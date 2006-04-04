@@ -14,147 +14,139 @@
 package org.netbeans.core.startup;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * A class that provides logging facility for the IDE - once instantiated, it
- * redirects the System.err into a log file.
+ * Class that sets the java.util.logging.LogManager configuration to log into
+ * the right file and put there the right content. Does nothing if
+ * either <code>java.util.logging.config.file</code> or
+ * <code>java.util.logging.config.class</code> is specified.
  */
-public class TopLogging
-{
-    /** The name of the log file */
-    public static final String LOG_FILE_NAME = "messages.log"; // NOI18N
-
+public final class TopLogging {
     private static final boolean disabledConsole = ! Boolean.getBoolean("netbeans.logger.console"); // NOI18N
 
-    private PrintStream logPrintStream;
-
-    private static TopLogging topLogging;
-    
-    /** Maximal size of log file.*/
-    private static final long LOG_MAX_SIZE = 
-        Long.getLong("org.netbeans.core.TopLogging.LOG_MAX_SIZE", 0x40000).longValue(); // NOI18N
-
-    /** Number of old log files that are maintained.*/    
-    private static final int LOG_COUNT = 
-        Integer.getInteger("org.netbeans.core.TopLogging.LOG_COUNT", 3).intValue(); // NOI18N
-    
-    
-    /** Creates a new TopLogging - redirects the System.err to a log file.
-     * @param logDir A directory for the log file
+    /** Initializes the logging configuration. Invoked by <code>LogManager.readConfiguration</code> method.
      */
-    TopLogging (String logDir) throws IOException  {
-        topLogging = this;
+    public TopLogging() {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(os);
 
-        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
-        Date date = new Date();
-        if (logDir == null) {
-            // no demultiplexing -- everything goes just to stderr.
-            logPrintStream = System.err;
-            logPrintStream.println("-------------------------------------------------------------------------------"); // NOI18N
-            logPrintStream.println(">Log Session: "+df.format (date)); // NOI18N
-            logPrintStream.println(">System Info: "); // NOI18N
-            try {
-                printSystemInfo(logPrintStream);
-            } catch (Throwable t) {
-                // Serious problems.
-                t.printStackTrace();
-                logPrintStream.flush();
+        Iterator it = System.getProperties().entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry e = (Map.Entry)it.next();
+
+            String key = (String)e.getKey();
+
+            if ("sun.os.patch.level".equals(key)) { // NOI18N
+                // skip this property as it does not mean level of logging
+                continue;
             }
-            logPrintStream.println("-------------------------------------------------------------------------------"); // NOI18N
-            logPrintStream = new PrintStream(new OutputStream() {
-                public void write(int b) { /* intentionally empty */ }
-            });
+
+            String v = (String)e.getValue();
+
+            if (key.endsWith(".level")) {
+                ps.print(key);
+                ps.print("=");
+                ps.println(v);
+            }
+        }
+        ps.close();
+        try {
+            LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(os.toByteArray()));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        Logger logger = Logger.getLogger (""); // NOI18N
+
+        Handler[] old = logger.getHandlers();
+        for (int i = 0; i < old.length; i++) {
+            logger.removeHandler(old[i]);
+        }
+        logger.addHandler(defaultHandler ());
+        if (Boolean.getBoolean("netbeans.logger.console")) { // NOI18N
+            if (NonClose.getInternal(defaultHandler ()) instanceof FileHandler) {
+                logger.addHandler (streamHandler ());
+            }
+        }
+    }
+
+    private static String previousUser;
+    static final void initialize() {
+        if (previousUser == null || previousUser.equals(System.getProperty("netbeans.user"))) {
+            // useful from tests
+            streamHandler = null;
+            defaultHandler = null;
+        }
+
+        if (System.getProperty("java.util.logging.config.file") != null) { // NOI18N
             return;
         }
-        OutputStream log = null;
-        
-        File logFileDir = new File (logDir);
-        if (! logFileDir.exists () && ! logFileDir.mkdirs ()) {
-            throw new IOException ("Cannot make directory to contain log file"); // NOI18N
-        }
-        File logFile = createLogFile (logFileDir, LOG_FILE_NAME);
-        if ((logFile.exists() && !logFile.canWrite()) || logFile.isDirectory()) {
-            throw new IOException ("Cannot write to file"); // NOI18N
+        String v = System.getProperty("java.util.logging.config.class"); // NOI18N
+        String p = TopLogging.class.getName();
+        if (v != null && !v.equals(p)) {
+            return;
         }
 
-        log = new BufferedOutputStream(new FileOutputStream(logFile.getAbsolutePath(), true));
+        // initializes the properties
+        new TopLogging();
+        // next time invoke the constructor of TopLogging itself please
+        System.setProperty("java.util.logging.config.class", p);
 
-        final PrintStream stderr = System.err;
-        logPrintStream = new PrintStream(new StreamDemultiplexor(stderr, log), false, "UTF-8"); // NOI18N
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                logPrintStream.flush(); // #31519
-                logPrintStream.close();
-            }
-        });
-        logPrintStream.println("-------------------------------------------------------------------------------"); // NOI18N
-        logPrintStream.println(">Log Session: "+ df.format (date)); // NOI18N
-        logPrintStream.println(">System Info: "); // NOI18N
-        printSystemInfo(logPrintStream);
-        logPrintStream.println("-------------------------------------------------------------------------------"); // NOI18N
-
-        System.setErr(logPrintStream);
-    }
-
-    private static TopLogging getDefault() {
-        if (topLogging == null) {
-            try {
-                new TopLogging(CLIOptions.getLogDir());
-            } catch (IOException x) {
-                ErrorManager.getDefault().notify(x);
-            }
-        }
-        return topLogging;
-    }
-
-    /** This method limits size of log files. There is kept: actual log file   
-     *  and old log files. This method prevents from growing log file infinitely.*/
-    private static File createLogFile (File parent, String chld) {
-        long firstModified = 0;
-        File renameTo = null;
-        File retFile = new File (parent, chld);
-        
-        if (!retFile.exists() || retFile.length() < LOG_MAX_SIZE)
-            return retFile;
-        
-        for (int i = 1; i < LOG_COUNT;i++) {
-            String logName = chld + "."+i; // NOI18N
-            File logFile = new File (parent, logName);
-            
-            if (!logFile.exists()) {
-                renameTo = logFile;               
-                break;
-            }
-            
-            long logModif = logFile.lastModified();
-            if ((firstModified == 0 || logModif < firstModified) &&  logModif > 0) {
-                firstModified = logModif;
-                renameTo = logFile;
-            }            
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(os);
+        printSystemInfo(ps);
+        ps.close();
+        try {
+            Logger logger = Logger.getLogger (TopLogging.class.getName()); // NOI18N
+            logger.log(Level.INFO, os.toString("utf-8"));
+        } catch (UnsupportedEncodingException ex) {
+            assert false;
         }
 
-        if (renameTo != null) {
-            if (renameTo.exists()) renameTo.delete();
-            retFile.renameTo(renameTo);
+        if (!(System.err instanceof LgStream)) {
+            System.setErr(new LgStream(Logger.getLogger("stderr"))); // NOI18N
         }
-        
-        return retFile;
     }
     
-    public static void printSystemInfo(PrintStream ps) {
+
+    private static void printSystemInfo(PrintStream ps) {
+        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
+        Date date = new Date();
+
+        ps.println("-------------------------------------------------------------------------------"); // NOI18N
+        ps.println(">Log Session: "+df.format (date)); // NOI18N
+        ps.println(">System Info: "); // NOI18N
+        
         String buildNumber = System.getProperty ("netbeans.buildnumber"); // NOI18N
         String currentVersion = NbBundle.getMessage(TopLogging.class, "currentVersion", buildNumber );
         ps.println("  Product Version         = " + currentVersion); // NOI18N
@@ -186,6 +178,7 @@ public class TopLogging
         ps.println("  Boot & Ext. Classpath   = " + createBootClassPath()); // NOI18N
         ps.println("  Application Classpath   = " + System.getProperty("java.class.path", "unknown")); // NOI18N
         ps.println("  Startup Classpath       = " + System.getProperty("netbeans.dynamic.classpath", "unknown")); // NOI18N
+        ps.println("-------------------------------------------------------------------------------"); // NOI18N
     }
 
     // Copied from NbClassPath:
@@ -223,105 +216,202 @@ public class TopLogging
             }
         }
     }
+
+    /** Logger for test purposes.
+     */
+    static Handler createStreamHandler (PrintStream pw) {
+        StreamHandler s = new StreamHandler (
+            pw, NbFormater.FORMATTER
+        );
+        return s;
+    }
     
-    protected void finalize() throws Throwable {
-        logPrintStream.flush();
-        logPrintStream.close();
-    }
-
-    /** @since JST-PENDING needed by NbErrorManager */
-    public static PrintStream getLogOutputStream() {
-        if (System.getProperty("netbeans.user") == null) { // NOI18N
-            // No user directory. E.g. from <makeparserdb>. Skip ide.log.
-            return System.err;
+    private static java.util.logging.Handler streamHandler;
+    private static synchronized java.util.logging.Handler streamHandler () {
+        if (streamHandler == null) {
+            StreamHandler sth = new StreamHandler (System.err, NbFormater.FORMATTER);
+            sth.setLevel(Level.ALL);
+            streamHandler = new NonClose(sth);
         }
-        return TopLogging.getDefault().logPrintStream;
+        return streamHandler;
+    }
+    
+    private static java.util.logging.Handler defaultHandler;
+    private static synchronized java.util.logging.Handler defaultHandler () {
+        if (defaultHandler != null) return defaultHandler;
+
+        String home = System.getProperty("netbeans.user");
+        if (home != null && !"memory".equals(home) && !CLIOptions.noLogging) {
+            try {
+                File dir = new File(new File(new File(home), "var"), "log");
+                dir.mkdirs ();
+                File f = new File(dir, "messages.log");
+                File f1 = new File(dir, "messages.log.1");
+                File f2 = new File(dir, "messages.log.2");
+
+                if (f1.exists()) {
+                    f1.renameTo(f2);
+                }
+                if (f.exists()) {
+                    f.renameTo(f1);
+                }
+                
+                FileOutputStream fout = new FileOutputStream(f, false);
+                BufferedOutputStream bout = new BufferedOutputStream(fout);
+                Handler h = new StreamHandler(fout, NbFormater.FORMATTER);
+                h.setLevel(Level.ALL);
+                h.setFormatter(NbFormater.FORMATTER);
+                defaultHandler = new NonClose(h);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        if (defaultHandler == null) {
+            defaultHandler = streamHandler();
+        }
+        return defaultHandler;
     }
 
-    private static final class StreamDemultiplexor extends OutputStream implements Runnable {
+    /** Allows tests to flush all standard handlers */
+    static void flush(boolean clear) {
+        Handler s = streamHandler;
+        if (s != null) {
+            s.flush();
+        }
+
+        Handler d = defaultHandler;
+        if (d != null) {
+            d.flush();
+        }
+
+        if (clear) {
+            streamHandler = null;
+            defaultHandler = null;
+        }
+    }
+
+    /** Non closing handler.
+     */
+    private static final class NonClose extends Handler {
+        private final Handler delegate;
+
+        public NonClose(Handler h) {
+            delegate = h;
+        }
+
+        public void publish(LogRecord record) {
+            delegate.publish(record);
+        }
+
+        public void flush() {
+            delegate.flush();
+        }
+
+        public void close() throws SecurityException {
+            delegate.flush();
+        }
+
+        public Formatter getFormatter() {
+            return delegate.getFormatter();
+        }
+
+        static Handler getInternal(Handler h) {
+            if (h instanceof NonClose) {
+                return ((NonClose)h).delegate;
+            }
+            return h;
+        }
+    }
+
+    /** Modified formater for use in NetBeans.
+     */
+    private static final class NbFormater extends java.util.logging.Formatter {
+        private static String lineSeparator = System.getProperty ("line.separator"); // NOI18N
+        static java.util.logging.Formatter FORMATTER = new NbFormater ();
+
         
-        /** task to flush the log file, or null */
-        private RequestProcessor.Task logFlushTask;
+        public String format(java.util.logging.LogRecord record) {
+            String message = formatMessage(record);
+            if (message.indexOf('\n') != -1 && record.getThrown() == null) {
+                // multi line messages print witout any wrappings
+                return message;
+            }
 
-        /** processor in which to flush them */
-        private static final RequestProcessor RP = new RequestProcessor("Flush ide.log"); // NOI18N
+            StringBuffer sb = new StringBuffer();
+            sb.append(record.getLevel().getLocalizedName());
+            addLoggerName (sb, record);
+            sb.append(": ");
+            sb.append(message);
+            sb.append(lineSeparator);
+            if (record.getThrown() != null) {
+                try {
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    record.getThrown().printStackTrace(pw);
+                    pw.close();
+                    sb.append(sw.toString());
+                } catch (Exception ex) {
+                }
+            }
+            return sb.toString();
+        }
+        
+        private static void addLoggerName (StringBuffer sb, java.util.logging.LogRecord record) {
+            String name = record.getLoggerName ();
+            if (!"".equals (name)) {
+                sb.append(" [");
+                sb.append(name);
+                sb.append(']');
+//                if (record.getSourceClassName() != null) {	
+//                    sb.append(record.getSourceClassName());
+//                } else {
+//                    sb.append(record.getLoggerName());
+//                }
+            }
+        }
+    } // end of NbFormater
 
-        /** a lock for flushing */
-        private static final Object FLUSH_LOCK = new String("org.netbeans.core.TopLogging.StreamDemultiplexor.FLUSH_LOCK"); // NOI18N
+    /** a stream to delegate to logging.
+     */
+    private static final class LgStream extends PrintStream {
+        private Logger log;
+        private StringBuffer sb = new StringBuffer();
 
-        /** delay for flushing */
-        private static final int FLUSH_DELAY = Integer.getInteger("netbeans.logger.flush.delay", 15000).intValue(); // NOI18N
-
-        private final OutputStream stderr;
-        private OutputStream log;
-
-        StreamDemultiplexor(PrintStream stderr, OutputStream log) {
-            this.stderr = stderr;
+        public LgStream(Logger log) {
+            super(new ByteArrayOutputStream());
             this.log = log;
         }
-        
-        public void write(int b) throws IOException {
-            log.write(b);
-            if (! disabledConsole)
-                stderr.write(b);
-            flushLog();
+
+        public void write(byte[] buf, int off, int len) {
+            sb.append(new String(buf, off, len));
+            checkFlush();
         }
 
-        public void write(byte b[]) throws IOException {
-            log.write(b);
-            if (! disabledConsole) stderr.write(b);
-            flushLog();
+        public void write(byte[] b) throws IOException {
+            write(b, 0, b.length);
         }
 
-        public void write(byte b[],
-                          int off,
-                          int len)
-        throws IOException {
-            log.write(b, off, len);
-            if (! disabledConsole) stderr.write(b, off, len);
-            flushLog();
+        public void write(int b) {
+            sb.append((char)b);
+            checkFlush();
         }
 
-        public void flush() throws IOException {
-            log.flush();
-            stderr.flush();
-        }
-
-        public void close() throws IOException {
-            log.close();
-            stderr.close();
-        }
-
-        /**
-         * Flush the log file asynch.
-         * Waits for e.g. 15 seconds after the first write.
-         * Note that this is only a delay to force a flush; if there is a lot
-         * of content, the buffer will fill up and it may have been written out
-         * long before. This just catches any trailing content.
-         * @see "#31519"
-         */
-        private void flushLog() {
-            synchronized (FLUSH_LOCK) {
-                if (logFlushTask == null) {
-                    logFlushTask = RP.create(this);
-                    logFlushTask.schedule(FLUSH_DELAY);
+        private void checkFlush() {
+            for (;;) {
+                int first = sb.indexOf("\n"); // NOI18N
+                if (first < 0) {
+                    break;
                 }
+                if (first == 0) {
+                    sb.delete(0, 1);
+                    continue;
+                }
+                log.log(Level.INFO, sb.substring(0, first));
+                sb.delete(0, first);
             }
         }
 
-        /**
-         * Flush log messages periodically.
-         */
-        public void run() {
-            synchronized (FLUSH_LOCK) {
-                try {
-                    flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                logFlushTask = null;
-            }
-        }
 
     }
 }

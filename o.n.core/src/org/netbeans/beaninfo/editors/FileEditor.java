@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -136,7 +137,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         if (curDir instanceof File) {
             currentDirectory = (File)curDir;
             if(! currentDirectory.isDirectory()) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "java.io.File will not accept currentDir=" + currentDirectory); // NOI18N
+                Logger.getAnonymousLogger().warning("java.io.File will not accept currentDir=" + currentDirectory); // NOI18N
                 currentDirectory = null;
             }
         } // XXX else if != null, warn
@@ -146,7 +147,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             baseDirectory = (File)baseDir;
             // As baseDir accept only directories in their absolute form.
             if(!baseDirectory.isDirectory() || !baseDirectory.isAbsolute()) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "java.io.File will not accept baseDir=" + baseDirectory); // NOI18N
+                Logger.getAnonymousLogger().warning("java.io.File will not accept baseDir=" + baseDirectory); // NOI18N
                 baseDirectory = null;
             }
         } // XXX else if != null, warn

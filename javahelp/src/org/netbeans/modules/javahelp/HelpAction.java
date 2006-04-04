@@ -45,7 +45,7 @@ public class HelpAction extends SystemAction
 
     protected void initialize() {
         super.initialize();
-        Installer.err.log("HelpAction.initialize");
+        Installer.log.fine("HelpAction.initialize");
 
         // Cf. org.netbeans.core.windows.frames.NbFocusManager and
         // org.netbeans.core.windows.frames.ShortcutAndMenuKeyEventProcessor
@@ -95,9 +95,7 @@ public class HelpAction extends SystemAction
         Component focused = (w != null) ? SwingUtilities.findFocusOwner(w) : null;
         HelpCtx help = (focused == null) ? HelpCtx.DEFAULT_HELP : HelpCtx.findHelp(focused);
 
-        if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Installer.err.log(help.toString() + " from " + focused);
-        }
+        Installer.log.fine(help.toString() + " from " + focused);
         return help;
     }
     

@@ -16,6 +16,7 @@ package org.netbeans.modules.settings.convertors;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.xml.sax.SAXException;
 
@@ -91,7 +92,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
     private Saver saver;
     public void registerSaver(Object inst, Saver s) {
         if (saver != null) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, "[Warning] Saver already registered");
+            XMLSettingsSupport.err.warning("[Warning] Saver already registered");
             return;
         }
         
@@ -104,7 +105,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             this.saver = s;
 //System.out.println("XMLPropertiesConvertor.registerPropertyListener...ok " + inst);
         } catch (NoSuchMethodException ex) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+            XMLSettingsSupport.err.warning(
             "ObjectChangesNotifier: NoSuchMethodException: " + // NOI18N
             inst.getClass().getName() + ".addPropertyChangeListener"); // NOI18N
         } catch (IllegalAccessException ex) {
@@ -117,7 +118,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
     public void unregisterSaver(Object inst, Saver s) {
         if (saver == null) return;
         if (saver != s) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, "[Warning] trying unregistered unknown Saver");
+            XMLSettingsSupport.err.warning("[Warning] trying unregistered unknown Saver");
             return;
         }
         try {
@@ -128,7 +129,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             this.saver = null;
 //System.out.println("XMLPropertiesConvertor.unregisterPropertyListener...ok " + inst);
         } catch (NoSuchMethodException ex) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+            XMLSettingsSupport.err.fine(
             "ObjectChangesNotifier: NoSuchMethodException: " + // NOI18N
             inst.getClass().getName() + ".removePropertyChangeListener"); // NOI18N
             // just changes done through gui will be saved
@@ -308,7 +309,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
                 try {
                     reader.setProperty("http://xml.org/sax/properties/lexical-handler", this);  //NOI18N
                 } catch (SAXException sex) {
-                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION,
+                    XMLSettingsSupport.err.warning(
                     "Warning: XML parser does not support lexical-handler feature.");  //NOI18N
                 }
                 reader.parse(is);

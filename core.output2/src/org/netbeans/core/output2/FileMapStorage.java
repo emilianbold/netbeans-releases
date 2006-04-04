@@ -12,6 +12,7 @@
  */
 package org.netbeans.core.output2;
 
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -273,7 +274,7 @@ class FileMapStorage implements Storage {
                             mappedStart, mappedRange - mappedStart);
                         this.contents = cont;
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().log("Failed to memory map output file for " + //NOI18N
+                        Logger.getAnonymousLogger().info("Failed to memory map output file for " + //NOI18N
                                 "reading.  Trying to read it normally."); //NOI18N
                         ErrorManager.getDefault().notify(ioe);
 
@@ -285,7 +286,7 @@ class FileMapStorage implements Storage {
                         this.contents = cont;
                     }
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().log("Failed to read output file. Start:" + start + " bytes reqd=" + //NOI18N
+                    Logger.getAnonymousLogger().info("Failed to read output file. Start:" + start + " bytes reqd=" + //NOI18N
                         byteCount + " mapped range=" + mappedRange + //NOI18N
                         " previous mapped range=" + prevMappedRange + //NOI18N
                         " channel size: " + ch.size()); //NOI18N

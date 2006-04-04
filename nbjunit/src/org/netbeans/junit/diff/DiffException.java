@@ -11,18 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * DiffException.java
- *
- * Created on February 8, 2001, 3:03 PM
- */
-
 package org.netbeans.junit.diff;
 
-/**
- *
- * @author  vstejskal
- * @version 
+/** Exception that signals that the diff is wrong.
  */
 public class DiffException extends java.io.IOException {
     /** Creates new DiffException */

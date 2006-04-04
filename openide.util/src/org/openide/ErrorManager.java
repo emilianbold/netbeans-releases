@@ -14,37 +14,30 @@
 package org.openide;
 
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.WeakSet;
+import org.openide.util.lookup.Lookups;
 
 /**
- * A system of managing, annotating, and classifying errors and log messages.
+ * A more or less <em>deprecated</em> system of managing, annotating, and classifying errors
+ *  and log messages.
  * <p>
- * Rather than printing raw exceptions to the console, or popping up dialog boxes
- * with exceptions, or implementing custom debug or logging facililities, code may
- * use the error manager to access logging and error-reporting in a higher-level
- * fashion. Standard error manager implementations can then provide generic ways
- * of customizing logging levels for different components, and so on.
- * </p>
- * <p>Especially important is the attaching of annotations such as stack traces to
- * exceptions, permitting you to throw an exception of a type permitted by your
- * API signature while safely encapsulating the root cause of the problem (in terms
- * of other nested exceptions). Code should use {@link #notify(Throwable)} rather
- * than directly printing caught exceptions, to make sure nested annotations are not lost.
- * </p>
- * <p>Also localized messages may be annotated to exceptions so that code which can deal
- * with a caught exception with a user-visible UI can display a polite and helpful message.
- * Messages with no localized annotation can be handled in a default way while the details
- * are reserved for the log file.
- * </p>
- * <p>
- * There may be zero or more instances of <code>ErrorManager</code> in {@link Lookup#getDefault}.
- * All will be delegated to, or a simple backup implementation is available if there are none.
+ * Rather then using the {@link ErrorManager} consider using JDK's {@link Logger}
+ * for reporting log events, unwanted exceptions, etc.  The methods
+ * in this class which are deprecated are annotated with a description
+ * how to use use the {@link Logger} methods to achieve the same goal.
  * </p>
  * <p>
  * The levels in descending order are:
@@ -69,15 +62,23 @@ import org.openide.util.WeakSet;
  * try {
  *     foo.doSomething();
  * } catch (IOException ioe) {
- *     ErrorManager.getDefault().notify(ioe);
+ * <!--
+ *     Logger.getLogger(YourClass.class.getName()).log(Level.SEVERE, "msg", ioe);
+ *     // used to be
+ * -->
+ * ErrorManager.getDefault().notify(ioe);
+ * <!--
  * }
+ * -->
  * </pre>
  * <p>If it is not very important but should be sent to the log file:</p>
  * <pre>
  * try {
  *     foo.doSomething();
  * } catch (IOException ioe) {
- *     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+ *     Logger.getLogger(YourClass.class.getName()).log(Level.CONFIG, "msg", ioe);
+ *     // used to be:
+ *     // ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
  * }
  * </pre>
  * <p>If it is the normal outcome of a user action
@@ -86,7 +87,10 @@ import org.openide.util.WeakSet;
  * try {
  *     foo.doSomething();
  * } catch (IOException ioe) {
- *     // Also WARNING or ERROR:
+ * <!--
+ *     Logger.getAnonymousLogger().log(Level.INFO, "msg", ioe);
+ *     // used to be:
+ * -->
  *     ErrorManager.getDefault().notify(ErrorManager.USER, ioe);
  * }
  * </pre>
@@ -105,7 +109,8 @@ import org.openide.util.WeakSet;
  *         doSomethingElse();
  *     } catch (IllegalArgumentException iae) {
  *         IOException ioe = new IOException("did not work: " + iae);
- *         ErrorManager.getDefault().annotate(ioe, iae);
+ *         ioe.initCause(iae);
+ *         // used to be: ErrorManager.getDefault().annotate(ioe, iae);
  *         throw ioe;
  *     }
  * }
@@ -127,6 +132,8 @@ import org.openide.util.WeakSet;
  * } catch (IOException ioe) {
  *     // The IllegalArgumentException is still available here:
  *     ErrorManager.getDefault().notify(ioe);
+ *     // or use logging
+ *     Logger.getLogger(YourClass.class.getName()).log(Level.SEVERE, null, ioe);
  * }
  * </pre>
  * </dd>
@@ -169,12 +176,12 @@ import org.openide.util.WeakSet;
  * </pre>
  * <dd>
  *
- * <dt>Logging a warning message</dt>
+ * <dt>Logging a warning message just simply uses the JDK's logging API</dt>
  * <dd>
  * <pre>
  * public void doSomething(String arg) {
  *     if (arg.length() == 0) {
- *         ErrorManager.getDefault().log(ErrorManager.WARNING,
+ *         Logger.getLogger(YourClass.class.getName()).log(Leverl.WARNING,
  *             "Warning: doSomething called on empty string");
  *         return;
  *     }
@@ -183,20 +190,23 @@ import org.openide.util.WeakSet;
  * </pre>
  * </dd>
  *
- * <dt>Logging messages for some subcomponent</dt>
+ * <dt>Logging messages for some subcomponent can be done easily with JDK's logging API</dt>
  * <dd>
  * <pre>
  * package org.netbeans.modules.foo;
  * class FooModule {
- *     public static final ErrorManager ERR =
- *         ErrorManager.getDefault().getInstance("org.netbeans.modules.foo");
+ *     public static final Logger ERR =
+ *         Logger.getLogger("org.netbeans.modules.foo");
  * }
  * // ...
  * class Something {
  *     public void doSomething(String arg) {
- *         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
- *             ERR.log("Called doSomething with arg " + arg);
- *         }
+ *         LogRecord rec = new LogRecord(Level.FINE, "MSG_Key");
+ *         // where in the Bundle.properties one has:
+ *         // MSG_Key=Called doSomething with arg {0}
+ *         rec.setResourceBundle(NbBundle.getBundle(Something.class));
+ *         rec.setParameters(new Object[] { arg });
+ *         ERR.log(rec);
  *     }
  * }
  * </pre>
@@ -333,12 +343,14 @@ public abstract class ErrorManager extends Object {
     * @param s the log message
     */
     public abstract void log(int severity, String s);
+    // not yet: after phase III: * @deprecated use {@link Logger#log}
 
     /** Logs the message to log file and (possibly) tells the user.
      * Uses a default severity.
     * @param s the log message
     */
     public final void log(String s) {
+    // not yet: after phase III: * @deprecated {@link Logger#log}
         log(INFORMATIONAL, s);
     }
 
@@ -352,6 +364,7 @@ public abstract class ErrorManager extends Object {
      *    discard the message
      */
     public boolean isLoggable(int severity) {
+     // not yet: after phase III: * @deprecated Use {@link Logger#isLoggable}
         return true;
     }
 
@@ -498,6 +511,9 @@ public abstract class ErrorManager extends Object {
          * The set of instances we delegate to. Elements type is ErrorManager.
          */
         private Set delegates = new HashSet();
+        
+        /** fallback logger to send messages to */
+        private Logger logger;
 
         /**
          * A set that has to be updated when the list of delegates
@@ -513,6 +529,15 @@ public abstract class ErrorManager extends Object {
 
         public DelegatingErrorManager(String name) {
             this.name = name;
+        }
+        
+        /** Initializes the logger.
+         */
+        Logger logger() {
+            if (logger == null) {
+                logger = Logger.getLogger(this.name);
+            }
+            return logger;
         }
 
         /** If the name is not empty creates new instance of
@@ -560,9 +585,45 @@ public abstract class ErrorManager extends Object {
 
         /** Calls all delegates. */
         public Throwable annotate(
-            Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace,
+            Throwable t, int severity, String message, final String localizedMessage, Throwable stackTrace,
             java.util.Date date
         ) {
+            if (delegates.isEmpty()) {
+                LogRecord rec = new LogRecord(convertSeverity(severity, true, Level.ALL), message);
+                if (stackTrace != null) {
+                    rec.setThrown(stackTrace);
+                }
+                if (date != null) {
+                    rec.setMillis(date.getTime());
+                }
+                if (localizedMessage != null) {
+                    ResourceBundle rb = new ResourceBundle() {
+                        public Object handleGetObject(String key) {
+                            if ("msg".equals(key)) { // NOI18N
+                                return localizedMessage;
+                            } else {
+                                return null;
+                            }
+                        }
+                        
+                        public Enumeration getKeys() {
+                            return Enumerations.singleton("msg"); // NOI18N
+                        }
+                    };
+                    rec.setResourceBundle(rb);
+                    rec.setResourceBundleName("msg"); // NOI18N
+                }
+                
+                Throwable last = t;
+                while (last.getCause() != null) {
+                    last = last.getCause();
+                }
+                
+                last.initCause(new LogException(rec));
+                
+                return t;
+            }
+            
             for (Iterator i = delegates.iterator(); i.hasNext();) {
                 ErrorManager em = (ErrorManager) i.next();
                 em.annotate(t, severity, message, localizedMessage, stackTrace, date);
@@ -574,7 +635,13 @@ public abstract class ErrorManager extends Object {
         /** Calls all delegates. */
         public void notify(int severity, Throwable t) {
             if (delegates.isEmpty()) {
-                t.printStackTrace();
+                try {
+                    if (enterLogger()) return;
+                    logger().log(convertSeverity(severity, true, Level.SEVERE), t.getMessage(), t);
+                } finally {
+                    exitLogger();
+                }
+                return;
             }
 
             try {
@@ -599,26 +666,15 @@ public abstract class ErrorManager extends Object {
                 throw new IllegalArgumentException("ErrorManager.log(UNKNOWN, ...) is not permitted"); // NOI18N
             }
 
-            if (delegates.isEmpty() && (severity > INFORMATIONAL)) {
-                String sev;
-                switch (severity) {
-                case WARNING:
-                    sev = "WARNING"; // NOI18N
-                    break;
-                case USER:
-                    sev = "USER"; // NOI18N
-                    break;
-                case EXCEPTION:
-                    sev = "EXCEPTION"; // NOI18N
-                    break;
-                case ERROR:
-                    sev = "ERROR"; // NOI18N
-                    break;
-                default:
-                    sev = String.valueOf(severity);
-                    break;
+            if (delegates.isEmpty()) {
+                Level sev = convertSeverity(severity, false, Level.FINE);
+                try {
+                    if (enterLogger()) return;
+                    logger().log(sev, s);
+                } finally {
+                    exitLogger();
                 }
-                System.err.println("[" + sev + "] " + s); // NOI18N
+                return;
             }
 
             for (Iterator i = delegates.iterator(); i.hasNext();) {
@@ -627,14 +683,31 @@ public abstract class ErrorManager extends Object {
             }
         }
 
+        private static Level convertSeverity(final int severity, boolean forException, Level def) {
+            Level sev = def;
+
+            if (severity >= ERROR) {
+                sev = Level.SEVERE;
+            } else if (severity >= EXCEPTION) {
+                sev = Level.SEVERE;
+            } else if (severity >= USER) {
+                sev = Level.INFO;
+            } else if (severity >= WARNING) {
+                sev = Level.WARNING;
+            } else if (severity >= INFORMATIONAL) {
+                sev = forException ? Level.INFO: Level.FINE;
+            }
+            return sev;
+        }
+
         /** Calls all delegates. */
         public boolean isLoggable(int severity) {
             if (severity == UNKNOWN) {
                 throw new IllegalArgumentException("ErrorManager.isLoggable(UNKNOWN) is not permitted"); // NOI18N
             }
 
-            if (delegates.isEmpty() && (severity > INFORMATIONAL)) {
-                return true;
+            if (delegates.isEmpty()) {
+                return logger().isLoggable(convertSeverity(severity, false, null));
             }
 
             for (Iterator i = delegates.iterator(); i.hasNext();) {
@@ -655,7 +728,7 @@ public abstract class ErrorManager extends Object {
             }
 
             if (delegates.isEmpty()) {
-                return true;
+                return logger().isLoggable(convertSeverity(severity, true, null));
             }
 
             for (Iterator i = delegates.iterator(); i.hasNext();) {
@@ -719,5 +792,34 @@ public abstract class ErrorManager extends Object {
                 setDelegates(r.allInstances());
             }
         }
+
+        private static volatile Thread lastThread;
+        private static boolean enterLogger() {
+            if (lastThread == Thread.currentThread()) {
+                new Exception("using error manager from inside a logger").printStackTrace(); // NOI18N
+                return true;
+            }
+            lastThread = Thread.currentThread();
+            return false;
+        }
+
+        private static void exitLogger() {
+            lastThread = null;
+        }
     }
+    
+    /** An exception that has a log record associated with itself, so
+     * the NbErrorManager can extract info about the annotation.
+     */
+    private static final class LogException extends Exception implements Lookup.Provider {
+        private Lookup lookup;
+        
+        public LogException(LogRecord rec) {
+            this.lookup = Lookups.singleton(rec);
+        }
+
+        public Lookup getLookup() {
+            return this.lookup;
+        }
+    } // end LogException
 }

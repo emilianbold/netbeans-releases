@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
@@ -127,7 +128,7 @@ public final class FileBasedFileSystem extends FileSystem {
         stopWatch.stop();
 	
         // print refresh stats unconditionally in trunk
-        ErrorManager.getDefault().getInstance("org.netbeans.modules.masterfs.REFRESH").log(
+        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
             "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
             Statistics.REFRESH_FS.toString() + "\n  " +
             Statistics.LISTENERS_CALLS.toString() + "\n  " + 

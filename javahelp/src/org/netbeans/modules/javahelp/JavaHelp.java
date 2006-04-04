@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.*;
 
 import javax.help.HelpSet;
@@ -46,7 +47,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      *Or, use {@link #getDefaultJavaHelp}.
      */
     public JavaHelp() {
-        Installer.err.log("JavaHelp created");
+        Installer.log.fine("JavaHelp created");
         if (!isModalExcludedSupported()) {
             Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.WINDOW_EVENT_MASK);
         }
@@ -112,7 +113,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                     mergeModel.setValue(mergeModel.getValue() + 1);
                 }
             } catch (HelpSetException hse) {
-                Installer.err.notify(hse);
+                Installer.log.log(Level.WARNING, null, hse);
                 master = new HelpSet();
             } catch (MalformedURLException mfue) {
                 mfue.printStackTrace();
@@ -146,7 +147,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             if (!currentModalDialogsReady && (w instanceof Dialog) &&
                     !(w instanceof ProgressDialog) && w != dialogViewer && ((Dialog)w).isModal()) {
                 // #21286. A modal dialog was opened before JavaHelp was even created.
-                Installer.err.log("Early-opened modal dialog: " + w.getName() + " [" + ((Dialog)w).getTitle() + "]");
+                Installer.log.fine("Early-opened modal dialog: " + w.getName() + " [" + ((Dialog)w).getTitle() + "]");
                 return (Dialog)w;
             } else {
                 return null;
@@ -157,9 +158,9 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     }
     
     private void ensureFrameViewer() {
-        Installer.err.log("ensureFrameViewer");
+        Installer.log.fine("ensureFrameViewer");
         if (frameViewer == null) {
-            Installer.err.log("\tcreating new");
+            Installer.log.fine("\tcreating new");
             frameViewer = new JFrame();
             frameViewer.setIconImage(Utilities.loadImage("org/netbeans/modules/javahelp/resources/help.gif")); // NOI18N
             frameViewer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHelp.class, "ACSD_JavaHelp_viewer"));
@@ -171,28 +172,28 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         }
     }
     private void ensureDialogViewer() {
-        Installer.err.log("ensureDialogViewer");
+        Installer.log.fine("ensureDialogViewer");
         Dialog parent = currentModalDialog();
         if (dialogViewer != null && dialogViewer.getOwner() != parent) {
-            Installer.err.log("\tdisposing old");
+            Installer.log.fine("\tdisposing old");
             dialogViewer.setVisible(false);
             dialogViewer.dispose();
             dialogViewer = null;
         }
         if (dialogViewer == null) {
-            Installer.err.log("\tcreating new");
+            Installer.log.fine("\tcreating new");
             dialogViewer = new JDialog(parent);
             dialogViewer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHelp.class, "ACSD_JavaHelp_viewer"));
         }
     }
     private void displayHelpInFrame(JHelp jh) {
-        Installer.err.log("displayHelpInFrame");
+        Installer.log.fine("displayHelpInFrame");
         if (jh == null) jh = lastJH;
         if (jh == null) throw new IllegalStateException();
         boolean newFrameViewer = (frameViewer == null);
         ensureFrameViewer();
         if (dialogViewer != null) {
-            Installer.err.log("\tdisposing old dialog");
+            Installer.log.fine("\tdisposing old dialog");
             dialogViewer.setVisible(false);
             dialogViewer.getContentPane().removeAll();
             dialogViewer.dispose();
@@ -200,11 +201,11 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         }
         if (frameViewer.getContentPane().getComponentCount() > 0 &&
                 frameViewer.getContentPane().getComponent(0) != jh) {
-            Installer.err.log("\treplacing content");
+            Installer.log.fine("\treplacing content");
             frameViewer.getContentPane().removeAll();
         }
         if (frameViewer.getContentPane().getComponentCount() == 0) {
-            Installer.err.log("\tadding content");
+            Installer.log.fine("\tadding content");
             frameViewer.getContentPane().add(jh, BorderLayout.CENTER);
             frameViewer.setTitle(jh.getModel().getHelpSet().getTitle());
             frameViewer.pack();
@@ -231,7 +232,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         if (frameViewer.isVisible()) {
             frameViewer.repaint();
             frameViewer.toFront(); // #20048
-            Installer.err.log("\talready visible, just repainting");
+            Installer.log.fine("\talready visible, just repainting");
         } else {
             frameViewer.setVisible(true);
         }
@@ -241,13 +242,13 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         lastJH = jh;
     }
     private void displayHelpInDialog(JHelp jh) {
-        Installer.err.log("displayHelpInDialog");
+        Installer.log.fine("displayHelpInDialog");
         if (jh == null) jh = lastJH;
         if (jh == null) throw new IllegalStateException();
         ensureDialogViewer();
         Rectangle bounds = null;
         if (frameViewer != null) {
-            Installer.err.log("\thiding old frame viewer");
+            Installer.log.fine("\thiding old frame viewer");
             if (frameViewer.isVisible()) {
                 bounds = frameViewer.getBounds();
                 frameViewer.setVisible(false);
@@ -256,22 +257,22 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         }
         if (dialogViewer.getContentPane().getComponentCount() > 0 &&
                 dialogViewer.getContentPane().getComponent(0) != jh) {
-            Installer.err.log("\tchanging content");
+            Installer.log.fine("\tchanging content");
             dialogViewer.getContentPane().removeAll();
         }
         if (dialogViewer.getContentPane().getComponentCount() == 0) {
-            Installer.err.log("\tadding content");
+            Installer.log.fine("\tadding content");
             dialogViewer.getContentPane().add(jh, BorderLayout.CENTER);
             dialogViewer.setTitle(jh.getModel().getHelpSet().getTitle());
             dialogViewer.pack();
         }
         if (bounds != null) {
-            Installer.err.log("\tcopying bounds from frame viewer: " + bounds);
+            Installer.log.fine("\tcopying bounds from frame viewer: " + bounds);
             dialogViewer.setBounds(bounds);
         }
         rearrange(currentModalDialog());
         if (dialogViewer.isVisible()) {
-            Installer.err.log("\talready visible, just repainting");
+            Installer.log.fine("\talready visible, just repainting");
             dialogViewer.repaint();
         } else {
             dialogViewer.show();
@@ -281,13 +282,13 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     /*
     private void closeFrameViewer() {
         if (frameViewer == null || !frameViewer.isVisible()) throw new IllegalStateException();
-        Installer.err.log("Closing frame viewer");
+        Installer.log.fine("Closing frame viewer");
         frameViewer.setVisible(false);
         frameViewer.getContentPane().removeAll();
     }
     private void closeDialogViewer() {
         if (dialogViewer == null || !dialogViewer.isVisible()) throw new IllegalStateException();
-        Installer.err.log("Closing dialog viewer");
+        Installer.log.fine("Closing dialog viewer");
         dialogViewer.setVisible(false);
         dialogViewer.getContentPane().removeAll();
         dialogViewer.dispose();
@@ -309,7 +310,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     public void showHelp(HelpCtx ctx, final boolean showmaster) {
         final HelpCtx ctx2 = (ctx != null) ? ctx : HelpCtx.DEFAULT_HELP;
         if (!SwingUtilities.isEventDispatchThread()) {
-            Installer.err.log("showHelp later...");
+            Installer.log.fine("showHelp later...");
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     showHelp(ctx2, showmaster);
@@ -317,22 +318,22 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             });
             return;
         }
-        Installer.err.log("showing help: " + ctx2);
+        Installer.log.fine("showing help: " + ctx2);
         final HelpSet[] hs_ = new HelpSet[1];
         Runnable run = new Runnable() {
             public void run() {
                 String id = ctx2.getHelpID();
                 if (showmaster || ctx2.equals(HelpCtx.DEFAULT_HELP) || id == null) {
-                    Installer.err.log("getting master...");
+                    Installer.log.fine("getting master...");
                     hs_[0] = getMaster();
-                    Installer.err.log("getting master...done");
+                    Installer.log.fine("getting master...done");
                 }
                 if (hs_[0] == null ||
                         /* #22670: if ID in hidden helpset, use that HS, even if showmaster */
                         (id != null && !hs_[0].getCombinedMap().isValidID(id, hs_[0]))) {
-                    Installer.err.log("finding help set for " + id + "...");
+                    Installer.log.fine("finding help set for " + id + "...");
                     hs_[0] = findHelpSetForID(id);
-                    Installer.err.log("finding help set for " + id + "...done");
+                    Installer.log.fine("finding help set for " + id + "...done");
                 }
             }
         };
@@ -340,11 +341,11 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             // Computation required. Show the progress dialog and do the computation
             // in a separate thread. When finished, the progress dialog will hide
             // itself and control will return to event thread.
-            Installer.err.log("showing progress dialog...");
+            Installer.log.fine("showing progress dialog...");
             progressHandle = ProgressHandleFactory.createHandle("");
             createProgressDialog(run, currentModalDialog()).show();
             progressHandle.finish();
-            Installer.err.log("dialog done.");
+            Installer.log.fine("dialog done.");
         } else {
             // Nothing much to do, run it synchronously in event thread.
             run.run();
@@ -361,10 +362,10 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             displayHelpInFrame(jh);
         } else {
             if (currentModalDialog() == null) {
-                Installer.err.log("showing as non-dialog");
+                Installer.log.fine("showing as non-dialog");
                 displayHelpInFrame(jh);
             } else {
-                Installer.err.log("showing as dialog");
+                Installer.log.fine("showing as dialog");
                 displayHelpInDialog(jh);
             }
         }
@@ -390,11 +391,11 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         int type = ev.getID();
         Window w = ev.getWindow();
         if (type == WindowEvent.WINDOW_CLOSING && w == dialogViewer) {
-            Installer.err.log("7. Dialog viewer open. Viewer closed. rTFL = false.");
+            Installer.log.fine("7. Dialog viewer open. Viewer closed. rTFL = false.");
             reparentToFrameLater = false;
         }
         if (type != WindowEvent.WINDOW_CLOSED && type != WindowEvent.WINDOW_OPENED) {
-            //Installer.err.log("uninteresting window event: " + ev);
+            //Installer.log.fine("uninteresting window event: " + ev);
             return;
         }
         if (w instanceof Dialog) {
@@ -418,8 +419,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                     }
                 }
                 
-                if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    Installer.err.log("modal (or viewer) dialog event: " + ev + " [" + d.getTitle() + "]");
+                if (Installer.log.isLoggable(Level.FINE)) {
+                    Installer.log.fine("modal (or viewer) dialog event: " + ev + " [" + d.getTitle() + "]");
                 }
                 if (type == WindowEvent.WINDOW_CLOSED) {
                     if (d == dialogViewer) {
@@ -429,16 +430,16 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                             currentModalDialogs.pop();
                             currentModalDialogsReady = true;
                         } else {
-                            Installer.err.notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Please see IZ #24993")); // NOI18N
+                            Installer.log.log(Level.WARNING, null, new IllegalStateException("Please see IZ #24993")); // NOI18N
                         }
                         showDialogStack();
                         if ((frameViewer == null || !frameViewer.isVisible() ||
                              /* 14393 */frameViewer.getState() == Frame.ICONIFIED) &&
                             (dialogViewer == null || !dialogViewer.isVisible())) {
                             if (!reparentToFrameLater) {
-                                Installer.err.log("2. No viewer open, !rTFL. Top dialog closed. Pop it.");
+                                Installer.log.fine("2. No viewer open, !rTFL. Top dialog closed. Pop it.");
                             } else if (currentModalDialog() == null) {
-                                Installer.err.log("3. No viewer open, rTFL. Only top dialog closed. Pop it. Create frame viewer.");
+                                Installer.log.fine("3. No viewer open, rTFL. Only top dialog closed. Pop it. Create frame viewer.");
                                 //#47150 - reusing the old frame viewer can cause
                                 //re-showing the frame viewer to re-show the dialog
                                 if (frameViewer != null) {
@@ -447,16 +448,16 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                                 }
                                 displayHelpInFrame(null);
                             } else {
-                                Installer.err.log("4. No viewer open, rTFL. Some top dialog closed. Pop it. Create dialog viewer.");
+                                Installer.log.fine("4. No viewer open, rTFL. Some top dialog closed. Pop it. Create dialog viewer.");
                                 displayHelpInDialog(null);
                             }
                         } else if (dialogViewer != null && dialogViewer.isVisible()) {
-                            Installer.err.log(ErrorManager.WARNING, "WARNING - dialogViewer should not still be open"); // NOI18N
+                            Installer.log.warning("dialogViewer should not still be open"); // NOI18N
                         } else {
-                            Installer.err.log(ErrorManager.WARNING, "WARNING - frameViewer visible when a dialog was closing"); // NOI18N
+                            Installer.log.warning("frameViewer visible when a dialog was closing"); // NOI18N
                         }
                     } else {
-                        Installer.err.log("some random modal dialog closed: " + d.getName() + " [" + d.getTitle() + "]");
+                        Installer.log.fine("some random modal dialog closed: " + d.getName() + " [" + d.getTitle() + "]");
                     }
                 } else {
                     // WINDOW_OPENED
@@ -466,31 +467,31 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                         if ((frameViewer == null || !frameViewer.isVisible() ||
                              /* 14393 */frameViewer.getState() == Frame.ICONIFIED) &&
                             (dialogViewer == null || !dialogViewer.isVisible())) {
-                            Installer.err.log("1. No viewer open. Dialog opened. Push it on stack. rTFL = false.");
+                            Installer.log.fine("1. No viewer open. Dialog opened. Push it on stack. rTFL = false.");
                             reparentToFrameLater = false;
                         } else if (frameViewer != null && frameViewer.isVisible()) {
-                            Installer.err.log("5. Frame viewer open. Dialog opened. Push it. Close frame viewer. Create dialog viewer. rTFL = true.");
+                            Installer.log.fine("5. Frame viewer open. Dialog opened. Push it. Close frame viewer. Create dialog viewer. rTFL = true.");
                             displayHelpInDialog(null);
                             reparentToFrameLater = true;
                         } else if (dialogViewer != null && dialogViewer.isVisible()) {
-                            Installer.err.log("6. Dialog viewer open. Dialog opened. Push it. Reparent dialog viewer.");
+                            Installer.log.fine("6. Dialog viewer open. Dialog opened. Push it. Reparent dialog viewer.");
                             displayHelpInDialog(null);
                         } else {
-                            Installer.err.log(ErrorManager.WARNING, "WARNING - logic error"); // NOI18N
+                            Installer.log.warning("logic error"); // NOI18N
                         }
                     } else {
                         // dialog viewer opened, fine
                     }
                 }
             } else {
-                //Installer.err.log("nonmodal dialog event: " + ev);
+                //Installer.log.fine("nonmodal dialog event: " + ev);
             }
         } else {
-            //Installer.err.log("frame event: " + ev);
+            //Installer.log.fine("frame event: " + ev);
         }
     }
     private void showDialogStack() {
-        if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (Installer.log.isLoggable(Level.FINE)) {
             StringBuffer buf = new StringBuffer("new modal dialog stack: ["); // NOI18N
             boolean first = true;
             Iterator it = currentModalDialogs.iterator();
@@ -503,7 +504,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 buf.append(((Dialog)it.next()).getTitle());
             }
             buf.append("]"); // NOI18N
-            Installer.err.log(buf.toString());
+            Installer.log.fine(buf.toString());
         }
     }
     
@@ -515,7 +516,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         Rectangle r1 = dlg.getBounds();
         Rectangle r2 = dialogViewer.getBounds();
         if (r1.intersects(r2)) {
-            Installer.err.log("modal dialog and dialog viewer overlap");
+            Installer.log.fine("modal dialog and dialog viewer overlap");
             Dimension s = Toolkit.getDefaultToolkit().getScreenSize();
             int xExtra = s.width - r1.width - r2.width;
             int yExtra = s.height - r1.height - r2.height;
@@ -524,36 +525,36 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 int r1Yaxis = r1.x + (r1.width/2);
                 int r2Yaxis = r2.x + (r2.width/2);
                 if(r1Yaxis <= r2Yaxis) {
-                    Installer.err.log(" send help to the right");
+                    Installer.log.fine(" send help to the right");
                     if((r1.x + r1.width + r2.width) <= s.width) {
-                        Installer.err.log("there is enough place fo help");
+                        Installer.log.fine("there is enough place fo help");
                         r2.x = r1.x + r1.width;
                     } else {
-                        Installer.err.log("there is not enough place");
+                        Installer.log.fine("there is not enough place");
                         if((r1.width + r2.width) < s.width) {
-                            Installer.err.log("relocate both");
+                            Installer.log.fine("relocate both");
                             r2.x = s.width - r2.width;
                             r1.x = r2.x - r1.width;
                         } else {
-                            Installer.err.log("relocate both and resize help");
+                            Installer.log.fine("relocate both and resize help");
                             r1.x = 0;
                             r2.x = r1.width;
                             r2.width = s.width - r1.width;
                         }
                     }
                 } else {
-                    Installer.err.log("send help to the left");
+                    Installer.log.fine("send help to the left");
                     if((r1.x - r2.width) > 0) {
-                        Installer.err.log("there is enough place for help");
+                        Installer.log.fine("there is enough place for help");
                         r2.x = r1.x - r2.width;
                     } else {
-                        Installer.err.log("there is not enough place");
+                        Installer.log.fine("there is not enough place");
                         if((r1.width + r2.width) < s.width){
-                            Installer.err.log("relocate both");
+                            Installer.log.fine("relocate both");
                             r2.x = 0;
                             r1.x = r2.width;
                         } else {
-                            Installer.err.log("relocate both and resize help");
+                            Installer.log.fine("relocate both and resize help");
                             r1.x = s.width - r1.width;
                             r2.x = 0;
                             r2.width = r1.x;
@@ -565,36 +566,36 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 int r1Xaxis = r1.y + (r1.height/2);
                 int r2Xaxis = r2.y + (r2.height/2);
                 if(r1Xaxis <= r2Xaxis) {
-                    Installer.err.log(" send help to the bottom");
+                    Installer.log.fine(" send help to the bottom");
                     if((r1.y + r1.height + r2.height) <= s.height) {
-                        Installer.err.log("there is enough place fo help");
+                        Installer.log.fine("there is enough place fo help");
                         r2.y = r1.y + r1.height;
                     } else {
-                        Installer.err.log("there is not enough place");
+                        Installer.log.fine("there is not enough place");
                         if((r1.height + r2.height) < s.height) {
-                            Installer.err.log("relocate both");
+                            Installer.log.fine("relocate both");
                             r2.y = s.height - r2.height;
                             r1.y = r2.y - r1.height;
                         } else {
-                            Installer.err.log("relocate both and resize help");
+                            Installer.log.fine("relocate both and resize help");
                             r1.y = 0;
                             r2.y = r1.height;
                             r2.height = s.height - r1.height;
                         }
                     }
                 } else {
-                    Installer.err.log("send help to the top");
+                    Installer.log.fine("send help to the top");
                     if((r1.y - r2.height) > 0){
-                        Installer.err.log("there is enough place for help");
+                        Installer.log.fine("there is enough place for help");
                         r2.y = r1.y - r2.height;
                     } else {
-                        Installer.err.log("there is not enough place");
+                        Installer.log.fine("there is not enough place");
                         if((r1.height + r2.height) < s.height) {
-                            Installer.err.log("relocate both");
+                            Installer.log.fine("relocate both");
                             r2.y = 0;
                             r1.y = r2.height;
                         } else {
-                            Installer.err.log("relocate both and resize help");
+                            Installer.log.fine("relocate both and resize help");
                             r1.y = s.height - r1.height;
                             r2.y = 0;  //or with -1
                             r2.height = r1.y;
@@ -644,14 +645,14 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         }
         public void show() {
             if (run != null) {
-                Installer.err.log("posting request from progress dialog...");
+                Installer.log.fine("posting request from progress dialog...");
                 getHelpLoader().post(run).addTaskListener(this);
                 run = null;
             }
             super.show();
         }
         public void taskFinished(Task task) {
-            Installer.err.log("posting request from progress dialog...request finished.");
+            Installer.log.fine("posting request from progress dialog...request finished.");
             SwingUtilities.invokeLater(this);
         }
         public void run() {
@@ -690,10 +691,10 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             Iterator it = getHelpSets().iterator();
             if (MASTER_ID.equals(id)) {
                 if (it.hasNext()) {
-                    Installer.err.log("master id, and >=1 help set");
+                    Installer.log.fine("master id, and >=1 help set");
                     return Boolean.TRUE;
                 } else {
-                    Installer.err.log("master id, and 0 help sets");
+                    Installer.log.fine("master id, and 0 help sets");
                     return Boolean.FALSE;
                 }
             } else {
@@ -701,15 +702,15 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 while (it.hasNext()) {
                     HelpSet hs = (HelpSet)it.next();
                     if (hs.getCombinedMap().isValidID(id, hs)) {
-                        Installer.err.log("found normal valid id " + id + " in " + hs.getTitle());
+                        Installer.log.fine("found normal valid id " + id + " in " + hs.getTitle());
                         return Boolean.TRUE;
                     }
                 }
-                Installer.err.log("did not find id " + id);
+                Installer.log.fine("did not find id " + id);
                 return Boolean.FALSE;
             }
         } else {
-            Installer.err.log("not checking " + id + " specifically");
+            Installer.log.fine("not checking " + id + " specifically");
             return null;
         }
     }
@@ -719,7 +720,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     */
     private static void warnBadID(String id) {
         // PLEASE DO NOT COMMENT OUT...localized warning
-        Installer.err.log(ErrorManager.WARNING, NbBundle.getMessage(JavaHelp.class, "MSG_jh_id_not_found", id));
+        Installer.log.fine(NbBundle.getMessage(JavaHelp.class, "MSG_jh_id_not_found", id));
     }
 
     /** Display something in a JHelp.
@@ -732,7 +733,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     private synchronized void displayInJHelp(JHelp jh, String helpID, URL url) {
         if (jh == null) throw new NullPointerException();
         if (jh.getModel() == null) throw new IllegalArgumentException();
-        Installer.err.log("displayInJHelp: " + helpID + " " + url);
+        Installer.log.fine("displayInJHelp: " + helpID + " " + url);
         try {
             if (helpID != null && ! helpID.equals(MASTER_ID)) {
                 HelpSet hs = jh.getModel().getHelpSet();
@@ -745,7 +746,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 jh.setCurrentURL(url);
             }
         } catch (RuntimeException e) {
-            Installer.err.notify(e);
+            Installer.log.log(Level.WARNING, null, e);
         }
     }
 
@@ -774,10 +775,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             title = hs.getTitle();
             jh = new JHelp(hs);
         } catch (RuntimeException e) {
-            if (title != null) {
-                Installer.err.annotate(e, ErrorManager.UNKNOWN, "While trying to display: " + title, null, null, null); // NOI18N
-            }
-            Installer.err.notify(e);
+            Installer.log.log(Level.WARNING, "While trying to display: " + title, e); // NOI18N
             return new JHelp();
         }
         synchronized (availableJHelps) {
@@ -789,7 +787,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 jh.setCurrentID(home);
             }
         } catch (Exception e) {
-            Installer.err.notify(ErrorManager.INFORMATIONAL, e);
+            Installer.log.log(Level.WARNING, null, e);
         }
         return jh;
     }
@@ -807,11 +805,11 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 Method m = clazz.getMethod("isModalExcludedSupported", null); // NOI18N
                 Boolean b = (Boolean) m.invoke(null, null);
                 modalExcludedSupported = b.booleanValue() ? 1 : 0;
-                Installer.err.log("isModalExcludedSupported = " + modalExcludedSupported); // NOI18N
+                Installer.log.fine("isModalExcludedSupported = " + modalExcludedSupported); // NOI18N
             } catch (ThreadDeath ex) {
                 throw ex;
             } catch (Throwable ex) {
-                Installer.err.log("isModalExcludedSupported() failed  " + ex); // NOI18N
+                Installer.log.fine("isModalExcludedSupported() failed  " + ex); // NOI18N
             }
         }
         
@@ -829,7 +827,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         } catch (ThreadDeath ex) {
             throw ex;
         } catch (Throwable ex) {
-            Installer.err.log("setModalExcluded(Window) failed  " + ex); // NOI18N
+            Installer.log.fine("setModalExcluded(Window) failed  " + ex); // NOI18N
             modalExcludedSupported = 0;
         }
     }

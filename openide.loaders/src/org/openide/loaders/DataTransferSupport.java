@@ -19,6 +19,8 @@
 package org.openide.loaders;
 
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.Mnemonics;
@@ -83,7 +85,7 @@ abstract class DataTransferSupport {
         handleCreatePasteTypes (t, s);
     }
     
-    private static final ErrorManager err = ErrorManager.getDefault ().getInstance ("org.openide.loaders.DataTransferSupport"); //NOI18N
+    private static final Logger err = Logger.getLogger("org.openide.loaders.DataTransferSupport"); //NOI18N
     
     /** Supports paste of multiple DataObject at once.
      */
@@ -143,8 +145,8 @@ abstract class DataTransferSupport {
         }
         
         private void doPaste () throws IOException {
-	    if (err.isLoggable (ErrorManager.INFORMATIONAL)) {
-		err.notify (ErrorManager.INFORMATIONAL, new Throwable ("Issue #58666: Called " + this + " doPaste() on objects " + Arrays.asList (objs)));
+	    if (err.isLoggable (Level.FINE)) {
+		err.log(Level.FINE, null, new Throwable ("Issue #58666: Called " + this + " doPaste() on objects " + Arrays.asList (objs))); // NOI18N
 	    }
             for (int i = 0; i < objs.length; i++)
                 handlePaste (objs[i]);

@@ -31,6 +31,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.startup.StartLog;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
@@ -50,7 +52,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
     
     private static final String LAYER_STAMP = "layer-stamp.txt";
     
-    static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.core.projects"); // NOI18N
+    static final Logger err = Logger.getLogger("org.netbeans.core.projects"); // NOI18N
     
     /** current list of URLs - r/o; or null if not yet set */
     private List<URL> urls;
@@ -102,20 +104,20 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
             String defaultManager = "org.netbeans.core.startup.layers.BinaryCacheManager"; // NOI18N
             String managerName = System.getProperty("netbeans.cache.layers", defaultManager); // NOI18N
             if (managerName.equals("-")) { // NOI18N
-                err.log("Cache manager disabled");
+                err.fine("Cache manager disabled");
                 return LayerCacheManager.emptyManager();
             }
             try {
                 Class c = Class.forName(managerName);
                 Constructor ctor = c.getConstructor(new Class[] {File.class});
                 LayerCacheManager mgr = (LayerCacheManager)ctor.newInstance(new Object[] {cacheDir});
-                err.log("Using cache manager of type " + managerName + " in " + cacheDir);
+                err.fine("Using cache manager of type " + managerName + " in " + cacheDir);
                 return mgr;
             } catch (Exception e) {
                 throw (IOException) new IOException(e.toString()).initCause(e);
             }
         } else {
-            err.log("No cache manager");
+            err.fine("No cache manager");
             return LayerCacheManager.emptyManager();
         }
     }
@@ -131,7 +133,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
             try {
                 fs = mgr.createLoadedFileSystem();
             } catch (IOException ioe) {
-                err.notify(ErrorManager.INFORMATIONAL, ioe);
+                err.log(Level.WARNING, null, ioe);
                 mgr.cleanupCache();
                 cleanStamp(mgr.getCacheDirectory());
                 fs = mgr.createEmptyFileSystem();
@@ -203,11 +205,11 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
      */
     public void setURLs (final List<URL> urls) throws Exception {
         if (urls.contains(null)) throw new NullPointerException("urls=" + urls); // NOI18N
-        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err.log("setURLs: " + urls);
+        if (err.isLoggable(Level.FINE)) {
+            err.fine("setURLs: " + urls);
         }
         if (this.urls != null && urls.equals(this.urls)) {
-            err.log("no-op");
+            err.fine("no-op");
             return;
         }
         
@@ -224,7 +226,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
             stamp = null;
         }
         if (cacheDir != null && stampFile.isFile()) {
-            err.log("Stamp of new URLs: " + stamp.getHash());
+            err.fine("Stamp of new URLs: " + stamp.getHash());
             BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(stampFile), "UTF-8")); // NOI18N
             try {
                 String line = r.readLine();
@@ -234,9 +236,9 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                 } catch (NumberFormatException nfe) {
                     throw new IOException(nfe.toString());
                 }
-                err.log("Stamp in the cache: " + hash);
+                err.fine("Stamp in the cache: " + hash);
                 if (hash == stamp.getHash()) {
-                    err.log("Cache hit!");
+                    err.fine("Cache hit!");
                     this.urls = urls;
                     StartLog.logEnd("setURLs"); // NOI18N
                     return;
@@ -253,7 +255,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                     if (cacheDir != null) {
                         setStatusText(
                             NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_start_rewrite_cache"));
-                        err.log("Rewriting cache in " + cacheDir);
+                        err.fine("Rewriting cache in " + cacheDir);
                     } // else if null -> we are using emptyManager, so do not print confusing messages
                         try {
                             if (manager.supportsLoad()) {
@@ -263,8 +265,8 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                                 setDelegates(appendLayers(writableLayer, otherLayers, cacheLayer));
                             }
                         } catch (IOException ioe) {
-                            err.notify(ErrorManager.INFORMATIONAL, ioe);
-                            err.log("Abandoning cache manager");
+                            err.log(Level.WARNING, null, ioe);
+                            err.fine("Abandoning cache manager");
                             manager.cleanupCache();
                             cleanStamp(cacheDir);
                             manager = LayerCacheManager.emptyManager();
@@ -279,7 +281,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                                 setDelegates(appendLayers(writableLayer, otherLayers, cacheLayer));
                             } catch (IOException ioe2) {
                                 // More serious - should not happen.
-                                err.notify(ioe2);
+                                err.log(Level.WARNING, null, ioe2);
                             }
                             return;
                         }
@@ -301,7 +303,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                     if (cacheDir != null) {
                         setStatusText(
                             NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_rewrite_cache"));
-                        err.log("Finished rewriting cache in " + cacheDir);
+                        err.fine("Finished rewriting cache in " + cacheDir);
                     }
                 }
             }
@@ -360,7 +362,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                         // underlying URL inside jar:, generally file:
                         u2 = new URL(s.substring(4, bangSlash));
                     } else {
-                        err.log(ErrorManager.WARNING, "Weird JAR URL: " + u);
+                        err.warning("Weird JAR URL: " + u);
                         u2 = u;
                     }
                 } else {
@@ -405,5 +407,5 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
     private static void setStatusText (String msg) {
         org.netbeans.core.startup.Main.setStatusText (msg);
     }
-    
+
 }

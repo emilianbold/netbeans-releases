@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.multiview.MultiViewModel.ActionRequestObserverFactory;
@@ -314,7 +315,7 @@ public final class MultiViewPeer  {
         int type = TopComponent.PERSISTENCE_NEVER;
         for (int i = 0; i < descs.length; i++) {
             if (!(descs[i] instanceof Serializable)) {
-                ErrorManager.getDefault().getInstance(MultiViewTopComponent.class.getName()).log(ErrorManager.WARNING, 
+                Logger.getLogger(MultiViewTopComponent.class.getName()).warning(
                         "The MultiviewDescription instance " + descs[i].getClass() + " is not serializable. Cannot persist TopComponent.");
                 type = TopComponent.PERSISTENCE_NEVER;
                 break;
@@ -355,7 +356,7 @@ public final class MultiViewPeer  {
                 out.writeObject(closeHandler);
             } else {
                 //TODO some warning to the SPI programmer
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                Logger.getAnonymousLogger().info(
                        "The CloseOperationHandler isn not serializable. MultiView component id=" + preferredID());
             }
         }

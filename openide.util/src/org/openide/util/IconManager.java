@@ -12,8 +12,6 @@
  */
 package org.openide.util;
 
-import org.openide.ErrorManager;
-
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.MediaTracker;
@@ -24,6 +22,7 @@ import java.awt.image.ImageObserver;
 import java.lang.ref.*;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 
 /** Registers all loaded images into the AbstractNode, so nothing is loaded twice.
@@ -51,7 +50,7 @@ final class IconManager extends Object {
     private static final MediaTracker tracker = new MediaTracker(component);
     private static int mediaTrackerID;
     
-    private static ErrorManager ERR = ErrorManager.getDefault ().getInstance (IconManager.class.getName());
+    private static Logger ERR = Logger.getLogger(IconManager.class.getName());
 
     /**
      * Get the class loader from lookup.
@@ -71,7 +70,7 @@ final class IconManager extends Object {
             loaderQuery.addLookupListener(
                 new LookupListener() {
                     public void resultChanged(LookupEvent ev) {
-                        ERR.log("Loader cleared"); // NOI18N
+                        ERR.fine("Loader cleared"); // NOI18N
                         currentLoader = null;
                     }
                 }
@@ -84,12 +83,12 @@ final class IconManager extends Object {
             if (currentLoader == Thread.currentThread()) {
                 currentLoader = toReturn;
             }
-            ERR.log("Loader computed: " + currentLoader); // NOI18N
+            ERR.fine("Loader computed: " + currentLoader); // NOI18N
             return toReturn;
         } else { if (!noLoaderWarned) {
                 noLoaderWarned = true;
-                ERR.log(
-                    ErrorManager.WARNING, "No ClassLoader instance found in " + Lookup.getDefault() // NOI18N
+                ERR.warning(
+                    "No ClassLoader instance found in " + Lookup.getDefault() // NOI18N
                 );
             }
             return null;
@@ -253,8 +252,8 @@ final class IconManager extends Object {
 
             if (img != null) {
                 if (warn && extraInitialSlashes.add(name)) {
-                    ERR.log(
-                        ErrorManager.WARNING, "Initial slashes in Utilities.loadImage deprecated (cf. #20072): " +
+                    ERR.warning(
+                        "Initial slashes in Utilities.loadImage deprecated (cf. #20072): " +
                         name
                     ); // NOI18N
                 }

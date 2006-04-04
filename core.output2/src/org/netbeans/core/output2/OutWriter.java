@@ -18,6 +18,7 @@
 
 package org.netbeans.core.output2;
 
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -349,7 +350,7 @@ class OutWriter extends PrintWriter {
                         ol.outputLineCleared(e);
                     } else {
                         //#56826 - debug messaging
-                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Warning: issue #56826 - There was a null OutputListener on line:" + listenerLines[i]);
+                        Logger.getAnonymousLogger().warning("issue #56826 - There was a null OutputListener on line:" + listenerLines[i]);
                     }
                 }
             } else {

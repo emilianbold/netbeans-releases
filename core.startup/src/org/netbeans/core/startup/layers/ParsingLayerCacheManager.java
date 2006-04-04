@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NotImplementedException;
@@ -125,7 +126,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             // #23609: reverse these...
             urls = new ArrayList<URL>(urls);
             Collections.reverse(urls);
-            checkingForDuplicates = LayerCacheManager.err.isLoggable(ErrorManager.WARNING);
+            checkingForDuplicates = LayerCacheManager.err.isLoggable(Level.FINE);
             Iterator it = urls.iterator();
             while (it.hasNext()) {
                 base = (URL)it.next(); // store base for resolving in parser
@@ -133,22 +134,22 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
                     oneLayerFiles = new HashSet<String>(100);
                     currPath = null;
                 }
-                LayerCacheManager.err.log("Parsing: " + base);
+                LayerCacheManager.err.fine("Parsing: " + base);
                 try {
                     r.parse(base.toExternalForm());
                 } catch (Exception e) {
                     curr.clear();
                     curr.push(root);
-                    LayerCacheManager.err.log("Caught " + e + " while parsing: " + base);
+                    LayerCacheManager.err.fine("Caught " + e + " while parsing: " + base);
                     if (carrier == null) {
                         carrier = e;
                     } else {
-                        LayerCacheManager.err.annotate(carrier, e);
+                        ErrorManager.getDefault().annotate(carrier, e);
                     }
                 }
             }
             if (carrier != null) throw carrier;
-            LayerCacheManager.err.log("Finished layer parsing; " + fileCount + " files, " + folderCount + " folders, " + attrCount + " attributes");
+            LayerCacheManager.err.fine("Finished layer parsing; " + fileCount + " files, " + folderCount + " folders, " + attrCount + " attributes");
             return root;
         } catch (IOException ioe) {
             throw ioe;
@@ -248,7 +249,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             }
             parent.attrs.add(attr);
             if (checkingForDuplicates && !oneLayerFiles.add(currPath + "//" + attr.name)) { // NOI18N
-                LayerCacheManager.err.log(ErrorManager.WARNING, "Warning: layer " + base + " contains duplicate attributes " + attr.name + " for " + currPath);
+                LayerCacheManager.err.warning("layer " + base + " contains duplicate attributes " + attr.name + " for " + currPath);
             }
         } else {
             throw new SAXException(qname);
@@ -293,7 +294,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
                 currPath += "/" + name;
             }
             if (!oneLayerFiles.add(currPath)) {
-                LayerCacheManager.err.log(ErrorManager.WARNING, "Warning: layer " + base + " contains duplicate " + qname + "s named " + currPath);
+                LayerCacheManager.err.warning("layer " + base + " contains duplicate " + qname + "s named " + currPath);
             }
         }
         return f;
@@ -305,7 +306,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             if (text.length() > 0) {
                 MemFile file = (MemFile)curr.peek();
                 if (file.ref != null) throw new SAXParseException("CDATA plus url= in <file>", locator);
-                LayerCacheManager.err.log(ErrorManager.WARNING, "Warning: use of inline CDATA text contents in <file name=\"" + file.name + "\"> deprecated for performance and charset safety at " + locator.getSystemId() + ":" + locator.getLineNumber() + ". Please use the 'url' attribute instead, or the file attribute 'originalFile' on *.shadow files (with IDE/1 > 2.23).");
+                LayerCacheManager.err.warning("use of inline CDATA text contents in <file name=\"" + file.name + "\"> deprecated for performance and charset safety at " + locator.getSystemId() + ":" + locator.getLineNumber() + ". Please use the 'url' attribute instead, or the file attribute 'originalFile' on *.shadow files (with IDE/1 > 2.23).");
                 // Note: platform default encoding used. If you care about the encoding,
                 // you had better be using url= instead.
                 file.contents = text.getBytes();
@@ -365,7 +366,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
     }
     
     public void warning(SAXParseException e) throws SAXException {
-        LayerCacheManager.err.notify(ErrorManager.INFORMATIONAL, e);
+        LayerCacheManager.err.log(Level.WARNING, null, e);
     }
     
     public void fatalError(SAXParseException e) throws SAXException {

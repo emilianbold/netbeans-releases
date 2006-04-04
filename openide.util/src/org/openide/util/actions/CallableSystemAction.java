@@ -12,7 +12,7 @@
  */
 package org.openide.util.actions;
 
-import org.openide.ErrorManager;
+import java.util.logging.Logger;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 
@@ -121,8 +121,7 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
      */
     protected boolean asynchronous() {
         if (warnedAsynchronousActions.add(getClass())) {
-            ErrorManager.getDefault().log(
-                ErrorManager.WARNING,
+            Logger.getAnonymousLogger().warning(
                 "Warning - " + getClass().getName() +
                 " should override CallableSystemAction.asynchronous() to return false"
             );

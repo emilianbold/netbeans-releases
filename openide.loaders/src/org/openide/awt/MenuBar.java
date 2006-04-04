@@ -242,7 +242,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
                     // priority
                     err.annotate(newEx, err.INFORMATIONAL, null, null, null, null);
                 }
-                err.copyAnnotation(newEx, ex);
+                err.annotate(newEx, ex);
                 ex = newEx;
             }
         }

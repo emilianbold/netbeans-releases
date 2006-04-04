@@ -12,6 +12,7 @@
  */
 package org.openide.explorer.view;
 
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
@@ -1323,8 +1324,8 @@ public class TreeTableView extends BeanTreeView {
 
                                 if ((n1.getParentNode() == null) || (n2.getParentNode() == null)) {
                                     // PENDING: throw Exception
-                                    ErrorManager.getDefault().log(
-                                        "Warning: TTV.compare: Node " + n1 + " or " + n2 + " has no parent!"
+                                    Logger.getAnonymousLogger().warning(
+                                        "TTV.compare: Node " + n1 + " or " + n2 + " has no parent!"
                                     ); // NOI18N
 
                                     return 0;
@@ -1332,8 +1333,8 @@ public class TreeTableView extends BeanTreeView {
 
                                 if (!(n1.getParentNode().equals(n2.getParentNode()))) {
                                     // PENDING: throw Exception
-                                    ErrorManager.getDefault().log(
-                                        "Warning: TTV.compare: Nodes " + n1 + " and " + n2 + " has different parent!"
+                                    Logger.getAnonymousLogger().warning(
+                                        "TTV.compare: Nodes " + n1 + " and " + n2 + " has different parent!"
                                     ); // NOI18N
 
                                     return 0;

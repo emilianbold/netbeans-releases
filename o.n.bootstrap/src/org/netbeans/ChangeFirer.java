@@ -13,6 +13,7 @@
 
 package org.netbeans;
 
+import java.util.logging.Level;
 import org.openide.util.Utilities;
 import java.util.*;
 
@@ -92,7 +93,7 @@ final class ChangeFirer {
             modulesDeleted.clear();
         } catch (RuntimeException e) {
             // Recover gracefully.
-            Util.err.notify(e);
+            Util.err.log(Level.SEVERE, null, e);
         } finally {
             mgr.readOnly(false);
         }

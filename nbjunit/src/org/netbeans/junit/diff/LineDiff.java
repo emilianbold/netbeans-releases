@@ -85,9 +85,9 @@ public class LineDiff implements Diff {
     }
     
     /**
-     * @param first first file to compare -- ref
-     * @param second second file to compare -- golden
-     * @param diff difference file, caller can pass null value, when results are not needed.
+     * @param firstFile first file to compare -- ref
+     * @param secondFile second file to compare -- golden
+     * @param diffFile difference file, caller can pass null value, when results are not needed.
      * @return true iff files differ
      */
     public boolean diff(File firstFile, File secondFile, File diffFile) throws IOException {

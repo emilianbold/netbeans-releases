@@ -200,7 +200,7 @@ public final class SerialDataNode extends DataNode {
         
         if (notifyResolvePropertyChange && propertyChangeListener != null ) {
             notifyResolvePropertyChange = false;
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
+            XMLSettingsSupport.err.warning(
                 "Warning: no PropertyChangeEvent fired from settings stored in " +// NOI18N
                 getDataObject());
         }

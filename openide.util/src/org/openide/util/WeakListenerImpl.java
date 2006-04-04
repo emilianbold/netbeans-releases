@@ -29,6 +29,8 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
@@ -530,8 +532,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 remove = getRemoveMethod(methodClass, methodName, types[0]);
 
                 if (remove == null) {
-                    ErrorManager.getDefault().log(
-                        ErrorManager.WARNING,
+                    Logger.getAnonymousLogger().warning(
                         "Can't remove " + ref.listenerClass.getName() + //NOI18N
                         " using method " + methodName + //NOI18N
                         " from " + src
@@ -552,10 +553,10 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             try {
                 remove.invoke(src, params);
             } catch (Exception ex) { // from invoke(), should not happen
-                ErrorManager.getDefault().annotate(
-                    ex, "Problem encountered while calling " + methodClass + "." + methodName + "(...) on " + src
+                Logger.getAnonymousLogger().warning(
+                    "Problem encountered while calling " + methodClass + "." + methodName + "(...) on " + src
                 ); // NOI18N
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
             }
         }
 

@@ -14,8 +14,11 @@
 package org.netbeans.junit;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Checks that we can do proper logging.
  *
@@ -37,7 +40,7 @@ public class LoggingTest extends NbTestCase {
         NbTestSuite suite = new NbTestSuite(LoggingTest.class);
         return suite;
     }
-
+    
     protected void setUp() throws Exception {
         clearWorkDir();
     }
@@ -55,7 +58,7 @@ public class LoggingTest extends NbTestCase {
     }
     
     /** Test of NbTestCase#trimLogFiles method. It should trim size of all files
-     * in test case workdir to 1 MB. The method is called at the end of 
+     * in test case workdir to 1 MB. The method is called at the end of
      * NbTestCase#run method.
      */
     public void testTrimLogFiles() throws IOException {
@@ -82,5 +85,30 @@ public class LoggingTest extends NbTestCase {
                 assertTrue(file.getName()+" not trimmed." + file.length(), file.length() < 1024 * 1024);
             }
         }
+    }
+
+
+    protected Level logLevel() {
+        return Level.WARNING;
+    }
+
+    public void testLoggingUtil() throws Exception {
+        Logger log = Logger.getLogger(getName());
+        log.log(Level.SEVERE, "Ahoj");
+        log.log(Level.INFO, "Jardo");
+ 
+        File f = new File(getWorkDir(), getName() + ".log");
+        assertEquals("Log file exists", true, f.exists());
+
+        byte[] arr = new byte[(int)f.length()];
+        FileInputStream is = new FileInputStream(f);
+        int l = is.read(arr);
+        assertEquals(l, arr.length);
+
+        String s = new String(arr);
+        if (s.indexOf("Ahoj") == -1) {
+            fail("There should be Ahoj\n" + s);
+        }
+        assertEquals("Not logged for FINE: " + s, -1, s.indexOf("Jardo"));
     }
 }

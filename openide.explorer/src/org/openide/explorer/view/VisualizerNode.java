@@ -12,6 +12,7 @@
  */
 package org.openide.explorer.view;
 
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
@@ -530,8 +531,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             // bugfix #28515, check if getIcon contract isn't broken
             if (image == null) {
                 String method = opened ? "getOpenedIcon" : "getIcon"; // NOI18N
-                ErrorManager.getDefault().log(
-                    ErrorManager.WARNING,
+                Logger.getAnonymousLogger().warning(
                     "Node \"" + node.getName() + "\" [" + node.getClass().getName() + "] cannot return null from " +
                     method + "(). See Node." + method + " contract."
                 ); // NOI18N

@@ -35,6 +35,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.windows.Debug;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
@@ -67,6 +69,9 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Dafe Simonek
  */
 public final class PersistenceManager implements PropertyChangeListener {
+    /** logger of what is happening in persistance */
+    static final Logger LOG = Logger.getLogger("org.netbeans.core.windows.persistence"); // NOI18N
+
 
     /** Constants for default root folder name for winsys data representation */
     static final String ROOT_MODULE_FOLDER = "Windows2"; // NOI18N
@@ -451,11 +456,10 @@ public final class PersistenceManager implements PropertyChangeListener {
                             PersistenceManager.class, "EXC_BrokenTCSetting", 
                             stringId);
                     resultExc = new SafeException(new IOException(excAnnotation));
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    LOG.log(Level.WARNING,
                         "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                         + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
-                        + excAnnotation);
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, resultExc);
+                        + excAnnotation, resultExc);
                 }
             }
             else {
@@ -463,7 +467,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                 String excAnnotation = NbBundle.getMessage(PersistenceManager.class,
                         "EXC_FailedLocateTC",  stringId);
                 resultExc = new FileNotFoundException(excAnnotation);
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                LOG.warning(
                     "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                     + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                     + excAnnotation);
@@ -473,46 +477,40 @@ public final class PersistenceManager implements PropertyChangeListener {
 //                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, resultExc);
             }
         } catch (NoClassDefFoundError ndfe) { // TEMP>>
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
+            LOG.log(Level.WARNING,
                 "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
-                + ndfe.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ndfe);
+                + ndfe.getMessage(), ndfe);
         } catch (InvalidObjectException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
+            LOG.log(Level.WARNING,
                 "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
-                + ioe.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                + ioe.getMessage(), ioe);
         } catch (DataObjectNotFoundException dnfe) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
+            LOG.log(Level.WARNING,
                 "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                 + " Object not found: " + dnfe.getMessage() // NOI18N
-                + ". It was probably deleted."); // NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dnfe);
+                + ". It was probably deleted.", dnfe); // NOI18N
         } catch (ClassNotFoundException exc) {
             // ignore, will result in IOException fail below, annotate
             // and turn into IOExc
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
+            LOG.log(Level.WARNING,
                 "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
-                + exc.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                + exc.getMessage(), exc);
         } catch (ClassCastException exc) {
             // instance is not top component (is broken), annotate and
             // turn into IOExc
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
+            LOG.log(Level.WARNING,
                 "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
-                + exc.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                + exc.getMessage(), exc);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
+            LOG.log(Level.WARNING,
                 "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                 + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
-                + ioe.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                + ioe.getMessage(), ioe);
         }
         return null;
     }
@@ -726,9 +724,8 @@ public final class PersistenceManager implements PropertyChangeListener {
             escape.setAccessible(true);
             return (String) escape.invoke(null, new String[] {name});
         } catch (Exception ex) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                "Escape support failed"); // NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            LOG.log(Level.WARNING,
+                "Escape support failed", ex); // NOI18N
             return name;
         }
     }
@@ -746,9 +743,8 @@ public final class PersistenceManager implements PropertyChangeListener {
             unescape.setAccessible(true);
             return (String) unescape.invoke(null, new String[] {name});
         } catch (Exception ex) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-            "Escape support failed"); // NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            LOG.log(Level.WARNING,
+            "Escape support failed", ex); // NOI18N
             return name;
         }
     }

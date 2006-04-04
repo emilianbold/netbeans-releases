@@ -22,6 +22,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.FocusManager;
@@ -95,7 +96,7 @@ final class NavigatorTC extends TopComponent {
         if (navTC == null) {
             // shouldn't happen under normal conditions
             navTC = privateGetInstance();
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+            Logger.getAnonymousLogger().warning(
                 "Could not locate the navigator component via its winsys id"); //NOI18N
         }
         return navTC;

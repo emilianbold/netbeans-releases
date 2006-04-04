@@ -17,6 +17,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.*;
 import org.openide.filesystems.*;
@@ -117,8 +119,8 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
     /** Listener and runner  for this object */
     private Listener listener;
     
-    /** Error manager for this instance */
-    private ErrorManager err;
+    /** error manager for this instance */
+    private Logger err;
 
     /** Task that computes the children list of the folder */
     private Task recognizingTask;
@@ -168,15 +170,15 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             logName = "org.openide.loaders.FolderInstance" + '.' + logName; // NOI18N
         }
 
-        err = ErrorManager.getDefault ().getInstance (logName);
+        err = Logger.getLogger(logName);
 
         this.container = container;
         container.addPropertyChangeListener (
             org.openide.util.WeakListeners.propertyChange (listener, container)
         );
         
-        if (err.isLoggable (err.INFORMATIONAL)) {
-            err.log ("new " + this); // NOI18N
+        if (err.isLoggable(Level.FINE)) {
+            err.fine("new " + this); // NOI18N
         }
     }
     
@@ -230,14 +232,14 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
         Object object = CURRENT.get ();
         
         if (object == null || LAST_CURRENT.get () != this) {
-            err.log ("do into waitFinished"); // NOI18N
+            err.fine("do into waitFinished"); // NOI18N
             waitFinished ();
 
             object = FolderInstance.this.object;
         }
 
-        if (err.isLoggable(err.INFORMATIONAL)) {
-            err.log ("instanceCreate: " + object); // NOI18N
+        if (err.isLoggable(Level.FINE)) {
+            err.fine("instanceCreate: " + object); // NOI18N
         }
 
         if (object instanceof java.io.IOException) {
@@ -273,20 +275,20 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
      * internal state correctly.
      */
     public void waitFinished () {
-        boolean isLog = err.isLoggable (err.INFORMATIONAL);
+        boolean isLog = err.isLoggable(Level.FINE);
         for (;;) {
-            err.log ("waitProcessingFinished on container"); // NOI18N
+            err.fine("waitProcessingFinished on container"); // NOI18N
             waitProcessingFinished (container);
 
             Task originalRecognizing = checkRecognizingStarted ();
             if (isLog) {
-                err.log ("checkRecognizingStarted: " + originalRecognizing); // NOI18N
+                err.fine("checkRecognizingStarted: " + originalRecognizing); // NOI18N
             }
             originalRecognizing.waitFinished ();
 
             Task t = creationTask;
             if (isLog) {
-                err.log ("creationTask: " + creationTask); // NOI18N
+                err.fine("creationTask: " + creationTask); // NOI18N
             }
             if (t != null) {
                 t.waitFinished ();
@@ -295,12 +297,12 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
 
             Task[] toWait = waitFor;
             if (isLog) {
-                err.log ("toWait: " + toWait); // NOI18N
+                err.fine("toWait: " + toWait); // NOI18N
             }
             if (toWait != null) {
                 for (int i = 0; i < toWait.length; i++) {
                     if (isLog) {
-                        err.log ("  wait[" + i + "]: " + toWait[i]); // NOI18N
+                        err.fine("  wait[" + i + "]: " + toWait[i]); // NOI18N
                     }
                     toWait[i].waitFinished ();
                 }
@@ -309,7 +311,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             // loop if there was yet another task started to compute the
             // children list
             if (originalRecognizing == checkRecognizingStarted ()) {
-                err.log ("breaking the wait loop"); // NOI18N
+                err.fine("breaking the wait loop"); // NOI18N
                 break;
             }
             
@@ -364,11 +366,11 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             acceptType = 1;
         } catch (IOException ex) {
             // an error during a call to acceptCookie
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            err.log(Level.WARNING, null, ex);
             cookie = null;
         } catch (ClassNotFoundException ex) {
             // an error during a call to acceptCookie
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            err.log(Level.WARNING, null, ex);
             cookie = null;
         }
         
@@ -396,8 +398,8 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             }
         }
 
-        if (err.isLoggable (ErrorManager.INFORMATIONAL)) {
-            err.log (ErrorManager.INFORMATIONAL, "acceptDataObject: " + dob + " cookie: " + cookie + " acceptType: " + acceptType); // NOI18N
+        if (err.isLoggable(Level.FINE)) {
+            err.fine("acceptDataObject: " + dob + " cookie: " + cookie + " acceptType: " + acceptType); // NOI18N
         }
 
         return cookie;
@@ -528,10 +530,10 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
         // the recognizer task was finished sooner then notifyRunning called.
         // In such case notifyFinished could be called before notifyRunning 
         // and everything was completely broken
-        err.log ("recreate");
+        err.fine("recreate");
         recognizingTask = computeChildrenList (container, listener);
-        if (err.isLoggable(err.INFORMATIONAL)) {
-            err.log ("  recognizing task is now " + recognizingTask);
+        if (err.isLoggable(Level.FINE)) {
+            err.fine("  recognizing task is now " + recognizingTask);
         }
         notifyRunning ();
     }
@@ -628,7 +630,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
     * @param arr array of objects to process
     */
     private final void defaultProcessObjects (Collection arr) {
-        err.log ("defaultProcessObjects");
+        err.fine("defaultProcessObjects");
         HashSet toRemove;
         ArrayList cookies = new ArrayList ();
 
@@ -739,10 +741,10 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
         } catch (ClassNotFoundException ex) {
             result = ex;
         } finally {
-            if (err.isLoggable (err.INFORMATIONAL)) {
-                err.log ("notifying finished"); // NOI18N
+            if (err.isLoggable(Level.FINE)) {
+                err.fine("notifying finished"); // NOI18N
                 for (int log = 0; log < all.length; log++) {
-                    err.log ("  #" + log + ": " + all[log]); // NOI18N
+                    err.fine("  #" + log + ": " + all[log]); // NOI18N
                 }
             }
             object = result;
@@ -802,7 +804,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
     
     /** Access to error manager for FolderLookup.
      */
-    final ErrorManager err () {
+    final Logger err () {
         return err;
     }
     
@@ -842,7 +844,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             Object s = ev.getSource ();
             if (s == container) {
                 if (DataObject.Container.PROP_CHILDREN.equals(ev.getPropertyName ())) {
-                    err.log ("PROP_CHILDREN");
+                    err.fine("PROP_CHILDREN");
 
                     recreate();
                 }
@@ -851,7 +853,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
 
             if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
                 if (s instanceof DataObject) {
-                    err.log("PROP_NAME");
+                    err.fine("PROP_NAME");
                     recreate();
                 }
             }
@@ -861,7 +863,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             if (DataObject.PROP_COOKIE.equals(ev.getPropertyName ())) {
                 if (s instanceof DataObject) {
                     DataObject source = (DataObject)s;
-                    err.log("PROP_COOKIE: " + source); // NOI18N
+                    err.fine("PROP_COOKIE: " + source); // NOI18N
 
                     InstanceCookie ic = acceptDataObject (source);
                     
@@ -872,7 +874,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                     }
                 
                     if (hi != null) {
-                        err.log("previous instance: " + hi + " new instance " + ic); // NOI18N
+                        err.fine("previous instance: " + hi + " new instance " + ic); // NOI18N
                         /* Recreate if the new instance cookie is null or differs
                          * from the previous one.
                          * When the default implementation of acceptDataObject is

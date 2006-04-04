@@ -24,6 +24,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.ErrorManager;
 
 import org.xml.sax.*;
 
@@ -60,7 +61,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
      */
     public void attachTo(XMLDataObject xml) {
         this.xml = xml;
-        Installer.err.log("processing help context ref: " + xml.getPrimaryFile());
+        Installer.log.fine("processing help context ref: " + xml.getPrimaryFile());
     }
     
     /** Get the class produced.
@@ -96,7 +97,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
         if (p != null)
             return p;
         
-        Installer.err.log("creating help context presenter from " + xml.getPrimaryFile());
+        Installer.log.fine("creating help context presenter from " + xml.getPrimaryFile());
         
         EntityResolver resolver = new EntityResolver() {
             public InputSource resolveEntity(String pubid, String sysid) {
@@ -124,7 +125,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             parser.parse(new InputSource(xml.getPrimaryFile().getInputStream()));
         } catch (SAXException saxe) {
             IOException ioe = new IOException(saxe.toString());
-            Installer.err.annotate(ioe, saxe);
+            ErrorManager.getDefault().annotate(ioe, saxe);
             throw ioe;
         }
         
@@ -159,7 +160,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             this.helpID = helpID;
             this.showmaster = showmaster;
             putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-            Installer.err.log("new ShortcutAction: " + obj + " " + helpID + " showmaster=" + showmaster);
+            Installer.log.fine("new ShortcutAction: " + obj + " " + helpID + " showmaster=" + showmaster);
             updateText();
             updateIcon();
             updateEnabled();
@@ -177,7 +178,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
         public void actionPerformed(ActionEvent actionEvent) {
             Help h = findHelp();
             if (h != null) {
-                Installer.err.log("ShortcutAction.actionPerformed: " + helpID + " showmaster=" + showmaster);
+                Installer.log.fine("ShortcutAction.actionPerformed: " + helpID + " showmaster=" + showmaster);
                 h.showHelp(new HelpCtx(helpID), showmaster);
             } else {
                 Toolkit.getDefaultToolkit().beep();
@@ -247,7 +248,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             if (valid != null) {
                 setEnabled(valid.booleanValue());
             }
-            Installer.err.log("enabled: xml=" + obj.getPrimaryFile() + " id=" + helpID + " enabled=" + valid);
+            Installer.log.fine("enabled: xml=" + obj.getPrimaryFile() + " id=" + helpID + " enabled=" + valid);
         }
 
         public void nodeDestroyed(NodeEvent ev) {

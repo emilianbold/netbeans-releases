@@ -18,6 +18,7 @@
 
 package org.netbeans.core.output2;
 
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -58,7 +59,7 @@ class ErrWriter extends OutputWriter {
     }
     
     public void reset() throws IOException {
-        ErrorManager.getDefault().log ("Do not call reset() on the error io," +
+        Logger.getAnonymousLogger().warning("Do not call reset() on the error io," +
         " only on the output IO.  Reset on the error io does nothing.");
         closed = false;
     }

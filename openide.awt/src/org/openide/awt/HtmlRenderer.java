@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.ListCellRenderer;
@@ -34,7 +36,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
-import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 
 /**
@@ -213,6 +214,8 @@ public final class HtmlRenderer {
     /** Cache for strings which have produced errors, so we don't post an
      * error message more than once */
     private static Set badStrings = null;
+
+    private static Logger LOG = Logger.getLogger(HtmlRenderer.class.getName());
 
     /** Definitions for a limited subset of SGML character entities */
     private static final Object[] entities = new Object[] {
@@ -588,7 +591,7 @@ public final class HtmlRenderer {
                 if (STRICT_HTML) {
                     throw aib;
                 } else {
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, aib);
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, aib);
 
                     return renderPlainString(s, g, x, y, w, h, f, defaultColor, style, paint);
                 }
@@ -1303,19 +1306,19 @@ public final class HtmlRenderer {
             new String(chars); //NOI18N
 
         if (!STRICT_HTML) {
-            if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
+            if (LOG.isLoggable(Level.WARNING)) {
                 if (badStrings == null) {
                     badStrings = new HashSet();
                 }
 
                 if (!badStrings.contains(msg)) {
-                    //ErrorManager bug, issue 38372 - log messages containing
+                    // bug, issue 38372 - log messages containing
                     //newlines are truncated - so for now we iterate the
                     //string we've just constructed
                     StringTokenizer tk = new StringTokenizer(out, "\n", false);
 
                     while (tk.hasMoreTokens()) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING, tk.nextToken());
+                        LOG.warning(tk.nextToken());
                     }
 
                     badStrings.add(msg.intern());

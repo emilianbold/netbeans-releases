@@ -17,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -98,7 +99,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         if (idx >= 0) {
             requestAttention(idx);
         } else {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+            Logger.getAnonymousLogger().fine(
                 "RequestAttention on component unknown to container: " + tc); //NOI18N
         }
     }
@@ -206,7 +207,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
             getSelectionModel().setSelectedIndex(toSelect);
         } else {
             //Assertions are off
-            ErrorManager.getDefault().log (ErrorManager.WARNING, "Tried to" +
+            Logger.getAnonymousLogger().warning("Tried to" +
             "set a selected component that was not in the array of open " +
             "components.  ToSelect: " + selected + " components: " + 
             Arrays.asList(tcs));
@@ -409,11 +410,11 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         //Synchronizing here ensures that never happens.
         
         if (!SwingUtilities.isEventDispatchThread()) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+            Logger.getAnonymousLogger().warning(
                 "All state changes to the tab component must happen on the event thread!"); //NOI18N
             Exception e = new Exception();
             e.fillInStackTrace();
-            System.err.println(e.getStackTrace()[1]);
+            Logger.getAnonymousLogger().warning(e.getStackTrace()[1].toString());
         }
         
         synchronized (getTreeLock()) {

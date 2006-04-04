@@ -86,11 +86,11 @@ public final class AutomaticDependencies {
 		is.setByteStream(inS);
                 p.parse(is);
             } catch (SAXException e) {
-                Util.err.annotate(e, ErrorManager.UNKNOWN, "While parsing: " + id, null, null, null);
-                throw e;
+                throw new SAXException("While parsing: " + id, e);
             } catch (IOException e) {
-                Util.err.annotate(e, ErrorManager.UNKNOWN, "While parsing: " + id, null, null, null);
-                throw e;
+                IOException exc = new IOException("While parsing: " + id);
+                exc.initCause(e);
+                throw exc;
             }
 	    finally {
 		if (inS != null) {

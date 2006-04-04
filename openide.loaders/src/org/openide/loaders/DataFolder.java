@@ -551,7 +551,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                     obj.copy (newFolder);
                 } else {
                     // data object can not be copied, inform user
-                    ErrorManager.getDefault().log(ErrorManager.USER,
+                    DataObject.LOG.warning(
                         NbBundle.getMessage(DataFolder.class,
 			    "FMT_CannotCopyDo", obj.getName() )
                     );
@@ -733,7 +733,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         keepAlive = true;
                         
                         // data object can not be moved, inform user
-                        ErrorManager.getDefault().log(ErrorManager.USER,
+                        DataObject.LOG.warning(
                             NbBundle.getMessage (DataFolder.class,
 				    "FMT_CannotMoveDo", obj.getName ())
                         );
@@ -1272,7 +1272,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             if (handlers.size()==0)
                 return null;
             if (handlers.size()>1)
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple instances of FolderRenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
+                DataObject.LOG.warning(
+                    "Multiple instances of FolderRenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
             return (FolderRenameHandler) handlers.iterator().next();
         }
 

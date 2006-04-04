@@ -16,6 +16,8 @@ package org.openide.loaders;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.event.ChangeListener;
 
@@ -50,8 +52,7 @@ implements ChangeListener {
     private WeakSet knownFileSystems = new WeakSet();
     
     /** error manager to log what is happening here */
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.loaders.DataObject.find"); // NOI18N
-    private static final boolean errLog = err.isLoggable(err.INFORMATIONAL);
+    private static final Logger err = Logger.getLogger("org.openide.loaders.DataObject.find"); // NOI18N
     
     /** the pool for all objects. Use getPOOL method instead of direct referencing
      * this field.
@@ -267,11 +268,11 @@ implements ChangeListener {
                 break;
             }
             
-            if (errLog) {
-                err.log (ErrorManager.INFORMATIONAL, "Enter recognition block: " + Thread.currentThread()); // NOI18N
-                err.log (ErrorManager.INFORMATIONAL, "            waiting for: " + fo); // NOI18N
-                err.log (ErrorManager.INFORMATIONAL, "        blocking thread: " + atomic); // NOI18N
-                err.log (ErrorManager.INFORMATIONAL, "             blocked on: " + blocked); // NOI18N
+            if (err.isLoggable(Level.FINE)) {
+                err.fine("Enter recognition block: " + Thread.currentThread()); // NOI18N
+                err.fine("            waiting for: " + fo); // NOI18N
+                err.fine("        blocking thread: " + atomic); // NOI18N
+                err.fine("             blocked on: " + blocked); // NOI18N
             }
             try {
                 if (FolderList.isFolderRecognizerThread()) {
@@ -415,20 +416,20 @@ implements ChangeListener {
     /** Notifies the creation of an item*/
     private void notifyCreation (Item item) {
         synchronized (this) {
-            if (errLog) {
-                err.log (ErrorManager.INFORMATIONAL, "Notify created: " + item + " by " + Thread.currentThread()); // NOI18N
+            if (err.isLoggable(Level.FINE)) {
+                err.fine("Notify created: " + item + " by " + Thread.currentThread()); // NOI18N
             }
             
             if (toNotify.isEmpty()) {
-                if (errLog) {
-                    err.log (ErrorManager.INFORMATIONAL, "  but toNotify is empty"); // NOI18N
+                if (err.isLoggable(Level.FINE)) {
+                    err.fine("  but toNotify is empty"); // NOI18N
                 }
                 return;
             }
             
             if (!toNotify.remove (item)) {
-                if (errLog) {
-                    err.log (ErrorManager.INFORMATIONAL, "  the item is not there: " + toNotify); // NOI18N
+                if (err.isLoggable(Level.FINE)) {
+                    err.fine("  the item is not there: " + toNotify); // NOI18N
                 }
                 return;
             }
@@ -482,9 +483,9 @@ implements ChangeListener {
                         return;
                     }
 
-                    if (errLog) {
-                        err.log (ErrorManager.INFORMATIONAL, "waitTillNotified: " + Thread.currentThread()); // NOI18N
-                        err.log (ErrorManager.INFORMATIONAL, "      waitingFor: " + obj.getPrimaryFile ().getPath ()); // NOI18N
+                    if (err.isLoggable(Level.FINE)) {
+                        err.fine("waitTillNotified: " + Thread.currentThread()); // NOI18N
+                        err.fine("      waitingFor: " + obj.getPrimaryFile ().getPath ()); // NOI18N
                     }
 
                     if (FolderList.isFolderRecognizerThread()) {
@@ -530,8 +531,7 @@ implements ChangeListener {
         l.add (item);
     }
     
-    private static final ErrorManager LISTENER = ErrorManager.getDefault().getInstance("org.openide.loaders.DataObjectPool.Listener"); // NOI18N
-    private static final boolean WILL_LOG_LISTENER = LISTENER.isLoggable(LISTENER.INFORMATIONAL);
+    private static final Logger LISTENER = Logger.getLogger("org.openide.loaders.DataObjectPool.Listener"); // NOI18N
 
     
     /** Listener used to distribute the File events to their DOs.
@@ -578,52 +578,52 @@ implements ChangeListener {
         }
 
         public void fileChanged(FileEvent fe) {
-            if (WILL_LOG_LISTENER) {
-                LISTENER.log ("fileChanged: " + fe); // NOI18N
+            if (LISTENER.isLoggable(Level.FINE)) {
+                LISTENER.fine("fileChanged: " + fe); // NOI18N
             }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
-                if (WILL_LOG_LISTENER) {
-                    LISTENER.log ("  to: " + dobj); // NOI18N
+                if (LISTENER.isLoggable(Level.FINE)) {
+                    LISTENER.fine("  to: " + dobj); // NOI18N
                 }
                 if (dobj != null) dobj.notifyFileChanged(fe);
             }
         }
 
         public void fileRenamed (FileRenameEvent fe) {
-            if (WILL_LOG_LISTENER) {
-                LISTENER.log ("fileRenamed: " + fe); // NOI18N
+            if (LISTENER.isLoggable(Level.FINE)) {
+                LISTENER.fine("fileRenamed: " + fe); // NOI18N
             }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
-                if (WILL_LOG_LISTENER) {
-                    LISTENER.log ("  to: " + dobj); // NOI18N
+                if (LISTENER.isLoggable(Level.FINE)) {
+                    LISTENER.fine("  to: " + dobj); // NOI18N
                 }
                 if (dobj != null) dobj.notifyFileRenamed(fe);
             }
         }
 
         public void fileDeleted (FileEvent fe) {
-            if (WILL_LOG_LISTENER) {
-                LISTENER.log ("fileDeleted: " + fe); // NOI18N
+            if (LISTENER.isLoggable(Level.FINE)) {
+                LISTENER.fine("fileDeleted: " + fe); // NOI18N
             }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
-                if (WILL_LOG_LISTENER) {
-                    LISTENER.log ("  to: " + dobj); // NOI18N
+                if (LISTENER.isLoggable(Level.FINE)) {
+                    LISTENER.fine("  to: " + dobj); // NOI18N
                 }
                 if (dobj != null) dobj.notifyFileDeleted(fe);
             }
         }
 
         public void fileDataCreated (FileEvent fe) {
-            if (WILL_LOG_LISTENER) {
-                LISTENER.log ("fileDataCreated: " + fe); // NOI18N
+            if (LISTENER.isLoggable(Level.FINE)) {
+                LISTENER.fine("fileDataCreated: " + fe); // NOI18N
             }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
-                if (WILL_LOG_LISTENER) {
-                    LISTENER.log ("  to: " + dobj); // NOI18N
+                if (LISTENER.isLoggable(Level.FINE)) {
+                    LISTENER.fine("  to: " + dobj); // NOI18N
                 }
                 if (dobj != null) dobj.notifyFileDataCreated(fe);
             }
@@ -631,21 +631,21 @@ implements ChangeListener {
         }
         
         public void fileAttributeChanged (FileAttributeEvent fe) {
-            if (WILL_LOG_LISTENER) {
-                LISTENER.log ("fileAttributeChanged: " + fe); // NOI18N
+            if (LISTENER.isLoggable(Level.FINE)) {
+                LISTENER.fine("fileAttributeChanged: " + fe); // NOI18N
             }
             for( Iterator it = getTargets(fe); it.hasNext(); ) {
                 DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
-                if (WILL_LOG_LISTENER) {
-                    LISTENER.log ("  to: " + dobj); // NOI18N
+                if (LISTENER.isLoggable(Level.FINE)) {
+                    LISTENER.fine("  to: " + dobj); // NOI18N
                 }
                 if (dobj != null) dobj.notifyAttributeChanged(fe);
             }
         }
 
         public void fileFolderCreated(FileEvent fe) {
-            if (WILL_LOG_LISTENER) {
-                LISTENER.log ("fileFolderCreated: " + fe); // NOI18N
+            if (LISTENER.isLoggable(Level.FINE)) {
+                LISTENER.fine("fileFolderCreated: " + fe); // NOI18N
             }
             ShadowChangeAdapter.checkBrokenDataShadows(fe);
         }
@@ -965,8 +965,7 @@ implements ChangeListener {
     private static final class Validator extends Object
     implements DataLoader.RecognizedFiles {
         /** error manager to log what is happening here */
-        private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.loaders.DataObject.Validator"); // NOI18N
-        private static final boolean errLog = err.isLoggable(err.INFORMATIONAL);
+        private static final Logger err = Logger.getLogger("org.openide.loaders.DataObject.Validator"); // NOI18N
         
         /** set of all files that should be revalidated (FileObject) */
         private Set files;
@@ -990,19 +989,19 @@ implements ChangeListener {
         * @return the set of files concatenated with any previous sets
         */
         private synchronized Set enter (Set set) {
-            boolean log = err.isLoggable (err.INFORMATIONAL);
+            boolean log = err.isLoggable (Level.FINE);
             if (log) {
-                err.log ("enter: " + set + " on thread: " + Thread.currentThread ()); // NOI18N
+                err.fine("enter: " + set + " on thread: " + Thread.currentThread ()); // NOI18N
             }
             if (current == Thread.currentThread ()) {
                 reenterCount++;
                 if (log) {
-                    err.log ("current thread, rentered: " + reenterCount); // NOI18N
+                    err.fine("current thread, rentered: " + reenterCount); // NOI18N
                 }
             } else {
                 waiters++;
                 if (log) {
-                    err.log ("Waiting as waiter: " + waiters); // NOI18N
+                    err.fine("Waiting as waiter: " + waiters); // NOI18N
                 }
                 while (current != null) {
                     try {
@@ -1013,20 +1012,20 @@ implements ChangeListener {
                 current = Thread.currentThread ();
                 waiters--;
                 if (log) {
-                    err.log ("Wait finished, waiters: " + waiters + " new current: " + current); // NOI18N
+                    err.fine("Wait finished, waiters: " + waiters + " new current: " + current); // NOI18N
                 }
             }
             
             if (files == null) {
                 if (log) {
-                    err.log ("New files: " + set); // NOI18N
+                    err.fine("New files: " + set); // NOI18N
                 }
                 files = set;
             } else {
                 files.addAll (set);
                 if (log) {
-                    err.log ("Added files: " + set); // NOI18N
-                    err.log ("So they are: " + files); // NOI18N
+                    err.fine("Added files: " + set); // NOI18N
+                    err.fine("So they are: " + files); // NOI18N
                 }
             }
 
@@ -1036,7 +1035,7 @@ implements ChangeListener {
         /** Leaves the critical section.
         */
         private synchronized void exit () {
-            boolean log = err.isLoggable (err.INFORMATIONAL);
+            boolean log = err.isLoggable (Level.FINE);
             if (reenterCount == 0) {
                 current = null;
                 if (waiters == 0) {
@@ -1044,12 +1043,12 @@ implements ChangeListener {
                 }
                 notify ();
                 if (log) {
-                    err.log ("Exit and notify from " + Thread.currentThread ()); // NOI18N
+                    err.fine("Exit and notify from " + Thread.currentThread ()); // NOI18N
                 }
             } else {
                 reenterCount--;
                 if (log) {
-                    err.log ("Exit reentrant: " + reenterCount); // NOI18N
+                    err.fine("Exit reentrant: " + reenterCount); // NOI18N
                 }
             }
         }
@@ -1133,7 +1132,7 @@ implements ChangeListener {
             // holds all created object, so they are not garbage
             // collected till this method ends
             LinkedList createObjects = new LinkedList ();
-            boolean log = err.isLoggable (err.INFORMATIONAL);
+            boolean log = err.isLoggable (Level.FINE);
             try {
                 
                 s = enter (s);
@@ -1148,7 +1147,7 @@ implements ChangeListener {
                     try {
                         FileObject fo = (FileObject)it.next ();
                         if (log) {
-                            err.log ("Iterate: " + fo); // NOI18N
+                            err.fine("Iterate: " + fo); // NOI18N
                         }
                         
                         if (!recognizedFiles.contains (fo)) {
@@ -1158,7 +1157,7 @@ implements ChangeListener {
                             // the previous data object should be canceled
                             DataObject orig = getPOOL().find (fo);
                             if (log) {
-                                err.log ("Original: " + orig); // NOI18N
+                                err.fine("Original: " + orig); // NOI18N
                             }
                             if (orig == null) {
                                 // go on
@@ -1175,7 +1174,7 @@ implements ChangeListener {
 
                             if (invalidate) {
                                 if (log) {
-                                    err.log ("Invalidate: " + obj); // NOI18N
+                                    err.fine("Invalidate: " + obj); // NOI18N
                                 }
                                 it.remove();                                
                                 try {
@@ -1183,7 +1182,7 @@ implements ChangeListener {
                                 } catch (java.beans.PropertyVetoException ex) {
                                     refusingObjects.add (orig);
                                     if (log) {
-                                        err.log ("  Refusing: " + orig); // NOI18N
+                                        err.fine("  Refusing: " + orig); // NOI18N
                                     }
                                 }
                             }
@@ -1205,8 +1204,8 @@ implements ChangeListener {
                         // is to ignore the exception and continue
                         it = s.iterator();
                         if (log) {
-                            err.notify (err.INFORMATIONAL, cme);
-                            err.log ("New iterator over: " + s); // NOI18N
+                            err.log(Level.FINE, null, cme);
+                            err.fine("New iterator over: " + s); // NOI18N
                         }
                     }
                 }
@@ -1219,13 +1218,13 @@ implements ChangeListener {
                 exit ();
 
                 if (log) {
-                    err.log ("will do refreshAllFolders: "+ s.size ()); // NOI18N
+                    err.fine("will do refreshAllFolders: "+ s.size ()); // NOI18N
                 }
                 
                 getPOOL().refreshAllFolders ();
                 
                 if (log) {
-                    err.log ("refreshAllFolders done"); // NOI18N
+                    err.fine("refreshAllFolders done"); // NOI18N
                 }
             }
         }

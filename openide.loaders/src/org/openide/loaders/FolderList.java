@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -108,7 +110,7 @@ implements FileChangeListener, DataObject.Container {
     /** order of primary files (FileObject) */
     transient private List order;
 
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.loaders.FolderList"); // NOI18N
+    private static final Logger err = Logger.getLogger("org.openide.loaders.FolderList"); // NOI18N
     
     /** property change support */
     transient private PropertyChangeSupport pcs;
@@ -213,8 +215,8 @@ implements FileChangeListener, DataObject.Container {
      */
     public static void changedDataSystem (FileObject folder) {
         FolderList list = find (folder, false);
-        if (err.isLoggable(err.INFORMATIONAL)) {
-            err.log ("changedDataSystem: " + folder + " on " + Thread.currentThread()); // NOI18N
+        if (err.isLoggable(Level.FINE)) {
+            err.fine("changedDataSystem: " + folder + " on " + Thread.currentThread()); // NOI18N
         }
         if (list != null) {
             list.refresh ();
@@ -282,8 +284,8 @@ implements FileChangeListener, DataObject.Container {
     /** Setter for sort mode.
     */
     private synchronized void changeComparator () {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("changeComparator on " + folder);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("changeComparator on " + folder);
         final RequestProcessor.Task previous = comparatorTask;
         final RequestProcessor.Task[] COMP = new RequestProcessor.Task[1];
         synchronized (COMP) {
@@ -297,14 +299,14 @@ implements FileChangeListener, DataObject.Container {
                         // change mode and regenerated children
                         if (primaryFiles != null) {
                             // the old children
-                            if (LOG) err.log ("changeComparator on " + folder + ": get old");
+                            if (LOG) err.fine("changeComparator on " + folder + ": get old");
                             List v = getObjects (null);
                             if (v.size () != 0) {
                                 // the new children - also are stored to be returned next time from getChildrenList ()
                                 order = null;
-                                if (LOG) err.log ("changeComparator: get new");
+                                if (LOG) err.fine("changeComparator: get new");
                                 List r = getObjects (null);
-                                if (LOG) err.log ("changeComparator: fire change");
+                                if (LOG) err.fine("changeComparator: fire change");
                                 fireChildrenChange (r, v);
                             }
                         }
@@ -329,8 +331,8 @@ implements FileChangeListener, DataObject.Container {
      */
     public void refresh () {
         final long now = System.currentTimeMillis();
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("refresh on " + folder + " @" + now);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("refresh on " + folder + " @" + now);
         synchronized (this) {
             if (refreshTask == null) {
                 refreshTask = PROCESSOR.post (new Runnable () {
@@ -341,7 +343,7 @@ implements FileChangeListener, DataObject.Container {
                             t.waitFinished ();
                         }
                         
-                        if (LOG) err.log ("-- refresh on " + folder + ": now=" + now);
+                        if (LOG) err.fine("-- refresh on " + folder + ": now=" + now);
                         if (primaryFiles != null) {
                             // list of children is created, recreate it for new files
                             createBoth (null, true);
@@ -388,8 +390,8 @@ implements FileChangeListener, DataObject.Container {
      * @param fe the event describing context where action has taken place
      */
     public void fileChanged (FileEvent fe) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("fileChanged: " + fe);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("fileChanged: " + fe);
         
         FileObject fo = fe.getFile ();
         
@@ -430,8 +432,8 @@ implements FileChangeListener, DataObject.Container {
     * @param fe the event describing context where action has taken place
     */
     public void fileDeleted (FileEvent fe) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("fileDeleted: " + fe);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("fileDeleted: " + fe);
         //    boolean debug = fe.getFile().toString().equals("P"); // NOI18N
         //if (debug) System.out.println ("fileDeleted: " + fe.getFile ()); // NOI18N
         //if (debug) System.out.println ("fileList: " + fileList + " file: " + fileList.get (fe.getFile ())); // NOI18N
@@ -450,8 +452,8 @@ implements FileChangeListener, DataObject.Container {
     * @param fe the event describing context where action has taken place
     */
     public void fileDataCreated (FileEvent fe) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("fileDataCreated: " + fe);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("fileDataCreated: " + fe);
         refresh();
     }
 
@@ -462,8 +464,8 @@ implements FileChangeListener, DataObject.Container {
     * @param fe the event describing context where action has taken place
     */
     public void fileFolderCreated (FileEvent fe) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("fileFolderCreated: " + fe);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("fileFolderCreated: " + fe);
         refresh();
     }
 
@@ -472,8 +474,8 @@ implements FileChangeListener, DataObject.Container {
     * @param fe the event describing context where action has taken place
     */
     public void fileRenamed (FileRenameEvent fe) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("fileRenamed: " + fe);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("fileRenamed: " + fe);
         refresh();
         // Typically order may change as a result (#13820):
         changeComparator();
@@ -484,8 +486,8 @@ implements FileChangeListener, DataObject.Container {
     * @param fe the event describing context where action has taken place
     */
     public void fileAttributeChanged(FileAttributeEvent fe) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log("fileAttributeChanged: " + fe);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("fileAttributeChanged: " + fe);
         // update list when attrs defining order were changed
         if (fe.getFile() == folder) {
             /** Means one of attributes were changed*/
@@ -518,8 +520,8 @@ implements FileChangeListener, DataObject.Container {
     * @return List with DataObject types
     */
     private List getObjects (FolderListListener f) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("getObjects on " + folder);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("getObjects on " + folder);
         List res;
         if (primaryFiles == null) {
             res = createBoth (f, false);
@@ -554,8 +556,8 @@ implements FileChangeListener, DataObject.Container {
      * @return the sorted list (may or may not be the same)
      */
     private /*static*/ List carefullySort (List l, FolderOrder c) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("carefullySort on " + folder);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("carefullySort on " + folder);
         // Not quite right: topologicalSort will not guarantee that these are left alone,
         // even if the constraints do not mention files in the existing folder order.
         // Adding constraints between adjacent pairs in the existing folder order is
@@ -571,16 +573,16 @@ implements FileChangeListener, DataObject.Container {
         if (constraints == null) {
             return l;
         } else {
-            if (LOG) err.log ("carefullySort: partial orders");
+            if (LOG) err.fine("carefullySort: partial orders");
             
             try {
                 return Utilities.topologicalSort(l, constraints);
             } catch (TopologicalSortException ex) {
                 List corrected = ex.partialSort();
-                if (err.isLoggable(ErrorManager.WARNING)) {
-                    err.log (ErrorManager.WARNING, "Note: folder " + folder + " cannot be consistently sorted due to ordering conflicts."); // NOI18N
-                    err.notify (ErrorManager.INFORMATIONAL, ex);
-                    err.log (ErrorManager.WARNING, "Using partial sort: " + corrected); // NOI18N
+                if (err.isLoggable(Level.WARNING)) {
+                    err.warning("Note: folder " + folder + " cannot be consistently sorted due to ordering conflicts."); // NOI18N
+                    err.log(Level.WARNING, null, ex);
+                    err.warning("Using partial sort: " + corrected); // NOI18N
                 }
                 return corrected;
             }
@@ -614,9 +616,9 @@ implements FileChangeListener, DataObject.Container {
     private /*static*/ List createObjects (
         Collection order, Map map, FolderListListener f
     ) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
+        final boolean LOG = err.isLoggable(Level.FINE);
         if (LOG) {
-            err.log ("createObjects on " + folder);
+            err.fine("createObjects on " + folder);
         }
         int size = order.size ();
 
@@ -627,11 +629,11 @@ implements FileChangeListener, DataObject.Container {
             FileObject fo = (FileObject)it.next ();
 
             if (LOG) {
-                err.log("  iterating" + fo); // NOI18N
+                err.fine("  iterating" + fo); // NOI18N
             }
             if (!fo.isValid ()) {
                 if (LOG) {
-                    err.log("    not valid, continue"); // NOI18N
+                    err.fine("    not valid, continue"); // NOI18N
                 }
                 continue;
             }
@@ -642,7 +644,7 @@ implements FileChangeListener, DataObject.Container {
             if (obj == null) {
                 // try to find new data object
                 if (LOG) {
-                    err.log("    reference is " + ref + " obj is " + obj); // NOI18N
+                    err.fine("    reference is " + ref + " obj is " + obj); // NOI18N
                 }
                 try {
                     obj = DataObject.find (fo);
@@ -655,7 +657,7 @@ implements FileChangeListener, DataObject.Container {
             // add if accepted
             if (obj != null) {
                 if (LOG) {
-                    err.log("    deliver: ref is " + ref + " obj is " + obj); // NOI18N
+                    err.fine("    deliver: ref is " + ref + " obj is " + obj); // NOI18N
                 }
 
                 // JST: Cannot be avoided otherwise DataObject.files () can be unconsistent
@@ -675,13 +677,13 @@ implements FileChangeListener, DataObject.Container {
 
         if (f != null) {
             if (LOG) {
-                err.log("  finished: " + res); // NOI18N
+                err.fine("  finished: " + res); // NOI18N
             }
             f.finished (res);
         }
         
         if (LOG) {
-            err.log("createObjects ends on " + folder); // NOI18N
+            err.fine("createObjects ends on " + folder); // NOI18N
         }
         return res;
     }
@@ -694,8 +696,8 @@ implements FileChangeListener, DataObject.Container {
      * @return vector of children
      */
     private List createBoth (FolderListListener filter, boolean notify) {
-        final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("createBoth on " + folder);
+        final boolean LOG = err.isLoggable(Level.FINE);
+        if (LOG) err.fine("createBoth on " + folder);
         // map for (FileObject, DataObject)
         final HashMap file = new HashMap ();
 
@@ -840,7 +842,7 @@ implements FileChangeListener, DataObject.Container {
 
         // notify the filter
         if (LOG) {
-            err.log("Notifying filter: " + filter); // NOI18N
+            err.fine("Notifying filter: " + filter); // NOI18N
         }
         if (filter != null) {
             filter.finished (res);
@@ -902,8 +904,8 @@ implements FileChangeListener, DataObject.Container {
         public RequestProcessor.Task task;
 
         public void run () {
-            final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-            if (LOG) err.log ("ListTask.run 1 on " + folder);
+            final boolean LOG = err.isLoggable(Level.FINE);
+            if (LOG) err.fine("ListTask.run 1 on " + folder);
             // invokes the refresh task before we do anything else
             if (comparatorTask != null) {
                 comparatorTask.waitFinished ();
@@ -911,10 +913,10 @@ implements FileChangeListener, DataObject.Container {
             if (refreshTask != null) {
                 refreshTask.waitFinished ();
             }
-            err.log ("ListTask.run 2");
+            err.fine("ListTask.run 2");
 
             result = getObjects (filter);
-            err.log ("ListTask.run 3");
+            err.fine("ListTask.run 3");
             
             folderCreated = true;
         }

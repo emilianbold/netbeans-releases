@@ -38,8 +38,6 @@ public class CLIOptions extends CLIHandler {
 
     /** The flag whether to show the Splash screen on the startup */
     protected static boolean noSplash = false;
-    /** The Class that logs the IDE events to a log file */
-    protected static TopLogging logger;
     /* The class of the UIManager to be used for netbeans - can be set by command-line argument -ui <class name> */
     protected static Class uiClass;
     /* The size of the fonts in the UI - 0 pt, the default value is set in NbTheme (for Metal L&F), for other L&Fs is set
@@ -183,18 +181,7 @@ public class CLIOptions extends CLIHandler {
     /** Initializes logging etc.
      */
     public static void initialize() {
-        if (!noLogging) {
-            try {
-                if ("memory".equals(getUserDir())) { // NOI18N
-                    logger = new TopLogging(null); // without user dir --> log to stderr
-                } else {
-                    logger = new TopLogging(getLogDir());
-                }
-            } catch (IOException e) {
-                System.err.println("Cannot create log file. Logging disabled."); // NOI18N
-                e.printStackTrace();
-            }
-        }
+        TopLogging.initialize();
         StartLog.logProgress("TopLogging initialized"); // NOI18N
     }
     

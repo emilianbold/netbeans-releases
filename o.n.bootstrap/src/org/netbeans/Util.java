@@ -13,9 +13,11 @@
 
 package org.netbeans;
 
-import org.openide.ErrorManager;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.modules.*;
 
@@ -28,7 +30,7 @@ public abstract class Util {
     private Util() {}
 
     /** Log everything happening in the module system. */
-    public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.core.modules"); // NOI18N
+    public static final Logger err = Logger.getLogger("org.netbeans.core.modules"); // NOI18N
     
     /**
      * Make a temporary copy of a JAR file.
@@ -59,7 +61,7 @@ public abstract class Util {
         } finally {
             is.close();
         }
-        err.log("Made " + physicalModuleFile);
+        err.fine("Made " + physicalModuleFile);
         return physicalModuleFile;
     }
 
@@ -237,21 +239,21 @@ public abstract class Util {
             } catch (ClassNotFoundException cnfe) {
                 if (packageName == null) {
                     // This was all we were relying on, so it is an error.
-                    err.notify(ErrorManager.INFORMATIONAL, cnfe);
-                    err.log("Probed class could not be found");
+                    err.log(Level.WARNING, null, cnfe);
+                    err.fine("Probed class could not be found");
                     return false;
                 }
                 // Else let the regular package check take care of it;
                 // this was only run to enforce that the package defs were loaded.
             } catch (RuntimeException e) {
                 // SecurityException, etc. Package exists but is corrupt.
-                err.notify(ErrorManager.INFORMATIONAL, e);
-                err.log("Assuming package " + packageName + " is corrupt");
+                err.log(Level.WARNING, null, e);
+                err.fine("Assuming package " + packageName + " is corrupt");
                 return false;
             } catch (LinkageError le) {
                 // NoClassDefFoundError, etc. Package exists but is corrupt.
-                err.notify(ErrorManager.INFORMATIONAL, le);
-                err.log("Assuming package " + packageName + " is corrupt");
+                err.log(Level.WARNING, null, le);
+                err.fine("Assuming package " + packageName + " is corrupt");
                 return false;
             }
         }
@@ -263,14 +265,14 @@ public abstract class Util {
                 pkg = Package.getPackage(packageName);
             }
             if (pkg == null) {
-                err.log("No package with the name " + packageName + " found");
+                err.fine("No package with the name " + packageName + " found");
                 return false;
             }
             if (comparison == Dependency.COMPARE_ANY) {
                 return true;
             } else if (comparison == Dependency.COMPARE_SPEC) {
                 if (pkg.getSpecificationVersion() == null) {
-                    err.log("Package " + packageName + " did not give a specification version");
+                    err.fine("Package " + packageName + " did not give a specification version");
                     return false;
                 } else {
                     try {
@@ -279,22 +281,22 @@ public abstract class Util {
                         if (versionSpec.compareTo(pkgSpec) <= 0) {
                             return true;
                         } else {
-                            err.log("Loaded package " + packageName + " was only of version " + pkgSpec + " but " + versionSpec + " was requested");
+                            err.fine("Loaded package " + packageName + " was only of version " + pkgSpec + " but " + versionSpec + " was requested");
                             return false;
                         }
                     } catch (NumberFormatException nfe) {
-                        err.notify(ErrorManager.INFORMATIONAL, nfe);
-                        err.log("Will not honor a dependency on non-numeric package spec version");
+                        err.log(Level.WARNING, null, nfe);
+                        err.fine("Will not honor a dependency on non-numeric package spec version");
                         return false;
                     }
                 }
             } else {
                 // COMPARE_IMPL
                 if (pkg.getImplementationVersion() == null) {
-                    err.log("Package " + packageName + " had no implementation version");
+                    err.fine("Package " + packageName + " had no implementation version");
                     return false;
                 } else if (! pkg.getImplementationVersion().trim().equals(version)) {
-                    err.log("Package " + packageName + " had the wrong impl version: " + pkg.getImplementationVersion());
+                    err.fine("Package " + packageName + " had the wrong impl version: " + pkg.getImplementationVersion());
                     return false;
                 } else {
                     return true;
@@ -460,7 +462,7 @@ public abstract class Util {
     public static String findLocalizedMessage(Throwable t, boolean detailOK) {
         String locmsg = t.getLocalizedMessage();
         if (Utilities.compareObjects(locmsg, t.getMessage())) {
-            ErrorManager.Annotation[] anns = err.findAnnotations(t);
+            ErrorManager.Annotation[] anns = ErrorManager.getDefault().findAnnotations(t);
             if (anns != null) {
                 for (int i = 0; i < anns.length; i++) {
                     if (anns[i].getLocalizedMessage() != null) {
@@ -722,7 +724,7 @@ public abstract class Util {
                     if (rel == -1) rel = 0; // XXX will this lead to incorrect semantics?
                     return new SpecificationVersion("" + rel + "." + d.getVersion()); // NOI18N
                 } catch (NumberFormatException nfe) {
-                    Util.err.notify(nfe);
+                    Util.err.log(Level.WARNING, null, nfe);
                     return null;
                 }
             }

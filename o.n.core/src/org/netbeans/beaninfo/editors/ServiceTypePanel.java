@@ -15,6 +15,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.util.*;
 import java.awt.event.*;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 import org.openide.*;
@@ -123,7 +124,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
         }
 
         if (i < 0) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "ServiceTypePanel: Unable to add service " + s.getName()); // NOI18N
+            Logger.getAnonymousLogger().warning("ServiceTypePanel: Unable to add service " + s.getName()); // NOI18N
             i = 0;
         }
         

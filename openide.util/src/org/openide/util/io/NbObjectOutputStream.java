@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import org.openide.ErrorManager;
+import java.util.logging.Logger;
 import org.openide.util.WeakSet;
 
 // note: keep method NbObjectInputStream.resolveObject
@@ -166,7 +166,7 @@ public class NbObjectOutputStream extends ObjectOutputStream {
                 b.append("]"); // NOI18N
             }
 
-            ErrorManager.getDefault().log(ErrorManager.WARNING, b.toString());
+            Logger.getAnonymousLogger().warning(b.toString());
         }
     }
 

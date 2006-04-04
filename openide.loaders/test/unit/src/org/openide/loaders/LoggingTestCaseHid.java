@@ -26,6 +26,10 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import junit.framework.AssertionFailedError;
@@ -47,6 +51,14 @@ import org.openide.util.lookup.ProxyLookup;
 public abstract class LoggingTestCaseHid extends NbTestCase {
     static {
         System.setProperty("org.openide.util.Lookup", "org.openide.loaders.LoggingTestCaseHid$Lkp");
+
+        Logger l = Logger.getLogger("");
+        Handler[] arr = l.getHandlers();
+        for (int i = 0; i < arr.length; i++) {
+            l.removeHandler(arr[i]);
+        }
+        l.addHandler(new ErrManager());
+        l.setLevel(Level.ALL);
     }
 
     protected LoggingTestCaseHid (String name) {
@@ -185,53 +197,24 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
     //
     // Logging support
     //
-    public static final class ErrManager extends ErrorManager {
+    public static final class ErrManager extends Handler {
         public static final StringBuffer messages = new StringBuffer ();
         static java.io.PrintStream log = System.err;
         
-        private String prefix;
-
         private static LinkedList switches;
         private static int timeout;
         /** maps names of threads to their instances*/
         private static java.util.Map threads = new java.util.HashMap();
         
         public ErrManager () {
-            this (null);
-        }
-        public ErrManager (String prefix) {
-            this.prefix = prefix;
         }
         
-        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations (Throwable t, ErrorManager.Annotation[] arr) {
-            return t;
-        }
-        
-        public ErrorManager.Annotation[] findAnnotations (Throwable t) {
-            return null;
-        }
-        
-        public ErrorManager getInstance (String name) {
-            if (
-                true
-//                name.startsWith ("org.openide.loaders.FolderList")
-//              || name.startsWith ("org.openide.loaders.FolderInstance")
-            ) {
-                return new ErrManager ('[' + name + "] ");
-            } else {
-                // either new non-logging or myself if I am non-logging
-                return new ErrManager ();
-            }
-        }
-        
-        public void log (int severity, String s) {
+        public void publish (LogRecord record) {
+            String s = record.getMessage();
+
             StringBuffer oneMsg = new StringBuffer();
-            if (prefix != null) {
-                oneMsg.append(prefix);
+            if (record.getLoggerName() != null) {
+                oneMsg.append(record.getLoggerName());
             } else {
                 oneMsg.append("[default] ");
             }
@@ -337,19 +320,11 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
                 }
             }
         }
-        
-        public void notify (int severity, Throwable t) {
-            log (severity, t.getMessage ());
-        }
-        
-        public boolean isNotifiable (int severity) {
-            return prefix != null;
-        }
-        
-        public boolean isLoggable (int severity) {
-            return prefix != null;
-        }
 
+        static void resetMessages() {
+            messages.setLength(0);
+        }
+        
         private static void clear(String n, PrintStream printStream) {
             ErrManager.log = printStream;
             ErrManager.messages.setLength(0);
@@ -357,6 +332,12 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
             ErrManager.messages.append (n);
             ErrManager.messages.append ('\n');
             threads.clear();
+        }
+
+        public void flush() {
+        }
+
+        public void close() throws SecurityException {
         }
         
     } // end of ErrManager

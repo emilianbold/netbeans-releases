@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.logging.Level;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
@@ -60,8 +61,6 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     private final SerialDataConvertor.NodeConvertor node;
     private SerialDataConvertor.SettingsInstance instance;
     private SaveSupport saver;
-    private static ErrorManager err = ErrorManager.getDefault().getInstance(SerialDataConvertor.class.getName());
-    private static final boolean errLog = err.isLoggable(ErrorManager.INFORMATIONAL);
     
     /** Creates a new instance of SDConvertor */
     public SerialDataConvertor(DataObject dobj, FileObject provider) {
@@ -154,9 +153,9 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     }
     
     private void instanceCookieChanged(Object inst) {
-        if (errLog) err.log("instanceCookieChanged: " + this.dobj); // NOI18N
+        if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("instanceCookieChanged: " + this.dobj); // NOI18N
         if (saver != null) {
-            if (errLog) err.log("canceling saver: " + this.dobj); // NOI18N
+            if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("canceling saver: " + this.dobj); // NOI18N
             saver.removePropertyChangeListener(this);
             getScheduledRequest().cancel();
             saver = null;
@@ -171,15 +170,15 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                 recreate = true;
             }
         }
-        if (errLog) err.log("need recreate: " + recreate + " for " + this.dobj); // NOI18N
+        if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("need recreate: " + recreate + " for " + this.dobj); // NOI18N
         if (isModuleEnabled(si)) {
             instance = si;
             lkpContent.set(Arrays.asList(new Object [] { this, si }), null);
-            if (errLog) err.log("module enabled: " + this.dobj); // NOI18N
+            if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("module enabled: " + this.dobj); // NOI18N
         } else {
             lkpContent.set(Collections.singleton(this), null);
             instance = null;
-            if (errLog) err.log("module disabled: " + this.dobj); // NOI18N
+            if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("module disabled: " + this.dobj); // NOI18N
         }
         
         lkpContent.add(this, node);
@@ -187,14 +186,14 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         //#34155 - if it was instantiated SystemOptions then force its recreation
         // See issue for more details.
         if (isModuleEnabled(si) && recreate) {
-            if (errLog) err.log("recreating: " + this.dobj); // NOI18N
+            if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("recreating: " + this.dobj); // NOI18N
             try {
                 instance.instanceCreate();
             } catch (Exception ex) {
-                err.notify(ErrorManager.INFORMATIONAL, ex);
+                XMLSettingsSupport.err.log(Level.WARNING, null, ex);
             }
         }
-        if (errLog) err.log("done: " + this.dobj); // NOI18N
+        if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("done: " + this.dobj); // NOI18N
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -251,7 +250,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                     ModuleInfoManager.getDefault().
                         registerPropertyChangeListener(this, mi);
                 } else {
-                    err.log(ErrorManager.WARNING,
+                    XMLSettingsSupport.err.warning(
                         "Warning: unknown module code base: " + // NOI18N
                         moduleCodeBase + " in " +  // NOI18N
                         getDataObject().getPrimaryFile());
@@ -271,7 +270,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             String module = si.getSettings(true).getCodeNameBase();
             return module;
         } catch (IOException ex) {
-            err.notify(ErrorManager.INFORMATIONAL, ex);
+            XMLSettingsSupport.err.log(Level.WARNING, null, ex);
         }
         return null;
     }
@@ -281,7 +280,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
      *  <CODE>ErrorManager.INFORMATIONAL</CODE>
      */
     static void inform(Throwable t) {
-        err.notify(ErrorManager.INFORMATIONAL, t);
+        XMLSettingsSupport.err.log(Level.WARNING, null, t);
     }
     
     /** called by ScheduledRequest in order to perform the request */
@@ -356,7 +355,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             synchronized (this) {
                 inst = getCachedInstance();
                 if (inst != null) {
-                    if (errLog) err.log("Cached instance1: " + inst); // NOI18N
+                    if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("Cached instance1: " + inst); // NOI18N
                     return inst;
                 }
             }
@@ -368,12 +367,12 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             synchronized (this) {
                 Object existing = getCachedInstance();
                 if (existing != null) {
-                    if (errLog) err.log("Cached instance2: " + existing); // NOI18N
+                    if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("Cached instance2: " + existing); // NOI18N
                     return existing;
                 }
                 setCachedInstance(inst);
             }
-            if (errLog) err.log("Attached to instance: " + inst); // NOI18N
+            if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("Attached to instance: " + inst); // NOI18N
             attachToInstance(inst);
             
             return inst;
@@ -418,10 +417,10 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                 // check the settings cache/file
                 return getSettings(true).getInstanceOf().contains(type.getName());
             } catch (ClassNotFoundException ex) {
-                err.annotate(ex, getDataObject().getPrimaryFile().toString());
+                XMLSettingsSupport.err.log(Level.WARNING, getDataObject().getPrimaryFile().toString());
                 inform(ex);
             } catch (IOException ex) {
-                err.annotate(ex, getDataObject().getPrimaryFile().toString());
+                XMLSettingsSupport.err.log(Level.WARNING, getDataObject().getPrimaryFile().toString());
                 inform(ex);
             }
             return false;
@@ -437,7 +436,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             try {
                 return getSettings(true).instanceName();
             } catch (IOException ex) {
-                err.annotate(ex, getDataObject().getPrimaryFile().toString());
+                XMLSettingsSupport.err.warning(getDataObject().getPrimaryFile().toString());
                 inform(ex);
                 return ""; // NOI18N
             }
@@ -632,18 +631,18 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                     method.invoke(inst, new Object[] {this});
                 } catch (NoSuchMethodException ex) {
                     // just changes done through gui will be saved
-                    if (errLog) {
-                        err.log(ErrorManager.INFORMATIONAL,
+                    if (XMLSettingsSupport.err.isLoggable(Level.FINE)) {
+                        XMLSettingsSupport.err.warning(
                         "NoSuchMethodException: " + // NOI18N
                         inst.getClass().getName() + ".addPropertyChangeListener"); // NOI18N
                     }
                 } catch (IllegalAccessException ex) {
                     // just changes done through gui will be saved
-                    err.annotate(ex, "Instance: " + inst); // NOI18N
-                    err.notify(ex);
+                    XMLSettingsSupport.err.warning("Instance: " + inst); // NOI18N
+                    XMLSettingsSupport.err.log(Level.WARNING, null, ex);
                 } catch (java.lang.reflect.InvocationTargetException ex) {
                     // just changes done through gui will be saved
-                    err.notify(ex.getTargetException());
+                    XMLSettingsSupport.err.log(Level.WARNING, null, ex.getTargetException());
                 }
             }
         }
@@ -658,16 +657,16 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                 method.invoke(inst, new Object[] {this});
             } catch (NoSuchMethodException ex) {
                 // just changes done through gui will be saved
-                if (errLog) {
-                    err.log(ErrorManager.INFORMATIONAL,
+                if (XMLSettingsSupport.err.isLoggable(Level.FINE)) {
+                    XMLSettingsSupport.err.log(Level.FINE, 
                     "NoSuchMethodException: " + // NOI18N
                     inst.getClass().getName() + ".removePropertyChangeListener"); // NOI18N
                 }
             } catch (IllegalAccessException ex) {
-                err.annotate(ex, "Instance: " + inst); // NOI18N
-                err.notify(ex);
+                XMLSettingsSupport.err.log(Level.WARNING, "Instance: " + inst); // NOI18N
+                XMLSettingsSupport.err.log(Level.WARNING, null, ex);
             } catch (java.lang.reflect.InvocationTargetException ex) {
-                err.notify(ex.getTargetException());
+                XMLSettingsSupport.err.log(Level.WARNING, null, ex.getTargetException());
             }
         }
         
@@ -715,8 +714,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         public void run() throws IOException {
             if (!getDataObject().isValid()) {
                 //invalid data object cannot be used for storing
-                if (errLog) {
-                    err.log("invalid data object cannot be used for storing " + getDataObject()); // NOI18N
+                if (XMLSettingsSupport.err.isLoggable(Level.FINE)) {
+                    XMLSettingsSupport.err.fine("invalid data object cannot be used for storing " + getDataObject()); // NOI18N
                 }
                 return;
             }
@@ -739,8 +738,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             org.openide.filesystems.FileLock lock;
             java.io.OutputStream los;
             synchronized (READWRITE_LOCK) {
-                if (errLog) {
-                    err.log("saving " + getDataObject()); // NOI18N
+                if (XMLSettingsSupport.err.isLoggable(Level.FINE)) {
+                    XMLSettingsSupport.err.fine("saving " + getDataObject()); // NOI18N
                 }
                 lock = getScheduledRequest().getFileLock();
                 if (lock == null) return;
@@ -749,8 +748,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                 java.io.OutputStream os = new java.io.BufferedOutputStream(los, 1024);
                 try {
                     buf.writeTo(os);
-                    if (errLog) {
-                        err.log("saved " + dobj); // NOI18N
+                    if (XMLSettingsSupport.err.isLoggable(Level.FINE)) {
+                        XMLSettingsSupport.err.fine("saved " + dobj); // NOI18N
                     }
                 } finally {
                     os.close();

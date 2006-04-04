@@ -14,6 +14,7 @@
 package org.netbeans;
 
 import java.util.Arrays;
+import java.util.logging.Level;
 import org.openide.ErrorManager;
 
 /** Track events that occur in the module system abstractly.
@@ -125,16 +126,16 @@ public abstract class Events {
      * listed as the constant in this class, not a copy.
      */
     public final void log(String message, Object[] args) {
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL) &&
+        if (Util.err.isLoggable(Level.FINE) &&
                 message != PERF_START && message != PERF_TICK && message != PERF_END) {
-            Util.err.log("EVENT -> " + message + " " + Arrays.asList(args));
+            Util.err.fine("EVENT -> " + message + " " + Arrays.asList(args));
         }
         try {
             logged(message, args);
         } catch (RuntimeException re) {
             // If there is any problem logging, it should not kill the system
             // which called the logger.
-            Util.err.notify(re);
+            Util.err.log(Level.WARNING, null, re);
         }
     }
     

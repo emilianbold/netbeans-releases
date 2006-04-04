@@ -13,6 +13,8 @@
 package org.openide.text;
 
 import java.awt.Component;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -95,10 +97,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private static final ThreadLocal LOCAL_LOAD_TASK = new ThreadLocal();
 
     /** error manager for CloneableEditorSupport logging and error reporting */
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance("org.openide.text.CloneableEditorSupport"); // NOI18N
-
-    /** will we log using the manager or not? */
-    private static final boolean ERR_LOG = ERR.isLoggable(ERR.INFORMATIONAL);
+    private static final Logger ERR = Logger.getLogger("org.openide.text.CloneableEditorSupport"); // NOI18N
 
     /** Flag saying if the CloneableEditorSupport handles already the UserQuestionException*/
     private boolean inUserQuestionExceptionHandler;
@@ -351,7 +350,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 try {
                     e.confirmed();
                 } catch (IOException ex1) {
-                    ERR.notify(ex1);
+                    ErrorManager.getDefault().notify(ex1);
 
                     return;
                 }
@@ -371,7 +370,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             } catch (UserQuestionException ex) {
                 e = ex;
             } catch (IOException ex) {
-                ERR.notify(ErrorManager.INFORMATIONAL, ex);
+                ERR.log(Level.INFO, null, ex);
             }
         }
     }
@@ -401,7 +400,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 );
             }
         } catch (IOException e) {
-            ERR.notify(ErrorManager.INFORMATIONAL, e);
+            ERR.log(Level.INFO, null, e);
         }
     }
 
@@ -560,12 +559,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                 } catch (RuntimeException t) {
                                     prepareDocumentRuntimeException = t;
                                     prepareTask = null;
-                                    ERR.notify(t);
+                                    ErrorManager.getDefault().notify(t);
                                     throw t;
                                 } catch (Error t) {
                                     prepareDocumentRuntimeException = t;
                                     prepareTask = null;
-                                    ERR.notify(t);
+                                    ErrorManager.getDefault().notify(t);
                                     throw t;
                                 } finally {
                                     synchronized (getLock()) {
@@ -619,7 +618,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         doc.remove(0, doc.getLength()); // remove all text
                         addRemoveDocListener(doc, true);
                     } catch (BadLocationException ble) {
-                        ERR.notify(ErrorManager.INFORMATIONAL, ble);
+                        ERR.log(Level.INFO, null, ble);
                     }
                 }
             }
@@ -782,16 +781,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         os = null;
 
                         // remember time of last save
-                        ERR.log("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
+                        ERR.fine("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
                         setLastSaveTime(System.currentTimeMillis());
                         
                         doMarkAsUnmodified = true;
-                        ERR.log("doMarkAsUnmodified"); // NOI18N
+                        ERR.fine("doMarkAsUnmodified"); // NOI18N
                     } catch (BadLocationException ex) {
-                        ERR.notify(ex);
+                        ErrorManager.getDefault().notify(ex);
                     } finally {
                         if (lastSaveTime == -1) { // restore for unsuccessful save
-                            ERR.log("restoring old save time"); // NOI18N
+                            ERR.fine("restoring old save time"); // NOI18N
                             setLastSaveTime(oldSaveTime);
                         }
 
@@ -937,7 +936,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         } catch (FileNotFoundException e) {
             notifyProblem(e, "CTL_Bad_File"); // NOI18N
         } catch (IOException e) {
-            ERR.notify(e);
+            ErrorManager.getDefault().notify(e);
         } catch (PrinterAbortException e) { // user exception
             notifyProblem(e, "CTL_Printer_Abort"); // NOI18N
         }catch (PrinterException e) {
@@ -951,8 +950,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     private static void notifyProblem(Exception e, String key) {
         String msg = NbBundle.getMessage(CloneableEditorSupport.class, key, e.getLocalizedMessage());
-        ERR.annotate(e, msg);
-        ERR.notify(ErrorManager.USER, e);
+        ErrorManager.getDefault().annotate(e, msg);
+        ErrorManager.getDefault().notify(ErrorManager.USER, e);
     }
 
     //
@@ -1058,7 +1057,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 try {
                     safe.waitForResult();
                 } catch (InterruptedException ex) {
-                    ERR.notify(ErrorManager.INFORMATIONAL, ex);
+                    ERR.log(Level.INFO, null, ex);
                     return false;
                 }
             }
@@ -1071,7 +1070,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 try {
                     saveDocument();
                 } catch (IOException e) {
-                    ERR.notify(e);
+                    ErrorManager.getDefault().notify(e);
 
                     return false;
                 }
@@ -1241,7 +1240,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         } catch (BadLocationException e) {
             //assert false : e;
             // should not happen
-            ERR.notify(ErrorManager.INFORMATIONAL, e);
+            ERR.log(Level.INFO, null, e);
             throw (IllegalStateException) new IllegalStateException(e.getMessage()).initCause(e);
         }
 
@@ -1287,9 +1286,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     *  by calling <tt>prepareDocument()</tt>.
     */
     protected Task reloadDocument() {
-        if (ERR_LOG) {
-            ERR.log("reloadDocument in " + Thread.currentThread()); // NOI18N
-        }
+        ERR.fine("reloadDocument in " + Thread.currentThread()); // NOI18N
 
         if (doc != null) {
             // acquire write access
@@ -1327,18 +1324,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                             getPositionManager().documentClosed();
                             updateLineSet(true);
                             fireDocumentChange(doc, true);
-                            ERR.log("clearDocument"); // NOI18N
+                            ERR.fine("clearDocument"); // NOI18N
                             clearDocument();
 
                             // uses the listener's run method to initialize whole document
                             prepareTask = new Task(getListener());
 
-                            if (ERR_LOG) {
-                                ERR.log("new prepare task: " + prepareTask); // NOI18N
-                            }
+                            ERR.fine("new prepare task: " + prepareTask); // NOI18N
 
                             prepareTask.run();
-                            ERR.log("prepareTask finished"); // NOI18N
+                            ERR.fine("prepareTask finished"); // NOI18N
 
                             documentStatus = DOCUMENT_READY;
 
@@ -1349,12 +1344,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         } catch (RuntimeException t) {
                             prepareDocumentRuntimeException = t;
                             prepareTask = null;
-                            ERR.notify(t);
+                            ErrorManager.getDefault().notify(t);
                             throw t;
                         } catch (Error t) {
                             prepareDocumentRuntimeException = t;
                             prepareTask = null;
-                            ERR.notify(t);
+                            ErrorManager.getDefault().notify(t);
                             throw t;
                         } finally {
                             synchronized (getLock()) {
@@ -1363,7 +1358,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                             }
                         }
 
-                        ERR.log("post-reload task posting to AWT"); // NOI18N
+                        ERR.fine("post-reload task posting to AWT"); // NOI18N
                         Runnable run = new Runnable() {
                                 public void run() {
                                     if (doc == null) {
@@ -1384,36 +1379,36 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                     }
 
                                     // XXX do this from AWT???
-                                    ERR.log("task-discardAllEdits"); // NOI18N
+                                    ERR.fine("task-discardAllEdits"); // NOI18N
                                     getUndoRedo().discardAllEdits(); // reset undo manager
 
                                     // Insert before-save undo event to enable unmodifying undo
-                                    ERR.log("task-undoableEditHappened"); // NOI18N
+                                    ERR.fine("task-undoableEditHappened"); // NOI18N
                                     getUndoRedo().undoableEditHappened(
                                         new UndoableEditEvent(
                                             CloneableEditorSupport.this, new BeforeSaveEdit(lastSaveTime)
                                         )
                                     );
 
-                                    ERR.log("task-check already modified"); // NOI18N
+                                    ERR.fine("task-check already modified"); // NOI18N
 
                                     // #57104 - if modified previously now it should become unmodified
                                     if (isAlreadyModified()) {
-                                        ERR.log("task-callNotifyUnmodified"); // NOI18N
+                                        ERR.fine("task-callNotifyUnmodified"); // NOI18N
                                         callNotifyUnmodified();
                                     }
 
                                     updateLineSet(true);
-                                    ERR.log("task-addUndoableEditListener"); // NOI18N
+                                    ERR.fine("task-addUndoableEditListener"); // NOI18N
 
                                     // Add undoable listener after atomic change has finished
                                     doc.addUndoableEditListener(getUndoRedo());
                                 }
                             };
                         if (doc != null) {
-                            ERR.log("Posting the AWT runnable: " + run);
+                            ERR.fine("Posting the AWT runnable: " + run);
                             SwingUtilities.invokeLater(run);
-                            ERR.log("Posted in " + Thread.currentThread());
+                            ERR.fine("Posted in " + Thread.currentThread());
                         }
                     }
                 }
@@ -1560,7 +1555,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                     try {
                                         ex.confirmed();
                                     } catch (IOException ex1) {
-                                        ERR.notify(ex1);
+                                        ErrorManager.getDefault().notify(ex1);
                                     }
                                 }
 
@@ -1581,7 +1576,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if (e.getMessage() != e.getLocalizedMessage()) {
                 message = e.getLocalizedMessage();
             } else {
-                ErrorManager.Annotation[] arr = ERR.findAnnotations(e);
+                ErrorManager.Annotation[] arr = ErrorManager.getDefault().findAnnotations(e);
 
                 if (arr != null) {
                     for (int i = 0; i < arr.length; i++) {
@@ -1678,7 +1673,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 ur.undo();
             }
         } catch (CannotUndoException cne) {
-            ERR.notify(ErrorManager.INFORMATIONAL, cne);
+            ERR.log(Level.INFO, null, cne);
         } finally {
             addRemoveDocListener(sd, true);
         }
@@ -1766,14 +1761,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 SwingUtilities.invokeLater(
                     new Runnable() {
                         public void run() {
-                            ERR.annotate(
+                            ErrorManager.getDefault().annotate(
                                 tmp,
                                 NbBundle.getMessage(
                                     CloneableEditorSupport.class, "EXC_LoadDocument", // NOI18N
                                     messageName()
                                 )
                             );
-                            ERR.notify(tmp);
+                            ErrorManager.getDefault().notify(tmp);
                         }
                     }
                 );
@@ -2142,7 +2137,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @param lst the time in millis of last save
      */
     final void setLastSaveTime(long lst) {
-        ERR.log("Setting new lastSaveTime to " + lst);
+        ERR.fine("Setting new lastSaveTime to " + lst);
         this.lastSaveTime = lst;
     }
 
@@ -2151,9 +2146,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     final void setAlreadyModified(boolean alreadyModified) {
-        if (ERR_LOG) {
-            ERR.notify(ErrorManager.INFORMATIONAL, new Exception("Setting to modified: " + alreadyModified));
-        }
+        ERR.log(Level.FINE, null, new Exception("Setting to modified: " + alreadyModified));
 
         this.alreadyModified = alreadyModified;
     }
@@ -2342,11 +2335,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 // empty new value means to force reload all the time
                 final Date time = (Date) ev.getNewValue();
                 
-                ERR.log("PROP_TIME new value: " + time);
-                ERR.log("       lastSaveTime: " + lastSaveTime);
+                ERR.fine("PROP_TIME new value: " + time);
+                ERR.fine("       lastSaveTime: " + lastSaveTime);
                 
                 boolean reload = (lastSaveTime != -1) && ((time == null) || (time.getTime() > lastSaveTime));
-                ERR.log("             reload: " + reload);
+                ERR.fine("             reload: " + reload);
 
                 if (reload) {
                     //#32777 - set externallyModified to true because file was externally modified
@@ -2580,9 +2573,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         BeforeModificationEdit(long saveTime, UndoableEdit delegate) {
             this.saveTime = saveTime;
             this.delegate = delegate;
-            if (ERR.isLoggable(ERR.INFORMATIONAL)) {
-                ERR.notify(ErrorManager.INFORMATIONAL, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
-            }
+            ERR.log(Level.FINE, null, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
         }
 
         public boolean addEdit(UndoableEdit anEdit) {
@@ -2599,7 +2590,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             super.undo();
 
             boolean res = saveTime == lastSaveTime;
-            ERR.log("Comparing saveTime and lastSaveTime: " + saveTime + "==" + lastSaveTime + " is " + res); // NOI18N
+            ERR.fine("Comparing saveTime and lastSaveTime: " + saveTime + "==" + lastSaveTime + " is " + res); // NOI18N
             if (res) {
                 justRevertedToNotModified = true;
             }

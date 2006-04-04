@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -569,7 +570,7 @@ public class PropertySheet extends JPanel {
         //bloc below copied from original impl - is this common/needed?
         if (ps == null) {
             // illegal node behavior => log warning about it
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Node " + node + ": getPropertySets() returns null!"); // NOI18N
+            Logger.getAnonymousLogger().warning("Node " + node + ": getPropertySets() returns null!"); // NOI18N
             ps = new Node.PropertySet[] {  };
 
             //Prepare the reusable model/env's node

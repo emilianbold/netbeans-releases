@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -102,8 +103,7 @@ class ProviderRegistry {
 
         if (fo == null) {
             // no available providers or malformed contentType 
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
-                "No providers for content type " + contentType); //NOI18N
+            Logger.getAnonymousLogger().fine("No providers for content type " + contentType); //NOI18N
             return Collections.EMPTY_LIST;
         }
         

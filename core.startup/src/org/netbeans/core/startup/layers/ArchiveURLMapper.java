@@ -25,6 +25,7 @@ import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -108,7 +109,7 @@ public class ArchiveURLMapper extends URLMapper {
                 } catch (IOException e) {                    
                     // Can easily happen if the JAR file is corrupt etc,
                     // it is better for user to log localized message than to dump stack
-                    ErrorManager.getDefault().log (ErrorManager.WARNING, e.getLocalizedMessage());
+                    ModuleLayeredFileSystem.err.log(Level.WARNING, null, e);
                 }
                 catch (URISyntaxException e) {
                     ErrorManager.getDefault().notify(e);

@@ -16,6 +16,8 @@ package org.netbeans.modules.settings;
 import java.beans.PropertyChangeEvent;
 import java.lang.ref.SoftReference;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -34,9 +36,7 @@ import org.netbeans.spi.settings.Convertor;
 final class InstanceProvider extends org.openide.filesystems.FileChangeAdapter
 implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
     /** Logging for events in this class */
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance(InstanceProvider.class.getName()); // NOI18N
-    /** will we log at all? */
-    private static final boolean willLog = err.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOG = Logger.getLogger(InstanceProvider.class.getName()); // NOI18N
     
     /** container handling objects provided by {@link #lookup} */
     private final org.openide.util.lookup.InstanceContent lkpContent;
@@ -144,7 +144,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
         SaveCookie scNew = saver.getSaveCookie();
         if (scCache != null) {
             if (!saver.isChanged()) {
-                if (willLog) err.log("remove save cookie: " + dobj); // NOI18N
+                if (LOG.isLoggable(Level.FINE)) LOG.fine("remove save cookie: " + dobj); // NOI18N
                 lkpContent.remove(scCache);
                 scCache = null;
                 return;
@@ -152,7 +152,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
         } else {
             if (saver.isChanged()) {
                 scCache = scNew;
-                if (willLog) err.log("add save cookie: " + dobj + " cookie: " + scNew); // NOI18N
+                if (LOG.isLoggable(Level.FINE)) LOG.fine("add save cookie: " + dobj + " cookie: " + scNew); // NOI18N
                 lkpContent.add(scNew);
                 return;
             }
@@ -166,7 +166,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
         }
         
         if (scCache != null) {
-            if (willLog) err.log("release instance and remove save cookie: " + dobj); // NOI18N
+            if (LOG.isLoggable(Level.FINE)) LOG.fine("release instance and remove save cookie: " + dobj); // NOI18N
             lkpContent.remove(scCache);
             getScheduledRequest().cancel();
             scCache = null;
@@ -176,7 +176,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
     }
     
     private void instanceCookieChanged(Object inst) {
-        if (willLog) err.log("instanceCookieChanged: " + dobj + " inst: " + inst); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) LOG.fine("instanceCookieChanged: " + dobj + " inst: " + inst); // NOI18N
         releaseInstance();
         
         lkpContent.add(this, node);
@@ -186,7 +186,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
 
         Object newCookie = createInstance(inst);
         lkpContent.add(newCookie);
-        if (willLog) err.log("cookie replaced: " + dobj + " old: " + ic + " new: " + newCookie); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) LOG.fine("cookie replaced: " + dobj + " old: " + ic + " new: " + newCookie); // NOI18N
     }
     
     private Convertor convertor;

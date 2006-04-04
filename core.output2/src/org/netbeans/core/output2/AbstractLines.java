@@ -20,6 +20,7 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
@@ -500,7 +501,7 @@ abstract class AbstractLines implements Lines, Runnable {
     public void addListener (int line, OutputListener l, boolean important) {
         if (l == null) {
             //#56826 - debug messaging
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Warning: Issue #56826 - Adding a null OutputListener for line:" + line);
+            Logger.getAnonymousLogger().warning("Issue #56826 - Adding a null OutputListener for line:" + line);
         } else {
             linesToListeners.put(line, l);
             if (important) {

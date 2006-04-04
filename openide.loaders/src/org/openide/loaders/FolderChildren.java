@@ -15,6 +15,7 @@ package org.openide.loaders;
 
 import java.beans.*;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -39,7 +40,7 @@ implements PropertyChangeListener, ChangeListener {
     /** listener on changes in nodes */
     private PropertyChangeListener listener;
     /** logging, if needed */
-    private ErrorManager err;
+    private Logger err;
     /** true if the refrersh is done after DataFilter change */
     private boolean refresh;        
     /**  we wait for this task finished in getNodes(true) */
@@ -69,10 +70,7 @@ implements PropertyChangeListener, ChangeListener {
         this.refreshRunnable = new ChildrenRefreshRunnable();
         this.refreshTask = refRP.create(refreshRunnable);
         this.listener = org.openide.util.WeakListeners.propertyChange(this, folder);
-        err = ErrorManager.getDefault().getInstance("org.openide.loaders.FolderChildren." + f.getPrimaryFile().getPath().replace('/','.')); // NOI18N
-        if (!err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err = null;
-        }
+        err = Logger.getLogger("org.openide.loaders.FolderChildren." + f.getPrimaryFile().getPath().replace('/','.')); // NOI18N
     }
     
     /** used from DataFolder */
@@ -84,7 +82,7 @@ implements PropertyChangeListener, ChangeListener {
     */
     public void propertyChange (final PropertyChangeEvent ev) {
         if (DataFolder.PROP_CHILDREN.equals (ev.getPropertyName ())) {
-            if (err != null) err.log("Got PROP_CHILDREN");
+            err.fine("Got PROP_CHILDREN");
             refreshChildren().schedule (0);
             postClearTask();
             return;
@@ -93,7 +91,7 @@ implements PropertyChangeListener, ChangeListener {
             DataFolder.PROP_SORT_MODE.equals (ev.getPropertyName ()) ||
             DataFolder.PROP_ORDER.equals (ev.getPropertyName ())
         ) {
-            if (err != null) err.log("Got PROP_SORT_MODE or PROP_ORDER");
+            err.fine("Got PROP_SORT_MODE or PROP_ORDER");
             refreshChildren().schedule (0);
             postClearTask();
             return;
@@ -131,7 +129,7 @@ implements PropertyChangeListener, ChangeListener {
     * @param key DataObject
     */
     protected Node[] createNodes (Object key) {
-        if (err != null) err.log("createNodes: " + key);
+        err.fine("createNodes: " + key);
         FileObject fo = ((Pair)key).primaryFile;
         DataObject obj;
         try {
@@ -188,9 +186,7 @@ implements PropertyChangeListener, ChangeListener {
     /** Initializes the children.
     */
     protected void addNotify () {
-        if (err != null) {
-            err.log("addNotify begin");
-        }
+        err.fine("addNotify begin");
         // add as a listener for changes on nodes
         folder.addPropertyChangeListener (listener);
         // add listener to the filter
@@ -199,17 +195,13 @@ implements PropertyChangeListener, ChangeListener {
         }
         // start the refresh task to compute the children
         refreshChildren().schedule(0);
-        if (err != null) {
-            err.log("addNotify end");
-        }
+        err.fine("addNotify end");
     }
 
     /** Deinitializes the children.
     */
     protected void removeNotify () {
-        if (err != null) {
-            err.log("removeNotify begin");
-        }
+        err.fine("removeNotify begin");
         // removes the listener
         folder.removePropertyChangeListener (listener);
         // remove listener from filter
@@ -219,9 +211,7 @@ implements PropertyChangeListener, ChangeListener {
         
         // we need to clear the children now
         setKeys(Collections.EMPTY_LIST);
-        if (err != null) {
-            err.log("removeNotify end");
-        }
+        err.fine("removeNotify end");
     }
 
     /** Display name */
@@ -250,9 +240,7 @@ implements PropertyChangeListener, ChangeListener {
             FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
             
             ch = folder.getChildren();
-            if (err != null) {
-                err.log("Children computed");
-            }
+            err.fine("Children computed");
             Object []keys = new Object[ch.length];
             for (int i = 0; i < keys.length; i++) {
                 keys[i] = new Pair(ch[i].getPrimaryFile());
@@ -277,9 +265,7 @@ implements PropertyChangeListener, ChangeListener {
         public void clear() {
             // this can be run only on the refRP thread
             assert refRP.isRequestProcessorThread();
-            if (err != null) {
-                err.log("Clearing the reference to children"); // NOI18N
-            }
+            err.fine("Clearing the reference to children"); // NOI18N
             ch = null;
         }
     }

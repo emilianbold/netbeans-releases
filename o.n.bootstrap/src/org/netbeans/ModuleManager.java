@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import org.openide.ErrorManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
@@ -101,8 +102,7 @@ public final class ModuleManager {
                     try {
                         classLoaderPatches.add(new JarFile(f));
                     } catch (IOException ioe) {
-                        Util.err.annotate(ioe, ErrorManager.UNKNOWN, "Problematic file: " + f, null, null, null);
-                        Util.err.notify(ioe);
+                        Util.err.log(Level.WARNING, "Problematic file: " + f, ioe);
                     }
                 }
             }
@@ -212,8 +212,8 @@ public final class ModuleManager {
     
     // Access from ChangeFirer:
     final void firePropertyChange(String prop, Object old, Object nue) {
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("ModuleManager.propertyChange: " + prop + ": " + old + " -> " + nue);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("ModuleManager.propertyChange: " + prop + ": " + old + " -> " + nue);
         }
         if (changeSupport != null)
             changeSupport.firePropertyChange(prop, old, nue);
@@ -239,7 +239,7 @@ public final class ModuleManager {
     }
     // Access from ChangeFirer:
     final void fireModulesCreatedDeleted(Set created, Set deleted) {
-        Util.err.log("lookup created: " + created + " deleted: " + deleted);
+        Util.err.fine("lookup created: " + created + " deleted: " + deleted);
         lookup.changed();
     }
     
@@ -334,7 +334,7 @@ public final class ModuleManager {
         try {
             nue = new SystemClassLoader(classLoaderPatches, parentCLs, modules);
         } catch (IllegalArgumentException iae) {
-            Util.err.notify(iae);
+            Util.err.log(Level.WARNING, null, iae);
             nue = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {ModuleManager.class.getClassLoader()}, Collections.<Module>emptySet());
         }
         synchronized (classLoaderLock) {
@@ -363,16 +363,16 @@ public final class ModuleManager {
                     // changes, we update all threads for which setContextClassLoader
                     // has not been called with some other special classloader.
                     if (force || (ts[i].getContextClassLoader() instanceof SystemClassLoader)) {
-                        //Util.err.log("Setting ctxt CL on " + ts[i].getName() + " to " + l);
+                        //Util.err.fine("Setting ctxt CL on " + ts[i].getName() + " to " + l);
                         ts[i].setContextClassLoader(l);
                     } else {
-                        Util.err.log("Not touching context class loader " + ts[i].getContextClassLoader() + " on thread " + ts[i].getName());
+                        Util.err.fine("Not touching context class loader " + ts[i].getContextClassLoader() + " on thread " + ts[i].getName());
                     }
                 }
-                Util.err.log("Set context class loader on " + x + " threads");
+                Util.err.fine("Set context class loader on " + x + " threads");
                 break;
             } else {
-                Util.err.log("Race condition getting all threads, restarting...");
+                Util.err.fine("Race condition getting all threads, restarting...");
                 continue;
             }
         }
@@ -432,7 +432,7 @@ public final class ModuleManager {
         
         protected void finalize() throws Throwable {
             super.finalize();
-            Util.err.log("Collected system class loader");
+            Util.err.fine("Collected system class loader");
         }
         
         public String toString() {
@@ -498,7 +498,7 @@ public final class ModuleManager {
                     }
                 }
                 if (ok) {
-                    Util.err.log("Enabling " + m + " immediately");
+                    Util.err.fine("Enabling " + m + " immediately");
                     enable(Collections.<Module>emptySet());
                 }
             }
@@ -538,13 +538,13 @@ public final class ModuleManager {
         // Cf. #19621:
         Module.PackageExport[] exports = (parent == null) ? null : parent.getPublicPackages();
         if (exports != null) {
-            //Util.err.log("exports=" + Arrays.asList(exports));
+            //Util.err.fine("exports=" + Arrays.asList(exports));
             // Packages from parent are restricted: #19621.
             boolean exported = false;
             if (parent.isDeclaredAsFriend(m)) { // meaning public to all, or at least to me
                 for (int i = 0; i < exports.length; i++) {
                     if (exports[i].recursive ? pkg.startsWith(exports[i].pkg) : pkg.equals(exports[i].pkg)) {
-                        //Util.err.log("matches " + exports[i]);
+                        //Util.err.fine("matches " + exports[i]);
                         exported = true;
                         break;
                     }
@@ -560,25 +560,25 @@ public final class ModuleManager {
                             deps[i].getComparison() == Dependency.COMPARE_IMPL &&
                             deps[i].getName().equals(parent.getCodeName())) {
                         impldep = true;
-                        //Util.err.log("impldep in " + deps[i]);
+                        //Util.err.fine("impldep in " + deps[i]);
                         break;
                     }
                 }
                 if (!impldep) {
                     // This module cannot use the package, sorry! It's private.
-                    //Util.err.log("forbidden");
-                    if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    //Util.err.fine("forbidden");
+                    if (Util.err.isLoggable(Level.FINE)) {
                         // Note that this is usually harmless. Typical case: Introspector.getBeanInfo
                         // is called on some module-supplied class; this looks in the module's classloader
                         // for org.netbeans.beaninfo.ModuleClassBeanInfo, which of course would not be
                         // found anyway.
-                        Util.err.log("Refusing to load non-public package " + pkg + " for " + m + " from parent module " + parent + " without an impl dependency");
+                        Util.err.fine("Refusing to load non-public package " + pkg + " for " + m + " from parent module " + parent + " without an impl dependency");
                     }
                     return false;
                 }
-                //Util.err.log("impl dep");
+                //Util.err.fine("impl dep");
             }
-            //Util.err.log("exported");
+            //Util.err.fine("exported");
         }
         if (pkg.startsWith("META-INF/")) { // NOI18N
             // Modules should not make direct reference to metainfo dirs of
@@ -597,7 +597,7 @@ public final class ModuleManager {
     }
 
     private void subCreate(Module m) throws DuplicateException {
-        Util.err.log("created: " + m);
+        Util.err.fine("created: " + m);
         Module old = get(m.getCodeNameBase());
         if (old != null) {
             throw new DuplicateException(old, m);
@@ -680,7 +680,7 @@ public final class ModuleManager {
     public void reload(Module m) throws IllegalArgumentException, IOException {
         assertWritable();
         // No Events, not a user- nor performance-interesting action.
-        Util.err.log("reload: " + m);
+        Util.err.fine("reload: " + m);
         if (m.isFixed()) throw new IllegalArgumentException("reload fixed module: " + m); // NOI18N
         if (m.isEnabled()) throw new IllegalArgumentException("reload enabled module: " + m); // NOI18N
         possibleProviderRemoved(m);
@@ -733,7 +733,7 @@ public final class ModuleManager {
      */
     public void enable(Set<Module> modules) throws IllegalArgumentException, InvalidException {
         assertWritable();
-        Util.err.log("enable: " + modules);
+        Util.err.fine("enable: " + modules);
         /* Consider eager modules:
         if (modules.isEmpty()) {
             return;
@@ -744,7 +744,7 @@ public final class ModuleManager {
         List<Module> toEnable = simulateEnable(modules);
 	ev.log(Events.PERF_TICK, "checked the required ordering and autoloads"); // NOI18N
 	
-        Util.err.log("enable: toEnable=" + toEnable); // NOI18N
+        Util.err.fine("enable: toEnable=" + toEnable); // NOI18N
         {
             // Verify that we are cool as far as basic dependencies go.
             Set<Module> testing = new HashSet<Module>(toEnable);
@@ -761,7 +761,7 @@ public final class ModuleManager {
                 }
             }
         }
-        Util.err.log("enable: verified dependencies");
+        Util.err.fine("enable: verified dependencies");
 	ev.log(Events.PERF_TICK, "verified dependencies"); // NOI18N
 
         ev.log(Events.START_ENABLE_MODULES, toEnable);
@@ -779,7 +779,7 @@ public final class ModuleManager {
 		ev.log(Events.PERF_START, "module preparation" ); // NOI18N
                 for (Module m: toEnable) {
                     fallback.addFirst(m);
-                    Util.err.log("enable: bringing up: " + m);
+                    Util.err.fine("enable: bringing up: " + m);
                     ev.log(Events.PERF_START, "bringing up classloader on " + m.getCodeName() ); // NOI18N
                     try {
                         // Calculate the parents to initialize the classloader with.
@@ -803,14 +803,14 @@ public final class ModuleManager {
                     } catch (IOException ioe) {
                         tryingClassLoaderUp = true;
                         InvalidException ie = new InvalidException(m, ioe.toString());
-                        Util.err.annotate(ie, ioe);
+                        ie.initCause(ioe);
                         throw ie;
                     }
                     m.setEnabled(true);
                     ev.log(Events.PERF_END, "bringing up classloader on " + m.getCodeName() ); // NOI18N
                     // Check package dependencies.
                     ev.log(Events.PERF_START, "package dependency check on " + m.getCodeName() ); // NOI18N
-                    Util.err.log("enable: checking package dependencies for " + m);
+                    Util.err.fine("enable: checking package dependencies for " + m);
                     Dependency[] dependencies = m.getDependenciesArray();
                     for (int i = 0; i < dependencies.length; i++) {
                         Dependency dep = dependencies[i];
@@ -821,7 +821,7 @@ public final class ModuleManager {
                             failedPackageDep = dep;
                             throw new InvalidException(m, "Dependency failed on " + dep); // NOI18N
                         }
-                        Util.err.log("Successful check for: " + dep);
+                        Util.err.fine("Successful check for: " + dep);
                     }
                     ev.log(Events.PERF_END, "package dependency check on " + m.getCodeName() ); // NOI18N
                     // Prepare to load it.
@@ -854,7 +854,7 @@ public final class ModuleManager {
                 // #14560: this one definitely changed its set of problems.
                 firer.change(new ChangeFirer.Change(bad, Module.PROP_PROBLEMS, Collections.EMPTY_SET, Collections.singleton(probs.iterator().next())));
                 // Rollback changes made so far before rethrowing.
-                Util.err.log("enable: will roll back from: " + ie);
+                Util.err.fine("enable: will roll back from: " + ie);
                 Iterator fbIt = fallback.iterator();
                 while (fbIt.hasNext()) {
                     Module m = (Module)fbIt.next();
@@ -878,7 +878,7 @@ public final class ModuleManager {
             }
             // They all were OK so far; add to system classloader and install them.
             if (classLoader != null) {
-                Util.err.log("enable: adding to system classloader");
+                Util.err.fine("enable: adding to system classloader");
                 List<ClassLoader> nueclassloaders = new ArrayList<ClassLoader>(toEnable.size());
                 Iterator<Module> teIt = toEnable.iterator();
                 if (moduleFactory.removeBaseClassLoader()) {
@@ -897,14 +897,14 @@ public final class ModuleManager {
                 }
                 classLoader.append((nueclassloaders.toArray(new ClassLoader[nueclassloaders.size()])), toEnable);
             } else {
-                Util.err.log("enable: no class loader yet, not appending");
+                Util.err.fine("enable: no class loader yet, not appending");
             }
-            Util.err.log("enable: continuing to installation");
+            Util.err.fine("enable: continuing to installation");
             installer.load(toEnable);
         }
         {
             // Take care of notifying various changes.
-            Util.err.log("enable: firing changes");
+            Util.err.fine("enable: firing changes");
             firer.change(new ChangeFirer.Change(this, PROP_ENABLED_MODULES, null, null));
             // The class loader does not actually change as a result of this.
             Iterator it = toEnable.iterator();
@@ -928,13 +928,13 @@ public final class ModuleManager {
      */
     public void disable(Set<Module> modules) throws IllegalArgumentException {
         assertWritable();
-        Util.err.log("disable: " + modules);
+        Util.err.fine("disable: " + modules);
         if (modules.isEmpty()) {
             return;
         }
         // Checks for invalid items, plus includes autoloads to turn off.
         List<Module> toDisable = simulateDisable(modules);
-        Util.err.log("disable: toDisable=" + toDisable);
+        Util.err.fine("disable: toDisable=" + toDisable);
         {
             // Verify that dependencies are OK.
             for (Module m: toDisable) {
@@ -943,7 +943,7 @@ public final class ModuleManager {
                 }
             }
         }
-        Util.err.log("disable: verified dependencies");
+        Util.err.fine("disable: verified dependencies");
         ev.log(Events.START_DISABLE_MODULES, toDisable);
         {
             // Actually turn off all modules.
@@ -964,7 +964,7 @@ public final class ModuleManager {
                 m.cleanup();
             }
         }
-        Util.err.log("disable: finished, will notify changes");
+        Util.err.fine("disable: finished, will notify changes");
         {
             // Notify various changes.
             firer.change(new ChangeFirer.Change(this, PROP_ENABLED_MODULES, null, null));
@@ -1044,9 +1044,9 @@ public final class ModuleManager {
             // Some kind of cycle involving prov-req deps. Should be extremely rare.
             // Do not know what to do here, actually, so give up.
             if (PRINT_TOPOLOGICAL_EXCEPTION_STACK_TRACES) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, ex);
+                Util.err.log(Level.WARNING, null, ex);
             }
-            Util.err.log(ErrorManager.WARNING, "Cyclic module dependencies, will refuse to enable: " + deps); // NOI18N
+            Util.err.warning("Cyclic module dependencies, will refuse to enable: " + deps); // NOI18N
             return Collections.<Module>emptyList();
         }
     }
@@ -1222,9 +1222,9 @@ public final class ModuleManager {
         } catch (TopologicalSortException ex) {
             // Again, don't know what to do exactly, so give up and just turn them off.
             if (PRINT_TOPOLOGICAL_EXCEPTION_STACK_TRACES) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, ex);
+                Util.err.log(Level.WARNING, null, ex);
             }
-            Util.err.log(ErrorManager.WARNING, "Cyclic module dependencies, will turn them off in a random order: " + deps); // NOI18N
+            Util.err.warning("Cyclic module dependencies, will turn them off in a random order: " + deps); // NOI18N
             return new ArrayList<Module>(willDisable);
         }
     }
@@ -1539,9 +1539,9 @@ public final class ModuleManager {
         } catch (TopologicalSortException ex) {
             // Once again, weird situation.
             if (PRINT_TOPOLOGICAL_EXCEPTION_STACK_TRACES) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, ex);
+                Util.err.log(Level.WARNING, null, ex);
             }
-            Util.err.log(ErrorManager.WARNING, "Cyclic module dependencies, will not shut down cleanly: " + deps); // NOI18N
+            Util.err.warning("Cyclic module dependencies, will not shut down cleanly: " + deps); // NOI18N
             return true;
         }
         if (! installer.closing(modules)) {
@@ -1551,9 +1551,9 @@ public final class ModuleManager {
             try {
                 midHook.run();
             } catch (RuntimeException e) {
-                Util.err.notify(e);
+                Util.err.log(Level.WARNING, null, e);
             } catch (LinkageError e) {
-                Util.err.notify(e);
+                Util.err.log(Level.WARNING, null, e);
             }
         }
         installer.close(modules);

@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -183,7 +184,7 @@ public final class Main extends Object {
           CoreBridge.getDefault ().initializePlaf(CLIOptions.uiClass, CLIOptions.uiFontSize, themeURL);
       }
       if (CLIOptions.uiFontSize > 0 && "GTK".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-          ErrorManager.getDefault().log(ErrorManager.WARNING, NbBundle.getMessage(Main.class,
+          Util.err.warning(NbBundle.getMessage(Main.class,
           "GTK_FONTSIZE_UNSUPPORTED")); //NOI18N
       }
       StartLog.logProgress("Fonts updated"); // NOI18N

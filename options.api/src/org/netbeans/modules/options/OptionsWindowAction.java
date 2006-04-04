@@ -23,6 +23,7 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -51,8 +52,7 @@ public class OptionsWindowAction extends AbstractAction {
     /** weak link to options dialog DialogDescriptor. */
     private static WeakReference    optionsDialogDescriptor = 
                                     new WeakReference (null);
-    private static ErrorManager     log = ErrorManager.getDefault ().getInstance
-                                    (OptionsWindowAction.class.getName ());
+    private static Logger log = Logger.getLogger(OptionsWindowAction.class.getName ());
     
     
     public OptionsWindowAction () {
@@ -67,7 +67,7 @@ public class OptionsWindowAction extends AbstractAction {
             // dialog already opened
             dialog.setVisible (true);
             dialog.toFront ();
-            log.log ("Front Options Dialog"); //NOI18N
+            log.fine("Front Options Dialog"); //NOI18N
             return;
         }
         
@@ -104,11 +104,11 @@ public class OptionsWindowAction extends AbstractAction {
             descriptor.setButtonListener (listener);
             optionsPanel.addPropertyChangeListener (listener);
             optionsDialogDescriptor = new WeakReference (descriptor);
-            log.log ("Create new Options Dialog"); //NOI18N
+            log.fine("Create new Options Dialog"); //NOI18N
         } else {
             optionsPanel = (OptionsPanel) descriptor.getMessage ();
             optionsPanel.update ();
-            log.log ("Reopen Options Dialog"); //NOI18N
+            log.fine("Reopen Options Dialog"); //NOI18N
         }
         
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
@@ -172,7 +172,7 @@ public class OptionsWindowAction extends AbstractAction {
                 return; //WORKARROUND for some bug in NbPresenter
                 // listener is called twice ...
             if (e.getSource () == bOK) {
-                log.log ("Options Dialog - Ok pressed."); //NOI18N
+                log.fine("Options Dialog - Ok pressed."); //NOI18N
                 Dialog d = dialog;
                 dialog = null;
                 d.dispose ();
@@ -185,7 +185,7 @@ public class OptionsWindowAction extends AbstractAction {
             if (e.getSource () == DialogDescriptor.CANCEL_OPTION ||
                 e.getSource () == DialogDescriptor.CLOSED_OPTION
             ) {
-                log.log ("Options Dialog - Cancel pressed."); //NOI18N
+                log.fine("Options Dialog - Cancel pressed."); //NOI18N
                 Dialog d = dialog;
                 dialog = null;
                 d.dispose ();
@@ -196,7 +196,7 @@ public class OptionsWindowAction extends AbstractAction {
                 });
             } else
             if (e.getSource () == bClassic) {
-                log.log ("Options Dialog - Classic pressed."); //NOI18N
+                log.fine("Options Dialog - Classic pressed."); //NOI18N
                 Dialog d = dialog;
                 dialog = null;
                 if (optionsPanel.isChanged ()) {
@@ -266,7 +266,7 @@ public class OptionsWindowAction extends AbstractAction {
         
         public void windowClosing (WindowEvent e) {
             if (dialog == null) return;
-            log.log ("Options Dialog - windowClosed "); //NOI18N
+            log.fine("Options Dialog - windowClosed "); //NOI18N
             RequestProcessor.getDefault ().post (new Runnable () {
                public void run () {
                     optionsPanel.cancel ();
@@ -287,7 +287,7 @@ public class OptionsWindowAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {
             RequestProcessor.getDefault ().post (new Runnable () {
                 public void run () {
-                    log.log ("Options Dialog - Back to modern."); //NOI18N
+                    log.fine("Options Dialog - Back to modern."); //NOI18N
                     OptionsWindowAction.this.actionPerformed 
                         (new ActionEvent (this, 0, "Open"));
                 }

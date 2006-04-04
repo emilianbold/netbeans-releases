@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Logger;
 
 // WARNING: this package should not contain any non-platform openide/core imports!
 
@@ -33,7 +34,7 @@ public abstract class LayerCacheManager {
 
     /** Local error manager for in-package use.
      */
-    static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.core.projects.cache"); // NOI18N
+    static final Logger err = Logger.getLogger("org.netbeans.core.projects.cache"); // NOI18N
     
     private final File cacheDir;
     

@@ -65,6 +65,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -73,7 +75,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.openide.util.AWTBridge;
-import org.openide.ErrorManager;
 import org.openide.util.actions.Presenter;
 
 /** Otherwise uncategorized useful static methods.
@@ -362,14 +363,14 @@ public final class Utilities {
         try {
             bi = java.beans.Introspector.getBeanInfo(clazz);
         } catch (java.beans.IntrospectionException ie) {
-            ErrorManager.getDefault().annotate(
-                ie, ErrorManager.UNKNOWN, "Encountered while introspecting " + clazz.getName(), null, null, null
+            org.openide.ErrorManager.getDefault().annotate(
+                ie, org.openide.ErrorManager.UNKNOWN, "Encountered while introspecting " + clazz.getName(), null, null, null
             ); // NOI18N
             throw ie;
         } catch (Error e) {
             // Could be a bug in Introspector triggered by NB code.
-            ErrorManager.getDefault().annotate(
-                e, ErrorManager.UNKNOWN, "Encountered while introspecting " + clazz.getName(), null, null, null
+            org.openide.ErrorManager.getDefault().annotate(
+                e, org.openide.ErrorManager.UNKNOWN, "Encountered while introspecting " + clazz.getName(), null, null, null
             ); // NOI18N
             throw e;
         }
@@ -1913,7 +1914,7 @@ widthcheck:  {
                     bounds.height -= (bounds.y + Integer.parseInt(st.nextToken()));
                     bounds.width -= (bounds.x + Integer.parseInt(st.nextToken()));
                 } catch (NumberFormatException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+                    Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
                 }
             }
 
@@ -1936,7 +1937,7 @@ widthcheck:  {
             bounds.height -= (insets.top + insets.bottom);
             bounds.width -= (insets.left + insets.right);
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
         }
 
         return bounds;
@@ -2401,7 +2402,7 @@ widthcheck:  {
         try {
             en = current.getResources("META-INF/netbeans/translate.names");
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
             en = null;
         }
 
@@ -2464,10 +2465,8 @@ widthcheck:  {
                 loadTranslationFile(re, reader, list);
                 reader.close();
             } catch (IOException ex) {
-                ErrorManager.getDefault().annotate(
-                    ex, ErrorManager.UNKNOWN, "Problematic file: " + u, null, null, null
-                );
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getAnonymousLogger().log(Level.WARNING, "Problematic file: " + u);
+                Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
             }
         }
 
@@ -2611,7 +2610,7 @@ widthcheck:  {
                 if (action instanceof ContextAwareAction) {
                     Action contextAwareAction = ((ContextAwareAction) action).createContextAwareInstance(context);
                     if(contextAwareAction == null) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+                        Logger.getAnonymousLogger().log(Level.WARNING, null,
                                 new NullPointerException("ContextAwareAction.createContextAwareInstance(context) returns null. That is illegal!" // NOI18N
                                         + " action=" + action +", context=" + context)); // NOI18N
                     } else {
@@ -2628,7 +2627,7 @@ widthcheck:  {
                         NullPointerException npe = new NullPointerException(
                                 "findContextMenuImpl, getPopupPresenter returning null for " + action
                             ); // NOI18N
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+                        Logger.getAnonymousLogger().log(Level.WARNING, null, npe);
                     }
                 } else {
                     // We need to correctly handle mnemonics with '&' etc.
@@ -3005,8 +3004,7 @@ widthcheck:  {
                     Reference ref = super.remove(0);
 
                     if (!(ref instanceof Runnable)) {
-                        ErrorManager.getDefault().log(
-                            ErrorManager.ERROR,
+                        Logger.getAnonymousLogger().warning(
                             "A reference not implementing runnable has been added to the Utilities.activeReferenceQueue (): " +
                             ref.getClass() // NOI18N
                         );
@@ -3015,11 +3013,9 @@ widthcheck:  {
                     }
 
                     if (deprecated) {
-                        ErrorManager.getDefault().log(
-                            ErrorManager.WARNING,
+                        Logger.getAnonymousLogger().warning(
                             "Utilities.ACTIVE_REFERENCE_QUEUE has been deprecated for " + ref.getClass() +
                             " use Utilities.activeReferenceQueue" // NOI18N
-                            
                         );
                     }
 
@@ -3031,13 +3027,13 @@ widthcheck:  {
                     } catch (Throwable t) {
                         // Should not happen.
                         // If it happens, it is a bug in client code, notify!
-                        ErrorManager.getDefault().notify(t);
+                        Logger.getAnonymousLogger().log(Level.WARNING, null, t);
                     } finally {
                         // to allow GC
                         ref = null;
                     }
                 } catch (InterruptedException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
                 }
             }
         }

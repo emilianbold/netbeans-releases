@@ -17,6 +17,7 @@ import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.net.URL;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.openide.ErrorManager;
 
@@ -27,21 +28,7 @@ import org.openide.ErrorManager;
 * @author Petr Hamernik, Jaroslav Tulach, Jesse Glick
 */
 public final class HelpCtx extends Object {
-    private static final ErrorManager err;
-
-    static {
-        ErrorManager master = ErrorManager.getDefault();
-        ErrorManager sub = master.getInstance("org.openide.util.HelpCtx"); // NOI18N
-
-        if (sub.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err = sub;
-        } else {
-            err = null;
-        }
-    }
-
-    // JST: I do not want to have every class deprecated!
-    //     * @deprecated Please give a specific help page instead.
+    private static final Logger err = Logger.getLogger("org.openide.util.HelpCtx"); // NOI18N
 
     /** Default help page.
     * This (hopefully) points to a note explaining to the user that no help is available.
@@ -140,9 +127,7 @@ public final class HelpCtx extends Object {
     * @param helpID help ID, or <code>null</code> if the help ID should be removed
     */
     public static void setHelpIDString(JComponent comp, String helpID) {
-        if (err != null) {
-            err.log("setHelpIDString: " + helpID + " on " + comp);
-        }
+        err.fine("setHelpIDString: " + helpID + " on " + comp);
 
         comp.putClientProperty("HelpID", helpID); // NOI18N
     }
@@ -157,17 +142,13 @@ public final class HelpCtx extends Object {
      * @return the help for that component (never <code>null</code>)
      */
     public static HelpCtx findHelp(java.awt.Component comp) {
-        if (err != null) {
-            err.log("findHelp on " + comp);
-        }
+        err.fine("findHelp on " + comp);
 
         while (comp != null) {
             if (comp instanceof HelpCtx.Provider) {
                 HelpCtx h = ((HelpCtx.Provider) comp).getHelpCtx();
 
-                if (err != null) {
-                    err.log("found help " + h + " through HelpCtx.Provider interface");
-                }
+                err.fine("found help " + h + " through HelpCtx.Provider interface");
 
                 return h;
             }
@@ -177,9 +158,7 @@ public final class HelpCtx extends Object {
                 String hid = (String) jc.getClientProperty("HelpID"); // NOI18N
 
                 if (hid != null) {
-                    if (err != null) {
-                        err.log("found help " + hid + " by client property");
-                    }
+                    err.fine("found help " + hid + " by client property");
 
                     return new HelpCtx(hid);
                 }
@@ -187,14 +166,10 @@ public final class HelpCtx extends Object {
 
             comp = comp.getParent();
 
-            if (err != null) {
-                err.log("no luck, trying parent " + comp);
-            }
+            err.fine("no luck, trying parent " + comp);
         }
 
-        if (err != null) {
-            err.log("nothing found");
-        }
+        err.fine("nothing found");
 
         return DEFAULT_HELP;
     }
@@ -228,7 +203,7 @@ public final class HelpCtx extends Object {
                 return new HelpCtx(v);
             }
         } catch (IntrospectionException e) {
-            err.log("findHelp on " + instance + ": " + e);
+            err.fine("findHelp on " + instance + ": " + e);
         }
 
         return HelpCtx.DEFAULT_HELP;

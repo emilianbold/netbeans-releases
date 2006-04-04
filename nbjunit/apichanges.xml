@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<?xml-stylesheet type="text/xml" href="../../../../../nbbuild/javadoctools/apichanges.xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+
+<apichanges>
+
+    <!-- First, a list of API names you may use: -->
+<apidefs>
+   <apidef name="nbjunit">NetBeans JUnit Extensions</apidef>
+   <apidef name="diff">Diff Support</apidef>
+</apidefs>
+
+    <!-- ACTUAL CHANGES BEGIN HERE: -->
+
+<changes>
+    <change id="controlFlow">
+      <api name="nbjunit"/>
+      <summary>Non-deterministic execution can be made deterministic</summary>
+      <version major="1" minor="28"/>
+      <date day="1" month="4" year="2006"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+        <p>An excelent tool to emulate race condition, deadlock or any other
+        non-deterministic behaviour created in the form of
+        <a href="@TOP@/org/netbeans/junit/Log.html#controlFlow(java.util.logging.Logger,%20java.util.logging.Logger,%20java.lang.String,%20int)">
+        Log.controlFlow</a> method.
+        </p>
+      </description>
+      <class package="org.netbeans.junit" name="NbTestCase"/>
+      <class package="org.netbeans.junit" name="Log"/>
+      <issue number="35067" />
+    </change>
+
+
+<change id="logging">
+      <api name="nbjunit"/>
+      <summary> Added support for logging</summary>
+      <version major="1" minor="27"/>
+      <date day="1" month="4" year="2006"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+        <p>Added two ways how to enable logging in a test case. One can
+        either overwrite <a href="@TOP@/org/netbeans/junit/NbTestCase.html#logLevel()">NbTestCase.logLevel</a>
+        method and return the right level to capture in the test and then
+        all the messages logged with the level and greater will be sent
+        to <a href="@TOP@/org/netbeans/junit/NbTestCase.html#getLog()">NbTestCase.getLog()</a>
+        stream which is placed in working directory.
+        </p>
+
+        <p>
+        Or one can directly call
+        <a href="@TOP@/org/netbeans/junit/Log.html#enable(java.lang.String,%20java.util.logging.Level)">Log.enable</a>
+        to capture all the logging into a <code>CharSequence</code>
+        which can be later queried for its content, usually by calling <code>its.toString()</code>
+        method.
+        </p>
+      </description>
+      <class package="org.netbeans.junit" name="NbTestCase"/>
+      <class package="org.netbeans.junit" name="Log"/>
+      <issue number="35067" />
+    </change>
+
+</changes>
+
+    <htmlcontents>
+    <head>
+      <title>Change History for the NetBeans JUnit Extensions API</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
+
+<p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
+
+<h1>Introduction</h1>
+
+<p>This document lists changes made to the <a href="@TOP@/index.html">NetBeans JUnit Extensions</a> API.</p>
+
+<!-- The actual lists of changes, as summaries and details: -->
+      <hr/>
+      <standard-changelists module-code-name="org.netbeans.modules.nbjunit"/>
+
+      <hr/><p>@FOOTER@</p>
+
+    </body>
+  </htmlcontents>
+
+</apichanges>

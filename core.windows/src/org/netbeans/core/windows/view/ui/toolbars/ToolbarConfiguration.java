@@ -13,6 +13,7 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
+import java.util.logging.Logger;
 import org.netbeans.core.NbPlaces;
 import org.openide.ErrorManager;
 import org.openide.awt.JPopupMenuPlus;
@@ -64,7 +65,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         "/org/netbeans/core/windows/toolbars/xmlToolbars"; // NOI18N
     
     /** error manager */
-    private static ErrorManager ERR = ErrorManager.getDefault ().getInstance ("org.netbeans.core.windows.toolbars"); // NOI18N
+    private static Logger ERR = Logger.getLogger("org.netbeans.core.windows.toolbars"); // NOI18N
 
     /** last time the document has been reloaded */
     private volatile long lastReload;
@@ -900,7 +901,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @param cn configuration file name
      */
     private void writeDocument (final String cn) throws IOException {
-        ERR.log ("writeDocument: " + cn); // NOI18N
+        ERR.fine("writeDocument: " + cn); // NOI18N
         WritableToolbarConfiguration wtc = new WritableToolbarConfiguration (toolbarRows, invisibleToolbars);
         final StringBuffer sb = new StringBuffer ("<?xml version=\"1.0\"?>\n\n"); // NOI18N
         sb.append ("<!DOCTYPE ").append (TAG_CONFIG).append (" PUBLIC \""). // NOI18N
@@ -928,7 +929,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
 			writer.close();
 		    } finally {
                         lastReload = System.currentTimeMillis ();
-                        ERR.log ("Setting last reload: " + lastReload); // NOI18N
+                        ERR.fine("Setting last reload: " + lastReload); // NOI18N
                         
 			if (os != null)
 			    os.close ();
@@ -940,7 +941,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         } finally {
             WRITE_IN_PROGRESS.set (prev);
         }
-        ERR.log ("writeDocument finished"); // NOI18N
+        ERR.fine("writeDocument finished"); // NOI18N
     }
 
     /** lazy init of toolbar panel */
@@ -971,7 +972,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @see #checkConfigurationOver */
     void updateConfiguration(final XMLDataObject xmlDataObject) {
         long mod = xmlDataObject.getPrimaryFile ().lastModified().getTime ();
-        ERR.log ("Checking modified: " + lastReload); // NOI18N
+        ERR.fine("Checking modified: " + lastReload); // NOI18N
         //Bugfix #10196, this condition commented to make sure that all changes
         //will be applied.
         /*if (lastReload >= mod) {
@@ -994,7 +995,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
 
 
                     if (configName.equals (toolbarPool ().getConfiguration())) {
-                        ERR.log ("Activating the configuration"); // NOI18N
+                        ERR.fine("Activating the configuration"); // NOI18N
                         // 1st argument is true because the change is important
                         // 2nd argument is false, because it should prevent the system
                         // to write anything do

@@ -12,6 +12,7 @@
  */
 package org.openide.filesystems;
 
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 
@@ -61,10 +62,11 @@ final class ExternalUtil extends Object {
         return ErrorManager.getDefault().annotate(ex, stack);
     }
 
+    private static Logger LOG = Logger.getLogger("org.openide.filesystems"); // NOI18N
     /** Logs a text.
      */
     public static void log(String msg) {
-        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+        LOG.fine(msg);
     }
 
     /** Loads a class of given name

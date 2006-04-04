@@ -12,6 +12,7 @@
  */
 package org.openide.actions;
 
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
@@ -36,33 +37,15 @@ import javax.swing.event.ChangeListener;
 public final class MoveUpAction extends NodeAction {
     /** the key to listener to reorder of selected nodes */
     private static final String PROP_ORDER_LISTENER = "sellistener"; // NOI18N
-    private static ErrorManager err = null;
-    private static boolean errInited = false;
+    private static Logger err = Logger.getLogger("org.openide.actions.MoveUpAction"); // NOI18N
 
     /** Holds index cookie on which we are listening */
     private Reference curIndexCookie;
 
-    private static final void initErr() {
-        if (!errInited) {
-            errInited = true;
-
-            ErrorManager master = ErrorManager.getDefault();
-            ErrorManager tmp = master.getInstance("org.openide.actions.MoveUpAction"); // NOI18N
-
-            if (tmp.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err = tmp;
-            }
-        }
-    }
-
     /* Initilizes the set of properties.
     */
     protected void initialize() {
-        initErr();
-
-        if (err != null) {
-            err.log(ErrorManager.INFORMATIONAL, "initialize");
-        }
+        err.fine("initialize");
 
         super.initialize();
 
@@ -98,14 +81,9 @@ public final class MoveUpAction extends NodeAction {
     }
 
     protected boolean enable(Node[] activatedNodes) {
-        initErr();
-
-        if (err != null) {
-            err.log(
-                ErrorManager.INFORMATIONAL,
-                "enable; activatedNodes=" + ((activatedNodes == null) ? null : Arrays.asList(activatedNodes))
-            );
-        }
+        err.fine(
+            "enable; activatedNodes=" + ((activatedNodes == null) ? null : Arrays.asList(activatedNodes))
+        );
 
         // remove old listener, if any
         Index idx = getCurIndexCookie();
@@ -117,7 +95,7 @@ public final class MoveUpAction extends NodeAction {
         Index cookie = getIndexCookie(activatedNodes);
 
         if (err != null) {
-            err.log(ErrorManager.INFORMATIONAL, "enable; cookie=" + cookie);
+            err.fine("enable; cookie=" + cookie);
         }
 
         if (cookie == null) {
@@ -131,12 +109,11 @@ public final class MoveUpAction extends NodeAction {
         int index = cookie.indexOf(activatedNodes[0]);
 
         if (err != null) {
-            err.log(ErrorManager.INFORMATIONAL, "enable; index=" + index);
+            err.fine("enable; index=" + index);
 
             if (index == -1) {
                 Node parent = activatedNodes[0].getParentNode();
-                err.log(
-                    ErrorManager.INFORMATIONAL,
+                err.fine(
                     "enable; parent=" + parent + "; parent.children=" + Arrays.asList(parent.getChildren().getNodes())
                 );
             }
@@ -176,21 +153,16 @@ public final class MoveUpAction extends NodeAction {
         }
 
         public void stateChanged(ChangeEvent e) {
-            initErr();
-
             Node[] activatedNodes = getActivatedNodes();
 
-            if (err != null) {
-                err.log(
-                    ErrorManager.INFORMATIONAL,
-                    "stateChanged; activatedNodes=" + ((activatedNodes == null) ? null : Arrays.asList(activatedNodes))
-                );
-            }
+            err.fine(
+                "stateChanged; activatedNodes=" + ((activatedNodes == null) ? null : Arrays.asList(activatedNodes))
+            );
 
             Index cookie = getIndexCookie(activatedNodes);
 
             if (err != null) {
-                err.log(ErrorManager.INFORMATIONAL, "stateChanged; cookie=" + cookie);
+                err.fine("stateChanged; cookie=" + cookie);
             }
 
             if (cookie == null) {
@@ -199,7 +171,7 @@ public final class MoveUpAction extends NodeAction {
                 int index = cookie.indexOf(activatedNodes[0]);
 
                 if (err != null) {
-                    err.log(ErrorManager.INFORMATIONAL, "stateChanged; index=" + index);
+                    err.fine("stateChanged; index=" + index);
                 }
 
                 setEnabled(index > 0);

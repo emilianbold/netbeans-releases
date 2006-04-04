@@ -40,6 +40,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
@@ -133,7 +134,7 @@ final class NbInstaller extends ModuleInstaller {
                 installClassName = Util.createPackageName(installClass);
             } catch (IllegalArgumentException iae) {
                 InvalidException ie = new InvalidException(m, iae.toString());
-                Util.err.annotate(ie, iae);
+                ie.initCause(iae);
                 throw ie;
             }
             if (installClass.endsWith(".ser")) throw new InvalidException(m, "Serialized module installs not supported: " + installClass); // NOI18N
@@ -170,11 +171,11 @@ final class NbInstaller extends ModuleInstaller {
                 // Did not find any validate() method, so remember the class and resolve later.
             } catch (Exception t) {
                 InvalidException ie = new InvalidException(m, t.toString());
-                Util.err.annotate(ie, t);
+                ie.initCause(t);
                 throw ie;
             } catch (LinkageError t) {
                 InvalidException ie = new InvalidException(m, t.toString());
-                Util.err.annotate(ie, t);
+                ie.initCause(t);
                 throw ie;
             }
         }
@@ -187,8 +188,8 @@ final class NbInstaller extends ModuleInstaller {
         }
         String helpSetName = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Description"); // NOI18N
         if (helpSetName != null) {
-            Util.err.log(ErrorManager.WARNING, "Use of OpenIDE-Module-Description in " + m.getCodeNameBase() + " is deprecated.");
-            Util.err.log(ErrorManager.WARNING, "(Please install help using an XML layer instead.)");
+            Util.err.warning("Use of OpenIDE-Module-Description in " + m.getCodeNameBase() + " is deprecated.");
+            Util.err.warning("(Please install help using an XML layer instead.)");
         }
         // We are OK, commit everything to our cache.
         if (mysections != null) {
@@ -203,7 +204,7 @@ final class NbInstaller extends ModuleInstaller {
     }
     
     public void dispose(Module m) {
-        Util.err.log("dispose: " + m);
+        Util.err.fine("dispose: " + m);
         // Events probably not needed here.
         Set s = (Set)sections.remove(m);
         if (s != null) {
@@ -244,9 +245,9 @@ final class NbInstaller extends ModuleInstaller {
                 try {
                     loadSections(m, true);
                 } catch (Exception t) {
-                    Util.err.notify(t);
+                    Util.err.log(Level.SEVERE, null, t);
                 } catch (LinkageError le) {
-                    Util.err.notify(le);
+                    Util.err.log(Level.SEVERE, null, le);
                 }
                 ev.log(Events.PERF_TICK, "sections for " + m.getCodeName() + " loaded"); // NOI18N
             }
@@ -257,7 +258,7 @@ final class NbInstaller extends ModuleInstaller {
 
         // Yarda says to put this here.
         if (! initializedFolderLookup) {
-            Util.err.log("modulesClassPathInitialized");
+            Util.err.fine("modulesClassPathInitialized");
             MainLookup.modulesClassPathInitialized();
             initializedFolderLookup = true;
         }
@@ -270,11 +271,11 @@ final class NbInstaller extends ModuleInstaller {
             try {
                 loadCode(m, true);
             } catch (Exception t) {
-                Util.err.notify(t);
+                Util.err.log(Level.SEVERE, null, t);
             } catch (LinkageError le) {
-                Util.err.notify(le);
+                Util.err.log(Level.SEVERE, null, le);
             } catch (AssertionError e) {
-                Util.err.notify(e);
+                Util.err.log(Level.SEVERE, null, e);
             }
 	    ev.log(Events.PERF_TICK, "ModuleInstall for " + m.getCodeName() + " called"); // NOI18N
         }
@@ -295,9 +296,9 @@ final class NbInstaller extends ModuleInstaller {
             try {
                 loadCode(m, false);
             } catch (Exception t) {
-                Util.err.notify(t);
+                Util.err.log(Level.SEVERE, null, t);
             } catch (LinkageError le) {
-                Util.err.notify(le);
+                Util.err.log(Level.SEVERE, null, le);
             }
         }
         CoreBridge.conditionallyLoaderPoolTransaction(true);
@@ -306,16 +307,16 @@ final class NbInstaller extends ModuleInstaller {
                 try {
                     loadSections(m, false);
                 } catch (Exception t) {
-                    Util.err.notify(t);
+                    Util.err.log(Level.SEVERE, null, t);
                 } catch (LinkageError le) {
-                    Util.err.notify(le);
+                    Util.err.log(Level.SEVERE, null, le);
                 }
             }
         } finally {
             try {
                 CoreBridge.conditionallyLoaderPoolTransaction(false);
             } catch (RuntimeException e) {
-                Util.err.notify(e);
+                Util.err.log(Level.SEVERE, null, e);
             }
         }
         loadLayers(modules, false);
@@ -434,7 +435,7 @@ final class NbInstaller extends ModuleInstaller {
             try {
                 return s.getInstance();
             } catch (Exception e) {
-                Util.err.notify(e);
+                Util.err.log(Level.WARNING, null, e);
                 // Try to remove it from the pool so it does not continue
                 // to throw errors over and over. Hopefully it is kosher to
                 // do this while it is in the process of converting! I.e.
@@ -480,7 +481,7 @@ final class NbInstaller extends ModuleInstaller {
         for (Module m: modules) {
             String s = (String)layers.get(m);
             if (s != null) {
-                Util.err.log("loadLayer: " + s + " load=" + load);
+                Util.err.fine("loadLayer: " + s + " load=" + load);
                 // Actually add a sequence of layers, in locale order.
                 String base, ext;
                 int idx = s.lastIndexOf('.'); // NOI18N
@@ -520,7 +521,7 @@ final class NbInstaller extends ModuleInstaller {
                 }
                 if (! foundSomething) {
                     // Should never happen (we already checked in prepare() for base layer)...
-                    Util.err.log("Module layer not found: " + s);
+                    Util.err.fine("Module layer not found: " + s);
                     continue;
                 }
             }
@@ -529,7 +530,7 @@ final class NbInstaller extends ModuleInstaller {
         for (Map.Entry<ModuleLayeredFileSystem,List<URL>> entry: urls.entrySet()) {
             ModuleLayeredFileSystem host = (ModuleLayeredFileSystem)entry.getKey();
             List<URL> theseurls = entry.getValue();
-            Util.err.log("Adding/removing layer URLs: host=" + host + " urls=" + theseurls);
+            Util.err.fine("Adding/removing layer URLs: host=" + host + " urls=" + theseurls);
             try {
                 if (load) {
                     host.addURLs(theseurls);
@@ -537,7 +538,7 @@ final class NbInstaller extends ModuleInstaller {
                     host.removeURLs(theseurls);
                 }
             } catch (Exception e) {
-                Util.err.notify(e);
+                Util.err.log(Level.WARNING, null, e);
             }
         }
     }
@@ -563,9 +564,9 @@ final class NbInstaller extends ModuleInstaller {
                         // For now, assume this is a developer-oriented message that need not be localized
                         // or displayed in a pretty fashion.
                         if (message != null) {
-                            Util.err.log(ErrorManager.WARNING, "Warning: the module " + m.getCodeNameBase() + " uses " + cnb + " which is deprecated: " + message); // NOI18N
+                            Util.err.warning("the module " + m.getCodeNameBase() + " uses " + cnb + " which is deprecated: " + message); // NOI18N
                         } else {
-                            Util.err.log(ErrorManager.WARNING, "Warning: the module " + m.getCodeNameBase() + " uses " + cnb + " which is deprecated."); // NOI18N
+                            Util.err.warning("the module " + m.getCodeNameBase() + " uses " + cnb + " which is deprecated."); // NOI18N
                         }
                     }
                 }
@@ -574,21 +575,21 @@ final class NbInstaller extends ModuleInstaller {
     }
         
     public boolean closing(List<Module> modules) {
-        Util.err.log("closing: " + modules);
+        Util.err.fine("closing: " + modules);
 	for (Module m: modules) {
             Class<? extends ModuleInstall> instClazz = installs.get(m);
             if (instClazz != null) {
                 try {
                     ModuleInstall inst = SharedClassObject.findObject(instClazz, true);
                     if (! inst.closing()) {
-                        Util.err.log("Module " + m + " refused to close");
+                        Util.err.fine("Module " + m + " refused to close");
                         return false;
                     }
                 } catch (RuntimeException re) {
-                    Util.err.notify(re);
+                    Util.err.log(Level.SEVERE, null, re);
                     // continue, assume it is trash
                 } catch (LinkageError le) {
-                    Util.err.notify(le);
+                    Util.err.log(Level.SEVERE, null, le);
                 }
             }
         }
@@ -596,7 +597,7 @@ final class NbInstaller extends ModuleInstaller {
     }
     
     public void close(List<Module> modules) {
-        Util.err.log("close: " + modules);
+        Util.err.fine("close: " + modules);
         ev.log(Events.CLOSE);
         // [PENDING] this may need to write out changed ModuleInstall externalized
         // forms...is that really necessary to do here, or isn't it enough to
@@ -613,7 +614,7 @@ final class NbInstaller extends ModuleInstaller {
                     throw td;
                 } catch (Throwable t) {
                     // Catch even the heavy stuff here, we are going away.
-                    Util.err.notify(t);
+                    Util.err.log(Level.SEVERE, null, t);
                     // oh well
                 }
             }
@@ -651,29 +652,29 @@ final class NbInstaller extends ModuleInstaller {
                         try {
                             urls.add(kids[i].getURL());
                         } catch (FileStateInvalidException e) {
-                            Util.err.notify(e);
+                            Util.err.log(Level.WARNING, null, e);
                         }
                     }
                 }
                 try {
                     autoDepsHandler = AutomaticDependencies.parse(urls.toArray(new URL[urls.size()]));
                 } catch (IOException e) {
-                    Util.err.notify(e);
+                    Util.err.log(Level.WARNING, null, e);
                 } catch (SAXException e) {
-                    Util.err.notify(e);
+                    Util.err.log(Level.WARNING, null, e);
                 }
             }
             if (autoDepsHandler == null) {
                 // Parsing failed, or no files.
                 autoDepsHandler = AutomaticDependencies.empty();
             }
-            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Util.err.log(ErrorManager.INFORMATIONAL, "Auto deps: " + autoDepsHandler);
+            if (Util.err.isLoggable(Level.FINE)) {
+                Util.err.fine("Auto deps: " + autoDepsHandler);
             }
         }
         AutomaticDependencies.Report rep = autoDepsHandler.refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
         if (rep.isModified()) {
-            Util.err.log(ErrorManager.WARNING, "Warning - had to upgrade dependencies for module " + m.getCodeNameBase() + ": added = " + rep.getAdded() + " removed = " + rep.getRemoved() + "; details: " + rep.getMessages());
+            Util.err.warning("had to upgrade dependencies for module " + m.getCodeNameBase() + ": added = " + rep.getAdded() + " removed = " + rep.getRemoved() + "; details: " + rep.getMessages());
         }
     }
     
@@ -723,8 +724,8 @@ final class NbInstaller extends ModuleInstaller {
             if (parent == null) throw new IllegalStateException("No such parent module of " + master + ": " + cnb); // NOI18N
             if (parentModules.add(parent)) {
                 if (!parents.contains(parent.getClassLoader())) {
-                    if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                        Util.err.log("#27853: adding virtual dependency from " + master + ": " + parent);
+                    if (Util.err.isLoggable(Level.FINE)) {
+                        Util.err.fine("#27853: adding virtual dependency from " + master + ": " + parent);
                     }
                     // XXX is this really right? For example, A has some impl classes,
                     // not exported, B has an impl dep on A, C has just a regular dep
@@ -743,7 +744,7 @@ final class NbInstaller extends ModuleInstaller {
     }
     
     public boolean shouldDelegateResource(Module m, Module parent, String pkg) {
-        //Util.err.log("sDR: m=" + m + " parent=" + parent + " pkg=" + pkg);
+        //Util.err.fine("sDR: m=" + m + " parent=" + parent + " pkg=" + pkg);
         // Cf. #19622:
         if (parent == null) {
             // Application classpath checks.
@@ -751,8 +752,8 @@ final class NbInstaller extends ModuleInstaller {
                 if (pkg.startsWith(CLASSPATH_PACKAGES[i]) &&
                         !findKosher(m).contains(CLASSPATH_PACKAGES[i])) {
                     // Undeclared use of a classpath package. Refuse it.
-                    if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                        Util.err.log("Refusing to load classpath package " + pkg + " for " + m.getCodeNameBase() + " without a proper dependency"); // NOI18N
+                    if (Util.err.isLoggable(Level.FINE)) {
+                        Util.err.fine("Refusing to load classpath package " + pkg + " for " + m.getCodeNameBase() + " without a proper dependency"); // NOI18N
                     }
                     return false;
                 }
@@ -864,7 +865,7 @@ final class NbInstaller extends ModuleInstaller {
         if ("org.openide.text".equals(m)) return; // NOI18N
         if ("org.openide.src".equals(m)) return; // NOI18N
         
-        Util.err.log(ErrorManager.WARNING, "Disabling openide load optimizations due to use of " + m); // NOI18N
+        Util.err.warning("Disabling openide load optimizations due to use of " + m); // NOI18N
         
         withoutOptimizations = true;
     }
@@ -1195,14 +1196,14 @@ final class NbInstaller extends ModuleInstaller {
             String userdir = System.getProperty("netbeans.user");
             if (userdir != null) {
                 manifestCacheFile = new File(new File(new File(new File (userdir), "var"), "cache"), "all-manifests.dat"); // NOI18N
-                Util.err.log("Using manifest cache in " + manifestCacheFile);
+                Util.err.fine("Using manifest cache in " + manifestCacheFile);
             } else {
                 // Some special startup mode, e.g. with Plain.
                 usingManifestCache = false;
-                Util.err.log("Not using any manifest cache; no user directory");
+                Util.err.fine("Not using any manifest cache; no user directory");
             }
         } else {
-            Util.err.log("Manifest cache disabled");
+            Util.err.fine("Manifest cache disabled");
         }
     }
     
@@ -1236,13 +1237,13 @@ final class NbInstaller extends ModuleInstaller {
         if (entry != null) {
             if (((Date)entry[0]).getTime() == jar.lastModified()) {
                 // Cache hit.
-                Util.err.log("Found manifest for " + jar + " in cache");
+                Util.err.fine("Found manifest for " + jar + " in cache");
                 return (Manifest)entry[1];
             } else {
-                Util.err.log("Wrong timestamp for " + jar + " in manifest cache");
+                Util.err.fine("Wrong timestamp for " + jar + " in manifest cache");
             }
         } else {
-            Util.err.log("No entry for " + jar + " in manifest cache");
+            Util.err.fine("No entry for " + jar + " in manifest cache");
         }
         // Cache miss.
         Manifest m = super.loadManifest(jar);
@@ -1259,7 +1260,7 @@ final class NbInstaller extends ModuleInstaller {
             try {
                 saveManifestCache(manifestCache, manifestCacheFile);
             } catch (IOException ioe) {
-                Util.err.notify(ErrorManager.WARNING, ioe);
+                Util.err.log(Level.WARNING, null, ioe);
             }
             usingManifestCache = false;
             manifestCacheDirty = false;
@@ -1272,7 +1273,7 @@ final class NbInstaller extends ModuleInstaller {
      * @see #manifestCacheFile
      */
     private void saveManifestCache(Map manifestCache, File manifestCacheFile) throws IOException {
-        Util.err.log("Saving manifest cache");
+        Util.err.fine("Saving manifest cache");
         manifestCacheFile.getParentFile().mkdirs();
         OutputStream os = new FileOutputStream(manifestCacheFile);
         try {
@@ -1310,7 +1311,7 @@ final class NbInstaller extends ModuleInstaller {
      */
     private Map<File,Object[]> loadManifestCache(File manifestCacheFile) {
         if (!manifestCacheFile.canRead()) {
-            Util.err.log("No manifest cache found at " + manifestCacheFile);
+            Util.err.fine("No manifest cache found at " + manifestCacheFile);
             return new HashMap<File,Object[]>(200);
         }
         ev.log(Events.PERF_START, "NbInstaller - loadManifestCache"); // NOI18N
@@ -1329,8 +1330,7 @@ final class NbInstaller extends ModuleInstaller {
                 ev.log(Events.PERF_END, "NbInstaller - loadManifestCache"); // NOI18N
             }
         } catch (IOException ioe) {
-            Util.err.annotate(ioe, ErrorManager.UNKNOWN, "While reading: " + manifestCacheFile, null, null, null); // NOI18N
-            Util.err.notify(ErrorManager.WARNING, ioe);
+            Util.err.log(Level.WARNING, "While reading: " + manifestCacheFile, ioe); // NOI18N
             return new HashMap<File,Object[]>(200);
         }
     }
@@ -1371,12 +1371,12 @@ final class NbInstaller extends ModuleInstaller {
             try {
                 mani = new Manifest(new ByteArrayInputStream(data, pos, end - pos));
             } catch (IOException ioe) {
-                Util.err.annotate(ioe, ErrorManager.UNKNOWN, "While in entry for " + jar, null, null, null);
+                ErrorManager.getDefault().annotate(ioe, ErrorManager.UNKNOWN, "While in entry for " + jar, null, null, null);
                 throw ioe;
             }
             m.put(jar, new Object[] {new Date(time), mani});
-            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Util.err.log("Manifest cache entry: jar=" + jar + " date=" + new Date(time) + " codename=" + mani.getMainAttributes().getValue("OpenIDE-Module"));
+            if (Util.err.isLoggable(Level.FINE)) {
+                Util.err.fine("Manifest cache entry: jar=" + jar + " date=" + new Date(time) + " codename=" + mani.getMainAttributes().getValue("OpenIDE-Module"));
             }
             pos = end + 1;
         }
@@ -1389,7 +1389,7 @@ final class NbInstaller extends ModuleInstaller {
      * @param modules a list of modules, newly enabled, to check; fixed modules will be ignored
      */
     private void preresolveClasses(List modules) {
-        Util.err.log(ErrorManager.USER, "Pre-resolving classes for all loaded modules...be sure you have not specified -J-Xverify:none in ide.cfg");
+        Util.err.info("Pre-resolving classes for all loaded modules...be sure you have not specified -J-Xverify:none in ide.cfg");
         Iterator it = modules.iterator();
         while (it.hasNext()) {
             Module m = (Module)it.next();
@@ -1406,17 +1406,18 @@ final class NbInstaller extends ModuleInstaller {
                         String name = entry.getName();
                         if (name.endsWith(".class")) { // NOI18N
                             String clazz = name.substring(0, name.length() - 6).replace('/', '.'); // NOI18N
+                            Throwable t = null;
                             try {
                                 Class.forName(clazz, false, m.getClassLoader());
                             } catch (ClassNotFoundException cnfe) { // e.g. "Will not load classes from default package" from ProxyClassLoader
-                                Util.err.annotate(cnfe, ErrorManager.UNKNOWN, "From " + clazz + " in " + m.getCodeNameBase() + " with effective classpath " + getEffectiveClasspath(m), null, null, null); // NOI18N
-                                Util.err.notify(ErrorManager.INFORMATIONAL, cnfe);
+                                t = cnfe;
                             } catch (LinkageError le) {
-                                Util.err.annotate(le, ErrorManager.UNKNOWN, "From " + clazz + " in " + m.getCodeNameBase() + " with effective classpath " + getEffectiveClasspath(m), null, null, null); // NOI18N
-                                Util.err.notify(ErrorManager.INFORMATIONAL, le);
+                                t = le;
                             } catch (RuntimeException re) { // e.g. IllegalArgumentException from package defs
-                                Util.err.annotate(re, ErrorManager.UNKNOWN, "From " + clazz + " in " + m.getCodeNameBase() + " with effective classpath " + getEffectiveClasspath(m), null, null, null); // NOI18N
-                                Util.err.notify(ErrorManager.INFORMATIONAL, re);
+                                t = re;
+                            }
+                            if (t != null) {
+                                Util.err.log(Level.WARNING, "From " + clazz + " in " + m.getCodeNameBase() + " with effective classpath " + getEffectiveClasspath(m), t);
                             }
                         }
                     }
@@ -1424,7 +1425,7 @@ final class NbInstaller extends ModuleInstaller {
                     j.close();
                 }
             } catch (IOException ioe) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, ioe);
+                Util.err.log(Level.WARNING, null, ioe);
             }
         }
     }

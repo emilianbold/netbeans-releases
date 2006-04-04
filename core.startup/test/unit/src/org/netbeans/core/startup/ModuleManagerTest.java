@@ -484,13 +484,13 @@ public class ModuleManagerTest extends SetupHid {
         assertTrue(items.size() == 1);
         Lookup.Item item = (Lookup.Item)items.iterator().next();
         assertEquals(m2, item.getInstance());
-        Util.err.log("Item ID: " + item.getId());
+        Util.err.info("Item ID: " + item.getId());
         assertTrue("Item class is OK: " + item.getType(), item.getType().isAssignableFrom(Module.class));
         assertEquals("finding by ID works", Collections.singleton(m2), new HashSet(l.lookup(new Lookup.Template(null, item.getId(), null)).allInstances()));
         final boolean[] waiter = new boolean[] {false};
         resultAll.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent lev) {
-                Util.err.log("Got event: " + lev);
+                Util.err.info("Got event: " + lev);
                 synchronized (waiter) {
                     waiter[0] = true;
                     waiter.notify();
@@ -1139,12 +1139,12 @@ public class ModuleManagerTest extends SetupHid {
         try {
             int i = 0;
             while (i < count) {
-                Util.err.log("testLackOfOrderSensitivity round #" + i);
+                Util.err.info("testLackOfOrderSensitivity round #" + i);
                 switch (r.nextInt(11)) {
                 case 0:
                 case 1:
                 case 2:
-                    Util.err.log("Add a regular module");
+                    Util.err.info("Add a regular module");
                     if (!freeModules.isEmpty()) {
                         String name = (String)freeModules.remove(r.nextInt(freeModules.size()));
                         mgr.create(new File(jars, name), null, false, false, false);
@@ -1152,7 +1152,7 @@ public class ModuleManagerTest extends SetupHid {
                     }
                     break;
                 case 3:
-                    Util.err.log("Add an autoload");
+                    Util.err.info("Add an autoload");
                     if (!freeModules.isEmpty()) {
                         String name = (String)freeModules.remove(r.nextInt(freeModules.size()));
                         mgr.create(new File(jars, name), null, false, true, false);
@@ -1160,7 +1160,7 @@ public class ModuleManagerTest extends SetupHid {
                     }
                     break;
                 case 4:
-                    Util.err.log("Add an eager module");
+                    Util.err.info("Add an eager module");
                     if (!freeModules.isEmpty()) {
                         String name = (String)freeModules.remove(r.nextInt(freeModules.size()));
                         if (!noDepsNames.contains(name)) {
@@ -1171,7 +1171,7 @@ public class ModuleManagerTest extends SetupHid {
                     break;
                 case 5:
                 case 6:
-                    Util.err.log("Remove a disabled module");
+                    Util.err.info("Remove a disabled module");
                     List disabled = new ArrayList(moduleNames.length);
                     Iterator it = mgr.getModules().iterator();
                     while (it.hasNext()) {
@@ -1189,7 +1189,7 @@ public class ModuleManagerTest extends SetupHid {
                     break;
                 case 7:
                 case 8:
-                    Util.err.log("Enable some set of modules");
+                    Util.err.info("Enable some set of modules");
                     List candidates = new ArrayList(moduleNames.length);
                     it = mgr.getModules().iterator();
                     while (it.hasNext()) {
@@ -1224,7 +1224,7 @@ public class ModuleManagerTest extends SetupHid {
                     break;
                 case 9:
                 case 10:
-                    Util.err.log("Disable some set of modules");
+                    Util.err.info("Disable some set of modules");
                     candidates = new ArrayList(moduleNames.length);
                     it = mgr.getModules().iterator();
                     while (it.hasNext()) {

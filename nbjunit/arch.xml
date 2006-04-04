@@ -124,8 +124,9 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-what">
   <p>
    Module contains NetBeans extension to JUnit. It is a library used in XTest 
-   and library wrapper module. See
+   and library wrapper module. <!-- See
    <a href="http://xtest.netbeans.org/NbJUnit/NbJUnit-overview.html">overview.</a>
+   -->
   </p>
  </answer>
 
@@ -519,8 +520,45 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   See <a href="http://xtest.netbeans.org/NbJUnit/JUnit_junit_properties.html">this</a>.
+NetBeans extension to JUnit uses standard JUnit preferences file to store additional information required when using advanced features of NbJUnit. The junit.properties file is a standard property file, which is stored in user's home directory (as defined in user.home system property of JVM). Recognized properties by NbJUnit are the following: 
+nbjunit.diff.impl - name of the java class implementing org.netbeans.junit.diff.Diff inteface. This class performs 'diff' between files. In NBJunit extension is available org.netbeans.junit.diff.SimpleDiff for simple comparision (this class decides only whether compared files are equal or not, it does not provide any additional information) and org.netbeans.junit.diff.NativeDiff for comparision via native diff code (e.g. diff program on unix machines).
+Please note, SimpleDiff is rather trivial implementation of diff command, so it is recommended to use native diff whenever possible.
   </p>
+
+  <ul>
+
+      <li>
+        <api name="nbjunit.diff.impl.CmdLine" group="property" type="export" category="devel">
+            used only when nbjunit.diff.impl is set
+            to org.netbeans.junit.diff.NativeDiff class. This property
+            contain command line, which is called from NativeDiff class
+            to perform comparision. This property use
+            also '%TESTFILE%' and '%PASSFILE%' variables understood
+            by NbJUnit, which are replaced with real
+            file names when running tests.
+        </api>
+      </li>
+
+      <li>
+          <api name="nbjunit.workdir" group="property" type="export" category="devel">
+            path to a directory, which is used as a root for tests' working
+            directories (for details see JavaDoc for NbTestCase.getWorkDir()).
+          </api>
+      </li>
+  </ul>
+ 
+
+ 
+ 
+<p>s
+
+ Here's an example of junit.properties file: 
+  </p>
+<pre>
+nbjunit.workdir=/space/netbeans/tests/workdir
+nbjunit.diff.impl=org.netbeans.junit.diff.NativeDiff
+nbjunit.diff.impl.CmdLine=/usr/bin/diff -bw %TESTFILE% %PASSFILE%
+</pre>
  </answer>
 
 

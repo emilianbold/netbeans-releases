@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -80,10 +81,10 @@ final class FixedModule extends Module {
                             // Fine, ignore.
                         }
                     } catch (MissingResourceException mre) {
-                        Util.err.notify(mre);
+                        Util.err.log(Level.WARNING, null, mre);
                     }
                 } else {
-                    Util.err.log(ErrorManager.WARNING, "WARNING - cannot efficiently load non-*.properties OpenIDE-Module-Localizing-Bundle: " + locb);
+                    Util.err.warning("cannot efficiently load non-*.properties OpenIDE-Module-Localizing-Bundle: " + locb);
                 }
             }
             if (!usingLoader) {
@@ -125,7 +126,7 @@ final class FixedModule extends Module {
         Attributes attr = manifest.getMainAttributes();
         String locbundle = attr.getValue("OpenIDE-Module-Localizing-Bundle"); // NOI18N
         if (locbundle != null) {
-            Util.err.log("Localized props in " + locbundle + " for " + attr.getValue("OpenIDE-Module"));
+            Util.err.fine("Localized props in " + locbundle + " for " + attr.getValue("OpenIDE-Module"));
             try {
                 int idx = locbundle.lastIndexOf('.'); // NOI18N
                 String name, ext;
@@ -147,7 +148,7 @@ final class FixedModule extends Module {
                     String resource = name + suffix + ext;
                     InputStream is = classloader.getResourceAsStream(resource);
                     if (is != null) {
-                        Util.err.log("Found " + resource);
+                        Util.err.fine("Found " + resource);
                         if (localizedProps == null) {
                             localizedProps = new Properties();
                         }

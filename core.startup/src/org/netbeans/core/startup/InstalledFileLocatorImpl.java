@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import org.netbeans.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -165,7 +166,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                         if (kids != null) {
                             fileCachePerPrefix.put(root, new HashSet<String>(Arrays.asList(kids)));
                         } else {
-                            ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - could not read files in " + d);
+                            Util.err.warning("could not read files in " + d);
                         }
                     }
                 }

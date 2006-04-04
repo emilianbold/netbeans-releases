@@ -14,6 +14,7 @@
 package org.netbeans.modules.javahelp;
 
 import java.util.*;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -44,7 +45,7 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
      */    
     protected final Collection getHelpSets() {
         if (helpsets == null) {
-            Installer.err.log("searching for instances of HelpSet...");
+            Installer.log.fine("searching for instances of HelpSet...");
             helpsets = Lookup.getDefault().lookup(new Lookup.Template(HelpSet.class));
             helpsets.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
@@ -54,13 +55,13 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
             fireChangeEvent(); // since someone may be listening to whether they are ready
         }
         Collection c = helpsets.allInstances();
-        if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (Installer.log.isLoggable(Level.FINE)) {
             List l = new ArrayList(Math.min(1, c.size()));
             Iterator it = c.iterator();
             while (it.hasNext()) {
                 l.add(((HelpSet)it.next()).getTitle());
             }
-            Installer.err.log("listing helpsets: " + l);
+            Installer.log.fine("listing helpsets: " + l);
         }
         return c;
     }
@@ -87,7 +88,7 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
      * do extra cleanup.
      */
     protected void helpSetsChanged() {
-        Installer.err.log("helpSetsChanged");
+        Installer.log.fine("helpSetsChanged");
         fireChangeEvent();
     }
     
@@ -123,7 +124,7 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
             it = new HashSet(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
-        Installer.err.log("Help.stateChanged");
+        Installer.log.fine("Help.stateChanged");
         while (it.hasNext()) {
             ((ChangeListener)it.next()).stateChanged(ev);
         }

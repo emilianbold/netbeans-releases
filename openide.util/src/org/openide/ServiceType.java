@@ -12,6 +12,8 @@
  */
 package org.openide;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -39,7 +41,7 @@ public abstract class ServiceType extends Object implements java.io.Serializable
 
     /** Name of property for the name of the service type. */
     public static final String PROP_NAME = "name"; // NOI18N
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.ServiceType"); // NOI18N
+    private static final Logger err = Logger.getLogger("org.openide.ServiceType"); // NOI18N
 
     /** name of the service type */
     private String name;
@@ -328,7 +330,7 @@ public abstract class ServiceType extends Object implements java.io.Serializable
                     // #32140 - do not notify user about this exception. This exception
                     // should be only thrown when module providing the service
                     // was uninstalled and in that case the exception must be ignored.
-                    err.log(ErrorManager.INFORMATIONAL, "Service not found: " + ex.toString()); //NOI18N
+                    err.log(Level.FINE, "Service not found", ex); //NOI18N
 
                     // nothing better to use
                     clazz = ServiceType.class;

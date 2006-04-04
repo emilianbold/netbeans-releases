@@ -15,8 +15,11 @@ package org.netbeans.core;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 import java.util.MissingResourceException;
+import java.util.logging.LogManager;
 import javax.swing.SwingUtilities;
+import org.netbeans.core.startup.CLIOptions;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 import org.openide.ErrorManager;
@@ -34,28 +37,42 @@ public class NbErrorManagerTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NbErrorManagerTest.class));
-    }
-    
     private NbErrorManager err;
-    private ByteArrayOutputStream w;
     protected void setUp() throws Exception {
-        w = new ByteArrayOutputStream();
-        err = new NbErrorManager(new PrintStream(w));
+        clearWorkDir();
         
         System.setProperty("netbeans.user", getWorkDirPath());
+        // init the whole system
+        CLIOptions.initialize();
+
+
+        Iterator it = Lookup.getDefault().lookup(new Lookup.Template(ErrorManager.class)).allInstances().iterator();
+        while (it.hasNext()) {
+            Object o = it.next();
+            if (o instanceof NbErrorManager) {
+                assertNull("No err yet", err);
+                err = (NbErrorManager)o;
+            }
+        }
+
+        assertNotNull("One Error manager found", err);
     }
     
     public void testEMFound() throws Exception {
         assertEquals(NbErrorManager.class, Lookup.getDefault().lookup(ErrorManager.class).getClass());
+    }
+
+    public void testIsLoggable() {
+        assertFalse(ErrorManager.getDefault ().isLoggable(ErrorManager.INFORMATIONAL));
+        assertFalse(ErrorManager.getDefault ().isLoggable(ErrorManager.INFORMATIONAL + 1));
+        assertTrue(ErrorManager.getDefault ().isLoggable(ErrorManager.WARNING + 1));
     }
     
     public void testBasicNotify() throws Exception {
         assertTrue(err.isNotifiable(ErrorManager.EXCEPTION));
         NullPointerException npe = new NullPointerException("unloc msg");
         err.notify(ErrorManager.INFORMATIONAL, npe);
-        String s = w.toString();
+        String s = readLog();
         assertTrue(s.indexOf("java.lang.NullPointerException: unloc msg") != -1);
         assertTrue(s.indexOf("testBasicNotify") != -1);
     }
@@ -63,24 +80,27 @@ public class NbErrorManagerTest extends NbTestCase {
     public void testLog() throws Exception {
         assertFalse(err.isLoggable(ErrorManager.INFORMATIONAL));
         err.log("some msg");
-        String s = w.toString();
+        String s = readLog();
         assertTrue(s.indexOf("some msg") == -1);
         assertTrue(err.isLoggable(ErrorManager.WARNING));
         err.log(ErrorManager.WARNING, "another msg");
-        s = w.toString();
+        s = readLog();
         assertTrue(s.indexOf("another msg") != -1);
         ErrorManager err2 = err.getInstance("foo.bar.baz");
         assertFalse(err2.isLoggable(ErrorManager.INFORMATIONAL));
         err2.log("sub msg #1");
-        s = w.toString();
+        s = readLog();
         assertTrue(s.indexOf("sub msg #1") == -1);
-        System.setProperty("quux.hoho", "0");
+        System.setProperty("quux.hoho.level", "0");
+
+        LogManager.getLogManager().readConfiguration();
+
         err2 = err.getInstance("quux.hoho.yaya");
         assertTrue(err2.isLoggable(ErrorManager.INFORMATIONAL));
         err2.log("sub msg #2");
-        s = w.toString();
-        assertTrue(s.indexOf("sub msg #2") != -1);
-        assertTrue(s.indexOf("quux.hoho.yaya") != -1);
+        s = readLog();
+        assertTrue(s, s.indexOf("sub msg #2") != -1);
+        assertTrue(s, s.indexOf("quux.hoho.yaya") != -1);
     }
     
     /** @see "#15611" */
@@ -88,7 +108,7 @@ public class NbErrorManagerTest extends NbTestCase {
         NullPointerException npe = new NullPointerException("unloc msg");
         ClassNotFoundException cnfe = new ClassNotFoundException("other msg", npe);
         err.notify(ErrorManager.INFORMATIONAL, cnfe);
-        String s = w.toString();
+        String s = readLog();
         assertTrue(s.indexOf("java.lang.NullPointerException: unloc msg") != -1);
         // JDK 1.3.1 will not print the detail message "other msg", OK:
         assertTrue(s.indexOf("java.lang.ClassNotFoundException") != -1);
@@ -99,31 +119,31 @@ public class NbErrorManagerTest extends NbTestCase {
         IllegalStateException ise = new IllegalStateException("msg4");
         err.annotate(ise, ite);
         err.notify(ErrorManager.INFORMATIONAL, ise);
-        s = w.toString();
-        assertTrue(s.indexOf("java.lang.NullPointerException: msg1") != -1);
-        assertTrue(s.indexOf("java.io.IOException: msg2") != -1);
+        s = readLog();
+        assertTrue(s, s.indexOf("java.lang.NullPointerException: msg1") != -1);
+        assertTrue(s, s.indexOf("java.io.IOException: msg2") != -1);
         // Again passes on 1.4 but not 1.3:
         //assertTrue(s.indexOf("msg3") != -1);
-        assertTrue(s.indexOf("java.lang.IllegalStateException: msg4") != -1);
+        assertTrue(s, s.indexOf("java.lang.IllegalStateException: msg4") != -1);
     }
     
     public void testNotifyWithAnnotations() throws Exception {
         NullPointerException npe = new NullPointerException("unloc msg");
         err.annotate(npe, "loc msg #1");
         err.notify(ErrorManager.INFORMATIONAL, npe);
-        String s = w.toString();
+        String s = readLog();
         assertTrue(s.indexOf("java.lang.NullPointerException: unloc msg") != -1);
         assertTrue(s.indexOf("loc msg #1") != -1);
         npe = new NullPointerException("unloc msg");
         err.annotate(npe, ErrorManager.UNKNOWN, "extra unloc msg", null, null, null);
         err.notify(ErrorManager.INFORMATIONAL, npe);
-        s = w.toString();
+        s = readLog();
         assertTrue(s.indexOf("extra unloc msg") != -1);
         npe = new NullPointerException("new unloc msg");
         IOException ioe = new IOException("something bad");
         err.annotate(ioe, npe);
         err.notify(ErrorManager.INFORMATIONAL, ioe);
-        s = w.toString();
+        s = readLog();
         assertTrue(s.indexOf("java.lang.NullPointerException: new unloc msg") != -1);
         assertTrue(s.indexOf("java.io.IOException: something bad") != -1);
     }
@@ -139,7 +159,7 @@ public class NbErrorManagerTest extends NbTestCase {
         Exception e4 = new Exception("msg4");
         err.annotate(e3, e4);
         err.notify(ErrorManager.INFORMATIONAL, e3);
-        String s = w.toString();
+        String s = readLog();
         assertTrue(s.indexOf("java.lang.Exception: msg1") != -1);
         assertTrue(s.indexOf("java.lang.Exception: msg2") != -1);
         assertTrue(s.indexOf("java.lang.Exception: msg3") != -1);
@@ -156,7 +176,7 @@ public class NbErrorManagerTest extends NbTestCase {
         err.annotate(e3, e2);
         err.annotate(e1, e3);
         err.notify(ErrorManager.INFORMATIONAL, e1);
-        String s = w.toString();
+        String s = readLog();
         assertTrue(s.indexOf("java.lang.Exception: msg1") != -1);
         assertTrue(s.indexOf("java.lang.Exception: msg2") != -1);
         assertTrue(s.indexOf("java.lang.Exception: msg3") != -1);
@@ -167,13 +187,13 @@ public class NbErrorManagerTest extends NbTestCase {
     public void testAddedInfo() throws Exception {
         MissingResourceException mre = new MissingResourceException("msg1", "the.class.Name", "the-key");
         err.notify(ErrorManager.INFORMATIONAL, mre);
-        String s = w.toString();
+        String s = readLog();
         assertTrue(s.indexOf("java.util.MissingResourceException: msg1") != -1);
         assertTrue(s.indexOf("the.class.Name") != -1);
         assertTrue(s.indexOf("the-key") != -1);
         SAXParseException saxpe = new SAXParseException("msg2", "pub-id", "sys-id", 313, 424);
         err.notify(ErrorManager.INFORMATIONAL, saxpe);
-        s = w.toString();
+        s = readLog();
         assertTrue(s.indexOf("org.xml.sax.SAXParseException: msg2") != -1);
         assertTrue(s.indexOf("pub-id") != -1);
         assertTrue(s.indexOf("sys-id") != -1);
@@ -275,14 +295,14 @@ public class NbErrorManagerTest extends NbTestCase {
         err.notify(err.INFORMATIONAL, my);
         err.notify(err.USER, my);
         
-        String output = w.toString();
+        String output = readLog();
         // wait for a dialog to be shown
         waitEQ();
         
         int report = output.indexOf("Exception occurred");
         assertTrue("There is one exception reported: " + output, report > 0);
         int next = output.indexOf("Exception occurred", report + 1);
-        assertEquals("No next exceptions there", -1, next);
+        assertEquals("No next exceptions there (after " + report + "):\n" + output, -1, next);
     }
     
     private void waitEQ() throws InterruptedException, InvocationTargetException {
@@ -299,25 +319,25 @@ public class NbErrorManagerTest extends NbTestCase {
             fail();
         } catch (IOException e) {
             err.notify(ErrorManager.INFORMATIONAL, e);
-            String s = w.toString();
+            String s = readLog();
             assertTrue("added [catch] marker in simple cases", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
         }
-        w.reset();
+        //w.reset();
         try {
             m3();
             fail();
         } catch (IOException e) {
             err.notify(ErrorManager.INFORMATIONAL, e);
-            String s = w.toString();
+            String s = readLog();
             assertTrue("added [catch] marker in compound exception", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
         }
-        w.reset();
+        //w.reset();
         try {
             m5();
             fail();
         } catch (InterruptedException e) {
             err.notify(ErrorManager.INFORMATIONAL, e);
-            String s = w.toString();
+            String s = readLog();
             assertTrue("added [catch] marker in multiply compound exception", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
         }
     }
@@ -343,6 +363,22 @@ public class NbErrorManagerTest extends NbTestCase {
         } catch (IOException e) {
             throw (InterruptedException) new InterruptedException().initCause(e);
         }
+    }
+
+    private String readLog() throws IOException {
+        LogManager.getLogManager().readConfiguration();
+
+        File log = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log");
+        assertTrue("Log file exists: " + log, log.canRead());
+
+        FileInputStream is = new FileInputStream(log);
+
+        byte[] arr = new byte[(int)log.length()];
+        int r = is.read(arr);
+        assertEquals("all read", arr.length, r);
+        is.close();
+
+        return new String(arr);
     }
     
 }

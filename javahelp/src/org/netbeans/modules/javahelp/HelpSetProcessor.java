@@ -18,6 +18,7 @@ import java.net.URL;
 import javax.swing.BoundedRangeModel;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.SwingUtilities;
+import org.openide.ErrorManager;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -64,7 +65,7 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
         hs = null;
         // XXX this is called way too often, why?
         this.xml = xml;
-        Installer.err.log("processing help set ref: " + xml.getPrimaryFile());
+        Installer.log.fine("processing help set ref: " + xml.getPrimaryFile());
         BPMChanger.invoke(BPMChanger.INC_MAXIMUM);
     }
     
@@ -106,7 +107,7 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
      */
     public synchronized Object instanceCreate() throws IOException, ClassNotFoundException {
         if (hs == null) {
-            Installer.err.log("creating help set from ref: " + xml.getPrimaryFile());
+            Installer.log.fine("creating help set from ref: " + xml.getPrimaryFile());
             try {
                 Document doc = xml.getDocument();
                 Element el = doc.getDocumentElement();
@@ -123,11 +124,11 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
                 BPMChanger.invoke(BPMChanger.INC_VALUE);
             } catch (SAXException saxe) {
                 IOException ioe = new IOException(saxe.toString());
-                Installer.err.annotate(ioe, saxe);
+                ErrorManager.getDefault().annotate(ioe, saxe);
                 throw ioe;
             } catch (HelpSetException hse) {
                 IOException ioe = new IOException(hse.toString());
-                Installer.err.annotate(ioe, hse);
+                ErrorManager.getDefault().annotate(ioe, hse);
                 throw ioe;
             }
         }

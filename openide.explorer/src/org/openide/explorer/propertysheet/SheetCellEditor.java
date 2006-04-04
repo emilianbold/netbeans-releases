@@ -17,6 +17,8 @@
 */
 package org.openide.explorer.propertysheet;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.*;
 import org.openide.nodes.Node.Property;
 
@@ -362,8 +364,7 @@ final class SheetCellEditor implements TableCellEditor, ActionListener {
                         //and throw an exception only if it happened on the EQ, not if otherwise,
                         //but even that wouldn't be foolproof, and if all node changes are
                         //moved to EQ it won't work at all.
-                        ErrorManager.getDefault().log(
-                            ErrorManager.WARNING,
+                        Logger.getAnonymousLogger().warning(
                             "Property " + propID + "value changed *while* the property sheet was setting its value " +
                             "but before it had been set.  This almost always means that the " +
                             "property editor has modified the property's value itself. " +
@@ -371,7 +372,7 @@ final class SheetCellEditor implements TableCellEditor, ActionListener {
                             "up to the displayer to decide if/when the property should be " +
                             "updated.  This behavior may cause an exception in the " + "future."
                         );
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+                        Logger.getAnonymousLogger().log(Level.FINE, null, npe);
 
                         return false;
                     } else {

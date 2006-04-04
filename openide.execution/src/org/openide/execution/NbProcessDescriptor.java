@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.logging.Logger;
 
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -44,7 +44,7 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
     private static final long serialVersionUID = -4535211234565221486L;
     
     /** ErrorManager for logging execs */
-    private static ErrorManager execLog;
+    private static Logger execLog;
 
     /** The name of the executable to run */
     private String processName;
@@ -224,7 +224,7 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
     }
     
     private static void logArgs(String[] args) {
-        getExecLog().log(ErrorManager.INFORMATIONAL, "Running: " + Arrays.asList(args)); // NOI18N
+        getExecLog().fine("Running: " + Arrays.asList(args)); // NOI18N
     }
 
     /** Executes the process with arguments and processNme formatted by the provided
@@ -280,9 +280,9 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
     }
     
     /** Getter for the execLog */
-    private static ErrorManager getExecLog() {
+    private static Logger getExecLog() {
         if (execLog == null) {
-            execLog = ErrorManager.getDefault().getInstance("IDE-Exec"); // NOI18N
+            execLog = Logger.getLogger(NbProcessDescriptor.class.getName());
         }
         return execLog;
     }

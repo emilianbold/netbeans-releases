@@ -16,6 +16,7 @@ package org.openide.loaders;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import junit.framework.AssertionFailedError;
 
@@ -29,7 +30,7 @@ import org.netbeans.junit.*;
 import java.util.Enumeration;
 
 public class FolderInstanceTest extends LoggingTestCaseHid {
-    private org.openide.ErrorManager err;
+    private Logger err;
     
     public FolderInstanceTest() {
         super("");
@@ -64,7 +65,7 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
         
         assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
        
-        err = ErrManager.getDefault().getInstance("TEST-" + getName());
+        err = Logger.getLogger("TEST-" + getName());
     }
 
     /** Checks whether only necessary listeners are attached to the objects.
@@ -90,75 +91,75 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
         FileSystem lfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
 
         FileObject bb = lfs.findResource("/AA");
-        err.log("Found resource: " + bb);
+        err.info("Found resource: " + bb);
         if (bb != null) {
             bb.delete ();
         }
-        err.log("Resource deleted");
+        err.info("Resource deleted");
         FileObject theFile = FileUtil.createData (lfs.getRoot (), "/AA/A.simple");
-        err.log("Found the file: " + theFile);
+        err.info("Found the file: " + theFile);
         bb = FileUtil.createFolder(lfs.getRoot (), "/AA");
-        err.log("Found the folder: " + bb);
+        err.info("Found the folder: " + bb);
         assertTrue("Is file", theFile.isData());
-        err.log("Confirmed, its the data: " + theFile);
+        err.info("Confirmed, its the data: " + theFile);
         
         
         DataFolder folder = DataFolder.findFolder (bb);
         
 
         DataLoader l = DataLoader.getLoader(DataLoaderOrigTest.SimpleUniFileLoader.class);
-        err.log("Add loader: " + l);
+        err.info("Add loader: " + l);
         Pool.setExtra(l);
-        err.log("Loader added");
+        err.info("Loader added");
         try {
             FileObject aa = lfs.findResource("/AA/A.simple");
             DataObject tmp = DataObject.find (aa);
             assertEquals ("Is of the right type", DataLoaderOrigTest.SimpleDataObject.class, tmp.getClass ());
             DataLoaderOrigTest.SimpleDataObject obj = (DataLoaderOrigTest.SimpleDataObject)tmp;
             
-            err.log("simple object found: " + obj);
+            err.info("simple object found: " + obj);
             
             if (cookie) {
-                err.log("Adding cookie");
+                err.info("Adding cookie");
                 obj.cookieSet().add (new InstanceSupport.Instance (new Integer (100)));
-                err.log("Cookie added");
+                err.info("Cookie added");
             }
             
             
             F instance = new F (folder);
-            err.log("Instance for " + folder + " created");
+            err.info("Instance for " + folder + " created");
             Object result = instance.instanceCreate ();
-            err.log("instanceCreate called. Result: " + result);
+            err.info("instanceCreate called. Result: " + result);
             
             Enumeration en = obj.listeners ();
             
-            err.log("Asking for listeners of " + obj);
+            err.info("Asking for listeners of " + obj);
             
             assertTrue ("Folder instance should have add one listener", en.hasMoreElements ());
             en.nextElement ();
             assertTrue ("But there should be just one", !en.hasMoreElements ());
             
-            err.log("Successfully tested for one listener, creating B.simple");
+            err.info("Successfully tested for one listener, creating B.simple");
             
             folder.getPrimaryFile().createData("B.simple");
-            err.log("B.simple created");
+            err.info("B.simple created");
             assertEquals ("DO created", folder.getChildren ().length, 2);
-            err.log("Children obtained correctly");
+            err.info("Children obtained correctly");
             
             // wait to finish processing
             result = instance.instanceCreate ();
-            err.log("instanceCreate finished, with result: " + result);
+            err.info("instanceCreate finished, with result: " + result);
 
             en = obj.listeners ();
-            err.log("Asking for listeners once again");
+            err.info("Asking for listeners once again");
             assertTrue ("Folder instance should not change the amount of listeners", en.hasMoreElements ());
             en.nextElement ();
             assertTrue ("And there still should be just one", !en.hasMoreElements ());
-            err.log("Successfully tested for listeners");
+            err.info("Successfully tested for listeners");
         } finally {
-            err.log("Clearing data loader");
+            err.info("Clearing data loader");
             Pool.setExtra(null);
-            err.log("Loader cleared");
+            err.info("Loader cleared");
         }
     }
 
@@ -509,10 +510,10 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
             InvCheckFolderInstance icfi = new InvCheckFolderInstance(f, false);
             assertTrue(icfi.ok);
             assertEquals(new Integer(0), icfi.instanceCreate());
-            err.log ("sample1: " + DataObject.find(lfs.findResource(names[0])));
+            err.info("sample1: " + DataObject.find(lfs.findResource(names[0])));
             Pool.setExtra(l);
             try {
-                err.log ("sample2: " + DataObject.find(lfs.findResource(names[0])));
+                err.info("sample2: " + DataObject.find(lfs.findResource(names[0])));
                 assertTrue(icfi.ok);
                 /*
                 Thread.sleep(100);
@@ -531,26 +532,26 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
                 //Thread.sleep(sleep);
                 //assertTrue(icfi.ok);
             } finally {
-                err.log("begining to clear the pool");
+                err.info("begining to clear the pool");
                 Pool.setExtra(null);
-                err.log("clearing pool is finished");
+                err.info("clearing pool is finished");
             }
-            err.log ("sample3: " + DataObject.find(lfs.findResource(names[0])));
-            err.log ("sample4: " + DataFolder.findFolder(lfs.findResource(names[0]).getParent ()).getChildren()[0]);
+            err.info("sample3: " + DataObject.find(lfs.findResource(names[0])));
+            err.info("sample4: " + DataFolder.findFolder(lfs.findResource(names[0]).getParent ()).getChildren()[0]);
             assertTrue(icfi.ok);
             Object instance = null;
             for (int i = 0; i < 1; i++) {
                 Thread.sleep(sleep);
-                err.log ("getting the instance: " + i);
+                err.info("getting the instance: " + i);
                 instance = icfi.instanceCreate();
-                err.log ("instance is here (" + i + "): " + instance);
+                err.info("instance is here (" + i + "): " + instance);
                 
                 if (new Integer (0).equals (instance)) {
                     break;
                 }
             }
             assertEquals(new Integer(0), instance);
-            err.log("passed the usual failing point");
+            err.info("passed the usual failing point");
             //Thread.sleep(sleep);
             assertTrue(icfi.ok);
             Pool.setExtra(l);
@@ -591,11 +592,11 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
             assertEquals("One child", 1, arr.length);
             assertEquals("It is folder", DataFolder.class, arr[0].getClass());
             
-            err.log("Creating InvCheckFolderInstance");
+            err.info("Creating InvCheckFolderInstance");
             InvCheckFolderInstance icfi = new InvCheckFolderInstance(f, true);
-            err.log("Computing result");
+            err.info("Computing result");
             List computed = (List)icfi.instanceCreate();
-            err.log("Result is here: " + computed);
+            err.info("Result is here: " + computed);
             assertEquals("One from folder instance", 1, computed.size());
             assertEquals("The same data object", arr[0], computed.get(0));
             
@@ -628,7 +629,7 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
         
         protected Object createInstance(InstanceCookie[] cookies) throws IOException, ClassNotFoundException {
             // Whatever, irrelevant.
-            err.log ("new createInstance: " + cookies.length);
+            err.info("new createInstance: " + cookies.length);
             
             if (acceptF) {
                 ArrayList list = new ArrayList();
@@ -648,7 +649,7 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
                 return null;
             }
             if (o instanceof DataLoaderOrigTest.SimpleDataObject) {
-                err.log ("got a simpledataobject");
+                err.info("got a simpledataobject");
                 // Simulate some computation here:
                 try {
                     Thread.sleep(10);
@@ -656,16 +657,16 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
                 return new InstanceSupport.Instance("ignore");
             } else {
                 if (acceptF && o instanceof DataFolder) {
-                    err.log("Recognized folder: " + o);
+                    err.info("Recognized folder: " + o);
                     return new InstanceSupport.Instance(o);
                 }
-                err.log ("got a " + o);
+                err.info("got a " + o);
                 return null;
             }
         }
         // For faithfulness to the original:
         protected Task postCreationTask (Runnable run) {
-            err.log ("postCreationTask");
+            err.info("postCreationTask");
             return new AWTTask (run);
         }
     }
@@ -679,18 +680,18 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
             if (!executed) {
                 super.run ();
                 executed = true;
-                err.log ("AWTTask executed");
+                err.info("AWTTask executed");
             }
         }
         public void waitFinished () {
-            err.log ("AWTTask waitFinished");
+            err.info("AWTTask waitFinished");
             if (SwingUtilities.isEventDispatchThread ()) {
-                err.log ("AWTTask waitFinished on AWT thread");
+                err.info("AWTTask waitFinished on AWT thread");
                 run ();
-                err.log ("AWTTask waitFinished on AWT thread done");
+                err.info("AWTTask waitFinished on AWT thread done");
             } else {
                 super.waitFinished ();
-                err.log ("AWTTask waitFinished done");
+                err.info("AWTTask waitFinished done");
             }
         }
     }

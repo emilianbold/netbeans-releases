@@ -17,6 +17,7 @@ package org.netbeans.core.windows.view;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
@@ -443,7 +444,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                    }
                    modeView.requestAttention (tc); 
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                    Logger.getLogger(DefaultView.class.getName()).fine(
                         "Could not find mode " + viewEvent.getSource());
                 }
             } else if (changeType == View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION) {
@@ -458,7 +459,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                    }
                    modeView.cancelRequestAttention (tc); 
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                    Logger.getLogger(DefaultView.class.getName()).fine(
                         "Could not find mode " + viewEvent.getSource());
                 }
                 

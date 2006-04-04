@@ -23,10 +23,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import junit.framework.AssertionFailedError;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
@@ -40,10 +43,6 @@ import org.openide.windows.CloneableTopComponent;
  */
 public class ReloadTest extends NbTestCase 
 implements CloneableEditorSupport.Env {
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-    }
-    
     /** the support to work with */
     private transient CES support;
 
@@ -57,7 +56,8 @@ implements CloneableEditorSupport.Env {
     private transient PropertyChangeSupport propL = new PropertyChangeSupport (this);
     private transient VetoableChangeListener vetoL;
 
-    private ErrorManager err;
+    private Logger err;
+    private CharSequence log;
     
     public ReloadTest (String s) {
         super(s);
@@ -72,28 +72,20 @@ implements CloneableEditorSupport.Env {
     protected boolean runInEQ() {
         return false;
     }
+
+    protected Level logLevel() {
+        return Level.ALL;
+    }
     
     
     protected void setUp () {
         support = new CES (this, Lookup.EMPTY);
+
+        log = Log.enable("", Level.ALL);
+
         
-        assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
-        ErrManager.resetMessages();
-        ErrManager.log = getLog ();
-        
-        err = ErrManager.getDefault().getInstance(getName());
+        err = Logger.getLogger(getName());
     }
-    
-    protected void runTest () throws Throwable {
-        try {
-            super.runTest ();
-        } catch (AssertionFailedError err) {
-            AssertionFailedError n = new AssertionFailedError (err.getMessage () + "\n" + ErrManager.messages);
-            n.initCause (err);
-            throw n;
-        }
-    }
-    
     
 
     public void testRefreshProblem46885 () throws Exception {
@@ -126,10 +118,10 @@ implements CloneableEditorSupport.Env {
     }
 
     private void waitAWT () throws Exception {
-        err.log("wait for AWT begin");
+        err.info("wait for AWT begin");
         assertFalse ("Not in AWT", SwingUtilities.isEventDispatchThread ());
         SwingUtilities.invokeAndWait (new Runnable () { public void run () { }});
-        err.log("wait for AWT ends");
+        err.info("wait for AWT ends");
     }
     
     //
@@ -241,77 +233,6 @@ implements CloneableEditorSupport.Env {
                 retValue = super.createEditorKit();
             }
             return retValue;
-        }
-
-        
-    }
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp() {
-            this(new org.openide.util.lookup.InstanceContent());
-        }
-        
-        private Lkp(org.openide.util.lookup.InstanceContent ic) {
-            super(ic);
-            ic.add(new ErrManager());
-        }
-    }
-
-    private static final class ErrManager extends org.openide.ErrorManager {
-        static final StringBuffer messages = new StringBuffer();
-        static int nOfMessages;
-        static final String DELIMITER = ": ";
-        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
-        /** setup in setUp */
-        static java.io.PrintStream log = System.err;
-        
-        private String prefix;
-        
-        public ErrManager () {
-            prefix = "";
-        }
-        
-        private ErrManager (String pr) {
-            this.prefix = pr;
-        }
-        
-        static void resetMessages() {
-            messages.delete(0, ErrManager.messages.length());
-            nOfMessages = 0;
-        }
-        
-        public void log(int severity, String s) {
-            synchronized (ErrManager.messages) {
-                nOfMessages++;
-                messages.append('['); log.print ('[');
-                messages.append(prefix); log.print (prefix);
-                messages.append("] - "); log.print ("] - ");
-                messages.append(s); log.println (s);
-                messages.append('\n'); 
-            }
-        }
-        
-        public Throwable annotate(Throwable t, int severity,
-                String message, String localizedMessage,
-                Throwable stackTrace, java.util.Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance(String name) {
-            return new ErrManager (name);
-        }
-        
-        public void notify(int severity, Throwable t) {
-            StringWriter w = new StringWriter ();
-            t.printStackTrace (new java.io.PrintWriter (w));
-            log (severity, w.toString ());
         }
     }
 }

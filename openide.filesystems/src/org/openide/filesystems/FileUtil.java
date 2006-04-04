@@ -37,6 +37,7 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileSystemView;
@@ -1115,7 +1116,7 @@ public final class FileUtil extends Object {
                 retVal = canonicalFile;
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR, "Normalization failed on file " + file + ": " + ioe);
+            Logger.getAnonymousLogger().severe("Normalization failed on file " + file + ": " + ioe);
 
             // OK, so at least try to absolutize the path
             retVal = file.getAbsoluteFile();
@@ -1175,8 +1176,8 @@ public final class FileUtil extends Object {
             try {
                 retVal = file.getCanonicalFile();
             } catch (IOException e) {
-                ErrorManager.getDefault().log(
-                    ErrorManager.ERROR, "getCanonicalFile() on file " + file + " failed. " + e.toString()
+                Logger.getAnonymousLogger().severe(
+                    "getCanonicalFile() on file " + file + " failed. " + e.toString()
                 ); // NOI18N
             }
         }

@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import org.openide.ErrorManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
@@ -248,7 +249,7 @@ public abstract class Module extends ModuleInfo {
         if (codeName == null) {
             InvalidException e = new InvalidException("Not a module: no OpenIDE-Module tag in manifest of " + /* #17629: important! */this); // NOI18N
             // #29393: plausible user mistake, deal with it politely.
-            Util.err.annotate(e, NbBundle.getMessage(Module.class, "EXC_not_a_module", this.toString()));
+            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(Module.class, "EXC_not_a_module", this.toString()));
             throw e;
         }
         try {
@@ -333,7 +334,7 @@ public abstract class Module extends ModuleInfo {
                 }
             } else {
                 // XXX new link?
-                Util.err.log(ErrorManager.WARNING, "Warning: module " + codeNameBase + " does not declare OpenIDE-Module-Public-Packages in its manifest, so all packages are considered public by default: http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages");
+                Util.err.warning("module " + codeNameBase + " does not declare OpenIDE-Module-Public-Packages in its manifest, so all packages are considered public by default: http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages");
                 publicPackages = null;
             }
             
@@ -377,7 +378,7 @@ public abstract class Module extends ModuleInfo {
                 dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, "org.openide/" + name.substring(4) + " > " + d.getVersion())); // NOI18N
                 if (dependencies.size() != 1) throw new IllegalStateException("Should be singleton: " + dependencies); // NOI18N
                 
-                Util.err.log(ErrorManager.WARNING, "Warning: the module " + codeNameBase + " uses OpenIDE-Module-IDE-Dependencies which is deprecated. See http://openide.netbeans.org/proposals/arch/modularize.html"); // NOI18N
+                Util.err.warning("the module " + codeNameBase + " uses OpenIDE-Module-IDE-Dependencies which is deprecated. See http://openide.netbeans.org/proposals/arch/modularize.html"); // NOI18N
             }
             dependencies.addAll(Dependency.create(Dependency.TYPE_JAVA, attr.getValue("OpenIDE-Module-Java-Dependencies"))); // NOI18N
             dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, attr.getValue("OpenIDE-Module-Module-Dependencies"))); // NOI18N
@@ -513,8 +514,8 @@ public abstract class Module extends ModuleInfo {
     
     // Access from ChangeFirer:
     final void firePropertyChange0(String prop, Object old, Object nue) {
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("Module.propertyChange: " + this + " " + prop + ": " + old + " -> " + nue);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("Module.propertyChange: " + this + " " + prop + ": " + old + " -> " + nue);
         }
         firePropertyChange(prop, old, nue);
     }

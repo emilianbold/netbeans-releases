@@ -14,6 +14,8 @@
 package org.openide.nodes;
 
 import java.util.Date;
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
@@ -32,67 +34,50 @@ public class NodeProperty51907Test extends NbTestCase {
     public NodeProperty51907Test(String name) {
         super(name);
     }
-    
-    protected void setUp() {
-        System.setProperty("org.openide.util.Lookup", "org.openide.nodes.NodeProperty51907Test$Lkp");
-        assertNotNull("ErrManager has to be in lookup", Lookup.getDefault().lookup(ErrManager.class));
-        ErrManager.resetMessages();
-    }
-    
-    
+        
     /**
      * Note that for this test it doesn't matter what isDefaultValue() methods
      * return.
      */
     public void testThatWarningIsLoggedForOldModulesProperty() {
-        System.out.println("testThatWarningIsLoggedForOldModulesProperty");
-        
+        CharSequence log = Log.enable("", Level.WARNING);
         Node.Property property = new OldModulePropertyWithSDVReturningTrue();
         // ErrorManager should log warning
         property.isDefaultValue();
-        String messages = ErrManager.messages.toString();
         String className = property.getClass().getName();
-        assertTrue("There should be WARNING message logged by the ErrorManager",
-                messages.startsWith(ErrManager.WARNING_MESSAGE_START));
         assertTrue("The WARNING message should contain name of the property" +
-                "class - " + className, messages.indexOf(className) >= 0);
-        assertTrue("There should be exactly one message logged, but is " +
-                ErrManager.nOfMessages, ErrManager.nOfMessages == 1);
+                "class - " + className + " was log:\n" + log, log.toString().indexOf(className) >= 0);
+
+
+        int len = log.length();
         
         // ErrorManager shouldn't log warning more than once per property
         property.isDefaultValue();
-        assertTrue("There should be exactly one message logged, but is " +
-                ErrManager.nOfMessages, ErrManager.nOfMessages == 1);
-        
+        assertEquals("No other message logged", len, log.length());
+
         Node.Property otherInstance = new OldModulePropertyWithSDVReturningTrue();
         otherInstance.isDefaultValue();
-        assertTrue("There should be exactly one message logged, but is " +
-                ErrManager.nOfMessages, ErrManager.nOfMessages == 1);
+        assertEquals("No other message logged2", len, log.length());
     }
     
     public void testThatWarningIsNotLoggedForPropertyWithBothMethodsOverrided() {
-        System.out.println("testThatWarningIsNotLoggedForPropertyWithBothMethodOverrided");
+        CharSequence log = Log.enable("", Level.WARNING);
         
         Node.Property property = new BothMethodsOverridedProperty();
         // ErrorManager shouldn't log warning for correct implementations
         property.isDefaultValue();
-        assertTrue("There shouldn't be any WARNING message logged by the ErrorManager",
-                ErrManager.messages.length() == 0);
-        assertTrue("There shouldn't be any messages logged, but is " +
-                ErrManager.nOfMessages, ErrManager.nOfMessages == 0);
+        assertEquals("There shouldn't be any WARNING message logged by the ErrorManager", 0, log.length());
     }
     
     public void testThatWarningIsNotLoggedForPropertyWithNoneMethodOverrided() {
-        System.out.println("testThatWarningIsNotLoggedForPropertyWithNoneMethodOverrided");
+        CharSequence log = Log.enable("", Level.WARNING);
         
         Node.Property property = new DefaultTestProperty();
         // ErrorManager shouldn't log warning for correct implementations
         property.isDefaultValue();
-        assertTrue("There shouldn't be any WARNING message logged by the ErrorManager",
-                ErrManager.messages.length() == 0);
-        assertTrue("There shouldn't be any messages logged, but is " +
-                ErrManager.nOfMessages, ErrManager.nOfMessages == 0);
+        assertEquals("There shouldn't be any WARNING message logged by the ErrorManager", 0, log.length());
     }
+
     
     /**
      * Simulates property for old modules which didn't know about
@@ -132,54 +117,4 @@ public class NodeProperty51907Test extends NbTestCase {
         public boolean canRead() { return false; }
     }
     
-    
-    
-    public static final class Lkp extends AbstractLookup {
-        public Lkp() {
-            this(new InstanceContent());
-        }
-        
-        private Lkp(InstanceContent ic) {
-            super(ic);
-            ic.add(new ErrManager());
-        }
-    }
-    
-    private static final class ErrManager extends ErrorManager {
-        static final StringBuffer messages = new StringBuffer();
-        static int nOfMessages;
-        static final String DELIMITER = ": ";
-        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
-        
-        static void resetMessages() {
-            messages.delete(0, ErrManager.messages.length());
-            nOfMessages = 0;
-        }
-        
-        public void log(int severity, String s) {
-            nOfMessages++;
-            messages.append(severity + DELIMITER + s);
-            messages.append('\n');
-        }
-        
-        public Throwable annotate(Throwable t, int severity,
-                String message, String localizedMessage,
-                Throwable stackTrace, Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
-            return t;
-        }
-        
-        public ErrorManager.Annotation[] findAnnotations(Throwable t) {
-            return null;
-        }
-        
-        public ErrorManager getInstance(String name) {
-            return this;
-        }
-        
-        public void notify(int severity, Throwable t) {}
-    }
 }

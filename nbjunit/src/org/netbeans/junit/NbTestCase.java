@@ -17,6 +17,7 @@ import java.awt.EventQueue;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Field;
+import java.util.logging.Level;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.AssertionFailedError;
@@ -101,7 +102,25 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     protected int timeOut() {
         return 0;
     }
-    
+
+    /**
+    * Allows easy collecting of log messages send thru java.util.logging API.
+    * Overwrite and return the log level to collect logs to logging file. 
+    * If the method returns non-null level, then the level is assigned to
+    * the <code>Logger.getLogger("")</code> and the messages reported to it
+    * are then send into regular log file (which is accessible thru {@link NbTestCase#getLog})
+    * and in case of failure the last few messages is also included
+    * in <code>failure.getMessage()</code>.
+    *
+    * @return default implementation returns <code>null</code> which disables any logging
+    *   support in test
+    * @since 1.27
+    * @see Log#enable
+    */
+    protected Level logLevel() {
+        return null;
+    }
+     
     /**
      * Runs the test case, while conditionally skip some according to result of
      * {@link #canRun} method.
@@ -126,6 +145,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
 
             public void run() {
                 try {
+                    Level lev = logLevel();
+                    if (lev != null) {
+                        Log.configure(lev, NbTestCase.this);
+                    }
+
                     long now = System.currentTimeMillis();
                     try {
                         NbTestCase.super.runTest();
@@ -137,7 +161,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                         NbTestCase.this.time = last;
                     }
                 } catch (Throwable t) {
-                    this.t = t;
+                    this.t = Log.wrapWithMessages(t);
                 } finally {
                     synchronized (this) {
                         finished = true;
@@ -175,7 +199,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         } else {
             if (timeOut() == 0) {
                 // Regular test.
-                super.runTest();
+                run.run();
+                run.waitFinished();
             } else {
                 // Regular test with time out
                 Thread watchDog = new Thread(run, "Test Watch Dog: " + getName());

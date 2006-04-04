@@ -12,6 +12,7 @@
  */
 package org.openide.util.actions;
 
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.util.*;
 
@@ -213,8 +214,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
                             img = new ImageIcon(u);
 
                             if (relativeIconResourceClasses.add(clazz)) {
-                                ErrorManager.getDefault().log(
-                                    ErrorManager.WARNING,
+                                Logger.getAnonymousLogger().warning(
                                     "Deprecated relative path in " + clazz + ".iconResource (cf. #20072)"
                                 ); // NOI18N
                             }
@@ -238,8 +238,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
                                 img = new ImageIcon(u);
 
                                 if (relativeIconResourceClasses.add(clazz)) {
-                                    ErrorManager.getDefault().log(
-                                        ErrorManager.WARNING,
+                                    Logger.getAnonymousLogger().warning(
                                         "Deprecated relative path in " + clazz + ".iconResource (cf. #26887)"
                                     ); // NOI18N
                                 }

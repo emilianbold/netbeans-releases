@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
-
     <change id="lookupAll-lookupResult">
         <api name="lookup"/>
         <summary>Convenience methods added to <code>Lookup</code></summary>
@@ -45,6 +44,55 @@ Microsystems, Inc. All Rights Reserved.
         <issue number="73848"/>
     </change>
 
+    <change id="use-logging" >
+      <api name="util"/>
+      <summary>Do not use ErrorManager for logging</summary>
+      <version major="7" minor="0"/>
+      <date day="15" month="4" year="2006"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="yes" binary="compatible" source="compatible" semantic="incompatible" deprecation="no" deletion="no"/>
+      <description>
+          <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a>
+          is no longer the recommended way to do logging in NetBeans based
+          application. Instead NetBeans now fully support logging two JDK's
+          standard <a href="@JDK@/java/util/logging/Logger.html">Logger</a>.
+          See logging
+          <a href="@TOP@/org/openide/util/doc-files/logging.html">tutorial</a>
+          to learn the best practises for logging in NetBeans.
+          <br/>
+          <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a>
+          is still kept around for annotating exceptions with localized
+          messages and advanced manipulation and its behaviour is fully
+          backward compatible. However modules are adviced to migrate to
+          <a href="@JDK@/java/util/logging/Logger.html">logging</a> whereever
+          possible.
+          <br/>
+          To migrate your modules you can install Jackpot modules from
+          autoupdate (if they are not yet part of your IDE) and apply
+          precreate <a href="http://www.netbeans.org/source/browse/openide/util/Attic/ErrorManagerJackpot.rules">
+          javapot error manager rule</a>.
+          <br/>
+          There is one possible incompatibility from end user point of view.
+          The way to <em>enable logging</em> for certain components when
+          running inside the whole NetBeans container has changed:
+          If there is 
+          <a href="@JDK@/java/util/logging/Logger.html">Logger</a> or
+          <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a>
+          named <q>org.mymodule.MyComponent</q> then the correct way
+          to turn the logging is now to invoke NetBeans with
+          <code>-J-Dorg.mymodule.MyComponent<b>.level</b>=100</code>
+          (where the possible constants are taken form
+          a JDK's definition of <a href="@JDK@/java/util/logging/Level.html">level</a>).
+          There is however a certain benefit in this change, the value
+          of the property (like <q>org.mymodule.MyComponent.level</q>)
+          can be changed during runtime and thus the logging can be
+          enabled or disabled dynamically (after changing the value, it is
+          necessary to call
+          <a href="@JDK@/java/util/logging/LogManager.html">LogManager.readConfiguration()</a>).
+      </description>
+      <class package="org.openide" name="ErrorManager"/>
+      <issue number="56311"/>
+    </change>
     <change id="rp-create-true" >
       <api name="util"/>
       <summary>Ability to create finished RequestProcessor task</summary>

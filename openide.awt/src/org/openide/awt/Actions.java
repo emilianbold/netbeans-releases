@@ -13,7 +13,7 @@
 package org.openide.awt;
 
 import java.util.List;
-import org.openide.ErrorManager;
+import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -181,7 +181,7 @@ public class Actions extends Object {
                         }
                     );
                 } else {
-                    ErrorManager.getDefault().getInstance(Actions.class.getName()).log(
+                    Logger.getLogger(Actions.class.getName()).warning(
                         "Keymap is not observable, behaviour described in bug #39508 can reappear."
                     );
                 }

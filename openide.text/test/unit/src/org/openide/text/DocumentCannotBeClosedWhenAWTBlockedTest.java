@@ -14,6 +14,10 @@
 
 package org.openide.text;
 import java.io.StringWriter;
+import java.util.logging.Handler;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.text.*;
 import javax.swing.text.StyledDocument;
 
@@ -35,6 +39,15 @@ public class DocumentCannotBeClosedWhenAWTBlockedTest extends NbTestCase impleme
     private java.util.Date date = new java.util.Date ();
     private java.util.List/*<java.beans.PropertyChangeListener>*/ propL = new java.util.ArrayList ();
     private java.beans.VetoableChangeListener vetoL;
+
+    static {
+        Logger l = Logger.getLogger("");
+        Handler[] arr = l.getHandlers();
+        for (int i = 0; i < arr.length; i++) {
+            l.removeHandler(arr[i]);
+        }
+        l.addHandler(new ErrManager());
+    }
     
     
     /** lock to use for communication between AWT & main thread */
@@ -46,109 +59,109 @@ public class DocumentCannotBeClosedWhenAWTBlockedTest extends NbTestCase impleme
     }
     
     protected void setUp () throws Exception {
-		System.setProperty("org.openide.util.Lookup", DocumentCannotBeClosedWhenAWTBlockedTest.class.getName() + "$Lkp");
-		
+        System.setProperty("org.openide.util.Lookup", DocumentCannotBeClosedWhenAWTBlockedTest.class.getName() + "$Lkp");
+        
         super.setUp();
-		
-		Lookup l = Lookup.getDefault();
-		if (!(l instanceof Lkp)) {
-			fail("Wrong lookup: " + l);
-		}
-		
-		clearWorkDir();
-		
-        support = new CES (this, org.openide.util.Lookup.EMPTY);
-		
-		ErrManager.messages.setLength(0);
+        
+        Lookup l = Lookup.getDefault();
+        if (!(l instanceof Lkp)) {
+            fail("Wrong lookup: " + l);
+        }
+        
+        clearWorkDir();
+        
+        support = new CES(this, org.openide.util.Lookup.EMPTY);
+        
+        ErrManager.messages.setLength(0);
     }
     
     public void testModifyAndBlockAWTAndTryToClose () throws Exception {
-        StyledDocument doc = support.openDocument ();
-		doc.insertString(0, "Ble", null);
-		
-		assertTrue("Modified", support.isModified());
-			
-		class Block implements Runnable {
-			public synchronized void run () {
-				try {
-					wait();
-				} catch (InterruptedException ex) {
-					ex.printStackTrace();
-				}
-			}
-		}
-		
-		Block b = new Block();
+        StyledDocument doc = support.openDocument();
+        doc.insertString(0, "Ble", null);
+        
+        assertTrue("Modified", support.isModified());
+        
+        class Block implements Runnable {
+            public synchronized void run() {
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        
+        Block b = new Block();
         javax.swing.SwingUtilities.invokeLater(b);
-		
-		boolean success = support.canClose();
-		
-		synchronized (b) { 
-			b.notifyAll();
-		}
-		
-		assertFalse("Support cannot close as we cannot ask the user", success);
-		
-		if (ErrManager.messages.indexOf("InterruptedException") == -1) {
-			fail("InterruptedException exception should be reported: " + ErrManager.messages);
-		}
+        
+        boolean success = support.canClose();
+        
+        synchronized (b) {
+            b.notifyAll();
+        }
+        
+        assertFalse("Support cannot close as we cannot ask the user", success);
+        
+        if (ErrManager.messages.indexOf("InterruptedException") == -1) {
+            fail("InterruptedException exception should be reported: " + ErrManager.messages);
+        }
     }
 
 	
     public void testBlockingAWTForFiveSecIsOk() throws Exception {
-        StyledDocument doc = support.openDocument ();
-		doc.insertString(0, "Ble", null);
-		
-		assertTrue("Modified", support.isModified());
-			
-		class Block implements Runnable {
-			public synchronized void run () {
-				try {
-					wait(5000);
-				} catch (InterruptedException ex) {
-					ex.printStackTrace();
-				}
-			}
-		}
-		
-		Block b = new Block();
+        StyledDocument doc = support.openDocument();
+        doc.insertString(0, "Ble", null);
+        
+        assertTrue("Modified", support.isModified());
+        
+        class Block implements Runnable {
+            public synchronized void run() {
+                try {
+                    wait(5000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        
+        Block b = new Block();
         javax.swing.SwingUtilities.invokeLater(b);
-		
-		boolean success = support.canClose();
-		
-		synchronized (b) { 
-			b.notifyAll();
-		}
-		
-		assertTrue("Ok, we managed to ask the question", success);
-		
-		if (ErrManager.messages.length() > 0) {
-			fail("No messages should be reported: " + ErrManager.messages);
-		}
+        
+        boolean success = support.canClose();
+        
+        synchronized (b) {
+            b.notifyAll();
+        }
+        
+        assertTrue("Ok, we managed to ask the question", success);
+        
+        if (ErrManager.messages.length() > 0) {
+            fail("No messages should be reported: " + ErrManager.messages);
+        }
     }
 
     public void testCallingFromAWTIsOk() throws Exception {
-        StyledDocument doc = support.openDocument ();
-		doc.insertString(0, "Ble", null);
-		
-		assertTrue("Modified", support.isModified());
-			
-		class AWT implements Runnable {
+        StyledDocument doc = support.openDocument();
+        doc.insertString(0, "Ble", null);
+        
+        assertTrue("Modified", support.isModified());
+        
+        class AWT implements Runnable {
             boolean success;
             
-			public synchronized void run () {
-        		success = support.canClose();
-			}
-		}
-		
-		AWT b = new AWT();
+            public synchronized void run() {
+                success = support.canClose();
+            }
+        }
+        
+        AWT b = new AWT();
         javax.swing.SwingUtilities.invokeAndWait(b);
-		
-		assertTrue("Ok, we managed to ask the question", b.success);
-		
-		if (ErrManager.messages.length() > 0) {
-			fail("No messages should be reported: " + ErrManager.messages);
-		}
+        
+        assertTrue("Ok, we managed to ask the question", b.success);
+        
+        if (ErrManager.messages.length() > 0) {
+            fail("No messages should be reported: " + ErrManager.messages);
+        }
     }
     
     //
@@ -272,11 +285,11 @@ public class DocumentCannotBeClosedWhenAWTBlockedTest extends NbTestCase impleme
         }
         
     } // end of DD
-    private static final class ErrManager extends org.openide.ErrorManager {
+    private static final class ErrManager extends Handler {
         static final StringBuffer messages = new StringBuffer();
         static int nOfMessages;
         static final String DELIMITER = ": ";
-        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
+
         /** setup in setUp */
         static java.io.PrintStream log = System.err;
         
@@ -295,11 +308,7 @@ public class DocumentCannotBeClosedWhenAWTBlockedTest extends NbTestCase impleme
             nOfMessages = 0;
         }
         
-        public void log(int severity, String s) {
-		}
-		
-		
-        private void logImpl(int severity, String s) {
+        private void logImpl(String s) {
             synchronized (ErrManager.messages) {
                 nOfMessages++;
                 messages.append('['); log.print ('[');
@@ -310,39 +319,19 @@ public class DocumentCannotBeClosedWhenAWTBlockedTest extends NbTestCase impleme
             }
         }
         
-        public Throwable annotate(Throwable t, int severity,
-                String message, String localizedMessage,
-                Throwable stackTrace, java.util.Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance(String name) {
-            return new ErrManager (name);
-        }
-        
-        public void notify(int severity, Throwable t) {
-            StringWriter w = new StringWriter ();
-            t.printStackTrace (new java.io.PrintWriter (w));
-            logImpl (severity, w.toString ());
+        public void publish(LogRecord record) {
+            logImpl(record.getMessage());
+            if (record.getThrown() != null) {
+                StringWriter w = new StringWriter ();
+                record.getThrown().printStackTrace (new java.io.PrintWriter (w));
+                logImpl (w.toString ());
+            }
         }
 
-		
-		
-		public boolean isNotifiable(int severity) {
-			return true;
-		}
+        public void flush() {
+        }
 
-		/** no logging */
-		public boolean isLoggable(int severity) {
-			return false;
-		}
+        public void close() {
+        }
     } // end of ErrManager
 }

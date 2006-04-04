@@ -59,11 +59,11 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
                 if (renamed) {
                     break;
                 }
-                LayerCacheManager.err.log("cannot rename (#" + i + "): " + cacheFile); // NOI18N
+                LayerCacheManager.err.fine("cannot rename (#" + i + "): " + cacheFile); // NOI18N
                 // try harder
                 System.gc();
                 System.runFinalization();
-                LayerCacheManager.err.log("after GC"); // NOI18N
+                LayerCacheManager.err.fine("after GC"); // NOI18N
             }
             if (!renamed) {
                 // still delete on exit, so next start is ok
@@ -80,7 +80,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
     
     public FileSystem createLoadedFileSystem() throws IOException {
         if (cacheFile.exists()) {
-            LayerCacheManager.err.log("Loading from " + cacheFile);
+            LayerCacheManager.err.fine("Loading from " + cacheFile);
             FileSystem fs = new BinaryFS(cacheFile.getAbsolutePath());
             /* ???
 	    // pre-enumerate interesting resources
@@ -106,7 +106,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
         try {
             sizes = new HashMap<MemFileOrFolder,Integer>(1000);
             int fsSize = computeSize(root);
-            LayerCacheManager.err.log("Writing binary layer cache of length " + (fsSize + BinaryFS.MAGIC.length) + " to " + cacheFile);
+            LayerCacheManager.err.fine("Writing binary layer cache of length " + (fsSize + BinaryFS.MAGIC.length) + " to " + cacheFile);
             os.write(BinaryFS.MAGIC);
             BinaryWriter bw = new BinaryWriter (os, root, fsSize);
             writeFolder(bw, root);

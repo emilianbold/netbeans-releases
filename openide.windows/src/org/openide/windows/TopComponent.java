@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -269,8 +270,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     public int getPersistenceType() {
         //First check for 'PersistenceType' client property for compatibility.
         if (warnedClasses.add(getClass()) && !TopComponent.class.equals(getClass())) {
-            ErrorManager.getDefault().log(
-                ErrorManager.WARNING,
+            Logger.getAnonymousLogger().warning(
                 "Note - " // NOI18N
                  +getClass().getName() + " ought to override getPersistenceType()" // NOI18N
                  +" rather than using the client property or accepting the default."
@@ -481,8 +481,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         Class clazz = getClass();
 
         if (getPersistenceType() != PERSISTENCE_NEVER && warnedTCPIClasses.add(clazz)) {
-            ErrorManager.getDefault().log(
-                ErrorManager.WARNING, "Warning: " + clazz.getName() + " should override preferredID()"  //NOI18N
+            Logger.getAnonymousLogger().warning(
+                clazz.getName() + " should override preferredID()"  //NOI18N
             ); 
         }
 
@@ -700,8 +700,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
 
         // warning if display name contains html tags
         if (BasicHTML.isHTMLString(displayName)) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                "WARNING: Call of " + getClass().getName() + ".setDisplayName(\"" + displayName + "\")" +
+            Logger.getAnonymousLogger().warning(
+                "Call of " + getClass().getName() + ".setDisplayName(\"" + displayName + "\")" +
                 " shouldn't contain any HTML tags. Please use " + getClass().getName() + ".setHtmlDisplayName(String)" +
                 "for such purpose. For details please see http://www.netbeans.org/issues/show_bug.cgi?id=66777.");
         }

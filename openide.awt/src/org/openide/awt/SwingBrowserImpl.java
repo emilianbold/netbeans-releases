@@ -12,7 +12,8 @@
  */
 package org.openide.awt;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -76,6 +77,8 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
     private int historyNavigating = NO_NAVIGATION;
     private String title = null;
     boolean fetchingTitle = false;
+
+    private static Logger LOG = Logger.getLogger(SwingBrowserImpl.class.getName());
 
     SwingBrowserImpl() {
         pcs = new PropertyChangeSupport(this);
@@ -161,7 +164,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
 
             rp.post(this);
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LOG.log(Level.WARNING, null, e);
             pcs.firePropertyChange(PROP_STATUS_MESSAGE, null, statusMessage = "" + e); // NOI18N
         }
     }
@@ -187,7 +190,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
 
             rp.post(this);
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LOG.log(Level.WARNING, null, e);
             pcs.firePropertyChange(PROP_STATUS_MESSAGE, null, statusMessage = "" + e); // NOI18N
         }
     }
@@ -465,7 +468,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
                                 try {
                                     SwingBrowserImpl.this.setURL(e.getURL());
                                 } catch (Exception ex) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                                    LOG.log(Level.WARNING, null, ex);
                                 }
                             }
                         }
@@ -500,7 +503,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
 
             // #53207: pre-read encoding from loaded URL
             String charset = findEncodingFromURL(page.openStream());
-            ErrorManager.getDefault().log(ErrorManager.USER, "Url " + page + " has charset " + charset); // NOI18N
+            LOG.log(Level.FINE, "Url " + page + " has charset " + charset); // NOI18N
 
             if (charset != null) {
                 putClientProperty("charset", charset);

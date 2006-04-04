@@ -16,6 +16,8 @@ package org.netbeans.modules.settings.convertors;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
@@ -42,7 +44,7 @@ final class XMLSettingsSupport {
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     
     /** Logging for events in XML settings system. */
-    static final ErrorManager err = ErrorManager.getDefault().getInstance(XMLSettingsSupport.class.getName()); // NOI18N
+    static final Logger err = Logger.getLogger(XMLSettingsSupport.class.getName()); // NOI18N
     
     /** Store instanceof elements.
      * @param classes everything what class extends or implements
@@ -282,7 +284,7 @@ final class XMLSettingsSupport {
                 getSuperClasses(cs[i], classes);
             }
         } else {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,
+            err.severe(
                 "Error: if you encounter this message, please attach " + //NOI18N
                 "the class name to the issue http://www.netbeans.org/issues/show_bug.cgi?id=16257. " + //NOI18N
                 "Class.getInterfaces() == null for the class: " + clazz); // NOI18N
@@ -715,7 +717,7 @@ final class XMLSettingsSupport {
             
             try {
                 if (header) {
-                    if (err.isLoggable (err.INFORMATIONAL) && source.getSize () < 12000) {
+                    if (err.isLoggable(Level.FINE) && source.getSize () < 12000) {
                         // log the content of the stream 
                         byte[] arr = new byte[(int)source.getSize ()];
                         InputStream temp = source.getInputStream ();
@@ -724,7 +726,7 @@ final class XMLSettingsSupport {
                             throw new IOException ("Could not read " + arr.length + " bytes from " + source + " just " + len); // NOI18N
                         }
                         
-                        err.log ("Parsing:" + new String (arr));
+                        err.fine("Parsing:" + new String (arr));
                         
                         temp.close ();
                         
@@ -824,16 +826,16 @@ final class XMLSettingsSupport {
             Set iofs = new HashSet();   // <String>
 
             if (!expect(is, MODULE_SETTINGS_INTRO)) {
-                err.log("Could not read intro "+source); // NOI18N
+                err.fine("Could not read intro "+source); // NOI18N
                 return null;
             }
             version = readTo(is, '"');
             if (version == null) {
-                err.log("Could not read version "+source); // NOI18N
+                err.fine("Could not read version "+source); // NOI18N
                 return null;
             }
             if (!expect(is, MODULE_SETTINGS_INTRO_END)) {
-                err.log("Could not read stuff after cnb "+source); // NOI18N
+                err.fine("Could not read stuff after cnb "+source); // NOI18N
                 return null;
             }
             // Now we have (module?, instanceof*, (instance | serialdata)).
@@ -845,12 +847,12 @@ final class XMLSettingsSupport {
                 case 'm':
                     // <module />
                     if (!expect(is, MODULE_SETTINGS_MODULE_NAME)) {
-                        err.log("Could not read up to <module name=\" "+source); // NOI18N
+                        err.fine("Could not read up to <module name=\" "+source); // NOI18N
                         return null;
                     }
                     String codeName = readTo(is, '"');
                     if (codeName == null) {
-                        err.log("Could not read module name value "+source); // NOI18N
+                        err.fine("Could not read module name value "+source); // NOI18N
                         return null;
                     }
                     codeName = codeName.intern();
@@ -858,23 +860,23 @@ final class XMLSettingsSupport {
                     c = is.read();
                     if (c == '/') {
                         if (!expect(is, MODULE_SETTINGS_TAG_END)) {
-                            err.log("Could not read up to end of module tag "+source); // NOI18N
+                            err.fine("Could not read up to end of module tag "+source); // NOI18N
                             return null;
                         }
                         break;
                     }
                     else if (c != ' ') {
-                        err.log("Could not space after module name "+source); // NOI18N
+                        err.fine("Could not space after module name "+source); // NOI18N
                         return null;
                     }
                     // <module spec/>
                     if (!expect(is, MODULE_SETTINGS_MODULE_SPEC)) {
-                        err.log("Could not read up to spec=\" "+source); // NOI18N
+                        err.fine("Could not read up to spec=\" "+source); // NOI18N
                         return null;
                     }
                     String mspec = readTo(is, '"');
                     if (mspec == null) {
-                        err.log("Could not read module spec value "+source); // NOI18N
+                        err.fine("Could not read module spec value "+source); // NOI18N
                         return null;
                     }
                     try {
@@ -885,128 +887,128 @@ final class XMLSettingsSupport {
                     c = is.read();
                     if (c == '/') {
                         if (!expect(is, MODULE_SETTINGS_TAG_END)) {
-                            err.log("Could not read up to end of <module name spec/> tag "+source); // NOI18N
+                            err.fine("Could not read up to end of <module name spec/> tag "+source); // NOI18N
                             return null;
                         }
                         break;
                     }
                     else if (c != ' ') {
-                        err.log("Could not read space after module name "+source); // NOI18N
+                        err.fine("Could not read space after module name "+source); // NOI18N
                         return null;
                     }
                     // <module impl/>
                     if (!expect(is, MODULE_SETTINGS_MODULE_IMPL)) {
-                        err.log("Could not read up to impl=\" "+source); // NOI18N
+                        err.fine("Could not read up to impl=\" "+source); // NOI18N
                         return null;
                     }
                     moduleImpl = readTo(is, '"');
                     if (moduleImpl == null) {
-                        err.log("Could not read module impl value "+source); // NOI18N
+                        err.fine("Could not read module impl value "+source); // NOI18N
                         return null;
                     }
                     moduleImpl = moduleImpl.intern();
                     // /> >
                     if (!expect(is, MODULE_SETTINGS_TAG_END)) {
-                        err.log("Could not read up to /> < "+source); // NOI18N
+                        err.fine("Could not read up to /> < "+source); // NOI18N
                         return null;
                     }
                     break;
                 case 'i':
                     // <instanceof> or <instance>
                     if (!expect(is, MODULE_SETTINGS_INSTANCE)) {
-                        err.log("Could not read up to instance "+source); // NOI18N
+                        err.fine("Could not read up to instance "+source); // NOI18N
                         return null;
                     }
                     // Now we need to check which one
                     c = is.read();
                     if (c == 'o') {
                         if (!expect(is, MODULE_SETTINGS_OF)) {
-                            err.log("Could not read up to instance"); // NOI18N
+                            err.fine("Could not read up to instance"); // NOI18N
                             return null;
                         }
                         String iof = readTo(is, '"');
                         if (iof == null) {
-                            err.log("Could not read instanceof value "+source); // NOI18N
+                            err.fine("Could not read instanceof value "+source); // NOI18N
                             return null;
                         }
                         iof = org.openide.util.Utilities.translate(iof).intern();
                         iofs.add (iof);
                         if (is.read() != '/') {
-                            err.log("No / at end of <instanceof> " + iof+" "+source); // NOI18N
+                            err.fine("No / at end of <instanceof> " + iof+" "+source); // NOI18N
                             return null;
                         }
                         if (!expect(is, MODULE_SETTINGS_TAG_END)) {
-                            err.log("Could not read up to next tag after <instanceof> " + iof+" "+source); // NOI18N
+                            err.fine("Could not read up to next tag after <instanceof> " + iof+" "+source); // NOI18N
                             return null;
                         }
                     }
                     else if (c == ' ') {
                         // read class and optional method
                         if (!expect(is, MODULE_SETTINGS_INSTANCE_CLZ)) {
-                            err.log("Could not read up to class=\" "+source); // NOI18N
+                            err.fine("Could not read up to class=\" "+source); // NOI18N
                             return null;
                         }
                         instanceClass = readTo(is, '"');
                         if (instanceClass == null) {
-                            err.log("Could not read instance class value "+source); // NOI18N
+                            err.fine("Could not read instance class value "+source); // NOI18N
                             return null;
                         }
                         instanceClass = org.openide.util.Utilities.translate(instanceClass).intern();
                         c = is.read();
                         if (c == '/') {
                             if (!expect(is, MODULE_SETTINGS_TAG_END)) {
-                                err.log("Could not read up to end of instance tag "+source); // NOI18N
+                                err.fine("Could not read up to end of instance tag "+source); // NOI18N
                                 return null;
                             }
                             break;
                         }
                         else if (c != ' ') {
-                            err.log("Could not space after instance class "+source); // NOI18N
+                            err.fine("Could not space after instance class "+source); // NOI18N
                             return null;
                         }
                         // <instance method/>
                         if (!expect(is, MODULE_SETTINGS_INSTANCE_MTD)) {
-                            err.log("Could not read up to method=\" "+source); // NOI18N
+                            err.fine("Could not read up to method=\" "+source); // NOI18N
                             return null;
                         }
                         instanceMethod = readTo(is, '"');
                         if (instanceMethod == null) {
-                            err.log("Could not read method value "+source); // NOI18N
+                            err.fine("Could not read method value "+source); // NOI18N
                             return null;
                         }
                         instanceMethod = instanceMethod.intern();
                         c = is.read();
                         if (c == '/') {
                             if (!expect(is, MODULE_SETTINGS_TAG_END)) {
-                                err.log("Could not read up to end of instance tag "+source); // NOI18N
+                                err.fine("Could not read up to end of instance tag "+source); // NOI18N
                                 return null;
                             }
                             break;
                         }
-                        err.log("Strange stuff after method attribute "+source); // NOI18N
+                        err.fine("Strange stuff after method attribute "+source); // NOI18N
                         return null;
                     }
                     else {
-                        err.log("Could not read after to instance "+source); // NOI18N
+                        err.fine("Could not read after to instance "+source); // NOI18N
                         return null;
                     }
                     break;
                 case 's':
                     // <serialdata class
                     if (!expect(is, MODULE_SETTINGS_SERIAL)) {
-                        err.log("Could not read up to <serialdata class=\" "+source); // NOI18N
+                        err.fine("Could not read up to <serialdata class=\" "+source); // NOI18N
                         return null;
                     }
                     instanceClass = readTo(is, '"');
                     if (instanceClass == null) {
-                        err.log("Could not read serialdata class value "+source); // NOI18N
+                        err.fine("Could not read serialdata class value "+source); // NOI18N
                         return null;
                     }
                     instanceClass = org.openide.util.Utilities.translate(instanceClass).intern();
                     // here we are complete for header, otherwise we would need to go through serialdata stream
                     c = is.read();
                     if (c != '>') {
-                        err.log("Could not read up to end of serialdata tag "+source); // NOI18N
+                        err.fine("Could not read up to end of serialdata tag "+source); // NOI18N
                         return null;
                     }
                     break PARSE;
@@ -1014,12 +1016,12 @@ final class XMLSettingsSupport {
                     // </settings
                     // XXX do not read further is neader is set
                     if (!expect(is, MODULE_SETTINGS_END)) {
-                        err.log("Could not read up to end of settings tag "+source); // NOI18N
+                        err.fine("Could not read up to end of settings tag "+source); // NOI18N
                         return null;
                     }
                     break PARSE;
                 default:
-                    err.log("Strange stuff after <" + (char)c+" "+source); // NOI18N
+                    err.fine("Strange stuff after <" + (char)c+" "+source); // NOI18N
                     return null;
                 }
             }

@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.Action;
 import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
@@ -161,7 +162,7 @@ final class BrokenDataShadow extends MultiDataObject {
             }
         } catch (FileStateInvalidException e) {
             // something wrong, exit
-            ErrorManager.getDefault().log(ErrorManager.WARNING, e.toString());
+            DataObject.LOG.log(Level.WARNING, e.toString(), e);
             return;
         }
         

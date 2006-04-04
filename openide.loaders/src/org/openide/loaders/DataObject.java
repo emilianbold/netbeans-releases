@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -108,6 +109,10 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     
     /** Lock for copy/move/rename/etc. operations */
     private static Object synchObject = new Object ();
+
+
+    /** default logger for whole package */
+    static final Logger LOG = Logger.getLogger("org.openide.loaders"); // NOI18N
 
     /** Create new data object.
      * <p>
@@ -1105,7 +1110,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
                 java.util.HashSet single = new java.util.HashSet();
                 single.add(f);
                 if (!DataObjectPool.getPOOL().revalidate(single).isEmpty()) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "It was not possible to invalidate data object: " + this); // NOI18N
+                    LOG.info("It was not possible to invalidate data object: " + this); // NOI18N
                 } else {
                     // we need to refresh parent folder if it is there 
                     // this should be covered by DataLoaderPoolTest.testChangeIsAlsoReflectedInNodes

@@ -21,6 +21,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -329,13 +331,13 @@ public class FolderLookup extends FolderInstance {
 
             // changes the its content
             content.setPairs (items);
-            if (fl.err().isLoggable(ErrorManager.INFORMATIONAL)) fl.err ().log ("Changed pairs: " + items); // NOI18N
+            if (fl.err().isLoggable(Level.FINE)) fl.err ().fine("Changed pairs: " + items); // NOI18N
 
             lookups.set(0, pairs);
 
             Lookup[] arr = (Lookup[])lookups.toArray (new Lookup[lookups.size ()]);
             setLookups (arr);
-            if (fl.err().isLoggable(ErrorManager.INFORMATIONAL)) fl.err ().log ("Changed lookups: " + lookups); // NOI18N
+            if (fl.err().isLoggable(Level.FINE)) fl.err ().fine("Changed lookups: " + lookups); // NOI18N
         }
         
         /** Waits before the processing of changes is finished. */
@@ -361,12 +363,12 @@ public class FolderLookup extends FolderInstance {
                                 // folder recognizer thread is waiting for more then
                                 // 10s in waitFinished, which signals that there 
                                 // is a very high possibility of a deadlock
-                                fl.err().log(ErrorManager.INFORMATIONAL, "Preventing deadlock #65543: Do not call FolderLookup from inside DataObject operations!"); // NOI18N
+                                fl.err().fine("Preventing deadlock #65543: Do not call FolderLookup from inside DataObject operations!"); // NOI18N
                                 return;
                             }
                         }
                     } catch (InterruptedException ex) {
-                        fl.err().notify(ex);
+                        fl.err().log(Level.WARNING, null, ex);
                     }
                 }
             }
@@ -390,9 +392,7 @@ public class FolderLookup extends FolderInstance {
         static final ThreadLocal DANGEROUS = new ThreadLocal ();
 
         /** error manager for ICItem */
-        private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ICItem.class.getName());
-        /** is loggable? */
-        private static final boolean WILL_LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL); 
+        private static final Logger ERR = Logger.getLogger(ICItem.class.getName());
 
         /** when deserialized only primary file is stored */
         private FileObject fo;
@@ -412,7 +412,7 @@ public class FolderLookup extends FolderInstance {
             this.rootName = rootName;
             this.fo = obj.getPrimaryFile();
             
-            if (WILL_LOG) ERR.log("New ICItem: " + obj); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("New ICItem: " + obj); // NOI18N
         }
         
         /** Initializes the item
@@ -481,20 +481,20 @@ public class FolderLookup extends FolderInstance {
         protected boolean instanceOf (Class clazz) {
             init ();
             
-            if (WILL_LOG) ERR.log("instanceOf: " + clazz.getName() + " obj: " + obj); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("instanceOf: " + clazz.getName() + " obj: " + obj); // NOI18N
             
             if (ic instanceof InstanceCookie.Of) {
                 // special handling for special cookies
                 InstanceCookie.Of of = (InstanceCookie.Of)ic;
                 boolean res = of.instanceOf (clazz);
-                if (WILL_LOG) ERR.log("  of: " + res); // NOI18N
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("  of: " + res); // NOI18N
                 return res;
             }
 
             // handling of normal instance cookies
             try {
                 boolean res = clazz.isAssignableFrom (ic.instanceClass ());
-                if (WILL_LOG) ERR.log("  plain: " + res); // NOI18N
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("  plain: " + res); // NOI18N
                 return res;
             } catch (ClassNotFoundException ex) {
                 exception(ex, fo);
@@ -512,7 +512,7 @@ public class FolderLookup extends FolderInstance {
             
             try {
                 Object obj = ic.instanceCreate();
-                if (WILL_LOG) ERR.log("  getInstance: " + obj + " for " + this.obj); // NOI18N
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("  getInstance: " + obj + " for " + this.obj); // NOI18N
                 ref = new WeakReference (obj);
                 return obj;
             } catch (ClassNotFoundException ex) {

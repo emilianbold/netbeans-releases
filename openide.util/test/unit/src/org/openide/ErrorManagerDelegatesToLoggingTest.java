@@ -1,0 +1,146 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License" You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.openide;
+
+import java.io.IOException;
+import java.io.StringBufferInputStream;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import junit.framework.*;
+import org.netbeans.junit.*;
+
+/** Test for general ErrorManager functionality.
+ *
+ * @author Jaroslav Tulach
+ */
+public class ErrorManagerDelegatesToLoggingTest extends NbTestCase {
+    
+    public ErrorManagerDelegatesToLoggingTest(java.lang.String testName) {
+        super(testName);
+    }
+    
+    protected void setUp () throws IOException {
+        assertNull ("No ErrorManager in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrorManager.class));
+        
+        
+        String config = 
+            "handlers=" + MyHandler.class.getName() + "\n" +
+            ".level=50\n";
+        LogManager.getLogManager().readConfiguration(new StringBufferInputStream(config));
+
+        MyHandler.messages.setLength(0);
+    }
+    
+    /** Test of getDefault method, of class org.openide.ErrorManager. */
+    public void testGetDefault() {
+        assertNotNull("There has to be a manager", ErrorManager.getDefault ());
+    }
+    
+    /** Test of notify method, of class org.openide.ErrorManager. */
+    public void testNotify() {
+        Throwable t = new Throwable ();
+        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, t);
+        MyHandler.assertNotify (ErrorManager.INFORMATIONAL, t);
+        t = new Throwable ();
+        ErrorManager.getDefault ().notify (t);
+        MyHandler.assertNotify (ErrorManager.EXCEPTION, t);
+    }
+    
+    /** Test of log method, of class org.openide.ErrorManager. */
+    public void testLog() {
+        ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "A text");
+        MyHandler.assertLog (ErrorManager.INFORMATIONAL, "A text");
+        ErrorManager.getDefault ().log ("Another text");
+        MyHandler.assertLog (ErrorManager.INFORMATIONAL, "Another text");
+    }
+    
+    /** Test of isLoggable method, of class org.openide.ErrorManager. */
+    public void testIsLoggable() {
+        ErrorManager.getDefault ().isLoggable(ErrorManager.INFORMATIONAL);
+        ErrorManager.getDefault ().isLoggable(ErrorManager.INFORMATIONAL + 1);
+    }
+    
+    /** Test of annotate method, of class org.openide.ErrorManager. */
+    public void testReturnValues () {
+        Throwable t = new Throwable ();
+        Throwable value = ErrorManager.getDefault ().annotate(t, ErrorManager.INFORMATIONAL, null, null, null, null);
+        assertEquals ("Annotate must return the same exception", t, value);
+        
+        value = ErrorManager.getDefault ().copyAnnotation (t, new Throwable ());
+        assertEquals ("copyAnnotation must return the same exception", t, value);
+        
+        value = ErrorManager.getDefault ().attachAnnotations(t, new ErrorManager.Annotation[0]);
+        assertEquals ("attachAnnotations must return the same exception", t, value);
+        
+    }
+    
+    //
+    // Manager to delegate to
+    //
+    public static final class MyHandler extends Handler {
+        public static final StringBuffer messages = new StringBuffer ();
+        
+        private String prefix;
+        
+        private static int lastSeverity;
+        private static Throwable lastThrowable;
+        private static String lastText;
+
+        public static void assertNotify (int sev, Throwable t) {
+            assertEquals ("Severity is same", sev, lastSeverity);
+            assertSame ("Throwable is the same", t, lastThrowable);
+            lastThrowable = null;
+            lastSeverity = -1;
+        }
+        
+        public static void assertLog (int sev, String t) {
+            assertEquals ("Severity is same", sev, lastSeverity);
+            assertEquals ("Text is the same", t, lastText);
+            lastText = null;
+            lastSeverity = -1;
+        }
+
+        public void publish(LogRecord record) {
+            messages.append(record.getMessage());
+            
+            lastText = record.getMessage();
+            lastThrowable = record.getThrown();
+            if (Level.WARNING == record.getLevel()) {
+                lastSeverity = ErrorManager.WARNING;
+            }
+            if (Level.INFO == record.getLevel()) {
+                lastSeverity = ErrorManager.INFORMATIONAL;
+            }
+            if (Level.CONFIG == record.getLevel()) {
+                lastSeverity = ErrorManager.INFORMATIONAL;
+            }
+            if (Level.SEVERE == record.getLevel()) {
+                lastSeverity = ErrorManager.EXCEPTION;
+            }
+            if (Level.FINE == record.getLevel()) {
+                lastSeverity = ErrorManager.INFORMATIONAL;
+            }
+        }
+
+        public void flush() {
+        }
+
+        public void close() throws SecurityException {
+        }
+        
+    } 
+    
+}

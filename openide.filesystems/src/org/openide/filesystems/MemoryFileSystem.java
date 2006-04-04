@@ -13,6 +13,8 @@
 package org.openide.filesystems;
 
 import java.lang.ref.Reference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.AbstractFileSystem.*;
 
 import java.beans.*;
@@ -28,9 +30,7 @@ import org.openide.ErrorManager;
  * @author Jaroslav Tulach
  */
 final class MemoryFileSystem extends AbstractFileSystem implements Info, Change, AbstractFileSystem.List, Attr {
-    private static final ErrorManager ERR = ErrorManager.getDefault().
-            getInstance(MemoryFileSystem.class.getName());
-    private static final boolean LOGGABLE = ERR.isLoggable(ErrorManager.INFORMATIONAL); 
+    private static final Logger ERR = Logger.getLogger(MemoryFileSystem.class.getName());
     
     /** time when the filesystem was created. It is supposed to be the default
      * time of modification for all resources that has not been modified yet
@@ -117,7 +117,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
             }   
         }
 
-	if (LOGGABLE && expectedResult != null && retval != expectedResult.booleanValue()) {
+	if (ERR.isLoggable(Level.FINE) && expectedResult != null && retval != expectedResult.booleanValue()) {
 	    logMessage("entry: " + x +  " isValidReference.fo: " + ((fo == null) ? "null" : //NOI18N
 		(fo.isValid() ? "valid" : "invalid")));//NOI18N
 	}
@@ -293,7 +293,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     }
 
     private Map initEntry() {
-	return Collections.synchronizedMap((!LOGGABLE) ? new Hashtable() : new Hashtable() {
+	return Collections.synchronizedMap(!ERR.isLoggable(Level.FINE) ? new Hashtable() : new Hashtable() {
 	    public Object get(Object key) {
 		Object retval = super.get(key);
 		logMessage("called: GET" + " key: "+key + " result: " + retval);//NOI18N    		
@@ -337,19 +337,17 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     
     
     private static void logMessage(final String message) {
-	if (LOGGABLE) {
-	    StringBuffer sb = new StringBuffer();
-	    sb.append(" -> ").append(message);
-	    
-	    //ucomment if necessary
-	    /*ByteArrayOutputStream bos = new ByteArrayOutputStream();
-	    PrintWriter pw = new PrintWriter(bos);
-	    new Exception().printStackTrace(pw);
-	    pw.close();
-	    sb.append(bos.toString());
-	     */
-	    ERR.log(ErrorManager.INFORMATIONAL,sb.toString());
-	}
+        StringBuffer sb = new StringBuffer();
+        sb.append(" -> ").append(message);
+
+        //ucomment if necessary
+        /*ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintWriter pw = new PrintWriter(bos);
+        new Exception().printStackTrace(pw);
+        pw.close();
+        sb.append(bos.toString());
+         */
+        ERR.fine(sb.toString());
     }    
     
 }

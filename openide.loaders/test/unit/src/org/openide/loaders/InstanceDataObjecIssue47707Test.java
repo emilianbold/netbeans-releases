@@ -119,7 +119,10 @@ public class InstanceDataObjecIssue47707Test extends NbTestCase {
         throws java.io.IOException, ClassNotFoundException {
             return this;
         }
-        
+
+        public String toString() {
+            return getClass().getName();
+        }
     } // end LkpForDO
     
 }

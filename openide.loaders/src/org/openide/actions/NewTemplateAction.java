@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
@@ -534,17 +535,17 @@ public class NewTemplateAction extends NodeAction {
                 nodesInContext = getNodesFromLookup (actionContext);
             }
             if ((nodesInContext == null) || (nodesInContext.length != 1)) {
-                ErrorManager.getDefault ().log (ErrorManager.WARNING, "Wrong count of nodes in context lookup."); //NOI18N
+                Logger.getAnonymousLogger().warning("Wrong count of nodes in context lookup."); //NOI18N
                 return false;
             }
             if ((nodes == null) || (nodes.length != 1)) {
-                ErrorManager.getDefault ().log (ErrorManager.WARNING, "Wrong count of selected nodes in popup menu."); //NOI18N
+                Logger.getAnonymousLogger().warning("Wrong count of selected nodes in popup menu."); //NOI18N
                 return false;
             }
             Node n = nodes[0];
             DataObject obj = (DataObject)n.getCookie (DataObject.class);
             if (obj == null || !obj.isTemplate ()) {
-                ErrorManager.getDefault ().log (ErrorManager.WARNING, "Selected node in popup menu is not acceptable."); //NOI18N
+                Logger.getAnonymousLogger().warning("Selected node in popup menu is not acceptable."); //NOI18N
                 // do not accept
                 return false;
             }

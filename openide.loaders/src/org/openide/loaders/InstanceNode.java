@@ -279,7 +279,7 @@ final class InstanceNode extends DataNode implements Runnable {
             // #31227 - some action does not implement its name properly.
             // Throw exception with the name of the class.
             if (name == null) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                DataObject.LOG.warning(
                     "Please attach following information to the issue " + // NOI18N
                     "<http://www.netbeans.org/issues/show_bug.cgi?id=31227>: " + // NOI18N
                     "action " + className + " does not implement SystemAction.getName() or Action.getValue(NAME) properly. It returns null!"); // NOI18N

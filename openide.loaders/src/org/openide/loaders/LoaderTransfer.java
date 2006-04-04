@@ -19,6 +19,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
@@ -142,8 +143,8 @@ public abstract class LoaderTransfer {
                     // Logging this exception as informative is too confusing.
                     // There is usually several exceptions logged for one clipboard object
                     // and users file it repeatedly as bug. Just log some explanation message instead.
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
-                        "INFORMATIONAL: Object in clipboard refers to a non existing file. "+ ioe.toString()); //NOI18N
+                    DataObject.LOG.fine(
+                        "Object in clipboard refers to a non existing file. "+ ioe.toString()); //NOI18N
                 } catch (UnsupportedFlavorException ufe) {
                     maybeReportException (ufe);
                 }

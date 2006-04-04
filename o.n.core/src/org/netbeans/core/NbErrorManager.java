@@ -13,6 +13,7 @@
 
 package org.netbeans.core;
 
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -33,101 +34,60 @@ import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
-import org.netbeans.core.startup.TopLogging;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXParseException;
 
-/** This is the implementation of the famous exception manager.
+/** Wraps errormanager with logger.
 *
 * @author Jaroslav Tulach, Jesse Glick
 */
 public final class NbErrorManager extends ErrorManager {
+    static {
+        System.setProperty("sun.awt.exception.handler", "org.netbeans.core.NbErrorManager$AWTHandler"); // NOI18N
+    }
+
+    /** logger to delegate to */
+    private Logger logger;
+    /** mapping of Throwables to errors */
+    private static Map map = new HashMap();
 
     public NbErrorManager() {
-        this(null, defaultSeverity(), null);
+        this("");
+    }
+
+    private NbErrorManager(String pfx) {
+        this(Logger.getLogger(pfx));
     }
     
     /**
      * Construct for testing.
      * @see "#18141"
      */
-    NbErrorManager(PrintStream pw) {
-        this(null, defaultSeverity(), pw);
+    NbErrorManager(Logger l) {
+        this.logger = l;
     }
     
-    private static int defaultSeverity() {
-        String dsev = System.getProperty("ErrorManager.minimum");
-        // use e.g. 17 to avoid logging WARNING messages.
-        if (dsev != null) {
-            try {
-                return Integer.parseInt(dsev);
-            } catch (NumberFormatException nfe) {
-                nfe.printStackTrace();
-            }
+    private static Level mapSeverity (int severity, boolean forException) {
+        Level sev = Level.SEVERE;
+
+        if (severity >= ERROR) {
+            sev = Level.SEVERE;
+        } else if (severity >= EXCEPTION) {
+            sev = Level.SEVERE;
+        } else if (severity >= USER) {
+            sev = Level.INFO;
+        } else if (severity >= WARNING) {
+            sev = Level.WARNING;
+        } else if (severity >= INFORMATIONAL) {
+            sev = forException ? Level.INFO: Level.FINE;
         }
-        // I.e. 2: avoid logging INFORMATIONAL messages.
-        return ErrorManager.INFORMATIONAL + 1;
-    }
-    
-    private NbErrorManager(String pfx, int sev, PrintStream pw) {
-        prefix = pfx;
-        minLogSeverity = sev;
-        logWriter = pw;
-        synchronized (uniquifiedIds) {
-            Integer i = (Integer)uniquifiedIds.get(pfx);
-            if (i == null) {
-                uniquifier = 1;
-            } else {
-                uniquifier = i.intValue() + 1;
-            }
-            uniquifiedIds.put(pfx, new Integer(uniquifier));
-        }
-        //System.err.println("NbErrorManager[" + pfx + " #" + uniquifier + "]: minLogSeverity=" + sev);
+        return sev;
     }
 
-    /** maps Throwables to java.util.List (Ann) */
-    private static final Map map = new WeakHashMap (11);
-    
-    /** message to print date to */
-    private static final MessageFormat EXC_HEADER = new MessageFormat(
-        "{0}*********** Exception occurred ************ at {1,time,short} on {1,date,medium}", // NOI18N
-        Locale.ENGLISH
-    );
-
-    /** The writer to the log file*/
-    private PrintStream logWriter;
-    
-    /** Minimum value of severity to write message to the log file*/
-    private final int minLogSeverity;
-
-    /** Prefix preprended to customized loggers, if any. */
-    private final String prefix;
-    
-    // Make sure two distinct EM impls log differently even with the same name.
-    private final int uniquifier; // 0 for root EM (prefix == null), else >= 1
-    private static final Map uniquifiedIds = new HashMap(20); // Map<String,Integer>
-    
-    static {
-        System.setProperty("sun.awt.exception.handler", "org.netbeans.core.NbErrorManager$AWTHandler"); // NOI18N
-    }
-    
-    /** Initializes the log stream.
-     */
-    private PrintStream getLogWriter () {
-        synchronized (this) {
-            if (logWriter != null) return logWriter;
-            // to prevent further initializations during TopLogging.getLogOutputStream method
-            logWriter = System.err;
-        }
-        
-        PrintStream pw = TopLogging.getLogOutputStream();
-        
-        synchronized (this) {
-            logWriter = pw;
-            return logWriter;
-        }
-    }
 
     public synchronized Throwable annotate (
         Throwable t,
@@ -178,7 +138,7 @@ public final class NbErrorManager extends ErrorManager {
      * @see "#24056"
      */
     public boolean isNotifiable(int severity) {
-        return isLoggable(severity + 1);
+        return logger.isLoggable(mapSeverity(severity, true));
     }
 
     /** Notifies all the exceptions associated with
@@ -218,14 +178,32 @@ public final class NbErrorManager extends ErrorManager {
             }
         }
         if (wantStackTrace) {
-            PrintStream log = getLogWriter();
-            if (prefix != null)
-                log.print ("[" + prefix + "] "); // NOI18N        
-            String level = ex.getSeverity() == INFORMATIONAL ? "INFORMATIONAL " : "";// NOI18N
-            
-            
-            log.println (EXC_HEADER.format (new Object[] { level, ex.getDate() }));
-            ex.printStackTrace(log);
+            String s = ex.getSeverity() == ErrorManager.INFORMATIONAL ? "INFORMATIONAL" : ""; // NOI18N
+            Level level = mapSeverity(ex.getSeverity(), true);
+            LogRecord rec = new LogRecord(level, "MSG_ExceptionHeader"); // NOI18N
+            rec.setResourceBundle(NbBundle.getBundle(NbErrorManager.class));
+            rec.setMillis(ex.getDate().getTime());
+            rec.setParameters(new Object[] { s, ex.getDate() });
+            try {
+                if (!enterLog()) {
+                    logger.log(rec);
+                }
+            } finally {
+                exitLog();
+            }
+
+            StringWriter annotate = new StringWriter();
+            PrintWriter pw = new PrintWriter(annotate);
+            ex.printStackTrace(pw);
+            pw.close();
+
+            try {
+                if (!enterLog()) {
+                    logger.log(level, annotate.toString());
+                }
+            } finally {
+                exitLog();
+            }
         }
 
         if (ex.getSeverity () > INFORMATIONAL) {
@@ -243,31 +221,12 @@ public final class NbErrorManager extends ErrorManager {
     }
 
     public void log(int severity, String s) {
-        if (isLoggable (severity)) {
-            //System.err.println(toString() + " logging '" + s + "' at " + severity);
-            PrintStream log = getLogWriter ();
-            
-            if (prefix != null) {
-                boolean showUniquifier;
-                // Print a unique EM sequence # if there is more than one
-                // with this name. Shortcut: if the # > 1, clearly there are.
-                if (uniquifier > 1) {
-                    showUniquifier = true;
-                } else if (uniquifier == 1) {
-                    synchronized (uniquifiedIds) {
-                        int count = ((Integer)uniquifiedIds.get(prefix)).intValue();
-                        showUniquifier = count > 1;
-                    }
-                } else {
-                    throw new IllegalStateException("prefix != null yet uniquifier == 0");
-                }
-                if (showUniquifier) {
-                    log.print ("[" + prefix + " #" + uniquifier + "] "); // NOI18N
-                } else {
-                    log.print ("[" + prefix + "] "); // NOI18N
-                }
+        try {
+            if (!enterLog()) {
+                logger.log(mapSeverity(severity, false), s);
             }
-            log.println(s);
+        } finally {
+            exitLog();
         }
     }
     
@@ -280,7 +239,7 @@ public final class NbErrorManager extends ErrorManager {
      *    discard the message
      */
     public boolean isLoggable (int severity) {
-        return severity >= minLogSeverity;
+        return logger.isLoggable(mapSeverity(severity, false));
     }
     
     
@@ -289,29 +248,12 @@ public final class NbErrorManager extends ErrorManager {
      * a hierarchy.
      */
     public final ErrorManager getInstance(String name) {
-        String pfx = (prefix == null) ? name : prefix + '.' + name;
-        int sev = minLogSeverity;
-        String prop = pfx;
-        while (prop != null) {
-            String value = System.getProperty (prop);
-            //System.err.println ("Trying; prop=" + prop + " value=" + value);
-            if (value != null) {
-                try {
-                    sev = Integer.parseInt (value);                    
-                } catch (NumberFormatException nfe) {
-                    notify (WARNING, nfe);
-                }
-                break;
-            } else {
-                int idx = prop.lastIndexOf ('.');
-                if (idx == -1)
-                    prop = null;
-                else
-                    prop = prop.substring (0, idx);
-            }
+        String pfx = logger.getName();
+        if (pfx.length() > 0 && !pfx.endsWith(".")) {
+            pfx += ".";
         }
-        //System.err.println ("getInstance: prefix=" + prefix + " mls=" + minLogSeverity + " name=" + name + " prefix2=" + newEM.prefix + " mls2=" + newEM.minLogSeverity);
-        return new NbErrorManager(pfx, sev, logWriter);
+        pfx += name;
+        return new NbErrorManager(pfx);
     }    
     
     /** Method (or field) names in various exception classes which give
@@ -462,9 +404,23 @@ public final class NbErrorManager extends ErrorManager {
     }
     
     public String toString() {
-        return super.toString() + "<" + prefix + "," + minLogSeverity + ">"; // NOI18N
+        return super.toString() + "<" + logger + ">"; // NOI18N
     }
 
+    private static volatile Thread lastThread;
+    private static boolean enterLog() {
+        if (lastThread == Thread.currentThread()) {
+            new Exception("using error manager from inside a logger").printStackTrace(); // NOI18N
+            return true;
+        }
+        lastThread = Thread.currentThread();
+        return false;
+    }
+
+    private static void exitLog() {
+        lastThread = null;
+    }
+    
     /** Implementation of annotation interface.
     */
     private static final class Ann extends Object
@@ -634,13 +590,9 @@ public final class NbErrorManager extends ErrorManager {
             return d;
         }
 
-        /** Prints stack trace of all annotations and if
-         * there is no annotation trace then of the exception
-         */
         void printStackTrace (PrintStream ps) {
-            printStackTrace(new PrintWriter(ps, true));
+            printStackTrace(new PrintWriter(new OutputStreamWriter(ps)));
         }
-        
         /** Prints stack trace of all annotations and if
          * there is no annotation trace then of the exception
          */

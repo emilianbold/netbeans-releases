@@ -13,6 +13,7 @@
 
 package org.netbeans.core.windows.persistence;
 
+import java.util.logging.Level;
 import org.netbeans.core.windows.Debug;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -268,7 +269,7 @@ class TCRefParser {
             if (version != null) {
                 internalConfig.specVersion = new SpecificationVersion(version);
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.TCRefParser.handleTCRef]" // NOI18N
                 + " Warning: Missing attribute \"version\" of element \"tc-ref\"."); // NOI18N
                 internalConfig.specVersion = new SpecificationVersion("2.0"); // NOI18N
@@ -280,7 +281,7 @@ class TCRefParser {
                 if (tc_id != null) {
                     //XXX handle old format
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.TCRefParser.handleTCRef]" // NOI18N
                     + " Warning: Missing attribute \"id\" of element \"tc-ref\"."); // NOI18N
                 }
@@ -330,14 +331,14 @@ class TCRefParser {
             if (tc_id != null) {
                 tcRefConfig.tc_id = tc_id;
                 if (!tc_id.equals(TCRefParser.this.getName())) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.TCRefParser.handleTcId]" // NOI18N
                     + " Error: Value of attribute \"id\" of element \"tc-id\"" // NOI18N
                     + " and configuration file name must be the same."); // NOI18N
                     throw new SAXException("Invalid attribute value"); // NOI18N
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.TCRefParser.handleTcId]" // NOI18N
                 + " Error: Missing required attribute \"id\" of element \"tc-id\"."); // NOI18N
                 throw new SAXException("Missing required attribute"); // NOI18N
@@ -352,14 +353,14 @@ class TCRefParser {
                 } else if ("false".equals(opened)) { // NOI18N
                     tcRefConfig.opened = false;
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.TCRefParser.handleState]" // NOI18N
                     + " Warning: Invalid value of attribute \"opened\"" // NOI18N
                     + " of element \"state\"."); // NOI18N
                     tcRefConfig.opened = false;
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.TCRefParser.handleState]" // NOI18N
                 + " Warning: Missing required attribute \"opened\"" // NOI18N
                 + " of element \"state\"."); // NOI18N
@@ -372,7 +373,7 @@ class TCRefParser {
             if (name != null) {
                 tcRefConfig.previousMode = name;
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.TCRefParser.handlePreviousMode]" // NOI18N
                 + " Warning: Missing required attribute \"name\"" // NOI18N
                 + " of element \"previousMode\"."); // NOI18N

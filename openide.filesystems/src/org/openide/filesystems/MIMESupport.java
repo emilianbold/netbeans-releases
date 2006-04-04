@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -50,7 +51,7 @@ final class MIMESupport extends Object {
     private static Object lock = new Object();
     
     /** for logging and test interaction */
-    private static ErrorManager ERR = ErrorManager.getDefault().getInstance(MIMESupport.class.getName());
+    private static Logger ERR = Logger.getLogger(MIMESupport.class.getName());
 
     private MIMESupport() {
     }
@@ -135,7 +136,7 @@ final class MIMESupport extends Object {
                     creators = (Set)resolvers;
                     if (creators.contains (Thread.currentThread())) {
                         // prevent stack overflow
-                        ERR.log("Stack Overflow prevention. Returning previousResolvers: " + previousResolvers);
+                        ERR.fine("Stack Overflow prevention. Returning previousResolvers: " + previousResolvers);
                         Object toRet = previousResolvers;
                         if (!(toRet instanceof MIMEResolver[])) {
                             toRet = new MIMEResolver[0];
@@ -153,7 +154,7 @@ final class MIMESupport extends Object {
                         new LookupListener() {
                             public void resultChanged(LookupEvent evt) {
                                 synchronized (CachedFileObject.class) {
-                                    ERR.log("Clearing cache"); // NOI18N
+                                    ERR.fine("Clearing cache"); // NOI18N
                                     Object prev = resolvers;
                                     if (prev instanceof MIMEResolver[]) {
                                         previousResolvers = (MIMEResolver[]) prev;
@@ -171,20 +172,20 @@ final class MIMESupport extends Object {
                 creators.add(Thread.currentThread());
             }
 
-            ERR.log("Computing resolvers"); // NOI18N
+            ERR.fine("Computing resolvers"); // NOI18N
             
             MIMEResolver[] toRet = (MIMEResolver[])result.allInstances().toArray(new MIMEResolver[0]);
 
-            ERR.log("Resolvers computed"); // NOI18N
+            ERR.fine("Resolvers computed"); // NOI18N
 
             synchronized (CachedFileObject.class) {
                 if (resolvers == creators) {
                     // ok, we computed the value and nobody cleared it till now
                     resolvers = toRet;
                     previousResolvers = null;
-                    ERR.log("Resolvers assigned"); // NOI18N
+                    ERR.fine("Resolvers assigned"); // NOI18N
                 } else {
-                    ERR.log("Somebody else computes resolvers: " + resolvers); // NOI18N
+                    ERR.fine("Somebody else computes resolvers: " + resolvers); // NOI18N
                 }
 
 

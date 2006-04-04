@@ -18,6 +18,8 @@
 
 package org.netbeans.core.output2;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.windows.OutputListener;
 import org.openide.util.Mutex;
@@ -166,9 +168,9 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             OutWriter.lowDiskSpace = true;
             //Sets the error flag and releases the storage
             writer.dispose();
-            ErrorManager.getDefault().log (ErrorManager.INFORMATIONAL, 
-                "OOME while reading output.  Cleaning up."); //NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, error);
+            Logger.getAnonymousLogger().log(Level.WARNING,
+                "OOME while reading output.  Cleaning up.", //NOI18N
+            error);
         }
     }
     

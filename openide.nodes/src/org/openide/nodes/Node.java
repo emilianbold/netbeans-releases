@@ -26,10 +26,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.event.EventListenerList;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -108,12 +109,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      */
     public static final String PROP_LEAF = "leaf"; // NOI18N
 
-    /** Error manager used for logging and its precomputed doLog and doWarn
-     * booleans to speedup the check whether to log or not. See #35039
+    /** Error manager used for logging and its precomputed err.isLoggable(Level.FINE) 
      */
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.nodes.Node"); //NOI18N;
-    private static final boolean doLog = err.isLoggable(ErrorManager.INFORMATIONAL);
-    private static final boolean doWarn = err.isLoggable(ErrorManager.WARNING);
+    private static final Logger err = Logger.getLogger("org.openide.nodes.Node"); //NOI18N;
 
     /** cache of all created lookups */
     private static WeakHashMap lookups = new WeakHashMap(37);
@@ -803,15 +801,15 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     public final void addPropertyChangeListener(PropertyChangeListener l) {
         int count = -1;
 
-        if (doLog) {
+        if (err.isLoggable(Level.FINE)) {
             count = getPropertyChangeListenersCount();
         }
 
         listeners.add(PropertyChangeListener.class, l);
 
-        if (doLog) {
+        if (err.isLoggable(Level.FINE)) {
             err.log(
-                ErrorManager.INFORMATIONAL,
+                Level.FINE,
                 "ADD - " + getName() + " [" + count + "]->[" + getPropertyChangeListenersCount() + "] " + l
             );
         }
@@ -846,15 +844,15 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     public final void removePropertyChangeListener(PropertyChangeListener l) {
         int count = -1;
 
-        if (doLog) {
+        if (err.isLoggable(Level.FINE)) {
             count = getPropertyChangeListenersCount();
         }
 
         listeners.remove(PropertyChangeListener.class, l);
 
-        if (doLog) {
+        if (err.isLoggable(Level.FINE)) {
             err.log(
-                ErrorManager.INFORMATIONAL,
+                Level.FINE,
                 "RMV - " + getName() + " [" + count + "]->[" + getPropertyChangeListenersCount() + "] " + l
             );
         }
@@ -877,7 +875,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     */
     protected final void firePropertyChange(String name, Object o, Object n) {
         // First check if this property actually exists - if not warn! See #31413.
-        if (doWarn && (name != null) && propertySetsAreKnown()) {
+        if (err.isLoggable(Level.WARNING) && (name != null) && propertySetsAreKnown()) {
             Node.PropertySet[] pss = getPropertySets();
             boolean exists = false;
 
@@ -898,8 +896,8 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                     String clazz = getClass().getName();
 
                     if (warnedBadProperties.add(clazz + "." + name)) {
-                        ErrorManager.getDefault().notify(
-                            ErrorManager.INFORMATIONAL,
+                        org.openide.ErrorManager.getDefault().notify(
+                            org.openide.ErrorManager.INFORMATIONAL,
                             new IllegalStateException(
                                 "Warning - the node \"" + getDisplayName() + "\" [" + clazz +
                                 "] is trying to fire the property " + name +
@@ -1347,8 +1345,8 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
 
             // Issue 51907 backward compatibility
             if (supportsDefaultValue() && warnedNames.add(name)) {
-                ErrorManager.getDefault().log(
-                    ErrorManager.WARNING,
+                Logger.getAnonymousLogger().log(
+                    Level.WARNING,
                     "Class " + name + " must override isDefaultValue() since it " +
                     "overrides supportsDefaultValue() to be true"
                 );

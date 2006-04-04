@@ -13,6 +13,7 @@
 
 package org.netbeans.core.windows.persistence;
 
+import java.util.logging.Level;
 import org.netbeans.core.windows.Debug;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -255,7 +256,7 @@ class TCGroupParser {
             if (version != null) {
                 internalConfig.specVersion = new SpecificationVersion(version);
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.TCGroupParser.handleTCGroup]" // NOI18N
                 + " Warning: Missing attribute \"version\" of element \"tc-group\"."); // NOI18N
                 internalConfig.specVersion = new SpecificationVersion("2.0"); // NOI18N
@@ -305,14 +306,14 @@ class TCGroupParser {
             if (tc_id != null) {
                 tcGroupConfig.tc_id = tc_id;
                 if (!tc_id.equals(TCGroupParser.this.getName())) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.TCGroupParser.handleTcId]" // NOI18N
                     + " Error: Value of attribute \"id\" of element \"tc-id\"" // NOI18N
                     + " and configuration file name must be the same."); // NOI18N
                     throw new SAXException("Invalid attribute value"); // NOI18N
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.TCGroupParser.handleTcId]" // NOI18N
                 + " Error: Missing required attribute \"id\" of element \"tc-id\"."); // NOI18N
                 throw new SAXException("Missing required attribute"); // NOI18N
@@ -328,14 +329,14 @@ class TCGroupParser {
                 } else if ("false".equals(open)) { // NOI18N
                     tcGroupConfig.open = false;
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.TCGroupParser.handleOpenCloseBehavior]" // NOI18N
                     + " Warning: Invalid value of attribute \"open\"" // NOI18N
                     + " of element \"open-close-behavior\"."); // NOI18N
                     tcGroupConfig.open = false;
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.TCGroupParser.handleOpenCloseBehavior]" // NOI18N
                 + " Warning: Missing required attribute \"open\"" // NOI18N
                 + " of element \"open-close-behavior\"."); // NOI18N
@@ -349,14 +350,14 @@ class TCGroupParser {
                 } else if ("false".equals(close)) { // NOI18N
                     tcGroupConfig.close = false;
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.TCGroupParser.handleOpenCloseBehavior]" // NOI18N
                     + " Warning: Invalid value of attribute \"close\"" // NOI18N
                     + " of element \"open-close-behavior\"."); // NOI18N
                     tcGroupConfig.close = false;
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.TCGroupParser.handleOpenCloseBehavior]" // NOI18N
                 + " Warning: Missing required attribute \"close\"" // NOI18N
                 + " of element \"open-close-behavior\"."); // NOI18N
@@ -370,7 +371,7 @@ class TCGroupParser {
                 } else if ("false".equals(wasOpened)) { // NOI18N
                     tcGroupConfig.wasOpened = false;
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.TCGroupParser.handleOpenCloseBehavior]" // NOI18N
                     + " Warning: Invalid value of attribute \"was-opened\"" // NOI18N
                     + " of element \"open-close-behavior\"."); // NOI18N

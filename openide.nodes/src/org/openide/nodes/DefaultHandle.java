@@ -12,7 +12,8 @@
  */
 package org.openide.nodes;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** Simple implementation of <code>Node.Handle</code>.
@@ -88,9 +89,8 @@ public final class DefaultHandle extends Object implements Node.Handle {
             }
 
             if (parentNode.getChildren().findChild(childPath) != node) {
-                if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
-                    ErrorManager.getDefault().log(
-                        ErrorManager.WARNING,
+                if (Logger.getAnonymousLogger().isLoggable(Level.WARNING)) {
+                    Logger.getAnonymousLogger().warning(
                         "WARNING: parent could not find own child in DefaultHandle.createHandle\n\tnode=" + node +
                         "\n\tparentNode=" + parentNode + "\n\tchildPath=" + childPath + "\n\tfound child=" +
                         parentNode.getChildren().findChild(childPath)

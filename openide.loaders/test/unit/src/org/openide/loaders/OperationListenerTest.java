@@ -14,6 +14,8 @@
 package org.openide.loaders;
 
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import junit.framework.AssertionFailedError;
 import org.openide.filesystems.*;
@@ -38,7 +40,7 @@ implements OperationListener {
     private ArrayList events = new ArrayList ();
     private FileSystem fs;
     private DataLoaderPool pool;
-    private org.openide.ErrorManager err;
+    private Logger err;
     
     /** Creates the test */
     public OperationListenerTest(String name) {
@@ -58,7 +60,7 @@ implements OperationListener {
         TestUtilHid.destroyLocalFileSystem (getName());
         fs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
         
-        err = ErrManager.getDefault().getInstance("TEST-" + getName());
+        err = Logger.getLogger("TEST-" + getName());
         
         pool = DataLoaderPool.getDefault ();
         assertNotNull (pool);
@@ -66,21 +68,21 @@ implements OperationListener {
         
         Pool.setExtra(null);
         
-        err.log("setUp is over");
+        err.info("setUp is over");
     }
     
     //Clear all stuff when the test finish
     protected void tearDown() throws Exception {
-        err.log("entering tearDown");
+        err.info("entering tearDown");
         
         pool.removeOperationListener(this);
         
-        err.log("Making sure everything is cleaned");
+        err.info("Making sure everything is cleaned");
         WeakReference ref = new WeakReference(fs);
         fs = null;
         events = null;
         assertGC("GC the filesystem", ref);
-        err.log("Ok, tearDown finished");
+        err.info("Ok, tearDown finished");
         
 //        AddLoaderManuallyHid.addRemoveLoader (ALoader.getLoader (ALoader.class), false);
 //        AddLoaderManuallyHid.addRemoveLoader (BLoader.getLoader (BLoader.class), false);
@@ -104,18 +106,18 @@ implements OperationListener {
     }
 
     public void testCopyFile() throws Exception {
-        err.log("Before add listener");
+        err.info("Before add listener");
         pool.addOperationListener(this);
-        err.log("after add listener");
+        err.info("after add listener");
         DataObject obj = DataObject.find (fs.findResource ("fake/A.instance"));
-        err.log("object found: " + obj);
+        err.info("object found: " + obj);
         DataFolder df = DataFolder.findFolder (fs.findResource ("dir"));
-        err.log("folder found: " + df);
+        err.info("folder found: " + df);
         DataObject n = obj.copy (df);
-        err.log("copy done: " + n);
+        err.info("copy done: " + n);
         assertEquals ("Copy successfull", n.getFolder(), df);
         
-        err.log("Comparing events");
+        err.info("Comparing events");
         assertEvents ("All well", new OperationEvent[] {
             new OperationEvent (obj),
             new OperationEvent (df),
@@ -128,29 +130,29 @@ implements OperationListener {
         BrokenLoader loader = (BrokenLoader)DataLoader.getLoader(BrokenLoader.class);
         
         try {
-            err.log("before setExtra: " + loader);
+            err.info("before setExtra: " + loader);
             Pool.setExtra(loader);
             
-            err.log("before addOperationListener");
+            err.info("before addOperationListener");
             pool.addOperationListener(this);
             
             loader.acceptableFO = fs.findResource ("source/A.attr");
-            err.log("File object found: " + loader.acceptableFO);
+            err.info("File object found: " + loader.acceptableFO);
             try {
                 DataObject obj = DataObject.find (fs.findResource ("source/A.attr"));
                 fail ("The broken loader throws exception and cannot be created");
             } catch (IOException ex) {
                 // ok
-                err.log("Exception thrown correctly:");
-                err.notify(ex);
+                err.info("Exception thrown correctly:");
+                err.log(Level.INFO, null, ex);
             }
             assertEquals ("Loader created an object", loader, loader.obj.getLoader());
             
-            err.log("brefore waitFinished");
+            err.info("brefore waitFinished");
             // and the task can be finished
             loader.recognize.waitFinished ();
             
-            err.log("waitFinished done");
+            err.info("waitFinished done");
             
             assertEvents ("One creation notified even if the object is broken", new OperationEvent[] {
                 new OperationEvent (loader.obj),
@@ -215,37 +217,37 @@ implements OperationListener {
     
     public void operationCopy(org.openide.loaders.OperationEvent.Copy ev) {
         events.add (ev);
-        err.log ("  operationCopy: " + ev);
+        err.info("  operationCopy: " + ev);
     }
     
     public void operationCreateFromTemplate(org.openide.loaders.OperationEvent.Copy ev) {
         events.add (ev);
-        err.log ("  operationCreateFromTemplate: " + ev);
+        err.info("  operationCreateFromTemplate: " + ev);
     }
     
     public void operationCreateShadow(org.openide.loaders.OperationEvent.Copy ev) {
         events.add (ev);
-        err.log ("  operationCreateShadow: " + ev);
+        err.info("  operationCreateShadow: " + ev);
     }
     
     public void operationDelete(OperationEvent ev) {
         events.add (ev);
-        err.log ("  operationDelete: " + ev);
+        err.info("  operationDelete: " + ev);
     }
     
     public void operationMove(org.openide.loaders.OperationEvent.Move ev) {
         events.add (ev);
-        err.log ("  operationMove: " + ev);
+        err.info("  operationMove: " + ev);
     }
     
     public void operationPostCreate(OperationEvent ev) {
         events.add (ev);
-        err.log ("  operationPostCreate: " + ev);
+        err.info("  operationPostCreate: " + ev);
     }
     
     public void operationRename(org.openide.loaders.OperationEvent.Rename ev) {
         events.add (ev);
-        err.log ("  operationRename: " + ev);
+        err.info("  operationRename: " + ev);
     }
 
     

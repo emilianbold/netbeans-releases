@@ -28,6 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Mutex;
 
 /** Container for array of nodes.
@@ -64,10 +66,9 @@ public abstract class Children extends Object {
     */
     public static final Children LEAF = new Empty();
     private static final Object LOCK = new Object();
-    private static final org.openide.ErrorManager LOG_GET_ARRAY = org.openide.ErrorManager.getDefault().getInstance(
+    private static final Logger LOG_GET_ARRAY = Logger.getLogger(
             "org.openide.nodes.Children.getArray"
         ); // NOI18N
-    private static final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(LOG_GET_ARRAY.INFORMATIONAL);
 
     /** parent node for all nodes in this list (can be null) */
     private Node parent;
@@ -468,6 +469,8 @@ public abstract class Children extends Object {
     }
 
     private ChildrenArray getArray(boolean[] cannotWorkBetter) {
+        final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
+
         ChildrenArray arr;
         boolean doInitialize = false;
         synchronized (LOCK) {
@@ -485,7 +488,7 @@ public abstract class Children extends Object {
 
         if (doInitialize) {
             if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.log("Initialize " + this + " on " + Thread.currentThread()); // NOI18N
+                LOG_GET_ARRAY.fine("Initialize " + this + " on " + Thread.currentThread()); // NOI18N
             }
 
             // this call can cause a lot of callbacks => be prepared
@@ -494,14 +497,14 @@ public abstract class Children extends Object {
                 this.callAddNotify();
 
                 if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.log("addNotify successfully called for " + this + " on " + Thread.currentThread()); // NOI18N
+                    LOG_GET_ARRAY.fine("addNotify successfully called for " + this + " on " + Thread.currentThread()); // NOI18N
                 }
             } finally {
                 boolean notifyLater;
                 notifyLater = MUTEX.isReadAccess();
 
                 if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.log(
+                    LOG_GET_ARRAY.fine(
                         "notifyAll for " + this + " on " + Thread.currentThread() + "  notifyLater: " + notifyLater
                     ); // NOI18N
                 }
@@ -520,7 +523,7 @@ public abstract class Children extends Object {
                         }
                         
                         if (IS_LOG_GET_ARRAY) {
-                            LOG_GET_ARRAY.log(
+                            LOG_GET_ARRAY.fine(
                                 "notifyAll done"
                             ); // NOI18N
                         }
@@ -548,7 +551,7 @@ public abstract class Children extends Object {
             if (MUTEX.isReadAccess() || (initThread == Thread.currentThread())) {
                 // fail, we are in read access
                 if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.log(
+                    LOG_GET_ARRAY.fine(
                         "cannot initialize better " + this + // NOI18N
                         " on " + Thread.currentThread() + // NOI18N
                         " read access: " + MUTEX.isReadAccess() + // NOI18N
@@ -568,7 +571,7 @@ public abstract class Children extends Object {
             synchronized (LOCK) {
                 while (initThread != null) {
                     if (IS_LOG_GET_ARRAY) {
-                        LOG_GET_ARRAY.log(
+                        LOG_GET_ARRAY.fine(
                             "waiting for children for " + this + // NOI18N
                             " on " + Thread.currentThread() // NOI18N
                         );
@@ -581,7 +584,7 @@ public abstract class Children extends Object {
                 }
             }
             if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.log(
+                LOG_GET_ARRAY.fine(
                     " children are here for " + this + // NOI18N
                     " on " + Thread.currentThread() + // NOI18N
                     " children " + arr.children
@@ -620,8 +623,9 @@ public abstract class Children extends Object {
     * @param weak use weak or hard reference
     */
     final void registerChildrenArray(final ChildrenArray chArr, boolean weak) {
+        final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
         if (IS_LOG_GET_ARRAY) {
-            LOG_GET_ARRAY.log("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
+            LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
         }
         if (weak) {
             this.array = new WeakReference(chArr);
@@ -636,19 +640,20 @@ public abstract class Children extends Object {
         
         chArr.pointedBy(this.array);
         if (IS_LOG_GET_ARRAY) {
-            LOG_GET_ARRAY.log("pointed by: " + chArr + " to: " + this.array); // NOI18N
+            LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
         }
     }
 
     /** Finalized.
     */
     final void finalizedChildrenArray(Reference caller) {
+        final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
         // usually in removeNotify setKeys is called => better require write access
         try {
             PR.enterWriteAccess();
 
             if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.log("previous array: " + array + " caller: " + caller);
+                LOG_GET_ARRAY.fine("previous array: " + array + " caller: " + caller);
             }
             if (array == caller) {
                 // really finalized and not reconstructed
@@ -731,13 +736,14 @@ public abstract class Children extends Object {
     }
 
     final void setEntries(Collection entries) {
+        final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
         // current list of nodes
         ChildrenArray holder = (ChildrenArray) array.get();
 
         if (IS_LOG_GET_ARRAY) {
-            LOG_GET_ARRAY.log("setEntries for " + this + " on " + Thread.currentThread()); // NOI18N
-            LOG_GET_ARRAY.log("       values: " + entries); // NOI18N
-            LOG_GET_ARRAY.log("       holder: " + holder); // NOI18N
+            LOG_GET_ARRAY.fine("setEntries for " + this + " on " + Thread.currentThread()); // NOI18N
+            LOG_GET_ARRAY.fine("       values: " + entries); // NOI18N
+            LOG_GET_ARRAY.fine("       holder: " + holder); // NOI18N
         }
         if (holder == null) {
             //      debug.append ("Set1: " + entries); // NOI18N

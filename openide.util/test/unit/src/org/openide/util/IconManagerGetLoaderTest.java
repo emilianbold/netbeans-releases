@@ -14,6 +14,10 @@ package org.openide.util;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import junit.framework.*;
 import org.openide.ErrorManager;
 import java.awt.Component;
@@ -32,6 +36,15 @@ import java.util.*;
 public class IconManagerGetLoaderTest extends TestCase {
     static {
         System.setProperty("org.openide.util.Lookup", "org.openide.util.IconManagerGetLoaderTest$Lkp");
+
+
+        Logger l = Logger.getLogger("");
+        Handler[] arr = l.getHandlers();
+        for (int i = 0; i < arr.length; i++) {
+            l.removeHandler(arr[i]);
+        }
+        l.addHandler(new ErrMgr());
+        l.setLevel(Level.ALL);
     }
     
     
@@ -63,7 +76,6 @@ public class IconManagerGetLoaderTest extends TestCase {
     
     
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        private ErrMgr err = new ErrMgr();
         private org.openide.util.lookup.InstanceContent ic;
         static ClassLoader c1 = new URLClassLoader(new URL[0]);
         static ClassLoader c2 = new URLClassLoader(new URL[0]);
@@ -81,32 +93,18 @@ public class IconManagerGetLoaderTest extends TestCase {
         
         public void turn (ClassLoader c) {
             ArrayList l = new ArrayList();
-            l.add(err);
             l.add(c);
             ic.set (l, null);
         }
     }
     
     
-    private static class ErrMgr extends ErrorManager {
+    private static class ErrMgr extends Handler {
         public static boolean switchDone;
         
-        public Throwable attachAnnotations (Throwable t, ErrorManager.Annotation[] arr) {
-            return null;
-        }
+        public void log (String s) {
+            if (s == null) return;
 
-        public ErrorManager.Annotation[] findAnnotations (Throwable t) {
-            return null;
-        }
-
-        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, Date date) {
-            return null;
-        }
-
-        public void notify (int severity, Throwable t) {
-        }
-
-        public void log (int severity, String s) {
             if (s.startsWith ("Loader computed")) {
                 switchDone = true;
                 Lkp lkp = (Lkp)org.openide.util.Lookup.getDefault ();
@@ -114,8 +112,14 @@ public class IconManagerGetLoaderTest extends TestCase {
             }
         }
 
-        public ErrorManager getInstance (String name) {
-            return this;
+        public void publish(LogRecord record) {
+            log(record.getMessage());
+        }
+
+        public void flush() {
+        }
+
+        public void close() throws SecurityException {
         }
         
     }

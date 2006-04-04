@@ -13,13 +13,15 @@
 
 package org.openide.loaders;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -29,12 +31,23 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.Mutex;
 
+
 /**
  * Tests Index cookio of DataFolder (when uses DataFilter).
  *
  * @author Jiri Rechtacek
  */
 public class DataFolderIndexTest extends LoggingTestCaseHid {
+    static {
+        Logger l = Logger.getLogger("");
+        Handler[] arr = l.getHandlers();
+        for (int i = 0; i < arr.length; i++) {
+            l.removeHandler(arr[i]);
+        }
+        l.addHandler(new ErrMgr());
+        l.setLevel(Level.ALL);
+    }
+    
     DataFolder df;
     FileObject fo;
     ErrorManager ERR;
@@ -52,25 +65,25 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
         
         
         ERR = org.openide.ErrorManager.getDefault().getInstance("TEST-" + getName());
-
-		FileObject old = Repository.getDefault ().getDefaultFileSystem ().findResource ("TestTemplates");
-		if (old != null) {
-			old.delete();
-		}
         
-		fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder ("TestTemplates");
-		df = DataFolder.findFolder (fo);
-		assertNotNull ("DataFolder found for AA", df);
-
-		df.getPrimaryFile ().createData ("marie");
-		df.getPrimaryFile ().createData ("jakub");
-		df.getPrimaryFile ().createData ("eva");
-		df.getPrimaryFile ().createData ("adam");
-
-		assertNotNull ("Folder " + df + " has a children.", df.getChildren ());
-		assertEquals ("Folder " + df + " has 4 childs.", 4, df.getChildren ().length);
-
-        ErrManager.resetMessages();
+        FileObject old = Repository.getDefault().getDefaultFileSystem().findResource("TestTemplates");
+        if (old != null) {
+            old.delete();
+        }
+        
+        fo = Repository.getDefault().getDefaultFileSystem().getRoot().createFolder("TestTemplates");
+        df = DataFolder.findFolder(fo);
+        assertNotNull("DataFolder found for AA", df);
+        
+        df.getPrimaryFile().createData("marie");
+        df.getPrimaryFile().createData("jakub");
+        df.getPrimaryFile().createData("eva");
+        df.getPrimaryFile().createData("adam");
+        
+        assertNotNull("Folder " + df + " has a children.", df.getChildren());
+        assertEquals("Folder " + df + " has 4 childs.", 4, df.getChildren().length);
+        
+        ErrMgr.resetMessages();
     }
     
     public void testIndexWithoutInitialization() throws Exception {
@@ -98,7 +111,7 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
             }
         });
         
-        if (ErrManager.messages.length() > 0) {
+        if (ErrMgr.messages.length() > 0) {
             fail("No messages shall be reported: " + ErrManager.messages);
         }
     }
@@ -194,48 +207,35 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
             }
         }
     }
-
-    static final class ErrManager extends org.openide.ErrorManager {
+    static final class ErrMgr extends Handler {
         static final StringBuffer messages = new StringBuffer();
         static int nOfMessages;
         static final String DELIMITER = ": ";
-        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
         
         static void resetMessages() {
             messages.delete(0, ErrManager.messages.length());
             nOfMessages = 0;
         }
-        
-        public void log(int severity, String s) {
-            /*
+
+        public void publish(LogRecord rec) {
+            Throwable t = rec.getThrown();
+            if (t == null) {
+                return;
+            }
+
             nOfMessages++;
-            messages.append(severity + DELIMITER + s);
+            messages.append(rec.getLevel() + DELIMITER + rec.getMessage());
             messages.append('\n');
-             */
-        }
-        
-        public Throwable annotate(Throwable t, int severity,
-                String message, String localizedMessage,
-                Throwable stackTrace, java.util.Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance(String name) {
-            return this;
-        }
-        
-        public void notify(int severity, Throwable t) {
+
             StringWriter w = new StringWriter();
             t.printStackTrace(new PrintWriter(w));
             messages.append(w.toString());
+        }
+
+        public void flush() {
+        }
+
+        public void close() throws SecurityException {
         }
     }
     

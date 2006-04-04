@@ -11,20 +11,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * NativeDiff.java
- *
- * Created on February 2, 2001, 4:36 PM
- */
-
 package org.netbeans.junit.diff;
 import java.io.*;
 import java.util.StringTokenizer;
 
-/**
- *
- * @author  Jan Becicka
- * @version
+/** Implementation of native OS diff.
  */
 public class NativeDiff implements Diff {
     

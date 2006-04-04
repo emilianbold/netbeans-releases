@@ -66,7 +66,7 @@ public abstract class ManifestSection<T> {
             className = Util.createPackageName(name);
         } catch (IllegalArgumentException iae) {
             InvalidException ie = new InvalidException(module, iae.toString());
-            Util.err.annotate(ie, iae);
+            ie.initCause(iae);
             throw ie;
         }
     }
@@ -114,7 +114,7 @@ public abstract class ManifestSection<T> {
                 }
                 return clazz;
             } catch (ClassNotFoundException cnfe) {
-                Util.err.annotate(cnfe, ErrorManager.UNKNOWN, "Loader for ClassNotFoundException: " + getClassLoader(), null, null, null);
+                ErrorManager.getDefault().annotate(cnfe, ErrorManager.UNKNOWN, "Loader for ClassNotFoundException: " + getClassLoader(), null, null, null);
                 problem = cnfe;
                 throw problem;
             } catch (Exception e) {
@@ -155,7 +155,7 @@ public abstract class ManifestSection<T> {
                 }
                 return o;
             } catch (ClassNotFoundException cnfe) {
-                Util.err.annotate(cnfe, ErrorManager.UNKNOWN, "Loader for ClassNotFoundException: " + getClassLoader(), null, null, null);
+                ErrorManager.getDefault().annotate(cnfe, ErrorManager.UNKNOWN, "Loader for ClassNotFoundException: " + getClassLoader(), null, null, null);
                 throw cnfe;
             } catch (LinkageError le) {
                 throw new ClassNotFoundException(le.toString(), le);
@@ -247,7 +247,7 @@ public abstract class ManifestSection<T> {
             return null;
         } else if (sectionName.equalsIgnoreCase("Node")) { // NOI18N
             warnObsolete(sectionName, module);
-            Util.err.log(ErrorManager.WARNING, "(See http://www.netbeans.org/issues/show_bug.cgi?id=19609, last comment, for howto.)");
+            Util.err.warning("(See http://www.netbeans.org/issues/show_bug.cgi?id=19609, last comment, for howto.)");
             return null;
         } else if (sectionName.equalsIgnoreCase("Service")) { // NOI18N
             warnObsolete(sectionName, module);
@@ -266,8 +266,8 @@ public abstract class ManifestSection<T> {
     }
     
     private static void warnObsolete(String sectionName, Module module) {
-        Util.err.log(ErrorManager.WARNING, "Use of OpenIDE-Module-Class: " + sectionName + " in " + module.getCodeNameBase() + " is obsolete.");
-        Util.err.log(ErrorManager.WARNING, "(Please use layer-based installation of objects instead.)");
+        Util.err.warning("Use of OpenIDE-Module-Class: " + sectionName + " in " + module.getCodeNameBase() + " is obsolete.");
+        Util.err.warning("(Please use layer-based installation of objects instead.)");
     }
     
     /** Module section for an Action.
@@ -362,7 +362,7 @@ public abstract class ManifestSection<T> {
             return ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass(name);
         } catch (ClassNotFoundException cnfe) {
             InvalidException e = new InvalidException(m, "Unable to locate class: " + name + " maybe you do not have its module enabled!?"); // NOI18N
-            Util.err.annotate(e, cnfe);
+            e.initCause(cnfe);
             throw e;
         }
     }

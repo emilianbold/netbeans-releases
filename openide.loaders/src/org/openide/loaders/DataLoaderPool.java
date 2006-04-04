@@ -445,7 +445,7 @@ implements java.io.Serializable {
         java.util.HashSet single = new java.util.HashSet();
         single.add(fo);
         if (!DataObjectPool.getPOOL().revalidate(single).isEmpty()) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "It was not possible to invalidate data object: " + fo); // NOI18N
+            DataObject.LOG.fine("It was not possible to invalidate data object: " + fo); // NOI18N
         }
     }
     

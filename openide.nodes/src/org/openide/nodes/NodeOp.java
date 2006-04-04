@@ -12,6 +12,8 @@
  */
 package org.openide.nodes;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -415,8 +417,6 @@ public final class NodeOp extends Object {
      *   contain nulls
      */
     static org.openide.util.actions.SystemAction[] createFromNames(String[] arr) {
-        ErrorManager err = (ErrorManager) org.openide.util.Lookup.getDefault().lookup(ErrorManager.class);
-
         LinkedList ll = new LinkedList();
 
         for (int i = 0; i < arr.length; i++) {
@@ -432,9 +432,7 @@ public final class NodeOp extends Object {
                 Class c = Class.forName(name);
                 ll.add(org.openide.util.actions.SystemAction.get(c));
             } catch (ClassNotFoundException ex) {
-                if (err != null) {
-                    err.log(err.INFORMATIONAL, "NodeOp.java: Missing class " + name); // NOI18N
-                }
+                Logger.getAnonymousLogger().log(Level.WARNING, "NodeOp.java: Missing class " + name, ex); // NOI18N
 
                 // otherwise it is probably ok, that the class is missing
             }

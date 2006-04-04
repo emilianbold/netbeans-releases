@@ -41,6 +41,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -185,7 +187,7 @@ public class WizardDescriptor extends DialogDescriptor {
      */
     private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
 
-    private static ErrorManager err = ErrorManager.getDefault ().getInstance (WizardDescriptor.class.getName ());
+    private static Logger err = Logger.getLogger(WizardDescriptor.class.getName ());
 
     /** real buttons to be placed instead of the options */
     private final JButton nextButton = new JButton();
@@ -1090,7 +1092,7 @@ public class WizardDescriptor extends DialogDescriptor {
         Runnable validationPeformer = new Runnable() {
             public void run() {
                 
-                err.log (ErrorManager.INFORMATIONAL, "validationPeformer entry."); // NOI18N
+                err.log (Level.FINE, "validationPeformer entry."); // NOI18N
                 ValidatingPanel v = (ValidatingPanel) panel;
 
                 try {
@@ -1100,14 +1102,14 @@ public class WizardDescriptor extends DialogDescriptor {
                     // validation succesfull
                     if (SwingUtilities.isEventDispatchThread ()) {
                         setValid(true);
-                        err.log (ErrorManager.INFORMATIONAL, "Runs onValidPerformer directly in EDT."); // NOI18N
+                        err.log (Level.FINE, "Runs onValidPerformer directly in EDT."); // NOI18N
                         onValidPerformer.run();
                     } else {
-                        err.log (ErrorManager.INFORMATIONAL, "invokeLater onValidPerformer."); // NOI18N
+                        err.log (Level.FINE, "invokeLater onValidPerformer."); // NOI18N
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
                                 setValid(true);
-                                err.log (ErrorManager.INFORMATIONAL, "Runs onValidPerformer from invokeLater."); // NOI18N
+                                err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
                                 onValidPerformer.run();
                             } 
                         });
@@ -1136,13 +1138,13 @@ public class WizardDescriptor extends DialogDescriptor {
             AsynchronousValidatingPanel p = (AsynchronousValidatingPanel) panel;
             setValid(false);  // disable Next> Finish buttons
             p.prepareValidation();
-            err.log (ErrorManager.INFORMATIONAL, "Do ASYNCHRONOUS_JOBS_RP.post(validationPeformer)."); // NOI18N
+            err.log (Level.FINE, "Do ASYNCHRONOUS_JOBS_RP.post(validationPeformer)."); // NOI18N
             backgroundValidationTask = ASYNCHRONOUS_JOBS_RP.post(validationPeformer);
         } else if (panel instanceof ValidatingPanel) {
-            err.log (ErrorManager.INFORMATIONAL, "Runs validationPeformer."); // NOI18N
+            err.log (Level.FINE, "Runs validationPeformer."); // NOI18N
             validationPeformer.run();
         } else {
-            err.log (ErrorManager.INFORMATIONAL, "Runs onValidPerformer."); // NOI18N
+            err.log (Level.FINE, "Runs onValidPerformer."); // NOI18N
             onValidPerformer.run();
         }
 
@@ -1178,7 +1180,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
             try {
                 assert ! (panels instanceof AsynchronousInstantiatingIterator) || ! SwingUtilities.isEventDispatchThread () : "Cannot invoked within EDT if AsynchronousInstantiatingIterator!";
-                err.log (ErrorManager.INFORMATIONAL, "Calls instantiate() on iterator: " + panels.getClass ().getName ());
+                err.log (Level.FINE, "Calls instantiate() on iterator: " + panels.getClass ().getName ());
                 newObjects = ((InstantiatingIterator) panels).instantiate();
             } finally {
 
@@ -1600,12 +1602,12 @@ public class WizardDescriptor extends DialogDescriptor {
                 wizardPanel.setErrorMessage(" ", null); //NOI18N
             }
 
-            err.log (ErrorManager.INFORMATIONAL, "actionPerformed entry. Source: " + ev.getSource ()); // NOI18N
+            err.log (Level.FINE, "actionPerformed entry. Source: " + ev.getSource ()); // NOI18N
             if (ev.getSource() == nextButton) {
                 final Dimension previousSize = panels.current().getComponent().getSize();
                 Runnable onValidPerformer = new Runnable() {
                     public void run() {
-                        err.log (ErrorManager.INFORMATIONAL, "onValidPerformer on next button entry."); // NOI18N
+                        err.log (Level.FINE, "onValidPerformer on next button entry."); // NOI18N
                         panels.nextPanel();
 
                         try {
@@ -1621,12 +1623,12 @@ public class WizardDescriptor extends DialogDescriptor {
                             } else {
                                 // this should be used (it checks for exception
                                 // annotations and severity)
-                                err.notify(ise);
+                                org.openide.ErrorManager.getDefault().notify(ise);
                             }
 
                             updateState();
                         }
-                        err.log (ErrorManager.INFORMATIONAL, "onValidPerformer on next button exit."); // NOI18N
+                        err.log (Level.FINE, "onValidPerformer on next button exit."); // NOI18N
                     }
                 };
                 lazyValidate(panels.current(), onValidPerformer);
@@ -1642,7 +1644,7 @@ public class WizardDescriptor extends DialogDescriptor {
             if (ev.getSource() == finishButton) {
                 Runnable onValidPerformer = new Runnable() {
                     public void run() {
-                        err.log (ErrorManager.INFORMATIONAL, "onValidPerformer on finish button entry."); // NOI18N
+                        err.log (Level.FINE, "onValidPerformer on finish button entry."); // NOI18N
                         
                         // disable all buttons to indicate that instantiate runs
                         cancelButton.setEnabled (false);
@@ -1655,13 +1657,13 @@ public class WizardDescriptor extends DialogDescriptor {
                         
                         Runnable performFinish = new Runnable () {
                             public void run () {
-                                err.log (ErrorManager.INFORMATIONAL, "performFinish entry."); // NOI18N
+                                err.log (Level.FINE, "performFinish entry."); // NOI18N
                                 // do instantiate
                                 try {
                                     callInstantiate();
                                 } catch (IOException ioe) {
                                     // notify to log
-                                    err.notify(ErrorManager.INFORMATIONAL, ioe);
+                                    err.log(Level.FINE, null, ioe);
 
                                     setValueWithoutPCH(NEXT_OPTION);
                                     updateStateWithFeedback();
@@ -1683,25 +1685,25 @@ public class WizardDescriptor extends DialogDescriptor {
                                     public void run () {
                                         // all is OK
                                         // close wizrad
-                                        err.log (ErrorManager.INFORMATIONAL, "WD.finishOption.fireActionPerformed()");
+                                        err.log (Level.FINE, "WD.finishOption.fireActionPerformed()");
                                         finishOption.fireActionPerformed();
-                                        err.log (ErrorManager.INFORMATIONAL, "Set value to OK_OPTION.");
+                                        err.log (Level.FINE, "Set value to OK_OPTION.");
                                         setValue (OK_OPTION);
                                     }
                                 });
-                                err.log (ErrorManager.INFORMATIONAL, "performFinish exit."); // NOI18N
+                                err.log (Level.FINE, "performFinish exit."); // NOI18N
                             }
                         };
                         
                         if (panels instanceof AsynchronousInstantiatingIterator) {
-                            err.log (ErrorManager.INFORMATIONAL, "Do ASYNCHRONOUS_JOBS_RP.post(performFinish)."); // NOI18N
+                            err.log (Level.FINE, "Do ASYNCHRONOUS_JOBS_RP.post(performFinish)."); // NOI18N
                             ASYNCHRONOUS_JOBS_RP.post (performFinish);
                         } else {
-                            err.log (ErrorManager.INFORMATIONAL, "Run performFinish."); // NOI18N
+                            err.log (Level.FINE, "Run performFinish."); // NOI18N
                             performFinish.run ();
                         }
                         
-                        err.log (ErrorManager.INFORMATIONAL, "onValidPerformer on finish button exit."); // NOI18N
+                        err.log (Level.FINE, "onValidPerformer on finish button exit."); // NOI18N
                         
                     }
                 };

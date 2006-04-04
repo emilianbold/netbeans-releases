@@ -19,6 +19,8 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -44,9 +46,7 @@ import org.openide.util.io.SafeException;
 */
 public abstract class DataLoader extends SharedClassObject {
     /** error manager for logging the happenings in loaders */
-    static final ErrorManager ERR = ErrorManager.getDefault().getInstance("org.openide.loaders.DataLoader"); // NOI18N
-    /** flag to know whether log messages will be logged */
-    static final boolean ERR_WILL_LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+    static final Logger ERR = Logger.getLogger("org.openide.loaders.DataLoader"); // NOI18N
 
     // XXX why is this necessary? otherwise reading loader pool now throws heavy
     // InvalidClassException's reading (abstract!) DataLoader...? --jglick
@@ -82,7 +82,7 @@ public abstract class DataLoader extends SharedClassObject {
         putProperty (PROP_REPRESENTATION_CLASS, representationClass);
         putProperty (PROP_REPRESENTATION_CLASS_NAME, representationClass.getName());
         if (representationClass.getClassLoader() == getClass().getClassLoader()) {
-            ERR.log(ErrorManager.WARNING, "Use of super(" + representationClass.getName() + ".class) in " + getClass().getName() + "() should be replaced with super(\"" + representationClass.getName() + "\") to reduce unnecessary class loading");
+            ERR.warning("Use of super(" + representationClass.getName() + ".class) in " + getClass().getName() + "() should be replaced with super(\"" + representationClass.getName() + "\") to reduce unnecessary class loading");
         }
     }
 
@@ -164,10 +164,10 @@ public abstract class DataLoader extends SharedClassObject {
             try {
                 actions = mgr.instanceCreate ();
             } catch (IOException ex) {
-                ERR.notify (ex);
+                ErrorManager.getDefault().notify (ex);
                 actions = null;
             } catch (ClassNotFoundException ex) {
-                ERR.notify (ex);
+                ErrorManager.getDefault().notify (ex);
                 actions = null;
             }
             if (actions == null) {
@@ -246,7 +246,7 @@ public abstract class DataLoader extends SharedClassObject {
                     fo = FileUtil.createFolder (fo, context);
 
                 } catch (IOException ex) {
-                    ERR.notify (ex);
+                    ERR.log(Level.WARNING, null, ex);
                 }
                 newlyCreated = true;
             }
@@ -491,14 +491,14 @@ public abstract class DataLoader extends SharedClassObject {
                     if ( version == 0 && isdefault && !defactions[i].equals(ac))
                         isdefault = false;
                 } catch (ClassNotFoundException ex) {
-                    ERR.annotate (
+                    ErrorManager.getDefault().annotate (
                         ex, ErrorManager.INFORMATIONAL, 
                         null, null, null, null
                     );
                     if (main == null) {
                         main = ex;
                     } else {
-                        ERR.annotate (main, ex);
+                        ErrorManager.getDefault().annotate (main, ex);
                     }
                 }
             }
@@ -518,7 +518,7 @@ public abstract class DataLoader extends SharedClassObject {
             SafeException se = new SafeException (main);
             // Provide a localized message explaining that there is no big problem.
             String message = NbBundle.getMessage (DataLoader.class, "EXC_missing_actions_in_loader", getDisplayName ());
-            ERR.annotate (se, message);
+            ErrorManager.getDefault().annotate (se, message);
             throw se;
         }
     }

@@ -33,6 +33,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 
 /** Shared object that allows different instances of the same class
@@ -65,8 +67,8 @@ public abstract class SharedClassObject extends Object implements Externalizable
     /** Set of classes to not warn about any more.
      * Names only.
      */
-    private static final Set<String> alreadyWarnedAboutDupes = new HashSet<String>(); //
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.util.SharedClassObject"); // NOI18N
+    private static final Set<String> alreadyWarnedAboutDupes = new HashSet<String>();
+    private static final Logger err = Logger.getLogger("org.openide.util.SharedClassObject"); // NOI18N
 
     /** data entry for this class */
     private final DataEntry dataEntry;
@@ -134,7 +136,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
         if (first != null) {
             if (first == this) {
                 // Could be a performance hit, so only do this when developing.
-                if ((err != null) && err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                if (err.isLoggable(Level.FINE)) {
                     Throwable t = new Throwable("First instance created here"); // NOI18N
                     t.fillInStackTrace();
                     first.firstTrace = t;
@@ -158,12 +160,12 @@ public abstract class SharedClassObject extends Object implements Externalizable
                             ); // NOI18N
 
                         if (first.firstTrace != null) {
-                            err.annotate(e, first.firstTrace);
+                            err.log(Level.WARNING, "First stack trace", first.firstTrace);
                         } else {
-                            err.annotate(e, "(Run with -J-Dorg.openide.util.SharedClassObject=0 for more details.)"); // NOI18N
+                            err.warning("(Run with -J-Dorg.openide.util.SharedClassObject.level=0 for more details.)"); // NOI18N
                         }
 
-                        err.notify(ErrorManager.INFORMATIONAL, e);
+                        err.log(Level.WARNING, null, e);
                     }
                 }
             }
@@ -358,7 +360,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
                 // [PENDING] theoretical race condition for this warning if listeners are added
                 // and removed very quickly from two threads, I guess, and addNotify() impl is slow
                 String msg = "You must call super.addNotify() from " + getClass().getName() + ".addNotify()"; // NOI18N
-                err.log(ErrorManager.WARNING, msg);
+                err.warning(msg);
             }
         }
     }
@@ -390,7 +392,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
 
             if (!removeNotifySuper) {
                 String msg = "You must call super.removeNotify() from " + getClass().getName() + ".removeNotify()"; // NOI18N
-                err.log(ErrorManager.WARNING, msg);
+                err.warning(msg);
             }
         }
     }
@@ -592,7 +594,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
 
     // See above:
     private static void warn(Throwable t) {
-        err.notify(ErrorManager.INFORMATIONAL, t);
+        err.log(Level.WARNING, null, t);
     }
 
     static SharedClassObject createInstancePrivileged(Class<? extends SharedClassObject> clazz)
@@ -718,8 +720,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
                 } catch (Exception ex) {
                     // checked or runtime does not matter - we must survive
                     String banner = "Skipping " + object.getClass() + " resolution:"; //NOI18N
-                    err.annotate(ex, ErrorManager.UNKNOWN, banner, null, null, null);
-                    err.notify(ErrorManager.INFORMATIONAL, ex);
+                    err.log(Level.WARNING, banner, ex);
                 } finally {
                     resolveMethod.setAccessible(false);
                 }
@@ -906,7 +907,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
 
             if (!obj.initializeSuper) {
                 String msg = "You must call super.initialize() from " + obj.getClass().getName() + ".initialize()"; // NOI18N
-                err.log(ErrorManager.WARNING, msg);
+                err.warning(msg);
             }
         }
 

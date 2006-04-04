@@ -24,6 +24,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import org.openide.ErrorManager;
@@ -56,10 +58,9 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     static final long serialVersionUID = -6305817805474624653L;
 
     /** logging */
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance(
+    private static final Logger err = Logger.getLogger(
             "org.openide.util.actions.CallbackSystemAction"
         ); // NOI18N
-    private static final boolean errLog = err.isLoggable(err.INFORMATIONAL);
 
     /** Initialize the action to have no performer.
     */
@@ -291,8 +292,8 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         // clear the performers out of any loop
         for (CallbackSystemAction a : actions) {
 
-            if (errLog) {
-                err.log("updateEnabled: " + a); // NOI18N
+            if (err.isLoggable(Level.FINE)) {
+                err.fine("updateEnabled: " + a); // NOI18N
             }
 
             a.updateEnabled();
@@ -335,20 +336,20 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
                         a = ((WeakAction) a).getDelegate();
                     }
 
-                    if (errLog) {
-                        err.log("No action for key: " + key + " using delegate: " + a); // NOI18N
+                    if (err.isLoggable(Level.FINE)) {
+                        err.fine("No action for key: " + key + " using delegate: " + a); // NOI18N
                     }
                 } else {
-                    if (errLog) {
-                        err.log("New action for key: " + key + " put: " + a);
+                    if (err.isLoggable(Level.FINE)) {
+                        err.fine("New action for key: " + key + " put: " + a);
                     }
 
                     survive.put(key, new WeakAction(a));
                 }
             }
 
-            if (errLog) {
-                err.log("Action for key: " + key + " is: " + a); // NOI18N
+            if (err.isLoggable(Level.FINE)) {
+                err.fine("Action for key: " + key + " is: " + a); // NOI18N
             }
 
             return a;
@@ -358,9 +359,9 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         public void resultChanged(org.openide.util.LookupEvent ev) {
             ActionMap a = Utilities.actionsGlobalContext().lookup(ActionMap.class);
 
-            if (errLog) {
-                err.log("changed map : " + a); // NOI18N
-                err.log("previous map: " + actionMap.get()); // NOI18N
+            if (err.isLoggable(Level.FINE)) {
+                err.fine("changed map : " + a); // NOI18N
+                err.fine("previous map: " + actionMap.get()); // NOI18N
             }
 
             if (a == actionMap.get()) {
@@ -369,8 +370,8 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
             actionMap = new WeakReference<ActionMap>(a);
 
-            if (errLog) {
-                err.log("clearActionPerformers"); // NOI18N
+            if (err.isLoggable(Level.FINE)) {
+                err.fine("clearActionPerformers"); // NOI18N
             }
 
             Mutex.EVENT.readAccess(new Runnable() {

@@ -22,6 +22,7 @@ import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
@@ -304,8 +305,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      */
     public void open(Workspace workspace) {
         if (discard()) {
-            ErrorManager.getDefault().log(
-                ErrorManager.WARNING,
+            Logger.getAnonymousLogger().warning(
                 "Can not open " + this + " component," // NOI18N
                  +" its support environment is not valid" // NOI18N
                  +" [support=" + support + ", env=" // NOI18N
@@ -613,7 +613,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                  ourMode.dockInto( this );
             } else {
                 //should not happen - editor mode is always defined
-                ErrorManager.getDefault().log( ErrorManager.WARNING, "The window system cannot find the default editor mode." );
+                Logger.getAnonymousLogger().warning("The window system cannot find the default editor mode." );
             }
         }
     }

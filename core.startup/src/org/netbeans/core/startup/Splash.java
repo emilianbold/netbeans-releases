@@ -45,6 +45,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import org.netbeans.Util;
 import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
@@ -228,7 +229,7 @@ public final class Splash  implements SwingConstants {
                     color_corner = new Color(rgb.intValue());
                 } catch (NumberFormatException nfe) {
                     //IZ 37515 - NbBundle.DEBUG causes startup to fail - provide some useless values
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Number format exception " + //NOI18N
+                    Util.err.warning("Number format exception " + //NOI18N
                         "loading splash screen parameters."); //NOI18N
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, nfe);
                     color_text = Color.BLACK;

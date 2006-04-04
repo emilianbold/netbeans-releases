@@ -18,6 +18,10 @@ import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
@@ -91,6 +95,15 @@ import org.openide.util.lookup.InstanceContent;
  * @author Jaroslav Tulach
  */
 public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
+    static {
+        Logger l = Logger.getLogger("");
+        Handler[] arr = l.getHandlers();
+        for (int i = 0; i < arr.length; i++) {
+            l.removeHandler(arr[i]);
+        }
+        l.addHandler(new ErrManager());
+        l.setLevel(Level.ALL);
+    }
     
     /** Creates a new instance of CanYouQueryFolderLookupFromHandleFindTest */
     public CanYouQueryFolderLookupFromHandleFindTest(String s) {
@@ -240,45 +253,35 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
             return Enumerations.singleton(DataLoader.getLoader(MyLoader.class));
         }
     }
-    static final class ErrManager extends org.openide.ErrorManager {
+    static final class ErrManager extends Handler {
         static final StringBuffer messages = new StringBuffer();
         static int nOfMessages;
         static final String DELIMITER = ": ";
-        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
         
         static void resetMessages() {
             messages.delete(0, ErrManager.messages.length());
             nOfMessages = 0;
         }
-        
-        public void log(int severity, String s) {
+
+        public void publish(LogRecord rec) {
             nOfMessages++;
-            messages.append(severity + DELIMITER + s);
+            messages.append(rec.getLevel() + DELIMITER + rec.getMessage());
             messages.append('\n');
-        }
-        
-        public Throwable annotate(Throwable t, int severity,
-                String message, String localizedMessage,
-                Throwable stackTrace, java.util.Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance(String name) {
-            return this;
-        }
-        
-        public void notify(int severity, Throwable t) {
+
+            Throwable t = rec.getThrown();
+            if (t == null) {
+                return;
+            }
+
             StringWriter w = new StringWriter();
             t.printStackTrace(new PrintWriter(w));
             messages.append(w.toString());
+        }
+
+        public void flush() {
+        }
+
+        public void close() throws SecurityException {
         }
     }
     

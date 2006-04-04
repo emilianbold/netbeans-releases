@@ -15,6 +15,7 @@ package org.netbeans.modules.settings;
 
 import java.beans.*;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
@@ -184,10 +185,7 @@ final class SaveSupport {
         public void run () throws IOException {
             if (!ip.getDataObject().isValid()) {
                 //invalid data object cannot be used for storing
-                ErrorManager err = ErrorManager.getDefault();
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log("invalid data object cannot be used for storing " + ip.getDataObject()); // NOI18N
-                }
+                Logger.getAnonymousLogger().fine("invalid data object cannot be used for storing " + ip.getDataObject()); // NOI18N
                 return;
             }
             org.openide.filesystems.FileLock lock = null;

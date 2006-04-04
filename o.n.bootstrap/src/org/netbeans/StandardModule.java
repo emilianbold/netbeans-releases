@@ -41,6 +41,7 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import org.openide.ErrorManager;
 import org.openide.modules.Dependency;
@@ -105,7 +106,7 @@ final class StandardModule extends Module {
         // For the chronologically reverse case, see findExtensionsAndVariants().
         Set bogoOwners = (Set)extensionOwners.get(jar);
         if (bogoOwners != null) {
-            Util.err.log(ErrorManager.WARNING, "WARNING - module " + jar + " was incorrectly placed in the Class-Path of other JARs " + bogoOwners + "; please use OpenIDE-Module-Module-Dependencies instead");
+            Util.err.warning("module " + jar + " was incorrectly placed in the Class-Path of other JARs " + bogoOwners + "; please use OpenIDE-Module-Module-Dependencies instead");
         }
         moduleJARs.add(jar);
     }
@@ -141,15 +142,15 @@ final class StandardModule extends Module {
                             // Fine, ignore.
                         }
                     } catch (MissingResourceException mre) {
-                        Util.err.notify(mre);
+                        Util.err.log(Level.WARNING, null, mre);
                     }
                 } else {
-                    Util.err.log(ErrorManager.WARNING, "WARNING - cannot efficiently load non-*.properties OpenIDE-Module-Localizing-Bundle: " + locb);
+                    Util.err.warning("cannot efficiently load non-*.properties OpenIDE-Module-Localizing-Bundle: " + locb);
                 }
             }
             if (!usingLoader) {
                 if (localizedProps == null) {
-                    Util.err.log("Trying to get localized attr " + attr + " from disabled module " + getCodeNameBase());
+                    Util.err.fine("Trying to get localized attr " + attr + " from disabled module " + getCodeNameBase());
                     try {
                         if (jar != null) {
                             JarFile jarFile = new JarFile(jar, false);
@@ -162,8 +163,7 @@ final class StandardModule extends Module {
                             throw new IllegalStateException();
                         }
                     } catch (IOException ioe) {
-                        Util.err.annotate(ioe, ErrorManager.INFORMATIONAL, jar.getAbsolutePath(), null, null, null);
-                        Util.err.notify(ErrorManager.INFORMATIONAL, ioe);
+                        Util.err.log(Level.WARNING, jar.getAbsolutePath(), ioe);
                         if (localizedProps == null) {
                             localizedProps = new Properties();
                         }
@@ -228,20 +228,20 @@ final class StandardModule extends Module {
         if (physicalJar != null) {
             if (physicalJar.isFile()) {
                 if (! physicalJar.delete()) {
-                    Util.err.log(ErrorManager.WARNING, "Warning: temporary JAR " + physicalJar + " not currently deletable.");
+                    Util.err.warning("temporary JAR " + physicalJar + " not currently deletable.");
                 } else {
-                    Util.err.log("deleted: " + physicalJar);
+                    Util.err.fine("deleted: " + physicalJar);
                 }
             }
             physicalJar = null;
         } else {
-            Util.err.log("no physicalJar to delete for " + this);
+            Util.err.fine("no physicalJar to delete for " + this);
         }
     }
     
     /** Open the JAR, load its manifest, and do related things. */
     private void loadManifest() throws IOException {
-        Util.err.log("loading manifest of " + jar);
+        Util.err.fine("loading manifest of " + jar);
         File jarBeingOpened = null; // for annotation purposes
         try {
             if (reloadable) {
@@ -263,7 +263,7 @@ final class StandardModule extends Module {
             }
         } catch (IOException e) {
             if (jarBeingOpened != null) {
-                Util.err.annotate(e, ErrorManager.UNKNOWN, "While loading manifest from: " + jarBeingOpened, null, null, null); // NOI18N
+                ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "While loading manifest from: " + jarBeingOpened, null, null, null); // NOI18N
             }
             throw e;
         }
@@ -291,13 +291,13 @@ final class StandardModule extends Module {
                         // than modules/ext/. However updater.jar is not in startup classpath,
                         // so autoupdate module explicitly declares it this way.
                     } else {
-                        Util.err.log(ErrorManager.WARNING, "WARNING: Class-Path value " + ext + " from " + jar + " is illegal according to the Java Extension Mechanism: must be relative and not move up directories");
+                        Util.err.warning("Class-Path value " + ext + " from " + jar + " is illegal according to the Java Extension Mechanism: must be relative and not move up directories");
                     }
                 }
                 File extfile = new File(jar.getParentFile(), ext.replace('/', File.separatorChar));
                 if (! extfile.exists()) {
                     // Ignore unloadable extensions.
-                    Util.err.log(ErrorManager.WARNING, "Warning: Class-Path value " + ext + " from " + jar + " cannot be found at " + extfile);
+                    Util.err.warning("Class-Path value " + ext + " from " + jar + " cannot be found at " + extfile);
                     continue;
                 }
                 //No need to sync on extensionOwners - we are in write mutex
@@ -312,7 +312,7 @@ final class StandardModule extends Module {
                     } // else already know about it (OK or warned)
                 // Also check to make sure it is not a module JAR! See constructor for the reverse case.
                 if (moduleJARs.contains(extfile)) {
-                    Util.err.log(ErrorManager.WARNING, "WARNING: Class-Path value " + ext + " from " + jar + " illegally refers to another module; use OpenIDE-Module-Module-Dependencies instead");
+                    Util.err.warning("Class-Path value " + ext + " from " + jar + " illegally refers to another module; use OpenIDE-Module-Module-Dependencies instead");
                 }
                 if (plainExtensions == null) plainExtensions = new HashSet<File>();
                 plainExtensions.add(extfile);
@@ -344,10 +344,10 @@ final class StandardModule extends Module {
                 }
             }
         }
-        Util.err.log("localeVariants of " + jar + ": " + localeVariants);
-        Util.err.log("plainExtensions of " + jar + ": " + plainExtensions);
-        Util.err.log("localeExtensions of " + jar + ": " + localeExtensions);
-        Util.err.log("patches of " + jar + ": " + patches);
+        Util.err.fine("localeVariants of " + jar + ": " + localeVariants);
+        Util.err.fine("plainExtensions of " + jar + ": " + plainExtensions);
+        Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
+        Util.err.fine("patches of " + jar + ": " + patches);
         if (patches != null) {
             Iterator it = patches.iterator();
             while (it.hasNext()) {
@@ -370,7 +370,7 @@ final class StandardModule extends Module {
                 patches.add(jars[j]);
             }
         } else {
-            Util.err.log(ErrorManager.WARNING, "Could not search for patches in " + patchdir);
+            Util.err.warning("Could not search for patches in " + patchdir);
         }
     }
     
@@ -448,7 +448,7 @@ final class StandardModule extends Module {
             }
             /* Don't log; too large and annoying:
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Util.err.log("localizedProps=" + localizedProps);
+                Util.err.fine("localizedProps=" + localizedProps);
             }
             */
         }
@@ -525,7 +525,7 @@ final class StandardModule extends Module {
      * The parents should already have had their classloaders initialized.
      */
     protected void classLoaderUp(Set<Module> parents) throws IOException {
-        Util.err.log("classLoaderUp on " + this + " with parents " + parents);
+        Util.err.fine("classLoaderUp on " + this + " with parents " + parents);
         // Find classloaders for dependent modules and parent to them.
         List<ClassLoader> loaders = new ArrayList<ClassLoader>(parents.size() + 1);
         // This should really be the base loader created by org.nb.Main for loading openide etc.:
@@ -555,7 +555,7 @@ final class StandardModule extends Module {
             }
             ClassLoader l = parent.getClassLoader();
             if (parent.isFixed() && loaders.contains(l)) {
-                Util.err.log("#24996: skipping duplicate classloader from " + parent);
+                Util.err.fine("#24996: skipping duplicate classloader from " + parent);
                 continue;
             }
             loaders.add(l);
@@ -616,7 +616,7 @@ final class StandardModule extends Module {
             ((ProxyClassLoader)classloader).destroy();
         }
         classloader = null;
-        Util.err.log("classLoaderDown on " + this + ": releaseCount=" + releaseCount + " released=" + released);
+        Util.err.fine("classLoaderDown on " + this + ": releaseCount=" + releaseCount + " released=" + released);
         released = false;
     }
     /** Should be called after turning off the classloader of one or more modules & GC'ing. */
@@ -624,10 +624,10 @@ final class StandardModule extends Module {
         if (isEnabled()) throw new IllegalStateException("cleanup on enabled module: " + this); // NOI18N
         if (classloader != null) throw new IllegalStateException("cleanup on module with classloader: " + this); // NOI18N
         if (! released) {
-            Util.err.log("Warning: not all resources associated with module " + jar + " were successfully released.");
+            Util.err.fine("Warning: not all resources associated with module " + jar + " were successfully released.");
             released = true;
         } else {
-            Util.err.log ("All resources associated with module " + jar + " were successfully released.");
+            Util.err.fine("All resources associated with module " + jar + " were successfully released.");
         }
         // XXX should this rather be done when the classloader is collected?
         destroyPhysicalJar();
@@ -724,12 +724,12 @@ final class StandardModule extends Module {
 
         protected void finalize() throws Throwable {
             super.finalize();
-            Util.err.log("Finalize for " + this + ": rc=" + rc + " releaseCount=" + releaseCount + " released=" + released); // NOI18N
+            Util.err.fine("Finalize for " + this + ": rc=" + rc + " releaseCount=" + releaseCount + " released=" + released); // NOI18N
             if (rc == releaseCount) {
                 // Hurrah! release() worked.
                 released = true;
             } else {
-                Util.err.log("Now resources for " + getCodeNameBase() + " have been released."); // NOI18N
+                Util.err.fine("Now resources for " + getCodeNameBase() + " have been released."); // NOI18N
             }
         }
     }

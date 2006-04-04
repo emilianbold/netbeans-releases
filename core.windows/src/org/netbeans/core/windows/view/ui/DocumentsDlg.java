@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -243,13 +245,11 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
                 try {
                     sc.save();
                 } catch (IOException exc) {
-                    ErrorManager em = ErrorManager.getDefault();
-                    em.log(ErrorManager.WARNING,
+                    Logger.getAnonymousLogger().log(Level.WARNING,
                     "[WinSys.DocumentsDlg.saveDocuments]" // NOI18N
                     + " Warning: Cannot save content of TopComponent: [" // NOI18N
                     + WindowManagerImpl.getInstance().getTopComponentDisplayName(tc) + "]" // NOI18N
-                    + " [" + tc.getClass().getName() + "]"); // NOI18N
-                    em.notify(ErrorManager.INFORMATIONAL, exc);
+                    + " [" + tc.getClass().getName() + "]", exc); // NOI18N
                 }
                 //Refresh name of node because TopComponent name is probably changed too
                 //('*' is removed)

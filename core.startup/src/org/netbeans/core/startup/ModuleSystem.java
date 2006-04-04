@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import org.netbeans.DuplicateException;
 import org.netbeans.Events;
 import org.netbeans.Module;
@@ -159,10 +160,10 @@ public final class ModuleSystem {
                 ignoredPrefixes.add("jar:" + f.toURI().toURL()); // NOI18N
             }
         } catch (MalformedURLException e) {
-            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            Util.err.log(Level.WARNING, null, e);
         }
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("ignoredPrefixes=" + ignoredPrefixes);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("ignoredPrefixes=" + ignoredPrefixes);
         }
         
         mgr.mutexPrivileged().enterWriteAccess();
@@ -188,8 +189,8 @@ public final class ModuleSystem {
                         continue MANIFESTS;
                     }
                 }
-                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    Util.err.log("Checking boot manifest: " + manifestUrlS);
+                if (Util.err.isLoggable(Level.FINE)) {
+                    Util.err.fine("Checking boot manifest: " + manifestUrlS);
                 }
                 
                 InputStream is;
@@ -197,7 +198,7 @@ public final class ModuleSystem {
                     is = manifestUrl.openStream();
                 } catch (IOException ioe) {
                     // Debugging for e.g. #32493 - which JAR was guilty?
-                    Util.err.annotate(ioe, ErrorManager.UNKNOWN, "URL: " + manifestUrl, null, null, null); // NOI18N
+                    ErrorManager.getDefault().annotate(ioe, ErrorManager.UNKNOWN, "URL: " + manifestUrl, null, null, null); // NOI18N
                     throw ioe;
                 }
                 try {
@@ -224,9 +225,9 @@ public final class ModuleSystem {
             // Probably if a bootstrap module is corrupt we are in pretty bad shape
             // anyway, so don't bother trying to be fancy and install just some of
             // them etc.
-            Util.err.notify(ioe);
+            Util.err.log(Level.WARNING, null, ioe);
         } catch (DuplicateException de) {
-            Util.err.notify(de);
+            Util.err.log(Level.WARNING, null, de);
         } finally {
             // Not 100% accurate in this case:
             ev.log(Events.FINISH_LOAD_BOOT_MODULES);

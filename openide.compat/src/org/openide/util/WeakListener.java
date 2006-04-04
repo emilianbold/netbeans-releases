@@ -12,6 +12,7 @@
  */
 package org.openide.util;
 
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
@@ -135,8 +136,7 @@ public abstract class WeakListener implements java.util.EventListener {
             }
 
             if ((m == null) && (source == null)) { // can't remove the listener
-                ErrorManager.getDefault().log(
-                    ErrorManager.WARNING,
+                Logger.getAnonymousLogger().warning(
                     "Can't remove " + listenerClass.getName() + //NOI18N
                     " using method " + removeMethodName() + //NOI18N
                     " source=" + source + //NOI18N
@@ -935,8 +935,7 @@ public abstract class WeakListener implements java.util.EventListener {
                 remove = getRemoveMethod(methodClass, methodName, types[0]);
 
                 if (remove == null) {
-                    ErrorManager.getDefault().log(
-                        ErrorManager.WARNING,
+                    Logger.getAnonymousLogger().warning(
                         "Can't remove " + ref.listenerClass.getName() + //NOI18N
                         " using method " + methodName + //NOI18N
                         " from " + src

@@ -17,6 +17,8 @@
  */
 package org.openide.explorer.propertysheet;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import org.openide.*;
@@ -312,9 +314,7 @@ final class PropUtils {
 
     //logging code borrowed from winsys
     static void log(Class clazz, String msg) {
-        if (isLoggable(clazz)) {
-            ErrorManager.getDefault().getInstance(clazz.getName()).log(msg);
-        }
+        Logger.getLogger(clazz.getName()).fine(msg);
     }
 
     static void log(Class clazz, FocusEvent fe) {
@@ -330,7 +330,7 @@ final class PropUtils {
             return false;
         }
 
-        boolean result = ErrorManager.getDefault().getInstance(clazz.getName()).isLoggable(ErrorManager.INFORMATIONAL);
+        boolean result = Logger.getLogger(clazz.getName()).isLoggable(Level.FINE);
 
         return result;
     }
@@ -396,7 +396,7 @@ final class PropUtils {
 
     public static void dumpStack(Class clazz) {
         // log(Class,String) only has an effect if INFORMATIONAL logging enabled on that prefix
-        if (ErrorManager.getDefault().getInstance(clazz.getName()).isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (Logger.getLogger(clazz.getName()).isLoggable(Level.FINE)) {
             StringWriter sw = new StringWriter();
             new Throwable().printStackTrace(new PrintWriter(sw));
             log(clazz, sw.getBuffer().toString());
@@ -827,8 +827,8 @@ final class PropUtils {
             String type = p.getValueType().getName();
 
             if (!(missing.contains(type))) {
-                ErrorManager.getDefault().log(
-                    ErrorManager.INFORMATIONAL, "No property editor registered for type " + type
+                Logger.getAnonymousLogger().fine(
+                    "No property editor registered for type " + type
                 ); //NOI18N
                 missing.add(type);
             }

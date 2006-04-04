@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.ServiceType;
 import org.openide.actions.DeleteAction;
@@ -134,7 +136,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
 
     private static final RequestProcessor PROCESSOR = new RequestProcessor ("Instance processor"); // NOI18N
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.loaders.InstanceDataObject"); // NOI18N
+    private static final Logger err = Logger.getLogger("org.openide.loaders.InstanceDataObject"); // NOI18N
 
     /** Create a new instance.
     * Do not use this to make instances; use {@link #create}.
@@ -430,16 +432,6 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             return HelpCtx.DEFAULT_HELP;
     }
 
-
-    /** Little utility method for posting an exception
-     *  to the default <CODE>ErrorManager</CODE> with severity
-     *  <CODE>ErrorManager.INFORMATIONAL</CODE>
-     */
-    static void inform(Throwable t) {
-	err.notify(ErrorManager.INFORMATIONAL, t);
-    }
-
-
     /* Provides node that should represent this data object. When a node for representation
     * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
     * with only parent changed. This implementation creates instance
@@ -481,7 +473,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 return new DataNode(this, Children.LEAF);
             }
         } catch (FileStateInvalidException ex) {
-            inform(ex);
+        	err.log(Level.WARNING, null, ex);
             return new DataNode(this, Children.LEAF);
         }
 
@@ -505,9 +497,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 return new CookieAdjustingFilter(h.getNode());
             }
         } catch (IOException ex) {
-            inform(ex);
+            err.log(Level.WARNING, null, ex);
         } catch (ClassNotFoundException ex) {
-            inform(ex);
+            err.log(Level.WARNING, null, ex);
         }
 
         return new InstanceNode (this);
@@ -774,8 +766,8 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
      */
     private static void warnAboutBrackets(FileObject fo) {
         if (warnedAboutBrackets.add(fo)) {
-            err.log(ErrorManager.WARNING, "Use of [] in " + fo + " is deprecated."); // NOI18N
-            err.log(ErrorManager.WARNING, "(Please use the string-valued file attribute instanceClass instead.)"); // NOI18N
+            err.warning("Use of [] in " + fo + " is deprecated."); // NOI18N
+            err.warning("(Please use the string-valued file attribute instanceClass instead.)"); // NOI18N
         }
     }
 
@@ -830,7 +822,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             char c = text.charAt (i);
             if (c == '#') {
                 if (i + 4 >= len) {
-                    err.log(ErrorManager.WARNING, "trailing garbage in instance name: " + text); // NOI18N
+                    err.warning("trailing garbage in instance name: " + text); // NOI18N
                     break;
                 }
                 try {
@@ -838,7 +830,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                     text.getChars (i + 1, i + 5, hex, 0);
                     unesc.append ((char) Integer.parseInt (new String (hex), 16));
                 } catch (NumberFormatException nfe) {
-                    err.notify(ErrorManager.INFORMATIONAL, nfe);
+                    err.log(Level.WARNING, null, nfe);
                 }
                 i += 4;
             } else {
@@ -892,8 +884,8 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             try {
                 fileLock = getPrimaryFile().lock();
             } catch (IOException ex) {
-                err.annotate(ex, getPrimaryFile().toString());
-        	inform(ex);
+                err.log(Level.WARNING, getPrimaryFile().toString());
+        	err.log(Level.WARNING, null, ex);
             }
             return fileLock;
         }
@@ -930,7 +922,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 return DataObject.find( createSerFile( df, name, obj ) );
             }
         } catch (ClassNotFoundException ex) {
-    	    inform(ex);
+    	    err.log(Level.WARNING, null, ex);
         }
 
         return super.handleCreateFromTemplate(df, name);
@@ -964,7 +956,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                     }
                 }
             } catch (ClassNotFoundException ex) {
-                inform(ex);
+                err.log(Level.WARNING, null, ex);
             }
         }
         return super.handleCopy(df);
@@ -1135,7 +1127,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             if (attr instanceof String) {
                 return Utilities.translate((String) attr);
             } else if (attr != null) {
-                err.log(ErrorManager.WARNING,
+                err.warning(
                     "instanceClass was a " + attr.getClass().getName()); // NOI18N
             }
 
@@ -1277,11 +1269,10 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                     oos.close ();
                 }
             } catch (IOException ex) {
-                err.annotate (ex, NbBundle.getMessage (
+                err.log(Level.WARNING, NbBundle.getMessage (
                     InstanceDataObject.class, "EXC_CannotSaveBean", // NOI18N
                     instanceName (), entry ().getFile ().getPath()
-                ));
-                err.notify (ex);
+                ), ex);
             }
 
         }
@@ -1306,7 +1297,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
                 return Boolean.FALSE;
             } else if (obj != null) {
-                err.log(ErrorManager.WARNING, "instanceOf was a " + obj.getClass().getName()); // NOI18N
+                err.warning("instanceOf was a " + obj.getClass().getName()); // NOI18N
             }
             // means no cache exists
             return null;
@@ -1553,7 +1544,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         if (e != null) {
             ErrorManager.getDefault().annotate(
                 e, "Problem with InstanceCookie.setInstance method: " + convertor.getClass()); // NOI18N
-            inform(e);
+            err.log(Level.WARNING, null, e);
         }
     }
 

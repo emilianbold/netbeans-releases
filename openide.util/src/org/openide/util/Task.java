@@ -14,6 +14,7 @@ package org.openide.util;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Level;
 
 
 /** A task that may be executed in a separate thread and permits examination of its status.
@@ -164,8 +165,8 @@ public class Task extends Object implements Runnable {
     */
     protected final void notifyRunning() {
         synchronized (this) {
-            if (RequestProcessor.logger().isLoggable(org.openide.ErrorManager.INFORMATIONAL)) {
-                RequestProcessor.logger().log("notifyRunning: " + this); // NOI18N
+            if (RequestProcessor.logger().isLoggable(Level.FINE)) {
+                RequestProcessor.logger().fine("notifyRunning: " + this); // NOI18N
             }
             this.finished = false;
             notifyAll();
@@ -180,8 +181,8 @@ public class Task extends Object implements Runnable {
 
         synchronized (this) {
             finished = true;
-            if (RequestProcessor.logger().isLoggable(org.openide.ErrorManager.INFORMATIONAL)) {
-                RequestProcessor.logger().log("notifyFinished: " + this); // NOI18N
+            if (RequestProcessor.logger().isLoggable(Level.FINE)) {
+                RequestProcessor.logger().fine("notifyFinished: " + this); // NOI18N
             }
             notifyAll();
 

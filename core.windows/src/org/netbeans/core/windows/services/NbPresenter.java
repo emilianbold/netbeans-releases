@@ -18,6 +18,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.openide.DialogDescriptor;
@@ -101,6 +103,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     private transient HelpCtx currentHelp = null;
     /** Used to prevent updateHelp from calling initializeButtons too many times. */
     private transient boolean haveCalledInitializeButtons = false;
+
+    private static Logger LOG = Logger.getLogger(NbPresenter.class.getName());
     
     static final long serialVersionUID =-4508637164126678997L;
     
@@ -1180,8 +1184,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                 dequeue = DefaultKeyboardFocusManager.class.getDeclaredMethod("dequeueKeyEvents", new Class[] { Long.TYPE, java.awt.Component.class });
                 dequeue.setAccessible(true);
             } catch (Throwable ex) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Not activating workaround for #50423"); // NOI18N
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                LOG.log(Level.WARNING, "Not activating workaround for #50423", ex); // NOI18N
             }
         }
     }
@@ -1217,7 +1220,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                 return;
             }
 
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Symptoms of #50423: There is something in type ahead: " + result + " requesting focus change"); // NOI18N
+            LOG.warning("Symptoms of #50423: There is something in type ahead: " + result + " requesting focus change"); // NOI18N
             try {
                 dequeue.invoke(fm, new Object[] { new Long(-1), NbPresenter.this });
             } catch (Exception ex) {

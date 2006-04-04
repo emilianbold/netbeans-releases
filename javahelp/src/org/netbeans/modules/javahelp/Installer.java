@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import org.netbeans.api.javahelp.Help;
@@ -26,11 +27,10 @@ import org.openide.modules.ModuleInstall;
 
 public class Installer extends ModuleInstall {
     
-    public static final ErrorManager err =
-        ErrorManager.getDefault().getInstance("org.netbeans.modules.javahelp"); // NOI18N
+    public static final Logger log = Logger.getLogger("org.netbeans.modules.javahelp"); // NOI18N
 
     public void restored() {
-        err.log("restored module");
+        log.fine("restored module");
         // This ensures the static block will be called ASAP, hence that
         // the AWT listener will actually be started quickly and there
         // will already have been interesting mouse-entered events
@@ -48,7 +48,7 @@ public class Installer extends ModuleInstall {
     }
     
     public void uninstalled() {
-        err.log("uninstalled module");
+        log.fine("uninstalled module");
         if (help != null) {
             help.deactivate();
         }
@@ -86,9 +86,7 @@ public class Installer extends ModuleInstall {
             }
         }
         if (!badKeys.isEmpty()) {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("Cleaning up old UIDefaults keys (JRE bug #4675772): " + badKeys);
-            }
+            log.fine("Cleaning up old UIDefaults keys (JRE bug #4675772): " + badKeys);
             it = badKeys.iterator();
             while (it.hasNext()) {
                 d.put(it.next(), null);

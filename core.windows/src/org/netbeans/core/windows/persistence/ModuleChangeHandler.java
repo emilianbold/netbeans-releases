@@ -14,6 +14,7 @@
 package org.netbeans.core.windows.persistence;
 
 import java.util.Iterator;
+import java.util.logging.Level;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.ErrorManager;
@@ -64,11 +65,9 @@ class ModuleChangeHandler implements FileChangeListener {
         try {
             fs = modesModuleFolder.getFileSystem();
         } catch (FileStateInvalidException exc) {
-            ErrorManager em = ErrorManager.getDefault();
-            em.log(ErrorManager.WARNING,
+            PersistenceManager.LOG.log(Level.WARNING,
             "[WinSys.ModuleChangeHandler.startHandling]" // NOI18N
-            + " Cannot get filesystem."); // NOI18N
-            em.notify(ErrorManager.INFORMATIONAL,exc);
+            + " Cannot get filesystem.", exc); // NOI18N
             return;
         }
         fs.addFileChangeListener(this);

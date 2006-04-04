@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.netbeans.Events;
 import org.netbeans.Module;
@@ -40,7 +42,8 @@ import org.openide.util.RequestProcessor;
  * @author Jesse Glick
  */
 final class NbEvents extends Events {
-    
+    private Logger logger = Logger.getLogger(NbEvents.class.getName());
+
     /** Handle a logged event.
      * CAREFUL that this is called synchronously, usually within a write
      * mutex or other sensitive environment. So do not call anything
@@ -83,7 +86,6 @@ final class NbEvents extends Events {
         } else if (message == FINISH_ENABLE_MODULES) {
             List modules = (List)args[0];
             if (! modules.isEmpty()) {
-                System.err.println(NbBundle.getMessage(NbEvents.class, "TEXT_finish_enable_modules"));
                 dumpModulesList(modules);
             }
             setStatusText(
@@ -95,7 +97,7 @@ final class NbEvents extends Events {
         } else if (message == FINISH_DISABLE_MODULES) {
             List modules = (List)args[0];
             if (! modules.isEmpty()) {
-                System.err.println(NbBundle.getMessage(NbEvents.class, "TEXT_finish_disable_modules"));
+                logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_finish_disable_modules"));
                 dumpModulesList(modules);
             }
             setStatusText(
@@ -131,7 +133,7 @@ final class NbEvents extends Events {
             }
             String msg = buf.toString();
             notify(msg, true);
-            System.err.println(msg);
+            logger.log(Level.INFO, msg);
             setStatusText("");
         } else if (message == FAILED_INSTALL_NEW_UNEXPECTED) {
             Module m = (Module)args[0];
@@ -152,7 +154,7 @@ final class NbEvents extends Events {
                 throw new IllegalStateException("Module " + m + " could not be installed but had no problems"); // NOI18N
             }
             notify(buf.toString(), true);
-            System.err.println(buf.toString());
+            logger.log(Level.INFO, buf.toString());
             setStatusText("");
         } else if (message == START_READ) {
             setStatusText(
@@ -178,12 +180,12 @@ final class NbEvents extends Events {
             // Nice to see the real title; not that common, after all.
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_install", ((Module)args[0]).getDisplayName()));
-            System.err.println(NbBundle.getMessage(NbEvents.class, "TEXT_install", ((Module)args[0]).getDisplayName()));
+            logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_install", ((Module)args[0]).getDisplayName()));
             incrementSplashProgressBar();
         } else if (message == UPDATE) {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_update", ((Module)args[0]).getDisplayName()));
-            System.err.println(NbBundle.getMessage(NbEvents.class, "TEXT_update", ((Module)args[0]).getDisplayName()));
+            logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_update", ((Module)args[0]).getDisplayName()));
             incrementSplashProgressBar();
         } else if (message == UNINSTALL) {
             setStatusText(
@@ -196,7 +198,7 @@ final class NbEvents extends Events {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_load_layers"));
         } else if (message == WRONG_CLASS_LOADER) {
-            if (! Boolean.getBoolean("netbeans.moduleitem.dontverifyclassloader") && Util.err.isLoggable(ErrorManager.WARNING)) { // NOI18N
+            if (! Boolean.getBoolean("netbeans.moduleitem.dontverifyclassloader") && Util.err.isLoggable(Level.WARNING)) { // NOI18N
                 Class clazz = (Class)args[1];
                 // Message for developers, no need for I18N.
                 StringBuffer b = new StringBuffer();
@@ -205,17 +207,17 @@ final class NbEvents extends Events {
                 b.append("whereas it was actually loaded from " + clazz.getClassLoader() + "\n"); // NOI18N
                 b.append("Usually this means that some classes were in the startup classpath.\n"); // NOI18N
                 b.append("To suppress this message, run with: -J-Dnetbeans.moduleitem.dontverifyclassloader=true"); // NOI18N
-                Util.err.log(ErrorManager.WARNING, b.toString());
+                Util.err.warning(b.toString());
             }
         } else if (message == EXTENSION_MULTIPLY_LOADED) {
             // Developer-oriented message, no need for I18N.
-            Util.err.log(ErrorManager.WARNING, "Warning: the extension " + (File)args[0] + " may be multiply loaded by modules: " + (Set/*<File>*/)args[1] + "; see: http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#class-path"); // NOI18N
+            logger.log(Level.WARNING, "The extension " + (File)args[0] + " may be multiply loaded by modules: " + (Set/*<File>*/)args[1] + "; see: http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#class-path"); // NOI18N
         } else if (message == MISSING_JAR_FILE) {
             File jar = (File)args[0];
-            System.err.println(NbBundle.getMessage(NbEvents.class, "TEXT_missing_jar_file", jar.getAbsolutePath()));
+            logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_missing_jar_file", jar.getAbsolutePath()));
         } else if (message == CANT_DELETE_ENABLED_AUTOLOAD) {
             Module m = (Module)args[0];
-            System.err.println(NbBundle.getMessage(NbEvents.class, "TEXT_cant_delete_enabled_autoload", m.getDisplayName()));
+            logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_cant_delete_enabled_autoload", m.getDisplayName()));
         } else if (message == MISC_PROP_MISMATCH) {
             // XXX does this really need to be logged to the user?
             // Or should it just be sent quietly to the log file?
@@ -223,10 +225,10 @@ final class NbEvents extends Events {
             String prop = (String)args[1];
             Object onDisk = (Object)args[2];
             Object inMem = (Object)args[3];
-            System.err.println(NbBundle.getMessage(NbEvents.class, "TEXT_misc_prop_mismatch", new Object[] {m.getDisplayName(), prop, onDisk, inMem}));
+            logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_misc_prop_mismatch", new Object[] {m.getDisplayName(), prop, onDisk, inMem}));
         } else if (message == PATCH) {
             File f = (File)args[0];
-            System.err.println(NbBundle.getMessage(NbEvents.class, "TEXT_patch", f.getAbsolutePath()));
+            logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_patch", f.getAbsolutePath()));
         }
         // XXX other messages?
     }
@@ -238,7 +240,9 @@ final class NbEvents extends Events {
         Iterator it = modules.iterator();
         if (! it.hasNext()) throw new IllegalArgumentException();
         StringBuffer buf = new StringBuffer(modules.size() * 100 + 1);
+        buf.append(NbBundle.getMessage(NbEvents.class, "TEXT_finish_enable_modules"));
         String lineSep = System.getProperty("line.separator");
+        buf.append(lineSep);
         while (it.hasNext()) {
             Module m = (Module)it.next();
             buf.append('\t'); // NOI18N
@@ -262,13 +266,13 @@ final class NbEvents extends Events {
             // #32331: use platform-specific newlines
             buf.append(lineSep);
         }
-        System.err.print(buf.toString());
+        logger.log(Level.INFO, buf.toString());
     }
     
     private void notify(String text, boolean warn) {
         if (Boolean.getBoolean("netbeans.full.hack")) { // NOI18N
             // #21773: interferes with automated GUI testing.
-            System.err.println(text);
+            logger.log(Level.INFO, text);
         } else {
             // Normal - display dialog.
             new Notifier(text, warn);

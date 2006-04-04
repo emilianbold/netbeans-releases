@@ -21,6 +21,8 @@ import java.util.ListIterator;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 
 /** Request processor that is capable to execute requests in dedicated threads.
@@ -101,7 +103,7 @@ public final class RequestProcessor {
     private static Timer starterThread = new Timer(true);
 
     /** logger */
-    private static ErrorManager logger;
+    private static Logger logger;
 
     /** The counter for automatic naming of unnamed RequestProcessors */
     private static int counter = 0;
@@ -383,10 +385,10 @@ public final class RequestProcessor {
 
     /** Logger for the error manager.
      */
-    static ErrorManager logger() {
+    static Logger logger() {
         synchronized (starterThread) {
             if (logger == null) {
-                logger = ErrorManager.getDefault().getInstance("org.openide.util.RequestProcessor"); // NOI18N
+                logger = Logger.getLogger("org.openide.util.RequestProcessor"); // NOI18N
             }
 
             return logger;
@@ -402,13 +404,13 @@ public final class RequestProcessor {
      * in the Processor.
      */
     void enqueue(Item item) {
-        ErrorManager em = logger();
-        boolean loggable = em.isLoggable(ErrorManager.INFORMATIONAL);
+        Logger em = logger();
+        boolean loggable = em.isLoggable(Level.FINE);
         
         synchronized (processorLock) {
             if (item.getTask() == null) {
                 if (loggable) {
-                    em.log("Null task for item " + item); // NOI18N
+                    em.fine("Null task for item " + item); // NOI18N
                 }
                 return;
             }
@@ -425,7 +427,7 @@ public final class RequestProcessor {
             }
         }
         if (loggable) {
-            em.log("Item enqueued: " + item.action + " status: " + item.enqueued); // NOI18N
+            em.fine("Item enqueued: " + item.action + " status: " + item.enqueued); // NOI18N
         }
     }
 
@@ -658,11 +660,11 @@ public final class RequestProcessor {
             if (isRequestProcessorThread()) { //System.err.println(
                 boolean toRun;
                 
-                ErrorManager em = logger();
-                boolean loggable = em.isLoggable(ErrorManager.INFORMATIONAL);
+                Logger em = logger();
+                boolean loggable = em.isLoggable(Level.FINE);
                 
                 if (loggable) {
-                    em.log("Task.waitFinished on " + this + " from other task in RP: " + Thread.currentThread().getName()); // NOI18N
+                    em.fine("Task.waitFinished on " + this + " from other task in RP: " + Thread.currentThread().getName()); // NOI18N
                 }
                 
 
@@ -671,25 +673,25 @@ public final class RequestProcessor {
                     // the same:        toRun = !isFinished () && (item == null ? true : item.clear ());
                     toRun = !isFinished() && ((item == null) || item.clear(null));
                     if (loggable) {
-                        em.log("    ## finished: " + isFinished()); // NOI18N
-                        em.log("    ## item: " + item); // NOI18N
+                        em.fine("    ## finished: " + isFinished()); // NOI18N
+                        em.fine("    ## item: " + item); // NOI18N
                     }
                 }
 
                 if (toRun) { 
                     if (loggable) {
-                        em.log("    ## running it synchronously"); // NOI18N
+                        em.fine("    ## running it synchronously"); // NOI18N
                     }
                     Processor processor = (Processor)Thread.currentThread();
                     processor.doEvaluate (this, processorLock, RequestProcessor.this);
                 } else { // it is already running in other thread of this RP
                     if (loggable) {
-                        em.log("    ## not running it synchronously"); // NOI18N
+                        em.fine("    ## not running it synchronously"); // NOI18N
                     }
 
                     if (lastThread != Thread.currentThread()) {
                         if (loggable) {
-                            em.log("    ## waiting for it to be finished"); // NOI18N
+                            em.fine("    ## waiting for it to be finished"); // NOI18N
                         }
                         super.waitFinished();
                     }
@@ -700,7 +702,7 @@ public final class RequestProcessor {
                     //                    }
                 }
                 if (loggable) {
-                    em.log("    ## exiting waitFinished"); // NOI18N
+                    em.fine("    ## exiting waitFinished"); // NOI18N
                 }
             } else {
                 super.waitFinished();
@@ -923,11 +925,11 @@ public final class RequestProcessor {
 
                 String debug = null;
 
-                ErrorManager em = logger();
-                boolean loggable = em.isLoggable(ErrorManager.INFORMATIONAL);
+                Logger em = logger();
+                boolean loggable = em.isLoggable(Level.INFO);
 
                 if (loggable) {
-                    em.log(ErrorManager.INFORMATIONAL, "Begining work " + getName()); // NOI18N
+                    em.fine("Begining work " + getName()); // NOI18N
                 }
 
                 // while we have something to do
@@ -941,13 +943,13 @@ public final class RequestProcessor {
 
                     try {
                         if (loggable) {
-                            logger().log("  Executing " + todo); // NOI18N
+                            em.fine("  Executing " + todo); // NOI18N
                         }
 
                         todo.run();
 
                         if (loggable) {
-                            logger().log("  Execution finished in" + getName()); // NOI18N
+                            em.fine("  Execution finished in" + getName()); // NOI18N
                         }
 
                         debug = todo.debug();
@@ -955,7 +957,7 @@ public final class RequestProcessor {
                         // direct notification, there may be no room for
                         // annotations and we need OOME to be processed
                         // for debugging hooks
-                        ErrorManager.getDefault().notify(oome);
+                        em.log(Level.SEVERE, null, oome);
                     } catch (StackOverflowError e) {
                         // Try as hard as possible to get a real stack trace
                         e.printStackTrace();
@@ -977,7 +979,7 @@ public final class RequestProcessor {
                 }
 
                 if (loggable) {
-                    logger().log(ErrorManager.INFORMATIONAL, "Work finished " + getName()); // NOI18N
+                    em.fine("Work finished " + getName()); // NOI18N
                 }
             }
         }
@@ -1019,12 +1021,10 @@ public final class RequestProcessor {
 
         /** @see "#20467" */
         private static void doNotify(RequestProcessor.Task todo, Throwable ex) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(
-                ex, ErrorManager.EXCEPTION, null,
-                null, SLOW ? todo.item : null, null
-            );
-            err.notify(ex);
+            logger().log(Level.SEVERE, null, ex);
+            if (SLOW) {
+                logger.log(Level.SEVERE, null, todo.item);
+            }
         }
 
         /**

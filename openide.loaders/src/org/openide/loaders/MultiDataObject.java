@@ -17,6 +17,8 @@ import java.lang.ref.WeakReference;
 import java.io.*;
 import java.util.*;
 import java.beans.PropertyVetoException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
@@ -57,8 +59,7 @@ public class MultiDataObject extends DataObject {
     /** lock used in firePropFilesAfterFinishing */
     private static final Object delayedPropFilesLock = new Object();
     /** logging of operations in multidataobject */
-    static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MultiDataObject.class.getName());
-    static final boolean LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+    static final Logger ERR = Logger.getLogger(MultiDataObject.class.getName());
     
     /** getPrimaryEntry() is intended to have all inetligence for copy/move/... */
     private Entry primary;
@@ -158,8 +159,8 @@ public class MultiDataObject extends DataObject {
             if (secondary == null) {
                 secondary = new HashMap(4);
             }
-            if (LOG) {
-                ERR.log("getSecondary for " + this + " is " + secondary); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("getSecondary for " + this + " is " + secondary); // NOI18N
             }
             return secondary;
         }
@@ -219,8 +220,8 @@ public class MultiDataObject extends DataObject {
     protected final void addSecondaryEntry (Entry fe) {
         synchronized ( getSecondary() ) {
             getSecondary().put (fe.getFile (), fe);  
-            if (LOG) {
-                ERR.log("addSecondaryEntry: " + fe + " for " + this); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("addSecondaryEntry: " + fe + " for " + this); // NOI18N
             }
         }
 
@@ -256,8 +257,8 @@ public class MultiDataObject extends DataObject {
     protected final void removeSecondaryEntry (Entry fe) {
         synchronized (getSecondary()) {
             getSecondary().remove (fe.getFile ());
-            if (LOG) {
-                ERR.log("removeSecondaryEntry: " + fe + " for " + this); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("removeSecondaryEntry: " + fe + " for " + this); // NOI18N
             }
         }
         
@@ -365,8 +366,8 @@ public class MultiDataObject extends DataObject {
      * set of objects.
      */
     private void removeAllInvalid () {
-        if (LOG) {
-            ERR.log("removeAllInvalid, started " + this); // NOI18N
+        if (ERR.isLoggable(Level.FINE)) {
+            ERR.fine("removeAllInvalid, started " + this); // NOI18N
         }
         Iterator it = checkSecondary ().entrySet ().iterator ();
         while (it.hasNext ()) {
@@ -374,14 +375,14 @@ public class MultiDataObject extends DataObject {
             FileObject fo = (FileObject)e.getKey ();
             if (!fo.isValid ()) {
                 it.remove ();
-                if (LOG) {
-                    ERR.log("removeAllInvalid, removed: " + fo + " for " + this); // NOI18N
+                if (ERR.isLoggable(Level.FINE)) {
+                    ERR.fine("removeAllInvalid, removed: " + fo + " for " + this); // NOI18N
                 }
                 firePropertyChangeLater (PROP_FILES, null, null);
             }
         }
-        if (LOG) {
-            ERR.log("removeAllInvalid, finished " + this); // NOI18N
+        if (ERR.isLoggable(Level.FINE)) {
+            ERR.fine("removeAllInvalid, finished " + this); // NOI18N
         }
     }
 
@@ -483,8 +484,8 @@ public class MultiDataObject extends DataObject {
             Object[] objects = toRemove.toArray();
             for (int i = 0; i < objects.length; i++) {
                 getSecondary().remove(objects[i]);
-                if (LOG) {
-                    ERR.log("  handleDelete, removed entry: " + objects[i]);
+                if (ERR.isLoggable(Level.FINE)) {
+                    ERR.fine("  handleDelete, removed entry: " + objects[i]);
                 }
             }
         }
@@ -537,16 +538,16 @@ public class MultiDataObject extends DataObject {
                     Object[] objects = toRemove.toArray();
                     for (int i = 0; i < objects.length; i++) {
                         getSecondary().remove(objects[i]);
-                        if (LOG) {
-                            ERR.log("handleRename, removed: " + objects[i] + " for " + this); // NOI18N
+                        if (ERR.isLoggable(Level.FINE)) {
+                            ERR.fine("handleRename, removed: " + objects[i] + " for " + this); // NOI18N
                         }
                     }
                 }
                 // add entries
                 if (add != null) {
                     getSecondary().putAll (add);
-                    if (LOG) {
-                        ERR.log("handleRename, putAll: " + add + " for " + this); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) {
+                        ERR.fine("handleRename, putAll: " + add + " for " + this); // NOI18N
                     }
                 }
             }
@@ -583,19 +584,19 @@ public class MultiDataObject extends DataObject {
                 it = list.iterator();
             }
             
-            if (LOG) {
-                ERR.log("move " + this + " to " + df + " number of secondary entries: " + count); // NOI18N
-                ERR.log("moving primary entry: " + getPrimaryEntry()); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("move " + this + " to " + df + " number of secondary entries: " + count); // NOI18N
+                ERR.fine("moving primary entry: " + getPrimaryEntry()); // NOI18N
             }
             getPrimaryEntry ().changeFile (getPrimaryEntry ().move (df.getPrimaryFile (), suffix));
-            if (LOG) ERR.log("               moved: " + getPrimaryEntry().getFile()); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("               moved: " + getPrimaryEntry().getFile()); // NOI18N
 
             
             while (it.hasNext ()) {
                 Map.Entry e = (Map.Entry)it.next ();
-                if (LOG) ERR.log("moving entry :" + e); // NOI18N
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("moving entry :" + e); // NOI18N
                 FileObject fo = ((Entry)e.getValue ()).move (df.getPrimaryFile (), suffix);
-                if (LOG) ERR.log("  moved to   :" + fo); // NOI18N
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("  moved to   :" + fo); // NOI18N
                 if (fo == null) {
                     // remove the entry
                     toRemove.add(e.getKey());
@@ -623,34 +624,34 @@ public class MultiDataObject extends DataObject {
                         Object[] objects = toRemove.toArray();
                         for (int i = 0; i < objects.length; i++) {
                             getSecondary().remove(objects[i]);
-                            if (LOG) {
-                                ERR.log("handleMove, remove: " + objects[i] + " for " + this); // NOI18N
+                            if (ERR.isLoggable(Level.FINE)) {
+                                ERR.fine("handleMove, remove: " + objects[i] + " for " + this); // NOI18N
                             }
                         }
                     }
                     // add entries
                     if (add != null) {
                         getSecondary().putAll (add);
-                        if (LOG) {
-                            ERR.log("handleMove, putAll: " + add + " for " + this); // NOI18N
+                        if (ERR.isLoggable(Level.FINE)) {
+                            ERR.fine("handleMove, putAll: " + add + " for " + this); // NOI18N
                         }
                     }
                 }
                 firePropertyChangeLater (PROP_FILES, null, null);
             }
 
-            if (LOG) {
-                ERR.log("successfully moved " + this); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("successfully moved " + this); // NOI18N
             }
             return getPrimaryEntry ().getFile ();
         } catch (IOException e) {
-            if (LOG) {
-                ERR.log("exception is here, restoring entries " + this); // NOI18N
-                ERR.notify(ErrorManager.INFORMATIONAL, e);
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("exception is here, restoring entries " + this); // NOI18N
+                ERR.log(Level.FINE, null, e);
             }
             restoreEntries(backup);
-            if (LOG) {
-                ERR.log("entries restored " + this); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("entries restored " + this); // NOI18N
             }
             throw e;
         }
@@ -983,8 +984,8 @@ public class MultiDataObject extends DataObject {
             if (newFile.equals (file)) {
                 return;
             }
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "changeFile: " + newFile + " for " + this + " of " + getDataObject());  // NOI18N
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("changeFile: " + newFile + " for " + this + " of " + getDataObject());  // NOI18N
             }
             newFile.setImportant (isImportant ());
             this.file = newFile;
@@ -992,8 +993,8 @@ public class MultiDataObject extends DataObject {
             // release lock for old file
             FileLock l = lock == null ? null : (FileLock)lock.get ();
             if (l != null && l.isValid ()) {
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log("releasing old lock: " + this + " was: " + l);
+                if (ERR.isLoggable(Level.FINE)) {
+                    ERR.fine("releasing old lock: " + this + " was: " + l);
                 }
                 l.releaseLock ();
             }
@@ -1077,8 +1078,8 @@ public class MultiDataObject extends DataObject {
                 l = getFile ().lock ();
                 lock = new WeakReference (l);
             }
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log("takeLock: " + this + " is: " + l);
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("takeLock: " + this + " is: " + l);
             }
             return l;
         }

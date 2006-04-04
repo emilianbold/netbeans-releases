@@ -13,6 +13,7 @@
 
 package org.netbeans.core.windows.persistence;
 
+import java.util.logging.Level;
 import org.netbeans.core.windows.Debug;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -215,8 +216,7 @@ class GroupParser {
                                         (cfg.moduleCodeNameBase, cfg.moduleCodeNameRelease,
                                          cfg.moduleSpecificationVersion);
             if (curModuleInfo == null) {
-                ErrorManager em = ErrorManager.getDefault();
-                em.log (ErrorManager.INFORMATIONAL, "Cannot find module \'" + 
+                PersistenceManager.LOG.fine("Cannot find module \'" +
                           cfg.moduleCodeNameBase + " " + cfg.moduleCodeNameRelease + " " + 
                           cfg.moduleSpecificationVersion + "\' for tcgrp with name \'" + config.tc_id + "\'"); // NOI18N
             }
@@ -324,7 +324,7 @@ class GroupParser {
         //Check consistency. TCGroupParser instance should not exist.
         TCGroupParser tcGroupParser = (TCGroupParser) tcGroupParserMap.get(tcGroupName);
         if (tcGroupParser != null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
+            PersistenceManager.LOG.log(Level.WARNING,
             "[WinSys.GroupParser.addTCGroup]" // NOI18N
             + " Warning: GroupParser " + getName() + ". TCGroupParser " // NOI18N
             + tcGroupName + " exists but it should not."); // NOI18N
@@ -339,11 +339,9 @@ class GroupParser {
         try {
             tcGroupConfig = tcGroupParser.load();
         } catch (IOException exc) {
-            ErrorManager em = ErrorManager.getDefault();
-            em.log(ErrorManager.WARNING,
+            PersistenceManager.LOG.log(Level.WARNING,
             "[WinSys.GroupParser.addTCGroup]" // NOI18N
-            + " Warning: GroupParser " + getName() + ". Cannot load tcGroup " +  tcGroupName); // NOI18N
-            em.notify(ErrorManager.INFORMATIONAL, exc);
+            + " Warning: GroupParser " + getName() + ". Cannot load tcGroup " +  tcGroupName, exc); // NOI18N
         }
         return tcGroupConfig;
     }
@@ -518,7 +516,7 @@ class GroupParser {
             if (version != null) {
                 internalConfig.specVersion = new SpecificationVersion(version);
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.GroupParser.handleGroup]" // NOI18N
                 + " Warning: Missing attribute \"version\" of element \"group\"."); // NOI18N
                 internalConfig.specVersion = new SpecificationVersion("2.0"); // NOI18N
@@ -568,14 +566,14 @@ class GroupParser {
             if (name != null) {
                 groupConfig.name = name;
                 if (!name.equals(GroupParser.this.getName())) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.GroupParser.handleName]" // NOI18N
                     + " Error: Value of attribute \"unique\" of element \"name\"" // NOI18N
                     + " and configuration file name must be the same."); // NOI18N
                     throw new SAXException("Invalid attribute value"); // NOI18N
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.GroupParser.handleName]" // NOI18N
                 + " Error: Missing required attribute \"unique\" of element \"name\"."); // NOI18N
                 throw new SAXException("Missing required attribute"); // NOI18N
@@ -591,13 +589,13 @@ class GroupParser {
                 } else if ("false".equals(opened)) { // NOI18N
                     groupConfig.opened = false;
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.GroupParser.handleState]" // NOI18N
                     + " Warning: Invalid value of attribute \"opened\" of element \"state\"."); // NOI18N
                     groupConfig.opened = false;
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                 PersistenceManager.LOG.log(Level.WARNING,
                 "[WinSys.GroupParser.handleState]" // NOI18N
                 + " Error: Missing required attribute \"opened\" of element \"state\"."); // NOI18N
                 groupConfig.opened = false;

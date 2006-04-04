@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
@@ -176,8 +176,9 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
                         // ignore--normal
                     }
                 } catch (MissingResourceException ex) {
-                    ErrorManager.getDefault().annotate(ex, ErrorManager.UNKNOWN, "Computing display name for " + fo, null, null, null); // NOI18N
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    ModuleLayeredFileSystem.err.log(
+                        Level.WARNING,
+                        "Computing display name for " + fo, ex); // NOI18N
                     // ignore
                 }
             }
@@ -212,7 +213,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
                     // #18832
                     return (Image)value;
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
+                    ModuleLayeredFileSystem.err.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
                 }
             }
             Image anntIm = FixedFileSystem.deflt.annotateIcon(fo.getPath());
