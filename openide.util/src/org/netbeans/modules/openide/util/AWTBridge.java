@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,10 @@ package org.netbeans.modules.openide.util;
 
 import java.awt.Component;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import org.openide.util.Lookup;
 
 /** Provider of action presentations. Based on type of the action
  * should be able to derive its menu, popup menu and toolbar 
@@ -30,14 +33,14 @@ public abstract class AWTBridge extends Object {
      * @return the presenter
      */
     public static AWTBridge getDefault () {
-        AWTBridge ap = (AWTBridge)org.openide.util.Lookup.getDefault().lookup (AWTBridge.class);
+        AWTBridge ap = Lookup.getDefault().lookup(AWTBridge.class);
         return ap == null ? new Default () : ap;
     }
     
     /** Creates a default empty implementation of popup menu.
      * @return popup menu
      */
-    public abstract javax.swing.JPopupMenu createEmptyPopup ();
+    public abstract JPopupMenu createEmptyPopup();
     
     /** Creates a menu item that can present this action in a {@link javax.swing.JMenu}.
      * @param action the action to represent
@@ -67,19 +70,19 @@ public abstract class AWTBridge extends Object {
     private static final class Default extends AWTBridge {
         
         public JMenuItem createMenuPresenter(Action action) {
-            return new javax.swing.JMenuItem (action);
+            return new JMenuItem(action);
         }
         
         public JMenuItem createPopupPresenter(Action action) {
-            return new javax.swing.JMenuItem (action);
+            return new JMenuItem(action);
         }
         
         public Component createToolbarPresenter(Action action) {
-            return new javax.swing.JButton (action);
+            return new JButton(action);
         }
         
-        public javax.swing.JPopupMenu createEmptyPopup() {
-            return new javax.swing.JPopupMenu ();
+        public JPopupMenu createEmptyPopup() {
+            return new JPopupMenu();
         }
         
         public Component[] convertComponents(Component comp) {
