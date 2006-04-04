@@ -586,7 +586,7 @@ public class SvnUtils {
      * <p> E.g. revert on package node means:
      * <ul>
      *   <li>revert package folder properties AND
-     *   <li>revert all modified files in the folder
+     *   <li>revert all modified (including deleted) files in the folder
      * </ul>
      *
      * @return files with given status and direct descendants with given status.
@@ -601,7 +601,7 @@ public class SvnUtils {
             if ((status & info.getStatus()) != 0) {
                 ret.add(dir);
             }
-            File[] entries = dir.listFiles();
+            File[] entries = cache.listFiles(dir);  // comparing to dir.listFiles() lists already deleted too
             for (int e = 0; e<entries.length; e++) {
                 File entry = entries[e];
                 info = cache.getStatus(entry);

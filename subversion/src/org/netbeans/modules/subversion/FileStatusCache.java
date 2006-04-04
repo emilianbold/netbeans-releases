@@ -117,7 +117,7 @@ public class FileStatusCache implements ISVNNotifyListener {
      * @param dir folder to list
      * @return
      */
-    private File [] listFiles(File dir) {
+    public File [] listFiles(File dir) {
         Set files = getScannedFiles(dir).keySet();
         return (File[]) files.toArray(new File[files.size()]);
     }

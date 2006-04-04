@@ -109,9 +109,15 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
         // needed for external deletes; othewise, beforeDelete is quicker
         if (Thread.currentThread() == ignoredThread) return;
         File file = FileUtil.toFile(fe.getFile());
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            eventProcessor.post(new FileDeletedTask(file));
+        if (file != null) {
+            // file is already deleted, cache contains null for up-to-date file
+            // for deleted files it'd mean FILE_INFORMATION_UNKNOWN
+            // on the other hand cache keeps all folders regardless their status
+            File probe = file.getParentFile();
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+            if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                eventProcessor.post(new FileDeletedTask(file));
+            }
         }
     }
 
@@ -335,18 +341,12 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
      */ 
     private void fileDeletedImpl(File file) {
         if (file == null) return;
-
-        FileInformation info = cache.getStatus(file);
-        if ((info.getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-            try {
-                ISVNClientAdapter client = Subversion.getInstance().getClient();
-                client.remove(new File [] { file }, true);
-            } catch (SVNClientException e) {
-                // ignore; we do not know what to do here; does no harm
-            }
-            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        try {
+            ISVNClientAdapter client = Subversion.getInstance().getClient();
+            client.remove(new File [] { file }, true);
+        } catch (SVNClientException e) {
+            // ignore; we do not know what to do here; does no harm
         }
-//        if (properties_changed) cache.directoryContentChanged(file.getParentFile());
     }
     
     /**

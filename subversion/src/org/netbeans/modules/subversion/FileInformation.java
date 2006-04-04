@@ -143,13 +143,15 @@ public class FileInformation implements Serializable {
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
     /**
-     * Modified, in conflict, scheduled for removal or addition.
+     * Modified, in conflict, scheduled for removal or addition;
+     * or deleted but with existing entry record.
      */
     public static final int STATUS_REVERTIBLE_CHANGE =
             FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
             FileInformation.STATUS_VERSIONED_CONFLICT | 
             FileInformation.STATUS_VERSIONED_MERGE |
             FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY |
+            FileInformation.STATUS_VERSIONED_DELETEDLOCALLY |
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
 
@@ -343,6 +345,10 @@ public class FileInformation implements Serializable {
 
     private static boolean match(int status, int mask) {
         return (status & mask) != 0;
+    }
+
+    public String toString() {
+        return "Text: " + status + " " + getStatusText(status) + "\nProp: " + propStatus + " " + getStatusText(status);
     }
 }
 
