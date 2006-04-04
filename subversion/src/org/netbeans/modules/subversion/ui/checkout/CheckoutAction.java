@@ -54,7 +54,6 @@ public final class CheckoutAction extends CallableSystemAction {
             public void perform() {
                 try {
                     setDisplayName("checking out ...");
-                    setCancellableDelegate(client);
                     checkout(client, repository, repositoryFiles, file, false, this);
                 } catch (SVNClientException ex) {
                     ErrorManager.getDefault().notify(ex); 
@@ -65,18 +64,16 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
 
                 setDisplayName("scaning folders ...");
-                setCancellableDelegate(null);
                 if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0) {
                     String[] folders = new String[repositoryFiles.length];
                     for (int i = 0; i < repositoryFiles.length; i++) {
-
+                        if(isCanceled()) {
+                            return;
+                        }
                         if(repositoryFiles[i].isRepositoryRoot()) {
                             folders[i] = ".";
                         } else {
                             folders[i] = repositoryFiles[i].getFileUrl().getLastPathSegment();
-                        }
-                        if(isCanceled()) {
-                            return;
                         }
                     }             
                     CheckoutCompleted cc = new CheckoutCompleted(file, folders, true);

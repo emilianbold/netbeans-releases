@@ -16,6 +16,7 @@ package org.netbeans.modules.subversion;
 import java.util.*;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.UnsupportedSvnClientAdapter;
@@ -50,10 +51,7 @@ public class Subversion {
     private FileStatusCache     fileStatusCache;
     private FilesystemHandler   filesystemHandler;
     private Annotator           annotator;
-    private HashMap             clientsToUrl;
     private HashMap             processorsToUrl;
-    private HashMap             clientsToProxyDescriptor;
-    private HashMap             urlToClients;    
 
     private OutputLogger outputLogger;
 
@@ -85,7 +83,7 @@ public class Subversion {
     }
 
     private void cleanup() {
-        rp.post(new Runnable() {
+        getRequestProccessor().post(new Runnable() {
             public void run() {
                 try {
                     Diagnostics.println("Cleaning up");
@@ -155,36 +153,14 @@ public class Subversion {
         return annotator;
     }
 
-    public SVNUrl getUrl(SvnClient client) {
-        if(urlToClients!=null) {
-            return (SVNUrl) urlToClients.get(client);
-        }
-        return null;
-    }
-
-    public ProxyDescriptor getProxyDescriptor(SvnClient client) {
-        if(clientsToProxyDescriptor!=null) {
-            return (ProxyDescriptor) clientsToProxyDescriptor.get(client);
-        }
-        return null;
-    }
-    
     public SvnClient getClient(SVNUrl repositoryUrl,
                                ProxyDescriptor pd, 
                                String username, 
                                String password) 
     throws SVNClientException    
     {
-        SvnClient client = (SvnClient) getClientsToUrl().get(repositoryUrl);
-        if(client == null) {
-            client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password);            
-            attachListeners(client);            
-        } else {
-            // XXX - some kind of check if it's still the same configuration (proxy, psswd, user)            
-        }
-
-        // associate the client with the proxy descriptor and url
-        clientAndURl(client, repositoryUrl, pd);
+        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password);            
+        attachListeners(client);            
 
         return client;
     }
@@ -196,7 +172,7 @@ public class Subversion {
         return getClient(repositoryUrl);
     }
 
-    public SvnClient getClient(Context ctx) throws SVNClientException {
+    public SvnClient getClient(Context ctx, SvnProgressSupport support) throws SVNClientException {
         File[] roots = ctx.getRootFiles();
         SVNUrl repositoryUrl = null;
         for (int i = 0; i<roots.length; i++) {
@@ -208,18 +184,16 @@ public class Subversion {
 
         assert repositoryUrl != null : "Unable to get repository, context contains only unmanaged files!";
 
-        return getClient(repositoryUrl);
+        return getClient(repositoryUrl, support);
     }
-    
-    public SvnClient getClient(SVNUrl repositoryUrl) 
-    throws SVNClientException 
-    {        
-        SvnClient client = (SvnClient) getClientsToUrl().get(repositoryUrl);
-        if(client == null) {        
-            client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl);        
-            attachListeners(client);
-            clientAndURl(client, repositoryUrl, null);
-        }
+
+    public SvnClient getClient(SVNUrl repositoryUrl) throws SVNClientException {
+        return getClient(repositoryUrl, null);
+    }
+
+    public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support) throws SVNClientException {
+        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support);
+        attachListeners(client);
         return client;
     }
     
@@ -239,36 +213,7 @@ public class Subversion {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient();
         attachListeners(client);
         return client;
-    }    
-    
-    private HashMap getClientsToUrl() {
-        if(clientsToUrl == null) {
-            clientsToUrl = new HashMap();
-        }
-        return clientsToUrl;
-    }    
-
-    private HashMap getUrlToClients() {
-        if(urlToClients == null) {
-            urlToClients = new HashMap();
-        }
-        return urlToClients;
-    }
-
-    private HashMap getClientsToProxyDescriptor() {
-        if(clientsToProxyDescriptor == null) {
-            clientsToProxyDescriptor = new HashMap();
-        }
-        return clientsToProxyDescriptor;
     }        
-
-    private void clientAndURl(SvnClient client, SVNUrl repositoryUrl, ProxyDescriptor pd) {
-        getClientsToUrl().put(repositoryUrl, client);
-        getUrlToClients().put(client, repositoryUrl);
-        if(pd!=null) {
-            getClientsToProxyDescriptor().put(client, pd);   
-        }        
-    }    
     
     public ISVNStatus getLocalStatus(File file) throws SVNClientException {
         ISVNClientAdapter client = getClient();
@@ -363,17 +308,15 @@ public class Subversion {
             return false;
         }
 
-    }
+    }    
 
     /**
      * Serializes all SVN requests (moves them out of AWT).
-     * XXX delete me!!!
      */
-    private RequestProcessor rp = new RequestProcessor("Subversion", 1, true); // NOI18N
-    public RequestProcessor.Task postRequest(Runnable run) {
-        return rp.post(run);
+    public RequestProcessor getRequestProccessor() {
+        return getRequestProccessor(null);
     }
-    
+
     /**
      * Serializes all SVN requests (moves them out of AWT).
      */
@@ -381,7 +324,14 @@ public class Subversion {
         if(processorsToUrl == null) {
             processorsToUrl = new HashMap();
         }
-        String key = url.toString();
+
+        String key;
+        if(url != null) {
+            key = url.toString();
+        } else {
+            key = "ANY_URL";
+        }
+
         RequestProcessor rp = (RequestProcessor) processorsToUrl.get(key);
         if(rp == null) {
             rp = new RequestProcessor("Subversion - " + key, 1, true); // NOI18N

@@ -14,9 +14,9 @@
 package org.netbeans.modules.subversion.ui.commit;
 
 import java.io.*;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.settings.*;
 import org.netbeans.modules.subversion.ui.actions.*;
-import org.netbeans.modules.subversion.ui.actions.PlaceholderAction;
 import org.openide.nodes.*;
 
 /**
@@ -66,26 +66,27 @@ public final class ExcludeFromCommitAction extends ContextAction {
         return status;
     }
 
-    public void performContextAction(Node[] nodes) {
-        Object pair = startProgress(nodes);
-        try {            
-            SvnModuleConfig config = SvnModuleConfig.getDefault();
-            int status = getActionStatus(nodes);
-            File [] files = getContext(nodes).getFiles();
-            if (status == EXCLUDING) {
-                for (int i = 0; i < files.length; i++) {
-                    File file = files[i];
-                    config.addExclusionPath(file.getAbsolutePath());
+    public void performContextAction(Node[] nodes, SvnProgressSupport support) {        
+        SvnModuleConfig config = SvnModuleConfig.getDefault();
+        int status = getActionStatus(nodes);
+        File [] files = getContext(nodes).getFiles();
+        if (status == EXCLUDING) {
+            for (int i = 0; i < files.length; i++) {
+                if(support.isCanceled()) {
+                    return;
                 }
-            } else if (status == INCLUDING) {
-                for (int i = 0; i < files.length; i++) {
-                    File file = files[i];
-                    config.removeExclusionPath(file.getAbsolutePath());
-                }
+                File file = files[i];
+                config.addExclusionPath(file.getAbsolutePath());
             }
-        } finally {
-            finished(pair);
+        } else if (status == INCLUDING) {
+            for (int i = 0; i < files.length; i++) {
+                if(support.isCanceled()) {
+                    return;
+                }
+                File file = files[i];
+                config.removeExclusionPath(file.getAbsolutePath());
+            }
         }
     }
-    
+
 }

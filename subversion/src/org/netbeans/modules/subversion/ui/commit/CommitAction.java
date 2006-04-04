@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
@@ -29,10 +30,12 @@ import java.awt.*;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Commit action
@@ -46,7 +49,7 @@ public class CommitAction extends ContextAction {
     }
 
     /** Run commit action.  */
-    public static void commit(final Context ctx) {
+    public static void commit(final Context ctx, SvnProgressSupport support) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
 
@@ -81,38 +84,46 @@ public class CommitAction extends ContextAction {
         dialog.setVisible(true);
 
         if (dd.getValue() == commitButton) {
+
             final Map commitFiles = data.getCommitFiles();
             final String message = panel.messageTextArea.getText();
-            Runnable run = new Runnable() {
-                public void run() {
-                    performCommit(message, commitFiles, ctx);
+
+            SVNUrl repository = getSvnUrl(ctx);
+            RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
+            support = new SvnProgressSupport(rp) {
+                public void perform() {                    
+                    performCommit(message, commitFiles, ctx, this);
                 }
             };
-            Subversion.getInstance().postRequest(run);
+            support.start("Comitting...");
         }
 
         // if OK setup sequence of add, remove and commit calls
         
     }
     
-    protected void performContextAction(Node[] nodes) {
+    protected void performContextAction(Node[] nodes, SvnProgressSupport support) {
         Context ctx = getContext(nodes);
-        commit(ctx);
+        commit(ctx, support);
     }
 
-    private static void performCommit(String message, Map commitFiles, Context ctx) {
-        ProgressHandle progress = ProgressHandleFactory.createHandle("Committing...");
+    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
+        // no SvnProgressSupport so performContextAction() won't run asynchronously        
+        return null;
+    }
+
+    private static void performCommit(String message, Map commitFiles, Context ctx, SvnProgressSupport support) {        
         try {
-            progress.start();
                                                
-            ISVNClientAdapter client;
+            SvnClient client;
             try {
-                client = Subversion.getInstance().getClient(ctx);
+                client = Subversion.getInstance().getClient(ctx, support);
             } catch (SVNClientException ex) {
                 ex.printStackTrace(); // should not hapen
                 return;
-            }       
-        
+            }                   
+            support.setDisplayName("Committing...");
+
             List addCandidates = new ArrayList();
             List removeCandidates = new ArrayList();
             Set commitCandidates = new LinkedHashSet();
@@ -121,15 +132,25 @@ public class CommitAction extends ContextAction {
 
             Iterator it = commitFiles.keySet().iterator();
             while (it.hasNext()) {
+                if(support.isCanceled()) {
+                    return;
+                }
                 SvnFileNode node = (SvnFileNode) it.next();
                 CommitOptions option = (CommitOptions) commitFiles.get(node);
                 if (CommitOptions.ADD_BINARY == option) {
                     List l = listUnmanagedParents(node);  // FIXME coved scheduled but nor commited files!
                     Iterator dit = l.iterator();
                     while (dit.hasNext()) {
+                        if(support.isCanceled()) {
+                            return;
+                        }
                         File file = (File) dit.next();
                         addCandidates.add(new SvnFileNode(file));
                         commitCandidates.add(file);
+                    }
+
+                    if(support.isCanceled()) {
+                        return;
                     }
 
                     // set MIME property application/octet-stream
@@ -146,9 +167,15 @@ public class CommitAction extends ContextAction {
                     List l = listUnmanagedParents(node);
                     Iterator dit = l.iterator();
                     while (dit.hasNext()) {
+                        if(support.isCanceled()) {
+                            return;
+                        }
                         File file = (File) dit.next();
                         addCandidates.add(new SvnFileNode(file));
                         commitCandidates.add(file);
+                    }
+                    if(support.isCanceled()) {
+                        return;
                     }
                     addCandidates.add(node);
                     commitCandidates.add(node.getFile());
@@ -167,6 +194,9 @@ public class CommitAction extends ContextAction {
             // XXX waht if user denied directory add but wants to add a file in it?
             it = addCandidates.iterator();
             while (it.hasNext()) {
+                if(support.isCanceled()) {
+                    return;
+                }
                 SvnFileNode svnFileNode = (SvnFileNode) it.next();
                 File file = svnFileNode.getFile();
                 if (file.isDirectory()) {
@@ -175,10 +205,16 @@ public class CommitAction extends ContextAction {
                     addFiles.add(file);
                 }
             }
+            if(support.isCanceled()) {
+                return;
+            }
 
             it = addDirs.iterator();
             Set addedDirs = new HashSet();
             while (it.hasNext()) {
+                if(support.isCanceled()) {
+                    return;
+                }
                 File dir = (File) it.next();
                 if (addedDirs.contains(dir)) {
                     continue;
@@ -186,9 +222,15 @@ public class CommitAction extends ContextAction {
                 client.addDirectory(dir, false);
                 addedDirs.add(dir);
             }
+            if(support.isCanceled()) {
+                return;
+            }
 
             it = addFiles.iterator();
             while (it.hasNext()) {
+                if(support.isCanceled()) {
+                    return;
+                }
                 File file = (File) it.next();
                 client.addFile(file);
             }
@@ -198,7 +240,9 @@ public class CommitAction extends ContextAction {
             // finally commit
             File[] files = (File[]) commitCandidates.toArray(new File[0]);
             client.commit(files, message, false);
-
+            if(support.isCanceled()) {
+                return;
+            }
             // XXX intercapt results and update cache
 
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
@@ -208,9 +252,7 @@ public class CommitAction extends ContextAction {
             }
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ex);
-        } finally {
-            progress.finish();
-        }
+        } 
     }
 
     private static List listUnmanagedParents(SvnFileNode node) {

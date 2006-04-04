@@ -18,13 +18,10 @@ import org.netbeans.modules.subversion.settings.*;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
-
-import java.awt.event.ActionEvent;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.Node;
 import org.openide.util.*;
-import org.tigris.subversion.svnclientadapter.*;
-import org.openide.ErrorManager;
 
 /**
  * Diff action shows local changes
@@ -56,10 +53,15 @@ public class DiffAction extends ContextAction {
         tc.requestActive();        
     }
     
-    protected void performContextAction(Node[] nodes) {
+    protected void performContextAction(Node[] nodes, SvnProgressSupport support) {
         Context ctx = getContext(nodes);
         String contextName = getContextDisplayName(nodes);
         diff(ctx, Setup.DIFFTYPE_LOCAL, contextName);        
+    }
+
+    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
+        // no SvnProgressSupport so performContextAction() won't run asynchronously
+        return null;
     }
     
     /**

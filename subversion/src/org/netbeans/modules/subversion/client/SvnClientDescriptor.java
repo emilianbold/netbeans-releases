@@ -10,17 +10,17 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.subversion.client;
 
-import org.openide.util.Cancellable;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.netbeans.modules.subversion.config.ProxyDescriptor;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
- * Extends basic ISVNClientAdapter fucntionality. 
- * 
- * @author Petr Kuzel
+ *
+ * @author Tomas Stupka
  */
-public interface SvnClient extends ISVNClientAdapter, Cancellable, SvnClientDescriptor {    
+public interface SvnClientDescriptor {    
+
+    public SVNUrl getSvnUrl();
 
 }

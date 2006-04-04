@@ -190,7 +190,7 @@ public class SyncFileNode extends AbstractNode {
                         firePropertyChange(COLUMN_NAME_PATH, null, null);
                     }
                 };
-                repoload = Subversion.getInstance().postRequest(run);
+                repoload = Subversion.getInstance().getRequestProccessor().post(run);
                 return "Asking remote repository...";
             }
             return shortPath;

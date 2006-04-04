@@ -20,6 +20,7 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
 import org.openide.*;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -33,11 +34,11 @@ public class ConflictResolvedAction extends ContextAction {
         return "resolve";  // NOI18N
     }
 
-    protected void performContextAction(Node[] nodes) {
+    protected void performContextAction(Node[] nodes, SvnProgressSupport support) {
         Context ctx = getContext(nodes);
         SvnClient client = null;;
         try {
-            client = Subversion.getInstance().getClient(ctx);
+            client = Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             ErrorManager.getDefault().notify(ErrorManager.USER, ex);
@@ -47,23 +48,23 @@ public class ConflictResolvedAction extends ContextAction {
         if (client == null) {
             return;
         }
+                
+        File[] files = ctx.getFiles();
 
-        // FIXME move out of AWT
-
-        Object pair = startProgress(nodes);
-        try {
-            File[] files = ctx.getFiles();
-            for (int i = 0; i<files.length; i++) {
-                File file = files[i];
-                try {
-                    client.resolved(file);
-                    cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
+        for (int i = 0; i<files.length; i++) {
+            if(support.isCanceled()) {
+                return;
             }
-        } finally {
-            finished(pair);
+            File file = files[i];
+            try {
+                client.resolved(file);
+                if(support.isCanceled()) {
+                    return;
+                }
+                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            } catch (SVNClientException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
         }
     }
 

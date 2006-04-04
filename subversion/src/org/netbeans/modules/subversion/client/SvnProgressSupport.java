@@ -38,31 +38,20 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     }
 
     public void start(String displayName) {
+        // XXX should also work without the message
         this.displayName = displayName;
         rp.post(this);        
     }
-
-    protected void setCancellableDelegate(Cancellable cancellable) {
-        this.delegate = cancellable;
-    }
-
-    protected void setDisplayName(String displayName) {
-        this.displayName = displayName;
-        if(progressHandle!=null) {
-            progressHandle.progress(displayName);
-        }
-    }
     
-    public void run() {
-        progressHandle = ProgressHandleFactory.createHandle(displayName, this);
-        progressHandle.start();         
+    public void run() {        
+        startProgress();
         try {
             interruptibleThread = Thread.currentThread();
             Diagnostics.println("Start - " + displayName);
             perform();
             Diagnostics.println("End - " + displayName);
         } finally {
-            progressHandle.finish();            
+            finnishProgress();
         }
     }
 
@@ -84,6 +73,32 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         }
         canceled = true;
         return true;
+    }
+
+    void setCancellableDelegate(Cancellable cancellable) {
+        this.delegate = cancellable;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+        if(progressHandle!=null) {
+            progressHandle.progress(displayName);
+        }
+    }
+
+    protected ProgressHandle getProgressHandle() {
+        if(progressHandle==null) {
+            progressHandle = ProgressHandleFactory.createHandle(displayName, this);
+        }
+        return progressHandle;
+    }
+
+    protected void startProgress() {
+        getProgressHandle().start();
+    }
+
+    protected void finnishProgress() {
+        getProgressHandle().finish();
     }
 
 }

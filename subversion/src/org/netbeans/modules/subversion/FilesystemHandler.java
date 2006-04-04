@@ -405,7 +405,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
                 }
             };
 
-            Subversion.getInstance().postRequest(outOfAwt).waitFinished();
+            Subversion.getInstance().getRequestProccessor().post(outOfAwt).waitFinished();
             if (innerT[0] != null) {
                 if (innerT[0] instanceof IOException) {
                     throw (IOException) innerT[0];

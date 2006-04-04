@@ -24,14 +24,12 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
-import org.openide.util.*;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -52,7 +50,7 @@ public final class DeleteLocalAction extends ContextAction {
         return LOCALLY_DELETABLE_MASK;
     }
     
-    protected void performContextAction(final Node[] nodes) {
+    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Prompt"));
         descriptor.setTitle(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Title"));
         descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
@@ -64,24 +62,14 @@ public final class DeleteLocalAction extends ContextAction {
         }
 
         final Context ctx = getContext(nodes);
-        Runnable run = new Runnable() {
-            public void run() {
-                Object pair = startProgress(nodes);
-                try {
-                    performDelete(ctx);
-                } finally {
-                    finished(pair);
-                }
-            }
-        };
-        Subversion.getInstance().postRequest(run);
+        performDelete(ctx, support);                
     }
     
-    public static void performDelete(Context ctx) {
+    public static void performDelete(Context ctx, SvnProgressSupport support) {
 
         SvnClient client;
         try {
-            client = Subversion.getInstance().getClient(ctx);
+            client = Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ex);
             return;
@@ -89,8 +77,15 @@ public final class DeleteLocalAction extends ContextAction {
 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
 
+        if(support.isCanceled()) {
+            return;
+        }
         File[] files = ctx.getFiles();
         for (int i = 0; i < files.length; i++) {
+            if(support.isCanceled()) {
+                return;
+            }
+        
             File file = files[i];
             FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
@@ -102,9 +97,8 @@ public final class DeleteLocalAction extends ContextAction {
                         // XXX mask (not versioned) it's expected
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
-
                     lock = fo.lock();                    
-                    fo.delete(lock);
+                    fo.delete(lock);       
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
                     err.annotate(e, NbBundle.getMessage(DeleteLocalAction.class, "BK0001", file.getAbsolutePath()));

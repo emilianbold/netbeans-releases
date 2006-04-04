@@ -16,6 +16,7 @@ package org.netbeans.modules.subversion.ui.status;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -38,7 +39,7 @@ public class StatusAction  extends ContextAction {
         return enabledForStatus;
     }
 
-    public void performContextAction(Node[] nodes) {
+    public void performContextAction(Node[] nodes, SvnProgressSupport support) {
         Context ctx = SvnUtils.getCurrentContext(nodes);
         final SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
         stc.setContentTitle(getContextDisplayName(nodes));
@@ -49,7 +50,11 @@ public class StatusAction  extends ContextAction {
             public void run() {
                 stc.performRefreshAction();
             }
-        });
-            
+        });            
+    }
+
+    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
+        // no SvnProgressSupport so performContextAction() won't run asynchronously
+        return null;
     }
 }

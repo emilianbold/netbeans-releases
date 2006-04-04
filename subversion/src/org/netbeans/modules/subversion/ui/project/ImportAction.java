@@ -13,11 +13,9 @@
 
 package org.netbeans.modules.subversion.ui.project;
 
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.FileUtils;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
@@ -29,7 +27,6 @@ import org.openide.loaders.DataShadow;
 import org.netbeans.api.project.*;
 import java.io.*;
 import java.util.*;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -120,8 +117,7 @@ public final class ImportAction extends NodeAction {
         RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repositoryUrl);
         SvnProgressSupport support = new SvnProgressSupport(rp) {
             public void perform() {
-                try{
-                    setCancellableDelegate(client);                            
+                try{                   
                     try {
                         client.doImport(importDirectory, repositoryFolderUrl, message, true);
                     } catch (SVNClientException ex) {
@@ -132,8 +128,7 @@ public final class ImportAction extends NodeAction {
                         return;
                     }
 
-                    if(checkout) {
-                        setCancellableDelegate(null);                              
+                    if(checkout) {                        
 
                         RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };
                         File checkoutFile = new File(importDirectory.getAbsolutePath() + ".co");

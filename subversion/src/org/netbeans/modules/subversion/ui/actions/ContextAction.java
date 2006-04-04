@@ -13,9 +13,10 @@
 
 package org.netbeans.modules.subversion.ui.actions;
 
+import com.sun.corba.se.impl.oa.poa.RequestProcessingPolicyImpl;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.util.actions.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -24,24 +25,21 @@ import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.filesystems.FileObject;
-import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.Actions;
 import org.openide.LifecycleManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.OutputLogger;
-
-import javax.swing.*;
 import java.text.MessageFormat;
 import java.text.DateFormat;
 import java.io.File;
 import java.util.MissingResourceException;
 import java.util.Date;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.subversion.Subversion;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Base for all context-sensitive SVN actions.
@@ -72,13 +70,32 @@ public abstract class ContextAction extends NodeAction {
      * Synchronizes memory modificatios with disk and calls
      * {@link  #performContextAction}.
      */
-    protected void performAction(Node[] nodes) {
+    protected void performAction(final Node[] nodes) {
         // TODO try to save files in invocation context only
         LifecycleManager.getDefault().saveAll();
-        performContextAction(nodes);
+        
+        SvnProgressSupport support = createSvnProgressSupport(nodes);
+        if(support!=null) {
+            support.start(getRunningName(nodes));
+        } else {
+            performContextAction(nodes, null);   
+        }               
+    }
+
+    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
+        return new ProgressSupport(this, nodes);
+    }
+
+    protected SVNUrl getSvnUrl(Node[] nodes) {
+        return getSvnUrl(getContext(nodes)); // XXX maybe as a parameter
+    }
+
+    public static SVNUrl getSvnUrl(Context ctx) {
+        File[] roots = ctx.getRootFiles();
+        return SvnUtils.getRepositoryRootUrl(roots[0]);
     }
     
-    protected abstract void performContextAction(Node[] nodes);
+    protected abstract void performContextAction(Node[] nodes, SvnProgressSupport support);
 
     /** Be sure nobody overwrites */
     public final boolean isEnabled() {
@@ -265,64 +282,58 @@ public abstract class ContextAction extends NodeAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
-    private static class PD {
-        ProgressHandle progress;
-        long progressStamp;
-        Node[] nodes;
-    }
-
-    /**
-     * <pre>
-     * Object handle = startProgress();
-     * try {
-     *    // impl
-     * } finally {
-     *    finished(handle);
-     * }
-     * </pre>
-     *
-     * @return action data (SystemAction is singleton
-     * so it must be held by clients).
-     */
-    protected final Object startProgress(Node[] nodes){
-        PD pd = new PD();
-        OutputLogger logger = new OutputLogger();
-        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + getRunningName(nodes));
-        pd.progress = ProgressHandleFactory.createHandle(getRunningName(nodes));
-        pd.progress.setInitialDelay(500);
-        pd.progressStamp = System.currentTimeMillis() + 500;
-        pd.progress.start();
-        pd.nodes = nodes;  // XXX OK untill called from performContextAction()
-        return pd;
-    }
-
-    /**
-     * Action is complete, switch progress to complete 100%
-     * and remove it after 15 sec.
-     */
-    protected final void finished(Object progressHandle) {
-
-        // TODO add failed and restart texts
-
-        final PD pd = (PD) progressHandle;
-
-        OutputLogger logger = new OutputLogger();
-        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + getName("", pd.nodes) + " finished.");
-
-        pd.progress.switchToDeterminate(100);
-        pd.progress.progress("Done!", 100);
-        if (System.currentTimeMillis() > pd.progressStamp) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    pd.progress.finish();
-                }
-            }, 15 * 1000);
-        } else {
-            pd.progress.finish();
-        }
-    }
-
     protected boolean asynchronous() {
         return false;
+    }
+
+    protected static class ProgressSupport  extends SvnProgressSupport {
+
+        private final ContextAction action;
+        private final Node[] nodes;
+        private long progressStamp;
+
+        public ProgressSupport(ContextAction action, Node[] nodes) {
+            super(createRequestProcessor(action, nodes));
+            this.action = action;
+            this.nodes = nodes;
+        }
+
+        private static RequestProcessor createRequestProcessor(ContextAction action, Node[] nodes) {
+            SVNUrl repository = action.getSvnUrl(nodes);
+            return Subversion.getInstance().getRequestProccessor(repository);
+        }
+
+        public void perform() {
+            action.performContextAction(nodes, this);
+        }
+
+        protected void startProgress() {
+            OutputLogger logger = new OutputLogger();
+            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getRunningName(nodes));
+            ProgressHandle progress = getProgressHandle();
+            progress.setInitialDelay(500);
+            progressStamp = System.currentTimeMillis() + 500;
+            progress.start();            
+        }
+
+        protected void finnishProgress() {
+            // TODO add failed and restart texts                
+
+            OutputLogger logger = new OutputLogger();
+            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " finished.");
+
+            final ProgressHandle progress = getProgressHandle();
+            progress.switchToDeterminate(100);
+            progress.progress("Done!", 100);
+            if (System.currentTimeMillis() > progressStamp) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        progress.finish();
+                    }
+                }, 15 * 1000);
+            } else {
+                progress.finish();
+            }
+        }
     }
 }

@@ -16,22 +16,20 @@ package org.netbeans.modules.subversion.ui.update;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-
-import java.awt.event.ActionEvent;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.*;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.RequestProcessor;
 
 /**
  * Update action
  *
  * @author Petr Kuzel
- */
+ */ 
 public class UpdateAction extends ContextAction {
 
     protected String getBaseName(Node[] nodes) {
@@ -48,23 +46,12 @@ public class UpdateAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    protected void performContextAction(final Node[] nodes) {
+    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
         final Context ctx = getContext(nodes);
-
-        Runnable run = new Runnable() {
-            public void run() {
-                Object pair = startProgress(nodes);
-                try {
-                    performUpdate(ctx);
-                } finally {
-                    finished(pair);
-                }
-            }
-        };
-        Subversion.getInstance().postRequest(run);
+        performUpdate(ctx, support);
     }
 
-    public void performUpdate(Context ctx) {
+    public void performUpdate(Context ctx, final SvnProgressSupport support) {
         // FIXME add non-recursive folders splitting
         // FIXME add shalow logic allowing to ignore nested projects
 
@@ -77,7 +64,6 @@ public class UpdateAction extends ContextAction {
             ex.printStackTrace(); // should not hapen
             return;
         }
-
         
         try {
             
@@ -86,7 +72,9 @@ public class UpdateAction extends ContextAction {
 
 roots_loop:
             for (int i = 0; i<roots.length; i++) {
-
+                if(support.isCanceled()) {
+                    return;
+                }
                 client.update(roots[i], SVNRevision.HEAD, true);
                 ISVNStatus status[] = client.getStatus(roots[i], true, false);
                 for (int k = 0; k<status.length; k++) {
@@ -109,4 +97,5 @@ roots_loop:
             err.notify(e1);
         }
     }
+
 }

@@ -18,11 +18,13 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusProvider;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -60,42 +62,50 @@ public class SwitchToAction extends ContextAction {
         return nodes != null && nodes.length == 1 &&  getContext(nodes).getRoots().size() > 0;
     }        
     
-    protected void performContextAction(final Node[] nodes) {
+    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
         Context ctx = getContext(nodes);        
         
         final File root = ctx.getRootFiles()[0];                        
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
      
-        SwitchTo switchTo = new SwitchTo(repositoryRoot, root.getName()); 
+        final SwitchTo switchTo = new SwitchTo(repositoryRoot, root.getName());
         if(switchTo.showDialog()) {
-            final RepositoryFile repository = switchTo.getRepositoryFile();            
-            final boolean replaceModifications = switchTo.replaceModifications();            
-
-            Runnable run = new Runnable() {
-                public void run() {
-                    Object pair = startProgress(nodes);
-                    try {
-                        ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
-                        if(replaceModifications) {
-                            // get rid of all changes ...
-                            // doesn't wok for added (new) files
-                            client.revert(root, true);
-                        }
-                        // ... and switch
-                        client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), true);
-                        FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
-                    } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                        return;
-                    } finally {
-                        finished(pair);
-                    }
+            support = new ContextAction.ProgressSupport(this, nodes) {
+                public void perform() {
+                    performSwitch(switchTo, repositoryRoot, root, this);
                 }
             };
-            Subversion.getInstance().postRequest(run);                  
-               
+            support.start("Switching...");
         }        
     }
-    
+
+    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
+        // no SvnProgressSupport means performContextAction() won't run asynchronously
+        return null;
+    }
+
+    private void performSwitch(SwitchTo switchTo, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
+        RepositoryFile repository = switchTo.getRepositoryFile();            
+        boolean replaceModifications = switchTo.replaceModifications();            
+
+        try {
+            ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+            if(replaceModifications) {
+                // get rid of all changes ...
+                // doesn't wok for added (new) files
+                client.revert(root, true);
+
+                if(support.isCanceled()) {
+                    return;
+                }
+            }
+            // ... and switch
+            client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), true);
+            FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return;
+        }
+    }
 }

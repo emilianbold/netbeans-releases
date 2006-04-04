@@ -17,6 +17,7 @@ import java.io.File;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.ui.actions.PlaceholderAction;
 import org.netbeans.modules.subversion.util.*;
@@ -40,42 +41,37 @@ public class RevertModificationsAction extends ContextAction {
         return "CTL_MenuItem_Revert"; // NOI18N
     }
 
-    protected void performContextAction(final Node[] nodes) {
-        final Context ctx = getContext(nodes);
-        Runnable run = new Runnable() {
-            public void run() {
-                Object pair = startProgress(nodes);
-                try {
-                    performRevert(ctx);
-                } finally {
-                    finished(pair);
-                }
-            }
-        };
-        Subversion.getInstance().postRequest(run);
+    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
+        final Context ctx = getContext(nodes);        
+        performRevert(ctx, support);
     }
 
     /** Recursive revert */
-    public static void performRevert(final Context ctx) {
+    public static void performRevert(final Context ctx, SvnProgressSupport support) {
         SvnClient client;
         try {
-            client = Subversion.getInstance().getClient(ctx);
+            client = Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ex);
             return;
         }
-
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
 
         File files[] = ctx.getFiles();
         File[][] split = SvnUtils.splitFlatOthers(files);
         for (int c = 0; c<1; c++) {
+            if(support.isCanceled()) {
+                return;
+            }
             files = split[c];
             boolean recursive = c == 1;
             if (recursive == false) {
                 files = SvnUtils.flatten(files, FileInformation.STATUS_REVERTIBLE_CHANGE);
             }
             for (int i= 0; i<files.length; i++) {
+                if(support.isCanceled()) {
+                    return;
+                }
                 try {
                     client.revert(files[i], recursive);
                 } catch (SVNClientException ex) {

@@ -18,13 +18,13 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -57,56 +57,68 @@ public class CreateCopyAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    protected void performContextAction(final Node[] nodes) {
+    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
         Context ctx = getContext(nodes);
 
-        final File root = ctx.getRootFiles()[0];        
+        final File root = ctx.getRootFiles()[0];
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         boolean isChanged = files.length > 0;                
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
-        final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);                
+        final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
 
-        CreateCopy createCopy = new CreateCopy(repositoryRoot, root.getName(), isChanged); 
+        final CreateCopy createCopy = new CreateCopy(repositoryRoot, root.getName(), isChanged);
         if(createCopy.showDialog()) {
-                        
-            final RepositoryFile repositoryFolder = createCopy.getRepositoryFile();
-            final String message = createCopy.getMessage();            
-            
-            Runnable run = new Runnable() {
-                public void run() {
-                    Object pair = startProgress(nodes);
-                    try {                
-                        ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
-                                                
-                        if(!repositoryFolder.isRepositoryRoot()) {
-                            SVNUrl folderToCreate = repositoryFolder.removeLastSegment().getFileUrl();
-                            ISVNInfo info = null;
-                            try{
-                                info = client.getInfo(folderToCreate);                                                                
-                            } catch (SVNClientException ex) {                                
-                                if(!ExceptionHandler.isWrongUrl(ex)) {
-                                    throw ex;
-                                }
-                            }            
-                            
-                            if(info == null) {
-                                client.mkdir(folderToCreate,
-                                             true, 
-                                             "[Netbeans SVN client generated message: create a new folder for the following copy]: " + message); // XXX how shoul be this done                      
-                            }                            
-                        }                        
-                        
-                        client.copy(root, repositoryFolder.getFileUrl(), message);
-                    } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                        return;
-                    } finally {
-                        finished(pair);
-                    }
+            support = new ContextAction.ProgressSupport(this, nodes) {
+                public void perform() {
+                    performCopy(createCopy, repositoryRoot, root, this);
                 }
             };
-            Subversion.getInstance().postRequest(run);            
+            support.start("Copying...");
         }
     }
-    
+
+    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
+        // no SvnProgressSupport means performContextAction() won't run asynchronously
+        return null;
+    }
+
+    private void performCopy(CreateCopy createCopy, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
+        final RepositoryFile repositoryFolder = createCopy.getRepositoryFile();
+        final String message = createCopy.getMessage();            
+
+        try {                
+            ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+
+            if(!repositoryFolder.isRepositoryRoot()) {
+                SVNUrl folderToCreate = repositoryFolder.removeLastSegment().getFileUrl();
+                ISVNInfo info = null;
+                try{
+                    info = client.getInfo(folderToCreate);                                                                
+                } catch (SVNClientException ex) {                                
+                    if(!ExceptionHandler.isWrongUrl(ex)) {
+                        throw ex;
+                    }
+                }            
+
+                if(support.isCanceled()) {
+                    return;
+                }
+
+                if(info == null) {
+                    client.mkdir(folderToCreate,
+                                 true, 
+                                 "[Netbeans SVN client generated message: create a new folder for the following copy]: " + message); // XXX how shoul be this done                      
+                }                            
+            }                        
+
+            if(support.isCanceled()) {
+                return;
+            }
+
+            client.copy(root, repositoryFolder.getFileUrl(), message);
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return;
+        }
+    }
 }

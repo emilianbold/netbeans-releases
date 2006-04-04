@@ -17,10 +17,12 @@ import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -52,67 +54,79 @@ public class MergeAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    protected void performContextAction(final Node[] nodes) {
+    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
         Context ctx = getContext(nodes);        
         
         final File root = ctx.getRootFiles()[0];                        
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);        
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
      
-        Merge merge = new Merge(repositoryRoot, root.getName());           
+        final Merge merge = new Merge(repositoryRoot, root.getName());           
         if(merge.showDialog()) {
-            final RepositoryFile mergeFromRepository = merge.getMergeFromRepositoryFile();
-            final boolean mergeAfter = merge.madeAfter();
-            final RepositoryFile mergeAfterRepository;
-            if(mergeAfter) {
-                mergeAfterRepository = merge.getMergeAfterRepositoryFile();
-            } else {
-                mergeAfterRepository = null;
-            }           
-            
-            Runnable run = new Runnable() {
-                public void run() {
-                    Object pair = startProgress(nodes);
-                    try {
-                        ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
-                        
-                        if(mergeAfter) {
-                            client.merge(mergeAfterRepository.getFileUrl(), 
-                                         mergeAfterRepository.getRevision(),
-                                         mergeFromRepository.getFileUrl(), 
-                                         mergeFromRepository.getRevision(),
-                                         root,
-                                         false,
-                                         true);                                                                                    
-                        } else {
-
-                            ISVNInfo info = client.getInfoFromWorkingCopy(root);
-                            SVNUrl fileUrl = null;
-                            if(info == null) {
-                                // oops
-                                return;
-                            }
-                        
-                            client.merge(info.getUrl(), 
-                                         info.getRevision(), 
-                                         mergeFromRepository.getFileUrl(), 
-                                         mergeFromRepository.getRevision(),
-                                         root,
-                                         false,
-                                         true);                                    
-                        }
-                        
-                    } catch (SVNClientException ex) {
-                        ex.printStackTrace(); // should not hapen
-                        return;
-                    } finally {
-                        finished(pair);
-                    }
+            support = new ContextAction.ProgressSupport(this, nodes) {
+                public void perform() {
+                    performMerge(merge, repositoryRoot, root, this);
                 }
             };
-            Subversion.getInstance().postRequest(run);                  
-               
+            support.start("Merging...");
         }        
     }
-    
+
+    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
+        // no SvnProgressSupport means performContextAction() won't run asynchronously
+        return null;
+    }
+
+    private void performMerge(Merge merge,  RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
+        RepositoryFile mergeFromRepository = merge.getMergeFromRepositoryFile();
+        boolean mergeAfter = merge.madeAfter();
+        RepositoryFile mergeAfterRepository;
+        if(mergeAfter) {
+            mergeAfterRepository = merge.getMergeAfterRepositoryFile();
+        } else {
+            mergeAfterRepository = null;
+        }           
+
+        try {
+            ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+
+            if(support.isCanceled()) {
+                return;
+            }
+
+            if(mergeAfter) {
+                client.merge(mergeAfterRepository.getFileUrl(), 
+                             mergeAfterRepository.getRevision(),
+                             mergeFromRepository.getFileUrl(), 
+                             mergeFromRepository.getRevision(),
+                             root,
+                             false,
+                             true);
+            } else {
+
+                ISVNInfo info = client.getInfoFromWorkingCopy(root);
+                if(support.isCanceled()) {
+                    return;
+                }
+
+                SVNUrl fileUrl = null;
+                if(info == null) {
+                    // oops
+                    return;
+                }
+
+                client.merge(info.getUrl(), 
+                             info.getRevision(), 
+                             mergeFromRepository.getFileUrl(), 
+                             mergeFromRepository.getRevision(),
+                             root,
+                             false,
+                             true);                                    
+            }
+
+        } catch (SVNClientException ex) {
+            ex.printStackTrace(); // should not hapen
+            return;
+        }
+    }
 }

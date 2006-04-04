@@ -19,7 +19,6 @@ import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -48,10 +47,10 @@ public class SvnClientFactory {
     
     public SvnClient createSvnClient() {
         ISVNClientAdapter adapter = createSvnClientAdapter();
-        return createSvnClient(adapter);          
+        return createSvnClient(adapter, null, null);
     }
     
-    public SvnClient createSvnClient(SVNUrl repositoryUrl) 
+    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support)
     throws SVNClientException 
     {                                
         //ProxyDescriptor pd = SvnRootSettings.getProxyFor(repositoryUrl);
@@ -64,7 +63,7 @@ public class SvnClientFactory {
             password = passwordFile.getPassword();            
         }        
         ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, null, username, password);
-        return createSvnClient(adapter);             
+        return createSvnClient(adapter, support, repositoryUrl);
     }    
 
     public SvnClient createSvnClient(SVNUrl repositoryUrl,
@@ -73,12 +72,23 @@ public class SvnClientFactory {
                                      String password) 
     {                                                                                   
         ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, pd, username, password);
-        return createSvnClient(adapter);                     
+        return createSvnClient(adapter, null, repositoryUrl);
     }
     
-    private SvnClient createSvnClient(ISVNClientAdapter adapter) {
-        Class proxyClass = Proxy.getProxyClass(SvnClient.class.getClassLoader(), new Class[]{ SvnClient.class } );        
-        SvnClientInvocationHandler handler = new SvnClientInvocationHandler(adapter);
+    private SvnClient createSvnClient(ISVNClientAdapter adapter, SvnProgressSupport support, final SVNUrl repository) {
+        Class proxyClass = Proxy.getProxyClass(SvnClient.class.getClassLoader(), new Class[]{ SvnClient.class } );
+
+        SvnClientInvocationHandler handler;
+        SvnClientDescriptor desc = new SvnClientDescriptor() {
+            public SVNUrl getSvnUrl() {
+                return repository;
+            }
+        };
+        if(support!=null) {
+            handler = new SvnClientInvocationHandler(adapter, desc, support);
+        } else {
+            handler = new SvnClientInvocationHandler(adapter, desc);
+        } 
         try {
            return (SvnClient) proxyClass.getConstructor(new Class[] { InvocationHandler.class }).newInstance(new Object[] { handler });                   
         } catch (Exception e) {

@@ -31,6 +31,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 public class SvnClientInvocationHandler implements InvocationHandler {
 
     private static Set remoteMethods = new HashSet();
+
     static {
         remoteMethods.add("checkout");  // NOI19N
         remoteMethods.add("commit"); // NOI19N
@@ -56,14 +57,23 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         remoteMethods.add("unlock"); // NOI19N
     }
 
-    private final ISVNClientAdapter adapter;    
-    private final Cancellable cancellable;
+    private final ISVNClientAdapter adapter;
+    private final SvnClientDescriptor desc;
+    private Cancellable cancellable;
+    private SvnProgressSupport support;
 
     /**
      *
      */
-    public SvnClientInvocationHandler (ISVNClientAdapter adapter) {
+    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc) {
         this.adapter = adapter;
+        this.desc = desc;
+    }
+
+    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support) {
+        this.adapter = adapter;
+        this.desc = desc;
+        this.support = support;
         this.cancellable = new Cancellable() {
             public boolean cancel() {
                 try {
@@ -115,9 +125,17 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         Class declaringClass = proxyMethod.getDeclaringClass();
 
         if( ISVNClientAdapter.class.isAssignableFrom(declaringClass) ) {
+            if(support != null) {
+                support.setCancellableDelegate(cancellable);
+            }
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
-        } else if( Cancellable.class.isAssignableFrom(declaringClass) ){
+            if(support != null) {
+                support.setCancellableDelegate(null);
+            }
+        } else if( Cancellable.class.isAssignableFrom(declaringClass) ) {
             ret = cancellable.getClass().getMethod(proxyMethod.getName(), parameters).invoke(cancellable, args);
+        } else if( SvnClientDescriptor.class.isAssignableFrom(declaringClass) ) {            
+            ret = desc.getClass().getMethod(proxyMethod.getName(), parameters).invoke(desc, args);
         } else {
             // try to take care for hashCode, equals & co.
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
