@@ -180,19 +180,19 @@ public class Lookups {
      * @return lookup item representing instance
      * @since 4.8
      */
-    public static Lookup.Item lookupItem(Object instance, String id) {
-        return new LookupItem(instance, id);
+    public static <T> Lookup.Item<T> lookupItem(T instance, String id) {
+        return new LookupItem<T>(instance, id);
     }
 
-    private static class LookupItem extends Lookup.Item {
+    private static class LookupItem<T> extends Lookup.Item<T> {
         private String id;
-        private Object instance;
+        private T instance;
 
-        public LookupItem(Object instance) {
+        public LookupItem(T instance) {
             this(instance, null);
         }
 
-        public LookupItem(Object instance, String id) {
+        public LookupItem(T instance, String id) {
             this.id = id;
             this.instance = instance;
         }
@@ -205,12 +205,13 @@ public class Lookups {
             return (id == null) ? instance.toString() : id;
         }
 
-        public Object getInstance() {
+        public T getInstance() {
             return instance;
         }
 
-        public Class getType() {
-            return instance.getClass();
+        @SuppressWarnings("unchecked")
+        public Class<? extends T> getType() {
+            return (Class<? extends T>)instance.getClass();
         }
 
         public boolean equals(Object object) {
