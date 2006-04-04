@@ -110,15 +110,14 @@ public final class ModuleSystem {
      * their extensions, and enabled locale variants of both.
      * Will be returned in a classpath-like order.
      * Intended for use by the execution engine (though sort of deprecated).
-     * @return <code>List&lt;File&gt;</code> of module-related JARs/ZIPs
+     * @return list of module-related JARs/ZIPs
      */
-    public List getModuleJars () {
+    public List<File> getModuleJars () {
         mgr.mutexPrivileged().enterReadAccess();
         try {
-            Iterator modules = mgr.getEnabledModules().iterator();
-            List l = new ArrayList (); // List<File>
+            List<File> l = new ArrayList<File>();
             for (Module m: mgr.getEnabledModules()) {
-                l.addAll (m.getAllJars ());
+                l.addAll(m.getAllJars());
             }
             return l;
         } finally {

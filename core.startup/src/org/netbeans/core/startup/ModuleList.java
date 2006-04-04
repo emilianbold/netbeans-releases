@@ -1094,9 +1094,7 @@ final class ModuleList {
                 Util.err.fine("ModuleList: moduleListChanged; statuses=" + statuses);
             }
             // Newly added modules first.
-            Iterator it = mgr.getModules().iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m : mgr.getModules()) {
                 if (m.isFixed() || m.getAllJars().isEmpty()) {
                     // No way, we don't manage these.
                     continue;
@@ -1115,9 +1113,9 @@ final class ModuleList {
                 }
             }
             // Now deleted & recreated modules.
-            it = statuses.values().iterator();
+            Iterator<DiskStatus> it = statuses.values().iterator();
             while (it.hasNext()) {
-                DiskStatus status = (DiskStatus)it.next();
+                DiskStatus status = it.next();
                 if (! status.module.isValid()) {
                     status.module.removePropertyChangeListener(listener);
                     Module nue = mgr.get(status.module.getCodeNameBase());

@@ -13,6 +13,7 @@
 
 package org.netbeans;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -175,8 +176,8 @@ final class FixedModule extends Module {
      * JARs already present in the classpath are <em>not</em> listed.
      * @return a <code>List&lt;File&gt;</code> of JARs
      */
-    public List getAllJars() {
-        return Collections.EMPTY_LIST;
+    public List<File> getAllJars() {
+        return Collections.emptyList();
     }
 
     /**

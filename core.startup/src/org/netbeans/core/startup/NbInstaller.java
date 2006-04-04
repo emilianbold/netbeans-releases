@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -1160,10 +1160,8 @@ final class NbInstaller extends ModuleInstaller {
             b.append(']'); // NOI18N
             qualification = b.toString();
         }
-        List jars = m.getAllJars();
-        Iterator it = jars.iterator();
-        while (it.hasNext()) {
-            cp.add(((File)it.next()).getAbsolutePath() + qualification);
+        for (File jar : m.getAllJars()) {
+            cp.add(jar.getAbsolutePath() + qualification);
         }
     }
     

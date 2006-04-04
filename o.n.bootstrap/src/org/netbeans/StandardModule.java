@@ -77,7 +77,7 @@ final class StandardModule extends Module {
     /** Set of locale-variants JARs for this module (or null).
      * Added explicitly to classloader, and can be used by execution engine.
      */
-    private Set<Object> localeVariants = null; // File or Object[] containing File and String suffix
+    private Set<File> localeVariants = null;
     /** Set of extension JARs that this module loads via Class-Path (or null).
      * Can be used e.g. by execution engine. (#9617)
      */
@@ -86,7 +86,7 @@ final class StandardModule extends Module {
      * Used to add these to the classloader. (#9348)
      * Can be used e.g. by execution engine.
      */
-    private Set<Object> localeExtensions = null; // File or Object[] containing File and String suffix
+    private Set<File> localeExtensions = null;
     /** Patches added at the front of the classloader (or null).
      * Files are assumed to be JARs; directories are themselves.
      */
@@ -275,8 +275,10 @@ final class StandardModule extends Module {
     private void findExtensionsAndVariants(Manifest m) {
         assert jar != null : "Cannot load extensions from classpath module " + getCodeNameBase();
         localeVariants = null;
-        List<Object> l = Util.findLocaleVariantsOf(jar, false); // List<File|Object[]>
-        if (!l.isEmpty()) localeVariants = new HashSet<Object>(l);
+        List<File> l = Util.findLocaleVariantsOf(jar);
+        if (!l.isEmpty()) {
+            localeVariants = new HashSet<File>(l);
+        }
         plainExtensions = null;
         localeExtensions = null;
         String classPath = m.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
@@ -316,9 +318,11 @@ final class StandardModule extends Module {
                 }
                 if (plainExtensions == null) plainExtensions = new HashSet<File>();
                 plainExtensions.add(extfile);
-                l = Util.findLocaleVariantsOf(extfile, false);
+                l = Util.findLocaleVariantsOf(extfile);
                 if (!l.isEmpty()) {
-                    if (localeExtensions == null) localeExtensions = new HashSet<Object>();
+                    if (localeExtensions == null) {
+                        localeExtensions = new HashSet<File>();
+                    }
                     localeExtensions.addAll(l);
                 }
             }
@@ -414,13 +418,11 @@ final class StandardModule extends Module {
                     name = locbundle.substring(0, idx);
                     ext = locbundle.substring(idx);
                 }
-                List pairs = Util.findLocaleVariantsOf(jar, true);
+                List<Util.FileWithSuffix> pairs = Util.findLocaleVariantsWithSuffixesOf(jar);
                 Collections.reverse(pairs);
-                Iterator it = pairs.iterator();
-                while (it.hasNext()) {
-                    Object[] pair = (Object[])it.next();
-                    File localeJar = (File)pair[0];
-                    String suffix = (String)pair[1];
+                for (Util.FileWithSuffix pair : pairs) {
+                    File localeJar = pair.file;
+                    String suffix = pair.suffix;
                     String rsrc = name + suffix + ext;
                     JarFile localeJarFile = new JarFile(localeJar, false);
                     try {
@@ -465,8 +467,8 @@ final class StandardModule extends Module {
      * JARs already present in the classpath are <em>not</em> listed.
      * @return a <code>List&lt;File&gt;</code> of JARs
      */
-    public List getAllJars() {
-        List<Object> l = new ArrayList<Object> ();
+    public List<File> getAllJars() {
+        List<File> l = new ArrayList<File>();
         if (patches != null) l.addAll(patches);
         if (physicalJar != null) {
             l.add(physicalJar);

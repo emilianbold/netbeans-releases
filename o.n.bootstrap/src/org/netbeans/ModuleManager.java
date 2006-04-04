@@ -59,7 +59,7 @@ public final class ModuleManager {
     static boolean PRINT_TOPOLOGICAL_EXCEPTION_STACK_TRACES = !Boolean.getBoolean ("suppress.topological.exception"); // NOI18N
     
     // the modules being managed (not all need be installed)
-    private final HashSet<Module> modules = new HashSet<Module>(100);
+    private final Set<Module> modules = new HashSet<Module>(100);
     // the same, indexed by code name base
     private final Map<String,Module> modulesByName = new HashMap<String,Module>(100);
     
@@ -248,7 +248,7 @@ public final class ModuleManager {
      * @see #PROP_MODULES
      */
     public Set<Module> getModules() {
-        return (Set<Module>)modules.clone();
+        return new HashSet<Module>(modules);
     }
     
     /** Get a set of modules managed which are currently enabled.

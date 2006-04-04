@@ -65,14 +65,31 @@ public abstract class Util {
         return physicalModuleFile;
     }
 
-    /** Find existing locale variants of f, in search order.
-     * Returns either just a list of files, or if requested,
-     * a list of pairs of file and suffixes (as a two-element
-     * Object array).
+    /**
+     * Find existing locale variants of f, in search order.
      */
-    static List<Object> findLocaleVariantsOf(File f, boolean includeSuffixes) {
+    static List<File> findLocaleVariantsOf(File f) {
+        List<FileWithSuffix> result = findLocaleVariantsWithSuffixesOf(f);
+        List<File> l = new ArrayList<File>(result.size());
+        for (FileWithSuffix fws : result) {
+            l.add(fws.file);
+        }
+        return l;
+    }
+    static final class FileWithSuffix {
+        public final File file;
+        public final String suffix;
+        FileWithSuffix(File file, String suffix) {
+            this.file = file;
+            this.suffix = suffix;
+        }
+    }
+    /**
+     * Find existing locale variants of f, in search order.
+     */
+    static List<FileWithSuffix> findLocaleVariantsWithSuffixesOf(File f) {
         if (! f.isFile()) {
-            return Collections.<Object>emptyList();
+            return Collections.emptyList();
         }
         File dir = new File(f.getParentFile(), "locale"); // NOI18N
         String logicalDir = null;
@@ -90,7 +107,7 @@ public abstract class Util {
                 }
             }
         }
-        List<Object> l = new ArrayList<Object>(7); // List<File|Object[]>
+        List<FileWithSuffix> l = new ArrayList<FileWithSuffix>(7);
         String nameExt = f.getName();
         int idx = nameExt.lastIndexOf('.'); // NOI18N
         String name, ext;
@@ -109,21 +126,13 @@ public abstract class Util {
 	    if (localeDirExists) {
 		v = new File(dir, name + suffix + ext);
 		if (v.isFile()) {
-		    if (includeSuffixes) {
-			l.add(new Object[] {v, suffix});
-		    } else {
-			l.add(v);
-		    }
+                    l.add(new FileWithSuffix(v, suffix));
 		}
             } else if (logicalDir != null) {
                 String path = logicalDir + name + suffix + ext;
                 v = InstalledFileLocator.getDefault().locate(path, null, false);
                 if (v != null) {
-                    if (includeSuffixes) {
-                        l.add(new Object[] {v, suffix});
-                    } else {
-                        l.add(v);
-                    }
+                    l.add(new FileWithSuffix(v, suffix));
                 }
             }
         }
@@ -531,7 +540,7 @@ public abstract class Util {
      */
     static final class ModuleLookup extends Lookup {
         ModuleLookup() {}
-        private final HashSet<Module> modules = new HashSet<Module>(100);
+        private final Set<Module> modules = new HashSet<Module>(100);
         private final Set<ModuleResult> results = new WeakSet<ModuleResult>(10);
         /** Add a module to the set. */
         public void add(Module m) {
@@ -629,7 +638,7 @@ public abstract class Util {
                         return modules.contains(inst) ? Collections.<Module>singleton(Module.class.cast(inst)) : Collections.<Module>emptySet();
                     } else {
                         // Regular lookup based on type.
-                        return (Set<Module>)modules.clone();
+                        return new HashSet<Module>(modules);
                     }
                 }
             }

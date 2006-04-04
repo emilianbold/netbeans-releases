@@ -369,10 +369,11 @@ public abstract class Module extends ModuleInfo {
             Set<Dependency> dependencies = new HashSet<Dependency>(20);
             // First convert IDE/1 -> org.openide/1, so we never have to deal with
             // "IDE deps" internally:
-            Set openideDeps = Dependency.create(Dependency.TYPE_IDE, attr.getValue("OpenIDE-Module-IDE-Dependencies")); // NOI18N
+            @SuppressWarnings("deprecation")
+            Set<Dependency> openideDeps = Dependency.create(Dependency.TYPE_IDE, attr.getValue("OpenIDE-Module-IDE-Dependencies")); // NOI18N
             if (!openideDeps.isEmpty()) {
                 // If empty, leave it that way; NbInstaller will add it anyway.
-                Dependency d = (Dependency)openideDeps.iterator().next();
+                Dependency d = openideDeps.iterator().next();
                 String name = d.getName();
                 if (!name.startsWith("IDE/")) throw new IllegalStateException("Weird IDE dep: " + name); // NOI18N
                 dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, "org.openide/" + name.substring(4) + " > " + d.getVersion())); // NOI18N
@@ -405,9 +406,9 @@ public abstract class Module extends ModuleInfo {
      * sporadic ZIP file exceptions when background threads (like Java parsing) tries
      * to open libraries found in the library path.
      * JARs already present in the classpath are <em>not</em> listed.
-     * @return a <code>List&lt;File&gt;</code> of JARs
+     * @return a list of JARs
      */
-    public abstract List getAllJars();
+    public abstract List<File> getAllJars();
 
     /** Is this module supposed to be easily reloadable?
      * If so, it is suitable for testing inside the IDE.

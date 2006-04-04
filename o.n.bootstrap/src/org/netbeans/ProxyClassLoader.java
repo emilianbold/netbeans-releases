@@ -13,11 +13,20 @@
 
 package org.netbeans;
 
-import java.util.*;
-import java.net.URL;
 import java.io.IOException;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 
 /**
@@ -289,24 +298,23 @@ public class ProxyClassLoader extends ClassLoader {
 
         // Don't bother optimizing this call by domains.
         // It is mostly used for resources for which isSpecialResource would be true anyway.
-        Enumeration<URL>[] es = new Enumeration[parents.length + 1];
-        for (int i = 0; i < parents.length; i++) {
-            if (!shouldDelegateResource(pkg, parents[i])) {
-                es[i] = org.openide.util.Enumerations.empty ();
+        List<Enumeration<URL>> es = new ArrayList<Enumeration<URL>>(parents.length + 1);
+        for (ClassLoader parent : parents) {
+            if (!shouldDelegateResource(pkg, parent)) {
                 continue;
             }
-            if (parents[i] instanceof ProxyClassLoader) {
-                es[i] = ((ProxyClassLoader)parents[i]).simpleFindResources(name);
+            if (parent instanceof ProxyClassLoader) {
+                es.add(((ProxyClassLoader) parent).simpleFindResources(name));
             } else {
-                es[i] = parents[i].getResources(name);
+                es.add(parent.getResources(name));
             }
         }
-        es[parents.length] = simpleFindResources(name);
+        es.add(simpleFindResources(name));
         // Should not be duplicates, assuming the parent loaders are properly distinct
         // from one another and do not overlap in JAR usage, which they ought not.
         // Anyway MetaInfServicesLookup, the most important client of this method, does
         // its own duplicate filtering already.
-        return new AAEnum<URL> (es);
+        return Enumerations.concat(Collections.enumeration(es));
     }
 
     /** This ClassLoader can't load anything itself. Subclasses
@@ -655,54 +663,6 @@ public class ProxyClassLoader extends ClassLoader {
      */
     protected boolean shouldDelegateResource(String pkg, ClassLoader parent) {
         return true;
-    }
-    
-    private static final class AAEnum<T> implements Enumeration<T> {
-        /** The array */
-        private Enumeration<T>[] array;
-        /** Current index in the array */
-        private int index = 0;
-
-        /** Constructs a new ArrayEnumeration for specified array */
-        public AAEnum (Enumeration<T>[] array) {
-            this.array = array;
-        }
-
-        /** Tests if this enumeration contains more elements.
-        * @return  <code>true</code> if this enumeration contains more elements;
-        *          <code>false</code> otherwise.
-        */
-        public boolean hasMoreElements() {
-            for (;;) {
-                if (index == array.length) {
-                    return false;
-                }
-
-                if (array[index].hasMoreElements ()) {
-                    return true;
-                }
-                
-                index++;
-            }
-        }
-
-        /** Returns the next element of this enumeration.
-        * @return     the next element of this enumeration.
-        * @exception  NoSuchElementException  if no more elements exist.
-        */
-        public T nextElement() {
-            try {
-                return array[index].nextElement ();
-            } catch (NoSuchElementException ex) {
-                if (hasMoreElements ()) {
-                    // try once more
-                    return nextElement ();
-                }
-                throw ex;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                throw new NoSuchElementException();
-            }
-        }
     }
     
 }
