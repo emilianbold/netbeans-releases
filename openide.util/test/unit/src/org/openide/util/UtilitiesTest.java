@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,17 +24,24 @@ import java.util.Locale;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import junit.framework.TestCase;
+import org.netbeans.modules.openide.util.AWTBridge;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * @author Jiri Rechtacek et al.
  */
 public class UtilitiesTest extends TestCase {
+
+    static {
+        System.setProperty(Lookup.class.getName(), Lkp.class.getName());
+    }
     
     public UtilitiesTest (String testName) {
         super (testName);
@@ -126,7 +133,7 @@ public class UtilitiesTest extends TestCase {
     }
     
     public void testActionsToPopupWithLookup() throws Exception {
-        final List/*<String>*/ commands = new ArrayList();
+        final List<String> commands = new ArrayList<String>();
         class BasicAction extends AbstractAction {
             public BasicAction(String name) {
                 super(name);
@@ -175,14 +182,18 @@ public class UtilitiesTest extends TestCase {
             new ContextAction("context"),
             new SpecialMenuAction("presenter"),
             null,
+            new BasicAction("top"),
+            new BasicAction("HIDDEN"),
+            null,
+            new BasicAction("bottom"),
+            null,
             null,
         };
         Lookup l = Lookups.singleton("thing");
         JPopupMenu menu = Utilities.actionsToPopup(actions, l);
-        Component[] elements = menu.getComponents(); // including separators
-        for (int i = 0; i < elements.length; i++) {
-            if (elements[i] instanceof AbstractButton) {
-                ((AbstractButton) elements[i]).doClick();
+        for (Component element : menu.getComponents()) { // including separators
+            if (element instanceof AbstractButton) {
+                ((AbstractButton) element).doClick();
             } else {
                 commands.add(null);
             }
@@ -197,6 +208,12 @@ public class UtilitiesTest extends TestCase {
             null,
             "context/thing", // ContextAwareAction was checked for
             "presenter/popup", // Presenter.Popup was checked for
+            null,
+            "top",
+            // exclude HIDDEN because of AwtBridgeImpl.convertComponents
+            // separator should however remain
+            null,
+            "bottom",
             // trailing separators must be stripped
         };
         assertEquals("correct generated menu", Arrays.asList(expectedCommands), commands);
@@ -394,5 +411,36 @@ public class UtilitiesTest extends TestCase {
         }
     }
      */
+
+    public static final class Lkp extends ProxyLookup {
+        public Lkp() {
+            super(new Lookup[] {
+                Lookups.fixed(new Object[] {new AwtBridgeImpl()}),
+                Lookups.metaInfServices(Lkp.class.getClassLoader()),
+            });
+        }
+    }
+
+    private static final class AwtBridgeImpl extends AWTBridge {
+        public JPopupMenu createEmptyPopup() {
+            return new JPopupMenu();
+        }
+        public JMenuItem createMenuPresenter(Action action) {
+            return new JMenuItem(action);
+        }
+        public JMenuItem createPopupPresenter(Action action) {
+            return new JMenuItem(action);
+        }
+        public Component createToolbarPresenter(Action action) {
+            return new JButton(action);
+        }
+        public Component[] convertComponents(Component comp) {
+            if (comp instanceof JMenuItem && "HIDDEN".equals(((JMenuItem) comp).getText())) {
+                return new Component[0];
+            } else {
+                return new Component[] {comp};
+            }
+        }
+    }
     
 }

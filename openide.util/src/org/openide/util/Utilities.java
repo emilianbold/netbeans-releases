@@ -2577,83 +2577,66 @@ widthcheck:  {
      * @since 3.29
      */
     public static JPopupMenu actionsToPopup(Action[] actions, Lookup context) {
-        JPopupMenu menu = org.netbeans.modules.openide.util.AWTBridge.getDefault().createEmptyPopup();
+        // keeps actions for which was menu item created already (do not add them twice)
+        Set<Action> counted = new HashSet<Action>();
+        // components to be added (separators are null)
+        List<Component> components = new ArrayList<Component>();
 
-        // keeps actions for which was menu item created already
-        HashSet<Action> counted = new HashSet<Action>();
-        boolean haveHadNonSep = false;
-        boolean needSep = false;
-
-        for (int i = 0; i < actions.length; i++) {
-            Action action = actions[i];
-
-            if (action != null) {
-                // if this action has menu item already, skip to next iteration
-                if (counted.contains(action)) {
-                    continue;
-                }
-
-                counted.add(action);
-
-                // Handle separators now.
-                if (needSep) {
-                    needSep = false;
-
-                    if (haveHadNonSep) {
-                        menu.addSeparator();
-                    }
-                }
-
-                haveHadNonSep = true;
-
+        for (Action action : actions) {
+            if (action != null && counted.add(action)) {
                 // switch to replacement action if there is some
                 if (action instanceof ContextAwareAction) {
                     Action contextAwareAction = ((ContextAwareAction) action).createContextAwareInstance(context);
-                    if(contextAwareAction == null) {
-                        Logger.getAnonymousLogger().log(Level.WARNING, null,
-                                new NullPointerException("ContextAwareAction.createContextAwareInstance(context) returns null. That is illegal!" // NOI18N
-                                        + " action=" + action +", context=" + context)); // NOI18N
+                    if (contextAwareAction == null) {
+                        Logger.getLogger(Utilities.class.getName()).warning(
+                                "ContextAwareAction.createContextAwareInstance(context) returns null. That is illegal!" // NOI18N
+                                        + " action=" + action + ", context=" + context); // NOI18N
                     } else {
                         action = contextAwareAction;
                     }                    
                 }
 
                 JMenuItem item;
-
                 if (action instanceof Presenter.Popup) {
                     item = ((Presenter.Popup) action).getPopupPresenter();
-
                     if (item == null) {
-                        NullPointerException npe = new NullPointerException(
-                                "findContextMenuImpl, getPopupPresenter returning null for " + action
-                            ); // NOI18N
-                        Logger.getAnonymousLogger().log(Level.WARNING, null, npe);
+                        Logger.getLogger(Utilities.class.getName()).warning(
+                                "findContextMenuImpl, getPopupPresenter returning null for " + action); // NOI18N
+                        continue;
                     }
                 } else {
                     // We need to correctly handle mnemonics with '&' etc.
-                     item = org.netbeans.modules.openide.util.AWTBridge.getDefault().createPopupPresenter(
-                            action
-                        );
+                     item = AWTBridge.getDefault().createPopupPresenter(action);
                 }
-                Component[] comps = AWTBridge.getDefault().convertComponents(item);
-                for (int v = 0; v < comps.length;v++) {
-                    if (comps[v] instanceof JSeparator && menu.getComponentCount() > 0 && menu.getComponent(menu.getComponentCount() - 1) instanceof JSeparator) {
-//                                System.out.println("ignorring separator");
-                        //TODO improve condition.
+
+                for (Component c : AWTBridge.getDefault().convertComponents(item)) {
+                    if (c instanceof JSeparator) {
+                        components.add(null);
                     } else {
-//                                System.out.println("is not=" + comps[v].getClass());
-                        menu.add(comps[v]);
+                        components.add(c);
                     }
                 }
-                if (comps.length == 0 || (comps.length > 0 && comps[comps.length - 1] instanceof JSeparator)) {
-                    haveHadNonSep = false;
-                }
             } else {
-                // Add next time it is needed.
-                needSep = true;
+                components.add(null);
             }
         }
 
+        // Now create actual menu. Strip adjacent, leading, and trailing separators.
+        JPopupMenu menu = AWTBridge.getDefault().createEmptyPopup();
+        boolean nonempty = false; // has anything been added yet?
+        boolean pendingSep = false; // should there be a separator before any following item?
+        for (Component c : components) {
+            if (c == null) {
+                pendingSep = nonempty;
+            } else {
+                nonempty = true;
+                if (pendingSep) {
+                    pendingSep = false;
+                    menu.addSeparator();
+                }
+                menu.add(c);
+            }
+        }
         return menu;
     }
 
