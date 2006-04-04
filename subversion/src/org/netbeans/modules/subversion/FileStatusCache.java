@@ -170,6 +170,41 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     /**
+     * Lists <b>interesting files</b> that are known to be inside given folders.
+     * These are locally and remotely modified and ignored files.
+     *
+     * <p>Comapring to CVS this method returns both folders and files.
+     *
+     * @param roots context to examine
+     * @param includeStatus limit returned files to those having one of supplied statuses
+     * @return File [] array of interesting files
+     */
+    public File [] listFiles(File[] roots, int includeStatus) {
+        Set set = new HashSet();
+        Map allFiles = cacheProvider.getAllModifiedValues();
+        for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation info = (FileInformation) allFiles.get(file);
+            if ((info.getStatus() & includeStatus) == 0) continue;
+            for (int j = 0; j < roots.length; j++) {
+                File root = roots[j];
+                if (root instanceof FlatFolder) {
+                    if (file.getParentFile().equals(root)) {
+                        set.add(file);
+                        break;
+                    }
+                } else {
+                    if (SvnUtils.isParentOrEqual(root, file)) {
+                        set.add(file);
+                        break;
+                    }
+                }
+            }
+        }
+        return (File[]) set.toArray(new File[set.size()]);
+    }
+
+    /**
      * Determines the versioning status of a file. This method accesses disk and may block for a long period of time.
      * 
      * @param file file to get status for

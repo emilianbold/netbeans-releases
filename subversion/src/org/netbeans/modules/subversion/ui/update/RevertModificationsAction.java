@@ -19,6 +19,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.ui.actions.PlaceholderAction;
+import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -65,12 +66,21 @@ public class RevertModificationsAction extends ContextAction {
         }
 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
+
         File files[] = ctx.getFiles();
-        for (int i= 0; i<files.length; i++) {
-            try {
-                client.revert(files[i], true);
-            } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ex);
+        File[][] split = SvnUtils.splitFlatOthers(files);
+        for (int c = 0; c<1; c++) {
+            files = split[c];
+            boolean recursive = c == 1;
+            if (recursive == false) {
+                files = SvnUtils.flatten(files, FileInformation.STATUS_REVERTIBLE_CHANGE);
+            }
+            for (int i= 0; i<files.length; i++) {
+                try {
+                    client.revert(files[i], recursive);
+                } catch (SVNClientException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
             }
         }
     }

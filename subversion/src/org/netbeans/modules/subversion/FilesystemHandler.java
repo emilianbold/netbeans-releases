@@ -34,7 +34,7 @@ import org.tigris.subversion.svnclientadapter.*;
  */
 class FilesystemHandler implements FileChangeListener, InterceptionListener, InterceptionListener2 {
         
-    private static final RequestProcessor  eventProcessor = new RequestProcessor("CVS-Event", 1); // NOI18N
+    private static final RequestProcessor  eventProcessor = new RequestProcessor("Subversion FS Monitor", 1); // NOI18N
 
     private final Subversion svn;
     private final FileStatusCache   cache;

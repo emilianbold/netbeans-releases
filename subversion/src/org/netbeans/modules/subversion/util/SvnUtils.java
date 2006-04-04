@@ -555,7 +555,8 @@ public class SvnUtils {
      * Splits files/folders into 2 groups: flat folders and other files
      * 
      * @param files array of files to split
-     * @return File[][] the first array File[0] contains flat folders, File[1] contains all other files 
+     * @return File[][] the first array File[0] contains flat folders (@see #flatten for their direct descendants),
+     * File[1] contains all other files
      */ 
     public static File[][] splitFlatOthers(File [] files) {
         Set flat = new HashSet(1);
@@ -569,10 +570,50 @@ public class SvnUtils {
         } else {
             Set allFiles = new HashSet(Arrays.asList(files));
             allFiles.removeAll(flat);
-            return new File[][] { (File[]) flat.toArray(new File[flat.size()]), (File[]) allFiles.toArray(new File[allFiles.size()]) };
+            return new File[][] {
+                (File[]) flat.toArray(new File[flat.size()]),
+                (File[]) allFiles.toArray(new File[allFiles.size()])
+            };
         }
     }
-    
+
+
+    /**
+     * Normalize flat files, Subversion treats folder as normal file
+     * so it's necessary explicitly list direct descendants to
+     * get classical flat behaviour.
+     *
+     * <p> E.g. revert on package node means:
+     * <ul>
+     *   <li>revert package folder properties AND
+     *   <li>revert all modified files in the folder
+     * </ul>
+     *
+     * @return files with given status and direct descendants with given status.
+     */
+    public static File[] flatten(File[] files, int status) {
+        LinkedList ret = new LinkedList();
+
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        for (int i = 0; i<files.length; i++) {
+            File dir = files[i];
+            FileInformation info = cache.getStatus(dir);
+            if ((status & info.getStatus()) != 0) {
+                ret.add(dir);
+            }
+            File[] entries = dir.listFiles();
+            for (int e = 0; e<entries.length; e++) {
+                File entry = entries[e];
+                info = cache.getStatus(entry);
+                if ((status & info.getStatus()) != 0) {
+                    ret.add(entry);
+                }
+            }
+        }
+                
+        return (File[]) ret.toArray(new File[ret.size()]);
+    }
+
     /**
      * Gets integer status that can be used in comparators. The more important the status is for the user,
      * the lower value it has. Conflict is 0, unknown status is 100. 

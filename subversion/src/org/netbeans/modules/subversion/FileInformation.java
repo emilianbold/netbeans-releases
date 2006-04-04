@@ -132,8 +132,8 @@ public class FileInformation implements Serializable {
             STATUS_VERSIONED_NEWINREPOSITORY |
             STATUS_VERSIONED_REMOVEDINREPOSITORY |
             STATUS_VERSIONED_DELETEDLOCALLY;
-            
-    public static final int STATUS_LOCAL_CHANGE = 
+
+    public static final int STATUS_LOCAL_CHANGE =
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | 
             FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
             FileInformation.STATUS_VERSIONED_CONFLICT | 
@@ -141,6 +141,17 @@ public class FileInformation implements Serializable {
             FileInformation.STATUS_VERSIONED_MERGE |
             FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY |
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
+
+    /**
+     * Modifiied, in conflict or scheduled for removal ar delete.
+     */
+    public static final int STATUS_REVERTIBLE_CHANGE =
+            FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
+            FileInformation.STATUS_VERSIONED_CONFLICT | 
+            FileInformation.STATUS_VERSIONED_MERGE |
+            FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY |
+            FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
+
 
     public static final int STATUS_REMOTE_CHANGE = 
             FileInformation.STATUS_VERSIONED_MERGE | 
