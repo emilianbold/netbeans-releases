@@ -119,14 +119,12 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="build-unix" depends="init, compile, xsl-unix">
     <build-installer input.ismp.project="${ismp.project}-unix"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux.jar"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
     <delete file="${ismp.project}-unix.uip"/>
   </target>
 
   <target name="build-unix-ml" depends="init, compile, xsl-unix, xsl-unix-ml">
     <build-installer input.ismp.project="${ismp.project}-unix-ml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux-ml.jar"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
     <delete file="${ismp.project}-unix.uip"/>
     <delete file="${ismp.project}-unix-ml.uip"/>

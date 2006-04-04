@@ -196,37 +196,31 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build" 
           depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part, build-unix-part" 
           description="build the installers">
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
   </target>
 
   <target name="build-ml" 
           depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part-ml, build-unix-part-ml" 
           description="build the multilanguage installers">
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
   </target>
 
   <target name="build-win32"
           depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part"
           description="build the installers">
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
   </target>
 
   <target name="build-win32-ml"
           depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part-ml"
           description="build the multilanguage installers">
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
   </target>
 
   <target name="build-unix"
           depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-unix-part"
           description="build the installers">
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
   </target>
 
   <target name="build-unix-ml"
           depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-unix-part-ml"
           description="build the multilanguage installers">
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
   </target>
 
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">

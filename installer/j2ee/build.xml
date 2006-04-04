@@ -119,7 +119,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="build-unix" depends="init, compile, xsl-unix">
     <build-installer input.ismp.project="${ismp.project}-unix"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
     <move file="build/disk1/setupLinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
@@ -128,7 +127,6 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="build-unix-ml" depends="init, compile, xsl-unix, xsl-unix-ml">
     <build-installer input.ismp.project="${ismp.project}-unix-ml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
     <move file="build/disk1/setupLinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>

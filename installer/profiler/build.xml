@@ -150,11 +150,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="build" depends="init, build-win32, build-unix, build-macosx" description="build the installers">
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
   </target>
 
   <target name="build-ml" depends="init, build-win32-ml, build-unix-ml, build-macosx-ml" description="build the multilanguage installers">
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
   </target>
  
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">
