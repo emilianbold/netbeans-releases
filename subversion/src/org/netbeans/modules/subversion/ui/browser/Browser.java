@@ -64,14 +64,17 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     private Action[] nodeActions;
     
     private ArrayList progressHandlers;
+
+    private boolean fileSelectionOnly;
     
     public Browser(String title) {                                
-        this(title, false, false);        
+        this(title, false, false, false);
     }   
     
-    public Browser(String title, boolean showFiles, boolean singleSelectionOnly) {                                        
+    public Browser(String title, boolean showFiles, boolean singleSelectionOnly, boolean fileSelectionOnly) {
         this.showFiles = showFiles;
-        
+        this.fileSelectionOnly = fileSelectionOnly;
+
         panel = new BrowserPanel(title,           
                                  org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSN_RepositoryTree"),         // NOI18N
                                  org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSD_RepositoryTree"),         // NOI18N
@@ -232,7 +235,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
 //                throw new PropertyVetoException("", evt); // NOI18N
 //            }
             
-            Node[] oldSelection =  (Node[]) evt.getOldValue();                                    
+            Node[] oldSelection = (Node[]) evt.getOldValue();                                    
             
             // RULE: don't select nodes on a different level as the already selected 
             if(oldSelection.length == 0 && newSelection.length == 1) {
@@ -258,6 +261,17 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             if(!selectionIsAtLevel(newSelection, getNodeLevel(selectedNode))) {
                 throw new PropertyVetoException("", evt); // NOI18N
             }
+
+            if(fileSelectionOnly) {
+                for (int i = 0; i < newSelection.length; i++) {
+                    if(newSelection[i] instanceof RepositoryPathNode) {
+                        RepositoryPathNode node = (RepositoryPathNode) newSelection[i];
+                        if(node.getEntry().getSvnNodeKind() == SVNNodeKind.DIR) {
+                            throw new PropertyVetoException("", evt); // NOI18N
+                        }
+                    }
+                }
+            }            
         }
     }    
     

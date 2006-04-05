@@ -107,7 +107,7 @@ public class ImportStep extends AbstractStep implements DocumentListener {
                     importPanel.repositoryPathTextField,
                     importPanel.browseRepositoryButton
                 );                   
-            repositoryPaths.setupBrowserBehavior(true, false, actions);
+            repositoryPaths.setupBrowserBehavior(true, false, false, actions);
         } else {
             repositoryPaths.setRepositoryFile(repositoryFile);
         }                                

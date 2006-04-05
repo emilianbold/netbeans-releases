@@ -51,7 +51,7 @@ public class Merge extends CopyDialog implements ActionListener {
                 panel.mergeFromRevisionTextField,
                 panel.mergeFromSearchRevisionButton
             );
-        mergeFromRepositoryPaths.setupBrowserBehavior(true, false);                        
+        mergeFromRepositoryPaths.setupBrowserBehavior(true, false, false);
 
         mergeAfterRepositoryPaths = 
             new RepositoryPaths(
@@ -61,7 +61,7 @@ public class Merge extends CopyDialog implements ActionListener {
                 panel.mergeAfterRevisionTextField,
                 panel.mergeAfterSearchRevisionButton
             );
-        mergeAfterRepositoryPaths.setupBrowserBehavior(true, false);                                        
+        mergeAfterRepositoryPaths.setupBrowserBehavior(true, false, false);                                        
         
         setupUrlComboBox(panel.mergeFromUrlComboBox,MERGE_FROM_URL_HISTORY_KEY);        
         setupUrlComboBox(panel.mergeAfterUrlComboBox, MERGE_AFTER_URL_HISTORY_KEY);        

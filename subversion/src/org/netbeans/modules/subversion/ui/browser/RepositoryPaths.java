@@ -53,8 +53,9 @@ public class RepositoryPaths implements ActionListener {
     // browser
     private boolean showFiles = false;
     private boolean singleSelection = false;
+    private boolean fileSelectionOnly = false;
     private boolean writeable;
-    private BrowserAction[] browserActions;
+    private BrowserAction[] browserActions;   
     
     public RepositoryPaths(RepositoryFile repositoryFile, 
                            JTextComponent repositoryPathTextField,  
@@ -86,13 +87,14 @@ public class RepositoryPaths implements ActionListener {
         this.searchRevisionButton = searchRevisionButton;
     }
 
-    public void setupBrowserBehavior(boolean singleSelection, boolean showFiles) {
+    public void setupBrowserBehavior(boolean singleSelection, boolean showFiles, boolean fileSelectionOnly) {
         this.singleSelection = singleSelection;
+        this.fileSelectionOnly = fileSelectionOnly;
         this.showFiles = showFiles;                
     }            
     
-    public void setupBrowserBehavior(boolean singleSelection, boolean showFiles, BrowserAction[] browserActions) {
-        setupBrowserBehavior(singleSelection, showFiles);        
+    public void setupBrowserBehavior(boolean singleSelection, boolean showFiles, boolean fileSelectionOnly, BrowserAction[] browserActions) {
+        setupBrowserBehavior(singleSelection, showFiles, fileSelectionOnly);
         this.browserActions = browserActions;
     }            
     
@@ -151,7 +153,8 @@ public class RepositoryPaths implements ActionListener {
             new Browser(
                 org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "LBL_CheckoutBrowser"), 
                 showFiles, 
-                singleSelection);        
+                singleSelection,
+                fileSelectionOnly);        
         
         final DialogDescriptor dialogDescriptor = 
                 new DialogDescriptor(browser.getBrowserPanel(), "Repository browser - " + getRepositoryUrl().toString()); 

@@ -79,7 +79,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                         workdirPanel.revisionTextField, 
                         workdirPanel.searchRevisionButton
                 );        
-            repositoryPaths.setupBrowserBehavior(false, false);
+            repositoryPaths.setupBrowserBehavior(false, false, false);
         } else {
             repositoryPaths.setRepositoryFile(repositoryFile);
         }                
