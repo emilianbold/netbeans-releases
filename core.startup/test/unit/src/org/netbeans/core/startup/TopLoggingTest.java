@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -72,7 +73,7 @@ public class TopLoggingTest extends NbTestCase {
 
         };
 
-        handler = TopLogging.createStreamHandler(new PrintStream(w));
+        handler = TopLogging.createStreamHandler(new PrintStream(getStream()));
         logger = Logger.getLogger("");
         Handler[] old = logger.getHandlers();
 // do not remove default handlers from CLIOptions.initialize():
@@ -85,18 +86,22 @@ public class TopLoggingTest extends NbTestCase {
 
     }
 
+
     protected void tearDown() throws Exception {
     }
 
+    protected ByteArrayOutputStream getStream() {
+        return w;
+    }
 
     public void testLogOneLine() throws Exception {
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
 
         Pattern p = Pattern.compile("INFO.*First visible message");
-        Matcher m = p.matcher(w.toString());
+        Matcher m = p.matcher(getStream().toString());
 
         if (!m.find()) {
-            fail("msg shall be logged: " + w.toString());
+            fail("msg shall be logged: " + getStream().toString());
         }
 
         String disk = readLog();
@@ -112,8 +117,8 @@ public class TopLoggingTest extends NbTestCase {
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "Second msg\nand its second line");
 
         String p = "\nSecond msg\nand its second line";
-        if (w.toString().indexOf(p) == -1) {
-            fail("msg shall be logged: " + w.toString());
+        if (getStream().toString().indexOf(p) == -1) {
+            fail("msg shall be logged: " + getStream().toString());
         }
 
         String disk = readLog();
@@ -132,7 +137,7 @@ public class TopLoggingTest extends NbTestCase {
         Logger l = Logger.getLogger(TopLoggingTest.class.getName());
         for (int i = 0; i < 2048; i++) {
             l.log(Level.WARNING, sb.toString() + " index: " + i);
-            w.reset();
+            getStream().reset();
         }
 
         TopLogging.flush(false);
@@ -205,7 +210,9 @@ public class TopLoggingTest extends NbTestCase {
         System.err.println("Ahoj");
         new IllegalStateException("Hi").printStackTrace();
 
-        handler.flush();
+        if (handler != null) {
+            handler.flush();
+        }
 
         String disk = readLog();
 
@@ -235,4 +242,5 @@ public class TopLoggingTest extends NbTestCase {
 
         return new String(arr);
     }
+
 }

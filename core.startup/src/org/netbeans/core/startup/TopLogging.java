@@ -52,7 +52,9 @@ import org.openide.util.RequestProcessor;
  * <code>java.util.logging.config.class</code> is specified.
  */
 public final class TopLogging {
-    private static final boolean disabledConsole = ! Boolean.getBoolean("netbeans.logger.console"); // NOI18N
+    private static boolean disabledConsole = ! Boolean.getBoolean("netbeans.logger.console"); // NOI18N
+    /** reference to the old error stream */
+    private static final PrintStream OLD_ERR = System.err;
 
     /** Initializes the logging configuration. Invoked by <code>LogManager.readConfiguration</code> method.
      */
@@ -93,10 +95,8 @@ public final class TopLogging {
             logger.removeHandler(old[i]);
         }
         logger.addHandler(defaultHandler ());
-        if (Boolean.getBoolean("netbeans.logger.console")) { // NOI18N
-            if (NonClose.getInternal(defaultHandler ()) instanceof FileHandler) {
-                logger.addHandler (streamHandler ());
-            }
+        if (!disabledConsole) { // NOI18N
+            logger.addHandler (streamHandler ());
         }
     }
 
@@ -229,7 +229,7 @@ public final class TopLogging {
     private static java.util.logging.Handler streamHandler;
     private static synchronized java.util.logging.Handler streamHandler () {
         if (streamHandler == null) {
-            StreamHandler sth = new StreamHandler (System.err, NbFormater.FORMATTER);
+            StreamHandler sth = new StreamHandler (OLD_ERR, NbFormater.FORMATTER);
             sth.setLevel(Level.ALL);
             streamHandler = new NonClose(sth);
         }
@@ -269,6 +269,7 @@ public final class TopLogging {
         
         if (defaultHandler == null) {
             defaultHandler = streamHandler();
+            disabledConsole = true;
         }
         return defaultHandler;
     }
