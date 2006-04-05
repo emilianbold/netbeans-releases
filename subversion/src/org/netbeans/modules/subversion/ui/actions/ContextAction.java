@@ -82,6 +82,10 @@ public abstract class ContextAction extends NodeAction {
         }               
     }
 
+    /**
+     * @thread If your code needs to access GUI return <tt>null</tt>
+     * and create own SvnProgressSupport in {@link #performContextAction}.
+     */
     protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
         return new ProgressSupport(this, nodes);
     }
@@ -94,7 +98,11 @@ public abstract class ContextAction extends NodeAction {
         File[] roots = ctx.getRootFiles();
         return SvnUtils.getRepositoryRootUrl(roots[0]);
     }
-    
+
+    /**
+     * @thread It's executed in #createSvnProgressSupport thread
+     * or if null in AWT thread.
+     */
     protected abstract void performContextAction(Node[] nodes, SvnProgressSupport support);
 
     /** Be sure nobody overwrites */
