@@ -137,7 +137,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 new PropertyDescriptor(FormLoaderSettings.PROP_ASSISTANT_SHOWN,
                                        FormLoaderSettings.class,
                                        "getAssistantShown", // NOI18N
-                                       "setAssistantShown") // NOI18N
+                                       "setAssistantShown"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_DESIGNER_LAF,
+                                       FormLoaderSettings.class,
+                                       "getDesignerLAF", // NOI18N
+                                       "setDesignerLAF") // NOI18N
             };
 
             ResourceBundle bundle = FormUtils.getBundle();
@@ -230,6 +234,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[++i].setDisplayName(bundle.getString("PROP_ASSISTANT_SHOWN")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_ASSISTANT_SHOWN")); // NOI18N
             desc[i].setPreferred(true);
+
+            desc[++i].setHidden(true);
 
             return desc;
         }

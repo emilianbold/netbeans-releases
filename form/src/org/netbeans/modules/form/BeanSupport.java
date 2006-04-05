@@ -18,8 +18,7 @@ import java.beans.*;
 import java.lang.reflect.Method;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
@@ -27,7 +26,7 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
  * BeanSupport is a utility class with various static methods supporting
  * operations with JavaBeans.
  *
- * @author Ian Formanek
+ * @author Ian Formanek, Jan Stola
  */
 public class BeanSupport
 {
@@ -36,10 +35,10 @@ public class BeanSupport
     // -----------------------------------------------------------------------------
     // Private variables
 
-    private static HashMap errorEmptyMap = new HashMap(3);
-    private static HashMap valuesCache = new HashMap(30);
-    private static HashMap instancesCache = new HashMap(30);
-    private static HashMap deviationsCache = new HashMap();
+    private static Map errorEmptyMap = new HashMap(3);
+    private static Map valuesCache = new HashMap(30);
+    private static Map instancesCache = new HashMap(30);
+    private static Map deviationsCache = new HashMap();
 
     // -----------------------------------------------------------------------------
     // Public methods
@@ -307,6 +306,28 @@ public class BeanSupport
         map.put("java.awt.Frame", "/org/netbeans/modules/form/resources/frame.gif"); // NOI18N
 
         return map;
+    }
+
+    /**
+     * Updates BeanSupport's caches. Used when the content of the caches
+     * must be updated during look and feel switch.
+     */
+    static void updateCaches() {
+        // Refresh instances cache
+        Set classes = new HashSet(instancesCache.keySet());
+        instancesCache.clear();
+        Iterator iter = classes.iterator();
+        while (iter.hasNext()) {
+            getDefaultInstance((Class)iter.next());
+        }
+
+        // Refresh values cache
+        classes = new HashSet(valuesCache.keySet());
+        valuesCache.clear();
+        iter = classes.iterator();
+        while (iter.hasNext()) {
+            getDefaultPropertyValues((Class)iter.next());
+        }
     }
 
     private static abstract class DefaultValueDeviation {

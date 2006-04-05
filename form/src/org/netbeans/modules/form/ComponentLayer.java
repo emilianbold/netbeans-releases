@@ -150,6 +150,7 @@ class ComponentLayer extends JPanel
 
         public void paint(Graphics g) {
             try {
+                FormLAF.setUseDesignerDefaults(true);
                 super.paint(g);
             } catch (Exception ex) {
                 // Issue 68776
@@ -174,6 +175,8 @@ class ComponentLayer extends JPanel
                 label.paint(g);
                 g.translate(-insets.left, -insets.top);
                 g.setClip(oldClip);
+            } finally {
+                FormLAF.setUseDesignerDefaults(false);
             }
         }
     }

@@ -233,9 +233,15 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
         </folder>
 
+        <folder name="LookAndFeels">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+            <attr name="isVisible" boolvalue="false" />
+        </folder>
+
         <attr name="Swing/AWT" boolvalue="true" />
         <attr name="AWT/Borders" boolvalue="true" />        
         <attr name="Borders/Beans" boolvalue="true" />
+        <attr name="Beans/LookAndFeels" boolvalue="true" />
     </folder>
 
     <folder name="Templates">

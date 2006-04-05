@@ -108,7 +108,7 @@ public final class PaletteUtils {
         return paletteFolder;
     }
     
-    static Node getPaletteNode() {
+    public static Node getPaletteNode() {
         return getPaletteDataFolder().getNodeDelegate();
     }
     

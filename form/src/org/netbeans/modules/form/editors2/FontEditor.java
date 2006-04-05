@@ -496,6 +496,15 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
                     if ((style != origStyle) || (origSize != newSize)) {
                         value = value.deriveFont(style, newSize);
                     }
+                    // Hack - propagation of the new font (created as a result
+                    // of LaF switch) back to the delegate
+                    PropertyEditor editor = property.getCurrentEditor();
+                    if (editor instanceof FontEditor) {
+                        FontEditor fontEditor = (FontEditor)editor;
+                        if (!value.equals(fontEditor.delegate.getValue())) {
+                            fontEditor.delegate.setValue(value);
+                        }
+                    }
                 }
             }
             return value;

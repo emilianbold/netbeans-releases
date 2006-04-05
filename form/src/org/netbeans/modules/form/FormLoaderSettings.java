@@ -14,6 +14,7 @@
 package org.netbeans.modules.form;
 
 import java.util.*;
+import javax.swing.UIManager;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.SharedClassObject;
@@ -85,6 +86,8 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_FOLD_GENERATED_CODE = "foldGeneratedCode"; // NOI18N
     /** Property name of the assistantShown property. */
     public static final String PROP_ASSISTANT_SHOWN = "assistantShown"; // NOI18N
+    /** Property name of the designerLAF property. */
+    public static final String PROP_DESIGNER_LAF = "designerLAF"; // NOI18N
 
     /** Property name of the layout code target property. */
     public static final String PROP_LAYOUT_CODE_TARGET = "layoutCodeTarget"; // NOI18N
@@ -160,6 +163,8 @@ public class FormLoaderSettings extends SystemOption {
     private static String [][] registeredEditors = new String [][] {{}};
 
     private static boolean toolBarPalette = false;
+
+    private static String designerLAF = null;
 
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;
@@ -556,6 +561,19 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_ASSISTANT_SHOWN,
                            oldValue, 
                            value ? Boolean.TRUE : Boolean.FALSE);
+    }
+
+    /** Getter for the designerLAF option. */
+    public String getDesignerLAF() {
+        return designerLAF;
+    }
+
+    /** Setter for the designerLAF option. */
+    public void setDesignerLAF(String designerLAF) {
+        if ((designerLAF == null) ? (this.designerLAF == null) : designerLAF.equals(this.designerLAF)) return;
+        String oldValue = this.designerLAF;
+        this.designerLAF = designerLAF;
+        firePropertyChange(PROP_DESIGNER_LAF, oldValue, designerLAF);
     }
 
     public int getLayoutCodeTarget() {

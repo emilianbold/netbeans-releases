@@ -176,7 +176,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         if (draggedComponent != null) {
+            FormLAF.setUseDesignerDefaults(true);
             draggedComponent.paintFeedback(g2);
+            FormLAF.setUseDesignerDefaults(false);
         }
         else { // just paint the selection of selected components
             g2.setColor(formSettings.getSelectionBorderColor());

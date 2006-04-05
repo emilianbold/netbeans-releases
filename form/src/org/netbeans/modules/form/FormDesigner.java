@@ -510,7 +510,34 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     VisualReplicator r = new VisualReplicator(
                         contClass, null, 0);
                     r.setTopMetaComponent(metacomp);
-                    return r.createClone();
+                    Object container = r.createClone();
+                    if (container instanceof RootPaneContainer) {
+                        JRootPane rootPane = ((RootPaneContainer)container).getRootPane();
+                        JLayeredPane newPane = new JLayeredPane() {
+                            public void paint(Graphics g) {
+                                try {
+                                    FormLAF.setUseDesignerDefaults(true);
+                                    super.paint(g);
+                                } finally {
+                                    FormLAF.setUseDesignerDefaults(false);
+                                }
+                            }
+                        };
+                        // Copy components from the original layered pane into our one
+                        JLayeredPane oldPane = rootPane.getLayeredPane();
+                        Component[] comps = oldPane.getComponents();
+                        for (int i=0; i<comps.length; i++) {
+                            newPane.add(comps[i], Integer.valueOf(oldPane.getLayer(comps[i])));
+                        }
+                        // Use our layered pane that knows about LAF switching
+                        rootPane.setLayeredPane(newPane);
+                        // Make the glass pane visible to force repaint of the whole layered pane
+                        rootPane.getGlassPane().setVisible(true);
+                        // Mark it as design preview
+                        rootPane.putClientProperty("designPreview", Boolean.TRUE); // NOI18N
+                    } // else AWT Frame - we don't care that the L&F of the Swing
+                    // components may not look good - it is a strange use case
+                    return container;
                 }
             }
         );
@@ -1533,6 +1560,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void componentClosed() {
         super.componentClosed();
+        formDesignerOpened = false;
         if (formModel != null) {
             if (formModelListener != null)
                 formModel.removeFormModelListener(formModelListener);
@@ -1566,6 +1594,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void componentOpened() {
         super.componentOpened();
+        formDesignerOpened = true;
         if ((formEditor == null) && (multiViewObserver != null)) { // Issue 67879
             multiViewObserver.getTopComponent().close();
             EventQueue.invokeLater(new Runnable() {
@@ -1574,6 +1603,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 }
             });
         }
+    }
+
+    private boolean formDesignerOpened;
+    public boolean isClosed() {
+        return !formDesignerOpened;
     }
 
     public CloseOperationState canCloseElement() {
@@ -1592,8 +1626,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // innerclasses
 
     private class LayoutMapper implements VisualMapper, LayoutConstants {
-
-        private LayoutStyle layoutStyle;
 
         // -------
 
@@ -1747,7 +1779,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                            SwingConstants.SOUTH : SwingConstants.NORTH;
             }
 
-            int prefPadding = getLayoutStyle().getPreferredGap(comp1, comp2, type, position, null);
+            int prefPadding = FormLAF.getDesignerLayoutStyle().getPreferredGap(comp1, comp2, type, position, null);
             
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  prefPadding.put(\"" + id + "\", new Integer(" + prefPadding +   //NOI18N
@@ -1804,7 +1836,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     alignment = SwingConstants.SOUTH;
                 }
             }
-            int prefPadding = getLayoutStyle().getContainerGap(comp, alignment, parent);
+            int prefPadding = FormLAF.getDesignerLayoutStyle().getContainerGap(comp, alignment, parent);
 
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  prefPaddingInParent.put(\"" + id + "\", new Integer(" +  //NOI18N
@@ -1859,11 +1891,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                    (Component) comp : null;
         }
 
-        private LayoutStyle getLayoutStyle() {
-            if (layoutStyle == null)
-                layoutStyle = LayoutStyle.getSharedInstance();
-            return layoutStyle;
-        }
     }
 
     // --------
