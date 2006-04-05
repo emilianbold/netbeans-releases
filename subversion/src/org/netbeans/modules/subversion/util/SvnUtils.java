@@ -385,7 +385,7 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {                
-                if (ExceptionHandler.isUnversionedResource(ex)) {
+                if (ExceptionHandler.isUnversionedResource(ex) == false) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -402,7 +402,7 @@ public class SvnUtils {
                     try {
                         repositoryURL = client.getInfo(fileURL).getRepository();
                     } catch (SVNClientException ex) {
-                        if (ExceptionHandler.isUnversionedResource(ex)) {
+                        if (ExceptionHandler.isUnversionedResource(ex) == false) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
@@ -451,7 +451,7 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex)) {
+                if (ExceptionHandler.isUnversionedResource(ex) == false) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -469,7 +469,7 @@ public class SvnUtils {
                     try {
                         repositoryURL = client.getInfo(fileURL).getRepository();
                     } catch (SVNClientException ex) {
-                        if (ExceptionHandler.isUnversionedResource(ex)) {
+                        if (ExceptionHandler.isUnversionedResource(ex) == false) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
@@ -513,7 +513,7 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex)) {  
+                if (ExceptionHandler.isUnversionedResource(ex) == false) {  
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
