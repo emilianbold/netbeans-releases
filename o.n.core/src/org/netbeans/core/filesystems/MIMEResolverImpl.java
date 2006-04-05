@@ -20,12 +20,8 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.XMLUtil;
@@ -66,23 +62,8 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         FileObject fo = obj.getPrimaryFile();
         InstanceContent ic = new InstanceContent();
         ic.add((InstanceCookie) new Impl(fo));
-        // bugfix #23534, provide node with help id
-        // for Options | IDE Configuration | System | File Types
-        Node n = new FileTypeNode (obj, Children.LEAF);
-        ic.add (n);
         return ic;
     }
-    
-    static class FileTypeNode extends DataNode {
-        public FileTypeNode (DataObject obj, Children ch) {
-            super(obj, ch);
-        }
-        
-        public org.openide.util.HelpCtx getHelpCtx () {
-            return new HelpCtx (FileTypeNode.class);
-        }
-    }
-                    
     
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
