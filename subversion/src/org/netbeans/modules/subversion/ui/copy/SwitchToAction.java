@@ -62,7 +62,7 @@ public class SwitchToAction extends ContextAction {
         return nodes != null && nodes.length == 1 &&  getContext(nodes).getRoots().size() > 0;
     }        
     
-    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
+    protected void performContextAction(final Node[] nodes) {
         Context ctx = getContext(nodes);        
         
         final File root = ctx.getRootFiles()[0];                        
@@ -71,18 +71,13 @@ public class SwitchToAction extends ContextAction {
      
         final SwitchTo switchTo = new SwitchTo(repositoryRoot, root);
         if(switchTo.showDialog()) {
-            support = new ContextAction.ProgressSupport(this, nodes) {
+            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
                 public void perform() {
                     performSwitch(switchTo, repositoryRoot, root, this);
                 }
             };
-            support.start("Switching...");
+            support.start();
         }        
-    }
-
-    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
-        // no SvnProgressSupport means performContextAction() won't run asynchronously
-        return null;
     }
 
     private void performSwitch(SwitchTo switchTo, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {

@@ -102,14 +102,14 @@ public class CommitAction extends ContextAction {
         
     }
     
-    protected void performContextAction(Node[] nodes, SvnProgressSupport support) {
-        Context ctx = getContext(nodes);
-        commit(ctx, support);
-    }
-
-    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
-        // no SvnProgressSupport so performContextAction() won't run asynchronously        
-        return null;
+    protected void performContextAction(Node[] nodes) {
+        final Context ctx = getContext(nodes);
+        ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+            public void perform() {
+                commit(ctx, this);
+            }
+        };
+        support.start();
     }
 
     private static void performCommit(String message, Map commitFiles, Context ctx, SvnProgressSupport support) {        

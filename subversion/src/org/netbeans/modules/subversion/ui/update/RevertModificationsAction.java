@@ -40,13 +40,18 @@ public class RevertModificationsAction extends ContextAction {
         return "CTL_MenuItem_Revert"; // NOI18N
     }
 
-    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
-        final Context ctx = getContext(nodes);        
-        performRevert(ctx, support);
+    protected void performContextAction(final Node[] nodes) {
+        final Context ctx = getContext(nodes);
+        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+            public void perform() {
+                performRevert(ctx, this);
+            }
+        };            
+        support.start();
     }
 
     /** Recursive revert */
-    public static void performRevert(final Context ctx, SvnProgressSupport support) {
+    public static void performRevert(Context ctx, SvnProgressSupport support) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(ctx, support);

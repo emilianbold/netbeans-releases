@@ -34,38 +34,44 @@ public class ConflictResolvedAction extends ContextAction {
         return "resolve";  // NOI18N
     }
 
-    protected void performContextAction(Node[] nodes, SvnProgressSupport support) {
-        Context ctx = getContext(nodes);
-        SvnClient client = null;;
-        try {
-            client = Subversion.getInstance().getClient(ctx, support);
-        } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
-        }
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+    protected void performContextAction(Node[] nodes) {
+        final Context ctx = getContext(nodes);
+        final File[] files = ctx.getFiles();
 
-        if (client == null) {
-            return;
-        }
-                
-        File[] files = ctx.getFiles();
+        ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+            public void perform() {
 
-        for (int i = 0; i<files.length; i++) {
-            if(support.isCanceled()) {
-                return;
-            }
-            File file = files[i];
-            try {
-                client.resolved(file);
-                if(support.isCanceled()) {
+                SvnClient client = null;
+                try {
+                    client = Subversion.getInstance().getClient(ctx, this);
+                } catch (SVNClientException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+                }
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+
+                if (client == null) {
                     return;
                 }
-                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        
+                for (int i = 0; i<files.length; i++) {
+                    if(isCanceled()) {
+                        return;
+                    }
+                    File file = files[i];
+                    try {
+                        client.resolved(file);
+                        if(isCanceled()) {
+                            return;
+                        }
+                        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    } catch (SVNClientException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                }
             }
-        }
+        };
+        support.start();        
     }
 
 }

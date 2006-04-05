@@ -29,7 +29,6 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -50,7 +49,7 @@ public final class DeleteLocalAction extends ContextAction {
         return LOCALLY_DELETABLE_MASK;
     }
     
-    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
+    protected void performContextAction(final Node[] nodes) {
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Prompt"));
         descriptor.setTitle(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Title"));
         descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
@@ -60,9 +59,14 @@ public final class DeleteLocalAction extends ContextAction {
         if (res != NotifyDescriptor.YES_OPTION) {
             return;
         }
-
+        
         final Context ctx = getContext(nodes);
-        performDelete(ctx, support);                
+        ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+            public void perform() {
+                performDelete(ctx, this);
+            }
+        };
+        support.start();        
     }
     
     public static void performDelete(Context ctx, SvnProgressSupport support) {

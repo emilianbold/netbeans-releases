@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.subversion.ui.actions;
 
-import com.sun.corba.se.impl.oa.poa.RequestProcessingPolicyImpl;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.util.actions.*;
@@ -72,22 +71,8 @@ public abstract class ContextAction extends NodeAction {
      */
     protected void performAction(final Node[] nodes) {
         // TODO try to save files in invocation context only
-        LifecycleManager.getDefault().saveAll();
-        
-        SvnProgressSupport support = createSvnProgressSupport(nodes);
-        if(support!=null) {
-            support.start(getRunningName(nodes));
-        } else {
-            performContextAction(nodes, null);   
-        }               
-    }
-
-    /**
-     * @thread If your code needs to access GUI return <tt>null</tt>
-     * and create own SvnProgressSupport in {@link #performContextAction}.
-     */
-    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
-        return new ProgressSupport(this, nodes);
+        LifecycleManager.getDefault().saveAll();        
+        performContextAction(nodes);           
     }
 
     protected SVNUrl getSvnUrl(Node[] nodes) {
@@ -99,11 +84,7 @@ public abstract class ContextAction extends NodeAction {
         return SvnUtils.getRepositoryRootUrl(roots[0]);
     }
 
-    /**
-     * @thread It's executed in #createSvnProgressSupport thread
-     * or if null in AWT thread.
-     */
-    protected abstract void performContextAction(Node[] nodes, SvnProgressSupport support);
+    protected abstract void performContextAction(Node[] nodes);
 
     /** Be sure nobody overwrites */
     public final boolean isEnabled() {
@@ -294,26 +275,28 @@ public abstract class ContextAction extends NodeAction {
         return false;
     }
 
-    protected static class ProgressSupport  extends SvnProgressSupport {
+    protected RequestProcessor createRequestProcessor(Node[] nodes) {
+        SVNUrl repository = getSvnUrl(nodes);
+        return Subversion.getInstance().getRequestProccessor(repository);
+    }
+
+    protected abstract static class ProgressSupport  extends SvnProgressSupport {
 
         private final ContextAction action;
         private final Node[] nodes;
         private long progressStamp;
 
-        public ProgressSupport(ContextAction action, Node[] nodes) {
-            super(createRequestProcessor(action, nodes));
+        public ProgressSupport(ContextAction action, RequestProcessor rp, Node[] nodes) {
+            super(rp);
             this.action = action;
             this.nodes = nodes;
         }
 
-        private static RequestProcessor createRequestProcessor(ContextAction action, Node[] nodes) {
-            SVNUrl repository = action.getSvnUrl(nodes);
-            return Subversion.getInstance().getRequestProccessor(repository);
+        public void start() {
+            start(action.getRunningName(nodes));
         }
 
-        public void perform() {
-            action.performContextAction(nodes, this);
-        }
+        public abstract void perform();
 
         protected void startProgress() {
             OutputLogger logger = new OutputLogger();

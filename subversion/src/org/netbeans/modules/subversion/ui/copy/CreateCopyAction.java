@@ -57,7 +57,7 @@ public class CreateCopyAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
+    protected void performContextAction(final Node[] nodes) {
         Context ctx = getContext(nodes);
 
         final File root = ctx.getRootFiles()[0];
@@ -68,18 +68,13 @@ public class CreateCopyAction extends ContextAction {
 
         final CreateCopy createCopy = new CreateCopy(repositoryRoot, root.getName(), isChanged);
         if(createCopy.showDialog()) {
-            support = new ContextAction.ProgressSupport(this, nodes) {
+            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this,  createRequestProcessor(nodes), nodes) {
                 public void perform() {
                     performCopy(createCopy, repositoryRoot, root, this);
                 }
             };
-            support.start("Copying...");
+            support.start();
         }
-    }
-
-    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
-        // no SvnProgressSupport means performContextAction() won't run asynchronously
-        return null;
     }
 
     private void performCopy(CreateCopy createCopy, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {

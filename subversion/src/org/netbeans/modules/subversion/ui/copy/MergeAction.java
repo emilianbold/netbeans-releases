@@ -54,7 +54,7 @@ public class MergeAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    protected void performContextAction(final Node[] nodes, SvnProgressSupport support) {
+    protected void performContextAction(final Node[] nodes) {
         Context ctx = getContext(nodes);        
         
         final File root = ctx.getRootFiles()[0];                        
@@ -63,18 +63,13 @@ public class MergeAction extends ContextAction {
      
         final Merge merge = new Merge(repositoryRoot, root.getName());           
         if(merge.showDialog()) {
-            support = new ContextAction.ProgressSupport(this, nodes) {
+            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
                 public void perform() {
                     performMerge(merge, repositoryRoot, root, this);
                 }
             };
-            support.start("Merging...");
+            support.start();
         }        
-    }
-
-    protected SvnProgressSupport createSvnProgressSupport(final Node[] nodes) {
-        // no SvnProgressSupport means performContextAction() won't run asynchronously
-        return null;
     }
 
     private void performMerge(Merge merge,  RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {

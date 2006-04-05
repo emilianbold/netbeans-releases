@@ -14,7 +14,6 @@
 package org.netbeans.modules.subversion.ui.commit;
 
 import java.io.*;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.settings.*;
 import org.netbeans.modules.subversion.ui.actions.*;
 import org.openide.nodes.*;
@@ -66,27 +65,32 @@ public final class ExcludeFromCommitAction extends ContextAction {
         return status;
     }
 
-    public void performContextAction(Node[] nodes, SvnProgressSupport support) {        
-        SvnModuleConfig config = SvnModuleConfig.getDefault();
-        int status = getActionStatus(nodes);
-        File [] files = getContext(nodes).getFiles();
-        if (status == EXCLUDING) {
-            for (int i = 0; i < files.length; i++) {
-                if(support.isCanceled()) {
-                    return;
+    public void performContextAction(final Node[] nodes) {
+        ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+            public void perform() {
+                SvnModuleConfig config = SvnModuleConfig.getDefault();
+                int status = getActionStatus(nodes);
+                File [] files = getContext(nodes).getFiles();
+                if (status == EXCLUDING) {
+                    for (int i = 0; i < files.length; i++) {
+                        if(isCanceled()) {
+                            return;
+                        }
+                        File file = files[i];
+                        config.addExclusionPath(file.getAbsolutePath());
+                    }
+                } else if (status == INCLUDING) {
+                    for (int i = 0; i < files.length; i++) {
+                        if(isCanceled()) {
+                            return;
+                        }
+                        File file = files[i];
+                        config.removeExclusionPath(file.getAbsolutePath());
+                    }
                 }
-                File file = files[i];
-                config.addExclusionPath(file.getAbsolutePath());
             }
-        } else if (status == INCLUDING) {
-            for (int i = 0; i < files.length; i++) {
-                if(support.isCanceled()) {
-                    return;
-                }
-                File file = files[i];
-                config.removeExclusionPath(file.getAbsolutePath());
-            }
-        }
+        };
+        support.start();
     }
 
 }
