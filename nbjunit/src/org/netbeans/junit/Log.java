@@ -209,7 +209,7 @@ public final class Log extends Handler {
 
         
         if (record.getThrown() != null) {
-            record.getThrown().printStackTrace(current.getLog());
+            record.getThrown().printStackTrace(getLog(record));
         }
     }
 
