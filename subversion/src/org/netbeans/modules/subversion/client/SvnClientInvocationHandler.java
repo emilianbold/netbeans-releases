@@ -33,6 +33,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
 
     private static Set remoteMethods = new HashSet();
     private static Set locallyHandledMethod = new HashSet();
+    private static final String ISVNSTATUS_IMPL;
 
     static {
         remoteMethods.add("checkout");  // NOI19N
@@ -59,6 +60,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         remoteMethods.add("unlock"); // NOI19N
 
         locallyHandledMethod.add("getSingleStatus");
+
+        String statusImpl = System.getProperty("ISVNStatus.impl");
+        ISVNSTATUS_IMPL = statusImpl == null ? "" : statusImpl;
     }
 
     private final ISVNClientAdapter adapter;
@@ -69,7 +73,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private static final String GET_SINGLE_STATUS = "getSingleStatus";     
     private SvnWcParser wcParser = new SvnWcParser();
 
-    private static final String ISVNSTATUS_IMPL = System.getProperty("ISVNStatus.impl");    
     /**
      *
      */
