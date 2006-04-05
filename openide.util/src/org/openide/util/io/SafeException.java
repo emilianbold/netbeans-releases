@@ -7,11 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.util.io;
 
+package org.openide.util.io;
 
 /** Special IOException that is used to signal that the write operation
 * failed but the underlaying stream is not corrupted and can be used
@@ -38,4 +38,9 @@ public class SafeException extends FoldingIOException {
     public Exception getException() {
         return ex;
     }
+
+    public Throwable getCause() {
+        return ex;
+    }
+
 }

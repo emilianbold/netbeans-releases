@@ -264,23 +264,9 @@ public final class NbErrorManager extends ErrorManager {
     private static Throwable extractNestedThrowable(Throwable t) {
         synchronized (NbErrorManager.class) {
             if (NESTS == null) {
-                NESTS = new HashMap(50);
-                NESTS.put("java.lang.ClassNotFoundException", "getException"); // NOI18N
-                NESTS.put("java.lang.ExceptionInInitializerError", "getException"); // NOI18N
-                NESTS.put("java.lang.reflect.InvocationTargetException", "getTargetException"); // NOI18N
-                NESTS.put("java.lang.reflect.UndeclaredThrowableException", "getUndeclaredThrowable"); // NOI18N
-                NESTS.put("java.security.PrivilegedActionException", "getException"); // NOI18N
-                NESTS.put("javax.naming.NamingException", "getRootCause"); // NOI18N
+                NESTS = new HashMap();
                 NESTS.put("javax.xml.parsers.FactoryConfigurationError", "getException"); // NOI18N
-                NESTS.put("javax.xml.transform.TransformerException", "getException"); // NOI18N
                 NESTS.put("javax.xml.transform.TransformerFactoryConfigurationError", "getException"); // NOI18N
-                NESTS.put("org.openide.compiler.CompilerGroupException", ".exception"); // NOI18N
-                NESTS.put("org.openide.src.SourceException$IO", "getReason"); // NOI18N
-                NESTS.put("org.openide.src.SourceException$Veto", "getReason"); // NOI18N
-                NESTS.put("org.openide.src.SourceVetoException", "getNestedException"); // NOI18N
-                NESTS.put("org.openide.util.MutexException", "getException"); // NOI18N
-                NESTS.put("org.openide.util.io.OperationException", "getException"); // NOI18N
-                NESTS.put("org.openide.util.io.SafeException", "getException"); // NOI18N
                 NESTS.put("org.xml.sax.SAXException", "getException"); // NOI18N
             }
         }
@@ -339,8 +325,7 @@ public final class NbErrorManager extends ErrorManager {
             if (l.size () == 0) l = null; // not clear if null means something other than new Annotation[0]
         } else {
             // #15611: find all kinds of nested exceptions and deal with them too.
-            // If and when JDK 1.4 causes are widely implemented, this will no
-            // longer be necessary... would be able to use a single call.
+            // Use of Throwable.initCause is preferred.
             Throwable t2 = extractNestedThrowable(t);
             if (t2 != null) {
                 if (l == null) {
@@ -389,6 +374,16 @@ public final class NbErrorManager extends ErrorManager {
                     }
                 }
                 l.addAll(al);
+            }
+        }
+        Throwable cause = t.getCause();
+        if (cause != null) {
+            Annotation[] extras = findAnnotations0(cause, true, alreadyVisited);
+            if (extras != null && extras.length > 0) {
+                if (l == null) {
+                    l = new ArrayList();
+                }
+                l.addAll(Arrays.asList(extras));
             }
         }
         

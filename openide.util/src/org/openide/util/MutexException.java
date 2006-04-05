@@ -7,11 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.util;
 
+package org.openide.util;
 
 /** Encapsulates other exceptions thrown from a mutex method.
 *
@@ -41,4 +41,9 @@ public class MutexException extends Exception {
     public Exception getException() {
         return ex;
     }
+
+    public Throwable getCause() {
+        return ex;
+    }
+
 }
