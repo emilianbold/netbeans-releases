@@ -33,12 +33,11 @@ public class SwitchToPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
 
         setName("Message");
-        jLabel4.setText("Repository Folder:");
+        urlLabel.setText("Repository Folder:");
 
         browseRepositoryButton.setText("Browse...");
 
@@ -62,7 +61,7 @@ public class SwitchToPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel4)
+                        .add(urlLabel)
                         .add(27, 27, 27)
                         .add(urlComboBox, 0, 381, Short.MAX_VALUE)
                         .add(10, 10, 10)
@@ -84,7 +83,7 @@ public class SwitchToPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
+                    .add(urlLabel)
                     .add(browseRepositoryButton)
                     .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(16, 16, 16)
@@ -103,13 +102,13 @@ public class SwitchToPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseRepositoryButton = new javax.swing.JButton();
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     final javax.swing.JCheckBox replaceModifiedCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JTextField revisionTextField = new javax.swing.JTextField();
     final javax.swing.JButton searchRevisionButton = new javax.swing.JButton();
     final javax.swing.JComboBox urlComboBox = new javax.swing.JComboBox();
+    final javax.swing.JLabel urlLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
     
 }

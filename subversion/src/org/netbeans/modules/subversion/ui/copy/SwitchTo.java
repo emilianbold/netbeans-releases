@@ -12,10 +12,10 @@
  */
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import javax.swing.JTextField;
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
@@ -28,8 +28,8 @@ public class SwitchTo extends CopyDialog {
     
     private RepositoryPaths repositoryPaths;
     
-    public SwitchTo(RepositoryFile repositoryRoot, String context) {
-        super(new SwitchToPanel(), "Switch " + context + " to...", "Switch");
+    public SwitchTo(RepositoryFile repositoryRoot, File root) {
+        super(new SwitchToPanel(), "Switch " + root.getName() + " to...", "Switch");
 
         SwitchToPanel panel = getSwitchToPanel();        
         
@@ -41,7 +41,13 @@ public class SwitchTo extends CopyDialog {
                 panel.revisionTextField,
                 panel.searchRevisionButton
             );
-        repositoryPaths.setupBrowserBehavior(true, false, new BrowserAction[] { new CreateFolderAction(context)} );                        
+        if(root.isFile()) {
+            getSwitchToPanel().urlLabel.setText("Repository File");
+            repositoryPaths.setupBrowserBehavior(true, true, null );
+        } else {
+            repositoryPaths.setupBrowserBehavior(true, false, new BrowserAction[] { new CreateFolderAction(root.getName())});
+        }
+        
         
         setupUrlComboBox(panel.urlComboBox, SwitchTo.class.getName());                
     }        

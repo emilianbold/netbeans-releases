@@ -69,7 +69,7 @@ public class SwitchToAction extends ContextAction {
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
      
-        final SwitchTo switchTo = new SwitchTo(repositoryRoot, root.getName());
+        final SwitchTo switchTo = new SwitchTo(repositoryRoot, root);
         if(switchTo.showDialog()) {
             support = new ContextAction.ProgressSupport(this, nodes) {
                 public void perform() {
