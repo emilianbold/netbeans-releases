@@ -60,6 +60,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="init-cp" depends="init">
+        <!-- These properties cannot be undefined. -->
+        <property name="cp.extra" value=""/>
+        <property name="test.unit.cp.extra" value=""/>
+        <property name="test.unit.run.cp.extra" value=""/>
         <path id="test.unit.compile.cp">
             <pathelement path="${module.run.classpath}"/>
             <pathelement location="${cluster}/${module.jar}"/>
