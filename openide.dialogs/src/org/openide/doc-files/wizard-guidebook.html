@@ -7,7 +7,7 @@
    - http://www.sun.com/
    - 
    - The Original Code is NetBeans. The Initial Developer of the Original
-   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
    - Microsystems, Inc. All Rights Reserved.
   -->
 
@@ -67,7 +67,7 @@ To achieve creation of subtitle, steps pane, help tab, ... one have to
 set initialization properties. 
 
 <br><br>
-    
+
 <h2>Wizard panel initialization</h2>
 
 Use 
@@ -79,7 +79,19 @@ properties.
 Name <b> <code>"WizardPanel_autoWizardStyle"</code></b>, type <b> <code>Boolean</code></b>
 
 <br>
-Set to <code>Boolean.TRUE</code> to turn on subtitle creation from 
+    The key property for layouting of wizard dialog. <b>Recommended to be set <code>Boolean.TRUE</code></b> to most cases.
+    <br>If switch on <code>WizardPanel_autoWizardStyle</code> then wizard can display wizards steps
+    on the left side, create a subtitle on active panel, display of error messages and others.
+    Wizards infrastructure will check the properties:
+    <ul>
+        <li><code>WizardPanel_contentDisplayed</code></li>
+        <li><code>WizardPanel_helpDisplayed</code></li>
+        <li><code>WizardPanel_contentNumbered</code></li>
+    </ul>
+    If doesn't set or set to <code>Boolean.FALSE</code> then these properties <b>are ignored</b>.
+<br>
+<br>
+Also set to <code>Boolean.TRUE</code> to turn on subtitle creation from
 <a href="../WizardDescriptor.Panel.html#getComponent()">
 <code>WizardDesriptor.Panel.getComponent()</code></a><code>.getName()</code>
 as first and 
@@ -95,7 +107,6 @@ Default subtitle format is <code>"{0} wizard ({1})"</code> and name of default
 <code>"{0} of {1}"</code>
 where <code>{0}</code> is number of current panel and <code>{1}</code> is size of iterator. 
 <br>
-Do not set or set to <code>Boolean.FALSE</code> if wizard panel shouldn't be used at all.
 
 </tt></li>
 <br><br>
@@ -114,11 +125,15 @@ Content will be constructed from not initialization property <code>"WizardPanel_
 <li><tt>
 Name <b> <code>"WizardPanel_helpDisplayed"</code></b>, type <b> <code>Boolean</code></b>
 <br>
-Set to <code>Boolean.TRUE</code> to turn on displaying of help (html browser). 
-Help will be taken from not initialization property
+Set to <code>Boolean.TRUE</code> to turn on displaying of help (html browser)
+in a special tabbed pane of wizard panel. <br>
+Help will be taken from not initialization property <code>"WizardPanel_helpURL"</code>.
+If also steps are displayed then put help and content panes into tabbed pane.
+<br>
+<br>
+<i>Note: If do you need a help on invoking the Help button then ensure
+a <code>WizardDescriptor.Panel</code> supply a non-default <code>HelpCtx</code>.</i>
 
-<code>"WizardPanel_helpURL"</code>. If also steps are displayed then put help and content
-panes into tabbed pane. 
 </tt></li>
 
 <br><br>
