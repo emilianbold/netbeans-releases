@@ -20,6 +20,7 @@ import java.io.PrintStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -189,7 +190,11 @@ public final class Log extends Handler {
         sb.append("] THREAD: ");
         sb.append(Thread.currentThread().getName());
         sb.append(" MSG: ");
-        sb.append(record.getMessage());
+        String msg = record.getMessage();
+        if (msg != null && record.getParameters() != null) {
+            msg = MessageFormat.format(msg, record.getParameters());
+        }
+        sb.append(msg);
         
         getLog(record).println(sb.toString());
 
