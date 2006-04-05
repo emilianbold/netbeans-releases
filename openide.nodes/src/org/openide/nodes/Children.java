@@ -551,12 +551,12 @@ public abstract class Children extends Object {
             if (MUTEX.isReadAccess() || (initThread == Thread.currentThread())) {
                 // fail, we are in read access
                 if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine(
+                    LOG_GET_ARRAY.log(Level.FINE,
                         "cannot initialize better " + this + // NOI18N
                         " on " + Thread.currentThread() + // NOI18N
                         " read access: " + MUTEX.isReadAccess() + // NOI18N
-                        " initThread: " + initThread // NOI18N
-                        
+                        " initThread: " + initThread, // NOI18N
+                        new Exception("StackTrace") // NOI18N
                     );
                 }
 

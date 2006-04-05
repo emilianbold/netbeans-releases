@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 
 /** Read-many/write-one lock.
@@ -72,6 +74,9 @@ import org.openide.ErrorManager;
 * @author Ales Novak
 */
 public final class Mutex extends Object {
+    /** counter of created mutexes */
+    private static int counter;
+
     /** Mutex that allows code to be synchronized with the AWT event dispatch thread.
      * <P>
      * When the Mutex methods are invoked on this mutex, the methods' semantics 
@@ -148,6 +153,12 @@ public final class Mutex extends Object {
     /** a queue of waiting threads for this mutex */
     private List<QueueCell> waiters;
 
+    /** identification of the mutex */
+    private int cnt;
+
+    /** logger for things that happen in mutex */
+    private static Logger LOG = Logger.getLogger(Mutex.class.getName());
+
     /** Enhanced constructor that permits specifying an object to use as a lock.
     * The lock is used on entry and exit to {@link #readAccess} and during the
     * whole execution of {@link #writeAccess}. The ability to specify locks
@@ -192,6 +203,7 @@ public final class Mutex extends Object {
         this.LOCK = lock;
         this.registeredThreads = new HashMap<Thread,ThreadInfo>(7);
         this.waiters = new LinkedList<QueueCell>();
+        this.cnt = counter++;
     }
 
     /** Run an action only with read access.
@@ -511,6 +523,22 @@ public final class Mutex extends Object {
     * @param t
     */
     private boolean enter(int requested, Thread t, boolean block) {
+        boolean log = LOG.isLoggable(Level.FINE);
+
+        if (log) {
+            LOG.log(Level.FINE, "[{0}] Entering {1}, {2}", new Object[] { cnt, requested, block }); // NOI18N
+        }
+
+        boolean ret = enterImpl(requested, t, block);
+
+        if (log) {
+            LOG.log(Level.FINE, "[{0}] Entering exit: {1}", new Object[] { cnt, ret }); // NOI18N
+        }
+
+        return ret;
+    }
+
+    private boolean enterImpl(int requested, Thread t, boolean block) {
         QueueCell cell = null;
         int loopc = 0;
 
@@ -630,6 +658,22 @@ public final class Mutex extends Object {
 
     /** privilegedEnter serves for processing posted requests */
     private boolean reenter(Thread t, int mode) {
+        boolean log = LOG.isLoggable(Level.FINE);
+
+        if (log) {
+            LOG.log(Level.FINE, "[{0}] Re-Entering {1}", new Object[] { cnt, mode }); // NOI18N
+        }
+
+        boolean ret = reenterImpl(t, mode);
+
+        if (log) {
+            LOG.log(Level.FINE, "[{0}] Re-Entering exit: {1}", new Object[] { cnt, ret }); // NOI18N
+        }
+        return ret;
+    }
+
+
+    private boolean reenterImpl(Thread t, int mode) {
         // from leaveX -> grantedMode is NONE or S
         if (mode == S) {
             if ((grantedMode != NONE) && (grantedMode != S)) {
@@ -717,6 +761,20 @@ public final class Mutex extends Object {
 
     /** Leaves this mutex */
     private void leave(Thread t) {
+        boolean log = LOG.isLoggable(Level.FINE);
+
+        if (log) {
+            LOG.log(Level.FINE, "[{0}] Leaving {1}", new Object[] { cnt, grantedMode }); // NOI18N
+        }
+
+        leaveImpl(t);
+
+        if (log) {
+            LOG.log(Level.FINE, "[{0}] Leaving exit: {1}", new Object[] { cnt, grantedMode }); // NOI18N
+        }
+    }
+
+    private void leaveImpl(Thread t) {
         ThreadInfo info;
         int postedMode = NONE;
         boolean needLock = false;
