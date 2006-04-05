@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -102,9 +102,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             support.putClass(FileComparator.class.getName());
             support.putClass(Util.class.getName());
             support.putClass(NetUtils.class.getName());
-            support.putClass("org.netbeans.installer.InstallApplicationServerAction$ProgressThread");
-            support.putClass("org.netbeans.installer.InstallApplicationServerAction$PointbaseFileFilter");
-            support.putClass("org.netbeans.installer.InstallApplicationServerAction$PEFileFilter");
+            support.putClass(InstallApplicationServerAction.ProgressThread.class.getName());
+            support.putClass(InstallApplicationServerAction.PEFileFilter.class.getName());
             support.putRequiredService(Win32RegistryService.NAME);
             support.putRequiredService(DesktopService.NAME);
         } catch (Exception ex){
@@ -684,25 +683,18 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     /** Return path to AS install/uninstall log files. */
     public String getPEDirLogPath() {
         String dirPath = "";
-
-        /* Determine if admin */
-        
-        boolean isAdmin = Util.isAdmin();
-
-        /* Which platform first */
         if (Util.isWindowsOS()) {
-            dirPath = tmpDir;
+            dirPath = imageDirPath;
         } else if (Util.isMacOSX()) {
             dirPath = imageDirPath;
         } else if (Util.isLinuxOS()) {
-            dirPath = ((isAdmin) ? "/var/log/wizards":"/var/tmp");
+            dirPath = imageDirPath;
         } else if (Util.isSunOS()) {
-            dirPath = ((isAdmin) ? "/var/sadm/install/logs":"/var/tmp");
+            dirPath = imageDirPath;
         }
         return dirPath;
     }
 
-    /** Gets the path of the pointbase jar*/
     public String getPELogPath(String dirPath) {
 
         File logDir = new File(dirPath);
@@ -715,7 +707,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         FileFilter ff = new InstallApplicationServerAction.PEFileFilter();
         File[] list = logDir.listFiles(ff);
 
-        if (list == null || list.length < 1){
+        if (list == null || list.length < 1) {
             // System.out.println("*.log file not found in - " + logDir.getAbsolutePath());
             return null;
         }
@@ -724,65 +716,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         // System.out.println("log path = " + recentFilePath);
 
         return recentFilePath;
-    }
-
-
-    /** Gets the path of the pointbase jar*/
-    static String getPointbaseJarPath(String pathToPointbase) {
-        if (pathToPointbase == null) return null;
-        File pbaseLibDir = new File(pathToPointbase + File.separator +
-        "client_tools" + File.separator +
-        "lib") ;
-        
-        if (!pbaseLibDir.exists()) {
-            //System.out.println( "Directory doesn't exists - " + pbaseLibDir.getAbsolutePath());
-            return null;
-        }
-        
-        FileFilter ff = new InstallApplicationServerAction.PointbaseFileFilter();
-        File[] list = pbaseLibDir.listFiles(ff);
-        //there will be only 1 jar file specified in the filter
-        if (list == null){
-            //System.out.println("pbclient*.jar file not found in - " + pbaseLibDir.getAbsolutePath());
-            return null;
-        }
-        
-        return list[0].getAbsolutePath();
-    }
-    
-    /** Appends the location of the pointbase jar to the ide.cfg file. Not used now. */
-    static void updateIDECfgFile(String pathToPointbase) {
-        try {
-            String xpFlags = null;
-            if (Util.isWindowsXP()) {
-                xpFlags = "-J-Dsun.java2d.noddraw=true -J-Dsun.java2d.d3d=false";
-                //System.out.println("xpFlags -> " + xpFlags );
-            }
-            
-            String jarFilePath = getPointbaseJarPath(pathToPointbase);
-            
-            if ((xpFlags != null) || (jarFilePath != null)) {
-                String forteHome=(String)System.getProperties().get("installDir");
-                String cfgFile = forteHome + File.separator + "bin" + File.separator + "ide.cfg";
-                
-                //System.out.println("jarFilePath -> " + jarFilePath );
-                //System.out.println("cfgFile -> " + cfgFile );
-                
-                RandomAccessFile file = new RandomAccessFile(cfgFile, "rwd");
-                file.seek(file.length());
-                if (xpFlags != null) {
-                    file.writeBytes(xpFlags);
-                    file.writeBytes("\n");
-                }
-                //make a new entry
-                file.writeBytes("-cp:a " + jarFilePath);
-                file.writeBytes("\n");
-                file.close();
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
     }
     
     /** Returns checksum for appserver directory in bytes */
@@ -1107,7 +1040,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             logFile = new File(instDirPath, "as-install.log");
             checksum = getCheckSum();
             
-            if(Util.isSunOS()) {
+            if (Util.isSunOS()) {
                 unzipLog = new File(instDirPath, "unzip.log");
                 isUnzipping = true;
                 startTime = System.currentTimeMillis();
@@ -1121,7 +1054,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 	}
 
         public void run() {
-            int sleepTime = 1000;
+            long sleepTime = 1000L;
             while (loop) {
                 //logEvent(this, Log.DBG,"looping");
                 try {
@@ -1131,16 +1064,20 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                         //logEvent(this, Log.DBG,"going 2 updateStatusDetail");
                         updateStatusDetail();
                         //logEvent(this, Log.DBG,"going 2 updateStatusDescription");
-                        if (doStatusDescUpdate) updateStatusDescription();
-                        sleepTime = 1200;
-                    }
-                    else {
-                        if (isUnzipping) updateUnzippingInfo();
-                        else updateStatusDetail();
-                        sleepTime = 2000;
+                        if (doStatusDescUpdate) {
+                            updateStatusDescription();
+                        }
+                    } else {
+                        if (isUnzipping) {
+                            updateUnzippingInfo();
+                        } else {
+                            updateStatusDetail();
+                        }
                     }
                     Thread.currentThread().sleep(sleepTime);
-                    if (isCanceled()) return;
+                    if (isCanceled()) {
+                        return;
+                    }
                 } catch (InterruptedIOException ex) {
                     //ex.printStackTrace();
                     loop = false;
@@ -1170,8 +1107,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                     logEvent(this, Log.DBG,"percentageCompleted = " + percentageCompleted + " updateCounter " + mos.getUpdateCounter());
                     mos.updatePercentComplete(ESTIMATED_TIME, 1L, 100L);
                 }*/
-            }
-            else {
+            } else {
                 String statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installationCancelled)");
                 mos.setStatusDescription(statusDesc);
                 mos.getProgress().setPercentComplete(0);
@@ -1182,12 +1118,11 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         
         /**check if the operation is canceled. If not yield to other threads.*/
         private boolean isCanceled() {
-            if(mos.isCanceled() && loop) {
+            if (mos.isCanceled() && loop) {
                 logEvent(this, Log.DBG,"MOS is cancelled");
                 loop = false;
                 runCommand.interrupt();
-            }
-            else {
+            } else {
                 Thread.currentThread().yield();
             }
             
@@ -1196,13 +1131,16 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                
         /** Updates the progress bar*/
         private void updateProgressBar() {
-            if (isCanceled()) return;
+            if (isCanceled()) {
+                return;
+            }
 
             long size = Util.getFileSize(appserverDir);
             long perc = (size * 100) / checksum;
             logEvent(this, Log.DBG,"installed size = " + size + " perc = " + perc);
-            if (perc <= percentageCompleted)
+            if (perc <= percentageCompleted) {
                 return;
+            }
             long increment = perc - percentageCompleted;
             mos.updatePercentComplete(ESTIMATED_TIME, increment, 100L);
             percentageCompleted = perc;
@@ -1210,7 +1148,9 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         
         /** Updates the status detail*/
         public void updateStatusDetail() {
-            if (isCanceled()) return;
+            if (isCanceled()) {
+                return;
+            }
             if (!appserverDir.exists()) {
                 mos.setStatusDetail(getDisplayPath(lastPathShown));
                 logEvent(this, Log.DBG,"StatusDetailThread-> " + lastPathShown + " NOT created yet");
@@ -1228,16 +1168,19 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                 int max_len = 60;
                 if (displayStr.length() > max_len) {
                     String fileName = displayStr.substring(displayStr.lastIndexOf(File.separatorChar));
+                    //If filename is too long cut it
+                    if (fileName.length() > 40) {
+                        fileName = fileName.substring(fileName.length() - 40);
+                    }
                     displayStr = displayStr.substring(0, max_len - fileName.length() - 4)
                     + "...."
                     + fileName;
                 }
-                if (! recentFilePath.equalsIgnoreCase(lastPathShown)) {
+                if (!recentFilePath.equalsIgnoreCase(lastPathShown)) {
                     lastPathShown = recentFilePath;
                     fileCounter = 0;
                     return displayStr;
-                }
-                else if ( fileCounter < MIN_DOTS) {
+                } else if (fileCounter < MIN_DOTS) {
                     fileCounter++;
                     return displayStr;
                 }
@@ -1292,10 +1235,14 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         }
         
         public void updateUnzippingInfo() {
-            if (isCanceled()) return;
-            try{
+            if (isCanceled()) {
+                return;
+            }
+            try {
                 if (unzipLogReader == null) {
-                    if (!unzipLog.exists())  return;
+                    if (!unzipLog.exists()) {
+                        return;
+                    }
                     unzipLogReader = new BufferedReader(new FileReader(unzipLog));
                 }
                 
@@ -1304,9 +1251,9 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                     while ((line = unzipLogReader.readLine()) != null) {
                         if (line.equalsIgnoreCase("DONE")) {
                             throw new Exception();   
+                        } else {
+                            mos.setStatusDetail(line);
                         }
-                        else
-                            mos.setStatusDetail(line);                      
                     }                   
                 }
             } catch (Exception ex) {
@@ -1328,27 +1275,16 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         }
     }
     
-    
-    /** FileFilter to extract the pointbase jarfile name*/
-    static public class PointbaseFileFilter implements FileFilter {
-        public boolean accept(File pathname) {
-            String name = pathname.getName();
-            if ( name.startsWith("pbclient") &&
-            name.endsWith(".jar"))
-                return true;
-            return false;
-        }
-    }
-
-    /** FileFilter to extract the PE logfile name*/
-    static public class PEFileFilter implements FileFilter {
+    /** FileFilter to extract the PE logfile name */
+    class PEFileFilter implements FileFilter {
         public boolean accept(File pathname) {
             String name = pathname.getName();
 
-            String prefix = (installMode == INSTALL ? "Install" : "Uninstall") + "_Application_Server_8PE_";
-            if ( name.startsWith(prefix) &&
-            name.endsWith(".log"))
+            String logName = resolveString("$L(org.netbeans.installer.Bundle,AS.installerLogName)");
+            String prefix = (installMode == INSTALL ? "Install" : "Uninstall") + logName;
+            if (name.startsWith(prefix) && name.endsWith(".log")) {
                 return true;
+            }
             return false;
         }
     }
