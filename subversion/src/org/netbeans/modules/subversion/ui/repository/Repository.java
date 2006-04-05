@@ -239,7 +239,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         SwingUtilities.invokeLater(awt);
     }
         
-    public SelectedRepository getSelectedRepository() throws Exception {    
+    public SelectedRepository getSelectedRepository() throws MalformedURLException {    
         String urlString = selectedUrlString();        
         if(urlString == null ) {
             return null;
@@ -287,7 +287,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         SelectedRepository repository = null;
         try {
             repository = getSelectedRepository();
-        } catch (Exception ex) {}
+        } catch (MalformedURLException ex) {
+            // ignore
+        }
         
         if(repository != null) {            
             if (repository.getUrl()!=null) {                   
