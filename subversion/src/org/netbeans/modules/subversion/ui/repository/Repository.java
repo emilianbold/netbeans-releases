@@ -299,6 +299,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 schedulePasswordUpdate();
             }
         }
+        message = "";
         updateVisibility();
     }
     
