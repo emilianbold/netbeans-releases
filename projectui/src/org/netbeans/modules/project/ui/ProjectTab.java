@@ -38,9 +38,14 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeModel;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -309,8 +314,27 @@ public class ProjectTab extends TopComponent
         RP.post( new Runnable() {
             public void run() {
                 ProjectsRootNode root = (ProjectsRootNode)manager.getRootContext();
-                final Node selectedNode = root.findNode( object );                
-                // Back to AWT
+                 Node tempNode = root.findNode( object );                
+                 if (tempNode == null) {
+                     Project project = FileOwnerQuery.getOwner(object);
+                     if (project != null && !OpenProjectList.getDefault().isOpen(project)) {
+                         DialogDisplayer dd = DialogDisplayer.getDefault();
+                         String message = NbBundle.getMessage(ProjectTab.class, "MSG_openProject_confirm", //NOI18N
+                                 ProjectUtils.getInformation(project).getDisplayName());
+                         String title = NbBundle.getMessage(ProjectTab.class, "MSG_openProject_confirm_title");//NOI18N
+                         NotifyDescriptor.Confirmation confirm =
+                                 new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.OK_CANCEL_OPTION);
+                         DialogDisplayer.getDefault().notify(confirm);
+                         if (confirm.getValue() == NotifyDescriptor.OK_OPTION) {
+                             if (!OpenProjectList.getDefault().isOpen(project)) {
+                                 OpenProjects.getDefault().open(new Project[] { project }, false);
+                             }
+                             tempNode = root.findNode( object );
+                         }
+                     }
+                 }
+                 final Node selectedNode = tempNode;
+                  // Back to AWT                // Back to AWT
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
                         if ( selectedNode != null ) {
