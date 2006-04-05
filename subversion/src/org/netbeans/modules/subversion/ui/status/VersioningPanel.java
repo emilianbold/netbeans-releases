@@ -49,7 +49,7 @@ import org.tigris.subversion.svnclientadapter.*;
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
  * 
- * @author Maros Sandor
+ * @author Maros Sandor 
  */
 class VersioningPanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener, VersioningListener, ActionListener {
     
@@ -305,14 +305,29 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      */ 
     private void onCommitAction() {
         LifecycleManager.getDefault().saveAll();
-        CommitAction.commit(context);
+
+        SVNUrl repository = CommitAction.getSvnUrl(context);
+        RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
+        SvnProgressSupport support = new SvnProgressSupport(rp) {
+            public void perform() {                
+                CommitAction.commit(context, this);
+            }            
+        };
+        support.start("Commiting...");
     }
     
     /**
      * Performs the "cvs update" command on all diplayed roots.
      */ 
     private void onUpdateAction() {
-        executeUpdate();
+        SVNUrl repository = CommitAction.getSvnUrl(context);
+        RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
+        SvnProgressSupport support = new SvnProgressSupport(rp) {
+            public void perform() {                
+                executeUpdate(this);
+            }            
+        };
+        support.start("Updating...");        
     }
     
     /**
@@ -325,7 +340,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         if (onRefreshTask != null) {
             onRefreshTask.cancel();
         }
-        onRefreshTask = Subversion.getInstance().postRequest(new Runnable() {
+        onRefreshTask = Subversion.getInstance().getRequestProccessor().post(new Runnable() {
             public void run() {
                 refreshStatuses();
             }
@@ -342,7 +357,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
 
     /* Connects to repository and gets recent status. */
     private void refreshStatuses() {
-        executeStatus();
+        SVNUrl repository = CommitAction.getSvnUrl(context);
+        RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
+        SvnProgressSupport support = new SvnProgressSupport(rp) {
+            public void perform() {                
+                executeStatus(this);
+            }            
+        };
+        support.start("Refreshing...");
         reScheduleRefresh(1000);  //XXX why asynchronosly
     }
 
@@ -366,21 +388,29 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     /**
      * Connects to repository and gets recent status.
      */
-    private void executeStatus() {
+    private void executeStatus(SvnProgressSupport support) {
 
         if (context == null || context.getRoots().size() == 0) {
             return;
         }
-        
-        ProgressHandle progress  = ProgressHandleFactory.createHandle("Refreshing status...");
+                
         try {
-            progress.start();
-            SvnClient client = Subversion.getInstance().getClient(context);
+            SvnClient client = Subversion.getInstance().getClient(context, support);
             File[] roots = context.getRootFiles();
             for (int i=0; i<roots.length; i++) {
+                if(support.isCanceled()) {
+                    return;
+                }
                 File root = roots[i];
                 ISVNStatus[] statuses = client.getStatus(root, true, false, true);  // cache refires events
+                if(support.isCanceled()) {
+                    return;
+                }
+
                 for (int s = 0; s < statuses.length; s++) {
+                    if(support.isCanceled()) {
+                        return;
+                    }
                     ISVNStatus status = statuses[s];
                     FileStatusCache cache = Subversion.getInstance().getStatusCache();
                     File file = status.getFile();
@@ -391,32 +421,28 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
             }
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ex);
-        } finally {
-            progress.finish();
         }
     }
 
-    private void executeUpdate() {
+    private void executeUpdate(SvnProgressSupport support) {
 
         if (context == null || context.getRoots().size() == 0) {
             return;
         }
-        
-        ProgressHandle progress  = ProgressHandleFactory.createHandle("Updating...");
-        try {
-            progress.start();
-            SvnClient client = Subversion.getInstance().getClient(context);
+                
+        try {          
+            SvnClient client = Subversion.getInstance().getClient(context, support);
             File[] roots = context.getRootFiles();
             for (int i=0; i<roots.length; i++) {
+                if(support.isCanceled()) {
+                    return;
+                }
                 File root = roots[i];
-                // TODO async & cancellable
                 client.update(root, SVNRevision.HEAD, true);
             }
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ex);
-        } finally {
-            progress.finish();
-        }
+        } 
     }
     
     private void onDisplayedStatusChanged() {
