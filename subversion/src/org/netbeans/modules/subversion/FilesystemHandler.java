@@ -212,7 +212,6 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
                 }
                 refreshRecursively(file);
             }
-            fileDeletedImpl(file);
         }
     }
 
@@ -344,6 +343,10 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
         try {
             ISVNClientAdapter client = Subversion.getInstance().getClient();
             client.remove(new File [] { file }, true);
+
+            // fire event explicitly because the file is already gone
+            // so svnClientAdapter does not fire ISVNNotifyListener event
+            Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         } catch (SVNClientException e) {
             // ignore; we do not know what to do here; does no harm
         }
