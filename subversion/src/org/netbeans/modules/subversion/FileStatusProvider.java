@@ -227,6 +227,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             try {
+                Diagnostics.println("Firing status event: " + file.getAbsolutePath());
                 fireFileStatusChanged(new FileStatusEvent(fo.getFileSystem(), fo, false, true));
             } catch (FileStateInvalidException e) {
                 // ignore files in invalid filesystems
@@ -235,6 +236,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         for (Iterator i = folders.keySet().iterator(); i.hasNext();) {
             FileSystem fs = (FileSystem) i.next();
             Set files = (Set) folders.get(fs);
+            Diagnostics.println("Firing status event: " + file.getAbsolutePath());
             fireFileStatusChanged(new FileStatusEvent(fs, files, true, false));
         }
     }
