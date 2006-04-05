@@ -59,7 +59,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     public String annotateNameHtml(String name, Set files) {        
         if (isManaged(files)) {
             try {
-                Diagnostics.println("Annotating " + name);
+                Diagnostics.println("Html annotating " + name);
                 return Subversion.getInstance().getAnnotator().annotateNameHtml(
                         name,
                         files,
@@ -68,7 +68,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
                         | FileInformation.STATUS_NOTVERSIONED_EXCLUDED
                 );
             } finally {
-                Diagnostics.println("END Annotating " + name);
+                Diagnostics.println("END Html annotating " + name);
             }
         } else {
             return null;
