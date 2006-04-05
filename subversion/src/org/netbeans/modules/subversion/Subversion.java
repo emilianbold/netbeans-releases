@@ -213,12 +213,7 @@ public class Subversion {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient();
         attachListeners(client);
         return client;
-    }        
-    
-    public ISVNStatus getLocalStatus(File file) throws SVNClientException {
-        ISVNClientAdapter client = getClient();
-        return client.getSingleStatus(file);        
-    }
+    }            
     
     public InterceptionListener getFileSystemHandler() {
         return filesystemHandler;

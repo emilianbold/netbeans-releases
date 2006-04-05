@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,6 +32,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 public class SvnClientInvocationHandler implements InvocationHandler {
 
     private static Set remoteMethods = new HashSet();
+    private static Set locallyHandledMethod = new HashSet();
 
     static {
         remoteMethods.add("checkout");  // NOI19N
@@ -55,6 +57,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         remoteMethods.add("merge"); // NOI19N
         remoteMethods.add("lock"); // NOI19N
         remoteMethods.add("unlock"); // NOI19N
+
+        locallyHandledMethod.add("getSingleStatus");
     }
 
     private final ISVNClientAdapter adapter;
@@ -62,6 +66,10 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private Cancellable cancellable;
     private SvnProgressSupport support;
 
+    private static final String GET_SINGLE_STATUS = "getSingleStatus";     
+    private SvnWcParser wcParser = new SvnWcParser();
+
+    private static final String ISVNSTATUS_IMPL = System.getProperty("ISVNStatus.impl");    
     /**
      *
      */
@@ -117,7 +125,14 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private Object invokeMethod(Method proxyMethod, Object[] args)
     throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
-        Object ret = null;
+        Object ret = null;        
+        if (!ISVNSTATUS_IMPL.equals("exec") && isHandledLocally(proxyMethod, args)) {
+            try {
+                return handleLocally(proxyMethod, args);
+            } catch (LocalSubversionException ex) {
+                //Exception thrown.  Call out to the default adapter
+            }
+        }
 
         // XXX refactor
         Class[] parameters = proxyMethod.getParameterTypes();
@@ -142,8 +157,23 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         }        
         return ret;
     }
-    
-    /**
+
+    private static boolean isHandledLocally(Method method, Object[] args) {
+        String name = method.getName();
+        return locallyHandledMethod.contains(name);
+    }
+
+    private Object handleLocally(Method method, Object[] args) throws LocalSubversionException {
+        Object returnValue = null;
+
+        if (GET_SINGLE_STATUS.equals(method.getName())) {
+            returnValue = wcParser.getSingleStatus((File) args[0]);
+        }
+
+        return returnValue;
+    }
+
+   /**
      * @return false for methods that perform calls over network
      */
     private static boolean noRemoteCallinAWT(Method method, Object[] args) {

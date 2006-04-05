@@ -260,7 +260,7 @@ public class FileInformation implements Serializable {
     
     private void readEntry(File file) {
         try {
-            entry = Subversion.getInstance().getLocalStatus(file);
+            entry = Subversion.getInstance().getClient().getSingleStatus(file);
         } catch (SVNClientException e) {
             // no entry for this file, ignore
         }
