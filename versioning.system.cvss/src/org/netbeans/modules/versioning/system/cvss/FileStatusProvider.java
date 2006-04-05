@@ -127,7 +127,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
                 SystemAction.get(CvsCommandsMenuItem.class)
             };
         } else {
-            return EMPTY_ACTIONS;
+            return null;
         }
     }
 
