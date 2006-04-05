@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,7 +45,6 @@ import javax.swing.UIManager;
 
 import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -131,7 +130,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     // variables ..................................................................................
     
     /** Selected color. */
-    private SuperColor color;
+    private SuperColor superColor;
     /** Property change support. Helper field. */
     private PropertyChangeSupport support;
 
@@ -184,10 +183,11 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     /** Gets value. Implements <code>PropertyEditor</code> interface.
      * @return <code>Color</code> value or <code>null</code> */
     public Object getValue () {
-        if (color instanceof Color)
-            return color;
-        else
+        if (superColor != null) {
+            return superColor.getColor ();
+        } else {
             return null;
+        }
     }
 
     /** Sets value. Implements <code>PropertyEditor</code> interface.
@@ -196,14 +196,14 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     public void setValue (Object object) {
         if(object != null) {
             if (object instanceof SuperColor) {
-                color = (SuperColor) object;
+                superColor = (SuperColor) object;
             } 
             else if (object instanceof Color) {
-                color = new SuperColor((Color) object);
+                superColor = new SuperColor((Color) object);
             }
         } 
         else {
-            color = null;
+            superColor = null;
         }
 
         support.firePropertyChange ("", null, null); // NOI18N
@@ -211,9 +211,9 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
     /** Gets value as text. Implements <code>PropertyEditor</code> interface. */
     public String getAsText () {
-        if (color == null)
+        if (superColor == null)
             return "null"; // NOI18N
-        return color.getAsText ();
+        return superColor.getAsText ();
     }
 
     /** Sets value ad text. Implements <code>PropertyEditor</code> interface. */
@@ -312,34 +312,34 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
     /** Gets java inititalization string. Implements <code>PropertyEditor</code> interface. */
     public String getJavaInitializationString() {
-        if (color == null)
+        if (superColor == null)
             return "null"; // NOI18N
-        if (color.getID() == null)
-            return "new java.awt.Color(" + color.getRed() + ", " + color.getGreen() + // NOI18N
-                   ", " + color.getBlue() + ")"; // NOI18N
+        if (superColor.getID() == null)
+            return "new java.awt.Color(" + superColor.getRed() + ", " + superColor.getGreen() + // NOI18N
+                   ", " + superColor.getBlue() + ")"; // NOI18N
 
-        switch (color.getPalette()) {
+        switch (superColor.getPalette()) {
         default:
         case AWT_PALETTE:
-            return "java.awt.Color." + color.getID(); // NOI18N
+            return "java.awt.Color." + superColor.getID(); // NOI18N
         case SYSTEM_PALETTE:
-            return "java.awt.SystemColor." + systemGenerate [getIndex (getSystemColorNames(), color.getID())]; // NOI18N
+            return "java.awt.SystemColor." + systemGenerate [getIndex (getSystemColorNames(), superColor.getID())]; // NOI18N
         case SWING_PALETTE:
             initSwingConstants();
-            int i = getIndex (swingColorNames, color.getID());
-            if (i < 0) return "new java.awt.Color(" + color.getRed() + ", " + color.getGreen() + // NOI18N
-                                  ", " + color.getBlue() + ")"; // NOI18N
+            int i = getIndex (swingColorNames, superColor.getID());
+            if (i < 0) return "new java.awt.Color(" + superColor.getRed() + ", " + superColor.getGreen() + // NOI18N
+                                  ", " + superColor.getBlue() + ")"; // NOI18N
             return "javax.swing.UIManager.getDefaults().getColor(\"" + // NOI18N
-                   color.getID() + "\")"; // NOI18N
+                   superColor.getID() + "\")"; // NOI18N
         }
     }
 
     /** Get tags possible for choosing value. Implements <code>PropertyEditor</code> interface. */
     public String[] getTags() {
-        if (color == null) {
+        if (superColor == null) {
             return getAWTColorNames();
         }
-        switch (color.getPalette()) {
+        switch (superColor.getPalette()) {
             case AWT_PALETTE:
                 return getAWTColorNames();
             case SYSTEM_PALETTE:
@@ -362,10 +362,10 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     public void paintValue(Graphics g, Rectangle rectangle) {
         int px;
 
-        if (this.color != null) {
+        if (this.superColor != null) {
             Color color = g.getColor();
             g.drawRect(rectangle.x, rectangle.y + rectangle.height / 2 - 5 , 10, 10);
-            g.setColor(this.color);
+            g.setColor(this.superColor);
             g.fillRect(rectangle.x + 1, rectangle.y + rectangle.height / 2 - 4 , 9, 9);
             g.setColor(color);
             px = 18;
@@ -506,6 +506,10 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             swingColors [i] = (Color) def.get (swingColorNames [i]);
     }
 
+    private SuperColor getSuperColor () {
+        return superColor;
+    }
+
 
     // innerclasses ............................................................................................
     /** Panel used as custom property editor. */
@@ -561,8 +565,11 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         /** Palette where it belongs. */
         private int palette = 0;
 
+        private Color color;
+
         SuperColor (Color color) {
             super (color.getRed (), color.getGreen (), color.getBlue ());
+            this.color = color;
             
             //jkozak: When user sets color by RGB values, maybe we shouldn't
             //        change the color to AWT-Palette constant.
@@ -575,6 +582,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
         SuperColor (String id, int palette, Color color) {
             super (color.getRed (), color.getGreen (), color.getBlue ());
+            this.color = color;
             this.id = id;
             this.palette = palette;
         }
@@ -607,6 +615,11 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         /** Gets palette of this color. */
         private int getPalette () {
             return palette;
+        }
+
+        /** Returns original color object */
+        private Color getColor () {
+            return this.color;
         }
 
         /** Gets as text this color value. */
@@ -661,13 +674,10 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
         /** Get called when state of selected color changes */
         public void updateChooser () {
-            Color c = null;
-            Object value = ce.getValue();
-            if (value instanceof Color)
-                c = (Color)value;
+            SuperColor sc = ce.getSuperColor ();
             
-            if ((c instanceof SuperColor) && (palette == ((SuperColor)c).getPalette ())) {
-                int i = getIndex (names, ((SuperColor)c).getID ());
+            if (palette == sc.getPalette ()) {
+                int i = getIndex (names, sc.getID ());
                 list.setSelectedIndex (i);
             } else 
                 list.clearSelection ();
@@ -865,14 +875,14 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
      */
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         org.w3c.dom.Element el = doc.createElement (XML_COLOR);
-        el.setAttribute (ATTR_TYPE, (color == null) ? VALUE_NULL : ((color.getID () == null) ? VALUE_RGB : VALUE_PALETTE));
-        if (color != null) {
-            el.setAttribute (ATTR_RED, Integer.toHexString (color.getRed ()));
-            el.setAttribute (ATTR_GREEN, Integer.toHexString (color.getGreen ()));
-            el.setAttribute (ATTR_BLUE, Integer.toHexString (color.getBlue ()));
-            if (color.getID () != null) {
-                el.setAttribute (ATTR_ID, color.getID ());
-                el.setAttribute (ATTR_PALETTE, Integer.toString (color.getPalette ()));
+        el.setAttribute (ATTR_TYPE, (superColor == null) ? VALUE_NULL : ((superColor.getID () == null) ? VALUE_RGB : VALUE_PALETTE));
+        if (superColor != null) {
+            el.setAttribute (ATTR_RED, Integer.toHexString (superColor.getRed ()));
+            el.setAttribute (ATTR_GREEN, Integer.toHexString (superColor.getGreen ()));
+            el.setAttribute (ATTR_BLUE, Integer.toHexString (superColor.getBlue ()));
+            if (superColor.getID () != null) {
+                el.setAttribute (ATTR_ID, superColor.getID ());
+                el.setAttribute (ATTR_PALETTE, Integer.toString (superColor.getPalette ()));
             }
         }
         return el;
