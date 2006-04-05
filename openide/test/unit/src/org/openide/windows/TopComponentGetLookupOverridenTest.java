@@ -15,6 +15,8 @@ package org.openide.windows;
 
 import java.awt.KeyboardFocusManager;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
 
@@ -39,6 +41,8 @@ import org.openide.util.lookup.InstanceContent;
  * @author Jaroslav Tulach
  */
 public class TopComponentGetLookupOverridenTest extends TopComponentGetLookupTest {
+    private Logger LOG = Logger.getLogger(TopComponentGetLookupOverridenTest.class + ".TEST-" + getName());
+
     public TopComponentGetLookupOverridenTest (java.lang.String testName) {
         super(testName);
     }
@@ -46,17 +50,21 @@ public class TopComponentGetLookupOverridenTest extends TopComponentGetLookupTes
     /** Setup component with lookup.
      */
     protected void setUp () {
-        ListingYourComponent tc = new ListingYourComponent ();
+        ListingYourComponent tc = new ListingYourComponent (LOG);
         top = tc;
+        get = tc.delegate;
         lookup = tc.delegate.getLookup ();
     }
+
 
     private static class ListingYourComponent extends TopComponent
     implements java.beans.PropertyChangeListener {
         YourComponent delegate;
-        
-        public ListingYourComponent () {
+        private Logger LOG;
+
+        public ListingYourComponent (Logger l) {
             delegate = new YourComponent();
+            LOG = l;
             
             addPropertyChangeListener (this);
             delegate.getExplorerManager ().setRootContext (new AbstractNode (new Children.Array ()));
@@ -69,26 +77,33 @@ public class TopComponentGetLookupOverridenTest extends TopComponentGetLookupTes
         private ThreadLocal callbacks = new ThreadLocal ();
         public void propertyChange (java.beans.PropertyChangeEvent ev) {
             ExplorerManager manager = delegate.getExplorerManager ();
-            
+
+            LOG.info("propertyChange: " + ev.getPropertyName());
+
             if ("activatedNodes".equals (ev.getPropertyName())) {
                 if (Boolean.TRUE.equals (callbacks.get ())) {
+                    LOG.info("  it was callback");
                     return;
                 }
                 try {
                     callbacks.set (Boolean.TRUE);
                     Node[] arr = getActivatedNodes ();
-                    
+
+                    LOG.info("settings ndoes to zero");
                     // first of all clear the previous values otherwise
                     // we will not test SynchronizeNodes (associateLookup (..., true))
-                    setActivatedNodes (new Node[0]);
-                    
+                    setActivatedNodes (ownNode());
+
+
                     Children.Array ch = (Children.Array)manager.getRootContext ().getChildren ();
                     for (int i = 0; i < arr.length; i++) {
                         if (arr[i].getParentNode() != manager.getRootContext()) {
                             assertTrue ("If this fails we are in troubles", ch.add (new Node[] { arr[i] }));
                         }
                     }
+                    LOG.info("em setSelectedNodes: " + Arrays.asList(arr));
                     manager.setSelectedNodes (arr);
+                    LOG.info("em setSelectedNodes done: " + Arrays.asList(arr));
                 } catch (java.beans.PropertyVetoException ex) {
                     ex.printStackTrace();
                     fail (ex.getMessage());
@@ -96,6 +111,18 @@ public class TopComponentGetLookupOverridenTest extends TopComponentGetLookupTes
                     callbacks.set (null);
                 }
             }
+
+        }
+
+        public String toString() {
+            return "ListingYourComponent";
+        }
+
+
+        private static Node[] ownNode() {
+            AbstractNode a = new AbstractNode(Children.LEAF);
+            a.setName("ownNode");
+            return new Node[] { a };
         }
     } // end of ListingYourComponent
     
@@ -124,6 +151,9 @@ public class TopComponentGetLookupOverridenTest extends TopComponentGetLookupTes
         }
         protected void componentDeactivated() {
             ExplorerUtils.activateActions(manager, false);
+        }
+        public String toString() {
+            return "YourComponent";
         }
     } // end of YourComponent
 }  

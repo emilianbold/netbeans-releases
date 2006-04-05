@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.JTextField;
@@ -52,10 +54,14 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class TopComponentGetLookupTest extends NbTestCase {
     
-    /** top component we work on */
+    /** top component we call set on*/
     protected TopComponent top;
+    /** top component we call get on */
+    protected TopComponent get;
     /** its lookup */
     protected Lookup lookup;
+
+    private Logger LOG = Logger.getLogger("TEST-" + getName());
     
     public TopComponentGetLookupTest(String testName) {
         super(testName);
@@ -65,6 +71,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
      */
     protected void setUp() {
         top = new TopComponent();
+        get = top;
         lookup = top.getLookup();
     }
     
@@ -72,21 +79,26 @@ public class TopComponentGetLookupTest extends NbTestCase {
         return true;
     }
     
-    
+    protected Level logLevel() {
+        return Level.FINER;
+    }
     
     /** Test to find nodes.
      */
     private void doTestNodes(Node[] arr, Class c, int cnt) {
+        LOG.fine("setActivatedNodes: " + arr);
         if (arr != null) {
             top.setActivatedNodes(arr);
         }
         
         assertNotNull("At least one node is registered", lookup.lookup(c));
+        LOG.fine("before lookup");
         Lookup.Result res = lookup.lookup(new Lookup.Template(c));
         Collection coll = res.allItems();
+        LOG.fine("after lookup");
         assertEquals("Two registered: " + coll, cnt, coll.size());
     }
-    
+
     public void testNodes() {
         doTestNodes(new Node[] {new N("1"), new N("2")}, N.class, 2);
         doTestNodes(new Node[] {new N("1"), new N("2")}, FeatureDescriptor.class, 2);
@@ -95,6 +107,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
     private void doTestNodesWithChangesInLookup(Class c) {
         InstanceContent ic = new InstanceContent();
         
+        LOG.fine("do test nodes");
         Node[] arr = new Node[] {
             new AbstractNode(Children.LEAF, new AbstractLookup(ic)),
             new AbstractNode(Children.LEAF, Lookup.EMPTY),
@@ -104,18 +117,22 @@ public class TopComponentGetLookupTest extends NbTestCase {
         //doTestNodes(arr, AbstractNode.class);
         doTestNodes(arr, c, 2);
         
+        LOG.fine("add new node");
         ic.add(arr[1]);
         
         /* Huh? There should be both [0] and [1], how can you say which one will be returned?
         assertEquals ("Now the [1] is in lookup of [0]", arr[1], lookup.lookup (c));
          */
         Collection all = lookup.lookup(new Lookup.Template(c)).allInstances();
+        LOG.fine("query");
         assertEquals("Two nodes are in TC lookup", 2, all.size());
         assertEquals("They are the ones we expect", new HashSet(Arrays.asList(arr)), new HashSet(all));
         assertTrue("Lookup simple query gives one or the other", new HashSet(Arrays.asList(arr)).contains(lookup.lookup(c)));
         assertEquals("Have two lookup items", 2, lookup.lookup(new Lookup.Template(c)).allItems().size());
         
+        LOG.fine("last doTestNodes");
         doTestNodes(null, c, 2);
+        LOG.fine("after last doTestNodes");
     }
     
     public void testNodesWhenTheyAreNotInTheirLookup() {
@@ -149,45 +166,64 @@ public class TopComponentGetLookupTest extends NbTestCase {
      */
     public void testCookies() {
         N[] arr = { new N("1"), new N("2"), new N("3") };
-        
+
+        LOG.fine("before activating");
         top.setActivatedNodes(arr);
-        assertEquals("Three nodes there", 3, top.getActivatedNodes().length);
+        LOG.fine("After activating");
+        Node[] myArr = get.getActivatedNodes();
+        LOG.fine("Nodes got back: " + myArr + " from " + top);
+        if (myArr != null) {
+            LOG.fine("  here they are: " + Arrays.asList(myArr));
+        }
+        assertEquals("Three nodes there", 3, myArr.length);
+        LOG.fine("Correctly activated");
         
         L l = new L();
         Lookup.Result res = lookup.lookup(new Lookup.Template(OpenCookie.class));
         res.addLookupListener(l);
+        LOG.fine("Listener attached");
         
         assertEquals("Empty now", res.allItems().size(), 0);
-        
+
+        LOG.fine("Changing state to 0x01");
         arr[0].state(0x01); // enabled open cookie
+        LOG.fine("Changing state to 0x01 done");
         
         assertEquals("One item", res.allItems().size(), 1);
         l.check("One change", 1);
-        
+
+        LOG.fine("Changing state to 0x02");
         arr[2].state(0x02); // change of different cookie
+        LOG.fine("Changing state to 0x02 done");
         
         assertEquals("Still one item", res.allItems().size(), 1);
         l.check("No change", 0);
         
+        LOG.fine("Changing state to 0x03");
         arr[2].state(0x03); // added also OpenCookie
+        LOG.fine("Changing state to 0x03 done");
         
         assertEquals("Both items", res.allItems().size(), 2);
         l.check("One change again", 1);
         
+        LOG.fine("Changing state to 0x00");
         arr[0].state(0x00);
+        LOG.fine("Changing state to 0x00 done");
         
         assertEquals("One still there", res.allItems().size(), 1);
         assertEquals("The second object", lookup.lookup(OpenCookie.class), arr[2].getCookie(OpenCookie.class));
         
+        LOG.fine("Clearing activated nodes");
         top.setActivatedNodes(new Node[0]);
+        LOG.fine("Clear done");
         assertNull("No cookie now", lookup.lookup(OpenCookie.class));
     }
     
     public void testNodesAreInTheLookupAndNothingIsFiredBeforeFirstQuery() {
         AbstractNode n1 = new AbstractNode(Children.LEAF, Lookup.EMPTY);
         top.setActivatedNodes(new Node[] { n1 });
-        assertEquals("One node there", 1, top.getActivatedNodes().length);
-        assertEquals("Is the right now", n1, top.getActivatedNodes()[0]);
+        assertEquals("One node there", 1, get.getActivatedNodes().length);
+        assertEquals("Is the right now", n1, get.getActivatedNodes()[0]);
         
         Lookup.Result res = lookup.lookup(new Lookup.Template(Node.class));
         L l = new L();
@@ -220,8 +256,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
         res.addLookupListener(listener);
         
         top.setActivatedNodes(new AbstractNode[] { n2 });
-        assertEquals("One node there", 1, top.getActivatedNodes().length);
-        assertEquals("n2", n2, top.getActivatedNodes()[0]);
+        assertEquals("One node there", 1, get.getActivatedNodes().length);
+        assertEquals("n2", n2, get.getActivatedNodes()[0]);
         
         //MK - here it changes twice.. because the setAtivatedNodes is trigger on inner TC, then lookup of MVTC contains old activated node..
         // at this monent the merged lookup contains both items.. later it gets synchronized by setting the activated nodes on the MVTC as well..
@@ -276,8 +312,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
         }
         
         top.setActivatedNodes(new Node[] { ac });
-        assertEquals("One node there", 1, top.getActivatedNodes().length);
-        assertEquals("It is the ac one", ac, top.getActivatedNodes()[0]);
+        assertEquals("One node there", 1, get.getActivatedNodes().length);
+        assertEquals("It is the ac one", ac, get.getActivatedNodes()[0]);
         ic.add(obj);
         
         L listener = new L();
@@ -297,7 +333,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         listener.check("One change", 1);
         
         top.setActivatedNodes(new N[0]);
-        assertEquals("The nodes are empty", 0, top.getActivatedNodes().length);
+        assertEquals("The nodes are empty", 0, get.getActivatedNodes().length);
         listener.check("No change", 0);
         
         cnt.queries = 0;
@@ -642,6 +678,10 @@ public class TopComponentGetLookupTest extends NbTestCase {
                 
             }
             return null;
+        }
+
+        public String toString() {
+            return "N[" + getName() + ", " + s + "]";
         }
     }
     

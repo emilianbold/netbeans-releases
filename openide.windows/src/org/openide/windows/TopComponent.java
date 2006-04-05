@@ -35,8 +35,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -80,6 +82,8 @@ import org.openide.util.actions.SystemAction;
 public class TopComponent extends JComponent implements Externalizable, Accessible, HelpCtx.Provider, Lookup.Provider {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -3022538025284122942L;
+    /** top component logger */
+    static final Logger LOG = Logger.getLogger(TopComponent.class.getName());
 
     /** Behavior in which a top component closed (by the user) in one workspace
      * will be removed from <em>every</em> workspace.
@@ -241,23 +245,43 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     * @param activatedNodes activated nodes for this component
     */
     public final void setActivatedNodes(Node[] activatedNodes) {
+        boolean l = LOG.isLoggable(Level.FINER);
+
         if (Arrays.equals(this.activatedNodes, activatedNodes)) {
+            if (l) {
+                LOG.finer("No change to activatedNodes for " + this); // NOI18N
+            }
             return;
         }
 
         Lookup lookup = getLookup(false);
 
         if (lookup instanceof DefaultTopComponentLookup) {
+            if (l) {
+                LOG.finer("Updating lookup " + lookup + " for " + this); // NOI18N
+            }
             ((DefaultTopComponentLookup) lookup).updateLookups(activatedNodes);
         }
 
         Node[] old = this.activatedNodes;
         this.activatedNodes = activatedNodes;
 
+        if (l) {
+            LOG.finer("activatedNodes changed: " + (activatedNodes == null ? "" : Arrays.asList(activatedNodes).toString())); // NOI18N
+        }
         // notify all that are interested...
         WindowManager.getDefault().topComponentActivatedNodesChanged(this, this.activatedNodes);
 
+        if (l) {
+            LOG.finer("window manager notified: " + this); // NOI18N
+        }
+
+
         firePropertyChange("activatedNodes", old, this.activatedNodes); // NOI18N
+
+        if (l) {
+            LOG.finer("listeners notified: " + this); // NOI18N
+        }
     }
 
     /**
@@ -1059,6 +1083,9 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             if (sync) {
                 defaultLookupRef = new Object[] { defaultLookupRef, new SynchronizeNodes(lookup) };
             }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("setLookup with " + lookup + " and sync: " + sync + " on " + this); // NOI18N
+            }
         }
     }
 
@@ -1400,6 +1427,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         }
 
         public void resultChanged(org.openide.util.LookupEvent ev) {
+            boolean l = LOG.isLoggable(Level.FINE);
+            if (l) {
+                LOG.fine("lookup changed for " + TopComponent.this + " is visible: " + TopComponent.this.isVisible()); // NOI18N
+            }
             if (TopComponent.this.isVisible() && EventQueue.isDispatchThread()) {
                 // run immediatelly
                 run();
@@ -1407,10 +1438,23 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
                 // replan
                 EventQueue.invokeLater(this);
             }
+            if (l) {
+                LOG.fine("lookup changed exit " + TopComponent.this); // NOI18N
+            }
         }
 
         public void run() {
-            setActivatedNodes((Node[]) res.allInstances().toArray(new Node[0]));
+            boolean l = LOG.isLoggable(Level.FINE);
+
+            Collection nodes = res.allInstances();
+
+            if (l) {
+                LOG.fine("setting nodes for " + TopComponent.this + " to " + nodes); // NOI18N
+            }
+            setActivatedNodes((Node[]) nodes.toArray(new Node[0]));
+            if (l) {
+                LOG.fine("setting nodes done for " + TopComponent.this + " to " + nodes); // NOI18N
+            }
         }
     }
      // end of SynchronizeNodes
