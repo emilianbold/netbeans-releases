@@ -287,6 +287,7 @@ public class NbExecutor extends Task {
         // create test case bean
         UnitTestCase testCaseBean = new UnitTestCase();
         testCaseBean.xmlat_name = label;
+        testCaseBean.xmlat_class = label;
         testCaseBean.xmlat_result = UnitTestCase.TEST_ERROR;
         testCaseBean.xmlat_message = "Compilation failed or other critical error appeared. Look at build script log for details.";
         testCaseBean.xml_cdata = message;
