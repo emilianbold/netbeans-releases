@@ -52,6 +52,7 @@ public final class WindowsLFCustoms extends LFCustoms {
                 // XXX Note this is workaround for JDK bug 5079742.
                 // Please remove when JDK 1.4 is no longer supported,
                 // when only JDK 1.5_02 and higher are supported 
+                // XXX that bug says fixed in Mustang only...?
 
                 "Button.font", patch2Tahoma("Button.font"), //NOI18N
                 "CheckBox.font", patch2Tahoma("CheckBox.font"), //NOI18N

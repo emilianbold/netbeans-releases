@@ -135,7 +135,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
             } else {
                 //#60235 - on macosx 1.5 there seems to be a bug with requesting focus.
                 // this piece of code seems to workaround most of the usecases in 60235
-                if (Utilities.getOperatingSystem() == Utilities.OS_MAC && System.getProperty("java.vm.version").indexOf("1.5") > -1) {//NOI18N
+                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             //#62947 another workaround for macosx 1.5 focus behaviour.

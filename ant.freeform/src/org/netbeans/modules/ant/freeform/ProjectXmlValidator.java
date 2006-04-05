@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,28 +73,8 @@ final class ProjectXmlValidator extends DefaultHandler implements FileChangeList
             f.setNamespaceAware(true);
             f.setValidating(true);
             SAXParser p = f.newSAXParser();
-            try {
-                p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", // NOI18N
-                              "http://www.w3.org/2001/XMLSchema"); // NOI18N
-            } catch (SAXNotRecognizedException e) {
-                // Thrown by Crimson's JAXP implementation in JDK 1.4. Try our Xerces.
-                ClassLoader loader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
-                if (loader == null) {
-                    loader = Thread.currentThread().getContextClassLoader();
-                }
-                try {
-                    f = (SAXParserFactory) Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl", true, loader).newInstance(); // NOI18N
-                } catch (ClassNotFoundException cnfe) {
-                    // Bummer.
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    return;
-                }
-                f.setNamespaceAware(true);
-                f.setValidating(true);
-                p = f.newSAXParser();
-                p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", // NOI18N
-                              "http://www.w3.org/2001/XMLSchema"); // NOI18N
-            }
+            p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", // NOI18N
+                          "http://www.w3.org/2001/XMLSchema"); // NOI18N
             p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", getSchemas()); // NOI18N
             p.parse(projectXml.getURL().toString(), this);
         } catch (SAXParseException e) {

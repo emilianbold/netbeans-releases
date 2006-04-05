@@ -380,8 +380,6 @@ public class JarFileSystem extends AbstractFileSystem {
     // Info
     //
     protected java.util.Date lastModified(String name) {
-        /** JarEntry.getTime returns wrong value: already reported in bugtraq 4319781
-         *  Fixed in jdk1.4  */
         try {
             return new java.util.Date(getEntry(name).getTime());
         } finally {

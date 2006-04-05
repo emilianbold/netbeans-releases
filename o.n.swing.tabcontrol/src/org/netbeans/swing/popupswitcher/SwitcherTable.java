@@ -140,18 +140,6 @@ public class SwitcherTable extends JTable {
             ren.setFont(new Font(getFont().getName(), Font.BOLD, getFont().getSize()));
         }
         
-        // #69485: Enforce selection colors on JDK 1.4.x
-        // can be deleted after JDK 1.4.x is no longer supported
-        if (System.getProperty("java.version").indexOf("1.4") != -1) {
-            if (selected) {
-                ren.setForeground(getSelectionForeground());
-                ren.setBackground(getSelectionBackground());
-            } else {
-                ren.setForeground(getForeground());
-                ren.setBackground(getBackground());
-            }
-        }
-        
         ren.setOpaque(true);
         
         return ren;

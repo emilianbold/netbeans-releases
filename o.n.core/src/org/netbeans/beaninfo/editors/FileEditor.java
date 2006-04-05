@@ -381,93 +381,9 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     public static void hackFileChooser(final JFileChooser chooser) {
         chooser.getAccessibleContext().setAccessibleDescription( getString("ACSD_FileEditor") );
         
-        // Only jdk1.3 there is not the action in action map, i.e. also no 
-        // key binding. When running on jdk1.4 only remove this part
-        // dealing with setting the key binding.
-        InputMap im = chooser.getInputMap(
-            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-        if(im != null) {
-            KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-
-            Object value = im.get(enter);
-            if(value == null) {
-                im.put(enter, "approveSelection"); // NOI18N
-            }
-        }
-
-        // Add(jdk1.3) or replace(jdk1.4) to parent (UI) map the new action
-        // doing the folder change.
-        ActionMap map = chooser.getActionMap();
-        if(map != null) {
-            // Get parent map, which is map set by FileChooserUI,
-            // containing the default approveSelection action.
-            ActionMap parent = map.getParent();
-
-            if(parent != null) {
-
-                // Get original action from parent map, set by UI.
-                final Action original = parent.get("approveSelection"); // NOI18N
-
-                // Replace it by our action which adds the folder change,
-                // if selected is a directory.
-                parent.put("approveSelection", new AbstractAction() { // NOI18N
-                    private String lastDir = null;
-                    public void actionPerformed(ActionEvent evt) {
-                        File beforefile = chooser.getSelectedFile();
-                        if (original != null) 
-                            original.actionPerformed(evt);
-                        File afterfile = chooser.getSelectedFile();
-                        File file;
-                        if (afterfile != null) 
-                            file=afterfile;
-                        else
-                            file = beforefile;
-                        
-                        if(file != null) {
-                            if (file.isDirectory()) {
-                                try {
-                                    // Strip trailing ".."
-                                    file = file.getCanonicalFile();
-                                    if (chooser.getFileSelectionMode() == chooser.DIRECTORIES_ONLY) {
-                                        //first time should select, second time should enter
-                                        //only for the case that directories are what is being
-                                        //selected
-                                        String path = file.getPath();
-                                        if (path.equals (lastDir)) {
-                                            //toggle between selecting the dir & displaying its contents
-                                            chooser.setCurrentDirectory (file);
-                                            lastDir = null;
-                                        } else {
-                                            chooser.setCurrentDirectory (file.getParentFile());
-                                            chooser.setSelectedFile(file);
-                                            chooser.ensureFileIsVisible (file);
-                                            lastDir = path;
-                                        }
-                                    } else {
-                                        chooser.setCurrentDirectory(file);
-                                    }
-                                } catch (java.io.IOException ioe) {
-                                    // Ok, use f as is
-                                }
-                            } else {
-                                //handle not a directory
-                                File dir = file.getParentFile();
-                                chooser.setCurrentDirectory (dir);
-                                chooser.setSelectedFile(file);
-                                chooser.ensureFileIsVisible(file);
-                            }
-                        } else {
-                            if(original != null) {
-                                original.actionPerformed(evt);
-                            }
-                        }
-                    }
-                });
-            }
-        }
         //issue 31605 - make escape work properly
         //Get the existing action key on ESCAPE
+        // XXX is this hack still necessary?
         final Object key = chooser.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
         
@@ -501,21 +417,8 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         chooser.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "close");
         chooser.getActionMap().put("close", close);
-        if (needAppleHack()) {
-            appleHackChooser(chooser);
-        }
     }
 
-    /** Apple's JDK 1.4.2_03 JFileChooserUI simply ignores 
-     * JFileChooser.setControlButtonsAreShown().  The result is extremely 
-     * confusing to a novice user - the mount wizard presents two sets of 
-     * buttons, including a glowing blue Open button which does nothing.
-     * This hack is only enabled for 1.4.2_03 (the only 1.4 impl available on
-     * osx).  A bug has been filed with apple's bug reporter.  */
-    private static void appleHackChooser (JFileChooser jfc) {
-        jfc.addPropertyChangeListener (new ButtonHider());
-    }
-    
     private static class ButtonHider implements PropertyChangeListener {
         public void propertyChange (PropertyChangeEvent pce) {
             if (JFileChooser.CONTROL_BUTTONS_ARE_SHOWN_CHANGED_PROPERTY.equals(pce.getPropertyName())) {
@@ -542,25 +445,6 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 }
             }
         }
-    }
-    
-    private static Boolean applehack = null;
-    private static boolean needAppleHack() {
-        if (applehack == null) {
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                if ("1.4.2_03".equals(Dependency.JAVA_IMPL)) {
-                    applehack = ("Aqua".equals(
-                        UIManager.getLookAndFeel().getID()) || 
-                        Boolean.getBoolean("netbeans.apple.filechooserhack")) ?
-                        Boolean.TRUE : Boolean.FALSE; //NOI18N
-                } else {
-                    applehack = Boolean.FALSE;
-                }
-            } else {
-                applehack = Boolean.FALSE;
-            }
-        }
-        return applehack.booleanValue();
     }
     
     /** Wraps java.io.FileFilter to javax.swing.filechooser.FileFilter. */

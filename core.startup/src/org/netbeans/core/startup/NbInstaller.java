@@ -765,16 +765,6 @@ final class NbInstaller extends ModuleInstaller {
     private static final String[] CLASSPATH_PACKAGES = new String[] {
         // core.jar shall be inaccessible
         "org/netbeans/core/startup/",
-        // Note that xalan.jar and crimson.jar are not in NB's lib/ext/, but is bundled in JDK 1.4's rt.jar (#28260):
-        // crimson.jar
-        "org/apache/crimson/", // NOI18N
-        // xalan.jar - XSLT processor
-        "org/apache/xalan/", // NOI18N
-        // xalan.jar - XPath implementation
-        "org/apache/xpath/", // NOI18N
-        // xalan.jar - other unidentified crud (#31586)
-        "org/apache/xml/dtm/", // NOI18N
-        "org/apache/xml/utils/", // NOI18N
     };
     
     private Set<String> findKosher(Module m) {

@@ -76,10 +76,6 @@ public class XMLUtil68942Test extends NbTestCase {
     }
 
     public void testClassLoaderFoundFor68942() throws Exception {
-        if (System.getProperty("java.specification.version").startsWith("1.4")) {
-            // 1.4 is using xerces and not transformer
-            return;
-        }
         Object orig = Thread.currentThread().getContextClassLoader();
         String data =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

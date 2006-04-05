@@ -110,7 +110,6 @@ public class NbErrorManagerTest extends NbTestCase {
         err.notify(ErrorManager.INFORMATIONAL, cnfe);
         String s = readLog();
         assertTrue(s.indexOf("java.lang.NullPointerException: unloc msg") != -1);
-        // JDK 1.3.1 will not print the detail message "other msg", OK:
         assertTrue(s.indexOf("java.lang.ClassNotFoundException") != -1);
         npe = new NullPointerException("msg1");
         IOException ioe = new IOException("msg2");
@@ -122,8 +121,7 @@ public class NbErrorManagerTest extends NbTestCase {
         s = readLog();
         assertTrue(s, s.indexOf("java.lang.NullPointerException: msg1") != -1);
         assertTrue(s, s.indexOf("java.io.IOException: msg2") != -1);
-        // Again passes on 1.4 but not 1.3:
-        //assertTrue(s.indexOf("msg3") != -1);
+        assertTrue(s.indexOf("msg3") != -1);
         assertTrue(s, s.indexOf("java.lang.IllegalStateException: msg4") != -1);
     }
     

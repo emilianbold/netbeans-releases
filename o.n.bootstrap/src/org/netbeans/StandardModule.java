@@ -217,7 +217,7 @@ final class StandardModule extends Module {
     
     /** Create a temporary test JAR if necessary.
      * This is primarily necessary to work around a Java bug,
-     * #4405789, which might be fixed in 1.4--check up on this.
+     * #4405789, which is marked as fixed so might be obsolete.
      */
     private void ensurePhysicalJar() throws IOException {
         if (reloadable && physicalJar == null) {

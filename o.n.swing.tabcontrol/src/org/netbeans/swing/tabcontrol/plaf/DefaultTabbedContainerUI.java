@@ -931,12 +931,6 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         }
     }
     
-    protected void jdk14bug4924516Hack(HierarchyEvent evt) {
-        if (hierarchyListener != null) {
-            hierarchyListener.hierarchyChanged (evt);
-        }
-    }
-    
     private boolean bug4924561knownShowing = false;
     /**
      * Calls <code>initDisplayer()</code>, then <code>attachModelAndSelectionListeners</code>,

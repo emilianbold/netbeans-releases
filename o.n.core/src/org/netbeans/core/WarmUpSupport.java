@@ -49,13 +49,6 @@ class WarmUpSupport implements Runnable {
 
     public void run() {
         boolean willLog = err.isLoggable(ErrorManager.INFORMATIONAL) || StartLog.willLog();
-        if (System.getProperty("java.version").indexOf("1.4") != -1 //NOI18N
-            && "Windows".equals(UIManager.getLookAndFeel().getID())) {//NOI18N
-            //Warm up windows file chooser UI - otherwise all file choosers
-            //in the IDE can be broken due to a bug in WindowsFileChooserUI
-            Issue38479Workaround.run();
-        }
-        
         if (willLog){
             err.log("Warmup starting..."); // NOI18N
             StartLog.logStart("Warmup"); // NOI18N

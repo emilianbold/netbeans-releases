@@ -56,14 +56,7 @@ final class TopThreadGroup extends ThreadGroup implements Runnable {
     }
 
     public void uncaughtException(Thread t, Throwable e) {
-        if (!(e instanceof ThreadDeath)
-            // XXX(-ttran) in Sun JDK 1.3.1_01 Linux (at least) there is a bug
-            // which can cause this exception to be thrown from a helper
-            // AWT-Selection thread
-            // XXX what bug #? fixed in 1.4 or not? -jglick
-            && !(e instanceof IllegalMonitorStateException &&
-                 "AWT-Selection".equals(t.getName())) // NOI18N
-            ) {
+        if (!(e instanceof ThreadDeath)) {
             if (e instanceof VirtualMachineError) {
                 // Try as hard as possible to get a stack trace from e.g. StackOverflowError
                 e.printStackTrace();

@@ -175,21 +175,6 @@ public abstract class TabbedContainerUI extends ComponentUI {
     public abstract Rectangle getTabsArea ();
     
     /**
-     * JDK bug 4924516 - on JDK 1.4, in some cases HierarchyEvents for 
-     * components being shown are not propagated correctly.  On 1.4, this
-     * method will be called, passing in a hierarchy event indicating the
-     * component has been shown.
-     * <p>
-     * The default implementation does nothing; subclasses which use
-     * HierarchyListeners should override it to pass the event to the 
-     * appropriate listener, which should test if it has already received
-     * an event in the ordinary way and only do something if necessary.
-     */
-    protected void jdk14bug4924516Hack(HierarchyEvent evt) {
-        //do nothing
-    }
-
-    /**
      * Index at which a tab would be inserted if a suitable object were dropped
      * at this point.
      *

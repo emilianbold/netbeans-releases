@@ -780,8 +780,6 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     // Helpers<<
     
     
-    /** Jdk1.4 <code>DragSourceMotionListener</code>
-     * change the code when starting to build on jdk1.4 and higher only */
     private static class MotionListener implements DragSourceMotionListener {
 
         private final WindowDnDManager windowDnDManager;

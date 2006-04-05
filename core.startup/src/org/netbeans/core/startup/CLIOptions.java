@@ -108,14 +108,7 @@ public class CLIOptions extends CLIHandler {
                 args[i] = null;
                 try {
                     String ui = args[++i];
-                    //Do not allow GTK L&F on 1.4.2 - it will throw nasty 
-                    //exceptions in strange places and not work right
-                    if ("com.sun.java.swing.plaf.gtk.GTKLookAndFeel".equals(ui) 
-                        && System.getProperty("java.version").indexOf ("1.4.2") != -1) {
-                        System.err.println(getString("MSG_GTKNotSupported"));
-                    } else {
-                        uiClass = Class.forName(ui);
-                    }
+                    uiClass = Class.forName(ui);
                 } catch(ArrayIndexOutOfBoundsException e) {
                     System.err.println(getString("ERR_UIExpected"));
                     return 2;

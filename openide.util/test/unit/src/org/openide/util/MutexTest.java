@@ -937,14 +937,7 @@ public class MutexTest extends NbTestCase {
     private void dumpStrackTrace(Thread thread, StringBuffer sb) throws IllegalAccessException, InvocationTargetException {
         sb.append("StackTrace for thread: " + thread.getName() + "\n");
 
-        StackTraceElement[] arr;
-        try {
-            Method m = Thread.class.getDeclaredMethod("getStackTrace", new Class[0]);
-            arr = (StackTraceElement[])m.invoke(thread, new Object[0]);
-        } catch (NoSuchMethodException ex) {
-            // no such method on 1.4
-            return;
-        }
+        StackTraceElement[] arr = thread.getStackTrace();
 
         for (int i = 0; i < arr.length; i++) {
             sb.append(arr[i].toString());

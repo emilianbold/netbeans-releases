@@ -269,7 +269,7 @@ public final class StandardLogger extends AntLogger {
      */
     private static OutputListener findHyperlink(AntSession session, String line) {
         // #29246: handle new (Ant 1.5.1) URLifications:
-        // [PENDING] Under JDK 1.4, could use new File(URI)... if Ant uses URI too (Jakarta BZ #8031)
+        // [PENDING] Could use new File(URI)... if Ant uses URI too (Jakarta BZ #8031)
         // XXX so tweak that for Ant 1.6 support!
         // XXX would be much easier to use a regexp here
         if (line.startsWith("file:///")) { // NOI18N

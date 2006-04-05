@@ -241,9 +241,9 @@ public final class Main extends Object {
     System.setProperty ("org.openide.version", "deprecated"); // NOI18N
     System.setProperty ("org.openide.major.version", "IDE/1"); // NOI18N
 
-    // Enforce JDK 1.4+ since we would not work without it.
-    if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.4")) < 0) { // NOI18N
-        System.err.println("The IDE requires JDK 1.4 or higher to run."); // XXX I18N?
+    // Enforce JDK 1.5+ since we would not work without it.
+    if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.5")) < 0) { // NOI18N
+        System.err.println("The IDE requires JDK 5 or higher to run."); // XXX I18N?
         org.netbeans.TopSecurityManager.exit(1);
     }
 

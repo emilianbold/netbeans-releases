@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.project.ant;
@@ -64,12 +64,6 @@ public class AntProjectModule extends ModuleInstall {
     
     private boolean checkForXalan() {
         //check for a buggy xalan on the classpath and warn if necessary:
-        //check the Java version (on 1.4, a different approach is used to store project metadata,
-        //that does not reveal the problem with Xalan):
-        if (System.getProperty("java.specification.version").startsWith("1.4")) { // NOI18N
-            return false;
-        }
-        
         //try to load org.apache.xalan.Version class, OK if it does not exist:
         try {
             Class version = XMLUtil.class.getClassLoader().loadClass("org.apache.xalan.Version"); // NOI18N

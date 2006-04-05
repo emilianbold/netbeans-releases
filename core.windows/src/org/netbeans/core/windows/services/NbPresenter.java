@@ -186,36 +186,6 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         setBounds(Utilities.findCenterBounds(getSize()));
     }
 
-    // XXX #17794. Method requestDefaultFocus doesn't work under jdk1.4,
-    // it is deprecated, and new API should be called insted,
-    // therefore we use this hack. 
-    // When building on jdk1.4, please remove the reflection code.
-    /** Find focus cycle root ancestor and transfers focus down the cycle,
-     * it has the effect to pass the focus to the default focus component.
-     * Valid only under jdk1.4 and higher.
-     * @param comp message component, may not be <code>null</code> */
-    private void requestFocusForJdk14(Component comp) {
-        // calling validate() here is important.
-        // javax.swing.LayoutFocusTraversalPolicy determines the component
-        // which should have the keyboard focus by default based on the bounds
-        // of components inside the container.  To make it work the layout must
-        // be correct.
-        // See also bugs #19539 and #19540
-        validate();
-
-        Component root = comp.getFocusCycleRootAncestor();
-
-        if(root != null) {
-            comp = root;
-        }
-
-        if(comp instanceof Container) {
-            ((Container)comp).transferFocusDownCycle();
-        } else {
-            comp.requestFocus();
-        }
-    }
-    
     /** Requests focus for <code>currentMessage</code> component.
      * If it is of <code>JComponent</code> type it tries default focus
      * request first. */
@@ -223,18 +193,6 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         Component comp = currentMessage;
         
         if(comp == null) {
-            return;
-        }
-        
-        // #17794.  See comments in initialize(NotifyDescriptor) above
-        //(TDB) This fix is not needed for JDK 1.4.1 & up, and caused issue
-        //29195 (keyboard nav problems in file chooser because focus was 
-        //set wrong).  Changing to only target jdk 1.4.
-        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.4.0")) == 0) {  // NOI18N
-            if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.4.1")) // NOI18N
-             > 0) { 
-                requestFocusForJdk14(comp);
-             }
             return;
         }
         
@@ -818,16 +776,6 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     }
     
     public void show() {
-        // XXX #21613: Modal dialog is very dangerous during DnD in progress,
-        // on jdk1.4.0. It is fixed in jdk1.4.1.
-        // There is no workaround, so setting it in the case as modeless.
-        if(isModal()
-        && Dependency.JAVA_IMPL.indexOf("1.4.0") >= 0  // NOI18N
-        && WindowDnDManager.isDnDEnabled()
-        && WindowManagerImpl.getInstance().isDragInProgress()) {
-            setModal(false);
-        }
-    
         //Bugfix #29993: Call show() asynchronously for non modal dialogs.
         if (isModal()) {
             Mutex.EVENT.readAccess(this);

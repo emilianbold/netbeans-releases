@@ -133,20 +133,6 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
     }//GEN-END:initComponents
 
     private void newObjectNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_newObjectNameFocusGained
-        //Code below works perfectly on Solaris with JDK 1.3 or 1.4.  The
-        //lines below show up in CVS annotate as by jglick, Apr 25, 2000, which
-        //is the major reformat/SPL addition for open sourcing NB.  I'm 
-        //guessing this was some 1.2 bug that is irrelevant now, but leaving
-        //it in place in case of a problem.  -TDB
-        /*
-        if (
-            Utilities.getOperatingSystem() == Utilities.OS_SOLARIS |
-            Utilities.getOperatingSystem() == Utilities.OS_SUNOS
-        ) {
-            // does not work on CDE window manager, so better do nothin
-            return;
-        }
-         */
         newObjectName.selectAll ();
     }//GEN-LAST:event_newObjectNameFocusGained
 

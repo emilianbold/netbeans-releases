@@ -91,25 +91,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         // set security manager
         SecurityManager secman = new TopSecurityManager();
 
-        /* Disabled until there is an IBM JDK 1.4 known to display the same bug:
-        // XXX(-trung) workaround for IBM JDK 1.3 Linux bug in
-        // java.net.URLClassLoader.findClass().  The IBM implementation of this
-        // method is not reentrant. The problem happens when findClass()
-        // indirectly calls methods of TopSecurityManager for the first time.
-        // This may trigger other classes to be loaded, thus findClass() is
-        // re-entered.
-        //
-        // We try to force dependent classes of TopSecurityManager to be loaded
-        // before setting it as system's SecurityManager
-        
-        try {
-            secman.checkRead("xxx"); // NOI18N
-        }
-        catch (RuntimeException ex) {
-            // ignore
-        }
-        */
-        
         System.setSecurityManager(secman);
         TopSecurityManager.makeSwingUseSpecialClipboard (
             (org.openide.util.datatransfer.ExClipboard)

@@ -148,6 +148,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
     public boolean dispatchKeyEvent(KeyEvent ev) {
         // XXX(-ttran) Sun JDK 1.4 on Linux: pressing Alt key produces
         // KeyEvent.VK_ALT, but Alt+<key> produces Meta+<key>
+        // XXX is this still a problem? -jglick
         if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             int mods = ev.getModifiers();
             if (mods == InputEvent.META_MASK) {

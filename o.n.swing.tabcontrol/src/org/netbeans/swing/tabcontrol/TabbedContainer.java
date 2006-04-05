@@ -183,8 +183,6 @@ public class TabbedContainer extends JComponent implements Accessible {
 
     public static final String COMMAND_DISABLE_AUTO_HIDE = "disableAutoHide"; //NOI18N
     
-    private static final boolean JDK14_BUG4924516_HACK_ENABLED =System.getProperty("java.version").indexOf("1.4") >= 0;
-    
     //XXX support supressing close buttons
     
     /**
@@ -367,26 +365,6 @@ public class TabbedContainer extends JComponent implements Accessible {
         }
     }
     
-    /** Overridden to work around jdk bug 4924516 on jdk 1.4 */
-    public void addNotify() {
-        super.addNotify();
-        jdk14bug4924516HackShowingEvent();
-    }
-    
-    /** Overridden to work around jdk bug 4924516 on jdk 1.4 */
-    public void removeNotify() {
-        super.removeNotify();
-        jdk14bug4924516HackShowingEvent();
-    }
-    
-    private void jdk14bug4924516HackShowingEvent() {
-        if (JDK14_BUG4924516_HACK_ENABLED) {
-            HierarchyEvent evt = new HierarchyEvent (this, 
-                HierarchyEvent.SHOWING_CHANGED, this, getParent());
-            getUI().jdk14bug4924516Hack(evt);
-        }
-    }
-
     /**
      * Get the type of this displayer - it is either TYPE_EDITOR or TYPE_VIEW.
      * This property is set in the constructor and is immutable

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,14 +43,6 @@ public class TaskThreadGroupGCTest extends NbTestCase {
 	
 	
     public void testTTGGC() throws Exception {
-        try {
-            Class c = Class.forName("java.lang.StringBuilder");
-        } catch (ClassNotFoundException ex) {
-            System.err.println("not running the test on JDK 1.4 as there seems to be something broken");
-            return;
-        }
-        
-        
         final Reference/*<Thread>*/[] t = new Reference[4];
         Runnable r = new Runnable() {
             public void run() {

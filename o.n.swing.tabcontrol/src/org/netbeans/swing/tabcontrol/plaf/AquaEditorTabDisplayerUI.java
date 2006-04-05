@@ -209,9 +209,6 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         }
     }
     
-    static boolean aqua14204offByOneError = System.getProperty("java.version") != null &&
-        System.getProperty("java.version").indexOf ("1.4.2_04") > -1;
-    
     private class OSXTabLayout implements LayoutManager {
 
         public void addLayoutComponent(String name, java.awt.Component comp) {
@@ -272,9 +269,7 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
             if (dontpaint) {
                 return;
             }
-            if (!aqua14204offByOneError) {
-                x -= 1;
-            }
+            x -= 1;
             y -= 3;
             g.setColor(c.isEnabled() ?
                        c.getForeground() :
@@ -342,9 +337,6 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
                 return;
             }
             y -= 5;
-            if (aqua14204offByOneError) {
-                x+=1;
-            }
 
             int wid = getIconWidth();
             if (wid % 2 == 0)
