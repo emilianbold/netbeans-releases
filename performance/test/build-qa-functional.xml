@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compilers -->
     <!-- ========= -->
     <!-- Overrides default qa-functional-compiler because we need something 
-         more on classpath -->
+    more on classpath -->
     <target name="qa-functional-compiler">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <!-- save copy of current Userdir -->
         <copy todir="${xtest.workdir}/sys/ide_backup">
-          <fileset dir="${xtest.workdir}/sys/ide"/>
+            <fileset dir="${xtest.workdir}/sys/ide"/>
         </copy>
         
         <antcall target="copy_original_ide_cfg_file"/>
@@ -114,8 +114,8 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
             
             <property name="xtest.ide.commandline.suffix" value="-J-Dperf.refactoring.test=true"/>
-            
-            <property name="xtest.enable.assertions" value="false" /> 
+
+            <property name="xtest.enable.assertions" value="false" />
             <property name="xtest.timeout" value="3600000" />
         </executeTests>
         
@@ -123,44 +123,17 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     
-    <target name="runidetest_memory_usage" depends="ide_command_line_suffix">
-        <delete dir="${xtest.workdir}/sys/ide"/>
-        <copy todir="${xtest.workdir}/sys/ide">
-            <fileset dir="${xtest.workdir}/sys/ide_backup"/>
-        </copy>
-        <antcall target="copy_released_ide_cfg_file"/>
-       
-        <mkdir dir="${xtest.tmpdir.createproject}"/>
-        
-        <executeTests pluginName="ide">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>
-                <path refid="performance.testutilities.path"/>
-            </classpath>
-            
-            <property name="xtest.ide.reuse.userdir" value="true"/>
-            <property name="xtest.timeout" value="5000000" />
-            
-            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.memory.repeat=15" />
-        </executeTests>
-        
-        <delete dir="${xtest.tmpdir.createproject}"/>
-        
-        <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-    
-
     <!-- ================ -->
     <!-- Run in IDE's JVM -->
     <!-- ================ -->
 
     <target name="internal-execution">
         <taskdef name="internalExecution" classname="org.netbeans.xtest.plugin.ide.IdeInternalExecutionTask" 
-                 classpath="${xtest.home}/plugins/ide/lib/xtest-ide-plugin.jar"/>
+        classpath="${xtest.home}/plugins/ide/lib/xtest-ide-plugin.jar"/>
 
         <!-- Root directory where tests are built in. It means there will be
-             separate folder for each test type: ${compile.destdir.root}/${xtest.testtype}/classes.
-             Originally defined in module_harness.xml.             
+        separate folder for each test type: ${compile.destdir.root}/${xtest.testtype}/classes.
+        Originally defined in module_harness.xml.             
         -->
         <property name="compile.destdir.root" location="../build/test"/>
         <!-- Destination directory for compiled tests. Used in basic_compiler_targets.xml. -->
@@ -169,7 +142,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/nbjunit-ide.jar"/>        
 
         <!-- This target runs main method of given class in IDE's JVM. 
-            You have -->
+        You have -->
         <internalExecution classname="${classname}">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
@@ -180,37 +153,5 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </internalExecution>
     </target>
-    
-    
-    <!-- ========================================================================== -->
-    <!-- Compiler and classpath definition for NB4.0 Classpath scanning measurement -->
-    <!-- ========================================================================== -->
-    
-    <!-- Compiler for testing classpath scan on NB4.0 -->
-    
-    <path id="compiletest.classpath.40">        
-        <pathelement location="${core.dir}/core/core.jar"/>
-        <pathelement location="${openide.dir}/core/openide.jar"/>
-        
-        <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-        <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-        
-        <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar"/>
-        
-        <pathelement location="${nball.dir}/xtest/lib/junit.jar"/>
-        <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>
-        <pathelement location="${nball.dir}/xtest/lib/nbjunit-ide.jar"/>
-    </path>
-    
-    <target name="qa-functional-compiler-40">
-        <buildTests srcDir="qa-functional/src" compileExcludes="gui/**ction/** gui/**memory_usage/** gui/MeasureActions.java gui/MeasureJava.java" packageExcludes="gui/**ction/**">
-            <classpath>
-                <path refid="compiletest.classpath.40"/>
-                <path refid="jemmy.and.jelly.path"/>
-                <path refid="performance.testutilities.path"/>
-            </classpath>
-        </buildTests>
-    </target>
-    
     
 </project>

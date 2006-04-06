@@ -103,62 +103,8 @@ Microsystems, Inc. All Rights Reserved.
 	    </patternset>
 	</testset>
     </testbag>
-    
-    <!-- 4th round -->    
-<!-- temporary
-    <testbag testattribs="(measure_ui or measure_actions) and NOT measure_once" prio="11"
-             executor="ide_performance" name="Measure UI responsiveness of actions" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureActions.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    <testbag testattribs="(measure_ui or measure_dialogs) and NOT measure_once" prio="12"
-             executor="ide_performance" name="Measure UI responsiveness of dialogs" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureDialogs.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    <testbag testattribs="(measure_ui or measure_menus) and NOT measure_once" prio="13"
-             executor="ide_performance" name="Measure UI responsiveness of menus" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureMenus.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
--->    
-    <!-- 5th round -->    
-<!-- temporary
-    <testbag testattribs="(measure_ui or measure_actions) and NOT measure_once" prio="14"
-             executor="ide_performance" name="Measure UI responsiveness of actions" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureActions.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    <testbag testattribs="(measure_ui or measure_dialogs) and NOT measure_once" prio="15"
-             executor="ide_performance" name="Measure UI responsiveness of dialogs" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureDialogs.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    <testbag testattribs="(measure_ui or measure_menus) and NOT measure_once" prio="16"
-             executor="ide_performance" name="Measure UI responsiveness of menus" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureMenus.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
--->    
 
+    <!-- Memory usage -->
     <testbag testattribs="measure_memory_usage or memory_dialog" prio="2"
              executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
@@ -360,19 +306,6 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <!-- Scan Classpath test bag -->    
-    <testbag testattribs="measure_scan_40" prio="100"
-                 executor="ide_performance_scan" compiler="qa-performance-compiler-40" 
-                 name="Measure Classpath Scan and time to create new projects for NB4.0" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-	    
-		<include name="gui/scanclasspath/ScanClasspath.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    
-    
     <!-- Custom / Module test bags -->    
     <testbag testattribs="measure_java" prio="100"
              executor="ide_performance" name="Measure UI responsiveness of actions,dialogs or menus related to java, editor, mdr" >
@@ -410,15 +343,12 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-
-<!-- END Property Editors testbag -->
-    
+    <!-- executors & compilers -->
     <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
     <executor name="ide_performance" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide_performance_memory_usage" antfile="build-qa-functional.xml" target="runidetest_memory_usage"/>
     <executor name="ide_performance_scan" antfile="build-qa-functional.xml" target="runidetest_scan" />
     
     <compiler name="qa-performance-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
-    <compiler name="qa-performance-compiler-40" antfile="build-qa-functional.xml" target="qa-functional-compiler-40"/>
     
 </mconfig>

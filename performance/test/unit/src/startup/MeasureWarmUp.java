@@ -137,7 +137,7 @@ public class MeasureWarmUp extends MeasureIDEStartupTime {
         // disable rescaning after startup
         //        cmd += " -J-Dnetbeans.javacore.noscan=true";
         // test command line suffix
-        if(!test_cmd_suffix.equalsIgnoreCase("${test.ide.commandline.suffix}"))
+        if(test_cmd_suffix!=null && !test_cmd_suffix.equalsIgnoreCase("${test.ide.commandline.suffix}"))
             cmd.append(" "+test_cmd_suffix);
         
         System.out.println("Running: "+cmd);

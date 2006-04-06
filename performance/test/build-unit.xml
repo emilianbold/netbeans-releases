@@ -138,6 +138,7 @@ Microsystems, Inc. All Rights Reserved.
         <executeTests pluginName="jvm">
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
+            <property name="xtest.userdata|test.ide.commandline.suffix" value="${test.ide.commandline.suffix}"/>
             
             <property name="xtest.enable.assertions" value="false" /> 
             
