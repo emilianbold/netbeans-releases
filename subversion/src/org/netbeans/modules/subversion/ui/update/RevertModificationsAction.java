@@ -63,7 +63,7 @@ public class RevertModificationsAction extends ContextAction {
 
         File files[] = ctx.getFiles();
         File[][] split = SvnUtils.splitFlatOthers(files);
-        for (int c = 0; c<1; c++) {
+        for (int c = 0; c<split.length; c++) {
             if(support.isCanceled()) {
                 return;
             }
