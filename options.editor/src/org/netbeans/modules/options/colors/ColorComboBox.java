@@ -45,7 +45,7 @@ import org.openide.util.NbBundle;
  *
  * @author Administrator
  */
-public class ColorComboBox extends JComboBox {
+public class ColorComboBox {
     
     public static final String PROP_COLOR = "color"; //NOI18N
     

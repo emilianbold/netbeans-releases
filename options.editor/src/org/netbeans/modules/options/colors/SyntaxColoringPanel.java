@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.Vector;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
@@ -114,8 +115,10 @@ PropertyChangeListener {
 //        bBackground.addActionListener (this);
 //        bBackground.setMargin (new Insets (0, 0, 0, 0));
         cbForeground.addActionListener (this);
+        ((JComponent)cbForeground.getEditor()).addPropertyChangeListener (this);
 
         cbBackground.addActionListener (this);
+        ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
         
         cbEffects.addItem (loc ("CTL_Effects_None"));
         cbEffects.addItem (loc ("CTL_Effects_Underlined"));
@@ -355,6 +358,8 @@ PropertyChangeListener {
                 blink = true;
                 return;
             }
+        } else if (evt.getPropertyName () == ColorComboBox.PROP_COLOR) {
+            updateData ();
         }
     }
     

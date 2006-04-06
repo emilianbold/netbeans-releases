@@ -24,6 +24,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 
 
 /**
@@ -114,7 +115,9 @@ ListCellRenderer, ComboBoxEditor {
     }
 
     public void setItem (Object anObject) {
+        Object oldValue = this.value;
         this.value = (ColorValue) anObject;
+        firePropertyChange(ColorComboBox.PROP_COLOR, oldValue, anObject);
     }
 
     public Object getItem () {

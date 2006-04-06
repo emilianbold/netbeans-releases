@@ -11,6 +11,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.AbstractButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
@@ -30,7 +32,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -39,7 +40,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
-public class HighlightingPanel extends JPanel implements ActionListener {
+public class HighlightingPanel extends JPanel implements ActionListener, PropertyChangeListener {
     
     private ColorModel          colorModel = null;
     private boolean		listen = false;
@@ -74,7 +75,9 @@ public class HighlightingPanel extends JPanel implements ActionListener {
         });
         lCategories.setCellRenderer (new CategoryRenderer ());
         cbForeground.addActionListener (this);
+        ((JComponent)cbForeground.getEditor()).addPropertyChangeListener (this);
         cbBackground.addActionListener (this);
+        ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
         JLabel lCategory = new JLabel ();
         loc (lCategory, "CTL_Category");
         lCategory.setLabelFor (lCategories);
@@ -159,6 +162,14 @@ public class HighlightingPanel extends JPanel implements ActionListener {
         if (!listen) return;
         updateData ();
         changed = true;
+    }
+    
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (!listen) return;
+        if (evt.getPropertyName () == ColorComboBox.PROP_COLOR) {
+            updateData ();
+            changed = true;
+        }
     }
     
     void update (ColorModel colorModel) {
