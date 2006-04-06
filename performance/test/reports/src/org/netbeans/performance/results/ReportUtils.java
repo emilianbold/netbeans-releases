@@ -100,7 +100,7 @@ public class ReportUtils {
                             "\" origaverage=\""+
                             refStat.getAverage()+
                             "\" origstddev=\""+
-                            refStat.getStdDev()+
+                            f.format(refStat.getStdDev())+
 
                             "\"/>\n");
                     
