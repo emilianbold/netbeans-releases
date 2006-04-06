@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="META-INF/MANIFEST.MF"/>
             </zipfileset>
         </jar>
-        <copy file="${xtest/nbjunit.dir}/modules/ext/insanelib.jar" todir="lib"/>
+        <copy file="external/insanelib.jar" todir="lib"/>
     </target>
 
     <target name="compile" depends="prepare-nbjunit">
