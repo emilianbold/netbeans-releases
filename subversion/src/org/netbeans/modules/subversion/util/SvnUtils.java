@@ -510,10 +510,28 @@ public class SvnUtils {
         String repositoryPath = null;
         SvnClient client = Subversion.getInstance().getClient();
         client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
-        
+
         List path = new ArrayList();
         SVNUrl fileURL = null;
         while (Subversion.getInstance().isManaged(file)) {
+
+            try {
+                // it works with 1.3 workdirs and our .svn parser
+                ISVNStatus status = client.getSingleStatus(file);
+                if (status != null) {
+                    SVNUrl url = status.getUrl();
+                    if (url != null) {
+                        return url;
+                    }
+                }
+            } catch (SVNClientException ex) {
+                if (ExceptionHandler.isUnversionedResource(ex) == false) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+
+            // slower fallback
+
             ISVNInfo info = null;
             try {
                 info = client.getInfoFromWorkingCopy(file);
@@ -669,8 +687,11 @@ public class SvnUtils {
      * @return name or null
      */
     public static String getCopy(File file) {
-
         SVNUrl url = getRepositoryUrl(file);
+        return getCopy(url);
+    }
+
+    public static String getCopy(SVNUrl url) {
         if (url != null) {
             Matcher m = branchesPattern.matcher(url.toString());
             if (m.matches()) {

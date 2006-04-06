@@ -44,6 +44,7 @@ import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
+import org.tigris.subversion.svnclientadapter.*;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
@@ -245,7 +246,16 @@ public class Annotator {
         String textAnnotation;
         String textAnnotationFormat = SvnModuleConfig.getDefault().getTextAnnotationsFormat();        
         if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
-            String sticky = SvnUtils.getCopy(file);
+
+            String sticky;
+            ISVNStatus lstatus = info.getEntry(file);
+            if (lstatus != null && lstatus.getUrl() != null) {
+                sticky = SvnUtils.getCopy(lstatus.getUrl());
+            } else {
+                // slower
+                sticky = SvnUtils.getCopy(file);
+            }
+
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
                 textAnnotation = ""; // NOI18N
             } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
