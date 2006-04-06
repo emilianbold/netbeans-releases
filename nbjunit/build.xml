@@ -8,22 +8,21 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest/nbjunit" basedir="." default="netbeans">
 
     <import file="../../nbbuild/templates/projectized.xml"/>
     
-    <target name="files-init" depends="projectized-common.files-init">
-        <copy file="../external/insanelib.jar" todir="${cluster}/modules/ext"/>
-    </target>
-
-    <target name="netbeans-extra" depends="projectized-common.netbeans-extra">
+    <target name="netbeans-extra">
         <mkdir dir="build/javadoc"/>
         <ant dir="." target="javadoc" inheritall="false">
             <property name="netbeans.javadoc.dir" location="build/javadoc"/>
         </ant>
         <copy file="build/javadoc/org-netbeans-modules-nbjunit.zip" todir="${cluster}/docs"/>
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy file="../external/insanelib.jar" todir="${cluster}/modules/ext"/>
     </target>
+    
 </project>
