@@ -30,7 +30,7 @@ edits in the text of a question, you need not change the version number.
 An automated process runs openide/www/tutorial/build.xml#question periodically
 and commits any changes to openide/www/tutorial/questions.html.
 -->
-<api-questions version="1.27">
+<api-questions version="1.28">
     <category id="arch" name="General Information">
         <question id="arch-what" when="init" >
             What is this project good for?
@@ -49,9 +49,10 @@ and commits any changes to openide/www/tutorial/questions.html.
                 clients and what support API</a>? 
             What parts will be pluggable?
             How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
-            to describe your general APIs.
-            If possible please provide 
-            simple diagrams. 
+            to describe your general APIs and specify their
+            <a href="http://openide.netbeans.org/tutorial/api-design.html#category-private">
+            stability categories</a>.
+            If possible please provide simple diagrams.
             </hint>
         </question>
         
@@ -87,11 +88,12 @@ and commits any changes to openide/www/tutorial/questions.html.
             <hint>
             What kind of testing do
             you want to use? How much functionality, in which areas,
-            should be covered by the tests? 
+            should be covered by the tests? How you find out that your
+            project was successful?
             </hint>
         </question>
 
-        <question id="arch-where" when="init">
+        <question id="arch-where" when="impl">
             Where one can find sources for your module?
             <hint>
                 Please provide link to the CVS web client at
@@ -104,8 +106,20 @@ and commits any changes to openide/www/tutorial/questions.html.
         <question id="dep-nb" when="init" >
             What other NetBeans projects and modules does this one depend on?
             <hint>
-            If you want, describe such projects as imported APIs using
-            the <code>&lt;api name="identification" type="import or export" category="stable" url="where is the description" /&gt;</code>
+            Depending on other NetBeans projects influnces the ability of
+            users of your work to customize their own branded version of
+            NetBeans by enabling and disabling some modules. Too
+            much dependencies restrict this kind of customization. If that
+            is your case, then you may want to split your functionality into
+            pieces of autoload, eager and regular modules which can be
+            enabled independently. Usually the answer to this question
+            is generated from your <code>project.xml</code> file, but
+            if it is not guessed correctly, you can suppress it by
+            specifying &lt;defaultanswer generate="none"/&gt; and
+            write here your own. Please describe such projects as imported APIs using
+            the <code>&lt;api name="identification" type="import or export" category="stable" url="where is the description" /&gt;</code>.
+            By doing this information gets listed in the summary page of your
+            javadoc.
             </hint>
         </question>
         
@@ -113,10 +127,16 @@ and commits any changes to openide/www/tutorial/questions.html.
             What other projects outside NetBeans does this one depend on?
             
             <hint>
-            Some non-NetBeans projects are packaged as NetBeans modules
+            Depending on 3rd party libraries is always problematic,
+            especially if they are not open source, as that complicates
+            the licensing scheme of NetBeans. Please enumerate your
+            external dependencies here, so it is correctly understood since
+            the begining what are the legal implications of your project.
+            Also please note that
+            some non-NetBeans projects are packaged as NetBeans modules
             (see <a href="http://libs.netbeans.org/">libraries</a>) and
             it is preferred to use this approach when more modules may
-            depend on such third-party library.
+            depend and share such third-party libraries.
             </hint>
         </question>
         
@@ -124,8 +144,18 @@ and commits any changes to openide/www/tutorial/questions.html.
             On which platforms does your module run? Does it run in the same
             way on each?
             <hint>
-            If your module is using JNI or deals with special differences of
-            OSes like filesystems, etc. please describe here what they are.
+            If you plan any dependency on OS or any usage of native code,
+            please describe why you are doing so and describe how you envision
+            to enforce the portability of your code.
+            Please note that there is a support for <a href="http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/api.html#how-os-specific">OS conditionally
+            enabled modules</a> which together with autoload/eager modules
+            can allow you to enable to provide the best OS aware support
+            on certain OSes while providing compatibility bridge on the not
+            supported ones.
+            Also please list the supported
+            OSes/HW platforms and mentioned the lovest version of JDK required
+            for your project to run on. Also state whether JRE is enough or
+            you really need JDK.
             </hint>
         </question>
         
@@ -186,15 +216,10 @@ and commits any changes to openide/www/tutorial/questions.html.
             public?
             
             <hint>
-            NetBeans module system allows restriction of access rights to
-            public classes of your module from other modules. This prevents
-            unwanted dependencies of others on your code and should be used
-            whenever possible (<a href="http://www.netbeans.org/download/dev/javadoc/org-openide-modules/apichanges.html#issue-19621">
-            public packages
-            </a>). If you do not restrict access to your classes you are
-            making it too easy for other people to misuse your implementation
-            details, that is why you should have good reason for not 
-            restricting package access.
+            By default NetBeans build harness treats all packages are private.
+            If you export some of them - either as public or friend packages,
+            you should have a reason. If the reason is described elsewhere
+            in this document, you can ignore this question.
             </hint>
         </question>
 
@@ -238,6 +263,15 @@ and commits any changes to openide/www/tutorial/questions.html.
             Very helpful for reading settings is to store version number
             there, so future versions can decide whether how to read/convert
             the settings and older versions can ignore the new ones.
+            </hint>
+        </question>
+        <question id="compat-deprecation" when="init" >
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
             </hint>
         </question>
     </category>
@@ -299,10 +333,21 @@ and commits any changes to openide/www/tutorial/questions.html.
             or any similar technology to find any components to communicate with? Which ones?
             
             <hint>
-            Please describe the interfaces you are searching for, where 
+            NetBeans is build around a generic registry of services called
+            lookup. It is preferable to use it for registration and discovery
+            if possible. See
+            <a href="http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/util/lookup/doc-files/index.html">
+            The Solution to Comunication Between Components
+            </a>. If you do not plan to use lookup and insist usage
+            of other solution, then please describe why it is not working for
+            you.
+            <br/>
+            When filling the final version of your arch document, please
+            describe the interfaces you are searching for, where 
             are defined, whether you are searching for just one or more of them,
             if the order is important, etc. Also classify the stability of such
-            API contract. For that use &lt;api group=&amp;lookup&amp; /&gt; tag.
+            API contract. Use &lt;api group=&amp;lookup&amp; /&gt; tag, so
+            your information gets listed in the summary page of your javadoc.
             </hint>
         </question>
         <question id="lookup-register" when="final" >
@@ -415,10 +460,14 @@ and commits any changes to openide/www/tutorial/questions.html.
             </hint>
         </question>
 
-        <question id="exec-threading" when="impl">
-            What threading models, if any, does your module adhere to?
+        <question id="exec-threading" when="init">
+            What threading models, if any, does your module adhere to? How the
+            project behaves with respect to threading?
             <hint>
-                If your module calls foreign APIs which have a specific threading model,
+                Is your API threadsafe? Can it be accessed from any threads or
+                just from some dedicated ones? Any special relation to AWT and
+                its Event Dispatch thread? Also
+                if your module calls foreign APIs which have a specific threading model,
                 indicate how you comply with the requirements for multithreaded access
                 (synchronization, mutexes, etc.) applicable to those APIs.
                 If your module defines any APIs, or has complex internal structures
@@ -516,6 +565,19 @@ and commits any changes to openide/www/tutorial/questions.html.
         <question id="perf-limit" when="init">
             Are there any hard-coded or practical limits in the number or size of
             elements your code can handle?
+            <hint>
+                Most of algorithms have increasing memory and speed complexity
+                with respect to size of data they operate on. What is the critical
+                part of your project that can be seen as a bottleneck with
+                respect to speed or required memory? What are the practical
+                sizes of data you tested your project with? What is your estimate
+                of potential size of data that would cause visible performance
+                problems? Is there some kind of check to detect such situation
+                and prevent "hard" crashes - for example the CloneableEditorSupport
+                checks for size of a file to be opened in editor
+                and if it is larger than 1Mb it shows a dialog giving the
+                user the right to decide - e.g. to cancel or commit suicide.
+            </hint>
         </question>
         <!-- multithreading -->
     
