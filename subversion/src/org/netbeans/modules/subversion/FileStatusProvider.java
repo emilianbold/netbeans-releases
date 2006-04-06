@@ -56,7 +56,8 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         return instance;
     }
 
-    public String annotateNameHtml(String name, Set files) {        
+    public String annotateNameHtml(String name, Set files) {
+        if (shutdown) return null;
         if (isManaged(files)) {
             try {
                 Diagnostics.println("Html annotating " + name);
@@ -76,6 +77,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
     
     public String annotateName(String name, Set files) {
+        if (shutdown) return null;
         if (isManaged(files)) {
             try {
                 Diagnostics.println("Annotating " + name);
