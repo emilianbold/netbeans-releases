@@ -19,6 +19,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
@@ -40,6 +41,10 @@ public class WeakListenersTest extends NbTestCase {
 
     protected int timeOut() {
         return 5000;
+    }
+
+    protected Level logLevel() {
+        return Level.ALL;
     }
     
     protected void setUp () throws Exception {
