@@ -311,7 +311,11 @@ public abstract class ContextAction extends NodeAction {
             // TODO add failed and restart texts                
 
             OutputLogger logger = new OutputLogger();
-            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " finished.");
+            if (isCanceled() == false) {
+                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " finished.");
+            } else {
+                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " cancelled.");
+            }
 
             final ProgressHandle progress = getProgressHandle();
             progress.switchToDeterminate(100);
