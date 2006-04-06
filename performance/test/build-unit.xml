@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -70,38 +70,13 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
 
-    <!-- Executor for Measure Memory Consumption test -->    
-    <target name="runidetest_measure_memory" depends="prepare_measure_memory">
-        <antcall target="copy_released_ide_cfg_file"/>
-        <executeTests pluginName="ide">
-            <property name="xtest.enable.assertions" value="false" /> 
-            <classpath/>
-        </executeTests>
-        <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-    
-    <!-- Executor for Measure Memory Consumption if JEdit project is opened test -->    
-    <target name="runidetest_measure_memory_with_opened_project" depends="prepare_measure_memory">
-        <antcall target="copy_released_ide_cfg_file"/>
-        <executeTests pluginName="ide">
-            <property name="xtest.enable.assertions" value="false" /> 
-            <property name="xtest.ide.reuse.userdir" value="true"/>
-            <classpath/>
-        </executeTests>
-        
-        <copy todir="${xtest.sketchpad}">
-            <fileset dir="${xtest.workdir}/sys/ide/var/log"/>
-        </copy>
-        
-        <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-    
     <!-- Executor for Measure Startup Time with empty userdir -->
     <target name="runcodetest_measure_startup" depends="make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
+            <property name="xtest.userdata|test.ide.commandline.suffix" value="${test.ide.commandline.suffix}"/>
             
             <property name="xtest.enable.assertions" value="false" /> 
             
@@ -122,7 +97,8 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|userdir.prepared" value="${xtest.workdir}"/>
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
-            
+            <property name="xtest.userdata|test.ide.commandline.suffix" value="${test.ide.commandline.suffix}"/>
+
             <!-- Property for repeatedly used userdir with opened files -->
             <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
         </executeTests>
@@ -143,6 +119,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|userdir.prepared" value="${xtest.workdir}"/>
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
+            <property name="xtest.userdata|test.ide.commandline.suffix" value="${test.ide.commandline.suffix}"/>
             
             <!-- Property for repeatedly used userdir with opened files -->
             <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
@@ -175,12 +152,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Utils     -->
     <!-- ========= -->
     
-    <!-- Prepare PS utils to be available from IDE during test -->    
-    <target name="prepare_measure_memory">
-        <copy file="${nbextra.qa.performance.dist.dir}/pslist.exe" tofile="${xtest.tmpdir}/pslist.exe" />
-        <echo message="PS utilities prepared!"/>
-    </target>
-
     <!-- Make ide executable -->
     <target name="make_netbeans_executable">
         <chmod perm="ugo+rx" file="${netbeans.dest.dir}/bin/netbeans"/>

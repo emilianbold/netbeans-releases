@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
 import java.util.Hashtable;
+
 import startup.MeasureIDEStartupTime.ThreadReader;
 
 /**
@@ -92,47 +94,58 @@ public class MeasureWarmUp extends MeasureIDEStartupTime {
         //add guitracker on classpath
         String classpath = System.getProperty("performance.testutilities.dist.jar");
         
+        //add property on command line
+        String test_cmd_suffix = System.getProperty("test.ide.commandline.suffix");
+        
         // create jdkhome switch
         String jdkhome = System.getProperty("java.home");
         if(jdkhome.endsWith("jre"))
             jdkhome = jdkhome.substring(0, jdkhome.length()-4);
         
-        String platform = getPlatform();
         File ideBinDir = new File(ideHome,"bin");
-        String cmd;
-        if (platform.equals(WINDOWS)) {
-            cmd = (new File(ideBinDir,"netbeans.exe")).getAbsolutePath();
+
+        String executor;
+
+        if (getPlatform().equals(WINDOWS)) {
+            executor = "netbeans.exe";
         } else {
-            cmd = (new File(ideBinDir,"netbeans")).getAbsolutePath();
+            executor = "netbeans";
         }
+
+        // construct command line
+        StringBuffer cmd = new StringBuffer((new File(ideBinDir,executor)).getAbsolutePath());
+
         // add other argumens
         // guiltracker lib
-        cmd += " --cp:a "+classpath;
+        cmd.append(" --cp:a "+classpath);
         // userdir
-        cmd += " --userdir "+userdir.getAbsolutePath();
+        cmd.append(" --userdir "+userdir.getAbsolutePath());
         // get jdkhome path
-        cmd += " --jdkhome "+jdkhome;
+        cmd.append(" --jdkhome "+jdkhome);
         // netbeans full hack
-        cmd += " -J-Dnetbeans.full.hack=true";
+        cmd.append(" -J-Dnetbeans.full.hack=true");
         // measure argument
-        cmd += " -J-Dorg.netbeans.log.startup.logfile="+measureFile.getAbsolutePath();
+        cmd.append(" -J-Dorg.netbeans.log.startup.logfile="+measureFile.getAbsolutePath());
         // measure argument - we have to set this one to ommit repaint of memory toolbar (see openide/actions/GarbageCollectAction)
-        cmd += " -J-Dorg.netbeans.log.startup=tests";
+        cmd.append(" -J-Dorg.netbeans.log.startup=tests");
         // close the IDE after startup
-        cmd += " -J-Dnetbeans.close=true";
+        cmd.append(" -J-Dnetbeans.close=true");
         // close the IDE after warmup
-        cmd += " -J-Dnetbeans.warm.close=true";
+        cmd.append(" -J-Dnetbeans.warm.close=true");
         // wait after startup, need to set longer time for complex startup because rescan rises
-        cmd += " -J-Dorg.netbeans.performance.waitafterstartup="+timeout;
+        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup="+timeout);
         // disable rescaning after startup
         //        cmd += " -J-Dnetbeans.javacore.noscan=true";
+        // test command line suffix
+        if(!test_cmd_suffix.equalsIgnoreCase("${test.ide.commandline.suffix}"))
+            cmd.append(" "+test_cmd_suffix);
         
         System.out.println("Running: "+cmd);
         
         Runtime runtime = Runtime.getRuntime();
         
         // need to create out and err handlers
-        Process ideProcess = runtime.exec(cmd,null,ideBinDir);
+        Process ideProcess = runtime.exec(cmd.toString(),null,ideBinDir);
         
         // track out and errs from ide - the last parameter is PrintStream where the
         // streams are copied - currently set to null, so it does not hit performance much

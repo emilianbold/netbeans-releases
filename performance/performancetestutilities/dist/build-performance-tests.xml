@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -83,6 +83,24 @@ Microsystems, Inc. All Rights Reserved.
     <target name="copy_unzip_nb_project">
         <unzip src="${nbextra.dir}/qa/projectized/SystemProperties.zip" dest="${xtest.tmpdir}/"/>
     </target>
+
+    <!-- =========================== -->
+    <!-- IDE Command Line Suffix     -->
+    <!-- =========================== -->
+    <target name="ide_command_line_suffix" depends="ide_command_line_suffix_yes,ide_command_line_suffix_no" />
     
+    <target name="ide_command_line_suffix_yes" depends="ide_command_line_suffix_new" if="new.suffix">
+        <property name="xtest.ide.commandline.suffix" value="${ide.commandline.suffix} ${test.ide.commandline.suffix}"/>
+    </target>
+
+    <target name="ide_command_line_suffix_no" depends="ide_command_line_suffix_new" unless="new.suffix">
+        <property name="xtest.ide.commandline.suffix" value="${ide.commandline.suffix}"/>
+    </target>
+
+    <target name="ide_command_line_suffix_new">
+        <condition property="new.suffix">
+            <isset property="test.ide.commandline.suffix" />
+         </condition>
+    </target>
         
 </project>

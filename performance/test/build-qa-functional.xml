@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -25,15 +25,11 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.tmpdir.createproject" location="${xtest.tmpdir}/createdProjects"/>
     
     
-    
     <!-- ==================== -->
     <!-- Setting command line -->
     <!-- ==================== -->
-    
-    <target name="ide_command_line_suffix">
-        <!--  Repeat performance test more than once -->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
-    </target>
+    <!-- Command line is created from this property and test.ide.commandline.suffix which can be set from command line of xtest -->
+    <property name="ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
     
     
     <!-- ========= -->
