@@ -178,6 +178,7 @@ public final class ImportAction extends NodeAction {
     }
 
     private void copyMetadata(File sourceFolder, File targetFolder) {
+        // XXX there is already somewhere a utility method giving the metadata file suffix - ".svn", "_svn", ...
         FileUtils.copyDirFiles(new File(sourceFolder.getAbsolutePath() + "/.svn"), new File(targetFolder.getAbsolutePath() + "/.svn"), true);
         targetFolder.setLastModified(sourceFolder.lastModified());
         File[] files = sourceFolder.listFiles();

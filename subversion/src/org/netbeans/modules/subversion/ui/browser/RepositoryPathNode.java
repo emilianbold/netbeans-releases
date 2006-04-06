@@ -79,9 +79,9 @@ public class RepositoryPathNode extends AbstractNode {
         this.canRename = canRename;
 
         if(entry.getSvnNodeKind()==SVNNodeKind.DIR){
-            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/wizards/browser/defaultFolder.gif");       // NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFolder.gif");       // NOI18N
         } else {
-            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/wizards/browser/defaultFile.gif");
+            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFile.gif");         // NOI18N    
         }
     }
 

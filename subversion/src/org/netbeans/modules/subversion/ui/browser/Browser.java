@@ -236,6 +236,17 @@ public class Browser implements VetoableChangeListener, BrowserClient {
 //            }
             
             Node[] oldSelection = (Node[]) evt.getOldValue();                                    
+
+            if(fileSelectionOnly) {
+                for (int i = 0; i < newSelection.length; i++) {
+                    if(newSelection[i] instanceof RepositoryPathNode) {
+                        RepositoryPathNode node = (RepositoryPathNode) newSelection[i];
+                        if(node.getEntry().getSvnNodeKind() == SVNNodeKind.DIR) {
+                            throw new PropertyVetoException("", evt); // NOI18N
+                        }
+                    }
+                }
+            }        
             
             // RULE: don't select nodes on a different level as the already selected 
             if(oldSelection.length == 0 && newSelection.length == 1) {
@@ -261,17 +272,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             if(!selectionIsAtLevel(newSelection, getNodeLevel(selectedNode))) {
                 throw new PropertyVetoException("", evt); // NOI18N
             }
-
-            if(fileSelectionOnly) {
-                for (int i = 0; i < newSelection.length; i++) {
-                    if(newSelection[i] instanceof RepositoryPathNode) {
-                        RepositoryPathNode node = (RepositoryPathNode) newSelection[i];
-                        if(node.getEntry().getSvnNodeKind() == SVNNodeKind.DIR) {
-                            throw new PropertyVetoException("", evt); // NOI18N
-                        }
-                    }
-                }
-            }            
+    
         }
     }    
     
