@@ -178,6 +178,10 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         annotationsPanel.update (colorModel);
         
         currentProfile = colorModel.getCurrentProfile ();
+        if (colorModel.isCustomProfile (currentProfile))
+            loc (bDelete, "CTL_Delete"); // NOI18N
+        else
+            loc (bDelete, "CTL_Restore"); // NOI18N
 
         // init schemes
         listen = false;
