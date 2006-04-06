@@ -45,7 +45,8 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
             l.removeHandler(arr[i]);
         }
         l.addHandler(new ErrMgr());
-        l.setLevel(Level.ALL);
+        l.setLevel(Level.WARNING);
+        l.setUseParentHandlers(false);
     }
     
     DataFolder df;
