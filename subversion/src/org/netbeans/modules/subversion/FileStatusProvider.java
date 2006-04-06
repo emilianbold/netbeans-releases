@@ -246,7 +246,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     void shutdown() {
         shutdown = true;
         SvnModuleConfig.getDefault().removePropertyChangeListener(this);        
-        refreshModifiedFiles();
+        refreshAllAnnotations(true, true);
     }
 
     void init() {

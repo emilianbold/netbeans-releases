@@ -57,6 +57,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
 
     public String annotateNameHtml(String name, Set files) {
+        if (shutdown) return null;
         if (isManaged(files)) {
             return CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(name, files, FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
         } else {
@@ -65,6 +66,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
     
     public String annotateName(String name, Set files) {
+        if (shutdown) return null;
         if (isManaged(files)) {
             return CvsVersioningSystem.getInstance().getAnnotator().annotateName(name, files);
         } else {
@@ -205,7 +207,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     void shutdown() {
         shutdown = true;
         CvsModuleConfig.getDefault().removePropertyChangeListener(this);        
-        refreshModifiedFiles();
+        refreshAllAnnotations(true, true);
     }
 
     void init() {
