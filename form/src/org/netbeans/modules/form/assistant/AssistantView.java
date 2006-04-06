@@ -55,6 +55,7 @@ public class AssistantView extends JPanel {
         closeButton.setFocusPainted(false);
         closeButton.setMargin(new Insets(0, 0, 0, 0));
         closeButton.setBorderPainted(false);
+        closeButton.setContentAreaFilled(false);
         closeButton.addActionListener(listener);
         // Workaround for GroupLayout.BASELINE == GroupLayout.CENTER bug
         JPanel panel = new JPanel(new BorderLayout(0,0));
