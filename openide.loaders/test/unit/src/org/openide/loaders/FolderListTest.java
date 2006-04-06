@@ -14,6 +14,7 @@
 
 package org.openide.loaders;
 
+import java.util.logging.Level;
 import junit.framework.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -55,6 +56,10 @@ public class FolderListTest extends NbTestCase {
         FileUtil.createData(folder, "C.txt");
         
         list = FolderList.find(folder, true);
+    }
+
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     protected void tearDown() throws Exception {
