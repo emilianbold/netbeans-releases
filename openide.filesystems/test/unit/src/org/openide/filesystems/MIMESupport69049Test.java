@@ -14,6 +14,9 @@ package org.openide.filesystems;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import junit.framework.*;
 import org.openide.ErrorManager;
 import java.awt.Component;
@@ -36,6 +39,7 @@ import org.openide.util.lookup.AbstractLookup.Pair;
 public class MIMESupport69049Test extends TestCase {
     static {
         System.setProperty("org.openide.util.Lookup", "org.openide.filesystems.MIMESupport69049Test$Lkp");
+        Logger.getLogger("").addHandler(new ErrMgr());
     }
     
     
@@ -181,27 +185,11 @@ public class MIMESupport69049Test extends TestCase {
     }
     
     
-    private static class ErrMgr extends ErrorManager {
+    private static class ErrMgr extends Handler {
         private boolean block = true;
         
-        public Throwable attachAnnotations (Throwable t, ErrorManager.Annotation[] arr) {
-            return null;
-        }
-
-        public ErrorManager.Annotation[] findAnnotations (Throwable t) {
-            return null;
-        }
-
-        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, Date date) {
-            return null;
-        }
-
-        public void notify (int severity, Throwable t) {
-            t.printStackTrace();
-        }
-
-        public synchronized void log (int severity, String s) {
-//            System.err.println(Thread.currentThread().getName() + " - " + s);
+        public synchronized void publish(LogRecord r) {
+            String s = r.getMessage();
             if (s.startsWith ("Computing resolvers")) {
                 notifyAll();
                 if (block) {
@@ -219,10 +207,12 @@ public class MIMESupport69049Test extends TestCase {
             }
         }
 
-        public ErrorManager getInstance (String name) {
-            return this;
+        public void flush() {
         }
-        
+
+        public void close() throws SecurityException {
+        }
+
     }
     
 }
