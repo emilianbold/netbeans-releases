@@ -33,7 +33,6 @@ public class MergePanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
@@ -51,7 +50,7 @@ public class MergePanel extends javax.swing.JPanel {
 
         mergeAfterEmptyLabel.setText("(empty means repository HEAD)");
 
-        jLabel7.setText("Repository Folder:");
+        mergeFromRepositoryFolderLabel.setText("Repository Folder:");
 
         mergeFromUrlComboBox.setEditable(true);
 
@@ -82,7 +81,7 @@ public class MergePanel extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(jLabel7))
+                                    .add(mergeFromRepositoryFolderLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createSequentialGroup()
@@ -120,7 +119,7 @@ public class MergePanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .add(23, 23, 23)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel7)
+                    .add(mergeFromRepositoryFolderLabel)
                     .add(mergeFromBrowseRepositoryButton)
                     .add(mergeFromUrlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(17, 17, 17)
@@ -151,7 +150,6 @@ public class MergePanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     final javax.swing.JButton mergeAfterBrowseRepositoryButton = new javax.swing.JButton();
@@ -162,6 +160,7 @@ public class MergePanel extends javax.swing.JPanel {
     final javax.swing.JButton mergeAfterSearchRevisionButton = new javax.swing.JButton();
     final javax.swing.JComboBox mergeAfterUrlComboBox = new javax.swing.JComboBox();
     final javax.swing.JButton mergeFromBrowseRepositoryButton = new javax.swing.JButton();
+    final javax.swing.JLabel mergeFromRepositoryFolderLabel = new javax.swing.JLabel();
     final javax.swing.JTextField mergeFromRevisionTextField = new javax.swing.JTextField();
     final javax.swing.JButton mergeFromSearchRevisionButton = new javax.swing.JButton();
     final javax.swing.JComboBox mergeFromUrlComboBox = new javax.swing.JComboBox();

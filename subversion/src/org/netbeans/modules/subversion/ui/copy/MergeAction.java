@@ -61,7 +61,7 @@ public class MergeAction extends ContextAction {
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);        
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
      
-        final Merge merge = new Merge(repositoryRoot, root.getName());           
+        final Merge merge = new Merge(repositoryRoot, root);           
         if(merge.showDialog()) {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
                 public void perform() {

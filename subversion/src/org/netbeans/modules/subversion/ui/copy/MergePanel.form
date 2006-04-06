@@ -23,7 +23,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jLabel8" alignment="0" min="-2" pref="128" max="-2" attributes="0"/>
-                                  <Component id="jLabel7" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="mergeFromRepositoryFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -75,7 +75,7 @@
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="mergeFromRepositoryFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mergeFromBrowseRepositoryButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mergeFromUrlComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -165,10 +165,13 @@
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel7">
+    <Component class="javax.swing.JLabel" name="mergeFromRepositoryFolderLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="Repository Folder:"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="mergeFromUrlComboBox">
       <Properties>

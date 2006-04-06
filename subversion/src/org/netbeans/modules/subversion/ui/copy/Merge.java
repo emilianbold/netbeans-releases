@@ -14,16 +14,11 @@ package org.netbeans.modules.subversion.ui.copy;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.MalformedURLException;
-import java.util.List;
-import java.util.Vector;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 
 /**
@@ -38,8 +33,8 @@ public class Merge extends CopyDialog implements ActionListener {
     private String MERGE_FROM_URL_HISTORY_KEY = Merge.class.getName() + "_merge_from";
     private String MERGE_AFTER_URL_HISTORY_KEY = Merge.class.getName() + "_merge_after";
     
-    public Merge(RepositoryFile repositoryRoot, String context) {
-        super(new MergePanel(), "Merge " + context + " to...", "Merge");
+    public Merge(RepositoryFile repositoryRoot, File root) {
+        super(new MergePanel(), "Merge " + root.getName() + " to...", "Merge");
 
         MergePanel panel = getMergePanel();        
         
@@ -51,8 +46,13 @@ public class Merge extends CopyDialog implements ActionListener {
                 panel.mergeFromRevisionTextField,
                 panel.mergeFromSearchRevisionButton
             );
-        mergeFromRepositoryPaths.setupBrowserBehavior(true, false, false);
-
+        if(root.isFile()) {
+            getMergePanel().mergeFromRepositoryFolderLabel.setText("Repository File");
+            mergeFromRepositoryPaths.setupBrowserBehavior(true, true, true);
+        } else {
+            mergeFromRepositoryPaths.setupBrowserBehavior(true, false, false);
+        }
+        
         mergeAfterRepositoryPaths = 
             new RepositoryPaths(
                 repositoryRoot, 
@@ -61,7 +61,13 @@ public class Merge extends CopyDialog implements ActionListener {
                 panel.mergeAfterRevisionTextField,
                 panel.mergeAfterSearchRevisionButton
             );
-        mergeAfterRepositoryPaths.setupBrowserBehavior(true, false, false);                                        
+
+        if(root.isFile()) {
+            getMergePanel().mergeAfterRepositoryFolderLabel.setText("Repository File");
+            mergeAfterRepositoryPaths.setupBrowserBehavior(true, true, true);
+        } else {
+            mergeAfterRepositoryPaths.setupBrowserBehavior(true, false, false);
+        }
         
         setupUrlComboBox(panel.mergeFromUrlComboBox,MERGE_FROM_URL_HISTORY_KEY);        
         setupUrlComboBox(panel.mergeAfterUrlComboBox, MERGE_AFTER_URL_HISTORY_KEY);        
