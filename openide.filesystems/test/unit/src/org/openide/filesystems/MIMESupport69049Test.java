@@ -12,25 +12,15 @@
  */
 package org.openide.filesystems;
 
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.*;
-import org.openide.ErrorManager;
-import java.awt.Component;
-import java.awt.Image;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.lang.ref.*;
 import java.util.*;
+import java.util.logging.Level;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.AbstractLookup.Pair;
 
 /**
  *
@@ -45,6 +35,10 @@ public class MIMESupport69049Test extends TestCase {
     
     public MIMESupport69049Test (String testName) {
         super (testName);
+    }
+
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     protected void setUp () throws Exception {
@@ -119,7 +113,7 @@ public class MIMESupport69049Test extends TestCase {
 
         Pair run1 = new Pair();
         Pair run2 = new Pair();
-        
+
         RequestProcessor.Task t1 = new RequestProcessor("t1").post(run1);
         RequestProcessor.Task t2 = new RequestProcessor("t2").post(run2, 20, Thread.NORM_PRIORITY);
         
