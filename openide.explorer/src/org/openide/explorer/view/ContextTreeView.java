@@ -18,14 +18,11 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 
 import java.awt.*;
-import java.awt.event.*;
 
 import java.beans.*;
-
-import java.util.*;
+import java.util.logging.Logger;
 
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.tree.*;
 
 
@@ -68,6 +65,8 @@ import javax.swing.tree.*;
 public class ContextTreeView extends TreeView {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -8282594827988436813L;
+    /** logger to find out why the ContextTreeView tests fail so randomly */
+    static final Logger LOG = Logger.getLogger(ContextTreeView.class.getName());
 
     /** Constructor.
     */
@@ -325,33 +324,42 @@ public class ContextTreeView extends TreeView {
         }
          */
         protected void fireTreeNodesRemoved(Object source, Object[] path, int[] childIndices, Object[] children) {
+            LOG.fine("fireTreeNodesRemoved"); // NOI18N
             if (!removalEvent(path, childIndices, children)) {
+                LOG.fine("fireTreeNodesRemoved - exit"); // NOI18N
                 return;
             }
 
             super.fireTreeNodesRemoved(source, path, newIndices, newChildren);
             newIndices = null;
             newChildren = null;
+            LOG.fine("fireTreeNodesRemoved - end"); // NOI18N
         }
 
         protected void fireTreeNodesInserted(Object source, Object[] path, int[] childIndices, Object[] children) {
+            LOG.fine("fireTreeNodesInserted"); // NOI18N
             if (!filterEvent(path, childIndices, children)) {
+                LOG.fine("fireTreeNodesInserted - exit"); // NOI18N
                 return;
             }
 
             super.fireTreeNodesInserted(source, path, newIndices, newChildren);
             newIndices = null;
             newChildren = null;
+            LOG.fine("fireTreeNodesInserted - end"); // NOI18N
         }
 
         protected void fireTreeNodesChanged(Object source, Object[] path, int[] childIndices, Object[] children) {
+            LOG.fine("fireTreeNodesChanged"); // NOI18N
             if (!filterEvent(path, childIndices, children)) {
+                LOG.fine("fireTreeNodesChanged - exit"); // NOI18N
                 return;
             }
 
             super.fireTreeNodesChanged(source, path, newIndices, newChildren);
             newIndices = null;
             newChildren = null;
+            LOG.fine("fireTreeNodesChanged - end"); // NOI18N
         }
     }
      // end of NodeContextModel
