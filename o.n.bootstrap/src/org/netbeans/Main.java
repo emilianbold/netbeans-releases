@@ -27,12 +27,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarFile;
+import javax.swing.JOptionPane;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -46,6 +47,23 @@ public class Main extends Object {
      * @throws Exception for lots of reasons
      */
     public static void main (String args[]) throws Exception {
+        // following code has to execute without java5 - e.g. do not use
+        // NbBundle or any other library compiled against java5 only
+        // also prevent usage of java5 methods and classes
+        try {
+            Class.forName("java.lang.StringBuilder"); // NOI18N
+        } catch (ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(
+                null,
+                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava5"),
+                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava5"),
+                JOptionPane.WARNING_MESSAGE
+            );
+            System.exit(10);
+        }
+        // end of java5 only code
+
+
         java.lang.reflect.Method[] m = new java.lang.reflect.Method[1];
         int res = execute (args, System.in, System.out, System.err, m);
         if (res == -1) {
