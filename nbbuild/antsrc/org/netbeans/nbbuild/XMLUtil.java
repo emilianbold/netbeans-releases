@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,9 +15,8 @@ package org.netbeans.nbbuild;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -30,6 +29,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -108,13 +108,28 @@ final class XMLUtil extends Object {
             throw (DOMException)new DOMException(DOMException.NOT_SUPPORTED_ERR, "Cannot create parser").initCause(ex); // NOI18N
         }        
     }
-    
+
+    // Cf. org.openide.xml.XMLUtil.
+    private static final String IDENTITY_XSLT_WITH_INDENT =
+            "<xsl:stylesheet version='1.0' " + // NOI18N
+            "xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " + // NOI18N
+            "xmlns:xalan='http://xml.apache.org/xslt' " + // NOI18N
+            "exclude-result-prefixes='xalan'>" + // NOI18N
+            "<xsl:output method='xml' indent='yes' xalan:indent-amount='4'/>" + // NOI18N
+            "<xsl:template match='@*|node()'>" + // NOI18N
+            "<xsl:copy>" + // NOI18N
+            "<xsl:apply-templates select='@*|node()'/>" + // NOI18N
+            "</xsl:copy>" + // NOI18N
+            "</xsl:template>" + // NOI18N
+            "</xsl:stylesheet>"; // NOI18N
+
     public static void write(Document doc, OutputStream out) throws IOException {
         // XXX note that this may fail to write out namespaces correctly if the document
         // is created with namespaces and no explicit prefixes; however no code in
         // this package is likely to be doing so
         try {
-            Transformer t = TransformerFactory.newInstance().newTransformer();
+            Transformer t = TransformerFactory.newInstance().newTransformer(
+                    new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
             DocumentType dt = doc.getDoctype();
             if (dt != null) {
                 String pub = dt.getPublicId();
@@ -124,8 +139,6 @@ final class XMLUtil extends Object {
                 t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dt.getSystemId());
             }
             t.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); // NOI18N
-            t.setOutputProperty(OutputKeys.INDENT, "yes"); // NOI18N
-            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); // NOI18N
             Source source = new DOMSource(doc);
             Result result = new StreamResult(out);
             t.transform(source, result);
@@ -133,6 +146,22 @@ final class XMLUtil extends Object {
             throw (IOException)new IOException(e.toString()).initCause(e);
         } catch (TransformerFactoryConfigurationError e) {
             throw (IOException)new IOException(e.toString()).initCause(e);
+        }
+    }
+
+    public static void write(Element el, OutputStream out) throws IOException {
+        try {
+            Transformer t = TransformerFactory.newInstance().newTransformer(
+                    new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
+            t.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); // NOI18N
+            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            Source source = new DOMSource(el);
+            Result result = new StreamResult(out);
+            t.transform(source, result);
+        } catch (Exception e) {
+            throw (IOException) new IOException(e.toString()).initCause(e);
+        } catch (TransformerFactoryConfigurationError e) {
+            throw (IOException) new IOException(e.toString()).initCause(e);
         }
     }
 

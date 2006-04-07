@@ -13,14 +13,22 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /** Makes an XML file representing update information from NBMs.
  *
@@ -163,9 +171,7 @@ public class MakeUpdateDesc extends MatchingTask {
 	    if (uptodate) return;
 	}
 	log ("Creating update description " + desc.getAbsolutePath ());
-	// [PENDING] this would be easier with a proper XML read/write library;
-	// unfortunately I don't have docs for any handy at the moment.
-	// So e.g. it is assumed that <license> is on its own line(s), etc.
+        // XXX Apparently cannot create a doc with entities using DOM 2.
 	try {
             desc.delete();
 	    java.io.OutputStream os = new java.io.FileOutputStream (desc);
@@ -222,7 +228,7 @@ public class MakeUpdateDesc extends MatchingTask {
                 }
 
                 pw.println ();
-		StringBuffer licenses = new StringBuffer ();
+		Map/*<String,Element>*/ licenses = new HashMap();
 		java.util.Set licenseNames = new java.util.HashSet (); // Set<String>
                 
                 for (int gi=0; gi < groups.size(); gi++) {
@@ -249,83 +255,38 @@ public class MakeUpdateDesc extends MatchingTask {
                                     }
                                     java.io.InputStream is = zip.getInputStream (entry);
                                     try {
-                                        java.io.BufferedReader r = new java.io.BufferedReader (new java.io.InputStreamReader (is, "UTF-8")); //NOI18N
-                                        String line = r.readLine ();
-                                        if (!line.startsWith ("<?xml")) { //NOI18N
-                                            throw new BuildException("Strange info.xml line: " + line, getLocation());
+                                        Element module = XMLUtil.parse(new InputSource(is), false, false, null, new EntityResolver() {
+                                            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                                                return new InputSource(new ByteArrayInputStream(new byte[0]));
+                                            }
+                                        }).getDocumentElement();
+                                        if (module.getAttribute("downloadsize").equals("0")) {
+                                            module.setAttribute("downloadsize", Long.toString(size));
                                         }
-                                        // next line probably blank, no problem though
-                                    INFOXML:
-                                        while ((line = r.readLine ()) != null) {
-                                            String dummyDownloadSize = "downloadsize=\"0\""; //NOI18N
-                                            int idx = line.indexOf (dummyDownloadSize);
-                                            if (idx != -1) {
-                                                line = line.substring (0, idx) +
-                                                    "downloadsize=\"" + size + "\"" + //NOI18N
-                                                    line.substring (idx + dummyDownloadSize.length ());
-                                            }
-                                            String dummyModuleName = "OpenIDE-Module-Name=\""; //NOI18N
-                                            idx = line.indexOf(dummyModuleName);
-                                            if (idx != -1) {
-                                                String mn = line.substring (idx + dummyModuleName.length () - 1);
-                                                log (" Adding module   " + mn + " (" + n_file.getAbsolutePath() + ")");
-                                            }
-                                            if (dist_base != null) {
-                                                // fix/enforce distribution URL base
-                                                String dummyDistribution = "distribution=\""; //NOI18N
-                                                idx = line.indexOf (dummyDistribution);
-                                                if (idx != -1) {
-                                                    String line1 = line.substring (0, idx) + "distribution=\""; //NOI18N
-                                                    log ("distribution line1  : \"" + line1 + "\"", Project.MSG_DEBUG);
-                                                    String pomline = line.substring (idx + dummyDistribution.length ());
-                                                    log ("distribution pomline: \"" + pomline + "\"", Project.MSG_DEBUG);
-                                                    String line2;
-                                                    int idx2 = pomline.indexOf("\""); //NOI18N
-                                                    if (idx2 != -1) {
-                                                        line2 = pomline.substring (idx2);
-                                                        log ("distribution line2: \"" + line2 + "\"", Project.MSG_DEBUG);
-                                                    } else {
-                                                        throw new BuildException("Strange info.xml line: " + line, getLocation());
-                                                    }
-                                                    String newline = line1 + dist_base + "/" + n_file.getName() + line2;
-                                                    if (!newline.equals(line)) {
-                                                        log (" <- distribution fixed from: \"" + line + "\"", Project.MSG_DEBUG);
-                                                        log (" -> distribution fixed to  : \"" + newline + "\"", Project.MSG_VERBOSE);
-                                                        line = newline;
-                                                    }
-                                                }
-                                            }
-
-                                            String docType = "<!DOCTYPE module"; //NOI18N
-                                            idx = line.indexOf(docType);
-                                            if (idx != -1) 
-                                                continue; //Do nothing, it shouldn't be included
-                                            String licenseMarker = "<license name=\""; //NOI18N
-                                            idx = line.indexOf (licenseMarker);
-                                            if (idx != -1) {
-                                                int idx2 = line.indexOf ("\"", idx + licenseMarker.length ()); //NOI18N
-                                                if (idx2 == -1) {
-                                                    throw new BuildException("Strange info.xml line: " + line, getLocation());
-                                                }
-                                                String name = line.substring (idx + licenseMarker.length (), idx2);
-                                                // [PENDING] ideally would compare the license texts to make sure they actually match up
-                                                boolean copy = ! licenseNames.contains (name);
-                                                licenseNames.add (name);
-                                                do {
-                                                    if (copy) {
-                                                        licenses.append (line);
-                                                        licenses.append ('\n'); //NOI18N
-                                                    }
-                                                    if (line.indexOf ("</license>") != -1) { //NOI18N
-                                                        licenses.append ('\n'); //NOI18N
-                                                        continue INFOXML;
-                                                    }
-                                                } while ((line = r.readLine ()) != null);
+                                        Element manifest = (Element) module.getElementsByTagName("manifest").item(0);
+                                        String name = manifest.getAttribute("OpenIDE-Module-Name");
+                                        if (name.length() > 0) {
+                                            log(" Adding module " + name + " (" + n_file.getAbsolutePath() + ")");
+                                        }
+                                        if (dist_base != null) {
+                                            // fix/enforce distribution URL base
+                                            String prefix;
+                                            if (dist_base.equals(".")) {
+                                                prefix = "";
                                             } else {
-                                                // Non-license line.
-                                                pw.println (line);
+                                                prefix = dist_base + "/";
                                             }
+                                            module.setAttribute("distribution", prefix + n_file.getName());
                                         }
+                                        NodeList licenseList = module.getElementsByTagName("license");
+                                        if (licenseList.getLength() > 0) {
+                                            Element license = (Element) licenseList.item(0);
+                                            // XXX ideally would compare the license texts to make sure they actually match up
+                                            licenses.put(license.getAttribute("name"), license);
+                                            module.removeChild(license);
+                                        }
+                                        pw.flush();
+                                        XMLUtil.write(module, os);
                                     } finally {
                                         is.close ();
                                         pw.println ();
@@ -333,8 +294,8 @@ public class MakeUpdateDesc extends MatchingTask {
                                 } finally {
                                     zip.close ();
                                 }
-                            } catch (IOException ioe) {
-                                throw new BuildException("Cannot access nbm file: " + n_file, ioe, getLocation());
+                            } catch (Exception e) {
+                                throw new BuildException("Cannot access nbm file: " + n_file, e, getLocation());
                             }
                         }
 		    }
@@ -343,7 +304,12 @@ public class MakeUpdateDesc extends MatchingTask {
                         pw.println ();
                     }
 		}
-		pw.print (licenses.toString ());
+                pw.flush();
+                Iterator it = licenses.values().iterator();
+                while (it.hasNext()) {
+                    Element license = (Element) it.next();
+                    XMLUtil.write(license, os);
+                }
                 if ( entityincludes.size() <= 0 ) {
                     pw.println ("</module_updates>"); //NOI18N
                     pw.println ();
