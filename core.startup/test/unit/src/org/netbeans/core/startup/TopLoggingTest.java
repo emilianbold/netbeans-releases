@@ -104,7 +104,7 @@ public class TopLoggingTest extends NbTestCase {
             fail("msg shall be logged: " + getStream().toString());
         }
 
-        String disk = readLog();
+        String disk = readLog(true);
         Matcher d = p.matcher(disk);
 
         if (!d.find()) {
@@ -121,7 +121,7 @@ public class TopLoggingTest extends NbTestCase {
             fail("msg shall be logged: " + getStream().toString());
         }
 
-        String disk = readLog();
+        String disk = readLog(true);
 
         if (disk.indexOf(p) == -1) {
             fail("msg shall be logged to file: " + disk);
@@ -165,7 +165,7 @@ public class TopLoggingTest extends NbTestCase {
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.FINER, "Finer level msg");
 
         Pattern p = Pattern.compile("FINER.*Finer level msg");
-        String disk = readLog();
+        String disk = readLog(true);
         Matcher d = p.matcher(disk);
 
         if (!d.find()) {
@@ -180,7 +180,7 @@ public class TopLoggingTest extends NbTestCase {
         Logger.getLogger("ha.nu.wirta").log(Level.FINER, "Finer level msg");
 
         Pattern p = Pattern.compile("FINER.*Finer level msg");
-        String disk = readLog();
+        String disk = readLog(true);
         Matcher d = p.matcher(disk);
 
         if (!d.find()) {
@@ -198,7 +198,7 @@ public class TopLoggingTest extends NbTestCase {
         l.log(Level.FINER, "Finer level msg");
 
         Pattern p = Pattern.compile("FINER.*Finer level msg");
-        String disk = readLog();
+        String disk = readLog(true);
         Matcher d = p.matcher(disk);
 
         if (!d.find()) {
@@ -214,7 +214,7 @@ public class TopLoggingTest extends NbTestCase {
             handler.flush();
         }
 
-        String disk = readLog();
+        String disk = readLog(true);
 
         if (disk.indexOf("Ahoj\n") == -1) {
             fail("Expecting 'Ahoj': " + disk);
@@ -227,8 +227,36 @@ public class TopLoggingTest extends NbTestCase {
         }
     }
 
-    private String readLog() throws IOException {
-        TopLogging.flush(false);
+    public void testFlushHappensAfterFewSeconds() throws Exception {
+        Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
+
+        Pattern p = Pattern.compile("INFO.*First visible message");
+        Matcher m = p.matcher(getStream().toString());
+
+        if (!m.find()) {
+            fail("msg shall be logged: " + getStream().toString());
+        }
+
+        Matcher d = null;
+        String disk = null;
+        // at most in 10s the output should be flushed
+        for (int i = 0; i < 30; i++) {
+            disk = readLog(false);
+            d = p.matcher(disk);
+            if (!d.find()) {
+                Thread.sleep(300);
+            } else {
+                return;
+            }
+        }
+
+        fail("msg shall be logged to file: " + disk);
+    }
+
+    private String readLog(boolean doFlush) throws IOException {
+        if (doFlush) {
+            TopLogging.flush(false);
+        }
 
         File log = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log");
         assertTrue("Log file exists: " + log, log.canRead());

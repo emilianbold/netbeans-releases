@@ -294,18 +294,26 @@ public final class TopLogging {
 
     /** Non closing handler.
      */
-    private static final class NonClose extends Handler {
+    private static final class NonClose extends Handler
+    implements Runnable {
+        private static RequestProcessor RP = new RequestProcessor("Logging Flush"); // NOI18N
+
         private final Handler delegate;
+        private RequestProcessor.Task flush;
 
         public NonClose(Handler h) {
             delegate = h;
+            flush = RP.create(this, true);
+            flush.setPriority(Thread.MIN_PRIORITY);
         }
 
         public void publish(LogRecord record) {
             delegate.publish(record);
+            flush.schedule(5000);
         }
 
         public void flush() {
+            flush.cancel();
             delegate.flush();
         }
 
@@ -322,6 +330,10 @@ public final class TopLogging {
                 return ((NonClose)h).delegate;
             }
             return h;
+        }
+
+        public void run() {
+            delegate.flush();
         }
     }
 
