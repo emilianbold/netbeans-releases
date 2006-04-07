@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -49,7 +49,7 @@ public class JavadocForBinaryImplTest extends TestBase {
     public void testJavadocForNetBeansOrgModules() throws Exception {
         // Have to load at least one module to get the scan going.
         ClassPath.getClassPath(nbroot.getFileObject("ant/src"), ClassPath.COMPILE);
-        File beansJar = file("nbbuild/netbeans/ide8/modules/org-netbeans-modules-beans.jar");
+        File beansJar = file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-beans.jar");
         URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(beansJar)).getRoots();
         URL[] expectedRoots = new URL[] {
             Util.urlForDir(file("nbbuild/build/javadoc/org-netbeans-modules-beans")),

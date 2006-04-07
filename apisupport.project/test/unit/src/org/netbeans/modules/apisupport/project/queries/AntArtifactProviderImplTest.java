@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -55,7 +55,7 @@ public class AntArtifactProviderImplTest extends TestBase {
         assertEquals("correct type", JavaProjectConstants.ARTIFACT_TYPE_JAR, arts[0].getType());
         assertEquals("correct ID", "module", arts[0].getID());
         assertEquals("correct location",
-            Collections.singletonList(URI.create("../../nbbuild/netbeans/platform7/modules/org-openide-loaders.jar")),
+            Collections.singletonList(URI.create("../../nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar")),
             Arrays.asList(arts[0].getArtifactLocations()));
         assertEquals("correct script", nbroot.getFileObject("openide/loaders/build.xml"), arts[0].getScriptFile());
         assertEquals("correct build target", "netbeans", arts[0].getTargetName());
@@ -64,7 +64,7 @@ public class AntArtifactProviderImplTest extends TestBase {
         arts = AntArtifactQuery.findArtifactsByType(javaProjectProject, JavaProjectConstants.ARTIFACT_TYPE_JAR);
         assertEquals("one artifact produced", 1, arts.length);
         assertEquals("correct location",
-            Collections.singletonList(URI.create("../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-java-project.jar")),
+            Collections.singletonList(URI.create("../../nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-java-project.jar")),
             Arrays.asList(arts[0].getArtifactLocations()));
     }
     

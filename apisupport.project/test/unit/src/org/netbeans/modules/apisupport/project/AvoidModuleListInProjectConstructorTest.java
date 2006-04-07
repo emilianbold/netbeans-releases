@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,11 +36,11 @@ public class AvoidModuleListInProjectConstructorTest extends TestBase {
         FileObject fo = nbroot.getFileObject("ant");
         Project p = ProjectManager.getDefault().findProject(fo);
         assertNotNull(p);
-        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/ide8/modules/org-apache-tools-ant-module.jar")).size());
+        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-apache-tools-ant-module.jar")).size());
         assertEquals("org.apache.tools.ant.module", ProjectUtils.getInformation(p).getName());
-        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/ide8/modules/org-apache-tools-ant-module.jar")).size());
+        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-apache-tools-ant-module.jar")).size());
         ClassPath.getClassPath(fo.getFileObject("src"), ClassPath.COMPILE);
-        assertEquals("now have scanned something", 1, ModuleList.getKnownEntries(file("nbbuild/netbeans/ide8/modules/org-apache-tools-ant-module.jar")).size());
+        assertEquals("now have scanned something", 1, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-apache-tools-ant-module.jar")).size());
     }
     
 }

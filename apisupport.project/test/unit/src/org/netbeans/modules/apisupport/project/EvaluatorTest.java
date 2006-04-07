@@ -57,14 +57,14 @@ public class EvaluatorTest extends TestBase {
         assertEquals("right code.name.base.dashes", "org-netbeans-modules-java-project", eval.getProperty("code.name.base.dashes"));
         assertEquals("right is.autoload", "true", eval.getProperty("is.autoload"));
         assertEquals("right manifest.mf", "manifest.mf", eval.getProperty("manifest.mf"));
-        assertEquals("right core.dir", file("nbbuild/netbeans/platform7"),
+        assertEquals("right core.dir", file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("core.dir")));
-        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/ide8"),
+        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport/project.dir")));
-        assertEquals("right module JAR", file("nbbuild/netbeans/ide8/modules/org-netbeans-modules-java-project.jar"),
+        assertEquals("right module JAR", file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-java-project.jar"),
             javaProjectProject.getHelper().resolveFile(eval.evaluate("${cluster}/${module.jar}")));
         eval = loadersProject.evaluator();
-        assertEquals("right module JAR", file("nbbuild/netbeans/platform7/modules/org-openide-loaders.jar"),
+        assertEquals("right module JAR", file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"),
             loadersProject.getHelper().resolveFile(eval.evaluate("${cluster}/${module.jar}")));
     }
 

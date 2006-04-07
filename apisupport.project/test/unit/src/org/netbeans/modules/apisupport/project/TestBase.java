@@ -49,6 +49,9 @@ import org.openide.filesystems.FileLock;
  * @author Jesse Glick
  */
 public abstract class TestBase extends NbTestCase {
+
+    public static final String CLUSTER_IDE = "ide8";
+    public static final String CLUSTER_PLATFORM = "platform7";
     
     protected TestBase(String name) {
         super(name);

@@ -71,12 +71,12 @@ public class NbPlatformTest extends TestBase {
     
     public void testGetSourceLocationOfModule() throws Exception {
         NbPlatform p = NbPlatform.getDefaultPlatform();
-        assertEquals("Right source location for beans.jar", file("beans"), p.getSourceLocationOfModule(file("nbbuild/netbeans/ide8/modules/org-netbeans-modules-beans.jar")));
+        assertEquals("Right source location for beans.jar", file("beans"), p.getSourceLocationOfModule(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-beans.jar")));
     }
     
     public void testIsPlatformDirectory() throws Exception {
         assertTrue("nbbuild/netbeans is a platform", NbPlatform.isPlatformDirectory(file("nbbuild/netbeans")));
-        assertFalse("platform7 is not a platform", NbPlatform.isPlatformDirectory(file("nbbuild/netbeans/platform7")));
+        assertFalse(TestBase.CLUSTER_PLATFORM + " is not a platform", NbPlatform.isPlatformDirectory(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM)));
         assertFalse("nbbuild is not a platform", NbPlatform.isPlatformDirectory(file("nbbuild")));
         assertFalse("nbbuild/build.xml is not a platform", NbPlatform.isPlatformDirectory(file("nbbuild/build.xml")));
         assertFalse("nonexistent dir is not a platform", NbPlatform.isPlatformDirectory(file("nonexistent")));

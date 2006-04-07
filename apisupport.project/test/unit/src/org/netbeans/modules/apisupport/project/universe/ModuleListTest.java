@@ -59,7 +59,7 @@ public class ModuleListTest extends TestBase {
         assertNotNull(nbdestdir);
         assertEquals(file("nbbuild/netbeans"), PropertyUtils.resolveFile(basedir, nbdestdir));
         assertEquals("modules/org-netbeans-modules-ant-browsetask.jar", eval.getProperty("module.jar"));
-        assertEquals(file("nbbuild/netbeans/ide8"), PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")));
+        assertEquals(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE), PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")));
         assertNull(eval.getProperty("suite.dir"));
         basedir = file("openide/loaders");
         eval = ModuleList.parseProperties(basedir, nbrootF, false, false, "org.openide.loaders");
@@ -104,12 +104,12 @@ public class ModuleListTest extends TestBase {
         System.err.println("XML files parsed: " + ModuleList.xmlFilesParsed + " in " + ModuleList.timeSpentInXmlParsing + "msec");
         ModuleEntry e = ml.getEntry("org.netbeans.modules.java.project");
         assertNotNull("have org.netbeans.modules.java.project", e);
-        assertEquals("right jarLocation", file("nbbuild/netbeans/ide8/modules/org-netbeans-modules-java-project.jar"), e.getJarLocation());
+        assertEquals("right jarLocation", file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-java-project.jar"), e.getJarLocation());
         assertTrue("in all entries", ml.getAllEntries().contains(e));
         assertEquals("right path", "java/project", e.getNetBeansOrgPath());
         assertEquals("right source location", file("java/project"), e.getSourceLocation());
         assertTrue("same by JAR", ModuleList.getKnownEntries(e.getJarLocation()).contains(e));
-        assertTrue("same by other random file", ModuleList.getKnownEntries(file("nbbuild/netbeans/ide8/config/Modules/org-netbeans-modules-java-project.xml")).contains(e));
+        assertTrue("same by other random file", ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/config/Modules/org-netbeans-modules-java-project.xml")).contains(e));
         assertEquals("right codeNameBase", "org.netbeans.modules.java.project", e.getCodeNameBase());
         assertEquals(file("nbbuild/netbeans"), e.getDestDir());
         assertEquals("", e.getClassPathExtensions());
@@ -124,7 +124,7 @@ public class ModuleListTest extends TestBase {
         // Test something in a different cluster and dir:
         e = ml.getEntry("org.openide.filesystems");
         assertNotNull("have org.openide.filesystems", e);
-        assertEquals("right jarLocation", file("nbbuild/netbeans/platform7/core/org-openide-filesystems.jar"), e.getJarLocation());
+        assertEquals("right jarLocation", file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/core/org-openide-filesystems.jar"), e.getJarLocation());
         assertEquals("right source location", file("openide/fs"), e.getSourceLocation());
         assertTrue("same by JAR", ModuleList.getKnownEntries(e.getJarLocation()).contains(e));
         assertEquals("right path", "openide/fs", e.getNetBeansOrgPath());
@@ -147,7 +147,7 @@ public class ModuleListTest extends TestBase {
         e = ml.getEntry("org.netbeans.modules.xml.tax");
         assertNotNull(e);
         assertEquals("correct CP extensions (using runtime-relative-path)",
-            ":" + file("nbbuild/netbeans/ide8/modules/ext/org-netbeans-tax.jar"),
+            ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/org-netbeans-tax.jar"),
             e.getClassPathExtensions());
         e = ml.getEntry("org.openide.util.enumerations");
         assertNotNull(e);
@@ -196,7 +196,7 @@ public class ModuleListTest extends TestBase {
          */
         e = ml.getEntry("org.netbeans.libs.xerces");
         assertEquals("correct CP exts for a nb.org module (using Class-Path only)",
-            ":" + file("nbbuild/netbeans/ide8/modules/ext/xerces-2.6.2.jar") + ":" + file("nbbuild/netbeans/ide8/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
+            ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xerces-2.6.2.jar") + ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
             e.getClassPathExtensions());
         // From suite2, can only find itself, and netbeans.org modules only available in binary form.
         ml = ModuleList.getModuleList(file(suite2, "misc-project"));
@@ -216,9 +216,9 @@ public class ModuleListTest extends TestBase {
         e = ml.getEntry("org.netbeans.libs.xerces");
         assertNotNull("can find nb.org binary module too", e);
         assertEquals("have sources for that", file("libs/xerces"), e.getSourceLocation());
-        assertEquals("and correct JAR location", file("nbbuild/netbeans/ide8/modules/org-netbeans-libs-xerces.jar"), e.getJarLocation());
+        assertEquals("and correct JAR location", file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-libs-xerces.jar"), e.getJarLocation());
         assertEquals("and correct CP exts (using Class-Path only)",
-            ":" + file("nbbuild/netbeans/ide8/modules/ext/xerces-2.6.2.jar") + ":" + file("nbbuild/netbeans/ide8/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
+            ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xerces-2.6.2.jar") + ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
             e.getClassPathExtensions());
         e = ml.getEntry("org.openide.util");
         assertNotNull(e);
