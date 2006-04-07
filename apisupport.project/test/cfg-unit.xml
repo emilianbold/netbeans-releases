@@ -17,7 +17,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
-                <exclude name="**/NbPlatformCustomizerSourcesTest.class"/> <!-- XXX #70652 -->
                 <!-- Too slow in the absence of input: -->
                 <exclude name="**/GenerateJNLPApplicationTest.class"/>
             </patternset>
