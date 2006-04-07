@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ==================== -->
     <!-- Setting command line -->
     <!-- ==================== -->
-    <!-- Command line is created from this property and test.ide.commandline.suffix which can be set from command line of xtest -->
+    <!-- Command line is created from this property and xtest.perf.commandline.suffix which can be set from command line of xtest -->
     <property name="ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
     
     

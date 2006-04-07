@@ -95,7 +95,7 @@ public class MeasureWarmUp extends MeasureIDEStartupTime {
         String classpath = System.getProperty("performance.testutilities.dist.jar");
         
         //add property on command line
-        String test_cmd_suffix = System.getProperty("test.ide.commandline.suffix");
+        String test_cmd_suffix = System.getProperty("xtest.perf.commandline.suffix");
         
         // create jdkhome switch
         String jdkhome = System.getProperty("java.home");
@@ -137,7 +137,7 @@ public class MeasureWarmUp extends MeasureIDEStartupTime {
         // disable rescaning after startup
         //        cmd += " -J-Dnetbeans.javacore.noscan=true";
         // test command line suffix
-        if(test_cmd_suffix!=null && !test_cmd_suffix.equalsIgnoreCase("${test.ide.commandline.suffix}"))
+        if(test_cmd_suffix!=null && !test_cmd_suffix.equalsIgnoreCase("${xtest.perf.commandline.suffix}"))
             cmd.append(" "+test_cmd_suffix);
         
         System.out.println("Running: "+cmd);
