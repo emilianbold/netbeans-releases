@@ -239,7 +239,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         SwingUtilities.invokeLater(awt);
     }
         
-    public SelectedRepository getSelectedRepository() throws MalformedURLException {    
+    public SelectedRepository getSelectedRepository() throws MalformedURLException {
         String urlString = selectedUrlString();        
         if(urlString == null ) {
             return null;
@@ -250,13 +250,17 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             if(idx < 0) {                
                 revision = SVNRevision.HEAD;                    
             } else if (acceptRevision) {
-                try {                    
-                    revision = new SVNRevision.Number(Long.parseLong(urlString.substring(idx+1))); 
-                } catch (NumberFormatException ex) {
-                    setValid(false, ex.getLocalizedMessage());
-                    throw ex;                    
-                } 
-                urlString = urlString.substring(0, idx);            
+                if( idx + 1 < urlString.length()) {
+                    String number = "";
+                    try {
+                        number = urlString.substring(idx+1);
+                        revision = new SVNRevision.Number(Long.parseLong(number));
+                    } catch (NumberFormatException ex) {
+                        setValid(false, "Wrong revision number: " + number);
+                        return null;
+                    }                    
+                }
+                urlString = urlString.substring(0, idx);
             } else {
                 throw new MalformedURLException("The only revision allowed here is HEAD!"); 
             }            
@@ -264,7 +268,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
         } catch (MalformedURLException ex) {
             setValid(false, ex.getLocalizedMessage());
-            throw ex;
+            return null;
         }        
     }
     

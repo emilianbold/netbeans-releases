@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion.ui.checkout;
 import java.io.File;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.settings.HistorySettings;
@@ -56,7 +57,9 @@ public final class CheckoutAction extends CallableSystemAction {
                     setDisplayName("checking out ...");
                     checkout(client, repository, repositoryFiles, file, false, this);
                 } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ex); 
+//                    ExceptionHandler eh = new ExceptionHandler(ex);
+//                    eh.handleOrNotify();
+                    ErrorManager.getDefault().notify(ex);
                     return;
                 }
                 if(isCanceled()) {
@@ -124,18 +127,13 @@ public final class CheckoutAction extends CallableSystemAction {
             } else {
                 destination = workingDir;
             }
-            try {
-                if(support!=null && support.isCanceled()) {
-                    return;
-                }
-                client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
-                if(support!=null && support.isCanceled()) {
-                    return;                
-                }
-            } catch (SVNClientException ex) {
-                ex.printStackTrace();
-                throw ex;
+            if(support!=null && support.isCanceled()) {
+                return;
             }
+            client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
+            if(support!=null && support.isCanceled()) {
+                return;                
+            }            
         }
     }
 

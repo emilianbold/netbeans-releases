@@ -111,7 +111,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 } else {
                     // XXX some action canceled by user message ... wrap the exception ???
                     throw new SVNClientException("Action canceled by user"); // XXX wrap me
-                }
+                }                
             } catch (InvocationTargetException ite) {
                 Throwable t = ite.getTargetException();
                 if(t instanceof SVNClientException) {
@@ -201,8 +201,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             throw t;
         }
         
-        ExceptionHandler eh = new ExceptionHandler((SVNClientException) t, adapter, client);
-        return eh.handleException();
+        ExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client);
+        try {
+            return eh.handleException();
+        } catch (SVNClientException ex) {
+            eh.annotate();
+            throw ex;
+        }
     }
      
 }
