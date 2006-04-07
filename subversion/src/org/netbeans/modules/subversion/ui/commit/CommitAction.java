@@ -49,7 +49,7 @@ public class CommitAction extends ContextAction {
     }
 
     /** Run commit action.  */
-    public static void commit(final Context ctx, SvnProgressSupport support) {
+    public static void commit(final Context ctx) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
 
@@ -90,7 +90,7 @@ public class CommitAction extends ContextAction {
 
             SVNUrl repository = getSvnUrl(ctx);
             RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
-            support = new SvnProgressSupport(rp) {
+            SvnProgressSupport support = new SvnProgressSupport(rp) {
                 public void perform() {                    
                     performCommit(message, commitFiles, ctx, this);
                 }
@@ -104,12 +104,7 @@ public class CommitAction extends ContextAction {
     
     protected void performContextAction(Node[] nodes) {
         final Context ctx = getContext(nodes);
-        ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
-            public void perform() {
-                commit(ctx, this);
-            }
-        };
-        support.start();
+        commit(ctx);
     }
 
     private static void performCommit(String message, Map commitFiles, Context ctx, SvnProgressSupport support) {        
