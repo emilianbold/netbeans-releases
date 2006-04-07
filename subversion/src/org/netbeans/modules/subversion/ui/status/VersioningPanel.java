@@ -304,16 +304,8 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added.
      */ 
     private void onCommitAction() {
-        LifecycleManager.getDefault().saveAll();
-
-        SVNUrl repository = CommitAction.getSvnUrl(context);
-        RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport(rp) {
-            public void perform() {                
-                CommitAction.commit(context, this);
-            }            
-        };
-        support.start("Commiting...");
+        LifecycleManager.getDefault().saveAll();            
+        CommitAction.commit(context);
     }
     
     /**
