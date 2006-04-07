@@ -228,11 +228,11 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         String binaryRootS = binaryRoot.toExternalForm();
         String result = null;
         if (binaryRootS.startsWith("jar:file:")) { // NOI18N
-            if (binaryRootS.endsWith("/testtools/modules/ext/nbjunit.jar!/")) { // NOI18N
+            if (binaryRootS.endsWith("/modules/ext/nbjunit.jar!/")) { // NOI18N
                 result = "xtest/nbjunit/src/"; // NOI18N
-            } else if (binaryRootS.endsWith("/testtools/modules/ext/nbjunit-ide.jar!/")) { // NOI18N
+            } else if (binaryRootS.endsWith("/modules/ext/nbjunit-ide.jar!/")) { // NOI18N
                 result = "xtest/nbjunit/src/"; // NOI18N
-            } else if (binaryRootS.endsWith("/testtools/modules/ext/insanelib.jar!/")) { // NOI18N
+            } else if (binaryRootS.endsWith("/modules/ext/insanelib.jar!/")) { // NOI18N
                 result = "performance/insanelib/src/"; // NOI18N
             } else {
                 result = null;

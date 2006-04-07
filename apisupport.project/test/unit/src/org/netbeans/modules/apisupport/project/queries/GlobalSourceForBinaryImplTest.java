@@ -27,6 +27,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
@@ -60,9 +61,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         
         URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform7/modules/org-openide-loaders.jar"));
         URL loadersSrcURL = new URL(Util.urlForJar(nbSrcZip), "openide/loaders/src/");
-        assertEquals("right results for " + loadersURL,
-                Collections.singletonList(URLMapper.findFileObject(loadersSrcURL)),
-                Arrays.asList(SourceForBinaryQuery.findSourceRoots(loadersURL).getRoots()));
+        assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
     }
     
     public void testFindSourceRootForZipWithSecondLevelDepthNbBuild() throws Exception {
@@ -71,9 +70,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         
         URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform7/modules/org-openide-loaders.jar"));
         URL loadersSrcURL = new URL(Util.urlForJar(nbSrcZip), "netbeans-src/openide/loaders/src/");
-        assertEquals("right results for " + loadersURL,
-                Collections.singletonList(URLMapper.findFileObject(loadersSrcURL)),
-                Arrays.asList(SourceForBinaryQuery.findSourceRoots(loadersURL).getRoots()));
+        assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
     }
     
     // just sanity check that exception is not thrown
@@ -87,10 +84,17 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
     }
     
     public void testResolveSpecialNBSrcPaths() throws Exception {
-//        assertResolved("testtools/modules/ext/nbjunit.jar", "xtest/nbjunit/src");
-//        assertResolved("testtools/modules/ext/nbjunit-ide.jar", "xtest/nbjunit/src");
+        //        assertResolved("testtools/modules/ext/nbjunit.jar", "xtest/nbjunit/src");
+        //        assertResolved("testtools/modules/ext/nbjunit-ide.jar", "xtest/nbjunit/src");
         assertTrue("performance.netbeans.org checked out", file("performance").isDirectory());
-        assertResolved("testtools/modules/ext/insanelib.jar", "performance/insanelib/src");
+        assertRoot(Util.urlForJar(file("xtest/lib/insanelib.jar")),
+                FileUtil.toFileObject(file("performance/insanelib/src")));
+        assertResolved("extra/modules/ext/insanelib.jar", "performance/insanelib/src");
+    }
+    
+    private void assertResolved(String jarInNBBuild, String dirInNBSrc) {
+        File jarFile = new File(file("nbbuild/netbeans"), jarInNBBuild);
+        assertRoot(Util.urlForJar(jarFile), FileUtil.toFileObject((file(dirInNBSrc))));
     }
     
     public void testListeningToNbPlatform() throws Exception {
@@ -106,16 +110,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         assertTrue("changed yet", resultCL.changed);
         assertEquals("one source root", 1, res.getRoots().length);
         URL loadersSrcURL = new URL(Util.urlForJar(nbSrcZip), "openide/loaders/src/");
-        assertEquals("right results for " + loadersURL,
-                Collections.singletonList(URLMapper.findFileObject(loadersSrcURL)),
-                Arrays.asList(SourceForBinaryQuery.findSourceRoots(loadersURL).getRoots()));
-    }
-    
-    private void assertResolved(String jarInNBBuild, String dirInNBSrc) {
-        File jarFile = new File(file("nbbuild/netbeans"), jarInNBBuild);
-        assertEquals("right result for " + jarFile.getAbsolutePath(),
-                Collections.singletonList(FileUtil.toFileObject((file(dirInNBSrc)))),
-                Arrays.asList(SourceForBinaryQuery.findSourceRoots(Util.urlForJar(jarFile)).getRoots()));
+        assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
     }
     
     private File generateNbSrcZip(String topLevelEntry) throws IOException {
@@ -139,6 +134,12 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
             zos.close();
         }
         return zip;
+    }
+    
+    private static void assertRoot(final URL loadersURL, final FileObject loadersSrcFO) {
+        assertEquals("right results for " + loadersURL,
+                Collections.singletonList(loadersSrcFO),
+                Arrays.asList(SourceForBinaryQuery.findSourceRoots(loadersURL).getRoots()));
     }
     
     private static final class ResultChangeListener implements ChangeListener {
