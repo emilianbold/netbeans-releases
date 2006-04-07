@@ -58,7 +58,8 @@ The debuggerjpda/api (Debugger JPDA API) defines API for NetBeans Java Debugger.
         </question>
 -->
 <answer id="arch-overall">
-List of APIs:
+The JPDA Debugger API module defines common API for Java debuggers.
+<br/>List of APIs:
 <ul>
 <li><api name="JPDADebuggerAPI" type="export" category="official" url="@org-netbeans-api-debugger-jpda@" group="java"/> JPDA Debugger API</li>
 <li><api name="JPDADebuggerSPI" type="import" category="official" url="@org-netbeans-api-debugger-jpda@" group="java"/> JPDA Debugger SPI</li>
