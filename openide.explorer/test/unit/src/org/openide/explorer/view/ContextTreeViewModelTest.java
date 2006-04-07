@@ -13,6 +13,9 @@
 
 package org.openide.explorer.view;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -79,7 +82,7 @@ public class ContextTreeViewModelTest extends NbTestCase {
         assertEquals("Leaf nodes are not counted", 0, m.getChildCount(visual));
 
 
-        Listener listener = new Listener();
+        Listener listener = new Listener(visual);
         m.addTreeModelListener(listener);
 
         LOG.info("listener added");
@@ -115,6 +118,8 @@ public class ContextTreeViewModelTest extends NbTestCase {
         assertEquals("Really added", nonLeaf.getParentNode(), root);
 
         LOG.info("all checked");
+
+        assertAgressiveGC();
         
         root.getChildren().remove(new Node[] { nonLeaf });
 
@@ -155,7 +160,7 @@ public class ContextTreeViewModelTest extends NbTestCase {
         
         assertEquals("Initial size is two", 2, m.getChildCount(visual));
         
-        Listener listener = new Listener();
+        Listener listener = new Listener(visual);
         m.addTreeModelListener(listener);
 
         LOG.info("listener added");
@@ -163,6 +168,8 @@ public class ContextTreeViewModelTest extends NbTestCase {
         Node[] arr = {
             createNode("add1", false), createNode("add2", false)
         };
+
+        assertAgressiveGC();
 
         LOG.info("adding children");
         root.getChildren().add(arr);
@@ -219,7 +226,7 @@ public class ContextTreeViewModelTest extends NbTestCase {
         
         assertEquals("Initial size is two", 3, m.getChildCount(visual));
         
-        Listener listener = new Listener();
+        Listener listener = new Listener(visual);
         m.addTreeModelListener(listener);
 
 
@@ -228,6 +235,8 @@ public class ContextTreeViewModelTest extends NbTestCase {
         Node[] arr = {
             createNode("add1", false), createNode("add2", false)
         };
+
+        assertAgressiveGC();
         
         root.getChildren().add(arr);
 
@@ -254,6 +263,12 @@ public class ContextTreeViewModelTest extends NbTestCase {
         n.setName(name);
         return n;
     }
+
+    private static void assertAgressiveGC() {
+        for (int i = 0; i < 10; i++) {
+            System.gc();
+        }
+    }
     
     private void waitEQ() throws Throwable {
         /*
@@ -277,6 +292,15 @@ public class ContextTreeViewModelTest extends NbTestCase {
     private class Listener implements TreeModelListener {
         private int cnt;
         private int[] indexes;
+
+
+        private TreeNode keep;
+        private List all = new ArrayList();
+
+        public Listener(TreeNode keep) {
+            this.keep = keep;
+            addChildren();
+        }
         
         public void assertEvents(String msg, int cnt) throws Throwable {
             waitEQ();
@@ -331,6 +355,13 @@ public class ContextTreeViewModelTest extends NbTestCase {
         
         public void treeStructureChanged(TreeModelEvent treeModelEvent) {
             cnt++;
+        }
+
+        private void addChildren() {
+            int cnt = keep.getChildCount();
+            for (int i = 0; i < cnt; i++) {
+                all.add(keep.getChildAt(i));
+            }
         }
     }
 }

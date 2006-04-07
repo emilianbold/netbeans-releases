@@ -12,8 +12,8 @@
  */
 package org.openide.explorer.view;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -48,6 +48,8 @@ import javax.swing.tree.TreeNode;
 final class VisualizerNode extends EventListenerList implements NodeListener, TreeNode, Runnable {
     /** one template to use for searching for visualizers */
     private static final VisualizerNode TEMPLATE = new VisualizerNode(0);
+    /** a shared logger for the visualizer functionality */
+    static final Logger LOG = Logger.getLogger(VisualizerNode.class.getName());
 
     /** constant holding empty reference to children */
     private static final Reference NO_REF = new WeakReference(null);
@@ -60,9 +62,6 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** queue processor to transfer requests to event queue */
     private static final QP QUEUE = new QP();
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance(
-            "org.openide.explorer.view.VisualizerNode"
-        ); // NOI18N
     private static final String UNKNOWN = new String();
     static final long serialVersionUID = 3726728244698316872L;
     private static final String NO_HTML_DISPLAYNAME = "noHtmlDisplayName"; //NOI18N
@@ -286,11 +285,14 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     public void childrenAdded(NodeMemberEvent ev) {
         VisualizerChildren ch = (VisualizerChildren) children.get();
 
+        LOG.log(Level.FINER, "childrenAdded {0}", ev); // NOI18N
         if (ch == null) {
+            LOG.log(Level.FINER, "childrenAdded - exit"); // NOI18N
             return;
         }
 
         QUEUE.runSafe(new VisualizerEvent.Added(ch, ev.getDelta(), ev.getDeltaIndices()));
+        LOG.log(Level.FINER, "childrenAdded - end"); // NOI18N
     }
 
     /** Fired when a set of children is removed.
@@ -299,11 +301,14 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     public void childrenRemoved(NodeMemberEvent ev) {
         VisualizerChildren ch = (VisualizerChildren) children.get();
 
+        LOG.log(Level.FINER, "childrenRemoved {0}", ev); // NOI18N
         if (ch == null) {
+            LOG.log(Level.FINER, "childrenRemoved - exit"); // NOI18N
             return;
         }
 
         QUEUE.runSafe(new VisualizerEvent.Removed(ch, ev.getDelta()));
+        LOG.log(Level.FINER, "childrenRemoved - end"); // NOI18N
     }
 
     /** Fired when the order of children is changed.
@@ -317,11 +322,14 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     void doChildrenReordered(int[] perm) {
         VisualizerChildren ch = (VisualizerChildren) children.get();
 
+        LOG.log(Level.FINER, "childrenReordered {0}", perm); // NOI18N
         if (ch == null) {
+            LOG.log(Level.FINER, "childrenReordered - exit"); // NOI18N
             return;
         }
 
         QUEUE.runSafe(new VisualizerEvent.Reordered(ch, perm));
+        LOG.log(Level.FINER, "childrenReordered - end"); // NOI18N
     }
 
     void reorderChildren(Comparator c) {
@@ -531,7 +539,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             // bugfix #28515, check if getIcon contract isn't broken
             if (image == null) {
                 String method = opened ? "getOpenedIcon" : "getIcon"; // NOI18N
-                Logger.getAnonymousLogger().warning(
+                LOG.warning(
                     "Node \"" + node.getName() + "\" [" + node.getClass().getName() + "] cannot return null from " +
                     method + "(). See Node." + method + " contract."
                 ); // NOI18N
@@ -627,17 +635,22 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             synchronized (this) {
                 // access to queue variable is synchronized
                 if (queue == null) {
+                    LOG.log(Level.FINER, "Queue empty"); // NOI18N
                     return;
                 }
 
                 en = Collections.enumeration(queue);
                 queue = null;
+                LOG.log(Level.FINER, "Queue emptied"); // NOI18N
             }
 
             while (en.hasMoreElements()) {
                 Runnable r = (Runnable) en.nextElement();
+                LOG.log(Level.FINER, "Running {0}", r); // NOI18N
                 Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
+                LOG.log(Level.FINER, "Finished {0}", r); // NOI18N
             }
+            LOG.log(Level.FINER, "Queue processing over"); // NOI18N
         }
     }
 }
