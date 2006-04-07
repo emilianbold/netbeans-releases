@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,10 +28,12 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.CreateTestAction;
+import org.netbeans.modules.junit.DefaultPlugin;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
 import org.netbeans.modules.junit.TestCreator;
 import org.netbeans.modules.junit.TestUtil;
+import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -165,21 +167,29 @@ public class TestSuiteWizardIterator
     private WizardDescriptor.Panel getTargetPanel() {
         final Project project = Templates.getProject(wizard);
         if (targetPanel == null || project != lastSelectedProject) {
-            Collection sourceGroups = Utils.getTestTargets(project, true);
-            if (sourceGroups.isEmpty()) {
+            JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+            if (plugin.getClass() != DefaultPlugin.class) {
                 targetPanel = new StepProblemMessage(
                         project,
-                        NbBundle.getMessage(EmptyTestCaseWizardIterator.class,
-                                            "MSG_NoTestSourceGroup"));  //NOI18N
+                        NbBundle.getMessage(TestSuiteWizardIterator.class,
+                                            "MSG_UnsupportedPlugin"));  //NOI18N
             } else {
-                sourceGroups.toArray(
-                        testSrcGroups = new SourceGroup[sourceGroups.size()]);
-                if (optionsPanel == null) {
-                    optionsPanel = new TestSuiteStepLocation();
+                Collection sourceGroups = Utils.getTestTargets(project, true);
+                if (sourceGroups.isEmpty()) {
+                    targetPanel = new StepProblemMessage(
+                            project,
+                            NbBundle.getMessage(TestSuiteWizardIterator.class,
+                                              "MSG_NoTestSourceGroup"));//NOI18N
+                } else {
+                    sourceGroups.toArray(
+                          testSrcGroups = new SourceGroup[sourceGroups.size()]);
+                    if (optionsPanel == null) {
+                        optionsPanel = new TestSuiteStepLocation();
+                    }
+                    targetPanel = JavaTemplates.createPackageChooser(project,
+                                                                  testSrcGroups,
+                                                                  optionsPanel);
                 }
-                targetPanel = JavaTemplates.createPackageChooser(project,
-                                                                 testSrcGroups,
-                                                                 optionsPanel);
             }
             lastSelectedProject = project;
         }
@@ -253,47 +263,28 @@ public class TestSuiteWizardIterator
     public Set instantiate(TemplateWizard wiz) throws IOException {
         saveSettings(wiz);
         
-        /* get the template DataObject... */
-        String templatePath = NbBundle.getMessage(
-                                      CreateTestAction.class,
-                                      "PROP_testSuiteTemplate");        //NOI18N
-        FileObject template = Repository.getDefault().getDefaultFileSystem()
-                              .findResource(templatePath);
-        DataObject templateDataObj;
-        try {
-            templateDataObj = DataObject.find(template);
-        } catch (DataObjectNotFoundException ex) {
-            String msg = NbBundle.getMessage(
-                    CreateTestAction.class,
-                    "MSG_template_not_found",                           //NOI18N
-                    templatePath);
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                            msg, NotifyDescriptor.ERROR_MESSAGE));
-            return null;
-        }
-        
         /* collect and build necessary data: */
         String name = Templates.getTargetName(wizard);
         FileObject targetFolder = Templates.getTargetFolder(wizard);
         DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
         FileObject testRootFolder = findTestRootFolder(targetFolder);
         assert testRootFolder != null;
+        
+        
         ClassPath testClassPath = ClassPathSupport.createClassPath(
                 new FileObject[] {testRootFolder});
         List testClassNames = TestUtil.getJavaFileNames(targetFolder,
                                                         testClassPath);
         
         /* create test class(es) for the selected source class: */
-        try {
-            DataObject suite = CreateTestAction.createSuiteTest(
-                new TestCreator(true),
-                testClassPath, targetDataFolder, name,
-                new LinkedList(testClassNames),
-                templateDataObj, null, null);
-        
+        DataObject suite = new DefaultPlugin().createSuiteTest(
+                testRootFolder,
+                targetFolder,
+                name,
+                TestUtil.getSettingsMap(true));
+        if (suite != null) {
             return Collections.singleton(suite);
-        } catch (CreateTestAction.CreationError e) {
+        } else {
             throw new IOException();
         }            
     }

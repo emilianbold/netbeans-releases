@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,8 +17,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
@@ -27,7 +29,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.GuiUtils;
+import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.netbeans.modules.junit.JUnitSettings;
+import org.netbeans.modules.junit.TestUtil;
+import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -243,39 +248,35 @@ public class EmptyTestCaseWizardIterator
     public Set instantiate(TemplateWizard wizard) throws IOException {
         saveSettings(wizard);
         
-        /* get the template DataObject... */
-        String templatePath = NbBundle.getMessage(
-                                      CreateTestAction.class,
-                                      "PROP_testClassTemplate");        //NOI18N
-        FileObject template = Repository.getDefault().getDefaultFileSystem()
-                              .findResource(templatePath);
-        DataObject templateDataObj;
-        try {
-            templateDataObj = DataObject.find(template);
-        } catch (DataObjectNotFoundException ex) {
-            String msg = NbBundle.getMessage(
-                    CreateTestAction.class,
-                    "MSG_template_not_found",                           //NOI18N
-                    templatePath);
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                            msg, NotifyDescriptor.ERROR_MESSAGE));
-            return null;
-        }
-        
+        /* collect and build necessary data: */
         String name = Templates.getTargetName(wizard);
         FileObject targetFolder = Templates.getTargetFolder(wizard);
-        DataFolder targetFolderDataObj = DataFolder.findFolder(targetFolder);
-        DataObject testDataObj = templateDataObj.createFromTemplate(
-                                         targetFolderDataObj, name);
-
-        // fill in setup etc. according to dialog settings
-        FileObject foSource = testDataObj.getPrimaryFile();
-        Resource srcRc = JavaModel.getResource(foSource);        
-        JavaClass cls = org.netbeans.modules.junit.TestUtil.getMainJavaClass(srcRc);
-        new org.netbeans.modules.junit.TestCreator(true).createEmptyTest(srcRc, cls);
         
-        return Collections.singleton(testDataObj);
+        Map<CreateTestParam, Object> params
+                = TestUtil.getSettingsMap(false);
+        params.put(CreateTestParam.CLASS_NAME,
+                   Templates.getTargetName(wizard));
+                
+        /* create the test class: */
+        final FileObject[] testFileObjects
+                = JUnitPluginTrampoline.DEFAULT.createTests(
+                     TestUtil.getPluginForProject(Templates.getProject(wizard)),
+                     null,
+                     targetFolder,
+                     params);
+        
+        if (testFileObjects == null) {
+            throw new IOException();
+        }
+        
+        DataObject testDataObject;
+        try {
+            testDataObject = DataObject.find(testFileObjects[0]);
+        } catch (DataObjectNotFoundException ex) {
+            throw new IOException();
+        }
+        
+        return Collections.singleton(testDataObject);
     }
 
     /**

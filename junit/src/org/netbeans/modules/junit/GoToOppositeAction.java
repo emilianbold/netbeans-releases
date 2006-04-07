@@ -7,17 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit;
 
 import java.awt.EventQueue;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 import javax.jmi.reflect.RefFeatured;
 import javax.jmi.reflect.RefObject;
 import javax.swing.Action;
@@ -26,14 +22,15 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.netbeans.jmi.javamodel.Element;
+import org.netbeans.jmi.javamodel.Feature;
+import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.NamedElement;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.junit.plugin.JUnitPlugin;
+import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
 import org.netbeans.modules.junit.wizards.Utils;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -103,27 +100,22 @@ public final class GoToOppositeAction extends NodeAction {
           return;
         }
         
-        String baseResName = srcCP.getResourceName(selectedFO, '/', false);
-        String oppoResName =
-                sourceToTest
-                ? (!selectedFO.isFolder()
-                        ? getTestResName(baseResName, selectedFO.getExt())
-                        : getSuiteResName(baseResName))
-                : getSrcResName(baseResName, selectedFO.getExt());
-        assert ((oppoResName != null) || (sourceToTest == false));
-        if (oppoResName == null) {
-            return;     //if the selectedFO is not a test class (by name)
-        }
+        JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+        assert plugin != null;
         
-        List/*<FileObject>*/ oppoFiles = ClassPathSupport
-                                         .createClassPath(oppositeRoots)
-                                         .findAllResources(oppoResName);
-        if (oppoFiles.isEmpty()) {
+        Location baseLocation = new Location(selectedFO,
+                                             getNavigationElement());
+        Location oppoLocation = sourceToTest
+                                ? JUnitPluginTrampoline.DEFAULT
+                                  .getTestLocation(plugin, baseLocation)
+                                : JUnitPluginTrampoline.DEFAULT
+                                  .getTestedLocation(plugin, baseLocation);
+        
+        if (oppoLocation == null) {
             if (sourceToTest) {
-                String sourceClsName = baseResName.replace('/', '.');
-                String testClsName = !selectedFO.isFolder()
-                                     ? getTestClassName(sourceClsName)
-                                     : getSuiteName(sourceClsName);
+                String sourceClsName;
+                sourceClsName = srcCP.getResourceName(selectedFO, '/', false)
+                                     .replace('/', '.');
                 String msgKey = 
                         !selectedFO.isFolder()
                         ? "MSG_test_class_not_found"                    //NOI18N
@@ -131,93 +123,20 @@ public final class GoToOppositeAction extends NodeAction {
                               ? "MSG_testsuite_class_not_found"         //NOI18N
                               : "MSG_testsuite_class_not_found_def_pkg";//NOI18N
                 TestUtil.notifyUser(
-                        NbBundle.getMessage(getClass(), msgKey,
-                                            testClsName, sourceClsName),
+                        NbBundle.getMessage(getClass(), msgKey, sourceClsName),
                         ErrorManager.INFORMATIONAL);
-                return;             //PENDING - offer creation of new test class
-            } else {
-                return;
             }
-        }
-        
-        NamedElement element = getNavigationElement();
-        if (element == null) {
-            OpenTestAction.openFile((FileObject) oppoFiles.get(0));
             return;
         }
-
-        assert (element instanceof Method)
-               || (element instanceof ClassDefinition);
-            
-        ClassDefinition clazz;
-        String oppoMethodName = null;
-        String baseClassName, oppoClassName;
-        String pkgName;
-
-        if (element instanceof Method) {
-            Method method = (Method) element;
-            String baseMethodName = method.getName();
-            oppoMethodName = sourceToTest
-                             ? getTestMethodName(baseMethodName)
-                             : getSourceMethodName(baseMethodName);
-            clazz = method.getDeclaringClass();
+        
+        assert oppoLocation.getFileObject() != null;
+        
+        FileObject oppoFile = oppoLocation.getFileObject();
+        Feature oppoElement = oppoLocation.getJavaElement();
+        if (oppoElement == null) {
+            OpenTestAction.openFile(oppoFile);
         } else {
-            clazz = (ClassDefinition) element;
-        }
-        baseClassName = clazz.getName();            //PENDING - inner classes!!!
-        oppoClassName = sourceToTest
-                        ? getTestClassName(baseClassName)
-                        : getSourceClassName(baseClassName);
-        
-        if (oppoClassName == null) {
-            OpenTestAction.openFile((FileObject) oppoFiles.get(0));
-            return;
-        }
-        
-        FileObject foWithClass = null;
-        FileObject foWithMethod = null;
-        ClassDefinition theClassDef = null;
-        Method theMethod = null;
-
-        for (Iterator/*<FileObject>*/ i = oppoFiles.iterator();
-                                      i.hasNext(); 
-                                      ) {
-            FileObject fileObj = (FileObject) i.next();
-            Resource resource = JavaModel.getResource(fileObj);
-            assert resource != null;
-
-            ClassDefinition classDef = findClassDef(resource,
-                                                    oppoClassName);
-            if (classDef != null) {
-                if (foWithClass == null) {
-                    foWithClass = fileObj;
-                    theClassDef = classDef;
-                }
-                if (oppoMethodName != null) {
-                    Method method = sourceToTest
-                                    ? findTestMethod(classDef,
-                                                     oppoMethodName)
-                                    : findSourceMethod(classDef,
-                                                       oppoMethodName);
-                    if (method != null) {
-                        theMethod = method;
-                        foWithMethod = fileObj;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        if (foWithClass == null) {
-            OpenTestAction.openFile((FileObject) oppoFiles.get(0));
-            return;
-        }
-        
-        int offset;
-        if (foWithMethod != null) {
-            OpenTestAction.openFileAtElement(foWithMethod, theMethod);
-        } else {
-            OpenTestAction.openFileAtElement(foWithClass, theClassDef);
+            OpenTestAction.openFileAtElement(oppoFile, oppoElement);
         }
     }
 
@@ -313,145 +232,23 @@ public final class GoToOppositeAction extends NodeAction {
     }
     
     /**
-     */
-    private static String getTestResName(String baseResName, String ext) {
-        StringBuffer buf = new StringBuffer(baseResName.length() + ext.length()
-                                            + 10);
-        buf.append(baseResName).append("Test");                         //NOI18N
-        if (ext.length() != 0) {
-            buf.append('.').append(ext);
-        }
-        return buf.toString();
-    }
-    
-    /**
-     */
-    private static String getSuiteResName(String baseResName) {
-        if (baseResName.length() == 0) {
-            return JUnitSettings.getDefault().getRootSuiteClassName();
-        }
-        
-        final String suiteSuffix = "Suite";                             //NOI18N
-
-        String lastNamePart
-                = baseResName.substring(baseResName.lastIndexOf('/') + 1);
-
-        StringBuffer buf = new StringBuffer(baseResName.length()
-                                            + lastNamePart.length()
-                                            + suiteSuffix.length()
-                                            + 6);
-        buf.append(baseResName).append('/');
-        buf.append(Character.toUpperCase(lastNamePart.charAt(0)))
-           .append(lastNamePart.substring(1));
-        buf.append(suiteSuffix);
-        buf.append(".java");                                            //NOI18N
-
-        return buf.toString();
-    }
-    
-    /**
-     */
-    private static String getSrcResName(String testResName, String ext) {
-        if (!testResName.endsWith("Test")) {                            //NOI18N
-            return null;
-        }
-        
-        StringBuffer buf = new StringBuffer(testResName.length() +ext.length());
-        buf.append(testResName.substring(0, testResName.length() - 4));
-        if (ext.length() != 0) {
-            buf.append('.').append(ext);
-        }
-        return buf.toString();
-    }
-    
-    /**
-     */
-    private static String getTestClassName(String baseClassName) {
-        return baseClassName + "Test";                                  //NOI18N
-    }
-    
-    /**
-     */
-    private static String getSuiteName(String packageName) {
-        if (packageName.length() == 0) {
-            return JUnitSettings.getDefault().getRootSuiteClassName();
-        }
-
-        final String suiteSuffix = "Suite";                             //NOI18N
-
-        String lastNamePart
-                = packageName.substring(packageName.lastIndexOf('.') + 1);
-        StringBuffer buf = new StringBuffer(packageName.length()
-                                            + lastNamePart.length()
-                                            + suiteSuffix.length()
-                                            + 1);
-        buf.append(packageName).append('.');
-        buf.append(Character.toUpperCase(lastNamePart.charAt(0)))
-           .append(lastNamePart.substring(1));
-        buf.append(suiteSuffix);
-        
-        return buf.toString();
-    }
-    
-    /**
-     */
-    private static String getSourceClassName(String testClassName) {
-        final String suffix = "Test";                                   //NOI18N
-        final int suffixLen = suffix.length();
-        
-        return ((testClassName.length() > suffixLen)
-                    && testClassName.endsWith(suffix))
-               ? testClassName.substring(0, testClassName.length() - suffixLen)
-               : null;
-    }
-    
-    /**
-     */
-    private static String getTestMethodName(String baseMethodName) {
-        final String prefix = "test";                                   //NOI18N
-        final int prefixLen = prefix.length();
-        
-        StringBuffer buf = new StringBuffer(prefixLen
-                                            + baseMethodName.length());
-        buf.append(prefix).append(baseMethodName);
-        buf.setCharAt(prefixLen,
-                      Character.toUpperCase(baseMethodName.charAt(0)));
-        return buf.toString();
-    }
-    
-    /**
-     */
-    private static String getSourceMethodName(String testMethodName) {
-        final String prefix = "test";                                   //NOI18N
-        final int prefixLen = prefix.length();
-        
-        return ((testMethodName.length() > prefixLen)
-                    && testMethodName.startsWith(prefix))
-               ? new StringBuffer(testMethodName.length() - prefixLen)
-                 .append(Character.toLowerCase(testMethodName.charAt(prefixLen)))
-                 .append(testMethodName.substring(prefixLen + 1))
-                 .toString()
-               : null;
-    }
-    
-    /**
      * Finds method or class element at the current editor cursor position.
      *
      * @return  the element, or <code>null</code> if the editor was not the
      *          active component or if no such element was found
      */
-    private NamedElement getNavigationElement() {
+    private Feature getNavigationElement() {
         RefFeatured javaElement = getJavaElement();
         
         while ((javaElement instanceof RefObject)
                 && (!(javaElement instanceof Method))
-                && (!(javaElement instanceof ClassDefinition))) {
+                && (!(javaElement instanceof JavaClass))) {
             javaElement = ((RefObject) javaElement).refImmediateComposite();
         }
         
         return ((javaElement instanceof Method)
-                    || (javaElement instanceof ClassDefinition))
-               ? (NamedElement) javaElement
+                    || (javaElement instanceof JavaClass))
+               ? (Feature) javaElement
                : null;
     }
     
@@ -485,72 +282,6 @@ public final class GoToOppositeAction extends NodeAction {
                : null;
     }
 
-    /**
-     * Finds class of the given name in the given resource.
-     *
-     * @return  the found class, or <code>null</code> if the class was not found
-     */
-    private static ClassDefinition findClassDef(Resource resource,
-                                                String className) {
-        for (Iterator/*<Element>*/ i = resource.getChildren().iterator();
-                i.hasNext();
-                ) {
-            Element e = (Element) i.next();
-            if ((e instanceof ClassDefinition)
-                    && ((ClassDefinition) e).getName().equals(className)) {
-                return (ClassDefinition) e;
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Finds a no-arg method with void return type of the given name.
-     *
-     * @param  classDef  class to find the method in
-     * @param  methodName  requested name of the method
-     * @return  found method, or <code>null</code> if not found
-     */
-    private static Method findTestMethod(ClassDefinition classDef,
-                                         String methodName) {
-        
-        Method method = classDef.getMethod(methodName,
-                                           Collections.EMPTY_LIST,
-                                           false);
-        return (method != null)
-               && Modifier.isPublic(method.getModifiers())
-               && method.getTypeName().getName().equals("void")         //NOI18N
-                      ? method
-                      : null;
-    }
-    
-    /**
-     * Finds a method with of the given name.
-     *
-     * @param  classDef  class to find the method in
-     * @param  methodName  requested name of the method
-     * @return  found method, or <code>null</code> if not found
-     */
-    private static Method findSourceMethod(ClassDefinition classDef,
-                                           String methodName) {
-        List/*<Element>*/ classChildren = classDef.getChildren();
-        
-        if ((classChildren == null) || (classChildren.isEmpty())) {
-            return null;
-        }
-        
-        for (Iterator/*<Element>*/ i = classChildren.iterator(); i.hasNext();) {
-            Object o = i.next();
-            if (o instanceof Method) {
-                Method method = (Method) o;
-                if (method.getName().equals(methodName)) {
-                    return method;
-                }
-            }
-        }
-        return null;
-    }
-    
     /**
      */
     private static FileObject getFileObject(Document document) {

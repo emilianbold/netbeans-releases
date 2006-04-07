@@ -7,9 +7,10 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.junit;
 
 import java.net.URL;
@@ -19,6 +20,8 @@ import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.junit.plugin.JUnitPlugin;
+import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.netbeans.modules.junit.wizards.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -708,6 +711,65 @@ public class TestUtil {
         }
         return true;
     }
+    
+    /**
+     *
+     */
+    public static JUnitPlugin getPluginForProject(final Project project) {
+        Object pluginObj = project.getLookup().lookup(JUnitPlugin.class);
+        return (pluginObj != null) ? (JUnitPlugin) pluginObj
+                                   : new DefaultPlugin();
+    }
 
+    /**
+     * Creates a map of parameters according to the current JUnit module
+     * settings.<br />
+     * Note: The map may not contain all the necessary settings,
+     *       i.g. name of a test class is missing.
+     *
+     * @param  multipleFiles  if {@code true}, the map should contain
+     *                        also settings need for creation of multiple
+     *                        tests
+     * @return  map of settings to be used by a
+     *          {@link org.netbeans.modules.junit.plugin JUnitPlugin}
+     * @see  org.netbeans.modules.junit.plugin.JUnitPlugin
+     */
+    public static Map<CreateTestParam, Object> getSettingsMap(
+            boolean multipleFiles) {
+        final JUnitSettings settings = JUnitSettings.getDefault();
+        final Map<CreateTestParam, Object> params
+                    = new HashMap<CreateTestParam, Object>(17);
+        
+        params.put(CreateTestParam.INC_PUBLIC,
+                   Boolean.valueOf(settings.isMembersPublic()));
+        params.put(CreateTestParam.INC_PROTECTED,
+                   Boolean.valueOf(settings.isMembersProtected()));
+        params.put(CreateTestParam.INC_PKG_PRIVATE,
+                   Boolean.valueOf(settings.isMembersPackage()));
+        params.put(CreateTestParam.INC_CODE_HINT,
+                   Boolean.valueOf(settings.isBodyComments()));
+        params.put(CreateTestParam.INC_METHOD_BODIES,
+                   Boolean.valueOf(settings.isBodyContent()));
+        params.put(CreateTestParam.INC_JAVADOC,
+                   Boolean.valueOf(settings.isJavaDoc()));
+        
+        if (multipleFiles) {
+            params.put(CreateTestParam.INC_GENERATE_SUITE,
+                       Boolean.valueOf(settings.isGenerateSuiteClasses()));
+            params.put(CreateTestParam.INC_PKG_PRIVATE_CLASS,
+                    Boolean.valueOf(settings.isIncludePackagePrivateClasses()));
+            params.put(CreateTestParam.INC_ABSTRACT_CLASS,
+                       Boolean.valueOf(settings.isGenerateAbstractImpl()));
+            params.put(CreateTestParam.INC_EXCEPTION_CLASS,
+                       Boolean.valueOf(settings.isGenerateExceptionClasses()));
+        }
+        
+        params.put(CreateTestParam.INC_SETUP,
+                   Boolean.valueOf(settings.isGenerateSetUp()));
+        params.put(CreateTestParam.INC_TEAR_DOWN,
+                   Boolean.valueOf(settings.isGenerateTearDown()));
+        
+        return params;
+    }
     
 }

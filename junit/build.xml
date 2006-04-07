@@ -47,5 +47,10 @@ Microsystems, Inc. All Rights Reserved.
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
     </target>
+    
+    <target name="arch">
+        <ant antfile="../nbbuild/templates/projectized.xml" target="arch"/>
+        <copy file="arch/JUnitPlugin.png" todir="build"/>
+    </target>
 
 </project>

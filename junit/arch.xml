@@ -6,9 +6,9 @@
 <!-- XXX merge w/ arch/arch-junit.xml -->
 
 <api-answers
-  question-version="1.23"
+  question-version="1.27"
   module="junit"
-  author="jglick@netbeans.org"
+  author="jglick@netbeans.org, mpetras@netbeans.org"
 >
 
   &api-questions;
@@ -30,7 +30,42 @@
         </question>
 -->
  <answer id="arch-overall">
-  The module supports some aspects of JUnit-based testing.
+    <p>
+        The module supports some aspects of JUnit-based testing.
+    </p>
+    <p>
+        There is no client API.
+    </p>
+    <p>
+        There is a support API (SPI) for a project-type-specific implementation
+        of JUnit:<br />
+        <api type="export"
+             name="org.netbeans.modules.junit.plugin"
+             group="java"
+             category="devel"
+             url="org/netbeans/modules/junit/plugin/package-summary.html">
+            This SPI describes services provided by the
+            custom JUnit support plugin which are not desribed by the existing
+            public SPI (<code>UnitTestForSourceQuery</code>). This SPI
+            represents an additional source of information for the JUnit module
+            and allows a custom test-skeleton generator to be plugged.
+        </api>
+        <api type="export"
+             name="JUnit-plugin-lookup"
+             group="lookup"
+             category="devel"
+             url="org/netbeans/modules/junit/plugin/JUnitPlugin.html">
+            The object implementing the <code>JUnitPlugin</code> interface
+            is taken by the JUnit module from the current project's lookup,
+            the same way as the <code>UnitTestForSourceQuery</code>.
+        </api>
+    </p>
+    <p>
+        See the diagram:<br />
+        <img src="JUnitPlugin.png"
+             alt="diagram &ndash; the SPI provides an additional source of information"
+             width="398" height="441" />
+    </p>
  </answer>
 
 
@@ -68,7 +103,10 @@
 -->
  <answer id="arch-time">
   <p>
-   Largely complete.
+    It should be done by 6<sup>th</sup> April 2006.
+    We are two people working on the SPI. One person is working on the default
+    implementation of the plugin, second person is working on a plugin for J2ME
+    modules.
   </p>
  </answer>
 
@@ -83,8 +121,32 @@
         </question>
 -->
  <answer id="arch-usecases">
-     The module does not have public API/SPI.
- </answer>
+     <p>
+        The SPI allows to plug a project-type-specific implementation of JUnit
+        support into NetBeans. The current NetBeans implementation only supports
+        JUnit on J2SE project types. The SPI describes services provided by the
+        custom JUnit support plugin.
+     </p>
+     <p>
+        The functionality to be plugged in comprises:
+     </p>
+     <ul>
+        <li>generation of test skeletons</li>
+        <li>navigation between source classes and corresponding test
+            classes</li>
+     </ul>
+     <p>
+        For navigation, the plugin defines mapping between source classes and
+        the corresponding test classes (both directions). Thus it provides
+        an additional information to the information provides by
+        <code>UnitTestForSourceQuery</code>
+     </p>
+     <p>
+         For generation of test skeletons, the plugin actually defines the whole
+         test skeleton generator - it generates one or more test files for
+         a given source file.
+     </p>
+</answer>
 
 
 
@@ -100,8 +162,8 @@
 -->
  <answer id="arch-what">
   <p>
-   The module supports development-time aspects of unit testing: finding and
-   creating tests. (Actual test running is typically performed directly by a
+   The module makes creating, running and navigation between tests easier.
+   (Actual test running is typically performed directly by a
    project type provider using Ant.)
   </p>
  </answer>
@@ -174,7 +236,7 @@
 -->
  <answer id="dep-jre">
   <p>
-   1.4+.
+   1.5+.
   </p>
  </answer>
 
@@ -316,7 +378,8 @@ Nothing.
 -->
  <answer id="deploy-packages">
   <p>
-   Yes, all packages are inaccessible.
+   Yes - only package <code>org.netbeans.modules.junit.plugin</code>
+   is available and it is only available to friend modules.
   </p>
  </answer>
 
@@ -393,7 +456,20 @@ Nothing.
 -->
  <answer id="exec-introspection">
   <p>
-   No.
+    Yes. Constructor of class
+    <code>org.netbeans.modules.junit.plugin.JUnitPlugin.Location</code>
+    requires that its <code>javaElement</code> argument is either
+    <code>null</code> or an instance of <code>JavaClass</code> or
+    <code>Method</code>. This is checked using operator
+    <code>instanceof</code>.
+  </p>
+  <p>
+    The default implementation of <code>JUnitPlugin</code> uses reflection
+    heavily in the test skeleton generator.
+  </p>
+  <p>
+    There are several cases of using reflection (<code>instanceof</code>,
+    <code>Class.getName()</code>) in other parts of the module, too.
   </p>
  </answer>
 
@@ -573,7 +649,12 @@ Nothing.
         </question>
 -->
  <answer id="lookup-lookup">
-  No.
+    Yes. It uses lookup to find a custom JUnit plugin implementing the
+    <a href="#org.netbeans.modules.junit.plugin">SPI</a> in the project's lookup.
+    If there is no such object found, the default implementation (the one
+    for J2SE projects) is used. If there are multiple implementations
+    found, an arbitrary one is used. This contract is under development,
+    like the whole <a href="#org.netbeans.modules.junit.plugin">SPI</a>.
  </answer>
 
 
@@ -634,7 +715,7 @@ Nothing.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   No. (XXX true?)
+    Yes. The <em>Create Test</em> dialog contains many check-boxes.
   </p>
  </answer>
 
@@ -662,7 +743,7 @@ Nothing.
 -->
  <answer id="perf-mem">
   <p>
-   Should be minimal.
+   XXX no answer for perf-mem
   </p>
  </answer>
 
@@ -676,7 +757,10 @@ Nothing.
 -->
  <answer id="perf-menus">
   <p>
-   No. (XXX true?)
+    Yes.
+    Actions <em>Create JUnit Tests</em> (in the <em>Tools</em> menu)
+    and <em>Go To Test/Go To Tested Class</em> (in the <em>Navigate</em> menu)
+    are context-sensitive and have quite complicated enablement logic.
   </p>
  </answer>
 
@@ -735,7 +819,10 @@ Nothing.
 -->
  <answer id="perf-spi">
   <p>
-   No special provisions.
+    The <a href="#java-unit-test-generator">SPI</a> allows an external test
+    skeleton generator to be plugged. The plugin should generate the task
+    quickly but there is no mechanism that would check the speed or correctness
+    of the plugin.
   </p>
  </answer>
 
@@ -848,6 +935,78 @@ Nothing.
  <answer id="resources-read">
   <p>
    No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="arch-where" when="init">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the CVS web client at
+                http://www.netbeans.org/download/source_browse.html
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
+ </answer>
+
+
+
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   XXX no answer for security-policy
   </p>
  </answer>
 

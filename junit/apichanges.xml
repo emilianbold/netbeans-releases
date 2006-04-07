@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<?xml-stylesheet href="../nbbuild/javadoctools/apichanges.xsl" type="text/xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+
+<!-- First, a list of API names you may use: -->
+<apidefs>
+        <apidef name="junit-plugin">JUnit Plugin SPI</apidef>
+</apidefs>
+
+<!-- ACTUAL CHANGES BEGIN HERE: -->
+
+<changes>
+
+        <change id="issue-74160">
+            <api name="junit-plugin"/>
+            <summary>Added SPI for JUnit plugins</summary>
+            <version major="2" minor="21"/>
+            <date day="7" month="4" year="2006"/>
+            <author login="mpetras"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Introduced new SPI - abstract class <code>JUnitPlugin</code> (with a nested
+                    enum <code>CreateTestParam</code> and a nested final class <code>Location</code>).
+                    Introduced to allow non-J2SE projects to plug in their own implementation
+                    of JUnit support, i.e.:
+                </p>
+                <ul>
+                    <li>jumping to a test for the current class/method and back</li>
+                    <li>generating of test skeletons</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.modules.junit.plugin" name="JUnitPlugin"/>
+            <issue number="74160"/>
+            <issue number="42349"/>
+        </change>
+
+</changes>
+
+  <!-- Now the surrounding HTML text and document structure: -->
+
+  <htmlcontents>
+<!--
+
+                            NO NO NO NO NO!
+
+         ==============>    DO NOT EDIT ME!  <======================
+
+          AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
+
+                SEE xml/api/doc/changes/apichanges.xml
+
+-->
+    <head>
+      <title>JUnit API changes by date</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
+
+<p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
+
+<h1>Introduction</h1>
+
+<p>This document lists changes made to the JUnit APIs. Please ask on the 
+<code>dev@junit.netbeans.org</code> or <code>nbdev@netbeans.org</code>
+mailing list if you have any questions about the details of a
+change, or are wondering how to convert existing code to be compatible.</p>
+
+      <hr/><standard-changelists module-code-name="org.netbeans.modules.junit/2"/>
+
+      <hr/><p>@FOOTER@</p>
+
+    </body>
+  </htmlcontents>
+</apichanges>

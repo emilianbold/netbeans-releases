@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,8 +15,10 @@ package org.netbeans.modules.junit.wizards;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
@@ -25,8 +27,11 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.GuiUtils;
+import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.netbeans.modules.junit.JUnitSettings;
 import org.netbeans.modules.junit.TestCreator;
+import org.netbeans.modules.junit.TestUtil;
+import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -261,45 +266,43 @@ public class SimpleTestCaseWizardIterator
     public Set instantiate(TemplateWizard wiz) throws IOException {
         saveSettings(wiz);
         
-        /* get the template DataObject... */
-        String templatePath = NbBundle.getMessage(
-                                      CreateTestAction.class,
-                                      "PROP_testClassTemplate");        //NOI18N
-        FileObject template = Repository.getDefault().getDefaultFileSystem()
-                              .findResource(templatePath);
-        DataObject templateDataObj;
-        try {
-            templateDataObj = DataObject.find(template);
-        } catch (DataObjectNotFoundException ex) {
-            String msg = NbBundle.getMessage(
-                    CreateTestAction.class,
-                    "MSG_template_not_found",                           //NOI18N
-                    templatePath);
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                            msg, NotifyDescriptor.ERROR_MESSAGE));
-            return null;
-        }
-        
         /* collect and build necessary data: */
         FileObject classToTest = (FileObject)
                 wizard.getProperty(SimpleTestCaseWizard.PROP_CLASS_TO_TEST);
         FileObject testRootFolder = (FileObject)
                 wizard.getProperty(SimpleTestCaseWizard.PROP_TEST_ROOT_FOLDER);
-        ClassPath testClassPath = ClassPathSupport.createClassPath(
-                new FileObject[] {testRootFolder});
+        Map<CreateTestParam, Object> params
+                = TestUtil.getSettingsMap(false);
                 
         /* create test class(es) for the selected source class: */
-        try {
-            return CreateTestAction.createSingleTest(
-                new TestCreator(true),
-                testClassPath, classToTest,
-                null,               //use the default class name
-                templateDataObj,
-                null, null, false).getCreated();
-        } catch (CreateTestAction.CreationError ex) {
+        final FileObject[] testFileObjects
+                = JUnitPluginTrampoline.DEFAULT.createTests(
+                     TestUtil.getPluginForProject(Templates.getProject(wizard)),
+                     new FileObject[] {classToTest},
+                     testRootFolder,
+                     params);
+        
+        //XXX: What if the selected class is not testable?
+        //     It should not be skipped!
+        
+        if (testFileObjects == null) {
             throw new IOException();
         }
+        
+        final Set<DataObject> dataObjects
+               = new HashSet<DataObject>((int) (testFileObjects.length * 1.5f));
+        for (FileObject testFile : testFileObjects) {
+            try {
+                dataObjects.add(DataObject.find(testFile));
+            } catch (DataObjectNotFoundException ex) {
+                //XXX - does nothing special - just continues
+            }
+        }
+        
+        if (dataObjects.isEmpty()) {
+            throw new IOException();
+        }
+        return dataObjects;
     }
 
     /**

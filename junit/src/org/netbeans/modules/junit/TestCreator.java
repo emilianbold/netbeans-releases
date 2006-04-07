@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import org.netbeans.modules.javacore.jmiimpl.javamodel.DiffElement;
 import org.netbeans.modules.javacore.jmiimpl.javamodel.ResourceImpl;
+import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.openide.ErrorManager;
 
 import org.openide.util.NbBundle;
@@ -156,6 +157,9 @@ public final class TestCreator {
     /** pattern of a multipart Java ID */
     private final Pattern javaIdFullPattern;
     
+    {
+        javaIdFullPattern = Pattern.compile(RegexpPatterns.JAVA_ID_REGEX_FULL);
+    }
     
     /* public methods */
     
@@ -170,7 +174,46 @@ public final class TestCreator {
         if (loadDefaults) {
             loadDefaults();
         }
-        javaIdFullPattern = Pattern.compile(RegexpPatterns.JAVA_ID_REGEX_FULL);
+    }
+    
+    /**
+     *
+     */
+    public TestCreator(Map<CreateTestParam, Object> params) {
+        final JUnitSettings settings = JUnitSettings.getDefault();
+        
+        skipTestClasses = !JUnitSettings.GENERATE_TESTS_FROM_TEST_CLASSES;
+        
+        skipPkgPrivateClasses = !Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_PKG_PRIVATE_CLASS));
+        skipAbstractClasses = !Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_ABSTRACT_CLASS));
+        skipExceptionClasses = !Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_EXCEPTION_CLASS));
+        generateSuiteClasses = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_GENERATE_SUITE));
+        
+        methodAccessModifiers = 0;
+        if (Boolean.TRUE.equals(params.get(CreateTestParam.INC_PUBLIC))) {
+            methodAccessModifiers |= Modifier.PUBLIC;
+        }
+        if (Boolean.TRUE.equals(params.get(CreateTestParam.INC_PROTECTED))) {
+            methodAccessModifiers |= Modifier.PROTECTED;
+        }
+        testPkgPrivateMethods = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_PKG_PRIVATE));
+        generateDefMethodBody = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_METHOD_BODIES));
+        generateMethodJavadoc = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_CODE_HINT));
+        generateSourceCodeHints = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_CODE_HINT));
+        generateSetUp = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_SETUP));
+        generateTearDown = Boolean.TRUE.equals(params.get(
+                                        CreateTestParam.INC_TEAR_DOWN));
+        
+        generateMainMethod = settings.isGenerateMainMethod();
     }
 
     
