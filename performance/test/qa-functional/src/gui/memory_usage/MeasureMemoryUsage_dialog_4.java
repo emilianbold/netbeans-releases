@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,14 +31,13 @@ public class MeasureMemoryUsage_dialog_4 {
         
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        suite.addTest(new NewProjectDialog("doMeasurement", "New Project dialog open"));
-        suite.addTest(new NewFileDialog("doMeasurement", "New File dialog open"));
-        suite.addTest(new OpenProjectDialog("doMeasurement", "Open Project dialog open"));
-        suite.addTest(new OpenFileDialog("doMeasurement", "Open File dialog open"));
-        
-        suite.addTest(new FindInProjects("doMeasurement", "Find in Projects dialog open"));
+        suite.addTest(new FindInProjects("measureTime", "Find in Projects dialog open"));
         suite.addTest(new ProjectPropertiesWindow("testJSEProject", "JSE Project Properties window open"));
+        suite.addTest(new ProjectPropertiesWindow("testNBProject", "NB Project Properties window open"));
+        suite.addTest(new ProjectPropertiesWindow("testWebProject", "Web Project Properties window open"));
  
+        suite.addTest(new DeleteFileDialog("measureTime", "Delete Object dialog open"));
+         
         return suite;
     }
     

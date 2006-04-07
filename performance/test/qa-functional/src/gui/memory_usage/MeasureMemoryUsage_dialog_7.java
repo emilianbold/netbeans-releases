@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,9 +31,15 @@ public class MeasureMemoryUsage_dialog_7 {
         
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        suite.addTest(new RefactorFindUsagesDialog("doMeasurement", "Refactor find usages dialog open"));
-        suite.addTest(new RefactorRenameDialog("doMeasurement", "Refactor rename dialog open"));
-        suite.addTest(new RefactorMoveClassDialog("doMeasurement", "Refactor move class dialog open"));
+//TODO        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
+        
+        suite.addTest(new AddServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
+        
+        suite.addTest(new CreateTestsDialog("measureTime", "Create Tests dialog open"));
+        
+        suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
+        suite.addTest(new RefactorRenameDialog("measureTime", "Refactor rename dialog open"));
+//TODO hard to indentify end of the action        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
         
         return suite;
     }

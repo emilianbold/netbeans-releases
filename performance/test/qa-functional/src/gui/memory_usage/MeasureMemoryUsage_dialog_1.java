@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,15 +31,11 @@ public class MeasureMemoryUsage_dialog_1 {
         
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        // dialogs and windows which don't require any preparation
-        suite.addTest(new About("doMeasurement", "About dialog open"));
-        suite.addTest(new About_2("doMeasurement", "About details open"));
+        suite.addTest(new ModuleManager("measureTime", "Module Manager dialog open"));
+        suite.addTest(new ServerManager("measureTime", "Server Manager dialog open"));
+        suite.addTest(new TemplateManager("measureTime", "Template Manager dialog open"));
         
-        suite.addTest(new Options("doMeasurement", "Options dialog open"));
- 
-        suite.addTest(new UpdateCenter("doMeasurement", "Update Center wizard open"));
-        suite.addTest(new ProxyConfiguration("doMeasurement", "Proxy Configuration open"));
-// TEMPORARY until Jellytools fixed suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
+        suite.addTest(new Options("measureTime", "Options dialog open"));
                 
         return suite;
     }

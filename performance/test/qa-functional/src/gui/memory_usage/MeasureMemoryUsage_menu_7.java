@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,9 +31,10 @@ public class MeasureMemoryUsage_menu_7 {
         
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Server Registry node popup in Runtime View"));
-        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Tomcat node popup in Runtime View"));
-        suite.addTest(new RuntimeViewPopupMenu("testHttpTomcatPopupMenuRuntime", "http localhost node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Servers node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Bundled Tomcat node popup in Runtime View"));
+        
+        suite.addTest(new FormInspectorNodePopupMenu("testFormNodePopupMenuInspector", "Form Inspector node popup"));
         
         return suite;
     }

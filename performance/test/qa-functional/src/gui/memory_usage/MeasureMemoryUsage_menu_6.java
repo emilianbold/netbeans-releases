@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,7 +35,7 @@ public class MeasureMemoryUsage_menu_6 {
         suite.addTest(new SourceEditorPopupMenu("testPopupInXml", "XML Editor popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupOnMethod", "Java Editor Method popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupOnClassName", "Java Editor Class Name popup"));
-        
+                
         return suite;
     }
     

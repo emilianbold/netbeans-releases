@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,14 +31,15 @@ public class MeasureMemoryUsage_dialog_5 {
         
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        suite.addTest(new AddServerInstanceDialog("doMeasurement", "Add JDBC Driver dialog open"));
-        suite.addTest(new NewDatabaseConnectionDialog("doMeasurement", "New Database Connection dialog open"));
-        suite.addTest(new SetDefaultServerDialog("doMeasurement", "Set Default Server dialog open"));
-        suite.addTest(new AddXMLandDTDSchemaCatalog("doMeasurement", "Mount XML Catalog dialog open"));
+        suite.addTest(new AttachDialog("measureTime", "Attach dialog open"));
+        suite.addTest(new NewBreakpointDialog("measureTime", "New Breakpoint dialog open"));
+        suite.addTest(new NewWatchDialog("measureTime", "New Watch dialog open"));
          
-        suite.addTest(new AttachDialog("doMeasurement", "Attach dialog open"));
-        suite.addTest(new NewBreakpointDialog("doMeasurement", "New Breakpoint dialog open"));
-        suite.addTest(new NewWatchDialog("doMeasurement", "New Watch dialog open"));
+        suite.addTest(new JavadocIndexSearch("measureTime", "Javadoc Index Search open"));
+        
+        suite.addTest(new JavaPlatformManager("measureTime", "Java Platform Manager open"));
+        suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
+        suite.addTest(new NetBeansPlatformManager("measureTime", "NetBeans Platform Manager open"));
 
         return suite;
     }

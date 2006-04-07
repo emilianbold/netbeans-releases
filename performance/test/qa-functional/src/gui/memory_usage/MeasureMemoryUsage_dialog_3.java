@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,15 +31,18 @@ public class MeasureMemoryUsage_dialog_3 {
         
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        suite.addTest(new NewProjectDialog("doMeasurement", "New Project dialog open"));
-        suite.addTest(new NewFileDialog("doMeasurement", "New File dialog open"));
-        suite.addTest(new OpenProjectDialog("doMeasurement", "Open Project dialog open"));
-        suite.addTest(new OpenFileDialog("doMeasurement", "Open File dialog open"));
+//TODO       suite.addTest(new OutputWindow("measureTime", "Output window open"));
+        suite.addTest(new ToDoWindow("measureTime", "To Do window open"));
+        suite.addTest(new HttpMonitorWindow("measureTime", "Http Monitor window open"));
+
+        suite.addTest(new HelpContentsWindow("measureTime", "Help Contents window open"));
         
-        suite.addTest(new HelpContentsWindow("doMeasurement", "Help Contents window open"));
+        suite.addTest(new PropertyEditorString("measureTime", "String Property Editor open"));
+//TODO fails often        suite.addTest(new PropertyEditorColor("measureTime", "Color Property Editor open"));
         
-        suite.addTest(new PropertyEditorString("doMeasurement", "String Property Editor open"));
-        suite.addTest(new PropertyEditorColor("doMeasurement", "Color Property Editor open"));
+        suite.addTest(new AddServerInstanceDialog("measureTime", "Add JDBC Driver dialog open"));
+        suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
+        suite.addTest(new AddXMLandDTDSchemaCatalog("measureTime", "Add Catalog dialog open"));
                 
         return suite;
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,10 +31,10 @@ public class MeasureMemoryUsage_action_7 {
         
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
-        suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
-        suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
-//TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
+        suite.addTest(new CreateNBProject("testCreateModuleProject", "Create Module Project"));
+        suite.addTest(new CreateNBProject("testCreateModuleSuiteProject", "Create Module Suite Project"));
+        
+        suite.addTest(new AddToFavorites("testAddJavaFile", "Add to Favorites Java file"));
         
         return suite;
     }

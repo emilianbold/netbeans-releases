@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,17 +31,19 @@ public class MeasureMemoryUsage_dialog_2 {
         
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        suite.addTest(new FilesWindow("doMeasurement", "Files window open"));
-        suite.addTest(new ProjectsWindow("doMeasurement", "Projects window open"));
-        suite.addTest(new RuntimeWindow("doMeasurement", "Runtime window open"));
-        suite.addTest(new VersioningWindow("doMeasurement", "Versioning window open"));
-        suite.addTest(new FavoritesWindow("doMeasurement", "Favorites window open"));
+        suite.addTest(new NewProjectDialog("measureTime", "New Project dialog open"));
+        suite.addTest(new NewFileDialog("measureTime", "New File dialog open"));
+        suite.addTest(new OpenProjectDialog("measureTime", "Open Project dialog open"));
+        suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
+ 
+        suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
+        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
         
-//TODO it still fails in Promo D       suite.addTest(new OutputWindow("doMeasurement", "Output window open"));
-        suite.addTest(new ToDoWindow("doMeasurement", "To Do window open"));
-        suite.addTest(new HttpMonitorWindow("doMeasurement", "Http Monitor window open"));
-
-        suite.addTest(new DeleteFileDialog("doMeasurement", "Delete Object dialog open"));
+        suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
+        //remove from test run for NB4.1        suite.addTest(new FilesWindow("measureTime", "Files window open"));
+        //remove from test run for NB4.1        suite.addTest(new ProjectsWindow("measureTime", "Projects window open"));
+        //remove from test run for NB4.1        suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
+        suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
         
         return suite;
     }

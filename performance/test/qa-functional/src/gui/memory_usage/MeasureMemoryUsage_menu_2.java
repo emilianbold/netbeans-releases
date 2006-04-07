@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,20 +31,17 @@ public class MeasureMemoryUsage_menu_2 {
         
         suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
         
-        suite.addTest(new MainSubMenus("testFileOpenRecentProjectMenu", "File | Open Recent Project main menu"));
+        // recent prj menu is empty and disabled
+        // suite.addTest(new MainSubMenus("testFileOpenRecentProjectMenu", "File | Open Recent Project main menu"));
         suite.addTest(new MainSubMenus("testFileSetMainProjectMenu", "File | Set Main Project main menu"));
-        suite.addTest(new MainSubMenus("testViewDocumentationIndicesMenu", "View | Documentation Indices main menu"));
-        suite.addTest(new MainSubMenus("testViewToolbarsMenu", "View | Toolbars main menu"));
+        // suite.addTest(new MainSubMenus("testViewDocumentationIndicesMenu", "View | Documentation Indices main menu"));
         suite.addTest(new MainSubMenus("testViewCodeFoldsMenu", "View | Code Folds main menu"));
-        suite.addTest(new MainSubMenus("testRunRunOtherMenu", "Run | Run Other main menu"));
+        suite.addTest(new MainSubMenus("testViewEditorsMenu", "View | Editors main menu"));
+        suite.addTest(new MainSubMenus("testViewToolbarsMenu", "View | Toolbars main menu"));
         suite.addTest(new MainSubMenus("testRunStackMenu", "Run | Stack main menu"));
-        suite.addTest(new MainSubMenus("testVersioningCVSMenu", "Versioning | CVS main menu"));
-        suite.addTest(new MainSubMenus("testVersioningPVCSMenu", "Versioning | PVCS main menu"));
+        suite.addTest(new MainSubMenus("testRunRunFileMenu", "Run | Run File main menu"));
         suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
-        suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
-        suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debug main menu"));
-        suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
-        suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document Node in main menu"));
+        suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debugging main menu"));
         
         return suite;
     }
