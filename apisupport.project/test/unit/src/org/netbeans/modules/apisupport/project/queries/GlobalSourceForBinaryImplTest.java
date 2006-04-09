@@ -89,7 +89,13 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         assertTrue("performance.netbeans.org checked out", file("performance").isDirectory());
         assertRoot(Util.urlForJar(file("xtest/lib/insanelib.jar")),
                 FileUtil.toFileObject(file("performance/insanelib/src")));
-        assertResolved("extra/modules/ext/insanelib.jar", "performance/insanelib/src");
+        File jarFile = new File(file("nbbuild/netbeans"), "extra/modules/ext/insanelib.jar");
+        if (jarFile.exists()) {
+            assertResolved("extra/modules/ext/insanelib.jar", "performance/insanelib/src");
+        } else {
+            assertEquals("no resolved root", 0,
+                    SourceForBinaryQuery.findSourceRoots(Util.urlForJar(jarFile)).getRoots().length);
+        }
     }
     
     private void assertResolved(String jarInNBBuild, String dirInNBSrc) {
