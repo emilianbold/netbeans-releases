@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import java.io.*;
 import org.netbeans.modules.subversion.*;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.subversion.SvnFileNode;
@@ -189,8 +190,33 @@ class CommitTableModel extends AbstractTableModel {
     }
 
     private CommitOptions getDefaultCommitOptions(File file) {
-        // XXX probe
-        return CommitOptions.ADD_TEXT;
+        if (file.isFile()) {
+            InputStream in = null;
+            try {
+                in = new BufferedInputStream(new FileInputStream(file), 1024);
+                long size = Math.min(1024, file.length());
+                byte[] probe = new byte[(int)size];
+                int read = in.read(probe);
+                assert read == size;
+                if (Subversion.getInstance().isBinary(probe)) {
+                    return CommitOptions.ADD_BINARY;
+                } else {
+                    return CommitOptions.ADD_TEXT;
+                }
+            } catch (IOException ex) {
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException ex) {
+                        // closed
+                    }
+                }
+            }
+            return CommitOptions.ADD_TEXT;
+        } else {
+            return CommitOptions.ADD_DIRECTORY;
+        }
     }
 
 }

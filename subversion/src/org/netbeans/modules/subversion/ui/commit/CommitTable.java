@@ -161,6 +161,11 @@ class CommitTable implements AncestorListener, TableModelListener {
     }
     
     private class CommitOptionsCellEditor extends DefaultCellEditor {
+
+        private final Object[] dirAddOptions = new Object [] {
+                CommitOptions.ADD_DIRECTORY,
+                CommitOptions.EXCLUDE
+            };
         
         private final Object[] addOptions = new Object [] {
                 CommitOptions.ADD_TEXT,
@@ -182,12 +187,17 @@ class CommitTable implements AncestorListener, TableModelListener {
         }
 
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            int fileStatus = tableModel.getNode(sorter.modelIndex(row)).getInformation().getStatus();
+            FileInformation info = tableModel.getNode(sorter.modelIndex(row)).getInformation();
+            int fileStatus = info.getStatus();
             JComboBox combo = (JComboBox) editorComponent;
             if (fileStatus == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || fileStatus == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 combo.setModel(new DefaultComboBoxModel(removeOptions));
             } else if ((fileStatus & FileInformation.STATUS_IN_REPOSITORY) == 0) {
-                combo.setModel(new DefaultComboBoxModel(addOptions));
+                if (info.isDirectory()) {
+                    combo.setModel(new DefaultComboBoxModel(dirAddOptions));
+                } else {
+                    combo.setModel(new DefaultComboBoxModel(addOptions));
+                }
             } else {
                 combo.setModel(new DefaultComboBoxModel(commitOptions));
             }

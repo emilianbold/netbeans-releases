@@ -157,7 +157,7 @@ public class CommitAction extends ContextAction {
 
                     addCandidates.add(node);
                     commitCandidates.add(node.getFile());
-                } else if (CommitOptions.ADD_TEXT == option) {
+                } else if (CommitOptions.ADD_TEXT == option || CommitOptions.ADD_DIRECTORY == option) {
                     // assute no MIME property or startin gwith text
                     List l = listUnmanagedParents(node);
                     Iterator dit = l.iterator();
