@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 import static org.apache.tools.ant.module.Generics.*;
+import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.filesystems.FileObject;
@@ -84,7 +85,7 @@ public class TargetLister {
      */
     public static Set<Target> getTargets(AntProjectCookie script) throws IOException {
         Set<File> alreadyImported = new HashSet<File>();
-        Map<String,String> properties = new HashMap<String,String>((Map<String,String>) System.getProperties());
+        Map<String,String> properties = Generics.checkedMapByFilter(System.getProperties(), String.class, String.class);
         Script main = new Script(null, script, alreadyImported, properties, Collections.<String,Element>emptyMap());
         Set<Target> targets = new HashSet<Target>();
         Set<AntProjectCookie> visitedScripts = new HashSet<AntProjectCookie>();
@@ -412,7 +413,7 @@ public class TargetLister {
                         } finally {
                             is.close();
                         }
-                        Map<String,String> evaluatedProperties = evaluateAll(propertyDefs, Collections.singletonList((Map<String,String>) p));
+                        Map<String,String> evaluatedProperties = evaluateAll(propertyDefs, Collections.singletonList(Generics.checkedMapByFilter(p, String.class, String.class)));
                         //System.err.println("loaded properties: " + evaluatedProperties);
                         if (evaluatedProperties == null) {
                             continue;

@@ -248,7 +248,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
             selection = "";
         }
         StringTokenizer tok = new StringTokenizer(selection, " ,"); // NOI18N
-        List<String> targetsL = Collections.list((Enumeration<String>) tok);
+        List<String> targetsL = Collections.list(Generics.checkedEnumerationByFilter(tok, String.class));
         String description = "";
         if (targetsL.size() == 1) {
             String targetName = targetsL.get(0);
@@ -282,7 +282,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
     public void run() throws IOException {
         // Read settings from the dialog.
         StringTokenizer tok = new StringTokenizer((String) targetComboBox.getSelectedItem(), " ,"); // NOI18N
-        List<String> targetsL = Collections.list((Enumeration<String>) tok);
+        List<String> targetsL = Collections.list(Generics.checkedEnumerationByFilter(tok, String.class));
         String[] targets;
         if (targetsL.isEmpty()) {
             // Run default target.
