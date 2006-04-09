@@ -22,6 +22,7 @@ import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -126,13 +127,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
         Object ret = null;        
-        if (!ISVNSTATUS_IMPL.equals("exec") && isHandledLocally(proxyMethod, args)) {
-            try {
-                return handleLocally(proxyMethod, args);
-            } catch (LocalSubversionException ex) {
-                //Exception thrown.  Call out to the default adapter
-            }
-        }
+//        if (isHandledLocally(proxyMethod, args)) {
+//            try {
+//                return handleLocally(proxyMethod, args);
+//            } catch (LocalSubversionException ex) {
+//                //Exception thrown.  Call out to the default adapter
+//            }
+//        }
 
         // XXX refactor
         Class[] parameters = proxyMethod.getParameterTypes();
@@ -160,7 +161,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
 
     private static boolean isHandledLocally(Method method, Object[] args) {
         String name = method.getName();
-        return locallyHandledMethod.contains(name);
+        return !ISVNSTATUS_IMPL.equals("exec") && locallyHandledMethod.contains(name);
     }
 
     private Object handleLocally(Method method, Object[] args) throws LocalSubversionException {
