@@ -70,7 +70,7 @@ final public class AntTargetExecutor {
     public ExecutorTask execute(AntProjectCookie antProject, String[] targets) throws IOException {
         TargetExecutor te = new TargetExecutor(antProject, targets);
         te.setVerbosity(env.getVerbosity());
-        te.setProperties(Generics.checkedMapByCopy(env.getProperties(), String.class, String.class));
+        te.setProperties(Generics.checkedMapByCopy(env.getProperties(), String.class, String.class, true));
         if (env.getLogger() == null) {
             return te.execute();
         } else {

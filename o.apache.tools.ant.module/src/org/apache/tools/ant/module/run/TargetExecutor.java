@@ -65,7 +65,7 @@ public final class TargetExecutor implements Runnable {
     private OutputStream outputStream;
     private boolean ok = false;
     private int verbosity = AntSettings.getDefault ().getVerbosity ();
-    private Map<String,String> properties = Generics.checkedMapByCopy(AntSettings.getDefault().getProperties(), String.class, String.class);
+    private Map<String,String> properties = Generics.checkedMapByCopy(AntSettings.getDefault().getProperties(), String.class, String.class, true);
     private List<String> targetNames;
     /** used for the tab etc. */
     private String displayName;

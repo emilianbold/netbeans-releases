@@ -329,7 +329,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         }
         // Actually run the target(s).
         TargetExecutor exec = new TargetExecutor(project, targets);
-        exec.setProperties(Generics.checkedMapByCopy(props, String.class, String.class));
+        exec.setProperties(Generics.checkedMapByCopy(props, String.class, String.class, true));
         exec.setVerbosity(verbosity);
         exec.execute();
     }

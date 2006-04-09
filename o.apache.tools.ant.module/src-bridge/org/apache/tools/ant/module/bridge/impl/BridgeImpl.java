@@ -262,8 +262,8 @@ public class BridgeImpl implements BridgeInterface {
             public void run() {
                 IntrospectedInfo custom = AntSettings.getDefault().getCustomDefs();
                 Map<String,Map<String,Class>> defs = new HashMap<String,Map<String,Class>>();
-                defs.put("task", Generics.checkedMapByCopy(p2.getTaskDefinitions(), String.class, Class.class));
-                defs.put("type", Generics.checkedMapByCopy(p2.getDataTypeDefinitions(), String.class, Class.class));
+                defs.put("task", Generics.checkedMapByCopy(p2.getTaskDefinitions(), String.class, Class.class, true));
+                defs.put("type", Generics.checkedMapByCopy(p2.getDataTypeDefinitions(), String.class, Class.class, true));
                 custom.scanProject(defs);
                 logger.shutdown();
                 // #8993: also try to refresh masterfs...this is hackish...
