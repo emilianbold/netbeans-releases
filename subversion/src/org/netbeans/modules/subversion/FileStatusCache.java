@@ -287,6 +287,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         } else {
             newFiles.put(file, fi);
         }
+        newFiles.remove(dir);  //XXX 73948 hotfix
         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
 
         if (file.isDirectory() && needRecursiveRefresh(fi, current)) {
@@ -389,6 +390,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         }
         if (newMap != null) {
             dir = FileUtil.normalizeFile(dir);
+            newMap.remove(dir);  //XXX 73948 hotfix
             turbo.writeEntry(dir, FILE_STATUS_MAP, newMap);
         }
     }
