@@ -69,7 +69,13 @@ public class FileStatusCache implements ISVNNotifyListener {
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
 
-    private final Pattern auxConflictPattern = Pattern.compile("(.*)\\.((r\\d+)|(mine))$");  // *.r# or *.mine
+    /**
+     * Auxiliary conflict file siblings
+     * After update: *.r#, *.mine
+     * After merge: *.working, *.merge-right.r#, *.metge-left.r#
+     */
+    private static final Pattern auxConflictPattern = Pattern.compile("(.*?)\\.((r\\d+)|(mine)|" +
+        "(working)|(merge-right\\.r\\d+)|((merge-left.r\\d+)))$");
 
     /*
      * Holds three kinds of information: what folders we have scanned, what files we have found
@@ -645,13 +651,20 @@ public class FileStatusCache implements ISVNNotifyListener {
             }
         }
 
-        // mark auxiliary conflict files as ignored
+        // mark auxiliary after-update conflict files as ignored
         // C source.java
         // I source.java.mine
         // I source.java.r45
         // I source.java.r57
+        //
         // XXX why is not it returned from getSingleStatus() ?
-
+        //
+        // after-merge conflicts (even svn st does not recognize as ignored)
+        // C source.java
+        // ? source.java.working
+        // ? source.jave.merge-right.r20
+        // ? source.java.merge-left.r0
+        
         String name = file.getName();
         Matcher m = auxConflictPattern.matcher(name);
         if (m.matches()) {
