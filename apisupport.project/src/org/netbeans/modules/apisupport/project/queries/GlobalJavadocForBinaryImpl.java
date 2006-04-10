@@ -51,7 +51,11 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             }
             if (jar.toExternalForm().endsWith("/xtest/lib/junit.jar")) { // NOI18N
                 // #68685 hack - associate reasonable Javadoc with XTest's version of junit
-                File f = InstalledFileLocator.getDefault().locate("modules/ext/junit-3.8.1.jar", "org.netbeans.modules.junit", false); // NOI18N
+                File f = InstalledFileLocator.getDefault().locate("modules/ext/junit-3.8.2.jar", "org.netbeans.modules.junit", false); // NOI18N
+                if (f == null) {
+                    // For compat with NB 5.0.
+                    f = InstalledFileLocator.getDefault().locate("modules/ext/junit-3.8.1.jar", "org.netbeans.modules.junit", false); // NOI18N
+                }
                 if (f != null) {
                     return JavadocForBinaryQuery.findJavadoc(FileUtil.getArchiveRoot(f.toURI().toURL()));
                 }

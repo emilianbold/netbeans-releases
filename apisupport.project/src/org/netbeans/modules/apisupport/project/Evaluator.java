@@ -312,11 +312,13 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 testJars =
                         "${test.unit.lib.cp}:" +
                         "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/ide8/modules/ext/junit-3.8.2.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
                         "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar:" + // NOI18N, new for 6.0
                         "${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
+                        "${netbeans.home}/../ide8/modules/ext/junit-3.8.2.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/insanelib.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest" default="netbeans" basedir=".">
@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="org/netbeans/xtest/testrunner/**"/>
         </jar>	        
   
-        <copy file="external/junit-3.8.1.jar" tofile="lib/junit.jar"/>
+        <copy file="../junit/external/junit-3.8.2.jar" tofile="lib/junit.jar"/>
         <copy file="external/insanelib.jar" tofile="lib/insanelib.jar"/>
     </target>
   
