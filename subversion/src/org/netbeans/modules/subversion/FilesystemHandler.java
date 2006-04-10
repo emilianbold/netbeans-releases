@@ -126,8 +126,24 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
     }
 
     public void fileRenamed(FileRenameEvent fe) {
-        // do not care
-        // moveImpl()
+        FileObject newFo = fe.getFile();
+        File newFile = FileUtil.toFile(newFo);
+        if (newFile != null) {
+            cache.refresh(newFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            File parent = newFile.getParentFile();
+            if (parent != null) {
+                String name = fe.getName();
+                String ext = fe.getExt();
+                if (ext != null && "".equals(ext) == false) {  // NOI18N
+                    name += "." + ext;  // NOI18N
+                }
+                File oldFile = new File(parent, name);
+                if (oldFile.equals(newFile)) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Wrong (identity) rename event for " + newFile.getAbsolutePath());
+                }
+                cache.refresh(oldFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            }
+        }
     }
 
     public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -449,15 +465,16 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
         try {                        
             boolean force = true; // file with local changes must be forced
             ISVNClientAdapter client = Subversion.getInstance().getClient();
+            client.removeNotifyListener(cache);  // do not fire events before MFS
             client.move(srcFile, dstFile, force);
-//            FileUtils.renameFile(srcFile, dstFile);  // XXX replace with above code
         } catch (SVNClientException e) {
             IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
             ex.initCause(e);
             throw ex;
         }
-        cache.refresh(srcFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        cache.refresh(dstFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        // should be handed by event handler (this)
+//        cache.refresh(srcFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+//        cache.refresh(dstFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
 
     public boolean implsRename(FileObject src, String name, String ext) {
