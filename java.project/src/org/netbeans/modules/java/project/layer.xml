@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
@@ -17,7 +17,30 @@ Microsystems, Inc. All Rights Reserved.
   
   <folder name="Templates">
             
+    <attr name="Folder.shadow/Package.shadow" boolvalue="true"/>
+    <folder name="Privileged">
+	<attr name="Folder/Package" boolvalue="true"/>
+        <file name="Package.shadow">
+	    <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.Bundle"/>
+        </file>
+	<attr name="Package.shadow/Main.shadow" boolvalue="true"/>
+        <file name="Main.shadow">
+	    <attr name="originalFile" stringvalue="Templates/Classes/Main.java"/>
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.Bundle"/>
+        </file>
+	<attr name="Main.shadow/Class.shadow" boolvalue="true"/>
+        <file name="Class.shadow">
+	    <attr name="originalFile" stringvalue="Templates/Classes/Class.java"/>
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.Bundle"/>
+        </file>
+    </folder>
+
+    <attr name="Folder/Classes" boolvalue="true"/>    
     <folder name="Classes">
+      <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Classes.html" />
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+
       <attr name="Class.java/Empty.java" boolvalue="true"/>
       <attr name="Empty.java/Interface.java" boolvalue="true"/>
       <attr name="Interface.java/Enum.java" boolvalue="true"/>
@@ -29,41 +52,72 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="JApplet.java/Applet.java" boolvalue="true"/>
       <attr name="Applet.java/Package" boolvalue="true"/>
       
-      <!-- XXX Remove the URLs after issue #41716 is fixed -->
-      <file name="Applet.java" url="nbres:/org/netbeans/modules/java/resources/templates/Applet.template">
+      <file name="Applet.java" url="resources/Applet.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Applet.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
       </file>
-      <file name="JApplet.java" url="nbres:/org/netbeans/modules/java/resources/templates/JApplet.template">
+      <file name="JApplet.java" url="resources/JApplet.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/JApplet.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
       </file>
-      <file name="Class.java" url="nbres:/org/netbeans/modules/java/resources/templates/Class.template">         
+      <file name="Class.java" url="resources/Class.template">         
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Class.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
       </file>
-      <file name="Main.java" url="nbres:/org/netbeans/modules/java/resources/templates/Main.template">
+      <file name="Main.java" url="resources/Main.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-main-class"/>
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Main.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/main-class.gif"/>
       </file>
-      <file name="Empty.java" url="nbres:/org/netbeans/modules/java/resources/templates/Empty.template">
+      <file name="Empty.java" url="resources/Empty.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Empty.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
       </file>
-      <file name="Interface.java" url="nbres:/org/netbeans/modules/java/resources/templates/Interface.template">
+      <file name="Interface.java" url="resources/Interface.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Interface.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
       </file>
-      <file name="Exception.java" url="nbres:/org/netbeans/modules/java/resources/templates/Exception.template">
+      <file name="Exception.java" url="resources/Exception.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Exception.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+	 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
       </file>
-      <file name="Package" url="nbres:/org/netbeans/modules/java/resources/templates/Package.template">
+      <file name="Package" url="resources/Package.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageWizard"/>
          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/spi/java/project/support/ui/package.gif"/>
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Package.html" />
+        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.Util.createPackageIterator"/>
       </file>        
-      <file name="Enum.java" url="nbres:/org/netbeans/modules/java/project/resources/Enum.template">
+      <file name="Enum.java" url="resources/Enum.template">
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Enum.html" />
@@ -71,7 +125,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="templateCategory" stringvalue="java-classes"/>
          <attr name="javac.source" stringvalue="1.5" />
       </file>
-      <file name="AnnotationType.java" url="nbres:/org/netbeans/modules/java/project/resources/AnnotationType.template">
+      <file name="AnnotationType.java" url="resources/AnnotationType.template">
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/AnnotationType.html" />
@@ -80,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="javac.source" stringvalue="1.5" />
       </file>
 
-      <file name="package-info.java" url="nbres:/org/netbeans/modules/java/project/resources/package-info.template">
+      <file name="package-info.java" url="resources/package-info.template">
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageInfoWizard"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/package-info.html" />

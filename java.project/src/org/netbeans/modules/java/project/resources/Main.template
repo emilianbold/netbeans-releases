@@ -1,0 +1,29 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+/**
+ *
+ * @author __USER__
+ */
+public class Main {
+
+    /** Creates a new instance of __NAME__ */
+    public Main() {
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        // TODO code application logic here
+    }
+
+}

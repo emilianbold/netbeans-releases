@@ -1,0 +1,26 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+/**
+ *
+ * @author __USER__
+ */
+public class Applet extends java.applet.Applet {
+
+    /** Initialization method that will be called after the applet is loaded
+     *  into the browser.
+     */
+    public void init() {
+        // TODO start asynchronous download of heavy resources
+    }
+
+    // TODO overwrite start(), stop() and destroy() methods
+}
