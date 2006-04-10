@@ -263,6 +263,45 @@
                 <comments/>
             </action>
         </component>
+        <component id="beanUnpackJars">
+            <key>
+                <uid>c5b448e72b687e6f5f8daec2e5000000</uid>
+                <version maintenance="0" major="0" minor="0"/>
+            </key>
+            <built>19700001 010000.000 0100</built>
+            <name>Unpack Jars</name>
+            <displayName>Unpack Jars</displayName>
+            <shareable>false</shareable>
+            <activeForUninstall>true</activeForUninstall>
+            <active>true</active>
+            <installStatus>0</installStatus>
+            <replaceOption>0</replaceOption>
+            <removeOption>0</removeOption>
+            <installFailureOption>3</installFailureOption>
+            <onFailSummaryMessage/>
+            <buildCategories/>
+            <comments/>
+            <conditionOperator>AND</conditionOperator>
+            <msiRemoteInstallationOption>0</msiRemoteInstallationOption>
+            <msiReevaluateCondition>false</msiReevaluateCondition>
+            <msi64Bit>false</msi64Bit>
+            <netEnabled>false</netEnabled>
+            <netContainsApplicationFile>false</netContainsApplicationFile>
+            <netScanAtBuildOption>0</netScanAtBuildOption>
+            <netInstallerClass>false</netInstallerClass>
+            <netInstallerClassInstallArguments>/LogFile=</netInstallerClassInstallArguments>
+            <netInstallerClassCommitArguments>/LogFile=</netInstallerClassCommitArguments>
+            <netInstallerClassUninstallArguments>/LogFile=</netInstallerClassUninstallArguments>
+            <netInstallerClassRollbackArguments>/LogFile=</netInstallerClassRollbackArguments>
+            <netCOMInterop>false</netCOMInterop>
+            <netPrecompileAssembly>false</netPrecompileAssembly>
+            <action class="org.netbeans.installer.UnpackJarsAction" id="unpackJarsAction">
+                <displayName>Unpack Jars Action</displayName>
+                <active>true</active>
+                <buildCategories/>
+                <comments/>
+            </action>
+        </component>
         <component id="beanStorageBuilder">
             <key>
                 <uid>0b5cdd27bfe0d550719aecfd89000000</uid>

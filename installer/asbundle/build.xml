@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="storage.builder" location="../../java/storagebuilder/dist/storagebuilder.jar"/>
   <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans"/>
+  <property name="nb.dir.tmp" location="build/netbeans"/>
 
   <!-- Specific to Mac OS X installer -->
   <property name="appname" value="NetBeans"/>
@@ -42,6 +43,19 @@ Microsystems, Inc. All Rights Reserved.
       <copy todir="." failonerror="false">
           <fileset dir="../../translatedfiles/src/installer/asbundle"/>
       </copy>
+  </target>
+
+  <!-- Copy NetBeans files to temporary dir where jars will be packed. Use native cp to preserve file attributes. -->
+  <target name="copy-netbeans">
+    <mkdir dir="${nb.dir.tmp}"/>
+    <exec os="Linux SunOS" executable="./copy-nbdir">
+      <arg line="${nb.dir}/* ${nb.dir.tmp}"/>
+    </exec>
+  </target>
+
+  <!-- Delete temporary netbeans directory used to pak jars -->
+  <target name="delete-netbeans-tmp">
+    <delete dir="${nb.dir.tmp}"/>
   </target>
 
   <target name="set-ismp.cp" unless="ismp.cp-set">
@@ -104,7 +118,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <macrodef name="build-installer">
     <attribute name="input.ismp.project"/>
-    <attribute name="input.nb.dir" default="${nb.dir}"/>
+    <attribute name="input.nb.dir" default="${nb.dir.tmp}"/>
     <sequential>
       <java classname="com.installshield.isje.ISJE" fork="true">
         <arg value="@{input.ismp.project}.uip" />
@@ -129,7 +143,7 @@ Microsystems, Inc. All Rights Reserved.
     </sequential>
   </macrodef>
 
-  <target name="build-linux" depends="init, clean-build, compile, create-statefile">
+  <target name="build-linux" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
@@ -137,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
   </target>
   
-  <target name="build-linux-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-linux-ml">
+  <target name="build-linux-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-linux-ml, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
@@ -146,7 +160,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="as-linux-ml.uip"/>
   </target>
 
-  <target name="build-solaris-sparc" depends="init, clean-build, compile, create-statefile">
+  <target name="build-solaris-sparc" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
@@ -154,7 +168,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
   </target>
   
-  <target name="build-solaris-sparc-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-sparc-ml">
+  <target name="build-solaris-sparc-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-sparc-ml, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
@@ -163,7 +177,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
   </target>
 
-  <target name="build-solaris-x86" depends="init, clean-build, compile, create-statefile">
+  <target name="build-solaris-x86" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
@@ -171,7 +185,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
   
-  <target name="build-solaris-x86-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-x86-ml">
+  <target name="build-solaris-x86-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-x86-ml, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
@@ -180,7 +194,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
   </target>
 
-  <target name="build-windows" depends="init, clean-build, compile, create-statefile">
+  <target name="build-windows" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack">
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-win-install.template" tofile="build/scripts/as_setup/as-win-install.template"/>
     <copy file="${preparse.files}"
@@ -195,7 +209,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
   
-  <target name="build-windows-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-windows-ml">
+  <target name="build-windows-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-windows-ml, copy-netbeans, run-pack">
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-win-install.template" tofile="build/scripts/as_setup/as-win-install.template"/>
     <copy file="${preparse.files}"
@@ -211,7 +225,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
   </target>
 
-  <target name="build-macosx" depends="init, clean-build, compile, create-statefile, create-app">
+  <target name="build-macosx" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack, create-app">
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-macosx-install.template" tofile="build/scripts/as_setup/as-macosx-install.template"/>
     <copy file="${preparse.files}"
@@ -226,7 +240,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx.jar"/>
   </target>
   
-  <target name="build-macosx-ml" depends="init-ml, clean-build, compile, create-statefile, create-app, xsl-macosx-ml">
+  <target name="build-macosx-ml" depends="init-ml, clean-build, compile, create-statefile, copy-netbeans, run-pack, create-app, xsl-macosx-ml">
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-macosx-install.template" tofile="build/scripts/as_setup/as-macosx-install.template"/>
     <copy file="${preparse.files}"
@@ -287,7 +301,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="build"/>
   </target>
 
-  <target name="clean" depends="init, clean-build, clean-library" description="Clean all build products and temp/backup files.">
+  <target name="clean" depends="init, clean-build, clean-library, clean-pack" description="Clean all build products and temp/backup files.">
     <delete>
       <fileset dir=".">
         <include name="**/*~"/>
@@ -299,6 +313,27 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="ismp" depends="init, compile" description="launch ISMP IDE">
     <exec os="Linux" command="sh -c &quot;${ismp.home}/ismp &amp;&quot;" />
+  </target>
+
+  <target name="compile-pack" description="Compile class for compressing jars">
+    <mkdir dir="../lib/packjars/classes"/>
+    <javac destdir="../lib/packjars/classes" srcdir="../lib/packjars/src" source="1.5" target="1.5" debug="true" deprecation="true">
+    </javac>
+  </target>
+
+    <target name="run-pack" depends="compile-pack" description="Pack jars">
+        <java classname="org.netbeans.installer.PackJars" fork="true" failonerror="true">
+            <jvmarg value="-Xmx256m" />
+            <arg value="${nb.dir.tmp}" />
+            <arg value="${basedir}/build/netbeans/_uninst/packedjars.xml" />
+            <classpath>
+                <pathelement path="../lib/packjars/classes"/>
+            </classpath>
+        </java>
+    </target>
+
+  <target name="clean-pack" description="Clean class for compressing jars">
+    <delete dir="../lib/packjars/classes"/>
   </target>
 
   <target name="create-statefile" description="Create statefile for AS installer">
@@ -329,7 +364,7 @@ Creating NetBeans.app bundle using ${nb.dir} as master
     <echo message="Copying netbeans home dir to ${build.dir}/${app.dir}/Contents/Resources/NetBeans"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="cp -r ${nb.dir} '${build.dir}/${app.dir}/Contents/Resources/NetBeans'"/>
+      <arg value="cp -r ${nb.dir.tmp} '${build.dir}/${app.dir}/Contents/Resources/NetBeans'"/>
     </exec>
                                                                                                                                  
     <echo message="Copying the icon into the correct place" />
