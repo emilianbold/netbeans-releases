@@ -42,8 +42,7 @@
         <api type="export"
              name="org.netbeans.modules.junit.plugin"
              group="java"
-             category="devel"
-             url="org/netbeans/modules/junit/plugin/package-summary.html">
+             category="devel">
             This SPI describes services provided by the
             custom JUnit support plugin which are not desribed by the existing
             public SPI (<code>UnitTestForSourceQuery</code>). This SPI
@@ -650,11 +649,11 @@ Nothing.
 -->
  <answer id="lookup-lookup">
     Yes. It uses lookup to find a custom JUnit plugin implementing the
-    <a href="#org.netbeans.modules.junit.plugin">SPI</a> in the project's lookup.
+    plugin SPI in the project's lookup.
     If there is no such object found, the default implementation (the one
     for J2SE projects) is used. If there are multiple implementations
     found, an arbitrary one is used. This contract is under development,
-    like the whole <a href="#org.netbeans.modules.junit.plugin">SPI</a>.
+    like the whole SPI.
  </answer>
 
 
