@@ -28,6 +28,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -119,8 +120,12 @@ public class RepositoryStep
                 
                 try {      
                     info = client.getInfo(selectedRepository.getUrl());                                                                                                        
-                } catch (SVNClientException ex) {                                    
-                    invalidMsg[0] = ex.getLocalizedMessage();                    
+                } catch (SVNClientException ex) {
+                    String msg = ExceptionHandler.getCustomizedMessage(ex);
+                    if(msg==null) {
+                        msg = ex.getLocalizedMessage();
+                    }
+                    invalidMsg[0] = msg;
                 }                                
                 
                 if(info != null) {                    
@@ -164,7 +169,7 @@ public class RepositoryStep
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread);
             try {
-                client.cancelOperation();
+                client.cancelOperation(); // XXX do we need this
             } catch (SVNClientException ex) {
                 ex.printStackTrace();  // cannot happen
             }
