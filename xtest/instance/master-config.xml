@@ -121,8 +121,10 @@ Microsystems, Inc. All Rights Reserved.
         <module name="java/editor" testtypes="qa-functional" attributes="validation"/>
         <module name="openide" testtypes="qa-functional" attributes="validation"/>
         <module name="refactoring" testtypes="qa-functional" attributes="validation"/>
+        <!-- will be fixed by release55 merge
         <module name="web" testtypes="qa-functional" attributes="validation"/>
         <module name="web/jspsyntax" testtypes="qa-functional" attributes="validation"/>
+        -->
         <module name="web/jspdebug" testtypes="qa-functional" attributes="validation"/>
         <!-- Has to be fixed.
         <module name="form" testtypes="qa-functional" attributes="validation"/> -->
