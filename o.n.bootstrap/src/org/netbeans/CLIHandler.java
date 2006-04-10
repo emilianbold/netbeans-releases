@@ -299,7 +299,7 @@ public abstract class CLIHandler extends Object {
         InputStream is, 
         OutputStream os, 
         java.io.OutputStream err,         
-        Main.BootClassLoader loader,
+        MainImpl.BootClassLoader loader,
         boolean failOnUnknownOptions, 
         boolean cleanLockFile,
         Runnable runWhenHome

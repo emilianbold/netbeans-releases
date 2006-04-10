@@ -42,7 +42,7 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
     }
     
     public static void main(String[] args) throws Exception {
-        org.netbeans.Main.finishInitialization();
+        org.netbeans.MainImpl.finishInitialization();
         synchronized (LOCK) {
             LOCK.notifyAll();
             LOCK.wait();
@@ -65,7 +65,7 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
             Exception ex;
             public void run() {
                 try {
-                    org.netbeans.Main.main(new String[] { });
+                    org.netbeans.MainImpl.main(new String[] { });
                 } catch (Exception ex) {
                     this.ex = ex;
                 }

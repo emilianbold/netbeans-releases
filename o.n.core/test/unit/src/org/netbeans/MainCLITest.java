@@ -69,7 +69,7 @@ public class MainCLITest extends NbTestCase {
 
         String[] args = new String[] { "--userdir", dir.toString () };
         assertFalse ("User dir is not correct. Will be set by org.netbeans.core.CLIOptions", dir.toString ().equals (System.getProperty ("netbeans.user")));
-        int result = Main.execute (args, null, null, null, null);
+        int result = MainImpl.execute (args, null, null, null, null);
         Main.finishInitialization ();
         assertEquals ("User set", dir.toString (), System.getProperty ("netbeans.user"));
         assertTrue ("CLI Handler from user dir was called", TestHandler.called);

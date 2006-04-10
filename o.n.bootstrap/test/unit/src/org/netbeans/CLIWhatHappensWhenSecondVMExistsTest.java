@@ -106,7 +106,7 @@ implements Map {
     
 
     public void testGet1000AndExit() throws Exception {
-        org.netbeans.Main.main(new String[] { "--userdir", getWorkDirPath() });
+        org.netbeans.MainImpl.main(new String[] { "--userdir", getWorkDirPath() });
         assertEquals("Called", true, called);
 
         called = false;

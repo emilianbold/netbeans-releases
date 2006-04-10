@@ -43,7 +43,7 @@ public class CLICanInfluenceMainClassTest extends NbTestCase {
         
         FakeHandler.toRun = new R();
         
-        org.netbeans.Main.main(new String[] { "--userdir", getWorkDirPath() });
+        org.netbeans.MainImpl.main(new String[] { "--userdir", getWorkDirPath() });
         
         assertTrue("Our main method has been called", called);
     }
