@@ -58,6 +58,7 @@ public class IntrospectedInfoTest extends NbTestCase {
         Map<String,String> attrs = ii.getAttributes("org.apache.tools.ant.taskdefs.Javac");
         assertEquals("right type for destdir", "java.io.File", attrs.get("destdir"));
         // XXX sometimes this line fails - when run from inside the IDE, but not on the command line!
+        // (related to #50160?)
         // Debugger shows that IntrospectionHelper.createAttributeSetter is calling
         //     Path.class.getConstructor(new Class[] {Project.class, String.class})
         // and this is (for some reason) throwing a NoSuchMethodException.
