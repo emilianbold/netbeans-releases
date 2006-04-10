@@ -60,6 +60,7 @@ public class UnpackJarsAction extends ProductAction {
     
     private String statusDesc = "";
     private String nbInstallDir = "";
+    private String rootInstallDir = "";
     private String uninstDir = "";
     private String tempPath = "";
 
@@ -100,7 +101,13 @@ public class UnpackJarsAction extends ProductAction {
         ProductService pservice = (ProductService)getService(ProductService.NAME);
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
         instDirPath = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation")); */
-        nbInstallDir = resolveString("$P(absoluteInstallLocation)");
+        rootInstallDir = resolveString("$P(absoluteInstallLocation)");
+        if (Util.isMacOSX()) {
+            nbInstallDir = rootInstallDir + File.separator 
+            + resolveString("$L(org.netbeans.installer.Bundle,Product.nbLocationBelowInstallRoot)");
+        } else {
+            nbInstallDir = rootInstallDir;
+        }
         logEvent(this, Log.DBG,"nbInstallDir: " + nbInstallDir);
         uninstDir = nbInstallDir + File.separator + "_uninst";
         logEvent(this, Log.DBG,"uninstDir: " + uninstDir);
