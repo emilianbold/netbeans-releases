@@ -14,10 +14,10 @@
 package org.netbeans.modules.projectimport.eclipse;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.modules.projectimport.LoggerFactory;
 
@@ -102,13 +102,13 @@ final class ClassPath {
     private Collection/*<ClassPathEntry>*/ pathEntries = Collections.EMPTY_LIST;
     
     private String jreContainer;
-    private Collection sourceRoots;
-    private Collection externalSourceRoots;
-    private Collection libraries;
-    private Collection externalLibraries;
-    private Collection projects;
-    private Collection variables;
-    private Collection userLibraries;
+    private Collection/*<ClassPathEntry>*/ sourceRoots;
+    private Collection/*<ClassPathEntry>*/ externalSourceRoots;
+    private Collection/*<ClassPathEntry>*/ libraries;
+    private Collection/*<ClassPathEntry>*/ externalLibraries;
+    private Collection/*<ClassPathEntry>*/ projects;
+    private Collection/*<ClassPathEntry>*/ variables;
+    private Collection/*<ClassPathEntry>*/ userLibraries;
     
     /**
      * Adds a given entry to entries list. If entry is output output member is
@@ -139,8 +139,8 @@ final class ClassPath {
         return pathEntries;
     }
     
-    private Collection getEntriesByType(ClassPathEntry.Type type) {
-        Collection entries = new ArrayList();
+    private Collection/*<ClassPathEntry>*/ getEntriesByType(ClassPathEntry.Type type) {
+        Collection/*<ClassPathEntry>*/ entries = new ArrayList();
         for (Iterator it = pathEntries.iterator(); it.hasNext(); ) {
             ClassPathEntry entry = (ClassPathEntry) it.next();
             if (entry.getType() == type) {
@@ -155,7 +155,7 @@ final class ClassPath {
      *
      * @see #getEntries()
      */
-    Collection getSourceRoots() {
+    Collection/*<ClassPathEntry>*/ getSourceRoots() {
         // lazy initialization
         if (sourceRoots == null) {
             sourceRoots = getEntriesByType(ClassPathEntry.TYPE_SOURCE);
@@ -193,7 +193,7 @@ final class ClassPath {
      *
      * @see #getEntries()
      */
-    Collection getExternalSourceRoots() {
+    Collection/*<ClassPathEntry>*/ getExternalSourceRoots() {
         // lazy initialization
         if (externalSourceRoots == null) {
             externalSourceRoots = getEntriesByType(ClassPathEntry.TYPE_LINK);
@@ -206,7 +206,7 @@ final class ClassPath {
      *
      * @see #getEntries()
      */
-    Collection getLibraries() {
+    Collection/*<ClassPathEntry>*/ getLibraries() {
         // lazy initialization
         if (libraries == null) {
             libraries = getEntriesByType(ClassPathEntry.TYPE_LIBRARY);
@@ -219,7 +219,7 @@ final class ClassPath {
      *
      * @see #getEntries()
      */
-    Collection getExternalLibraries() {
+    Collection/*<ClassPathEntry>*/ getExternalLibraries() {
         // lazy initialization
         if (externalLibraries == null) {
             externalLibraries = getEntriesByType(ClassPathEntry.TYPE_EXTERNAL_LIBRARY);
@@ -230,7 +230,7 @@ final class ClassPath {
     /**
      * Returns collection of names of user defined libraries.
      */
-    Collection getUserLibraries() {
+    Collection/*<String>*/ getUserLibraries() {
         // lazy initialization
         if (userLibraries == null) {
             Collection col = getEntriesByType(ClassPathEntry.TYPE_CONTAINER);
@@ -251,7 +251,7 @@ final class ClassPath {
      *
      * @see #getEntries()
      */
-    Collection getProjects() {
+    Collection/*<ClassPathEntry>*/ getProjects() {
         // lazy initialization
         if (projects == null) {
             projects = getEntriesByType(ClassPathEntry.TYPE_PROJECT);
@@ -264,7 +264,7 @@ final class ClassPath {
      *
      * @see #getEntries()
      */
-    Collection getVariables() {
+    Collection/*<ClassPathEntry>*/ getVariables() {
         // lazy initialization
         if (variables == null) {
             variables = getEntriesByType(ClassPathEntry.TYPE_VARIABLE);

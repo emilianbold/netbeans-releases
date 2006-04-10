@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,15 +17,15 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.netbeans.modules.projectimport.ProjectImporterException;
 import org.openide.ErrorManager;
+import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
-import org.netbeans.modules.projectimport.ProjectImporterException;
-import org.openide.xml.XMLUtil;
-import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Parses given project's .project file and fills up the project with found
@@ -35,20 +35,20 @@ import org.xml.sax.XMLReader;
  */
 final class ProjectParser extends DefaultHandler {
     
-    private EclipseProject project;
+    private final EclipseProject project;
     private ClassPath.Link currentLink;
     
-    private static final String JAVA_NATURE = "org.eclipse.jdt.core.javanature";
+    private static final String JAVA_NATURE = "org.eclipse.jdt.core.javanature"; // NOI18N
     
     // elements names
-    private static final String PROJECT_DESCRIPTION = "projectDescription";
-    private static final String LINKED_RESOURCES = "linkedResources";
-    private static final String LINK = "link";
-    private static final String NAME = "name";
-    private static final String TYPE = "type";
-    private static final String LOCATION = "location";
-    private static final String NATURES = "natures";
-    private static final String NATURE = "nature";
+    private static final String PROJECT_DESCRIPTION = "projectDescription"; // NOI18N
+    private static final String LINKED_RESOURCES = "linkedResources"; // NOI18N
+    private static final String LINK = "link"; // NOI18N
+    private static final String NAME = "name"; // NOI18N
+    private static final String TYPE = "type"; // NOI18N
+    private static final String LOCATION = "location"; // NOI18N
+    private static final String NATURES = "natures"; // NOI18N
+    private static final String NATURE = "nature"; // NOI18N
     
     // indicates current position in a xml document
     private static final int POSITION_NONE = 0;
@@ -98,7 +98,7 @@ final class ProjectParser extends DefaultHandler {
                     projectIS.close();
                 } catch (IOException e) {
                     ErrorManager.getDefault().log(ErrorManager.WARNING,
-                            "Unable to close projectInputStream: " + e);
+                            "Unable to close projectInputStream: " + e); // NOI18N
                 }
             }
         }
@@ -117,8 +117,8 @@ final class ProjectParser extends DefaultHandler {
                 if (localName.equals(PROJECT_DESCRIPTION)) {
                     position = POSITION_PROJECT_DESCRIPTION;
                 } else {
-                    throw (new SAXException("First element has to be "
-                            + PROJECT_DESCRIPTION + ", but is " + localName));
+                    throw (new SAXException("First element has to be " // NOI18N
+                            + PROJECT_DESCRIPTION + ", but is " + localName)); // NOI18N
                 }
                 break;
             case POSITION_PROJECT_DESCRIPTION:
@@ -165,6 +165,7 @@ final class ProjectParser extends DefaultHandler {
             case POSITION_PROJECT_DESCRIPTION:
                 // parsing ends
                 position = POSITION_NONE;
+                break;
             case POSITION_PROJECT_NAME:
                 if (unusedInner == 0) {
                     if (localName.equals(NAME)) {
@@ -209,8 +210,8 @@ final class ProjectParser extends DefaultHandler {
                 break;
             default:
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
-                        "Unknown state reached in ProjectParser, " +
-                        "position: " + position);
+                        "Unknown state reached in ProjectParser, " + // NOI18N
+                        "position: " + position); // NOI18N
         }
         chars.setLength(0);
     }
@@ -296,15 +297,13 @@ final class ProjectParser extends DefaultHandler {
                         "Link's type was already set. There can be only " + //NOI18N
                         "one type element inside of link element"); //NOI18N
             }
-            int type;
             try {
-                type = Integer.parseInt(chars.toString().trim());
+                currentLink.setType(Integer.parseInt(chars.toString().trim()));
+                position = POSITION_LINK;
             } catch (NumberFormatException e) {
                 throw new SAXException("Link's type has to be a " + //NOI18N
                         "number but is: " + chars.toString().trim()); //NOI18N
             }
-            currentLink.setType(type);
-            position = POSITION_LINK;
         }
     }
     

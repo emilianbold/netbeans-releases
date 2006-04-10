@@ -62,18 +62,16 @@ import org.w3c.dom.Element;
  */
 final class Importer {
     
-    /**
-     * Logger for this class
-     */
+    /** Logger for this class. */
     private static final Logger logger =
             LoggerFactory.getDefault().createLogger(Importer.class);
     
-    private Set eclProjects;
-    private String destination;
-    private boolean recursively;
+    private final Set/*<EclipseProject>*/ eclProjects;
+    private final String destination;
+    private final boolean recursively;
     private J2SEProject[] nbProjects;
-    private Set recursionCheck = new HashSet();
-    private Map loadedProject = new HashMap();
+    private final Set/*<String>*/ recursionCheck;
+    private final Map/*<String, J2SEProject>*/ loadedProject;
     
     private int nOfProcessed;
     private String progressInfo;
@@ -83,11 +81,13 @@ final class Importer {
     private JavaPlatform[] nbPlfs; // All netbeans platforms
     private File nbDefPlfFile; // NetBeans default platform directory
     
-    Importer(final Set eclProjects, String destination, boolean recursively) {
+    Importer(final Set/*<EclipseProject>*/ eclProjects, String destination, boolean recursively) {
         this.eclProjects = eclProjects;
         this.destination = destination;
         this.recursively = recursively;
         this.nbProjects = new J2SEProject[eclProjects.size()];
+        recursionCheck = new HashSet();
+        loadedProject = new HashMap();
     }
     
     /**
@@ -115,9 +115,9 @@ final class Importer {
                                 nbProjects[pos++] = importProject(eclPrj);
                             }
                         } catch (IOException ioe) {
-                            ioe.printStackTrace();
-                            ErrorManager.getDefault().log(ErrorManager.USER,
-                                    "Error occured during project importing: " + ioe); // NOI18N
+                            Throwable t = ErrorManager.getDefault().annotate(ioe,
+                                    "Error occured during project importing"); // NOI18N
+                            ErrorManager.getDefault().notify(ErrorManager.USER, t);
                         } finally {
                             done = true;
                         }
@@ -270,8 +270,7 @@ final class Importer {
                         "\" is not valid. Skipping..."); // NOI18N
                 continue;
             }
-            File nbPlfDir = FileUtil.toFile(
-                    (FileObject) instFolders.toArray()[0]);
+            File nbPlfDir = FileUtil.toFile((FileObject) instFolders.toArray()[0]);
             if (nbPlfDir.equals(eclPlfFile)) {
                 nbPlf = nbPlfs[i];
                 // found
@@ -368,11 +367,12 @@ final class Importer {
         String vmName = (String)m.get("java.vm.name");              //NOI18N
         String vmVersion = (String)m.get("java.vm.version");        //NOI18N
         StringBuffer displayName = new StringBuffer();
-        if (vmName != null)
+        if (vmName != null) {
             displayName.append(vmName);
+        }
         if (vmVersion != null) {
-            if (displayName.length()>0) {
-                displayName.append(" ");
+            if (displayName.length() > 0) {
+                displayName.append(' ');
             }
             displayName.append(vmVersion);
         }
@@ -407,4 +407,5 @@ final class Importer {
         }
         return false;
     }
+
 }

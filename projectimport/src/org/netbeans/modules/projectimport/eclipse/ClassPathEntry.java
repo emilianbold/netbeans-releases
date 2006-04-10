@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,7 +22,7 @@ import org.openide.ErrorManager;
  * @author mkrauskopf
  */
 public final class ClassPathEntry {
-    
+
     /** Serves for type-safe enumeration of types */
     static class Type {
         String desc;
@@ -34,55 +34,53 @@ public final class ClassPathEntry {
         }
     }
     
-    static final Type TYPE_OUTPUT = new Type("output");
-    static final Type TYPE_LIBRARY = new Type("lib");
-    static final Type TYPE_EXTERNAL_LIBRARY = new Type("lib-ext");
-    static final Type TYPE_CONTAINER = new Type("con");
-    static final Type TYPE_VARIABLE= new Type("var");
-    static final Type TYPE_SOURCE = new Type("src");
-    static final Type TYPE_PROJECT = new Type("src-prj");
-    static final Type TYPE_LINK = new Type("src-link");
-    static final Type TYPE_UNKNOWN = new Type("unkown");
+    static final Type TYPE_OUTPUT = new Type("output"); // NOI18N
+    static final Type TYPE_LIBRARY = new Type("lib"); // NOI18N
+    static final Type TYPE_EXTERNAL_LIBRARY = new Type("lib-ext"); // NOI18N
+    static final Type TYPE_CONTAINER = new Type("con"); // NOI18N
+    static final Type TYPE_VARIABLE= new Type("var"); // NOI18N
+    static final Type TYPE_SOURCE = new Type("src"); // NOI18N
+    static final Type TYPE_PROJECT = new Type("src-prj"); // NOI18N
+    static final Type TYPE_LINK = new Type("src-link"); // NOI18N
+    static final Type TYPE_UNKNOWN = new Type("unkown"); // NOI18N
     
     private Type type;
     private String rawPath;
     private String absolutePath;
     
-    static ClassPathEntry create(String type, String rawPath) {
-        ClassPathEntry cpe = new ClassPathEntry();
-        cpe.rawPath = rawPath;
-        cpe.setTypeFromRawtype(type);
-        return cpe;
+    ClassPathEntry(String type, String rawPath) {
+        this.rawPath = rawPath;
+        setTypeFromRawtype(type);
     }
-    
+
     void setType(ClassPathEntry.Type type) {
         this.type = type;
     }
     
     private void setTypeFromRawtype(String rawType) {
-        if ("output".equals(rawType)) {
+        if ("output".equals(rawType)) { // NOI18N
             this.type = TYPE_OUTPUT;
-        } else if ("src".equals(rawType)) {
+        } else if ("src".equals(rawType)) { // NOI18N
             // raw path for project entries starts with slash (on all platforms)
-            if (rawPath.startsWith("/")) {
+            if (rawPath.startsWith("/")) { // NOI18N
                 this.type = TYPE_PROJECT;
             } else {
                 this.type = TYPE_SOURCE;
             }
-        } else if ("lib".equals(rawType)) {
+        } else if ("lib".equals(rawType)) { // NOI18N
             if (isRawPathRelative()) {
                 this.type = TYPE_LIBRARY;
             } else {
                 this.type = TYPE_EXTERNAL_LIBRARY;
             }
-        } else if ("con".equals(rawType)) {
+        } else if ("con".equals(rawType)) { // NOI18N
             this.type = TYPE_CONTAINER;
-        } else if ("var".equals(rawType)) {
+        } else if ("var".equals(rawType)) { // NOI18N
             this.type = TYPE_VARIABLE;
         } else {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "Unkown type encountered in " +
-                    "ClassPathEntry.setTypeFromRawtype(): " + rawType);
+                    "Unkown type encountered in " + // NOI18N
+                    "ClassPathEntry.setTypeFromRawtype(): " + rawType); // NOI18N
             this.type = TYPE_UNKNOWN;
         }
     }
@@ -108,8 +106,8 @@ public final class ClassPathEntry {
     }
     
     public String toString() {
-        return type + " = \"" + rawPath + "\"" +
-                " (absolutePath: " + absolutePath + ")";
+        return type + " = \"" + rawPath + "\"" + // NOI18N
+                " (absolutePath: " + absolutePath + ")"; // NOI18N
     }
 }
 

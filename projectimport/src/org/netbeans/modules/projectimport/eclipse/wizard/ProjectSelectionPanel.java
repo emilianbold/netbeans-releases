@@ -190,7 +190,7 @@ final class ProjectSelectionPanel extends JPanel {
         String parent = destination.getText();
         for (Iterator it = allProjects().iterator(); it.hasNext(); ) {
             EclipseProject prj = (EclipseProject) it.next();
-            String destDir = parent + "/" + prj.getName();
+            String destDir = parent + "/" + prj.getName(); // NOI18N
             if (new File(destDir).exists()) {
                 setErrorMessage(ProjectImporterWizard.getMessage(
                         "MSG_ProjectExist", prj.getName())); // NOI18N
@@ -235,7 +235,7 @@ final class ProjectSelectionPanel extends JPanel {
     
     private void fillUpRequiredProjects(EclipseProject project) {
         Set children = project.getProjects();
-        if (children == null && children.isEmpty()) {
+        if (children == null || children.isEmpty()) {
             return;
         }
         for (Iterator it = children.iterator(); it.hasNext(); ) {
@@ -300,11 +300,7 @@ final class ProjectSelectionPanel extends JPanel {
         } catch (ProjectImporterException e) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_WorkspaceIsInvalid", workspaceDir)); // NOI18N
-            logger.fine("ProjectImporterException catched: " + e.getMessage());
-            if (logger.getLevel().intValue() <= Level.FINE.intValue()) {
-                logger.fine("   current stack trace follows:"); // NOI18N
-                e.printStackTrace();
-            }
+            logger.log(Level.FINE, "ProjectImporterException catched", e); // NOI18N
             return;
         }
         Set wsPrjs = new TreeSet(workspace.getProjects());
@@ -431,16 +427,16 @@ final class ProjectSelectionPanel extends JPanel {
         add(projectPanel, java.awt.BorderLayout.CENTER);
 
     }// </editor-fold>//GEN-END:initComponents
-    private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDestButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int ret = chooser.showOpenDialog(this);
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            destination.setText(chooser.getSelectedFile().getAbsolutePath());
-        }
+        private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDestButtonActionPerformed
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int ret = chooser.showOpenDialog(this);
+            if (ret == JFileChooser.APPROVE_OPTION) {
+                destination.setText(chooser.getSelectedFile().getAbsolutePath());
+            }
     }//GEN-LAST:event_chooseDestButtonActionPerformed
-    
-    
+        
+        
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseDestButton;
     private javax.swing.JPanel choosePanel;

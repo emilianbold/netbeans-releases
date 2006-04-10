@@ -176,7 +176,8 @@ final class WorkspaceParser {
                 int pathLength = fis.read();
                 // follows path itself
                 byte[] path = new byte[pathLength];
-                fis.read(path);
+                int read = fis.read(path);
+                assert read == pathLength;
                 return new File(new String(path, "ISO-8859-1")); // NOI18N
             } catch (IOException e) {
                 throw new ProjectImporterException("Error during reading " + // NOI18N

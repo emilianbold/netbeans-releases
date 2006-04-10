@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,7 +35,7 @@ public class LoggerFactory {
     
     // used logging level adjustable with "projectimport.logging.level" system
     // property
-    private static Level LEVEL = Level.INFO;
+    private static final Level LEVEL = readLevel();
     
     // TOTO: mkrauskopf - enhance this
     private static final int MAX_LEVEL_LENGTH = Level.WARNING.getName().length();
@@ -45,15 +45,18 @@ public class LoggerFactory {
         return factory;
     }
     
-    static {
+    private static Level readLevel() {
+        Level level = Level.INFO;
         String levelName = System.getProperty("projectimport.logging.level"); // NOI18N
         if (levelName != null) {
             try {
-                LEVEL = Level.parse(levelName);
+                level = Level.parse(levelName);
             } catch (IllegalArgumentException iae) {
+                System.err.println("Unable to parse \"projectimport.logging.level\": " + levelName); // NOI18N
                 // use default level - INFO
             }
         }
+        return level;
     }
     
     /**
@@ -70,21 +73,20 @@ public class LoggerFactory {
         return logger;
     }
     
-    
     private static class BasicFormatter extends Formatter {
-        private Date dat = new Date();
-        private final static String format = "yyyyMMdd_HHmmss z"; // NOI18N
-        private DateFormat formatter = new SimpleDateFormat(format);
+        
+        private final Date dat = new Date();
+        private final DateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss z"); // NOI18N
         
         public String format(LogRecord record) {
             StringBuffer sb = new StringBuffer();
             String name = record.getLevel().getName();
             // indent on the base of severity to have nice and readable output
             for (int i = name.length(); i < MAX_LEVEL_LENGTH; i++) {
-                sb.append(" "); // NOI18N
+                sb.append(' ');
             }
             // append severity
-            sb.append("[" + name + "]: "); // NOI18N
+            sb.append('[' + name + "]: "); // NOI18N
             // append date and time (minimize memory allocations here)
             dat.setTime(record.getMillis());
             sb.append(formatter.format(dat));
@@ -96,7 +98,7 @@ public class LoggerFactory {
                 sb.append(record.getLoggerName());
             }
             if (record.getSourceMethodName() != null) {
-                sb.append("."); // NOI18N
+                sb.append('.');
                 sb.append(record.getSourceMethodName());
                 sb.append("()"); // NOI18N
             }
@@ -104,20 +106,18 @@ public class LoggerFactory {
             sb.append(": "); // NOI18N
             sb.append(record.getMessage());
             if (record.getThrown() != null) {
-                try {
-                    sb.append("\n  "); // NOI18N
-                    StringWriter sw = new StringWriter();
-                    PrintWriter pw = new PrintWriter(sw);
-                    record.getThrown().printStackTrace(pw);
-                    pw.close();
-                    sb.append(sw.toString());
-                } catch (Exception ex) {
-                }
+                sb.append("\n  "); // NOI18N
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                record.getThrown().printStackTrace(pw);
+                pw.close();
+                sb.append(sw.toString());
             } else {
-                sb.append("\n"); // NOI18N
+                sb.append('\n');
             }
             return sb.toString();
         }
+        
     }
     
 }
