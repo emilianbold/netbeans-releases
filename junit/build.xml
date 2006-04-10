@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="release" depends="init">
         <mkdir dir="${cluster}/docs"/>
-        <copy file="external/junit-3.8.1-api.zip" todir="${cluster}/docs"/>
+        <copy file="external/junit-3.8.2-api.zip" todir="${cluster}/docs"/>
         <mkdir dir="${cluster}/modules/ext"/>
         <copy todir="${cluster}/modules/ext">
             <fileset dir="external">
@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
                 <text>For the JUnit module itself:</text>
                 <file location="${license.file}"/>
                 <text>For the JUnit framework:</text>
-                <file location="external/junit-3.8.1-license.txt"/>
+                <file location="external/junit-3.8.2-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
