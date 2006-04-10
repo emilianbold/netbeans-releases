@@ -17,6 +17,7 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
@@ -32,7 +33,7 @@ import org.openide.util.Utilities;
 /** Test things about shadows and broken shadows, etc.
  * @author Jaroslav Tulach
  */
-public class DataShadowTest extends LoggingTestCaseHid
+public class DataShadowTest extends NbTestCase
 implements java.net.URLStreamHandlerFactory {
     /** original object */
     private DataObject original;
@@ -50,6 +51,10 @@ implements java.net.URLStreamHandlerFactory {
     
     public DataShadowTest (String name) {
         super(name);
+    }
+
+    protected Level logLevel() {
+        return Level.FINER;
     }
     
     protected void setUp() throws Exception {
@@ -73,10 +78,6 @@ implements java.net.URLStreamHandlerFactory {
         
         Repository.getDefault ().addFileSystem (lfs);
         
-        
-        assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
-
-
         err = Logger.getLogger(getName());
     }
     
