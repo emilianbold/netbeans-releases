@@ -15,15 +15,16 @@ package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.projectimport.LoggerFactory;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Represents Eclipse project structure.
@@ -36,8 +37,8 @@ public final class EclipseProject implements Comparable {
     private static final Logger logger =
             LoggerFactory.getDefault().createLogger(EclipseProject.class);
     
-    static final String PROJECT_FILE = ".project";
-    static final String CLASSPATH_FILE = ".classpath";
+    static final String PROJECT_FILE = ".project"; // NOI18N
+    static final String CLASSPATH_FILE = ".classpath"; // NOI18N
     
     private Workspace workspace;
     
@@ -178,53 +179,55 @@ public final class EclipseProject implements Comparable {
     }
     
     /**
-     * Returns map of file-label(java.io.File-java.lang.String) entries
-     * representing Eclipse project's source roots.
+     * Returns map of file-label entries representing Eclipse project's source
+     * roots.
      */
-    public Map getAllSourceRoots() {
+    public Map/*<File, String>*/ getAllSourceRoots() {
         Map rootsLabels = new HashMap();
         
         // internal sources
         Collection srcRoots = cp.getSourceRoots();
         for (Iterator it = srcRoots.iterator(); it.hasNext(); ) {
             ClassPathEntry cpe = (ClassPathEntry) it.next();
-            rootsLabels.put(new File(cpe.getAbsolutePath()), cpe.getRawPath());
+            File file = FileUtil.normalizeFile(new File(cpe.getAbsolutePath()));
+            rootsLabels.put(file, cpe.getRawPath());
         }
         // external sources
         Collection extSrcRoots = cp.getExternalSourceRoots();
         for (Iterator it = extSrcRoots.iterator(); it.hasNext(); ) {
             ClassPathEntry cpe = (ClassPathEntry) it.next();
-            rootsLabels.put(new File(cpe.getAbsolutePath()), cpe.getRawPath());
+            rootsLabels.put(
+                    FileUtil.normalizeFile(new File(cpe.getAbsolutePath())),
+                    cpe.getRawPath());
         }
         
         return rootsLabels;
     }
     
     /**
-     * Returns all libraries on the project classpath as Collection of
-     * <code>java.io.File</code>s.
+     * Returns all libraries on the project classpath.
      */
-    public Collection getAllLibrariesFiles() {
+    public Collection/*<File>*/ getAllLibrariesFiles() {
         Collection files = new ArrayList();
         // internal libraries
         for (Iterator it = cp.getLibraries().iterator(); it.hasNext(); ) {
-            files.add(new File(((ClassPathEntry)it.next()).getAbsolutePath()));
+            files.add(FileUtil.normalizeFile(new File(((ClassPathEntry)it.next()).getAbsolutePath())));
             
         }
         // external libraries
         for (Iterator it = cp.getExternalLibraries().iterator(); it.hasNext(); ) {
-            files.add(new File(((ClassPathEntry)it.next()).getAbsolutePath()));
+            files.add(FileUtil.normalizeFile(new File(((ClassPathEntry)it.next()).getAbsolutePath())));
         }
         // jars in user libraries
         for (Iterator it = getUserLibrariesJars().iterator(); it.hasNext(); ) {
-            files.add(new File((String) it.next()));
+            files.add(FileUtil.normalizeFile(new File((String) it.next())));
         }
         // variables
         for (Iterator it = cp.getVariables().iterator(); it.hasNext(); ) {
             ClassPathEntry entry = (ClassPathEntry)it.next();
             // in case a variable wasn't resolved
             if (entry.getAbsolutePath() != null) {
-                files.add(new File(entry.getAbsolutePath()));
+                files.add(FileUtil.normalizeFile(new File(entry.getAbsolutePath())));
             }
         }
         return files;
@@ -346,7 +349,7 @@ public final class EclipseProject implements Comparable {
         ClassPath.Link link = getLink(entry.getRawPath());
         if (link != null) {
             logger.finest("Found link for entry \"" + entry + "\": " + link); // NOI18N
-            if (new File(link.getLocation()).exists()) {
+            if (FileUtil.normalizeFile(new File(link.getLocation())).exists()) {
                 // change type from source to source link
                 entry.setType(ClassPathEntry.TYPE_LINK);
                 entry.setAbsolutePath(link.getLocation());
@@ -429,7 +432,7 @@ public final class EclipseProject implements Comparable {
         if (this == obj) return true;
         if (!(obj instanceof EclipseProject)) return false;
         final EclipseProject ePrj = (EclipseProject) obj;
-        if (name != ePrj.name) return false;
+        if (!name.equals(ePrj.name)) return false;
         return true;
     }
     
