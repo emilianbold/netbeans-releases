@@ -310,13 +310,6 @@ public abstract class ContextAction extends NodeAction {
         protected void finnishProgress() {
             // TODO add failed and restart texts                
 
-            OutputLogger logger = new OutputLogger();
-            if (isCanceled() == false) {
-                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " finished.");
-            } else {
-                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " cancelled.");
-            }
-
             final ProgressHandle progress = getProgressHandle();
             progress.switchToDeterminate(100);
             progress.progress("Done!", 100);
@@ -329,6 +322,14 @@ public abstract class ContextAction extends NodeAction {
             } else {
                 progress.finish();
             }
+
+            OutputLogger logger = new OutputLogger();
+            if (isCanceled() == false) {
+                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " finished.");
+            } else {
+                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " cancelled.");
+            }
+            
         }
     }
 }

@@ -13,9 +13,12 @@
 
 package org.netbeans.modules.subversion.client;
 
+import java.text.DateFormat;
+import java.util.Date;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.Diagnostics;
+import org.netbeans.modules.subversion.OutputLogger;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
@@ -32,6 +35,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     private final RequestProcessor rp;
     private ProgressHandle progressHandle = null;    
     private String displayName = "";
+    private String originalDisplayName = "";
     
     public SvnProgressSupport(RequestProcessor rp) {
         this.rp = rp;        
@@ -39,7 +43,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     public void start(String displayName) {
         // XXX should also work without the message
-        this.displayName = displayName;
+        setDisplayName(displayName);
         rp.post(this);        
     }
     
@@ -80,6 +84,9 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     }
 
     public void setDisplayName(String displayName) {
+        if(originalDisplayName.equals("")) {
+            originalDisplayName = displayName;
+        }
         this.displayName = displayName;
         if(progressHandle!=null) {
             progressHandle.progress(displayName);
@@ -95,10 +102,18 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     protected void startProgress() {
         getProgressHandle().start();
+        OutputLogger logger = new OutputLogger(); // XXX to use the logger this way is a hack
+        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName);
     }
 
     protected void finnishProgress() {
         getProgressHandle().finish();
+        OutputLogger logger = new OutputLogger();
+        if (isCanceled() == false) {
+            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " finished.");
+        } else {
+            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " cancelled.");
+        }
     }
 
 }

@@ -19,6 +19,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
+import java.text.DateFormat;
+import java.util.Date;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -26,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.subversion.OutputLogger;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
@@ -207,6 +210,9 @@ public class RepositoryStep
         panel.progressPanel.revalidate();
 
         setEditable(false);
+
+        OutputLogger logger = new OutputLogger(); // XXX to use the logger this way is a hack
+        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + this.getClass().getName() + ".prepareValidation()");
     }
 
     public void stop() {
@@ -228,6 +234,13 @@ public class RepositoryStep
         panel.progressPanel.repaint();
         panel.progressPanel.setVisible(false);
         setEditable(true);
+
+        OutputLogger logger = new OutputLogger(); // XXX to use the logger this way is a hack
+        if(isValid()) {
+            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + this.getClass().getName() + ".validationDone() - finnished");
+        } else {
+            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + this.getClass().getName() + ".validationDone() - finnished with error");
+        }
     }
     
     private void setEditable(boolean editable) {
