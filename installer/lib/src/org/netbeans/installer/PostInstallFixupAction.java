@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -157,15 +157,23 @@ public class PostInstallFixupAction extends ProductAction {
             logEvent(this, Log.DBG, "Trying to delete: " + dirName);
             fileService.deleteDirectory(dirName,true,false);
             
+            SystemUtilService systemUtilService = (SystemUtilService) getServices().getService(SystemUtilService.NAME);
             if (Util.isMacOSX()) {
                 deleteSymbolicLink();
+                
+                dirName = rootInstallDir + sep + "Contents/MacOS";
+                logEvent(this, Log.DBG, "uninstall Delete dir on exit: " + dirName);
+                systemUtilService.deleteDirectoryOnExit(dirName,false);
+
+                dirName = rootInstallDir + sep + "Contents";
+                logEvent(this, Log.DBG, "uninstall Delete dir on exit: " + dirName);
+                systemUtilService.deleteDirectoryOnExit(dirName,false);
             }
             if (Util.isUnixOS()) {
                 uninstallGnomeIcon();
             }
             
             logEvent(this, Log.DBG, "uninstall Delete install dir on exit: " + rootInstallDir);
-            SystemUtilService systemUtilService = (SystemUtilService) getServices().getService(SystemUtilService.NAME);
             systemUtilService.deleteDirectoryOnExit(rootInstallDir,false);
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
@@ -232,7 +240,8 @@ public class PostInstallFixupAction extends ProductAction {
             }
         } catch (ServiceException se) {
             logEvent(this, Log.ERROR, "Cannot delete symbolic link: " + linkName);
-            logEvent(this, Log.ERROR, se);
+            Util.logStackTrace(this,se);
+            return;
         }
         logEvent(this, Log.DBG, "Symbolic link deleted Link: " + linkName);
     }
