@@ -48,7 +48,7 @@ public class CommitAction extends ContextAction {
         return "CTL_MenuItem_Commit";    // NOI18N
     }
 
-    /** Run commit action.  */
+    /** Run commit action. Shows UI */
     public static void commit(final Context ctx) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);

@@ -14,6 +14,7 @@
 package org.netbeans.modules.subversion;
 
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.InterceptionListener2;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -110,13 +111,16 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
         if (Thread.currentThread() == ignoredThread) return;
         File file = FileUtil.toFile(fe.getFile());
         if (file != null) {
-            // file is already deleted, cache contains null for up-to-date file
-            // for deleted files it'd mean FILE_INFORMATION_UNKNOWN
-            // on the other hand cache keeps all folders regardless their status
-            File probe = file.getParentFile();
-            FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-                eventProcessor.post(new FileDeletedTask(file));
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
+                // file is already deleted, cache contains null for up-to-date file
+                // for deleted files it'd mean FILE_INFORMATION_UNKNOWN
+                // on the other hand cache keeps all folders regardless their status
+                File probe = file.getParentFile();
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                // XXX STATUS_VERSIONED instead
+                if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                    eventProcessor.post(new FileDeletedTask(file));
+                }
             }
         }
     }

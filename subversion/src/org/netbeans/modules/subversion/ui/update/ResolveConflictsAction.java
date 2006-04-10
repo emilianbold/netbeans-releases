@@ -13,17 +13,47 @@
 
 package org.netbeans.modules.subversion.ui.update;
 
-import org.netbeans.modules.subversion.ui.actions.PlaceholderAction;
+import java.io.*;
+import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.util.Context;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 
 /**
+ * Show basic conflict resolver UI (provided by the diff module).
  *
  * @author Petr Kuzel
  */
-public class ResolveConflictsAction extends PlaceholderAction {
+public class ResolveConflictsAction extends ContextAction {
     
-    /** Creates a new instance of RevertModificationsAction */
     public ResolveConflictsAction() {
-        name = "Resolve Conflicts...";
+    }
+
+    protected String getBaseName(Node[] activatedNodes) {
+        return "ResolveConflicts";  // NOI18N
+    }
+
+    protected void performContextAction(Node[] nodes) {
+        Context ctx = getContext(nodes);
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        File[] files = cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT);
+
+        if (files.length == 0) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message("No Conflicts found!");
+            DialogDisplayer.getDefault().notify(nd);
+        } else {
+            for (int i = 0; i<files.length; i++) {
+                File file = files[i];
+                ResolveConflictsExecutor executor = new ResolveConflictsExecutor(file);
+                executor.exec();
+            }
+        }
+    }
+
+    public boolean asynchronous() {
+        return false;
     }
     
 }

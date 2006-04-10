@@ -110,6 +110,11 @@ public class FileInformation implements Serializable {
 
     public static final int STATUS_ALL = ~0;
 
+    /**
+     * All statuses except <tt>STATUS_NOTVERSIONED_NOTMANAGED</tt>
+     *
+     * <p>Note: it covers ignored files.
+     */
     public static final int STATUS_MANAGED = STATUS_ALL & ~STATUS_NOTVERSIONED_NOTMANAGED;
 
 
