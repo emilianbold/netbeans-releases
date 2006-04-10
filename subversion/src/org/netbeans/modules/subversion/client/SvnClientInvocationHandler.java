@@ -127,13 +127,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
         Object ret = null;        
-//        if (isHandledLocally(proxyMethod, args)) {
-//            try {
-//                return handleLocally(proxyMethod, args);
-//            } catch (LocalSubversionException ex) {
-//                //Exception thrown.  Call out to the default adapter
-//            }
-//        }
+        if (isHandledLocally(proxyMethod, args)) {
+            try {
+                return handleLocally(proxyMethod, args);
+            } catch (LocalSubversionException ex) {
+                //Exception thrown.  Call out to the default adapter
+            }
+        }
 
         // XXX refactor
         Class[] parameters = proxyMethod.getParameterTypes();
