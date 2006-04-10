@@ -160,7 +160,7 @@ public class Subversion {
     throws SVNClientException    
     {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password);            
-        attachListeners(client);            
+        attachListeners(client, false);            
 
         return client;
     }
@@ -187,13 +187,22 @@ public class Subversion {
         return getClient(repositoryUrl, support);
     }
 
+    public SvnClient getClient(SVNUrl repositoryUrl, boolean quite) throws SVNClientException {
+        return getClient(repositoryUrl, null, quite);
+    }
+    
     public SvnClient getClient(SVNUrl repositoryUrl) throws SVNClientException {
-        return getClient(repositoryUrl, null);
+        return getClient(repositoryUrl, null, false);
     }
 
     public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support) throws SVNClientException {
+        return getClient(repositoryUrl, support, false);
+    }
+
+    // XXX quite is a hot fix
+    public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support, boolean quite) throws SVNClientException {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support);
-        attachListeners(client);
+        attachListeners(client, quite);
         return client;
     }
     
@@ -211,7 +220,7 @@ public class Subversion {
      */
     public SvnClient getClient() {        
         SvnClient client = SvnClientFactory.getInstance().createSvnClient();
-        attachListeners(client);
+        attachListeners(client, false);
         return client;
     }            
     
@@ -237,9 +246,11 @@ public class Subversion {
         return false;
     }
 
-    private void attachListeners(SvnClient client) {
+    private void attachListeners(SvnClient client, boolean quite) {
         client.addNotifyListener(getLogger()); 
-        client.addNotifyListener(fileStatusCache); 
+        if(!quite) {
+            client.addNotifyListener(fileStatusCache);
+        }
     }
 
     public OutputLogger getLogger() {

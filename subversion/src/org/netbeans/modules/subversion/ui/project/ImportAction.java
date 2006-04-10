@@ -96,7 +96,7 @@ public final class ImportAction extends NodeAction {
                 
                 final SvnClient client;
                 try {
-                    client = Subversion.getInstance().getClient(repositoryUrl);
+                    client = Subversion.getInstance().getClient(repositoryUrl, true);
                 } catch (SVNClientException ex) {
                     ErrorManager.getDefault().notify(ex);
                     return;
