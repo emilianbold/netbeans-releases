@@ -231,7 +231,7 @@ public final class TopLogging {
         if (streamHandler == null) {
             StreamHandler sth = new StreamHandler (OLD_ERR, NbFormater.FORMATTER);
             sth.setLevel(Level.ALL);
-            streamHandler = new NonClose(sth);
+            streamHandler = new NonClose(sth, 500);
         }
         return streamHandler;
     }
@@ -261,7 +261,7 @@ public final class TopLogging {
                 Handler h = new StreamHandler(fout, NbFormater.FORMATTER);
                 h.setLevel(Level.ALL);
                 h.setFormatter(NbFormater.FORMATTER);
-                defaultHandler = new NonClose(h);
+                defaultHandler = new NonClose(h, 5000);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -300,16 +300,18 @@ public final class TopLogging {
 
         private final Handler delegate;
         private RequestProcessor.Task flush;
+        private int delay;
 
-        public NonClose(Handler h) {
+        public NonClose(Handler h, int delay) {
             delegate = h;
             flush = RP.create(this, true);
             flush.setPriority(Thread.MIN_PRIORITY);
+            this.delay = delay;
         }
 
         public void publish(LogRecord record) {
             delegate.publish(record);
-            flush.schedule(5000);
+            flush.schedule(delay);
         }
 
         public void flush() {

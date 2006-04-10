@@ -59,7 +59,6 @@ public class TopLoggingNbLoggerConsoleTest extends TopLoggingTest {
                 retValue = super.toString();
                 return retValue;
             }
-
         };
 
         ps = new PrintStream(w);
@@ -88,6 +87,28 @@ public class TopLoggingNbLoggerConsoleTest extends TopLoggingTest {
 
     protected ByteArrayOutputStream getStream() {
         return w;
+    }
+
+    public void testFlushHappensQuickly() throws Exception {
+        Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
+
+        Pattern p = Pattern.compile("INFO.*First visible message");
+        Matcher m = p.matcher(getStream().toString("utf-8"));
+
+        Matcher d = null;
+        String disk = null;
+        // console gets flushed at 500ms
+        for (int i = 0; i < 4; i++) {
+            disk = w.toString("utf-8"); // this one is not flushing
+            d = p.matcher(disk);
+            if (!d.find()) {
+                Thread.sleep(300);
+            } else {
+                return;
+            }
+        }
+
+        fail("msg shall be logged to file: " + disk);
     }
 
 }
