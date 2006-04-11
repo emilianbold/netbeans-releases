@@ -231,6 +231,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Beans">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+            <file name="ChooseBean.palette_item" url="palette/ChooseBean.palette_item" />
         </folder>
 
         <folder name="LookAndFeels">

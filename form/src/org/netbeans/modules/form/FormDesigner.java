@@ -26,6 +26,7 @@ import org.jdesktop.layout.Baseline;
 import org.jdesktop.layout.LayoutStyle;
 
 import org.netbeans.core.spi.multiview.*;
+import org.netbeans.modules.form.palette.PaletteItem;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
@@ -632,6 +633,22 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         if (mode == designerMode)
             return;
+
+        if (mode == MODE_ADD) {
+            PaletteItem pitem = PaletteUtils.getSelectedItem();
+            if ((pitem != null) && "chooseBean".equals(pitem.getExplicitComponentType())) { // NOI18N
+                NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
+                    FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
+                    FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
+                DialogDisplayer.getDefault().notify(desc);
+                if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+                    pitem.setComponentClassSource(desc.getInputText(), null, null);
+                } else {
+                    toggleSelectionMode();
+                    return;
+                }
+            }
+        }
 
         designerMode = mode;
 

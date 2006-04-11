@@ -61,10 +61,13 @@ public final class PaletteItem implements Node.Cookie {
         this.componentClassSource = componentClassSource;
     }
 
-    void setComponentClassSource(String className,
+    public void setComponentClassSource(String className,
                                  String[] cpTypes,
                                  String[] cpNames)
     {
+        componentClass = null;
+        lastError = null;
+        componentType = -1;
         componentClassSource = new ClassSource(className, cpTypes, cpNames);
     }
 
