@@ -205,7 +205,7 @@ public final class TestCreator {
         generateDefMethodBody = Boolean.TRUE.equals(params.get(
                                         CreateTestParam.INC_METHOD_BODIES));
         generateMethodJavadoc = Boolean.TRUE.equals(params.get(
-                                        CreateTestParam.INC_CODE_HINT));
+                                        CreateTestParam.INC_JAVADOC));
         generateSourceCodeHints = Boolean.TRUE.equals(params.get(
                                         CreateTestParam.INC_CODE_HINT));
         generateSetUp = Boolean.TRUE.equals(params.get(
