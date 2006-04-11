@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.LoggerFactory;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 
 /**
@@ -30,6 +32,10 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
  * @author mkrauskopf
  */
 final class WorkspaceParser {
+    
+    /** Logger for this class. */
+    private static final Logger logger =
+            LoggerFactory.getDefault().createLogger(WorkspaceParser.class);
     
     private static final String VM_XML = "org.eclipse.jdt.launching.PREF_VM_XML"; // NOI18N
     private static final String IGNORED_CP_ENTRY = "##<cp entry ignore>##"; // NOI18N
@@ -123,7 +129,14 @@ final class WorkspaceParser {
             if (EclipseUtils.isRegularProject(prjDir)) {
                 // we cannot load projects recursively until we have loaded
                 // information of all projects in the workspace
-                addLightProject(projectsDirs, prjDir, true);
+                logger.finest("Found a regular Eclipse Project in: " // NOI18N
+                        + prjDir.getAbsolutePath());
+                if (!projectsDirs.contains(prjDir.getName())) {
+                    addLightProject(projectsDirs, prjDir, true);
+                } else {
+                    logger.warning("Trying to add the same project twice: " // NOI18N
+                            + prjDir.getAbsolutePath());
+                }
             } // else .metadata or something we don't care about yet
         }
         
@@ -132,10 +145,15 @@ final class WorkspaceParser {
         for (int i = 0; i < resourceDirs.length; i++) {
             File resDir = resourceDirs[i];
             File location = getLocation(resDir);
-            if (location != null &&
-                    EclipseUtils.isRegularProject(location) &&
-                    !projectsDirs.contains(location.getName())) {
-                addLightProject(projectsDirs, location, false);
+            if (location != null && EclipseUtils.isRegularProject(location)) {
+                logger.finest("Found a regular Eclipse Project in: " // NOI18N
+                        + location.getAbsolutePath());
+                if (!projectsDirs.contains(location.getName())) {
+                    addLightProject(projectsDirs, location, false);
+                } else {
+                    logger.warning("Trying to add the same project twice: " // NOI18N
+                            + location.getAbsolutePath());
+                }
             }
         }
         
