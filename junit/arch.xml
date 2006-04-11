@@ -818,7 +818,7 @@ Nothing.
 -->
  <answer id="perf-spi">
   <p>
-    The <a href="#java-unit-test-generator">SPI</a> allows an external test
+    The SPI allows an external test
     skeleton generator to be plugged. The plugin should generate the task
     quickly but there is no mechanism that would check the speed or correctness
     of the plugin.
@@ -1006,6 +1006,26 @@ Nothing.
  <answer id="security-policy">
   <p>
    XXX no answer for security-policy
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   XXX no answer for compat-deprecation
   </p>
  </answer>
 
