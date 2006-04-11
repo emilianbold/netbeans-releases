@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.26"
+  question-version="1.28"
   module="xtest/nbjunit"
   author="jskrivanek@netbeans.org"
 >
@@ -1012,6 +1012,26 @@ nbjunit.diff.impl.CmdLine=/usr/bin/diff -bw %TESTFILE% %PASSFILE%
  <answer id="security-policy">
   <p>
    No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   N/A.
   </p>
  </answer>
 
