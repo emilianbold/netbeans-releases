@@ -55,13 +55,13 @@ if [ -f "${userdir}"/etc/netbeans.conf ] ; then
 fi
 
 
-if ! [ -f "$progdir"/../etc/netbeans.clusters ]; then
+if [ ! -f "$progdir"/../etc/netbeans.clusters ]; then
     echo Cannot read cluster file: "$progdir"/../etc/netbeans.clusters 1>&2
     exit 1
 fi
 
 readClusters() {
-    grep -v ^# "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep -v platform | while read X; do
+    grep -v "^#" "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep -v platform | while read X; do
         if [ -d "$progdir"/../$X ]; then
             echo -n ":"$progdir/../$X
         elif [ -d "$X" ]; then
@@ -78,7 +78,7 @@ if [ ! -z "$netbeans_extraclusters" ] ; then
 fi
 
 launchNbexec() {
-    nbexec=`grep -v ^# "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep platform | while read X; do
+    nbexec=`grep -v "^#" "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep platform | while read X; do
         if [ -f "$progdir"/../$X/lib/nbexec ]; then
             echo "$progdir"/../$X/lib/nbexec
         fi
