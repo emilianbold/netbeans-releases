@@ -31,6 +31,7 @@ import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.netbeans.modules.junit.JUnitSettings;
 import org.netbeans.modules.junit.TestCreator;
 import org.netbeans.modules.junit.TestUtil;
+import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -275,9 +276,16 @@ public class SimpleTestCaseWizardIterator
                 = TestUtil.getSettingsMap(false);
                 
         /* create test class(es) for the selected source class: */
+        JUnitPlugin plugin = TestUtil.getPluginForProject(
+                                                Templates.getProject(wizard));
+        /*
+         * The JUnitPlugin instance must be initialized _before_ field
+         * JUnitPluginTrampoline.DEFAULT gets accessed.
+         * See issue #74744.
+         */
         final FileObject[] testFileObjects
                 = JUnitPluginTrampoline.DEFAULT.createTests(
-                     TestUtil.getPluginForProject(Templates.getProject(wizard)),
+                     plugin,
                      new FileObject[] {classToTest},
                      testRootFolder,
                      params);
