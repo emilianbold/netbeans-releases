@@ -41,10 +41,9 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         this.rp = rp;        
     }
 
-    public void start(String displayName) {
-        // XXX should also work without the message
+    public RequestProcessor.Task start(String displayName) {
         setDisplayName(displayName);
-        rp.post(this);        
+        return rp.post(this);        
     }
     
     public void run() {        

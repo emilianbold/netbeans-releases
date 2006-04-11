@@ -79,11 +79,7 @@ public class ShowAllChangesAction extends AbstractAllAction {
                     stc.open();
                     stc.requestActive();
                     if (shouldPostRefresh()) {
-                        RequestProcessor.getDefault().post(new Runnable() {
-                            public void run() {
-                                stc.performRefreshAction();
-                            }
-                        });
+                        stc.performRefreshAction();
                     }
                 }
             });

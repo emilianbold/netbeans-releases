@@ -45,11 +45,7 @@ public class StatusAction  extends ContextAction {
         stc.setContext(ctx);
         stc.open(); 
         stc.requestActive();
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                stc.performRefreshAction();
-            }
-        });            
+        stc.performRefreshAction();
     }
 
 }

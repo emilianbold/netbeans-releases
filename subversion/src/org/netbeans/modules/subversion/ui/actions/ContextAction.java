@@ -292,8 +292,8 @@ public abstract class ContextAction extends NodeAction {
             this.nodes = nodes;
         }
 
-        public void start() {
-            start(action.getRunningName(nodes));
+        public RequestProcessor.Task start() {
+            return start(action.getRunningName(nodes));
         }
 
         public abstract void perform();

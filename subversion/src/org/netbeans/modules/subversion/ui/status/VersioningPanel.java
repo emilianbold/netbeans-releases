@@ -329,35 +329,33 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      */ 
     private void onRefreshAction() {
         LifecycleManager.getDefault().saveAll();
-        if (onRefreshTask != null) {
-            onRefreshTask.cancel();
-        }
-        onRefreshTask = Subversion.getInstance().getRequestProccessor().post(new Runnable() {
-            public void run() {
-                refreshStatuses();
-            }
-        });
+        refreshStatuses();
     }
 
     /**
      * Programmatically invokes the Refresh action.
      * Connects to repository and gets recent status.
      */ 
-    void performRefreshAction() {
-        refreshStatuses();
+    RequestProcessor.Task performRefreshAction() {
+        return refreshStatuses();
     }
 
-    /* Connects to repository and gets recent status. */
-    private void refreshStatuses() {
+    /* Async Connects to repository and gets recent status. */
+    private RequestProcessor.Task refreshStatuses() {
+        if (onRefreshTask != null) {
+            onRefreshTask.cancel();
+        }
+
         SVNUrl repository = CommitAction.getSvnUrl(context);
         RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
         SvnProgressSupport support = new SvnProgressSupport(rp) {
             public void perform() {                
                 executeStatus(this);
+                setupModels();
             }            
         };
-        support.start("Refreshing...");
-        reScheduleRefresh(1000);  //XXX why asynchronosly
+        onRefreshTask = support.start("Refreshing...");
+        return onRefreshTask;
     }
 
     /**

@@ -14,6 +14,7 @@
 package org.netbeans.modules.subversion.ui.status;
 
 import javax.swing.SwingUtilities;
+import org.openide.util.*;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
@@ -184,8 +185,8 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     /**
      * Programmatically invokes the Refresh action.
      */ 
-    public void performRefreshAction() {
-        syncPanel.performRefreshAction();
+    public RequestProcessor.Task performRefreshAction() {
+        return syncPanel.performRefreshAction();
     }
 
     /**
