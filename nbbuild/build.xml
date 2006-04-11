@@ -489,10 +489,12 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
 
     <mkdir dir="${netbeans.dest.dir}/etc" />
     <copy file="../ide/launcher/netbeans.conf" todir="${netbeans.dest.dir}/etc" />
+    <copy file="../ide/launcher/netbeans.clusters" todir="${netbeans.dest.dir}/etc" />
 
     <echo message="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" />
     <fixcrlf eol="lf" srcdir="${netbeans.dest.dir}" >
       <include name="etc/netbeans.conf" />
+      <include name="etc/netbeans.clusters" />
       <include name="bin/netbeans" />      
       <include name="${nb.cluster.platform.dir}/lib/nbexec" />      
     </fixcrlf>
@@ -1747,6 +1749,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <exclude name="THIRDPARTYLICENSE.txt"/>
       <exclude name="nb.cluster.*"/>
       <exclude name="etc/netbeans.conf"/>
+      <exclude name="etc/netbeans.clusters"/>
       <exclude name="build_info"/>
       <exclude name="module_tracking.xml"/>
       <exclude name="moduleCluster.properties"/>

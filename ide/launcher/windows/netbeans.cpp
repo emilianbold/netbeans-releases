@@ -24,21 +24,16 @@ static char* GetStringValue(HKEY key, const char *name);
 static DWORD GetDWordValue(HKEY key, const char *name);
 static void parseConfigFile(const char* path);
 static void parseArgs(int argc, char *argv[]);
+static int readClusterFile(const char* path);
 static int dirExists(const char* path);
 
 static char userdir[MAX_PATH] = "c:\\nbuser";
 static char options[4098] = "";
 static char dirs[4098] = "", extradirs[4098];
 static char jdkswitch[MAX_PATH] = "";
-
-static char* defaultDirs[] = { "nb6.0",
-                               "ide8",
-                               "enterprise4",
-                               "harness",
-                               "profiler1",
-                               "mobility8",
-                               "extra",
-                               NULL };
+static char platformDir[MAX_PATH] = "";
+static char* defaultDirs[512];
+static char msg[MAX_PATH + 128];
 
 #ifdef WINMAIN
 
@@ -73,6 +68,15 @@ int WINAPI
         *pc = '\0';
     strcpy(topdir, buf);
 
+    char clusterFileName[MAX_PATH];
+    sprintf(clusterFileName, "%s\\etc\\netbeans.clusters", topdir);
+
+    if (!readClusterFile(clusterFileName)) {
+        sprintf(msg, "Cannot read cluster file: %s", clusterFileName);
+        MessageBox(NULL, msg, "Error", MB_ICONSTOP | MB_OK);
+	exit(1);
+    }
+
     sprintf(buf, "%s\\etc\\netbeans.conf", topdir);
     parseConfigFile(buf);
 
@@ -105,8 +109,21 @@ int WINAPI
     if (extradirs[0] != '\0') {
         strcat(strcat(dirs, ";"), extradirs);
     }
-    
-    sprintf(nbexec, "%s\\platform7\\lib\\nbexec.exe", topdir);
+
+    if (*platformDir == '\0') {
+        MessageBox(NULL, "Undefined platform cluster!", "Error", MB_ICONSTOP | MB_OK);
+        exit(1);
+    }
+
+    sprintf(nbexec, "%s\\%s", topdir, platformDir);
+
+    if (!dirExists(nbexec)) {
+        sprintf(msg, "Could not find platform cluster:\n\n%s", nbexec);
+        MessageBox(NULL, msg, "Error", MB_ICONSTOP | MB_OK);
+        exit(1);
+    }        
+
+    strcat(nbexec, "\\lib\\nbexec.exe");
 
     sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,
@@ -421,6 +438,45 @@ void parseArgs(int argc, char *argv[]) {
     }
 }
 
+
+int readClusterFile(const char* path) {
+
+    char **dirs = defaultDirs;
+
+    FILE* fin = fopen(path, "r");
+    if (fin == NULL)
+        return 0;
+    
+    char line[2048], *pc;
+    
+    while (NULL != fgets(line, sizeof line, fin)) {
+        for (pc = line; *pc != '\0' && (*pc == ' ' || *pc == '\t' || *pc == '\n' || *pc == '\r'); pc++)
+            ;
+        if (*pc == '#')
+            continue;
+
+        char *s = pc;
+
+	while (*pc != '\0' && *pc != '\t' && *pc != '\n' && *pc != '\r')
+	    pc++;
+
+	*pc = '\0';
+
+	if (!strncmp("platform", s, 8) && *platformDir == '\0') {
+	    strcpy(platformDir, s);
+        }
+        else {
+	    *dirs = strdup(s);
+	    dirs++;
+        }
+    }
+    *dirs = NULL;
+    fclose(fin);
+
+    return 1;
+}
+
+
 int dirExists(const char* path) {
     WIN32_FIND_DATA ffd;
     HANDLE ffh;
@@ -435,3 +491,5 @@ int dirExists(const char* path) {
         return 0;
     }
 }
+
+    

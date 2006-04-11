@@ -7,7 +7,7 @@
 # http://www.sun.com/
 # 
 # The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+# Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 # Microsystems, Inc. All Rights Reserved.
 
 #
@@ -37,6 +37,7 @@ fi
 #     . /etc/netbeans.conf
 # fi
 
+
 # #68373: look for userdir, but do not modify "$@"
 userdir="${netbeans_default_userdir}"
 founduserdir=""
@@ -53,19 +54,35 @@ if [ -f "${userdir}"/etc/netbeans.conf ] ; then
     . "${userdir}"/etc/netbeans.conf
 fi
 
-netbeans_clusters=""
-for i in nb6.0 ide8 enterprise4 harness profiler1 mobility8 extra ; do
-    if [ -d "$progdir/../$i" ] ; then
-        netbeans_clusters="$netbeans_clusters:$progdir/../$i"
-    fi
-done
+
+if ! [ -f "$progdir"/../etc/netbeans.clusters ]; then
+    echo Cannot read cluster file: "$progdir"/../etc/netbeans.clusters 1>&2
+    exit 1
+fi
+
+readClusters() {
+    grep -v ^# "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep -v platform | while read X; do
+        if [ -d "$progdir"/../$X ]; then
+            echo -n ":"$progdir/../$X
+        elif [ -d "$X" ]; then
+            echo -n ":"$X
+        fi
+    done
+}
+
+
+netbeans_clusters=`readClusters`
 
 if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"
 fi
 
 launchNbexec() {
-    nbexec="$progdir"/../platform7/lib/nbexec
+    nbexec=`grep -v ^# "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep platform | while read X; do
+        if [ -f "$progdir"/../$X/lib/nbexec ]; then
+            echo "$progdir"/../$X/lib/nbexec
+        fi
+    done | head -n 1`
     if [ "${founduserdir}" = "yes" ]; then
         sh "$nbexec" "$@"
     else
