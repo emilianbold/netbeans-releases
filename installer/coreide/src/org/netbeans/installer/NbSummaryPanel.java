@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,10 +29,12 @@ import java.io.IOException;
 
 import java.util.Properties;
 
-public class NbSummaryPanel extends TextDisplayPanel
-{
+public class NbSummaryPanel extends TextDisplayPanel {
+
     private int type = ProductService.PRE_INSTALL;
-    
+
+    private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
+
     public NbSummaryPanel() {
         setTextSource(TEXT_PROPERTY);
         setContentType(HTML_CONTENT_TYPE);
@@ -66,32 +68,39 @@ public class NbSummaryPanel extends TextDisplayPanel
                     if (state.getState() == state.CANCELED) {
                         //User cancelled installation (install action)
                         removeAllFiles();
-                        String summaryMessage = resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.cancel)");
-                        setText(summaryMessage);
+                        String msg = resolveString(BUNDLE + "SummaryPanel.cancel)");
+                        logEvent(this,Log.DBG,"msg: " + msg);
+                        setText(msg);
                     } else {
                         Properties summary = service.getProductSummary(
                         ProductService.DEFAULT_PRODUCT_SOURCE,
                         ProductService.POST_INSTALL,
                         ProductService.HTML);
-                        String summaryMessage = summary.getProperty(ProductService.SUMMARY_MSG);
-                        summaryMessage += resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.error)");
-                        setText(summaryMessage);
+                        String msg = summary.getProperty(ProductService.SUMMARY_MSG);
+                        msg += resolveString(BUNDLE + "SummaryPanel.error)");
+                        logEvent(this,Log.DBG,"msg: " + msg);
+                        setText(msg);
                     }
                 } else {
                     boolean ret = scanLogFile();
                     if (ret) {
                         //Successfull
                         if (Util.isWindowsOS()) {
-                            setText(resolveString
-                            ("$L(org.netbeans.installer.Bundle, SummaryPanel.description,netbeans.exe,uninstaller.exe)"));
+                            String msg = resolveString
+                            (BUNDLE + "SummaryPanel.description,netbeans.exe,uninstaller.exe)");
+                            logEvent(this,Log.DBG,"msg: " + msg);
+                            setText(msg);
                         } else {
-                            setText(resolveString
-                            ("$L(org.netbeans.installer.Bundle, SummaryPanel.description,netbeans,uninstaller)"));
+                            String msg = resolveString
+                            (BUNDLE + "SummaryPanel.description,netbeans,uninstaller)");
+                            logEvent(this,Log.DBG,"msg: " + msg);
+                            setText(msg);
                         }
                     } else {
                         //Failure
-                        setText(resolveString
-                        ("$L(org.netbeans.installer.Bundle, SummaryPanel.errorScanLogFile)"));
+                        String msg = resolveString(BUNDLE + "SummaryPanel.errorScanLogFile)");
+                        logEvent(this,Log.DBG,"msg: " + msg);
+                        setText(msg);
                     }
                 }
             } else {
@@ -99,21 +108,21 @@ public class NbSummaryPanel extends TextDisplayPanel
                 ProductService.DEFAULT_PRODUCT_SOURCE,
                 type,
                 ProductService.HTML);
-                String summaryMessage = summary.getProperty(ProductService.SUMMARY_MSG);
+                String msg = summary.getProperty(ProductService.SUMMARY_MSG);
                 if (type == ProductService.POST_UNINSTALL) {
-                    summaryMessage += "<br><br>"
-                    + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstall,"
-                    + "$L(org.netbeans.installer.Bundle, Product.userDir))");
+                    msg += "<br><br>"
+                    + resolveString(BUNDLE + "SummaryPanel.descriptionPostUninstall,"
+                    + BUNDLE + "Product.userDir))");
                     if (Util.isWindowsOS()) {
-                        summaryMessage += " "
-                        + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstallWindows)");
+                        msg += " "
+                        + resolveString(BUNDLE + "SummaryPanel.descriptionPostUninstallWindows)");
                     } else {
-                        summaryMessage += " "
-                        + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstallUnix)");
+                        msg += " "
+                        + resolveString(BUNDLE + "SummaryPanel.descriptionPostUninstallUnix)");
                     }
                 }
-                logEvent(this, Log.DBG, "queryEnter UNINSTALL summaryMessage: " + summaryMessage);
-                setText(summaryMessage);
+                logEvent(this, Log.DBG, "msg: " + msg);
+                setText(msg);
             }
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
