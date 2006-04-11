@@ -78,9 +78,10 @@ public class CreateCopyAction extends ContextAction {
     }
 
     private void performCopy(CreateCopy createCopy, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
-        final RepositoryFile repositoryFolder = createCopy.getRepositoryFile();
-        final String message = createCopy.getMessage();            
-
+        RepositoryFile repositoryFolder = createCopy.getRepositoryFile();
+        String message = createCopy.getMessage();            
+        boolean switchTo = createCopy.getSwitchTo();
+        
         try {                
             ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
 
@@ -111,6 +112,15 @@ public class CreateCopyAction extends ContextAction {
             }
 
             client.copy(root, repositoryFolder.getFileUrl(), message);
+
+            if(support.isCanceled()) {
+                return;
+            }
+
+            if(switchTo) {
+                SwitchToAction.performSwitch(repositoryFolder, false, repositoryRoot, root, support);
+            }
+
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ex);
             return;

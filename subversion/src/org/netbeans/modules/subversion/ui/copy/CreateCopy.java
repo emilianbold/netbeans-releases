@@ -77,4 +77,8 @@ public class CreateCopy extends CopyDialog {
     String getMessage() {
         return getCreateCopyPanel().messageTextArea.getText();
     }
+
+    boolean getSwitchTo() {
+        return getCreateCopyPanel().switchToCheckBox.isSelected();
+    }
 }

@@ -73,17 +73,16 @@ public class SwitchToAction extends ContextAction {
         if(switchTo.showDialog()) {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
                 public void perform() {
-                    performSwitch(switchTo, repositoryRoot, root, this);
+                    RepositoryFile repository = switchTo.getRepositoryFile();
+                    boolean replaceModifications = switchTo.replaceModifications();
+                    performSwitch(repository, replaceModifications, repositoryRoot, root, this);
                 }
             };
             support.start();
         }        
     }
 
-    private void performSwitch(SwitchTo switchTo, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
-        RepositoryFile repository = switchTo.getRepositoryFile();            
-        boolean replaceModifications = switchTo.replaceModifications();            
-
+    static void performSwitch(RepositoryFile repository, boolean replaceModifications, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
         try {
             ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
             if(replaceModifications) {
