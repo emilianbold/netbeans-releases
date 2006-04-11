@@ -136,6 +136,8 @@ public class JavaActionsTest extends TestBase {
             Arrays.asList(new String[] {
                 ActionProvider.COMMAND_COMPILE_SINGLE,
                 ActionProvider.COMMAND_DEBUG,
+                ActionProvider.COMMAND_RUN_SINGLE,
+                ActionProvider.COMMAND_DEBUG_SINGLE
             }),
             Arrays.asList(ja.getSupportedActions()));
         /* Not really necessary; once there is a binding, the main ant/freeform Actions will mask this anyway:
@@ -303,9 +305,9 @@ public class JavaActionsTest extends TestBase {
     }
     
     public void testFindCompileClasspath() throws Exception {
-        assertEquals("${src.cp}", ja.findCompileClasspath("${src.dir}"));
-        assertEquals("${ant.src.cp}", ja.findCompileClasspath("${ant.src.dir}"));
-        assertEquals(null, ja.findCompileClasspath("${bogus.src.dir}"));
+        assertEquals("${src.cp}", ja.findCUClasspath("${src.dir}", "compile"));
+        assertEquals("${ant.src.cp}", ja.findCUClasspath("${ant.src.dir}", "compile"));
+        assertEquals(null, ja.findCUClasspath("${bogus.src.dir}", "compile"));
     }
     
     public void testFindLine() throws Exception {
@@ -527,7 +529,118 @@ public class JavaActionsTest extends TestBase {
             "</project>\n";
         assertEquals(expectedXml, xmlToString(doc.getDocumentElement()));
     }
-    
+
+    public void testCreateRunSingleTargetElem() throws Exception {
+        Document doc = XMLUtil.createDocument("project", null, null, null);
+        Lookup context = context(new FileObject[] {myAppJava});
+        JavaActions.AntLocation root = ja.findPackageRoot(context);
+        Element targetElem = ja.createRunSingleTargetElem(doc, "run-single-test-target", "test.class", root);
+        doc.getDocumentElement().appendChild(targetElem);
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project>\n" +
+            "    <target name=\"run-single-test-target\">\n" +
+            "        <fail unless=\"test.class\">Must set property 'test.class'</fail>\n" +
+            "        <ant antfile=\"build.xml\" target=\"jar\"/>\n" +
+            "        <java classname=\"${test.class}\" failonerror=\"true\" fork=\"true\">\n" +
+            "            <classpath>\n" +
+            "                <pathelement path=\"${src.cp}\"/>\n" +
+            "                <pathelement location=\"${classes.dir}\"/>\n" +
+            "                <pathelement location=\"${main.jar}\"/>\n" +
+            "            </classpath>\n" +
+            "        </java>\n" +
+            "    </target>\n" +
+            "</project>\n";
+        assertEquals(expectedXml, xmlToString(doc.getDocumentElement()));
+    }
+
+    public void testCreateDebugSingleTargetElem() throws Exception {
+        Document doc = XMLUtil.createDocument("project", null, null, null);
+        Lookup context = context(new FileObject[] {myAppJava});
+        JavaActions.AntLocation root = ja.findPackageRoot(context);
+        Element targetElem = ja.createDebugSingleTargetElem(doc, "debug-single-test-target", "test.class", root);
+        doc.getDocumentElement().appendChild(targetElem);
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project>\n" +
+            "    <target name=\"debug-single-test-target\">\n" +
+            "        <fail unless=\"test.class\">Must set property 'test.class'</fail>\n" +
+            "        <ant antfile=\"build.xml\" target=\"jar\"/>\n" +
+            "        <path id=\"cp\">\n" +
+            "            <pathelement path=\"${src.cp}\"/>\n" +
+            "            <pathelement location=\"${classes.dir}\"/>\n" +
+            "            <pathelement location=\"${main.jar}\"/>\n" +
+            "        </path>\n" +
+            "        <nbjpdastart addressproperty=\"jpda.address\" name=\"Simple Freeform Project\" transport=\"dt_socket\">\n" +
+            "            <classpath refid=\"cp\"/>\n" +
+            "        </nbjpdastart>\n" +
+            "        <java classname=\"${test.class}\" fork=\"true\">\n" +
+            "            <classpath refid=\"cp\"/>\n" +
+            "            <jvmarg value=\"-Xdebug\"/>\n" +
+            "            <jvmarg value=\"-Xnoagent\"/>\n" +
+            "            <jvmarg value=\"-Djava.compiler=none\"/>\n" +
+            "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
+            "        </java>\n" +
+            "    </target>\n" +
+            "</project>\n";
+        assertEquals(expectedXml, xmlToString(doc.getDocumentElement()));
+    }
+
+    public void testCreatePathLikeElem() throws Exception {
+        Document doc = XMLUtil.createDocument("testdoc", null, null, null);
+        Element pathElem = ja.createPathLikeElem(doc, "path", "id",
+                new String[] {"lib/File.jar;lib/File2.jar", "testlib/Lib1.jar;testlib/Lib2"},
+                new String[] {"c:\\workfiles\\library.jar", "/workfiles/library2.jar"},
+                "refid", "comment");
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<path id=\"id\" refid=\"refid\">\n" +
+            "    <!---->\n" +
+            "    <pathelement path=\"lib/File.jar;lib/File2.jar\"/>\n" +
+            "    <pathelement path=\"testlib/Lib1.jar;testlib/Lib2\"/>\n" +
+            "    <pathelement location=\"c:\\workfiles\\library.jar\"/>\n" +
+            "    <pathelement location=\"/workfiles/library2.jar\"/>\n" +
+            "</path>\n";
+        assertEquals(expectedXml, xmlToString(pathElem));
+        pathElem = ja.createPathLikeElem(doc, "classpath", null, null, null, null, "comment");
+        expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<classpath>\n" +
+            "    <!---->\n" +
+            "</classpath>\n";
+        assertEquals(expectedXml, xmlToString(pathElem));
+    }
+
+    public void testCreateAntElem() throws Exception {
+        Document doc = XMLUtil.createDocument("testdoc", null, null, null);
+        Element antElem = ja.createAntElem(doc, "antscript.xml", "test.target");
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<ant antfile=\"antscript.xml\" target=\"test.target\"/>\n";
+        assertEquals(expectedXml, xmlToString(antElem));
+    }
+
+    public void testGetPathFromCU() throws Exception {
+        Document doc = XMLUtil.createDocument("testdoc", null, null, null);
+        Lookup context = context(new FileObject[] {myAppJava});
+        JavaActions.AntLocation root = ja.findPackageRoot(context);
+        Element cpElem = ja.getPathFromCU(doc, root.virtual, "classpath");
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<classpath>\n" +
+            "    <pathelement path=\"${src.cp}\"/>\n" +
+            "    <pathelement location=\"${classes.dir}\"/>\n" +
+            "    <pathelement location=\"${main.jar}\"/>\n" +
+            "</classpath>\n";
+        assertEquals(expectedXml, xmlToString(cpElem));
+    }
+
+    public void testGetRunDepends() throws Exception {
+        String s[] = ja.getRunDepends();
+        assertEquals("build.xml", s[0]);
+        assertEquals("jar", s[1]);
+    }
+
     /**
      * Format XML as a string. Assumes Xerces serializer in current impl.
      * Collapse all comments to no body.

@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -78,10 +79,14 @@ final class JavaActions implements ActionProvider {
     /* Too problematic for importing <classpath> from existing <java>, since Ant would want NS on that too (oddly):
     private static final String NS_JPDA = "antlib:org.netbeans.modules.debugger.jpda.ant"; // NOI18N
      */
-    
+
+    static final String JAVA_FILE_PATTERN = "\\.java$";
+
     private static final String[] ACTIONS = {
         ActionProvider.COMMAND_COMPILE_SINGLE,
         ActionProvider.COMMAND_DEBUG,
+        ActionProvider.COMMAND_RUN_SINGLE,
+        ActionProvider.COMMAND_DEBUG_SINGLE
         // XXX more
     };
     
@@ -124,6 +129,10 @@ final class JavaActions implements ActionProvider {
             return findPackageRoot(context) != null;
         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
             return true;
+        } else if (command.equals(ActionProvider.COMMAND_RUN_SINGLE)) {
+            return (findPackageRoot(context) != null) && isSingleJavaFileSelected(context);
+        } else if (command.equals(ActionProvider.COMMAND_DEBUG_SINGLE)) {
+            return (findPackageRoot(context) != null) && isSingleJavaFileSelected(context);
         } else {
             throw new IllegalArgumentException(command);
         }
@@ -138,6 +147,10 @@ final class JavaActions implements ActionProvider {
                             handleCompileSingle(context);
                         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
                             handleDebug();
+                        } else if (command.equals(ActionProvider.COMMAND_RUN_SINGLE)) {
+                            handleRunSingle(context);
+                        } else if (command.equals(ActionProvider.COMMAND_DEBUG_SINGLE)) {
+                            handleDebugSingle(context);
                         } else {
                             throw new IllegalArgumentException(command);
                         }
@@ -215,9 +228,8 @@ final class JavaActions implements ActionProvider {
         doc.getDocumentElement().appendChild(target);
         writeCustomScript(doc, FILE_SCRIPT_PATH);
         // XXX #53622: support also folders (i.e. just files w/o ext??):
-        String pattern = "\\.java$"; // NOI18N
         String targetName = target.getAttribute("name");
-        addBinding(ActionProvider.COMMAND_COMPILE_SINGLE, FILE_SCRIPT_PATH, targetName, propertyName, root.virtual, pattern, "relative-path", ","); // NOI18N
+        addBinding(ActionProvider.COMMAND_COMPILE_SINGLE, FILE_SCRIPT_PATH, targetName, propertyName, root.virtual, JAVA_FILE_PATTERN, "relative-path", ","); // NOI18N
         jumpToBinding(ActionProvider.COMMAND_COMPILE_SINGLE);
         jumpToBuildScript(FILE_SCRIPT_PATH, targetName);
     }
@@ -247,7 +259,7 @@ final class JavaActions implements ActionProvider {
         if (sourceLevel != null) {
             javac.setAttribute("source", sourceLevel); // NOI18N
         }
-        String cp = findCompileClasspath(root.virtual);
+        String cp = findCUClasspath(root.virtual, "compile");
         if (cp != null) {
             Element classpath = doc.createElement("classpath"); // NOI18N
             classpath.setAttribute("path", cp); // NOI18N
@@ -727,7 +739,7 @@ final class JavaActions implements ActionProvider {
      * @param sources a source root in the project (as a virtual Ant name)
      * @return the classpath (in Ant form), or null if none was specified or there was no such source root
      */
-    String findCompileClasspath(String sources) {
+    String findCUClasspath(String sources, String moud) {
         Element compilationUnitEl = findCompilationUnit(sources);
         if (compilationUnitEl != null) {
             Iterator/*<Element>*/ classpaths = Util.findSubElements(compilationUnitEl).iterator();
@@ -735,7 +747,7 @@ final class JavaActions implements ActionProvider {
                 Element classpath = (Element) classpaths.next();
                 if (classpath.getLocalName().equals("classpath")) { // NOI18N
                     String mode = classpath.getAttribute("mode"); // NOI18N
-                    if (mode.equals("compile")) { // NOI18N
+                    if (mode.equals(moud)) {
                         return Util.findText(classpath);
                     }
                 }
@@ -743,7 +755,24 @@ final class JavaActions implements ActionProvider {
         }
         return null;
     }
-    
+
+    /**
+     * Finds all build-to elements in project.xml and returns their content as array
+     * @param srcRoot source root in the project
+     * @return array with content of all <built-to> elements built by CU containing the srcRoot
+     */
+    private String[] findCUOutputs(String srcRoot) {
+        ArrayList outputs = new ArrayList();
+        Element cuElem = findCompilationUnit(srcRoot);
+        if (cuElem != null) {
+            NodeList builts = cuElem.getElementsByTagName("built-to"); // NOI18N
+            for (int i = 0; i < builts.getLength(); i++) {
+                outputs.add(builts.item(i).getTextContent());
+            }
+        }
+        return (String[]) outputs.toArray(new String[] {});
+    }
+
     //The order of the root elements as specified in the schema.
     //Used to add <ide-actions> at the correct place.
     private static final String[] rootElementsOrder = new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}; // NOI18N
@@ -1017,6 +1046,223 @@ final class JavaActions implements ActionProvider {
             }
         }
         return foundTask;
+    }
+
+    private void handleRunSingle(Lookup context) throws IOException, SAXException {
+        if (!alert(NbBundle.getMessage(JavaActions.class, "ACTION_run.single"), FILE_SCRIPT_PATH)) {
+            return;
+        }
+        Document doc = readCustomScript(FILE_SCRIPT_PATH);
+        AntLocation root = handleInitials(doc, context);
+        assert root != null : context;
+        String propertyName = "run.class"; // NOI18N
+        String targetName = "run-selected-file-in-" + root.physical.getNameExt(); // NOI18N
+        Element target = createRunSingleTargetElem(doc, targetName, propertyName, root);
+        doc.getDocumentElement().appendChild(target);
+        writeCustomScript(doc, FILE_SCRIPT_PATH);
+        addBinding(ActionProvider.COMMAND_RUN_SINGLE, FILE_SCRIPT_PATH, targetName,
+                propertyName, root.virtual, JAVA_FILE_PATTERN, "java-name", null); // NOI18N
+        jumpToBinding(ActionProvider.COMMAND_RUN_SINGLE);
+        jumpToBuildScript(FILE_SCRIPT_PATH, targetName);
+    }
+
+    private void handleDebugSingle(Lookup context) throws IOException, SAXException {
+        if (!alert(NbBundle.getMessage(JavaActions.class, "ACTION_debug.single"), FILE_SCRIPT_PATH)) {
+            return;
+        }
+        Document doc = readCustomScript(FILE_SCRIPT_PATH);
+        AntLocation root = handleInitials(doc, context);
+        assert root != null : context;
+        String propertyName = "debug.class"; // NOI18N
+        String targetName = "debug-selected-file-in-" + root.physical.getNameExt(); // NOI18N
+        Element targetElem = createDebugSingleTargetElem(doc, targetName, propertyName, root);
+        doc.getDocumentElement().appendChild(targetElem);
+        writeCustomScript(doc, FILE_SCRIPT_PATH);
+        addBinding(ActionProvider.COMMAND_DEBUG_SINGLE, FILE_SCRIPT_PATH, targetName,
+                propertyName, root.virtual, JAVA_FILE_PATTERN, "java-name", null); // NOI18N
+        jumpToBinding(ActionProvider.COMMAND_DEBUG_SINGLE);
+        jumpToBuildScript(FILE_SCRIPT_PATH, targetName);
+    }
+
+    Element createRunSingleTargetElem(Document doc, String tgName,
+                String propName, AntLocation root) throws IOException, SAXException {
+
+        Element targetElem = doc.createElement("target"); // NOI18N
+        targetElem.setAttribute("name", tgName); // NOI18N
+        Element failElem = doc.createElement("fail"); // NOI18N
+        failElem.setAttribute("unless", propName); // NOI18N
+        failElem.appendChild(doc.createTextNode(NbBundle.getMessage(JavaActions.class,
+                "COMMENT_must_set_property", propName)));
+        targetElem.appendChild(failElem);
+
+        String depends[] = getRunDepends();
+        if (depends != null) {
+            targetElem.appendChild(createAntElem(doc, depends[0], depends[1]));
+        }
+
+        Element javaElem = doc.createElement("java"); // NOI18N
+        javaElem.setAttribute("classname", "${" + propName + "}"); // NOI18N
+        javaElem.setAttribute("fork", "true"); // NOI18N
+        javaElem.setAttribute("failonerror", "true"); // NOI18N
+
+        Element cpElem = getPathFromCU(doc, root.virtual, "classpath");
+        // add comment only if there is no definition
+        if (cpElem.getChildNodes().getLength() == 0) {
+            cpElem.appendChild(doc.createComment(" " + NbBundle.getMessage(JavaActions.class,
+                    "COMMENT_set_runtime_cp") + " "));
+        }
+        javaElem.appendChild(cpElem);
+        targetElem.appendChild(javaElem);
+        return targetElem;
+    }
+
+    Element createDebugSingleTargetElem(Document doc, String tgName,
+                String propName, AntLocation root) throws IOException, SAXException {
+
+        Element targetElem = doc.createElement("target"); // NOI18N
+        targetElem.setAttribute("name", tgName); // NOI18N
+        Element failElem = doc.createElement("fail"); // NOI18N
+        failElem.setAttribute("unless", propName); // NOI18N
+        failElem.appendChild(doc.createTextNode(NbBundle.getMessage(JavaActions.class,
+                "COMMENT_must_set_property", propName)));
+        targetElem.appendChild(failElem);
+
+        String depends[] = getRunDepends();
+        if (depends != null) {
+            targetElem.appendChild(createAntElem(doc, depends[0], depends[1]));
+        }
+
+        Element pElem = getPathFromCU(doc, root.virtual, "path"); // NOI18N
+        pElem.setAttribute("id", "cp"); // NOI18N
+        // add comment only if there is no definition
+        if (pElem.getChildNodes().getLength() == 0) {
+            pElem.appendChild(doc.createComment(" " + NbBundle.getMessage(JavaActions.class,
+                    "COMMENT_set_runtime_cp") + " "));
+        }
+        targetElem.appendChild(pElem);
+
+        Element nbjpdastartElem = createNbjpdastart(doc);
+        Element cpElem = doc.createElement("classpath"); // NOI18N
+        cpElem.setAttribute("refid", "cp"); // NOI18N
+        nbjpdastartElem.appendChild(cpElem);
+        targetElem.appendChild(nbjpdastartElem);
+
+        Element javaElem = doc.createElement("java"); // NOI18N
+        javaElem.setAttribute("classname", "${" + propName + "}"); // NOI18N
+
+        cpElem = doc.createElement("classpath"); // NOI18N
+        cpElem.setAttribute("refid", "cp"); // NOI18N
+        javaElem.appendChild(cpElem);
+        addDebugVMArgs(javaElem, doc);
+
+        targetElem.appendChild(javaElem);
+        return targetElem;
+    }
+
+    private AntLocation handleInitials(Document doc, Lookup context) {
+        ensurePropertiesCopied(doc.getDocumentElement());
+        Comment comm = doc.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_edit_target") + " ");
+        doc.getDocumentElement().appendChild(comm);
+        comm = doc.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_more_info_run.single") + " ");
+        doc.getDocumentElement().appendChild(comm);
+        return findPackageRoot(context);
+    }
+
+    /**
+     * Get value of depends attribute of target mapped as Run target by user
+     */
+    String[] getRunDepends() throws IOException, SAXException {
+        String depends[] = null;
+        Element targetElem = findExistingBuildTarget(ActionProvider.COMMAND_RUN);
+        if (targetElem == null)
+            return null;
+        String[] bindings = findCommandBinding(ActionProvider.COMMAND_RUN);
+        String dep = targetElem.getAttribute("depends"); // NOI18N
+        if (bindings != null && bindings.length <= 2 && !"".equals(dep)) {
+            depends = new String[2];
+            depends[0] = bindings[0];
+            depends[1] = dep;
+        }
+        return depends;
+    }
+
+    /**
+     * Create Path like element (path or classpath) consisting of either execute cp
+     * if it exists or compilation cp and build products
+     */
+    Element getPathFromCU(Document doc, String srcRoot, String type) {
+        String cp = findCUClasspath(srcRoot, "execute"); // NOI18N
+        Element pElem = null;
+        if (cp != null) {
+            // if EXECUTE cp exists use it
+            pElem = createPathLikeElem(doc, type, null, new String[] {cp}, null, null, null);
+        } else {
+            // if not try to create run cp from COMPILE cp and all output locations
+            cp = findCUClasspath(srcRoot, "compile"); // NOI18N
+            String paths[] = cp == null ? null : new String[] {cp};
+            String outputs[] = findCUOutputs(srcRoot);
+            pElem = createPathLikeElem(doc, type, null, paths, outputs, null, null);
+        }
+        return pElem;
+    }
+
+    /**
+     * Creates path or classpath element according to params
+     */
+    Element createPathLikeElem(Document doc, String type, String id,
+                String[] paths, String[] locations, String refid, String comm) {
+
+        Element pElem = doc.createElement(type); // NOI18N
+        if (id != null)
+            pElem.setAttribute("id", id); // NOI18N
+        if (refid != null)
+            pElem.setAttribute("refid", refid); // NOI18N
+        if (comm != null)
+            pElem.appendChild(doc.createComment(comm));
+        if (paths != null && paths.length > 0) {
+            for (int i = 0; i < paths.length; i++) {
+                Element pathelElem = doc.createElement("pathelement"); // NOI18N
+                pathelElem.setAttribute("path", paths[i]); // NOI18N
+                pElem.appendChild(pathelElem);
+            }
+        }
+        if (locations != null && locations.length > 0) {
+            for (int j = 0; j < locations.length; j++) {
+                Element pathelElem = doc.createElement("pathelement"); // NOI18N
+                pathelElem.setAttribute("location", locations[j]); // NOI18N
+                pElem.appendChild(pathelElem);
+            }
+        }
+        return pElem;
+    }
+
+    /**
+     * Creates ant element according to params
+     */
+    Element createAntElem(Document doc, String antFile, String deps) {
+        assert antFile != null;
+        Element antElem = doc.createElement("ant"); // NOI18N
+        antElem.setAttribute("antfile", antFile);
+        StringTokenizer st = new StringTokenizer(deps, ","); // NOI18N
+        if (st.countTokens() > 1) {
+            while (st.hasMoreTokens()) {
+                String dep = st.nextToken();
+                Element tgElem = doc.createElement("target"); // NOI18N
+                tgElem.setAttribute("name", dep.trim()); // NOI18N
+                antElem.appendChild(tgElem);
+            }
+        } else {
+            antElem.setAttribute("target", deps); // NOI18N
+        }
+        return antElem;
+    }
+
+    private boolean isSingleJavaFileSelected(Lookup context) {
+        List selectedDO = (List) context.lookup(new Lookup.Template(DataObject.class)).allInstances();
+        if (selectedDO.size() == 1 && ((FileObject) ((DataObject) selectedDO.get(0)).getPrimaryFile()).hasExt("java")) {
+            return true;
+        }
+        return false;
     }
 
 }
