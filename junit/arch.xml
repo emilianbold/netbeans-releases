@@ -264,10 +264,208 @@
         </question>
 -->
  <answer id="dep-nb">
-  <p>
-   Filesystems, Datasystems, Java Hierarchy, Ant module, Java Support APIs,
-   Lookup, Nodes, Options, Project Libraries API.
-  </p>
+    <defaultanswer generate='none'/>
+    <p>
+        These modules are required in project.xml file:
+    </p>
+    <ul>
+        <li><api type='import' group='java' category='stable' name='AntLogger' url='../org-apache-tools-ant-module/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                3.12
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='JavaSupportAPIs' url='../org-netbeans-api-java/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='stable' name='MDRAPI' url='../org-netbeans-api-mdr/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='devel' name='MultiView' url='../org-netbeans-core-multiview/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='private' name='org.netbeans.jmi.javamodel' url='../org-netbeans-jmi-javamodel/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='private' name='javax.jmi.reflect'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='private' name='org.netbeans.modules.mdr'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='JavaPlatformAPI' url='../org-netbeans-modules-java-platform/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='JavaProjectAPI' url='../org-netbeans-modules-java-project/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='devel' name='JavaCoreAPI' url='../org-netbeans-modules-javacore/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='ProjectAPI' url='../org-netbeans-modules-projectapi/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='ProjectUIAPI' url='../org-netbeans-modules-projectuiapi/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='FilesystemsAPI' url='../org-openide-filesystems/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='UtilitiesAPI' url='../org-openide-util/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.4
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='ModulesAPI' url='../org-openide-modules/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='NodesAPI' url='../org-openide-nodes/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='ExplorerAPI' url='../org-openide-explorer/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='org.openide.awt' url='../org-openide-awt/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.5
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='DialogsAPI' url='../org-openide-dialogs/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='SettingsAPI' url='../org-openide-options/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='EditorAPI' url='../org-openide-text/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='LoadersAPI' url='../org-openide-loaders/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.0
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='JavaHierarchyAPI' url='../org-openide-src/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.0
+                is required.
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='official' name='WindowSystemAPI' url='../org-openide-windows/overview-summary.html'>
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+        </li>            
+    </ul>
  </answer>
 
 
