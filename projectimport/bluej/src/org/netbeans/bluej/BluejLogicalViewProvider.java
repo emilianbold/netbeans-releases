@@ -261,6 +261,7 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                         "build.xml".equals(fo.getNameExt()) ||
                         "bluej.pkh".equals(fo.getNameExt()) ||
                         ("+libs".equals(fo.getName()) && fo.isFolder()) ||
+                        ".DS_Store".equals(fo.getNameExt()) ||
                         "ctxt".equals(fo.getExt()) ||
                         "class".equals(fo.getExt()) ||
                         (fo.isFolder() && fo.getFileObject("bluej.pkg") == null)) {
