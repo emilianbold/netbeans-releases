@@ -293,7 +293,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         } else {
             newFiles.put(file, fi);
         }
-        newFiles.remove(dir);  //XXX 73948 hotfix
+        assert newFiles.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
 
         if (file.isDirectory() && needRecursiveRefresh(fi, current)) {
@@ -396,7 +396,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         }
         if (newMap != null) {
             dir = FileUtil.normalizeFile(dir);
-            newMap.remove(dir);  //XXX 73948 hotfix
+            assert newMap.containsKey(dir) == false;
             turbo.writeEntry(dir, FILE_STATUS_MAP, newMap);
         }
     }
@@ -457,11 +457,14 @@ public class FileStatusCache implements ISVNNotifyListener {
 
         dir = FileUtil.normalizeFile(dir);
         files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
+        assert files.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) files.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) fireFileStatusChanged(file, null, info);
+            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                fireFileStatusChanged(file, null, info);
+            }
         }
         return files;
     }
@@ -503,12 +506,29 @@ public class FileStatusCache implements ISVNNotifyListener {
                 }
             }
         } else {
+            Set localFiles = new HashSet(Arrays.asList(files));
             for (int i = 0; i < entries.length; i++) {
                 ISVNStatus entry = entries[i];
                 File file = new File(entry.getPath());
+                if (file.equals(dir)) {
+                    continue;
+                }
+                localFiles.remove(file);
+                if (svn.isAdministrative(file)) {
+                    continue;
+                }
                 FileInformation fi = createFileInformation(file, entry, REPOSITORY_STATUS_UNKNOWN);
                 if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
                     folderFiles.put(file, fi);
+                }
+            }
+
+            Iterator it = localFiles.iterator();
+            while (it.hasNext()) {
+                File localFile = (File) it.next();
+                FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
+                if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
+                    folderFiles.put(localFile, fi);
                 }
             }
         }
