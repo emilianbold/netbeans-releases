@@ -24,5 +24,49 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${cluster}/modules/ext"/>
         <copy file="../external/insanelib.jar" todir="${cluster}/modules/ext"/>
     </target>
-    
+ 
+    <target name="build-source">
+	<mkdir dir="build"/>
+	<copy file="manifest.mf" tofile="build/source-manifest.tmp"/>
+	<replace file="build/source-manifest.tmp" token=": " value="="/>
+	<loadproperties srcfile="build/source-manifest.tmp">
+        </loadproperties>	    
+	<fail unless="OpenIDE-Module-Specification-Version">
+		Cannot parse OpenIDE-Module-Specification-Version from manifest.mf
+	</fail>
+	<property name="version" value="${OpenIDE-Module-Specification-Version}"/>
+
+	<echo file="build/build.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<project name="xtest/nbjunit" basedir="." default="all">
+  <target name="all">
+    <ant dir="nbbuild" target="bootstrap"/>
+    <ant dir="xtest/nbjunit" target="netbeans">
+    </ant>
+    <copy file="nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar" todir="."/>
+    <copy file="xtest/nbjunit/build/javadoc/org-netbeans-modules-nbjunit.zip" todir="."/>
+  </target>	  
+</project>
+]]></echo>
+
+	<typedef name="cvsfileset" classname="org.netbeans.nbbuild.CvsFileSet" 
+		classpath="../../nbbuild/nbantext.jar"/>
+        <cvsfileset id="sources.set" dir="../..">
+            <include name="nbbuild/**/*"/>
+            <exclude name="nbbuild/**/CheckHelpSet*java"/>
+            <exclude name="nbbuild/www/**/*"/>
+
+            <include name="xtest/external/insanelib*jar"/>
+            <include name="xtest/external/junit*jar"/>
+            <include name="xtest/nbjunit/**/*"/>
+            <exclude name="xtest/nbjunit/nbjunit-*-src.zip"/>
+
+            <include name="libs/external/*html*"/>
+            <include name="libs/external/build.xml"/>
+            <include name="junit/external/junit-3.8.2.jar"/>
+        </cvsfileset>
+	<zip destfile="nbjunit-${version}-src.zip">
+            <fileset refid="sources.set"/>
+            <zipfileset file="build/build.xml" fullpath="build.xml"/>
+	</zip>
+    </target>	   
 </project>
