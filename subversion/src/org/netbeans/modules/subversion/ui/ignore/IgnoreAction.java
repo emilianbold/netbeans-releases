@@ -74,6 +74,18 @@ public class IgnoreAction extends ContextAction {
                 actionStatus = UNDEFINED;
                 break;
             }
+
+            // only direct descendants of versioned files are ignorable
+            if (actionStatus == IGNORING) {
+                File parent = files[i].getParentFile();
+                if (parent != null) {
+                    FileInformation status = cache.getStatus(parent);
+                    if ((status.getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
+                        actionStatus = UNDEFINED;
+                        break;
+                    }
+                }
+            }
         }
         return actionStatus == -1 ? UNDEFINED : actionStatus;
     }
@@ -81,7 +93,9 @@ public class IgnoreAction extends ContextAction {
     private boolean canBeUnignored(File file) {
         File parent = file.getParentFile();
         try {
-            List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
+            SvnClient client = Subversion.getInstance().getClient();
+            client.removeNotifyListener(Subversion.getInstance().getLogger());
+            List patterns = client.getIgnoredPatterns(parent);
             return patterns.contains(file.getName());
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
