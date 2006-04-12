@@ -161,7 +161,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
 
     private static boolean isHandledLocally(Method method, Object[] args) {
         String name = method.getName();
-        return !ISVNSTATUS_IMPL.equals("exec") && locallyHandledMethod.contains(name);
+
+        // XXX hotfix internal parser failsa for already deleted files (it uses isFile() check)
+        boolean exec = ISVNSTATUS_IMPL.equals("exec");
+        if ("getSingleStatus".equals(name)) {
+            exec = ((File) args[0]).exists() == false;
+        }
+        return !exec && locallyHandledMethod.contains(name);
     }
 
     private Object handleLocally(Method method, Object[] args) throws LocalSubversionException {
