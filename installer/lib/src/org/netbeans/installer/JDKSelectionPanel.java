@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,8 +21,8 @@ import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.util.LocalizedStringResolver;
 import com.installshield.wizard.service.WizardServicesUI;
 
-public class JDKSelectionPanel extends DirectoryChooserPanel 
-{    
+public class JDKSelectionPanel extends DirectoryChooserPanel {
+
     private String jdkHome;
 
     public boolean queryEnter(WizardBeanEvent event) {
@@ -127,6 +127,33 @@ public class JDKSelectionPanel extends DirectoryChooserPanel
             }
             return false;
         }
+        //Following check is done only for asbundle installer on Windows and Linux.
+        if (Names.INSTALLER_AS_BUNDLE.equals(Util.getStringPropertyValue(Names.INSTALLER_TYPE)) &&
+            (Util.isWindowsOS() || Util.isLinuxOS())) {
+            //For asbundle check if JDK is 32bit or 64bit, 64bit is not supported
+            //Get os.arch property value
+            String jvm = Util.getJVMName();
+            File jvmFile = new File(jdkHome + File.separator + "bin" + File.separator + jvm);
+            RunCommand runCommand = new RunCommand();
+            String [] cmdArr = new String[5];
+            cmdArr[0] = jvmFile.getAbsolutePath();
+            cmdArr[1] = "-cp";
+            cmdArr[2] = JDKSearchAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            cmdArr[3] = "org.netbeans.installer.Verify";
+            cmdArr[4] = "os.arch";
+            runCommand.execute(cmdArr);
+            runCommand.waitFor();
+
+            String osArch = runCommand.getOutputLine().trim();
+            if (osArch.equals("amd64")) {
+                String msg = resolveString("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.64bitJDKNotSupported,"
+                + "$L(org.netbeans.installer.Bundle,AS.name))");
+                String title = resolveString("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.checkJdkDialogTitle)");
+                showErrorMsg(title,msg);
+                return false;
+            }
+        }
+
         return true;
     }
     

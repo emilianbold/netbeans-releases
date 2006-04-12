@@ -275,6 +275,20 @@ public class Util {
     public static void setJdkHome(String value) {
         setStringPropertyValue("jdkHome", value);
     }
+
+    /** Used to transfer value of system property os.arch from JDK selected
+     *  in JDKSelectionPanel. Selected JDK can be different from value from JDK used
+     *  to run installer.
+     *  Value of os.arch property can be for example on AMD64 machine "i386" on 32bit
+     *  JDK and "amd64" on 64bit JDK on both Linux and Windows.
+     */
+    public static String getOSArch () {
+        return getStringPropertyValue("os_arch");
+    }
+    
+    public static void setOSArch (String value) {
+        setStringPropertyValue("os_arch",value);
+    }
     
     public static String getCurrentJDKHome() {
         return getStringPropertyValue("currentJDKHome");

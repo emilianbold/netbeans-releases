@@ -104,13 +104,11 @@ public class JDKVersion {
 			    if (this.getUpdateNum() == jdkVersion.getUpdateNum()) {
 				return true;
 			    }
-			}
-			else if (!this.hasUpdateNum() && !jdkVersion.hasUpdateNum()) {
+			} else if (!this.hasUpdateNum() && !jdkVersion.hasUpdateNum()) {
 			    return true;
 			}
 		    }
-		}
-		else if (!this.has3VersionNums() && !jdkVersion.has3VersionNums()) {
+		} else if (!this.has3VersionNums() && !jdkVersion.has3VersionNums()) {
 		    return true;
 		}
 	    }

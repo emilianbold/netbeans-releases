@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,6 @@ public class JDKSearchAction extends CancelableWizardAction  {
     Vector jdkHomeList = new Vector();
     private String currentJDKHome = null;
     
-    
     public JDKSearchAction() {
         Util.setJdkHomeList(jdkHomeList);
     }
@@ -42,9 +41,9 @@ public class JDKSearchAction extends CancelableWizardAction  {
             support.putClass(JDKInfo.class.getName());
             support.putClass(JDKInfoAux.class.getName());
             support.putClass(SolarisRoutines.class.getName());
+            support.putClass(Verify.class.getName());
             support.putRequiredService(Win32RegistryService.NAME);
-        } 
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -324,8 +323,9 @@ public class JDKSearchAction extends CancelableWizardAction  {
         
         String jvm = Util.getJVMName();
         for (int i = 0; i < jdkHomeList.size(); i++) {
+            //Get Java version
             String jdkPath = ((File) jdkHomeList.get(i)).getPath();
-            File jvmFile = new File(jdkPath+File.separator+"bin"+File.separator+jvm);
+            File jvmFile = new File(jdkPath + File.separator + "bin" + File.separator + jvm);
             RunCommand runCommand = new RunCommand();
             String [] cmdArr = new String[2];
             cmdArr[0] = jvmFile.getAbsolutePath();
@@ -358,7 +358,28 @@ public class JDKSearchAction extends CancelableWizardAction  {
                 }
                 jdkVersion = stringBuffer.toString();
             }
-            jdkHomeList1.add(new JDKInfoAux(jdkPath,jdkVersion));
+
+            //Following check is done only for asbundle installer on Windows and Linux.
+            if (Names.INSTALLER_AS_BUNDLE.equals(Util.getStringPropertyValue(Names.INSTALLER_TYPE)) &&
+                (Util.isWindowsOS() || Util.isLinuxOS())) {
+                //Get os.arch property value
+                runCommand = new RunCommand();
+                cmdArr = new String[5];
+                cmdArr[0] = jvmFile.getAbsolutePath();
+                cmdArr[1] = "-cp";
+                cmdArr[2] = JDKSearchAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+                cmdArr[3] = "org.netbeans.installer.Verify";
+                cmdArr[4] = "os.arch";
+                runCommand.execute(cmdArr);
+                runCommand.waitFor();
+
+                String osArch = runCommand.getOutputLine().trim();
+                if (!osArch.equals("amd64")) {
+                    jdkHomeList1.add(new JDKInfoAux(jdkPath,jdkVersion));
+                }
+            } else {
+                jdkHomeList1.add(new JDKInfoAux(jdkPath,jdkVersion));
+            }
         }
         return jdkHomeList1;
     }
