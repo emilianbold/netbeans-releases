@@ -65,6 +65,8 @@ public class VersionsCache {
                 } else {
                     return null;
                 }
+            } else {
+                return null;
             }
         } else if (Setup.REVISION_CURRENT.equals(revision)) {
             return base;

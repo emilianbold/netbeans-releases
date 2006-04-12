@@ -259,51 +259,67 @@ public class Subversion {
         }
         return outputLogger;
     }
-    
+
+    /**
+     * Non-recursive ignore check.
+     *
+     * <p>Side effect: if under SVN version control
+     * it sets svn:ignore property
+     *
+     * @return true if file is listed in parent's ignore list
+     * or IDE thinks it should be.
+     */
     public boolean isIgnored(File file) {
-        if (file.isDirectory()) {
-            File entries = new File(file, ".svn/entries");
-            if (entries.canRead()) return false;
-        }
+
         String name = file.getName();
 
-        // backward compatability #68124
-        if (".nbintdb".equals(name)) {  // NOI18N
-            return true;
-        }
+        // ask SVN
 
         File parent = file.getParentFile();
-        try {
-            // XXX RE patterns?
-            List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
-
-            for (Iterator i = patterns.iterator(); i.hasNext();) {
+        if (parent != null) {
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+            int pstatus = cache.getStatus(parent).getStatus();
+            if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
                 try {
-                    Pattern pattern =  Pattern.compile((String) i.next());
-                    if (pattern.matcher(name).matches()) {
-                        return true;
+                    SvnClient client = Subversion.getInstance().getClient();
+                    client.removeNotifyListener(Subversion.getInstance().getLogger());
+
+                    // XXX RE patterns?
+                    List patterns = client.getIgnoredPatterns(parent);
+
+                    for (Iterator i = patterns.iterator(); i.hasNext();) {
+                        try {
+                            Pattern pattern =  Pattern.compile((String) i.next());
+                            if (pattern.matcher(name).matches()) {
+                                return true;
+                            }
+                        } catch (PatternSyntaxException e) {
+                            // XXX rethrow, assert?
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        }
                     }
-                } catch (PatternSyntaxException e) {
-                    // XXX rethrow, assert?
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                } catch (SVNClientException ex)  {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
-        } catch (SVNClientException ex)  {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
+        // ask projects and sync witn SVN
+        
         int sharability = SharabilityQuery.getSharability(file);
         if (sharability == SharabilityQuery.NOT_SHARABLE) {
             try {
-                // propagate IDE opinion to Subversion svn:ignore
-                FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                    List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
-                    if (patterns.contains(file.getName()) == false) {
-                        patterns.add(file.getName());
-                        Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
-                    } else {
-                        assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName();
+                // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
+                if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
+                    FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                    if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+                        List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
+                        if (patterns.contains(file.getName()) == false) {
+                            patterns.add(file.getName());
+                            Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
+                        } else {
+                            assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName();
+                        }
                     }
                 }
             } catch (SVNClientException ex) {
@@ -311,6 +327,11 @@ public class Subversion {
             }
             return true;
         } else {
+            // backward compatability #68124
+            if (".nbintdb".equals(name)) {  // NOI18N
+                return true;
+            }
+
             return false;
         }
 
