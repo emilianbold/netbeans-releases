@@ -101,7 +101,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         ProxyDescriptor pd = selector.selectProxy();
         if (pd != null) {
             proxyDescriptor = pd;            
-            userVisitedProxySettings = true;            
+            userVisitedProxySettings = true;
         }
     }    
 
@@ -202,8 +202,11 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             } else {
                 // XXX should be stored in some way ...
             }               
-
-            // SvnRootSettings.setProxyFor(repository.getUrl(), getProxyDescriptor()); XXX let's see if we still need this ...
+            
+            // XXX the way the usr, password and proxy settings are stored is not symetric and consistent...
+            if(userVisitedProxySettings) {
+                SvnConfigFiles.getInstance().setProxy(getProxyDescriptor(), repository.getUrl());                 
+            }            
         }
 
         HistorySettings.addRecent(HistorySettings.PROP_SVN_URLS, repository.getUrl().toString());

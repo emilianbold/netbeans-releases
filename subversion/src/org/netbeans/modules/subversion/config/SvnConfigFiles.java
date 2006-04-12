@@ -68,11 +68,13 @@ public class SvnConfigFiles {
     public ProxyDescriptor getProxyDescriptor(SVNUrl url) {
         Ini.Section group = getGroup(url);
         if(group==null) {
-            return null;
+            // no proxy specified -> direct
+            return ProxyDescriptor.DIRECT;
         }
         String host = (String) group.get("http-proxy-host");
         if(host == null || host.length() == 0) {
-            return null;
+            // no host specified -> direct
+            return ProxyDescriptor.DIRECT;
         }
         String portString = (String) group.get("http-proxy-port");
         int port;
@@ -83,22 +85,30 @@ public class SvnConfigFiles {
         }
         String username = (String) group.get("http-proxy-username");
         String password = (String) group.get("http-proxy-password");
-        return  new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, host, port, username, password);    
+        return new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, host, port, username, password);    
     }
 
     public void setProxy(ProxyDescriptor pd, SVNUrl url) {
-        Ini.Section group = getGroup(url);
-        if(group==null) {
-            group = addGroup(url);
+
+        if(pd != null && pd.getHost() != null) {
+
+            Ini.Section group = getGroup(url);
+            if(group==null) {
+                group = addGroup(url);
+            }
+        
+            group.put("http-proxy-host", pd.getHost());
+            group.put("http-proxy-port", String.valueOf(pd.getPort()));
+            if(pd.getUserName()!=null) {
+                group.put("http-proxy-username", pd.getUserName());
+            }
+            if(pd.getPassword()!=null) {
+                group.put("http-proxy-password", pd.getPassword());
+            }
+        } else {
+            // no proxy host means no proxy at all
+            removeGroup(url);
         }
-        group.put("http-proxy-host", pd.getHost());
-        group.put("http-proxy-port", String.valueOf(pd.getPort()));
-        if(pd.getUserName()!=null) {
-            group.put("http-proxy-username", pd.getUserName());
-        }
-        if(pd.getPassword()!=null) {
-            group.put("http-proxy-password", pd.getPassword());
-        }        
 
         try {
             File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/servers"));
@@ -121,6 +131,23 @@ public class SvnConfigFiles {
         groups.put(name, url.getHost());
         return group;
     }
+
+    private void removeGroup(SVNUrl url) {
+        Ini.Section group = getGroup(url);
+        if(group!=null) {
+            Ini.Section groups = getGroups();
+            String urlString = url.toString();
+            for (Iterator it = groups.keySet().iterator(); it.hasNext();) {
+                Object key = (Object) it.next();
+                if( ((String) groups.get(key)).equals(urlString) ) {
+                    groups.remove(key);
+                    break;
+                }                
+            }
+            servers.remove(group);
+        }
+    }
+    
 
     private Ini.Section getGroups() {
         Ini.Section groups = (Ini.Section) servers.get("groups");
@@ -154,7 +181,7 @@ public class SvnConfigFiles {
         }
         return null;
     }
-
+    
     // XXX test me
     private boolean match(String value, String host) {
         String[] values = value.split(",");

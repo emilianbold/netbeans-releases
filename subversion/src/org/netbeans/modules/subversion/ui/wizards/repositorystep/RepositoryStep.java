@@ -61,8 +61,7 @@ public class RepositoryStep
 
     private JLabel progressLabel;
     private ProgressHandle progress;
-    private JComponent progressComponent;        
-    
+    private JComponent progressComponent;           
     private Thread backgroundValidationThread;
 
     private RepositoryFile repositoryFile;    
@@ -119,8 +118,9 @@ public class RepositoryStep
             public void run() {
                 invalid(null);                
 
-                ISVNInfo info = null;
+                storeValues();              
                 
+                ISVNInfo info = null;                
                 try {      
                     info = client.getInfo(selectedRepository.getUrl());                                                                                                        
                 } catch (SVNClientException ex) {
@@ -163,7 +163,6 @@ public class RepositoryStep
             workerThread.join();
             if (invalidMsg[0] == null) {
                 valid();
-                storeValidValues();
             } else {
                 valid(invalidMsg[0]);
             }
@@ -247,7 +246,7 @@ public class RepositoryStep
         repository.setEditable(editable);        
     }
         
-    void storeValidValues() {
+    void storeValues() {
         repository.store();        
     }
     
