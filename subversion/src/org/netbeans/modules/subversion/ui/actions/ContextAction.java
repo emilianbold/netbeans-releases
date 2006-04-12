@@ -325,9 +325,9 @@ public abstract class ContextAction extends NodeAction {
 
             OutputLogger logger = new OutputLogger();
             if (isCanceled() == false) {
-                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " finished.");
+                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + ActionUtils.cutAmpersand(action.getName("", nodes)) + " finished.");
             } else {
-                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getName("", nodes) + " cancelled.");
+                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + ActionUtils.cutAmpersand(action.getName("", nodes)) + " cancelled.");
             }
             
         }
