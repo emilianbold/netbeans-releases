@@ -14,14 +14,11 @@
 package org.netbeans.editor.ext.java;
 
 import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
-import org.netbeans.editor.ext.java.JavaTokenContext;
-import org.netbeans.editor.ext.java.JavaSyntax;
 
 /**
 * Java indentation services are located here
@@ -818,6 +815,17 @@ public class JavaFormatSupport extends ExtFormatSupport {
                 if (isArrayInitializationBraceBlock(t, null) && !isInsideParens(t, stmtStart)) {
                     // Eliminate the later effect of statement continuation shifting
                     indent -= getFormatStatementContinuationIndent();
+                }
+            }
+            // Check whether there is an annotation '@' on the previous line begining
+            // and if so then do not add the continuation indent
+            if (t != null) {
+                FormatTokenPosition pos = findLineFirstNonWhitespace(getPosition(t, 0));
+                if (pos != null) {
+                    TokenItem maybeAnno = pos.getToken();
+                    if (maybeAnno != null && maybeAnno.getTokenID() == JavaTokenContext.ANNOTATION) {
+                        indent -= getFormatStatementContinuationIndent();
+                    }
                 }
             }
             indent += getFormatStatementContinuationIndent();
