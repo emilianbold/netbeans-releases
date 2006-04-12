@@ -141,7 +141,9 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     
     public ClassPath[] getCompileTimeClasspath() {
         if (compiles == null) {
-            compiles = new ClassPath[] { getCompileTimeClasspath(project.getProjectDirectory()) };
+            compiles = new ClassPath[] { getCompileTimeClasspath(project.getProjectDirectory()),
+                                         //make source path, becuase it's equal with the built output path..
+                                         ClassPathSupport.createClassPath(new FileObject[] { project.getProjectDirectory() })};
         }
         return compiles;
     }

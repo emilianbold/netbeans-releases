@@ -192,7 +192,6 @@ public final class BluejProject implements Project, AntProjectListener {
             new ClassPathProviderImpl(this), 
             new SFBQueryImpl(this, helper, evaluator()),
 ////            new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-////            new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),

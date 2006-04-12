@@ -19,7 +19,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -31,11 +33,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author mkleint
  */
-public class SFBQueryImpl implements SourceForBinaryQueryImplementation {
+public class SFBQueryImpl implements SourceForBinaryQueryImplementation, JavadocForBinaryQueryImplementation {
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private Map/*<URL,SourceForBinaryQuery.Result>*/  cache = new HashMap ();
+    private DocResult docResult;
 
     private BluejProject project;
 
@@ -55,13 +58,13 @@ public class SFBQueryImpl implements SourceForBinaryQueryImplementation {
             return res;
         }
         FileObject src = null;
-        if (hasSources(binaryRoot,"build.classes.dir")) {   //NOI18N
+        if (matches(binaryRoot,"build.classes.dir")) {   //NOI18N
             src = project.getProjectDirectory();
         }
-        else if (hasSources (binaryRoot,"dist.jar")) {      //NOI18N
+        else if (matches (binaryRoot,"dist.jar")) {      //NOI18N
             src = project.getProjectDirectory();
         }
-        else if (hasSources (binaryRoot,"build.test.classes.dir")) {    //NOI18N
+        else if (matches (binaryRoot,"build.test.classes.dir")) {    //NOI18N
             src = project.getProjectDirectory();
         }
         if (src == null) {
@@ -75,7 +78,7 @@ public class SFBQueryImpl implements SourceForBinaryQueryImplementation {
     }
 
 
-    private boolean hasSources (URL binaryRoot, String binaryProperty) {
+    private boolean matches (URL binaryRoot, String binaryProperty) {
         try {
             String outDir = evaluator.getProperty(binaryProperty);
             if (outDir != null) {
@@ -95,11 +98,30 @@ public class SFBQueryImpl implements SourceForBinaryQueryImplementation {
         }
         return false;
     }
+
+    public JavadocForBinaryQuery.Result findJavadoc(URL binaryRoot) {
+        if (FileUtil.getArchiveFile(binaryRoot) != null) {
+            binaryRoot = FileUtil.getArchiveFile(binaryRoot);
+            // XXX check whether this is really the root
+        }
+        if (matches (binaryRoot, "build.classes.dir") || matches (binaryRoot, "dist.jar") ||
+                matches (binaryRoot, "build.test.classes.dir")) {   //NOI18N
+            if (docResult == null) {
+                //TODO make this relative to property?? the location should not be changed anyway because then
+                // it stops working against bluej itself..
+                File fil = new File(FileUtil.toFile(project.getProjectDirectory()), "doc");
+                try {
+                    docResult = new DocResult(fil.toURI().toURL());
+                } catch (MalformedURLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        return docResult;
+    }
     
     private static class Result implements SourceForBinaryQuery.Result {
-
         private FileObject[] sourceRoots;
-
         public Result(FileObject fo) {
             this.sourceRoots = new FileObject[] {fo};
         }
@@ -113,7 +135,32 @@ public class SFBQueryImpl implements SourceForBinaryQueryImplementation {
         
         public synchronized void removeChangeListener (ChangeListener l) {
         }
+    }
 
+    private static class DocResult implements JavadocForBinaryQuery.Result {
+
+        private URL[] urls;
+        public DocResult(URL url) {
+            if (!url.toExternalForm().endsWith("/")) {
+                try {
+                    url = new URL(url.toExternalForm() + "/"); // NOI18N
+                } catch (MalformedURLException ex) {
+                    ex.printStackTrace();
+                } // NOI18N
+            }
+            urls = new URL[] {url};
+
+        }
+
+        public URL[] getRoots() {
+            return urls;
+        }
+
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+        }
     }
     
 }
