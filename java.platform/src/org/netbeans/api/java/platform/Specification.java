@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.api.java.platform;
 
 import org.openide.modules.SpecificationVersion;
@@ -61,8 +62,8 @@ public final class Specification {
     }
 
     /**
-     * Returns profiles supported by the Java SDK
-     * @return Profile[]
+     * Returns profiles supported by the Java platform.
+     * @return list of profiles, or null if not applicable
      */
     public final Profile[] getProfiles () {
         return this.profiles;

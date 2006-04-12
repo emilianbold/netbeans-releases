@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -86,8 +86,16 @@ public abstract class JavaPlatform {
             supp.removePropertyChangeListener(l);
     }
     
-    /** Gets the properties defined for java platform.
-     * @return the java platform properties
+    /**
+     * Gets some ad-hoc properties defined for this platform.
+     * The precise set of properties is not specified.
+     * <p class="nonnormative">
+     * Implementations are however advised to include the key
+     * <code>platform.ant.name</code> if they wish to be used in Ant builds;
+     * the value <code>default_platform</code> is conventionally associated
+     * with the default platform.
+     * </p>
+     * @return some properties
      */
     public abstract Map getProperties();
     
