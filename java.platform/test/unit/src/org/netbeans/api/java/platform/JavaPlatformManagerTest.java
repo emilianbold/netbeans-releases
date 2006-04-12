@@ -7,56 +7,79 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.java.platform;
 
-import java.util.*;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
-import junit.framework.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
-import org.openide.modules.SpecificationVersion;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.api.project.TestUtil;
-import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author Tomas Zezula
+ * @author Tomas Zezula, Jesse Glick
  */
 public class JavaPlatformManagerTest extends NbTestCase {
-    
-    public JavaPlatformManagerTest(java.lang.String testName) {
+
+    public JavaPlatformManagerTest(String testName) {
         super(testName);
-    }   
-    
-    
-    
-    
+    }
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestUtil.setLookup(Lookups.fixed(new Object[] {new TestJavaPlatformProvider()}));
+    }
+
     public void testGetDefaultPlatform() {
+        TestUtil.setLookup(new Object[0]); // make sure we are using pure defaults
         JavaPlatformManager manager = JavaPlatformManager.getDefault ();
         assertNotNull (manager);
-        //TODO:
+        JavaPlatform p = manager.getDefaultPlatform();
+        assertNotNull("some platform registered by default", p);
+        ClassPath cp = p.getBootstrapLibraries();
+        assertNotNull("is 1.5+ JRE: " + cp, cp.findResource("java/lang/StringBuilder.class"));
+        assertFalse(p.getInstallFolders().isEmpty());
+        //assertNotNull(p.findTool("javac"));
+        assertNotNull(p.getDisplayName());
+        assertNotNull(p.getSystemProperties().get("java.home"));
+        assertNotNull(p.getSourceFolders());
+        assertNotNull(p.getJavadocFolders());
+        cp = p.getStandardLibraries();
+        assertNotNull("contains test CP: " + cp, cp.findResource(JavaPlatformManager.class.getName().replace('.', '/') + ".class"));
+        assertNotNull(p.getProperties());
+        assertNotNull(p.getVendor());
+        Specification spec = p.getSpecification();
+        assertNotNull(spec);
+        assertNotNull(spec.getName());
+        // can be null: assertNotNull(spec.getProfiles());
+        assertTrue(spec.getVersion().compareTo(new SpecificationVersion("1.5")) >= 0);
     }
-    
-    public void testGetInstalledPlatforms() {        
+
+    public void testGetInstalledPlatforms() {
         JavaPlatformManager manager = JavaPlatformManager.getDefault();
         assertNotNull (manager);
         TestJavaPlatformProvider provider = TestJavaPlatformProvider.getDefault ();
         assertNotNull (provider);
         JavaPlatform[] platforms = manager.getInstalledPlatforms();
         assertNotNull (platforms);
-        assertTrue (platforms.length == 0);        
+        assertTrue (platforms.length == 0);
         JavaPlatform platform = new TestJavaPlatform ("Testing Platform",
             new Specification("j2se", new SpecificationVersion ("1.5")));
         provider.addPlatform (platform);
@@ -69,7 +92,7 @@ public class JavaPlatformManagerTest extends NbTestCase {
         assertNotNull (platforms);
         assertTrue (platforms.length == 0);
     }
-    
+
     public void testGetPlatforms() {
         JavaPlatformManager manager = JavaPlatformManager.getDefault();
         assertNotNull (manager);
@@ -130,46 +153,46 @@ public class JavaPlatformManagerTest extends NbTestCase {
         r = manager.getPlatforms (null, new Specification ("CDC", new SpecificationVersion("1.0")));        //Any CDC
         assertNotNull (r);
         assertTrue (r.length == 4);
-        assertEquivalent (r, new JavaPlatform[] {p5, p6, p7, p8});       
+        assertEquivalent (r, new JavaPlatform[] {p5, p6, p7, p8});
         r = manager.getPlatforms (null, new Specification ("CDC", null, new Profile[] {                     // CDC with PersonalJava/* and RMI/*
             new Profile ("PersonalJava",null),
             new Profile ("RMI",null)
         }));
         assertNotNull (r);
         assertTrue (r.length == 1);
-        assertTrue (r[0]==p5);        
+        assertTrue (r[0]==p5);
         r = manager.getPlatforms (null, new Specification ("CDC",null,new Profile[] {                       // CDC with any existing profile
             new Profile (null,null)
-        }));        
+        }));
         assertNotNull (r);
         assertTrue (r.length == 3);
-        assertEquivalent (r, new JavaPlatform[] {p5,p7,p8});        
+        assertEquivalent (r, new JavaPlatform[] {p5,p7,p8});
         r = manager.getPlatforms (null, new Specification ("CDC",null,new Profile[] {                       // CDC with PersonalJava/* and */*
             new Profile ("PersonalJava",null),
             new Profile (null,null)
         }));
         assertNotNull (r);
         assertTrue (r.length == 3);
-        assertEquivalent (r, new JavaPlatform[] {p5,p7,p8});                
+        assertEquivalent (r, new JavaPlatform[] {p5,p7,p8});
         r = manager.getPlatforms (null, new Specification ("CDC",null,new Profile[] {                       //CDC with PersonalJava/*
             new Profile ("PersonalJava",null)
         }));
         assertNotNull (r);
         assertTrue (r.length == 1);
-        assertTrue (r[0] == p7);        
+        assertTrue (r[0] == p7);
         r = manager.getPlatforms (null, new Specification ("CDC",null,new Profile[] {                       //CDC with RMI/* and */*
             new Profile ("RMI",null),
             new Profile (null,null)
         }));
         assertNotNull (r);
         assertTrue (r.length == 1);
-        assertTrue (r[0] == p5);                
+        assertTrue (r[0] == p5);
         r = manager.getPlatforms (null, new Specification ("CDC",null,new Profile[] {                       //CDC with Gateway/* and */*
             new Profile ("Gateway",null),
             new Profile (null, null)
         }));
         assertNotNull (r);
-        assertTrue (r.length == 0);        
+        assertTrue (r.length == 0);
         r = manager.getPlatforms(null,null);                                                              //All platforms
         assertNotNull(r);
         assertTrue (r.length == 8);
@@ -184,10 +207,10 @@ public class JavaPlatformManagerTest extends NbTestCase {
         provider.removePlatform (p6);
         provider.removePlatform (p7);
         provider.removePlatform (p8);
-        assertTrue (manager.getInstalledPlatforms().length == 0); 
+        assertTrue (manager.getInstalledPlatforms().length == 0);
     }
-    
-    
+
+
     private static void assertEquivalent (JavaPlatform[] a, JavaPlatform[] b) {
         assertTrue (a.length == b.length);
         List l = Arrays.asList(a);
@@ -197,56 +220,49 @@ public class JavaPlatformManagerTest extends NbTestCase {
             }
         }
     }
-    
-    protected void setUp() throws java.lang.Exception {
-        super.setUp();
-        TestUtil.setLookup(Lookups.fixed (new Object[]{new TestJavaPlatformProvider ()}));
-    }
-    
-    
-    
+
     private static class TestJavaPlatform extends JavaPlatform {
-        
+
         private String id;
         private Specification spec;
-        
+
         public TestJavaPlatform (String id, Specification spec) {
             this.id = id;
             this.spec = spec;
         }
-        
+
         public ClassPath getBootstrapLibraries() {
             return ClassPathSupport.createClassPath(new URL[0]);
         }
-        
+
         public String getDisplayName() {
             return this.id;
         }
-        
+
         public Collection getInstallFolders() {
             return Collections.EMPTY_LIST;
         }
-        
+
         public List getJavadocFolders() {
             return Collections.EMPTY_LIST;
         }
-        
+
         public Map getProperties() {
             return Collections.EMPTY_MAP;
         }
-        
+
         public ClassPath getSourceFolders() {
             return ClassPathSupport.createClassPath(Collections.EMPTY_LIST);
         }
-        
+
         public Specification getSpecification() {
             return this.spec;
         }
-        
+
         public ClassPath getStandardLibraries() {
             return ClassPathSupport.createClassPath(new URL[0]);
         }
-        
+
         public String getVendor() {
             return "Me";
         }
@@ -254,44 +270,44 @@ public class JavaPlatformManagerTest extends NbTestCase {
         public FileObject findTool(String name) {
             return null;
         }
-        
+
     }
-    
+
     public static class TestJavaPlatformProvider implements JavaPlatformProvider {
-        
+
         private ArrayList listeners = new ArrayList ();
         private List platforms = new ArrayList ();
-        
-        
+
+
         static TestJavaPlatformProvider getDefault () {
             return (TestJavaPlatformProvider) Lookup.getDefault ().lookup (TestJavaPlatformProvider.class);
         }
-        
+
         public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
             assertNotNull (listener);
             this.listeners.add (listener);
         }
-        
+
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             assertNotNull (listener);
             this.listeners.remove (listener);
         }
-        
+
         public JavaPlatform[] getInstalledPlatforms() {
             return (JavaPlatform[]) this.platforms.toArray (new JavaPlatform[platforms.size()]);
         }
-        
+
         void addPlatform (JavaPlatform platform) {
             this.platforms.add (platform);
             this.firePropertyChange ();
         }
-        
+
         void removePlatform (JavaPlatform platform) {
             this.platforms.remove (platform);
             this.firePropertyChange ();
         }
-        
-        private void firePropertyChange () {            
+
+        private void firePropertyChange () {
             Iterator it;
             synchronized (this) {
                 it = ((Collection)this.listeners.clone()).iterator();
@@ -301,14 +317,14 @@ public class JavaPlatformManagerTest extends NbTestCase {
                 ((PropertyChangeListener)it.next()).propertyChange(event);
             }
         }
-                        
+
         public JavaPlatform getDefaultPlatform() {
             if (platforms.size()>0)
                 return (JavaPlatform) platforms.get(0);
             else
                 return null;
         }
-        
+
     }
-    
+
 }

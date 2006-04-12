@@ -1,13 +1,13 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.netbeans.modules.java.platform.FallbackDefaultJavaPlatform;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -53,21 +54,20 @@ public final class JavaPlatformManager {
     /** Creates a new instance of JavaPlatformManager */
     public JavaPlatformManager() {
     }
- 
+
     /** Gets an instance of JavaPlatformManager. It the instance doesn't exist it will be created.
      * @return the instance of JavaPlatformManager
      */
     public static synchronized JavaPlatformManager getDefault() {
         if (instance == null)
             instance = new JavaPlatformManager();
-            
+
         return instance;
     }
-    
+
     /**
      * Returns default platform. The platform the IDE is running on.
-     * @return the default platform, or null in case the default platform cannot
-     *         be found (e.g. the j2seplatform module is not installed)
+     * @return the default platform (never null as of org.netbeans.modules.java.platform/1 1.9)
      */
     public JavaPlatform getDefaultPlatform() {
         Collection/*<JavaPlatformProvider>*/ instances = this.getProviders ();
@@ -78,14 +78,14 @@ public final class JavaPlatformManager {
                 return defaultPlatform;
             }
         }
-        return null;
+        return new FallbackDefaultJavaPlatform();
     }
-    
+
     /** Gets an array of JavaPlatfrom objects.
      * @return the array of java platform definitions.
      */
     public synchronized JavaPlatform[] getInstalledPlatforms() {
-        if (cachedPlatforms == null) {            
+        if (cachedPlatforms == null) {
             Collection/*<JavaPlatformProvider>*/ instances = this.getProviders();
             cachedPlatforms = new HashSet ();
             for (Iterator it = instances.iterator(); it.hasNext(); ) {
@@ -100,10 +100,10 @@ public final class JavaPlatformManager {
     }
 
     /**
-     * Returns platform given by display name and/or specification. 
+     * Returns platform given by display name and/or specification.
      * @param platformDisplayName display name of platform or null for any name.
      * @param platformSpec Specification of platform or null for platform of any type, in the specification null means all.
-     * Specification with null profiles means none or any profile. 
+     * Specification with null profiles means none or any profile.
      * Specification with Profile(null,null) means any profile but at least 1.
      * For example Specification ("CLDC", new Profile[] { new Profile("MIMDP",null), new Profile(null,null)})
      * matches all CLDC platforms with MIDP profile of any versions and any additional profile.
@@ -113,7 +113,7 @@ public final class JavaPlatformManager {
     public JavaPlatform[] getPlatforms (String platformDisplayName, Specification platformSpec) {
         JavaPlatform[] platforms = getInstalledPlatforms();
         Collection/*<JavaPlatform>*/ result = new ArrayList ();
-        for (int i = 0; i < platforms.length; i++) {            
+        for (int i = 0; i < platforms.length; i++) {
             String name = platformDisplayName == null ? null : platforms[i].getDisplayName(); //Don't ask for display name when not needed
             Specification spec = platformSpec == null ?  null : platforms[i].getSpecification(); //Don't ask for platform spec when not needed
             if ((platformDisplayName==null || name.equalsIgnoreCase(platformDisplayName)) &&
@@ -170,7 +170,7 @@ public final class JavaPlatformManager {
             (version == null || version.equals (platformSpec.getVersion())) &&
             compatibleProfiles (platformSpec.getProfiles(), query.getProfiles()));
     }
-    
+
     private static boolean compatibleProfiles (Profile[] platformProfiles, Profile[] query) {
         if (query == null) {
             return true;
@@ -194,18 +194,18 @@ public final class JavaPlatformManager {
                 }
             }
             return covered.size() == platformProfiles.length;
-        }        
+        }
     }
-    
+
     private static boolean compatibleProfile (Profile platformProfile, Profile query) {
         String name = query.getName();
         SpecificationVersion version = query.getVersion();
         return ((name == null || name.equals (platformProfile.getName())) &&
                (version == null || version.equals (platformProfile.getVersion())));
     }
-    
+
     private synchronized Collection/*<JavaPlatformProvider>*/ getProviders () {
-        if (!this.providersValid) {            
+        if (!this.providersValid) {
             if (this.providers == null) {
                 this.providers = Lookup.getDefault().lookup(new Lookup.Template(JavaPlatformProvider.class));
                 this.providers.addLookupListener (new LookupListener () {
@@ -236,10 +236,10 @@ public final class JavaPlatformManager {
                 JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
                 provider.addPropertyChangeListener (pListener);
             }
-            this.lastProviders = instances;                        
+            this.lastProviders = instances;
             providersValid = true;
         }
-        return this.lastProviders;        
+        return this.lastProviders;
     }
 
 

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="../../nbbuild/javadoctools/apichanges.xsl"?>
@@ -75,6 +75,35 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="JavaPlatformManager.defaultPlatform">
+            <api name="general"/>
+            <summary></summary>
+            <version major="1" minor="9"/>
+            <date day="12" month="4" year="2006"/>
+            <author login="jglick"/>
+            <compatibility modification="yes">
+                <p>
+                    Code which previously handled null return values
+                    but expected any returned platform instance to
+                    meet certain criteria, such as having a non-null
+                    <code>ant.platform.name</code>, may be broken.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    <code>JavaPlatformManager.getDefaultPlatform</code>
+                    could formerly return null, in case no installed
+                    providers returned an instance; typically this
+                    would be due to some storage problem. In the
+                    interests of robustness, it will now as a fallback
+                    return a simple platform instance corresponding
+                    the JRE hosting the NetBeans code. Optional
+                    capabilities may be missing so avoid relying on
+                    this fallback platform implementation.
+                </p>
+            </description>
+        </change>
 
         <change id="CustomPlatformInstall">
             <api name="general"/>

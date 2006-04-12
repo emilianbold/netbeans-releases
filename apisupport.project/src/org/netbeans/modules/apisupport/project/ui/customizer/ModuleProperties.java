@@ -236,7 +236,9 @@ public abstract class ModuleProperties {
     
     static String getPlatformID(JavaPlatform platform) {
         // XXX why isn't there a real API for this??
-        return (String) platform.getProperties().get("platform.ant.name"); // NOI18N
+        String id = (String) platform.getProperties().get("platform.ant.name"); // NOI18N
+        // Handle case that a platform is not an Ant platform:
+        return id != null ? id : "default"; // NOI18N
     }
     
     static JavaPlatform findJavaPlatformByID(String id) {
