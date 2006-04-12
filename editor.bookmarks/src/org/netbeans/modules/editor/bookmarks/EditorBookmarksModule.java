@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,6 @@ import org.netbeans.lib.editor.bookmarks.actions.BookmarksKitInstallAction;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.openide.modules.ModuleInstall;
 
-
 /**
  * Module installation class for editor.
  *
@@ -47,7 +46,6 @@ public class EditorBookmarksModule extends ModuleInstall {
 
     private PropertyChangeListener openProjectsListener;
     private static List listeners = new ArrayList(); // List<ChangeListener>
-    private static final ListenerSupport listenerSupport = new ListenerSupport();
     private PropertyChangeListener annotationTypesListener;
     private List lastOpenProjects;
 
@@ -127,10 +125,6 @@ public class EditorBookmarksModule extends ModuleInstall {
         finish();
     }
     
-    static ListenerSupport getListenerSupport(){
-        return listenerSupport;
-    }
-    
     private void finish() {
         // Stop listening on projects closing
         OpenProjects.getDefault().removePropertyChangeListener(openProjectsListener);
@@ -148,7 +142,7 @@ public class EditorBookmarksModule extends ModuleInstall {
         
         // notify NbBookmarkManager that the module is uninstalled and BookmarkList can be removed
         // from doc.clientProperty
-        listenerSupport.fireChange();
+        fireChange();
     }
 
     private static final class BookmarksSettingsInitializer extends Settings.AbstractInitializer {
@@ -174,24 +168,22 @@ public class EditorBookmarksModule extends ModuleInstall {
         
     }
     
-    static class ListenerSupport{
-        public static synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+    public static synchronized void addChangeListener(ChangeListener l) {
+        listeners.add(l);
+    }
+    
+    public static synchronized void removeChangeListener(ChangeListener l) {
+        listeners.remove(l);
+    }
+    
+    private static void fireChange() {
+        ChangeEvent ev = new ChangeEvent(EditorBookmarksModule.class);
+        ChangeListener[] ls;
+        synchronized (EditorBookmarksModule.class) {
+            ls = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
         }
-
-        public static synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
-        }
-
-        private static void fireChange() {
-            ChangeEvent ev = new ChangeEvent(EditorBookmarksModule.class);
-            ChangeListener[] ls;
-            synchronized (EditorBookmarksModule.class) {
-                ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
-            }
-            for (int i = 0; i < ls.length; i++) {
-                ls[i].stateChanged(ev);
-            }
+        for (int i = 0; i < ls.length; i++) {
+            ls[i].stateChanged(ev);
         }
     }
 }

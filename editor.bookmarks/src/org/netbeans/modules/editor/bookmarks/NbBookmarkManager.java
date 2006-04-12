@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,14 +17,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.netbeans.lib.editor.bookmarks.spi.BookmarkImplementation;
 import org.netbeans.lib.editor.bookmarks.spi.BookmarkManager;
 import org.netbeans.lib.editor.bookmarks.spi.BookmarkManagerFactory;
 import org.netbeans.lib.editor.bookmarks.spi.BookmarkManagerSupport;
 import org.openide.util.WeakListeners;
-
 
 /**
  * Interface to a bookmark.
@@ -51,7 +49,7 @@ public final class NbBookmarkManager implements BookmarkManager {
     
     public void init(BookmarkManagerSupport support) {
         this.support = support;
-        EditorBookmarksModule.getListenerSupport().addChangeListener(WeakListeners.change(bookmarksModuleListener, EditorBookmarksModule.getListenerSupport()));
+        EditorBookmarksModule.addChangeListener(WeakListeners.change(bookmarksModuleListener, EditorBookmarksModule.class));
         PersistentBookmarks.loadBookmarks(this);
     }
     
@@ -88,4 +86,3 @@ public final class NbBookmarkManager implements BookmarkManager {
     }
     
 }
-
