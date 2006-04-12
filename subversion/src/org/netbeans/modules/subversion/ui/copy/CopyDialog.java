@@ -54,7 +54,7 @@ public abstract class CopyDialog implements DocumentListener, FocusListener {
         
         okButton = new JButton(okLabel);
         okButton.setEnabled(false);
-        dialogDescriptor.setOptions(new Object[] {okButton, "Canel"});
+        dialogDescriptor.setOptions(new Object[] {okButton, "Cancel"});
         
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
