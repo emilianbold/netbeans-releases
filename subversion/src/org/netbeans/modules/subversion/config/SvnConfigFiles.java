@@ -139,9 +139,10 @@ public class SvnConfigFiles {
             String urlString = url.toString();
             for (Iterator it = groups.keySet().iterator(); it.hasNext();) {
                 Object key = (Object) it.next();
-                if( ((String) groups.get(key)).equals(urlString) ) {
-                    groups.remove(key);
-                    break;
+                String value = (String) groups.get(key);
+                if( value != null && match(value, urlString) ) {
+                    it.remove();
+                    // the group is removed, but we will continue just to get sure
                 }                
             }
             servers.remove(group);
@@ -345,7 +346,7 @@ public class SvnConfigFiles {
 
             if(sourceSection == null) {
                 // the whole section is missing -> drop it
-                toRemove.add( sectionName );
+                itSections.remove();
                 continue;
             }                    
 
@@ -353,13 +354,10 @@ public class SvnConfigFiles {
                 String key = (String) itVariables.next();
                 if(!isProxyConfiguration(key)) {
                     // a variable is missing -> drop it
-                    targetSection.remove(key);
+                    itVariables.remove();
                 }
             }
-        }
-        for (Iterator it = toRemove.iterator(); it.hasNext();) {
-            target.remove(it.next());
-        }
+        }        
     }
 
     private boolean isProxyConfiguration(String key) {
