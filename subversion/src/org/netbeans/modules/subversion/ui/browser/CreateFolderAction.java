@@ -17,14 +17,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import javax.swing.Action;
+import javax.swing.JButton;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPathNode.RepositoryPathEntry;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 
@@ -113,13 +115,19 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                     childNodes = children.getNodes();
                     for (int i = 0; i < childNodes.length; i++) {
                         if(childNodes[i].getDisplayName().equals(newDir)) {
-
-                            // XXX i'm sure there is some nicer way
-                            ErrorManager.getDefault().notify(new IllegalArgumentException("Name already exists!"));
+                            JButton ok = new JButton("OK");
+                            NotifyDescriptor descriptor = new NotifyDescriptor(
+                                    "Folder '" + newDir + "' already exists!",
+                                    "Wrong folder name",
+                                    NotifyDescriptor.DEFAULT_OPTION,
+                                    NotifyDescriptor.ERROR_MESSAGE,
+                                    new Object [] { ok },
+                                    ok);
+                            DialogDisplayer.getDefault().notify(descriptor);        
                             return;
                         }
                     }
-                }                                                
+                }
 
                 RepositoryFile parentFile = repositoryPathNode.getEntry().getRepositoryFile();                    
                 Node segmentNode = repositoryPathNode;
