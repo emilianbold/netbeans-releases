@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -525,7 +525,7 @@ public final class Utils {
         final FileObject[] fileObjsNew
                 = new FileObject[fileObjs.length - nullsCount];
         int index = 0, indexNew = 0;
-        while (nullsCount > 0) {
+        while (indexNew < fileObjsNew.length) {
             FileObject fileObj = fileObjs[index++];
             if (fileObj != null) {
                 fileObjsNew[indexNew++] = fileObj;
@@ -533,6 +533,7 @@ public final class Utils {
                 nullsCount--;
             }
         }
+        assert nullsCount == 0;
         return fileObjsNew;
     }
 
