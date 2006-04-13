@@ -118,7 +118,7 @@ public class RepositoryStep
             public void run() {
                 invalid(null);                
 
-                storeValues();              
+                storeConfigValues();
                 
                 ISVNInfo info = null;                
                 try {      
@@ -161,6 +161,7 @@ public class RepositoryStep
             workerThread.join();
             if (invalidMsg[0] == null) {
                 valid();
+                storeHistory();
             } else {
                 valid(invalidMsg[0]);
             }
@@ -244,8 +245,12 @@ public class RepositoryStep
         repository.setEditable(editable);        
     }
         
-    void storeValues() {
-        repository.store();        
+    void storeConfigValues() {
+        repository.storeConfigValues();        
+    }
+
+    private void storeHistory() {
+        repository.storeHistory();        
     }
     
     public RepositoryFile getRepositoryFile() {

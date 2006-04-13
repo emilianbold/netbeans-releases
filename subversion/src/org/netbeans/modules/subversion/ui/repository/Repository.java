@@ -59,7 +59,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private volatile boolean internalDocumentChange;   
     private boolean passwordExpected;        
     private boolean valid = true;
-    private boolean userVisitedProxySettings;
+    private boolean userVisitedProxySettings;    
     private List listeners;
 
     public static final String PROP_VALID = "valid"; // XXX do it via a changelistener
@@ -176,7 +176,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.proxySettingsButton.setEnabled(editable);        
     }
     
-    public void store() {
+    public void storeConfigValues() {
         SelectedRepository repository = null;
         try {
             repository = getSelectedRepository();
@@ -207,9 +207,17 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             if(userVisitedProxySettings) {
                 SvnConfigFiles.getInstance().setProxy(getProxyDescriptor(), repository.getUrl());                 
             }            
-        }
+        }    
+        
+    }
 
-        HistorySettings.addRecent(HistorySettings.PROP_SVN_URLS, repository.getUrl().toString());
+    public void storeHistory() {        
+        try {
+            SelectedRepository repository = getSelectedRepository();
+            HistorySettings.addRecent(HistorySettings.PROP_SVN_URLS, repository.getUrl().toString());
+        } catch (Exception ex) {
+            // ignore
+        }        
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -297,7 +305,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         } catch (MalformedURLException ex) {
             // ignore
         }
-        
+
         if(repository != null) {            
             if (repository.getUrl()!=null) {                   
                 if (userVisitedProxySettings == false) {
