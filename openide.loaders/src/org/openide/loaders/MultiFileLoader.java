@@ -67,29 +67,86 @@ public abstract class MultiFileLoader extends DataLoader {
 
         // if this loader does not recognizes this file => return
         if (primary == null) return null;
+
+
+        boolean willLog = ERR.isLoggable(Level.FINE);
         
-        if (ERR.isLoggable(Level.FINE)) {
+        if (willLog) {
             ERR.fine(getClass().getName() + " is accepting: " + fo); // NOI18N
+        }
+
+        if (primary != fo) {
+            if (willLog) {
+                ERR.fine("checking correctness: primary is different than provided file: " + primary + " fo: " + fo); // NOI18N
+            }
+            Enumeration en = DataLoaderPool.getDefault().allLoaders();
+            for (;;) {
+                DataLoader l = (DataLoader)en.nextElement();
+                if (l == this) {
+                    ERR.fine("ok, consistent"); // NOI18N
+                    break;
+                }
+                if (l instanceof MultiFileLoader) {
+                    MultiFileLoader ml = (MultiFileLoader)l;
+                    if (ml.findPrimaryFile(primary) == primary) {
+                        if (willLog) {
+                            ERR.fine("loader seems to also take care of the file: " + ml);
+                        }
+                        DataObject snd;
+                        try {
+                            snd = ml.findDataObject(primary, recognized);
+                        } catch (DataObjectExistsException ex) {
+                            snd = ex.getDataObject();
+                        }
+                        if (snd != null) {
+                            return null;
+                        }
+                    }
+                }
+            }
         }
 
         MultiDataObject obj;
         try {
             // create the multi object
             obj = createMultiObject (primary);
-            if (ERR.isLoggable(Level.FINE)) {
+            if (willLog) {
                 ERR.fine(getClass().getName() + " created object for: " + fo + " obj: " + obj); // NOI18N
             }
         } catch (DataObjectExistsException ex) {
             // object already exists
             DataObject dataObject = ex.getDataObject ();
-            if (ERR.isLoggable(Level.FINE)) {
+            if (willLog) {
                 ERR.fine(getClass().getName() + " object already exists for: " + fo + " obj: " + dataObject); // NOI18N
             }
             
             if (dataObject.getLoader () != this) {
-                if (ERR.isLoggable(Level.FINE)) {
+                if (willLog) {
                     ERR.fine(getClass().getName() + " loader is wrong: " + dataObject.getLoader().getClass().getName()); // NOI18N
                 }
+
+                if (dataObject.getLoader() instanceof MultiFileLoader) {
+                    MultiFileLoader mfl = (MultiFileLoader)dataObject.getLoader();
+                    FileObject loaderPrimary = mfl.findPrimaryFileImpl(fo);
+                    ERR.log(Level.FINE, "Its primary file is {0}", loaderPrimary); // NOI18N
+                    if (loaderPrimary != null && dataObject.getPrimaryFile() != loaderPrimary) {
+                        ERR.log(Level.FINE, "Which is different than primary of found: {0}", dataObject); // NOI18N
+
+                        Enumeration before = DataLoaderPool.getDefault().allLoaders();
+                        while (before.hasMoreElements()) {
+                            Object o = before.nextElement();
+                            if (o == mfl) {
+                                ERR.log(Level.FINE, "Returning null"); // NOI18N
+                                return null;
+                            }
+                            if (o == this) {
+                                ERR.log(Level.FINE, "The loader" + mfl + " is after " + this + ". So do break."); // NOI18N
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 // try to update the data object by allowing other 
                 // loaders to take care of the object
                 dataObject = checkCollision (dataObject, fo);
@@ -97,7 +154,7 @@ public abstract class MultiFileLoader extends DataLoader {
             
             if (!(dataObject instanceof MultiDataObject)) {
                 // but if it is not MultiDataObject, propadate the exception
-                if (ERR.isLoggable(Level.FINE)) {
+                if (willLog) {
                     ERR.fine(getClass().getName() + " object is not MultiDataObject: " + dataObject); // NOI18N
                 }
                 throw ex;
@@ -109,7 +166,7 @@ public abstract class MultiFileLoader extends DataLoader {
         }
 
         if (obj.getLoader () != this) {
-            if (ERR.isLoggable(Level.FINE)) {
+            if (willLog) {
                 ERR.fine(getClass().getName() + " wrong loader: " + obj.getLoader().getClass().getName()); // NOI18N
             }
             // this primary file is recognized by a different
@@ -118,17 +175,17 @@ public abstract class MultiFileLoader extends DataLoader {
         }
 
         // mark all secondary entries used
-        if (ERR.isLoggable(Level.FINE)) {
+        if (willLog) {
             ERR.fine(getClass().getName() + " marking secondary entries"); // NOI18N
         }
         obj.markSecondaryEntriesRecognized (recognized);
 
         // if the file is not between
-        if (ERR.isLoggable(Level.FINE)) {
+        if (willLog) {
             ERR.fine(getClass().getName() + " register entry: " + fo); // NOI18N
         }
         org.openide.loaders.MultiDataObject.Entry e = obj.registerEntry (fo);
-        if (ERR.isLoggable(Level.FINE)) {
+        if (willLog) {
             ERR.fine(getClass().getName() + " success: " + e); // NOI18N
         }
 
