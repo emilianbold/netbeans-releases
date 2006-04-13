@@ -212,7 +212,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         try {
             return eh.handleException();
         } catch (SVNClientException ex) {
-            eh.annotate();
+            //eh.annotate();
             throw ex;
         }
     }
