@@ -28,8 +28,6 @@ import org.apache.tools.ant.types.FileSet;
 
 /**
  * Create an update tracking file automatically.
- * Requires a build script target containing one (and only one)
- * occurrence of the <code>&lt;makenbm&gt;</code> task.
  * @author  Michal Zlamal
  */
 public class MakeListOfNBM extends Task {
