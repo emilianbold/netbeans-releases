@@ -124,12 +124,10 @@ public class RepositoryStep
                 try {      
                     info = client.getInfo(selectedRepository.getUrl());                                                                                                        
                 } catch (SVNClientException ex) {
-                    String msg = ExceptionHandler.getCustomizedMessage(ex);
-                    if(msg==null) {
-                        msg = ex.getLocalizedMessage();
-                    }
-                    invalidMsg[0] = msg;
-                }                                
+                    ExceptionHandler eh = new ExceptionHandler(ex);
+                    eh.annotateOrNotify();
+                    invalidMsg[0] = ExceptionHandler.parseExceptionMessage(ex);                    
+                }
                 
                 if(info != null) {                    
                     SVNUrl repositoryUrl = info.getRepository();
