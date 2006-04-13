@@ -49,8 +49,7 @@ public class ImportStep extends AbstractStep implements DocumentListener {
             importPanel = new ImportPanel();            
             importPanel.messageTextArea.getDocument().addDocumentListener(this);            
             importPanel.repositoryPathTextField.getDocument().addDocumentListener(this);                       
-        }         
-        validateUserInput();        
+        }            
         return importPanel;              
     }
 
@@ -58,9 +57,9 @@ public class ImportStep extends AbstractStep implements DocumentListener {
         validateUserInput();
     }   
 
-    private boolean validateUserInput() {
+    public boolean validateUserInput() {
         String text = importPanel.repositoryPathTextField.getText().trim();
-        if (text == null || text.length() == 0) {
+        if (text.length() == 0) {
             invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014"));
             return false;
         }        
@@ -70,8 +69,9 @@ public class ImportStep extends AbstractStep implements DocumentListener {
         if(valid) {
             valid();
         } else {
-            invalid(null);                
+            invalid("Import message required");
         }
+
         return valid;
     }
     

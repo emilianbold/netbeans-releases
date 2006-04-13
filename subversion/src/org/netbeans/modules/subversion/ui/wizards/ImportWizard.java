@@ -129,10 +129,14 @@ public final class ImportWizard implements ChangeListener {
 
         public void nextPanel() {            
             if(current() == repositoryStep) {                                            
-                importStep.setup(repositoryStep.getRepositoryFile());
+                importStep.setup(repositoryStep.getRepositoryFile());                
             }            
             super.nextPanel();
+            if(current() == importStep) {                                                            
+                importStep.validateUserInput();
+            }
         }
+
     }
 
     public SVNUrl getRepositoryUrl() {
