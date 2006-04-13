@@ -66,6 +66,7 @@ Microsystems, Inc. All Rights Reserved.
                 <equals arg1="${cluster.dir}" arg2="${cluster.dir.fallback}"/>
             </not>
         </condition>
+        <property name="nbm.target.cluster" value=""/>
         <path id="cp">
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>
