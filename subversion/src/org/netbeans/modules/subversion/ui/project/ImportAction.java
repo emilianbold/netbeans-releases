@@ -14,6 +14,7 @@
 package org.netbeans.modules.subversion.ui.project;
 
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.ErrorManager;
@@ -118,12 +119,9 @@ public final class ImportAction extends NodeAction {
         SvnProgressSupport support = new SvnProgressSupport(rp) {
             public void perform() {
                 try{                   
-                    try {
-                        client.doImport(importDirectory, repositoryFolderUrl, message, true);
-                    } catch (SVNClientException ex) {
-                        org.openide.ErrorManager.getDefault().notify(ex);
-                        return;
-                    }
+
+                    client.doImport(importDirectory, repositoryFolderUrl, message, true);
+
                     if(isCanceled()) {
                         return;
                     }
@@ -146,7 +144,8 @@ public final class ImportAction extends NodeAction {
                         FileUtils.deleteRecursively(checkoutFile);
                     }                            
                 } catch (SVNClientException ex) {
-                    org.openide.ErrorManager.getDefault().notify(ex);                                    
+                    ExceptionHandler eh = new ExceptionHandler(ex);
+                    eh.annotate();
                 } 
             }
         };
