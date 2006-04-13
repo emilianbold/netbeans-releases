@@ -148,7 +148,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 return Collections.EMPTY_LIST; // nothing to do...
             }
 
-            SvnClient client = Subversion.getInstance().getClient(this.repositoryRoot.getRepositoryUrl());                    
+            SvnClient client = Subversion.getInstance().getClient(this.repositoryRoot.getRepositoryUrl(), support);
             if(support.isCanceled()) {
                 return null;
             }
