@@ -157,32 +157,41 @@ public class RepositoryFile {
 
     public RepositoryFile appendPath(String path) {
         return new RepositoryFile(repositoryUrl, getFileUrl().appendPath(path), revision);
-    }
-    
-    public RepositoryFile  replaceLastSegment(String segment) {        
-        assert segment != null && !segment.equals("");        
+    }       
+
+    public RepositoryFile replaceLastSegment(String segment, int level) {
+        assert segment != null && !segment.equals("");
+        assert level > -1 && level < fileUrl.getPathSegments().length;
         assert !isRepositoryRoot(); // can't do this 
+
+        String fileUrlString = fileUrl.toString();
+        int fromIdx = fileUrlString.lastIndexOf('/');
+        int toIdx = fileUrlString.length() - 1;
+        for (int i = 0; i < level; i++) {
+            toIdx = fromIdx - 1;
+            fromIdx = fileUrlString.lastIndexOf('/', fromIdx - 1);
+        }        
         
-        String fileUrlStrint = fileUrl.toString();
-        int idx = fileUrlStrint.lastIndexOf('/');
-        
-        assert !(idx < repositoryUrl.toString().length());
+        assert !(fromIdx < repositoryUrl.toString().length());
+        assert toIdx >= fromIdx && toIdx < fileUrlString.length();
+
         SVNUrl newUrl = null;
         try {
-            newUrl = new SVNUrl(fileUrlStrint.substring(0, idx + 1) + segment);
+            newUrl = new SVNUrl(fileUrlString.substring(0, fromIdx + 1) + segment + fileUrlString.substring(toIdx + 1));
         } catch (MalformedURLException ex) {
             ex.printStackTrace();  // should not happen
         }                        
         return new RepositoryFile(repositoryUrl, newUrl, revision);
-    }        
+    }
 
     public RepositoryFile  removeLastSegment() {                
         assert !isRepositoryRoot(); // can't do this 
         
         String fileUrlStrint = fileUrl.toString();
         int idx = fileUrlStrint.lastIndexOf('/');
-        
+
         assert !(idx < repositoryUrl.toString().length());
+
         SVNUrl newUrl = null;
         try {
             newUrl = new SVNUrl(fileUrlStrint.substring(0, idx));
@@ -190,6 +199,6 @@ public class RepositoryFile {
             ex.printStackTrace();  // should not happen
         }                        
         return new RepositoryFile(repositoryUrl, newUrl, revision);
-    }        
+    }         
     
 }

@@ -12,17 +12,15 @@
  */
 package org.netbeans.modules.subversion.ui.browser;
 
-import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import org.netbeans.api.progress.ProgressHandle;
@@ -30,18 +28,11 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -54,7 +45,6 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     private String defaultFolderName;
     
     private static final RepositoryFile[] EMPTY_ROOT = new RepositoryFile[0];
-    private static final List EMPTY_LIST = new ArrayList(0);
     private static final Action[] EMPTY_ACTIONS = new Action[0];
     
     private final boolean showFiles;    
@@ -154,7 +144,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     public List listRepositoryPath(final RepositoryPathNode.RepositoryPathEntry entry) throws SVNClientException {
         
         if(entry.getSvnNodeKind().equals(SVNNodeKind.FILE)) {
-            return EMPTY_LIST; // nothing to do...
+            return Collections.EMPTY_LIST; // nothing to do...
         }
         
         ProgressHandle ph = 
@@ -174,7 +164,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
 
             if(dirEntries == null || dirEntries.length == 0) {
                 ph.finish();
-                return EMPTY_LIST; // nothing to do...
+                return Collections.EMPTY_LIST; // nothing to do...
             }
             
             for (int i = 0; i < dirEntries.length; i++) {                            
