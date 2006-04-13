@@ -58,7 +58,7 @@ public final class CheckoutAction extends CallableSystemAction {
                     checkout(client, repository, repositoryFiles, file, false, this);
                 } catch (SVNClientException ex) {
                     ExceptionHandler eh = new ExceptionHandler(ex);
-                    eh.annotateOrNotify();
+                    eh.annotate();
                     //ErrorManager.getDefault().notify(ex);
                     return;
                 }

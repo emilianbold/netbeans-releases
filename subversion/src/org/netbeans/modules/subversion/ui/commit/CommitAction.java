@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
@@ -246,7 +247,8 @@ public class CommitAction extends ContextAction {
                 cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ex);
+            ExceptionHandler eh = new ExceptionHandler(ex);
+            eh.annotate();
         } 
     }
 

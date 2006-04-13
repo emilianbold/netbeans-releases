@@ -187,7 +187,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 return null;
             } else {
                 ExceptionHandler eh = new ExceptionHandler(ex);
-                eh.annotateOrNotify();                
+                eh.annotate();                
                 throw ex;
             }                
         } finally {
