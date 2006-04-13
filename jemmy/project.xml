@@ -6,7 +6,7 @@
     <groupId>jemmy</groupId>
     <artifactId>jemmy</artifactId>
     <name>Jemmy</name>
-    <currentVersion>2.2.6</currentVersion>
+    <currentVersion>2.2.7-SNAPSHOT</currentVersion>
     <url>http://jemmy.netbeans.org/</url>
     <issueTrackingUrl>http://jemmy.netbeans.org/servlets/ProjectIssues</issueTrackingUrl>
     <siteDirectory>/export/home/www/netbeans/jemmy</siteDirectory>
