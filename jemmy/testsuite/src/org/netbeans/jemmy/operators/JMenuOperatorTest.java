@@ -111,24 +111,23 @@ public class JMenuOperatorTest extends TestCase {
     public void testConstructor() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
         
-        // JMenuOperator operator3 = new JMenuOperator(operator1, new NameComponentChooser("JMenuOperatorTest"));
-        // assertNotNull(operator3);
+        JMenuOperator operator3 = new JMenuOperator(operator1, new NameComponentChooser("JMenuOperatorTest"));
+        assertNotNull(operator3);
         
-        // JMenuOperator operator4 = new JMenuOperator(operator1, "JMenuOperatorTest");
-        // assertNotNull(operator4);
+        JMenuOperator operator4 = new JMenuOperator(operator1, "JMenuOperatorTest");
+        assertNotNull(operator4);
         
-        // JMenuOperator operator5 = new JMenuOperator(menu);
-        // assertNotNull(operator5);
+        JMenuOperator operator5 = new JMenuOperator(menu);
+        assertNotNull(operator5);
     }
 
     /**
@@ -137,12 +136,11 @@ public class JMenuOperatorTest extends TestCase {
     public void testFindJMenu() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JMenu menu1 = JMenuOperator.findJMenu(frame, "JMenuOperatorTest", false, false);
-        // assertNotNull(menu1);
+        JMenu menu1 = JMenuOperator.findJMenu(frame, "JMenuOperatorTest", false, false);
+        assertNotNull(menu1);
         
-        // JMenu menu2 = JMenuOperator.findJMenu(frame, new NameComponentChooser("JMenuOperatorTest"));
-        // assertNotNull(menu2);
+        JMenu menu2 = JMenuOperator.findJMenu(frame, new NameComponentChooser("JMenuOperatorTest"));
+        assertNotNull(menu2);
     }
 
     /**
@@ -151,12 +149,11 @@ public class JMenuOperatorTest extends TestCase {
     public void testWaitJMenu() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JMenu menu1 = JMenuOperator.waitJMenu(frame, "JMenuOperatorTest", false, false);
-        // assertNotNull(menu1);
+        JMenu menu1 = JMenuOperator.waitJMenu(frame, "JMenuOperatorTest", false, false);
+        assertNotNull(menu1);
         
-        // JMenu menu2 = JMenuOperator.waitJMenu(frame, new NameComponentChooser("JMenuOperatorTest"));
-        // assertNotNull(menu2);
+        JMenu menu2 = JMenuOperator.waitJMenu(frame, new NameComponentChooser("JMenuOperatorTest"));
+        assertNotNull(menu2);
     }
 
     /**
@@ -165,26 +162,25 @@ public class JMenuOperatorTest extends TestCase {
     public void testPushMenu() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // menu.addMenuListener(new PushMenuListener());
-        // operator2.pushMenu("JMenuOperatorTest");
-        // operator2.pushMenu("JMenuOperatorTest", "/");
-        // operator2.pushMenu("JMenuOperatorTest", "/", false, false);
+        menu.addMenuListener(new PushMenuListener());
+        operator2.pushMenu("JMenuOperatorTest");
+        operator2.pushMenu("JMenuOperatorTest", "/");
+        operator2.pushMenu("JMenuOperatorTest", "/", false, false);
         
-        // String[] strings = new String[1];
-        // strings[0] = "JMenuOperatorTest";
-        // operator2.pushMenu(strings, false, false);
+        String[] strings = new String[1];
+        strings[0] = "JMenuOperatorTest";
+        operator2.pushMenu(strings, false, false);
         
-        // operator2.pushMenu("JMenuOperatorTest", new RegExComparator());
+        operator2.pushMenu("JMenuOperatorTest", new RegExComparator());
     }
 
     /**
@@ -193,27 +189,26 @@ public class JMenuOperatorTest extends TestCase {
     public void testPushMenuNoBlock() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // menu.addMenuListener(new PushMenuListener());
-        // operator2.pushMenuNoBlock("JMenuOperatorTest");
-        // operator2.pushMenuNoBlock("JMenuOperatorTest", "/");
-        // operator2.pushMenuNoBlock("JMenuOperatorTest", "/", false, false);
+        menu.addMenuListener(new PushMenuListener());
+        operator2.pushMenuNoBlock("JMenuOperatorTest");
+        operator2.pushMenuNoBlock("JMenuOperatorTest", "/");
+        operator2.pushMenuNoBlock("JMenuOperatorTest", "/", false, false);
 
-        // String[] strings = new String[1];
-        // strings[0] = "JMenuOperatorTest";
-        // operator2.pushMenuNoBlock(strings, false, false);
+        String[] strings = new String[1];
+        strings[0] = "JMenuOperatorTest";
+        operator2.pushMenuNoBlock(strings, false, false);
 
-        // operator2.pushMenuNoBlock("JMenuOperatorTest", ",", new RegExComparator());
-        // operator2.pushMenuNoBlock("JMenuOperatorTest", new RegExComparator());
+        operator2.pushMenuNoBlock("JMenuOperatorTest", ",", new RegExComparator());
+        operator2.pushMenuNoBlock("JMenuOperatorTest", new RegExComparator());
     }
     
     /**
@@ -236,22 +231,21 @@ public class JMenuOperatorTest extends TestCase {
     public void testShowMenuItems() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // menu.addMenuListener(new PushMenuListener());
+        menu.addMenuListener(new PushMenuListener());
         // operator2.showMenuItems("JMenuOperatorTest");
         // operator2.showMenuItems("JMenuOperatorTest", "/");
 
-        // String[] strings = new String[1];
-        // strings[0] = "JMenuOperatorTest";
+        String[] strings = new String[1];
+        strings[0] = "JMenuOperatorTest";
         
         // operator2.showMenuItems(strings);
     }
@@ -262,28 +256,27 @@ public class JMenuOperatorTest extends TestCase {
     public void testShowMenuItem() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // menu.addMenuListener(new PushMenuListener());
+        menu.addMenuListener(new PushMenuListener());
         // operator2.showMenuItem("Item1");
-        // operator2.showMenuItem("JMenuOperatorTest/Item1", "/");
+        operator2.showMenuItem("Item1", "/");
 
-        // ComponentChooser[] choosers = new ComponentChooser[1];
-        // choosers[0] = new NameComponentChooser("Item1");
-        // operator2.showMenuItem(choosers);
+        ComponentChooser[] choosers = new ComponentChooser[1];
+        choosers[0] = new NameComponentChooser("Item1");
+        operator2.showMenuItem(choosers);
         
-        // String[] strings = new String[1];
-        // strings[0] = "JMenuOperatorTest";
+        String[] strings = new String[1];
+        strings[0] = "Item1";
         
-        // operator2.showMenuItem(strings);
+        operator2.showMenuItem(strings);
     }
 
     /**
@@ -292,17 +285,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testGetDump() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // operator2.getDump();
+        operator2.getDump();
     }
 
     /**
@@ -311,19 +303,18 @@ public class JMenuOperatorTest extends TestCase {
     public void testAdd() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // operator2.add(new JMenuItem("JMenuOperatorTest1"));;
-        // operator2.add("JMenuOperatorTest2");
-        // operator2.add(new ActionTest());
+        operator2.add(new JMenuItem("JMenuOperatorTest1"));;
+        operator2.add("JMenuOperatorTest2");
+        operator2.add(new ActionTest());
     }
 
     /**
@@ -332,22 +323,21 @@ public class JMenuOperatorTest extends TestCase {
     public void testAddMenuListener() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // MenuListenerTest listener = new MenuListenerTest();
-        // operator2.addMenuListener(listener);
-        // assertEquals(1, menu.getMenuListeners().length);
+        MenuListenerTest listener = new MenuListenerTest();
+        operator2.addMenuListener(listener);
+        assertEquals(1, menu.getMenuListeners().length);
         
-        // operator2.removeMenuListener(listener);
-        // assertEquals(0, menu.getMenuListeners().length);
+        operator2.removeMenuListener(listener);
+        assertEquals(0, menu.getMenuListeners().length);
     }
     
     /**
@@ -370,17 +360,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testAddSeparator() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
         
-        // operator2.addSeparator();
+        operator2.addSeparator();
     }
 
     /**
@@ -389,20 +378,19 @@ public class JMenuOperatorTest extends TestCase {
     public void testGetDelay() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // assertEquals(200, operator2.getDelay());
+        assertEquals(200, operator2.getDelay());
         
-        // operator2.setDelay(400);
-        // assertEquals(400, operator2.getDelay());
+        operator2.setDelay(400);
+        assertEquals(400, operator2.getDelay());
     }
 
     /**
@@ -411,17 +399,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testGetItem() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // assertNotNull(operator2.getItem(0));
+        assertNotNull(operator2.getItem(0));
     }
 
     /**
@@ -430,17 +417,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testGetItemCount() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // assertEquals(1, operator2.getItemCount());
+        assertEquals(1, operator2.getItemCount());
     }
 
     /**
@@ -449,17 +435,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testGetMenuComponent() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // assertNotNull(operator2.getMenuComponent(0));
+        assertNotNull(operator2.getMenuComponent(0));
     }
 
     /**
@@ -468,17 +453,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testGetMenuComponentCount() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // assertEquals(1, operator2.getMenuComponentCount());
+        assertEquals(1, operator2.getMenuComponentCount());
     }
 
     /**
@@ -487,17 +471,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testGetMenuComponents() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // assertNotNull(operator2.getMenuComponents());
+        assertNotNull(operator2.getMenuComponents());
     }
 
     /**
@@ -506,17 +489,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testGetPopupMenu() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // operator2.getPopupMenu();
+        operator2.getPopupMenu();
     }
 
     /**
@@ -525,19 +507,18 @@ public class JMenuOperatorTest extends TestCase {
     public void testInsert() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // operator2.insert(new JMenuItem("Test"), 0);
-        // operator2.insert("Testing", 0);
-        // operator2.insert(new ActionTest(), 0);
+        operator2.insert(new JMenuItem("Test"), 0);
+        operator2.insert("Testing", 0);
+        operator2.insert(new ActionTest(), 0);
     }
     
     /**
@@ -574,17 +555,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testInsertSeparator() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // operator2.insertSeparator(0);
+        operator2.insertSeparator(0);
     }
 
     /**
@@ -593,17 +573,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testIsMenuComponent() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        //  operator2.isMenuComponent(frame);
+        operator2.isMenuComponent(frame);
     }
 
     /**
@@ -612,20 +591,19 @@ public class JMenuOperatorTest extends TestCase {
     public void testIsPopupMenuVisible() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // assertTrue(!operator2.isPopupMenuVisible());
+        assertTrue(!operator2.isPopupMenuVisible());
         
-        // operator2.setPopupMenuVisible(true);
-        // assertTrue(operator2.isPopupMenuVisible());
+        operator2.setPopupMenuVisible(true);
+        assertTrue(operator2.isPopupMenuVisible());
     }
 
     /**
@@ -634,22 +612,21 @@ public class JMenuOperatorTest extends TestCase {
     public void testIsTearOff() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // try {
-        //    operator2.isTearOff();
-        //    fail();
-        // }
-        // catch(NullPointerException exception) {
-        // }
+        try {
+            operator2.isTearOff();
+            fail();
+        }
+        catch(NullPointerException exception) {
+        }
     }
 
     /**
@@ -658,17 +635,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testIsTopLevelMenu() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // assertTrue(operator2.isTopLevelMenu());
+        assertTrue(operator2.isTopLevelMenu());
     }
 
     /**
@@ -677,17 +653,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testRemove() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // operator2.remove(new JMenuItem("Test"));
+        operator2.remove(new JMenuItem("Test"));
     }
 
     /**
@@ -696,17 +671,16 @@ public class JMenuOperatorTest extends TestCase {
     public void testSetMenuLocation() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // operator2.setMenuLocation(0, 1);
+        operator2.setMenuLocation(0, 1);
     }
 
     /**
@@ -715,19 +689,18 @@ public class JMenuOperatorTest extends TestCase {
     public void testCreateDescription() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // ComponentChooser[] choosers = new ComponentChooser[1];
-        // choosers[0] = new NameComponentChooser("Test");
-        // operator2.createDescription(choosers);
+        ComponentChooser[] choosers = new ComponentChooser[1];
+        choosers[0] = new NameComponentChooser("Test");
+        operator2.createDescription(choosers);
     }
 
     /**
@@ -736,18 +709,17 @@ public class JMenuOperatorTest extends TestCase {
     public void testConverChoosers() {
         frame.setVisible(true);
         
-        // TODO: disabled, figure out why it is failing.
-        // JFrameOperator operator = new JFrameOperator();
-        // assertNotNull(operator);
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
         
-        // JMenuBarOperator operator1 = new JMenuBarOperator(operator);
-        // assertNotNull(operator1);
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
         
-        // JMenuOperator operator2 = new JMenuOperator(operator1);
-        // assertNotNull(operator2);
+        JMenuOperator operator2 = new JMenuOperator(operator1);
+        assertNotNull(operator2);
 
-        // ComponentChooser[] choosers = new ComponentChooser[1];
-        // choosers[0] = new NameComponentChooser("Test");
-        // operator2.converChoosers(choosers);
+        ComponentChooser[] choosers = new ComponentChooser[1];
+        choosers[0] = new NameComponentChooser("Test");
+        operator2.converChoosers(choosers);
     }
 }
