@@ -57,9 +57,9 @@ public final class CheckoutAction extends CallableSystemAction {
                     setDisplayName("checking out ...");
                     checkout(client, repository, repositoryFiles, file, false, this);
                 } catch (SVNClientException ex) {
-//                    ExceptionHandler eh = new ExceptionHandler(ex);
-//                    eh.handleOrNotify();
-                    ErrorManager.getDefault().notify(ex);
+                    ExceptionHandler eh = new ExceptionHandler(ex);
+                    eh.annotateOrNotify();
+                    //ErrorManager.getDefault().notify(ex);
                     return;
                 }
                 if(isCanceled()) {
@@ -127,7 +127,7 @@ public final class CheckoutAction extends CallableSystemAction {
             } else {
                 destination = workingDir;
             }
-            if(support!=null && support.isCanceled()) {
+            if(support!=null && support.isCanceled()) { // XXX support!= null && 
                 return;
             }
             client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
