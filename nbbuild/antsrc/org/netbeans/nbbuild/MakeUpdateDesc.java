@@ -16,6 +16,7 @@ package org.netbeans.nbbuild;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.BuildException;
@@ -23,7 +24,12 @@ import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.DirectoryScanner;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.EntityResolver;
@@ -39,9 +45,7 @@ public class MakeUpdateDesc extends MatchingTask {
     protected boolean usedMatchingTask = false;
     /** Set of NBMs presented as a folder in the Update Center. */
     public /*static*/ class Group {
-        public Vector nbms = new Vector ();
         public Vector filesets = new Vector ();
-        public Vector scanners = new Vector ();
 	public String name;
 
         /** Displayed name of the group. */
@@ -171,6 +175,18 @@ public class MakeUpdateDesc extends MatchingTask {
 	    if (uptodate) return;
 	}
 	log ("Creating update description " + desc.getAbsolutePath ());
+        
+        Map/*<String,List<Module>>*/ modulesByGroup = loadNBMs();
+        boolean targetClustersDefined = false;
+        Iterator it1 = modulesByGroup.values().iterator();
+        while (it1.hasNext()) {
+            Iterator it2 = ((List) it1.next()).iterator();
+            while (it2.hasNext()) {
+                Module m = (Module) it2.next();
+                targetClustersDefined |= m.xml.getAttributeNode("targetcluster") != null;
+            }
+        }
+        
         // XXX Apparently cannot create a doc with entities using DOM 2.
 	try {
             desc.delete();
@@ -195,7 +211,12 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     desc_ent = new File(ent_name);               
                     desc_ent.delete();
-                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.4//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_4.dtd\" ["); //NOI18N
+                    if (targetClustersDefined) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.4//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_4.dtd\" [");
+                    } else {
+                        // #74866: no need for targetcluster, so keep compat w/ 5.0 AU.
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.3//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_3.dtd\" [");
+                    }
                     // Would be better to follow order of groups and includes
                     pw.println ("    <!ENTITY entity SYSTEM \"" + xmlEscape(desc_ent.getName()) + "\">"); //NOI18N
                     int inc_num=0;
@@ -222,7 +243,11 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ();
                     
                 } else {
-                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.4//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_4.dtd\">"); //NOI18N
+                    if (targetClustersDefined) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.4//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_4.dtd\">");
+                    } else {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.3//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_3.dtd\">");
+                    }
                     pw.println ("<module_updates timestamp=\"" + date + "\">"); //NOI18N
                     pw.println ();
                 }
@@ -231,77 +256,53 @@ public class MakeUpdateDesc extends MatchingTask {
 		Map/*<String,Element>*/ licenses = new HashMap();
 		java.util.Set licenseNames = new java.util.HashSet (); // Set<String>
                 
-                for (int gi=0; gi < groups.size(); gi++) {
-		    Group g = (Group) groups.elementAt(gi);
-		    // Don't indent; embedded descriptions would get indented otherwise.
-                    log ("Creating group \"" + g.name + "\"");
-                    if ( ! g.name.equals("root")) { //NOI18N
-                        pw.println ("<module_group name=\"" + xmlEscape(g.name) + "\">"); //NOI18N
-                        pw.println ();
+                Iterator/*<Map.Entry<String,List<Module>>>*/ modulesByGroupIt = modulesByGroup.entrySet().iterator();
+                while (modulesByGroupIt.hasNext()) {
+                    Map.Entry/*<String,List<Module>>*/ entry = (Map.Entry) modulesByGroupIt.next();
+                    String groupName = (String) entry.getKey();
+                    // Don't indent; embedded descriptions would get indented otherwise.
+                    log("Creating group \"" + groupName + "\"");
+                    if (!groupName.equals("root")) {
+                        pw.println("<module_group name=\"" + xmlEscape(groupName) + "\">");
+                        pw.println();
                     }
-                    for (int fsi=0; fsi < g.filesets.size(); fsi++) {
-                        FileSet fs = (FileSet) g.filesets.elementAt(fsi);
-                        DirectoryScanner ds = fs.getDirectoryScanner(getProject());
-                        String[] files = ds.getIncludedFiles();
-                        for (int fid=0; fid < files.length; fid++) {
-                            File n_file = new File(fs.getDir(getProject()), files[fid]);
-                            try {
-                                long size = n_file.length ();
-                                java.util.zip.ZipFile zip = new java.util.zip.ZipFile (n_file);
-                                try {
-                                    java.util.zip.ZipEntry entry = zip.getEntry ("Info/info.xml"); //NOI18N
-                                    if (entry == null) {
-                                        throw new BuildException ("NBM " + n_file + " was malformed: no Info/info.xml", getLocation());
-                                    }
-                                    java.io.InputStream is = zip.getInputStream (entry);
-                                    try {
-                                        Element module = XMLUtil.parse(new InputSource(is), false, false, null, new EntityResolver() {
-                                            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                                                return new InputSource(new ByteArrayInputStream(new byte[0]));
-                                            }
-                                        }).getDocumentElement();
-                                        if (module.getAttribute("downloadsize").equals("0")) {
-                                            module.setAttribute("downloadsize", Long.toString(size));
-                                        }
-                                        Element manifest = (Element) module.getElementsByTagName("manifest").item(0);
-                                        String name = manifest.getAttribute("OpenIDE-Module-Name");
-                                        if (name.length() > 0) {
-                                            log(" Adding module " + name + " (" + n_file.getAbsolutePath() + ")");
-                                        }
-                                        if (dist_base != null) {
-                                            // fix/enforce distribution URL base
-                                            String prefix;
-                                            if (dist_base.equals(".")) {
-                                                prefix = "";
-                                            } else {
-                                                prefix = dist_base + "/";
-                                            }
-                                            module.setAttribute("distribution", prefix + n_file.getName());
-                                        }
-                                        NodeList licenseList = module.getElementsByTagName("license");
-                                        if (licenseList.getLength() > 0) {
-                                            Element license = (Element) licenseList.item(0);
-                                            // XXX ideally would compare the license texts to make sure they actually match up
-                                            licenses.put(license.getAttribute("name"), license);
-                                            module.removeChild(license);
-                                        }
-                                        pw.flush();
-                                        XMLUtil.write(module, os);
-                                    } finally {
-                                        is.close ();
-                                        pw.println ();
-                                    }
-                                } finally {
-                                    zip.close ();
-                                }
-                            } catch (Exception e) {
-                                throw new BuildException("Cannot access nbm file: " + n_file, e, getLocation());
-                            }
+                    List/*<Module>*/ modules = (List) entry.getValue();
+                    Iterator/*<Module>*/ modulesIt = modules.iterator();
+                    while (modulesIt.hasNext()) {
+                        Module m = (Module) modulesIt.next();
+                        Element module = m.xml;
+                        if (module.getAttribute("downloadsize").equals("0")) {
+                            module.setAttribute("downloadsize", Long.toString(m.nbm.length()));
                         }
-		    }
-                    if ( ! g.name.equals("root")) { //NOI18N
-                        pw.println ("</module_group>"); //NOI18N
-                        pw.println ();
+                        Element manifest = (Element) module.getElementsByTagName("manifest").item(0);
+                        String name = manifest.getAttribute("OpenIDE-Module-Name");
+                        if (name.length() > 0) {
+                            log(" Adding module " + name + " (" + m.nbm.getAbsolutePath() + ")");
+                        }
+                        if (dist_base != null) {
+                            // fix/enforce distribution URL base
+                            String prefix;
+                            if (dist_base.equals(".")) {
+                                prefix = "";
+                            } else {
+                                prefix = dist_base + "/";
+                            }
+                            module.setAttribute("distribution", prefix + m.nbm.getName());
+                        }
+                        NodeList licenseList = module.getElementsByTagName("license");
+                        if (licenseList.getLength() > 0) {
+                            Element license = (Element) licenseList.item(0);
+                            // XXX ideally would compare the license texts to make sure they actually match up
+                            licenses.put(license.getAttribute("name"), license);
+                            module.removeChild(license);
+                        }
+                        pw.flush();
+                        XMLUtil.write(module, os);
+                        pw.println();
+                    }
+                    if (!groupName.equals("root")) {
+                        pw.println("</module_group>");
+                        pw.println();
                     }
 		}
                 pw.flush();
@@ -326,4 +327,54 @@ public class MakeUpdateDesc extends MatchingTask {
 	}
     }
 
+    private static class Module {
+        public Module() {}
+        public Element xml;
+        public File nbm;
+    }
+    
+    private Map/*<String,List<Module>>*/ loadNBMs() throws BuildException {
+        Map r = new LinkedHashMap();
+        for (int gi = 0; gi < groups.size(); gi++) {
+            Group g = (Group) groups.elementAt(gi);
+            List/*<Element>*/ modules = new ArrayList();
+            r.put(g.name, modules);
+            for (int fsi = 0; fsi < g.filesets.size(); fsi++) {
+                FileSet fs = (FileSet) g.filesets.elementAt(fsi);
+                DirectoryScanner ds = fs.getDirectoryScanner(getProject());
+                String[] files = ds.getIncludedFiles();
+                for (int fid = 0; fid < files.length; fid++) {
+                    File n_file = new File(fs.getDir(getProject()), files[fid]);
+                    try {
+                        ZipFile zip = new ZipFile(n_file);
+                        try {
+                            ZipEntry entry = zip.getEntry("Info/info.xml");
+                            if (entry == null) {
+                                throw new BuildException("NBM " + n_file + " was malformed: no Info/info.xml", getLocation());
+                            }
+                            InputStream is = zip.getInputStream(entry);
+                            try {
+                                Module m = new Module();
+                                m.xml = XMLUtil.parse(new InputSource(is), false, false, null, new EntityResolver() {
+                                    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                                        return new InputSource(new ByteArrayInputStream(new byte[0]));
+                                    }
+                                }).getDocumentElement();
+                                m.nbm = n_file;
+                                modules.add(m);
+                            } finally {
+                                is.close();
+                            }
+                        } finally {
+                            zip.close();
+                        }
+                    } catch (Exception e) {
+                        throw new BuildException("Cannot access nbm file: " + n_file, e, getLocation());
+                    }
+                }
+            }
+        }
+        return r;
+    }
+        
 }

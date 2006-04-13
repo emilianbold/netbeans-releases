@@ -55,7 +55,17 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <!-- reads app.name if exists -->
         <condition property="help.target.cluster" value="${app.name}" >
-            <isset property="app.name"/>
+            <and>
+                <isset property="app.name"/>
+                <!-- #74866: only works for 6.0+ platforms. -->
+                <available resource="org/netbeans/updater/resources/autoupdate-info-2_4.dtd">
+                    <classpath>
+                        <fileset dir="${netbeans.dest.dir}">
+                            <include name="platform*/modules/ext/updater.jar"/>
+                        </fileset>
+                    </classpath>
+                </available>
+            </and>
         </condition>
         <!-- sets property 'nbm.target.cluster.name' to 'nbm.target.cluster' if helper property set -->
         <condition property="nbm.target.cluster.name" value="nbm.target.cluster" >

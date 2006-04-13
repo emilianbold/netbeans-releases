@@ -518,6 +518,8 @@ public class MakeNBM extends Task {
             mtm.setNbmNeedsRestart(needsrestart);
 	    log("  global: \""+mtm.getNbmIsGlobal()+ "\" => \"" + global + "\"", Project.MSG_DEBUG);
             mtm.setNbmIsGlobal(global);
+            // XXX this makes no sense. Why should targetcluster be defined in update_tracking/*.xml?
+            // (In fact it is not, but I can't tell why it isn't. -jglick)
 	    log("  targetcluster: \""+mtm.getNbmTargetCluster ()+ "\" => \"" + targetcluster + "\"", Project.MSG_DEBUG);
             mtm.setNbmTargetCluster (targetcluster);
 	    log("  releasedate: \""+mtm.getNbmReleaseDate() + "\" => \"" + releasedate+"\"", Project.MSG_DEBUG);
@@ -625,10 +627,16 @@ public class MakeNBM extends Task {
         } catch (ParserConfigurationException x) {
             throw new BuildException(x, getLocation());
         }
-        Document doc = domimpl.createDocument(null, "module",
-                domimpl.createDocumentType("module",
-                "-//NetBeans//DTD Autoupdate Module Info 2.4//EN",
-                "http://www.netbeans.org/dtds/autoupdate-info-2_4.dtd"));
+        String pub, sys;
+        if (targetcluster != null && !("".equals(targetcluster))) {
+            pub = "-//NetBeans//DTD Autoupdate Module Info 2.4//EN";
+            sys = "http://www.netbeans.org/dtds/autoupdate-info-2_4.dtd";
+        } else {
+            // #74866: no need for targetcluster, so keep compat w/ 5.0 AU.
+            pub = "-//NetBeans//DTD Autoupdate Module Info 2.3//EN";
+            sys = "http://www.netbeans.org/dtds/autoupdate-info-2_3.dtd";
+        }
+        Document doc = domimpl.createDocument(null, "module", domimpl.createDocumentType("module", pub, sys));
         String codenamebase = attr.getValue("OpenIDE-Module");
         if (codenamebase == null) {
             throw new BuildException("invalid manifest, does not contain OpenIDE-Module", getLocation());
