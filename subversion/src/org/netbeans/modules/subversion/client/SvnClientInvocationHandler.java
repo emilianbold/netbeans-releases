@@ -108,7 +108,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         } catch (Exception e) {
             try {
                 if(handleException((SvnClient) proxy, e) ) {
-                    return invokeMethod(method, args);
+                    return invoke(proxy, method, args);
                 } else {
                     // XXX some action canceled by user message ... wrap the exception ???
                     throw new SVNClientException("Action canceled by user"); // XXX wrap me
