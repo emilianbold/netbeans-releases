@@ -552,6 +552,15 @@
 <wizardTree>
     <wizardRoot>
         <comments/>
+        <wizardBean class="org.netbeans.installer.CheckJDKVersionAction" id="beanCheckJDKVersionAction">
+            <property name="displayName">Check JDK Version Action</property>
+            <property name="active">True</property>
+            <property name="buildCategories"/>
+            <property name="comments"/>
+            <property name="conditionOperator">AND</property>
+            <property name="conditionSet"/>
+            <property name="bidirectional">True</property>
+        </wizardBean>
         <wizardBean class="org.netbeans.installer.CustomizeUIAction" id="beanCustomizeUIAction">
             <property name="displayName">Customize UI Action</property>
             <property name="active">True</property>
