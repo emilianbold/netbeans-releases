@@ -21,6 +21,9 @@ package org.netbeans.jemmy.operators;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Window;
+import java.util.Enumeration;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -232,7 +235,12 @@ public class WindowOperatorTest extends TestCase {
      * Test addWindowListener method.
      */
     public void testAddWindowListener() {
+        frame.setVisible(true);
         
+        WindowOperator operator = new WindowOperator();
+        assertNotNull(operator);
+
+        operator.addWindowListener(null);
     }
 
     /**
@@ -248,6 +256,25 @@ public class WindowOperatorTest extends TestCase {
             operator.applyResourceBundle("");
         }
         catch(Exception exception) {
+        }
+        
+        operator.applyResourceBundle(new ResourceBundleTest());
+    }
+    
+    /**
+     * Inner class for testing.
+     */
+    public class ResourceBundleTest extends ResourceBundle {
+        public Locale getLocale() {
+            return Locale.US;
+        }
+        
+        protected Object handleGetObject(String key) {
+            return "";
+        }
+
+        public Enumeration getKeys() {
+            return null;
         }
     }
 
@@ -327,7 +354,12 @@ public class WindowOperatorTest extends TestCase {
      * Test removeWindowListener method.
      */
     public void testRemoveWindowListener() {
+        frame.setVisible(true);
         
+        WindowOperator operator = new WindowOperator();
+        assertNotNull(operator);
+
+        operator.removeWindowListener(null);
     }
 
     /**
