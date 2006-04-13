@@ -551,11 +551,11 @@ public final class Main extends Object {
             }
             
             public void run() {
-                Class clazz = getKlass (classname);
-                
                 // This module is included in our distro somewhere... may or may not be turned on.
                 // Whatever - try running some classes from it anyway.
                 try {
+                    Class clazz = getKlass (classname);
+                
                     Method showMethod = clazz.getMethod("showLicensePanel", new Class[] {}); // NOI18N
                     showMethod.invoke (null, new Object [] {});
                     executedOk = true;
