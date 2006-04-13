@@ -86,8 +86,8 @@ is the proper place.
                 <p>
                     Code which previously handled null return values
                     but expected any returned platform instance to
-                    meet certain criteria, such as having a non-null
-                    <code>ant.platform.name</code>, may be broken.
+                    meet certain criteria, such as having JDK tool bindings,
+                    may be broken.
                 </p>
             </compatibility>
             <description>

@@ -46,7 +46,7 @@ public class FallbackDefaultJavaPlatform extends JavaPlatform {
     }
 
     public Map getProperties() {
-        return Collections.emptyMap();
+        return Collections.singletonMap("platform.ant.name", "default_platform");
     }
 
     private static ClassPath sysProp2CP(String propname) {
