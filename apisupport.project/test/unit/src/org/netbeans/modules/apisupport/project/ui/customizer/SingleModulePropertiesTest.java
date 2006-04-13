@@ -183,8 +183,8 @@ public class SingleModulePropertiesTest extends TestBase {
         NbModuleProject libP = (NbModuleProject) ProjectManager.getDefault().findProject(nbroot.getFileObject("libs/xerces"));
         props = loadProperties(libP);
         pptm = props.getPublicPackagesModel();
-        assertEquals("number of available public packages", 38, pptm.getRowCount());
-        assertEquals("number of selected public packages", 38, pptm.getSelectedPackages().length);
+        assertEquals("number of available public packages", 39, pptm.getRowCount());
+        assertEquals("number of selected public packages", 39, pptm.getSelectedPackages().length);
     }
     
     public void testThatProjectWithoutBundleDoesNotThrowNPE_61469() throws Exception {
