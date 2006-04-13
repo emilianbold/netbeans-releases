@@ -22,7 +22,11 @@ Microsystems, Inc. All Rights Reserved.
                  module="${module.jar}"
                  homepage="${nbm.homepage}"
                  distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}">
+                 needsrestart="${nbm.needs.restart}"
+                 global="${nbm.is.global}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}"
+                 targetcluster="${nbm.target.cluster}">                  
             <license>
                 <text>For the JavaHelp integration module itself:</text>
                 <file location="${license.file}"/>
