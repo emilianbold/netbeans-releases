@@ -206,7 +206,7 @@ public class CanYouQueryFromRenameTest extends LoggingTestCaseHid {
         
         obj.rename("SomeStrangeName");
         
-        assertNull("It would not be bad if this would return non-null, but actually the button cannot be found right now", m.v);
+        //assertNull("It would not be bad if this would return non-null, but actually the button cannot be found right now: " + m.v, m.v);
     }
     
     
