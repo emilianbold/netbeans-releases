@@ -34,7 +34,9 @@ Microsystems, Inc. All Rights Reserved.
                  distribution="http://${dist.base}/${nbm}"
                  needsrestart="${nbm.needs.restart}"
                  releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}">
+		 moduleauthor="${nbm.module.author}"
+                 targetcluster="${nbm.target.cluster}"
+                 global="${nbm.is.global}">
             <license>
                 <text>For the Ant documentation module itself:</text>
                 <file location="${license.file}"/>
