@@ -132,7 +132,7 @@ public class ModuleListTest extends TestBase {
         e = ml.getEntry("org.netbeans.libs.xerces");
         assertNotNull(e);
         assertEquals("correct CP extensions (using <binary-origin> and relative paths)",
-            ":" + file("libs/external/xerces-2.6.2.jar") + ":" + file("libs/external/xml-commons-dom-ranges-1.0.b2.jar"),
+            ":" + file("libs/external/xerces-2.8.0.jar") + ":" + file("libs/external/xml-commons-dom-ranges-1.0.b2.jar"),
             e.getClassPathExtensions());
         e = ml.getEntry("javax.jmi.model");
         assertNotNull(e);
@@ -196,7 +196,7 @@ public class ModuleListTest extends TestBase {
          */
         e = ml.getEntry("org.netbeans.libs.xerces");
         assertEquals("correct CP exts for a nb.org module (using Class-Path only)",
-            ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xerces-2.6.2.jar") + ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
+            ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xerces-2.8.0.jar") + ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
             e.getClassPathExtensions());
         // From suite2, can only find itself, and netbeans.org modules only available in binary form.
         ml = ModuleList.getModuleList(file(suite2, "misc-project"));
@@ -218,7 +218,7 @@ public class ModuleListTest extends TestBase {
         assertEquals("have sources for that", file("libs/xerces"), e.getSourceLocation());
         assertEquals("and correct JAR location", file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-libs-xerces.jar"), e.getJarLocation());
         assertEquals("and correct CP exts (using Class-Path only)",
-            ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xerces-2.6.2.jar") + ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
+            ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xerces-2.8.0.jar") + ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
             e.getClassPathExtensions());
         e = ml.getEntry("org.openide.util");
         assertNotNull(e);
