@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.1//EN' 'http://www.netbeans.org/dtds/filesystem-1_1.dtd'>
+
+<filesystem>
+    <folder name="Menu">
+        <folder name="Help">
+            <file name="org-netbeans-modules-welcome-ShowWelcomeAction.instance" />
+            <attr name="org-netbeans-modules-welcome-ShowWelcomeAction.instance/org-netbeans-core-actions-AboutAction.instance" boolvalue="true"/>
+	    <attr name="utilities-sep-5.instance/org-netbeans-modules-welcome-ShowWelcomeAction.instance" boolvalue="true"/>
+        </folder>
+    </folder>
+    <folder name="Actions">
+        <folder name="Help">
+            <file name="Show Welcome.instance">
+	        <attr name="instanceClass" stringvalue="org.netbeans.modules.welcome.ShowWelcomeAction"/>
+            </file>
+        </folder>
+    </folder>  
+
+    <!-- XML Workspace Layout part --> 
+    <folder name="Windows2">
+        <folder name="Modes">
+            <folder name="editor">
+                <file name="Welcome.wstcref" url="Welcome.wstcref" />
+            </folder>
+        </folder>
+        <folder name="Components">
+            <file name="Welcome.settings" url="Welcome.settings" />
+        </folder>
+   </folder>
+ 
+    <folder name="Services">
+      <file name="WelcomeOptions.settings" url="WelcomeOptions.settings">
+      </file>
+   </folder>
+    
+    <folder name="WelcomePage">
+        <file name="layout.xml" url="layout.xml"/>
+        <folder name="GettingStartedLinks">
+
+            <file name="quickstart.url" url="quickstart.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+            </file>
+
+            <file name="whatsnew.url" url="whatsnew.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+            </file>
+
+            <folder name="AddOns">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+
+                <file name="profiler.url" url="profiler.url">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                </file>
+                <file name="mobility.url" url="mobility.url">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                </file>
+
+
+                <attr name="profiler.url/mobility.url" boolvalue="true"/>
+            </folder>
+
+            <folder name="Resources">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+
+                <file name="mailinglists.url" url="mailinglists.url">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                </file>
+                <file name="docsandsupport.url" url="docsandsupport.url">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                </file>
+                <file name="platform.url" url="platform.url">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                </file>
+
+
+                <attr name="mailinglists.url/docsandsupport.url" boolvalue="true"/>
+                <attr name="docsandsupport.url/platform.url" boolvalue="true"/>
+            </folder>
+
+
+	    <attr name="quickstart.url/whatsnew.url" boolvalue="true"/>
+	    <attr name="whatsnew.url/AddOns" boolvalue="true"/>
+	    <attr name="AddOns/Resources" boolvalue="true"/>
+            
+        </folder>
+    </folder>
+
+</filesystem>
+

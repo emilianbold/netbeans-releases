@@ -15,14 +15,10 @@ package org.netbeans.modules.welcome;
 
 import java.lang.ref.WeakReference;
 import org.openide.util.NbBundle;
-import org.openide.*;
 import org.openide.windows.*;
-
-import java.io.*;
 import java.awt.*;
-import java.lang.reflect.Method;
 import javax.swing.*;
-import javax.accessibility.*;
+import org.netbeans.modules.welcome.content.ContentFactory;
 import org.openide.ErrorManager;
 
 /**
@@ -33,14 +29,14 @@ class WelcomeComponent extends TopComponent{
     static final long serialVersionUID=6021472310161712674L;
     private static WeakReference/*<WelcomeComponent>*/ component = 
                 new WeakReference(null); 
-    private JComponent panel;
+    private JComponent content;
 
     private boolean initialized = false;
     
     private WelcomeComponent(){
         setLayout(new BorderLayout());
         setName(NbBundle.getMessage(WelcomeComponent.class, "LBL_Tab_Title"));   //NOI18N             
-        panel = null;
+        content = null;
         initialized = false;
     }
     
@@ -55,18 +51,12 @@ class WelcomeComponent extends TopComponent{
     private void doInitialize() {
         initAccessibility();
         
-        try{
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            panel =(JComponent)Class.forName(NbBundle.getMessage(
-                  WelcomeComponent.class,"CLASS_content_panel"), true, cl).newInstance();
-        }catch(Exception e){
-            ErrorManager.getDefault().notify(e);
-        }
-        if(panel == null)
+        content = ContentFactory.createContentPane();
+        if( null == content )
             return;
 
-        add(panel);
-        setFocusable(true);
+        add( content, BorderLayout.CENTER );
+        setFocusable( true );
     }
         
     /* Singleton accessor. As WelcomeComponent is persistent singleton this
@@ -123,15 +113,16 @@ class WelcomeComponent extends TopComponent{
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WelcomeComponent.class, "ACS_Welcome_DESC")); // NOI18N
     }
     
-    public void requestFocus(){
-        super.requestFocus();
-        panel.requestFocus();
-    }
-    
-    public boolean requestFocusInWindow(){
-        super.requestFocusInWindow();
-        return panel.requestFocusInWindow();
-    }
+//    public void requestFocus(){
+//        super.requestFocus();
+//        content.requestFocus();
+//    }
+//    
+//    public boolean requestFocusInWindow(){
+//        boolean res = super.requestFocusInWindow();
+//        content.requestFocusInWindow();
+//        return res;
+//    }
     
 
     /**
@@ -164,6 +155,10 @@ class WelcomeComponent extends TopComponent{
         }
         super.componentShowing();
     }
-    
+
+    protected void componentActivated() {
+        super.componentActivated();
+        content.requestFocus();
+    }
 }
 
