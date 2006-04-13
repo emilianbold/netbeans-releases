@@ -69,7 +69,8 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         if(isAuthentication(getException())) {
             return handleAuthenticationError();
         } if(isNoCertificate(getException())) {
-            return handleNoCertificateError();        }
+            return handleNoCertificateError();
+        } 
 
         return super.handleException();
     }

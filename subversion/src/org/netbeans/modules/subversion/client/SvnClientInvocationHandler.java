@@ -110,8 +110,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 if(handleException((SvnClient) proxy, e) ) {
                     return invoke(proxy, method, args);
                 } else {
-                    // XXX some action canceled by user message ... wrap the exception ???
-                    throw new SVNClientException("Action canceled by user"); // XXX wrap me
+                    // some action canceled by user message 
+                    throw new SVNClientException(ExceptionHandler.ACTION_CANCELED_BY_USER); 
                 }                
             } catch (InvocationTargetException ite) {
                 Throwable t = ite.getTargetException();
