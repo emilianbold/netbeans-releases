@@ -77,8 +77,55 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="FormDesignerPalette">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
             
-        <folder name="Swing">
+        <folder name="SwingContainers">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+            <attr name="isExpanded" boolvalue="true" />
+
+            <file name="JPanel.palette_item" url="palette/JPanel.palette_item" />
+            <file name="JTabbedPane.palette_item" url="palette/JTabbedPane.palette_item" />
+            <file name="JSplitPane.palette_item" url="palette/JSplitPane.palette_item" />
+            <file name="JScrollPane.palette_item" url="palette/JScrollPane.palette_item" />
+            <file name="JToolBar.palette_item" url="palette/JToolBar.palette_item" />
+            <file name="JDesktopPane.palette_item" url="palette/JDesktopPane.palette_item" />
+            <file name="JInternalFrame.palette_item" url="palette/JInternalFrame.palette_item" />
+            <file name="JLayeredPane.palette_item" url="palette/JLayeredPane.palette_item" />
+
+            <attr name="JPanel.palette_item/JTabbedPane.palette_item" boolvalue="true" />
+            <attr name="JTabbedPane.palette_item/JSplitPane.palette_item" boolvalue="true" />
+            <attr name="JSplitPane.palette_item/JScrollPane.palette_item" boolvalue="true" />
+            <attr name="JScrollPane.palette_item/JToolBar.palette_item" boolvalue="true" />
+            <attr name="JToolBar.palette_item/JDesktopPane.palette_item" boolvalue="true" />
+            <attr name="JDesktopPane.palette_item/JInternalFrame.palette_item" boolvalue="true" />
+            <attr name="JInternalFrame.palette_item/JLayeredPane.palette_item" boolvalue="true" />
+        </folder>
+
+        <folder name="SwingMenus">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+
+            <file name="JMenuBar.palette_item" url="palette/JMenuBar.palette_item" />
+            <file name="JPopupMenu.palette_item" url="palette/JPopupMenu.palette_item" />
+
+            <attr name="JMenuBar.palette_item/JPopupMenu.palette_item" boolvalue="true" />
+        </folder>
+
+        <folder name="SwingWindows">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+
+            <file name="JDialog.palette_item" url="palette/JDialog.palette_item" />
+            <file name="JFrame.palette_item" url="palette/JFrame.palette_item" />
+            <file name="JColorChooser.palette_item" url="palette/JColorChooser.palette_item" />
+            <file name="JFileChooser.palette_item" url="palette/JFileChooser.palette_item" />
+            <file name="JOptionPane.palette_item" url="palette/JOptionPane.palette_item" />
+
+            <attr name="JDialog.palette_item/JFrame.palette_item" boolvalue="true" />
+            <attr name="JFrame.palette_item/JColorChooser.palette_item" boolvalue="true" />
+            <attr name="JColorChooser.palette_item/JFileChooser.palette_item" boolvalue="true" />
+            <attr name="JFileChooser.palette_item/JOptionPane.palette_item" boolvalue="true" />
+        </folder>
+
+        <folder name="SwingControls">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+            <attr name="isExpanded" boolvalue="true" />
 
             <file name="JLabel.palette_item" url="palette/JLabel.palette_item" />
             <file name="JButton.palette_item" url="palette/JButton.palette_item" />
@@ -90,15 +137,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JList.palette_item" url="palette/JList.palette_item" />
             <file name="JTextField.palette_item" url="palette/JTextField.palette_item" />
             <file name="JTextArea.palette_item" url="palette/JTextArea.palette_item" />
-            <file name="JPanel.palette_item" url="palette/JPanel.palette_item" />
-            <file name="JTabbedPane.palette_item" url="palette/JTabbedPane.palette_item" />
             <file name="JScrollBar.palette_item" url="palette/JScrollBar.palette_item" />
-            <file name="JScrollPane.palette_item" url="palette/JScrollPane.palette_item" />
-            <file name="JMenuBar.palette_item" url="palette/JMenuBar.palette_item" />
-            <file name="JPopupMenu.palette_item" url="palette/JPopupMenu.palette_item" />
             <file name="JSlider.palette_item" url="palette/JSlider.palette_item" />
             <file name="JProgressBar.palette_item" url="palette/JProgressBar.palette_item" />
-            <file name="JSplitPane.palette_item" url="palette/JSplitPane.palette_item" />
             <file name="JFormattedTextField.palette_item" url="palette/JFormattedTextField.palette_item" />
             <file name="JPasswordField.palette_item" url="palette/JPasswordField.palette_item" />
             <file name="JSpinner.palette_item" url="palette/JSpinner.palette_item" />
@@ -107,15 +148,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JEditorPane.palette_item" url="palette/JEditorPane.palette_item" />
             <file name="JTree.palette_item" url="palette/JTree.palette_item" />
             <file name="JTable.palette_item" url="palette/JTable.palette_item" />
-            <file name="JToolBar.palette_item" url="palette/JToolBar.palette_item" />
-            <file name="JInternalFrame.palette_item" url="palette/JInternalFrame.palette_item" />
-            <file name="JLayeredPane.palette_item" url="palette/JLayeredPane.palette_item" />
-            <file name="JDesktopPane.palette_item" url="palette/JDesktopPane.palette_item" />
-            <file name="JOptionPane.palette_item" url="palette/JOptionPane.palette_item" />
-            <file name="JColorChooser.palette_item" url="palette/JColorChooser.palette_item" />
-            <file name="JFileChooser.palette_item" url="palette/JFileChooser.palette_item" />
-            <file name="JFrame.palette_item" url="palette/JFrame.palette_item" />
-            <file name="JDialog.palette_item" url="palette/JDialog.palette_item" />
 
             <attr name="JLabel.palette_item/JButton.palette_item" boolvalue="true" />
             <attr name="JButton.palette_item/JToggleButton.palette_item" boolvalue="true" />
@@ -126,16 +158,10 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="JComboBox.palette_item/JList.palette_item" boolvalue="true" />
             <attr name="JList.palette_item/JTextField.palette_item" boolvalue="true" />
             <attr name="JTextField.palette_item/JTextArea.palette_item" boolvalue="true" />
-            <attr name="JTextArea.palette_item/JPanel.palette_item" boolvalue="true" />
-            <attr name="JPanel.palette_item/JTabbedPane.palette_item" boolvalue="true" />
-            <attr name="JTabbedPane.palette_item/JScrollBar.palette_item" boolvalue="true" />
-            <attr name="JScrollBar.palette_item/JScrollPane.palette_item" boolvalue="true" />
-            <attr name="JScrollPane.palette_item/JMenuBar.palette_item" boolvalue="true" />
-            <attr name="JMenuBar.palette_item/JPopupMenu.palette_item" boolvalue="true" />
-            <attr name="JPopupMenu.palette_item/JSlider.palette_item" boolvalue="true" />
+            <attr name="JTextArea.palette_item/JScrollBar.palette_item" boolvalue="true" />
+            <attr name="JScrollBar.palette_item/JSlider.palette_item" boolvalue="true" />
             <attr name="JSlider.palette_item/JProgressBar.palette_item" boolvalue="true" />
-            <attr name="JProgressBar.palette_item/JSplitPane.palette_item" boolvalue="true" />
-            <attr name="JSplitPane.palette_item/JFormattedTextField.palette_item" boolvalue="true" />
+            <attr name="JProgressBar.palette_item/JFormattedTextField.palette_item" boolvalue="true" />
             <attr name="JFormattedTextField.palette_item/JPasswordField.palette_item" boolvalue="true" />
             <attr name="JPasswordField.palette_item/JSpinner.palette_item" boolvalue="true" />
             <attr name="JSpinner.palette_item/JSeparator.palette_item" boolvalue="true" />
@@ -143,15 +169,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="JTextPane.palette_item/JEditorPane.palette_item" boolvalue="true" />
             <attr name="JEditorPane.palette_item/JTree.palette_item" boolvalue="true" />
             <attr name="JTree.palette_item/JTable.palette_item" boolvalue="true" />
-            <attr name="JTable.palette_item/JToolBar.palette_item" boolvalue="true" />
-            <attr name="JToolBar.palette_item/JInternalFrame.palette_item" boolvalue="true" />
-            <attr name="JInternalFrame.palette_item/JLayeredPane.palette_item" boolvalue="true" />
-            <attr name="JLayeredPane.palette_item/JDesktopPane.palette_item" boolvalue="true" />
-            <attr name="JDesktopPane.palette_item/JOptionPane.palette_item" boolvalue="true" />
-            <attr name="JOptionPane.palette_item/JColorChooser.palette_item" boolvalue="true" />
-            <attr name="JColorChooser.palette_item/JFileChooser.palette_item" boolvalue="true" />
-            <attr name="JFileChooser.palette_item/JFrame.palette_item" boolvalue="true" />
-            <attr name="JFrame.palette_item/JDialog.palette_item" boolvalue="true" />
         </folder>
 
         <folder name="AWT">
@@ -237,9 +254,13 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="LookAndFeels">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
             <attr name="isVisible" boolvalue="false" />
+            <attr name="isReadonly" boolvalue="true" />
         </folder>
 
-        <attr name="Swing/AWT" boolvalue="true" />
+        <attr name="SwingContainers/SwingControls" boolvalue="true" />
+        <attr name="SwingControls/SwingMenus" boolvalue="true" />
+        <attr name="SwingMenus/SwingWindows" boolvalue="true" />
+        <attr name="SwingWindows/AWT" boolvalue="true" />
         <attr name="AWT/Borders" boolvalue="true" />        
         <attr name="Borders/Beans" boolvalue="true" />
         <attr name="Beans/LookAndFeels" boolvalue="true" />
