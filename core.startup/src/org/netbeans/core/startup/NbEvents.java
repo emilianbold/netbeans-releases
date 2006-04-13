@@ -129,7 +129,7 @@ final class NbEvents extends Events {
             }
             StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new"));
 	    for (String s: problemTexts) {
-                buf.append("\n\t").append(it.next()); // NOI18N
+                buf.append("\n\t").append(s); // NOI18N
             }
             String msg = buf.toString();
             notify(msg, true);
