@@ -341,13 +341,13 @@ public class Subversion {
      * Serializes all SVN requests (moves them out of AWT).
      */
     public RequestProcessor getRequestProccessor() {
-        return getRequestProccessor(null);
+        return getRequestProcessor(null);
     }
 
     /**
      * Serializes all SVN requests (moves them out of AWT).
      */
-    public RequestProcessor getRequestProccessor(SVNUrl url) {
+    public RequestProcessor getRequestProcessor(SVNUrl url) {
         if(processorsToUrl == null) {
             processorsToUrl = new HashMap();
         }

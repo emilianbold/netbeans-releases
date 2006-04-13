@@ -90,7 +90,7 @@ public class CommitAction extends ContextAction {
             final String message = panel.messageTextArea.getText();
 
             SVNUrl repository = getSvnUrl(ctx);
-            RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
+            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
             SvnProgressSupport support = new SvnProgressSupport(rp) {
                 public void perform() {                    
                     performCommit(message, commitFiles, ctx, this);

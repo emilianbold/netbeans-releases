@@ -277,7 +277,7 @@ public abstract class ContextAction extends NodeAction {
 
     protected RequestProcessor createRequestProcessor(Node[] nodes) {
         SVNUrl repository = getSvnUrl(nodes);
-        return Subversion.getInstance().getRequestProccessor(repository);
+        return Subversion.getInstance().getRequestProcessor(repository);
     }
 
     protected abstract static class ProgressSupport  extends SvnProgressSupport {

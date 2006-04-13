@@ -313,7 +313,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      */ 
     private void onUpdateAction() {
         SVNUrl repository = CommitAction.getSvnUrl(context);
-        RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport(rp) {
             public void perform() {                
                 executeUpdate(this);
@@ -347,7 +347,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         }
 
         SVNUrl repository = CommitAction.getSvnUrl(context);
-        RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repository);
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport(rp) {
             public void perform() {                
                 executeStatus(this);

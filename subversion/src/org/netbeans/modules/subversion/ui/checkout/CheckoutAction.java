@@ -51,7 +51,7 @@ public final class CheckoutAction extends CallableSystemAction {
         }
         
         String displayName = org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001");
-        SvnProgressSupport support = new SvnProgressSupport(Subversion.getInstance().getRequestProccessor(repository)) {
+        SvnProgressSupport support = new SvnProgressSupport(Subversion.getInstance().getRequestProcessor(repository)) {
             public void perform() {
                 try {
                     setDisplayName("checking out ...");

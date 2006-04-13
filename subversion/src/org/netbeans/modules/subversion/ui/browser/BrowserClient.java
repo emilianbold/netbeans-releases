@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion.ui.browser;
 
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPathNode.RepositoryPathEntry;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -23,6 +24,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  * @author Tomas Stupka
  */
 public interface BrowserClient {
-    public List listRepositoryPath(RepositoryPathEntry entry) throws SVNClientException;        
+    public List listRepositoryPath(RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException;        
     public Action[] getActions();   
 }

@@ -14,7 +14,7 @@
 package org.netbeans.modules.subversion.ui.browser;
 
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -25,10 +25,9 @@ import java.util.Collections;
 import java.awt.*;
 import java.beans.BeanInfo;
 import java.util.Collection;
+import org.netbeans.modules.subversion.Subversion;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Represents a path in the repository.
@@ -159,7 +158,7 @@ public class RepositoryPathNode extends AbstractNode {
         repositoryFolder = bl;
     }
     
-    private static class RepositoryPathChildren extends Children.Keys implements Runnable {
+    private static class RepositoryPathChildren extends Children.Keys {
 
         private RequestProcessor.Task task;
 
@@ -174,9 +173,8 @@ public class RepositoryPathNode extends AbstractNode {
         protected void addNotify() {
             super.addNotify();
             AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2001")); // NOI18N
-            setKeys(Collections.singleton(waitNode));
-            RequestProcessor rp = RequestProcessor.getDefault();
-            task = rp.post(this);
+            setKeys(Collections.singleton(waitNode));            
+            listRepositoryPath();
         }
 
         protected void removeNotify() {
@@ -200,21 +198,27 @@ public class RepositoryPathNode extends AbstractNode {
             return new Node[] {pathNode};
         }
 
-        public void run() {
-            try {
-                Collection cl = client.listRepositoryPath(pathEntry);
-                if(cl == null) {
-                    // is not a folder in the repository
-                    setKeys(Collections.EMPTY_LIST);
-                    RepositoryPathNode node = (RepositoryPathNode) getNode();
-                    node.setRepositoryFolder(false);
-                } else {
-                    setKeys(cl);
-                }                
-            } catch (SVNClientException ex) {                
-                setKeys(Collections.singleton(errorNode(ex)));                
-                return;
-            }
+        public void listRepositoryPath() {
+            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(pathEntry.getRepositoryFile().getRepositoryUrl());
+            SvnProgressSupport support = new SvnProgressSupport(rp) {
+                public void perform() {
+                    try {
+                        Collection cl = client.listRepositoryPath(pathEntry, this);
+                        if(cl == null) {
+                            // is not a folder in the repository
+                            setKeys(Collections.EMPTY_LIST);
+                            RepositoryPathNode node = (RepositoryPathNode) getNode();
+                            node.setRepositoryFolder(false);
+                        } else {
+                            setKeys(cl);
+                        }
+                    } catch (SVNClientException ex) {
+                        setKeys(Collections.singleton(errorNode(ex)));
+                        return;
+                    }
+                }
+            };
+            support.start(org.openide.util.NbBundle.getMessage(Browser.class, "BK2001"));
         }
 
         private static Node errorNode(Exception ex) {

@@ -115,7 +115,7 @@ public final class ImportAction extends NodeAction {
                                final File importDirectory,
                                final SvnClient client)
     {
-        RequestProcessor rp = Subversion.getInstance().getRequestProccessor(repositoryUrl);
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         SvnProgressSupport support = new SvnProgressSupport(rp) {
             public void perform() {
                 try{                   

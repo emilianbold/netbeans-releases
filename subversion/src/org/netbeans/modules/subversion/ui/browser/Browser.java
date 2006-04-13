@@ -29,6 +29,7 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
@@ -53,8 +54,8 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     private RepositoryFile repositoryRoot;        
     
     private Action[] nodeActions;
-    
-    private ArrayList progressHandlers;
+
+    private SvnProgressSupport support;
 
     private boolean fileSelectionOnly;
     
@@ -126,15 +127,10 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         Node rootNode = getExplorerManager().getRootContext();
         if(rootNode != null) {
             getExplorerManager().setRootContext(Node.EMPTY);
-            try {                
-                // XXX is this enough ??? 
-                rootNode.destroy(); 
-                if(progressHandlers!=null) {
-                    for (Iterator it = progressHandlers.iterator(); it.hasNext();) {
-                        ProgressHandle ph = (ProgressHandle) it.next();
-                        ph.finish();    
-                    }
-                    progressHandlers = null;
+            try {                                
+                rootNode.destroy();
+                if(support != null) {
+                    support.cancel();
                 }
             } catch (IOException ex) {
                 ex.printStackTrace(); // should not happen
@@ -142,21 +138,22 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         }
     }
     
-    public List listRepositoryPath(final RepositoryPathNode.RepositoryPathEntry entry) throws SVNClientException {
-        
-        if(entry.getSvnNodeKind().equals(SVNNodeKind.FILE)) {
-            return Collections.EMPTY_LIST; // nothing to do...
-        }
-        
-        ProgressHandle ph = 
-            ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(Browser.class, "BK2001"));       // NOI18N        
-        ph.start();
-        getProgressHandlers().add(ph);
-        
-        SvnClient client = Subversion.getInstance().getClient(this.repositoryRoot.getRepositoryUrl());
-        
-        List ret = new ArrayList();        
-        try {            
+    public List listRepositoryPath(final RepositoryPathNode.RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException {
+        List ret;
+        try {
+
+            this.support = support;
+
+            if(entry.getSvnNodeKind().equals(SVNNodeKind.FILE)) {
+                return Collections.EMPTY_LIST; // nothing to do...
+            }
+
+            SvnClient client = Subversion.getInstance().getClient(this.repositoryRoot.getRepositoryUrl());                    
+            if(support.isCanceled()) {
+                return null;
+            }
+
+            ret = new ArrayList();
 
             ISVNDirEntry[] dirEntries = client.getList(
                                         entry.getRepositoryFile().getFileUrl(), 
@@ -164,11 +161,14 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                                         false);             
 
             if(dirEntries == null || dirEntries.length == 0) {
-                ph.finish();
                 return Collections.EMPTY_LIST; // nothing to do...
             }
             
-            for (int i = 0; i < dirEntries.length; i++) {                            
+            for (int i = 0; i < dirEntries.length; i++) {
+                if(support.isCanceled()) {
+                    return null;
+                }
+
                 ISVNDirEntry dirEntry = dirEntries[i];
                 if( dirEntry.getNodeKind()==SVNNodeKind.DIR || 
                     (dirEntry.getNodeKind()==SVNNodeKind.FILE && showFiles) ) 
@@ -190,11 +190,9 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 eh.annotate();                
                 throw ex;
             }                
-        } finally {
-            if(ph!=null) {
-                ph.finish();
-                getProgressHandlers().remove(ph);
-            }            
+        }
+        finally {
+            this.support = null;
         }
 
         return ret;
@@ -326,13 +324,6 @@ public class Browser implements VetoableChangeListener, BrowserClient {
 
     public Action[] getActions() {
         return nodeActions;        
-    }
-
-    private ArrayList getProgressHandlers() {
-        if(progressHandlers == null) {
-            progressHandlers = new ArrayList(5);
-        }
-        return progressHandlers;
     }
 
     void setSelectedNodes(Node[] selection) throws PropertyVetoException {
