@@ -27,6 +27,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -180,6 +181,15 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                     );
                 }                
             }        
+        } catch (SVNClientException ex) {
+            if(ExceptionHandler.isURLNonExistent(ex)) {
+                // is not a folder in the repository
+                return null;
+            } else {
+                ExceptionHandler eh = new ExceptionHandler(ex);
+                eh.annotateOrNotify();                
+                throw ex;
+            }                
         } finally {
             if(ph!=null) {
                 ph.finish();

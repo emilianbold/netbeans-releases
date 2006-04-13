@@ -202,16 +202,17 @@ public class RepositoryPathNode extends AbstractNode {
 
         public void run() {
             try {
-                setKeys(client.listRepositoryPath(pathEntry));
-            } catch (SVNClientException ex) {
-                if(ExceptionHandler.isURLNonExistent(ex)) {
+                Collection cl = client.listRepositoryPath(pathEntry);
+                if(cl == null) {
+                    // is not a folder in the repository
                     setKeys(Collections.EMPTY_LIST);
                     RepositoryPathNode node = (RepositoryPathNode) getNode();
                     node.setRepositoryFolder(false);
                 } else {
-                    org.openide.ErrorManager.getDefault().notify(ex);
-                    setKeys(Collections.singleton(errorNode(ex)));
-                }
+                    setKeys(cl);
+                }                
+            } catch (SVNClientException ex) {                
+                setKeys(Collections.singleton(errorNode(ex)));                
                 return;
             }
         }
