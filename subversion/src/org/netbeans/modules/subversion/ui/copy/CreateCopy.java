@@ -18,6 +18,7 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -69,7 +70,7 @@ public class CreateCopy extends CopyDialog {
         try {
             return repositoryPaths.getRepositoryFiles()[0];
         } catch (MalformedURLException ex) {
-            ex.printStackTrace(); // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }
         return null;
     }

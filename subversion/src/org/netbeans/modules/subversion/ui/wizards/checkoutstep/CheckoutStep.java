@@ -34,10 +34,10 @@ import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * @author Tomas Stupka
@@ -266,7 +266,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         try {
             return repositoryPaths.getRepositoryFiles();
         } catch (MalformedURLException ex) {
-            ex.printStackTrace(); // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }
         return null;
     }

@@ -14,6 +14,7 @@
 package org.netbeans.modules.subversion.util;
 
 import java.io.*;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -69,7 +70,7 @@ public class FileUtils {
                     if(preserveTimestamp) target.setLastModified(files[i].lastModified());
                 }
             } catch (IOException ex) {
-                ex.printStackTrace(); // should not happen
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
             }
         }
     }

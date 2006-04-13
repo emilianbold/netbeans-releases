@@ -13,6 +13,7 @@
 package org.netbeans.modules.subversion;
 
 import java.net.MalformedURLException;
+import org.openide.ErrorManager;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -179,7 +180,7 @@ public class RepositoryFile {
         try {
             newUrl = new SVNUrl(fileUrlString.substring(0, fromIdx + 1) + segment + fileUrlString.substring(toIdx + 1));
         } catch (MalformedURLException ex) {
-            ex.printStackTrace();  // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);  // should not happen
         }                        
         return new RepositoryFile(repositoryUrl, newUrl, revision);
     }
@@ -196,7 +197,7 @@ public class RepositoryFile {
         try {
             newUrl = new SVNUrl(fileUrlStrint.substring(0, idx));
         } catch (MalformedURLException ex) {
-            ex.printStackTrace();  // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);  // should not happen
         }                        
         return new RepositoryFile(repositoryUrl, newUrl, revision);
     }         

@@ -16,6 +16,7 @@ package org.netbeans.modules.subversion.ui.update;
 import java.io.File;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
@@ -79,7 +80,8 @@ public class RevertModificationsAction extends ContextAction {
                 try {
                     client.revert(files[i], recursive);
                 } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    ExceptionHandler eh = new ExceptionHandler (ex);
+                    eh.annotate();
                 }
             }
         }

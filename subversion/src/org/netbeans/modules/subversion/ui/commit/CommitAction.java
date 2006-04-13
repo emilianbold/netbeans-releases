@@ -115,7 +115,7 @@ public class CommitAction extends ContextAction {
             try {
                 client = Subversion.getInstance().getClient(ctx, support);
             } catch (SVNClientException ex) {
-                ex.printStackTrace(); // should not hapen
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
                 return;
             }                   
             support.setDisplayName("Committing...");

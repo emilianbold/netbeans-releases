@@ -15,18 +15,14 @@ package org.netbeans.modules.subversion.config;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.modules.subversion.util.FileUtils;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -45,7 +41,7 @@ public class KVFile {
                 parse();
             }
         } catch (IOException ex) {
-            ex.printStackTrace(); // XXX
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
         
@@ -95,7 +91,7 @@ public class KVFile {
                     is.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace(); // should not happen
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e); // should not happen
             }                              
         }
     }  
@@ -159,7 +155,7 @@ public class KVFile {
                 try {
                     os.close();    
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }                
             }            
         }        

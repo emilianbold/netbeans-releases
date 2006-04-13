@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
@@ -34,10 +33,8 @@ import javax.net.ssl.X509TrustManager;
 
 import javax.swing.JButton;
 import org.netbeans.modules.proxy.ConnectivitySettings;
-import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
-import org.netbeans.modules.subversion.config.SVNCredentialFile;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.openide.DialogDescriptor;
@@ -70,7 +67,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             return handleAuthenticationError();
         } if(isNoCertificate(getException())) {
             return handleNoCertificateError();
-        } 
+        }
 
         return super.handleException();
     }
@@ -286,11 +283,11 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             }
             return ret;
         } catch (CertificateEncodingException ex) {
-            ex.printStackTrace(); // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         } catch (NoSuchAlgorithmException ex) {
-            ex.printStackTrace(); // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         } catch (IOException ex) {
-            ex.printStackTrace(); // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }                       
         return "";
     }

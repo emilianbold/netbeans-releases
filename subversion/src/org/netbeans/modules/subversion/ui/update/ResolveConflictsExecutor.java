@@ -416,24 +416,18 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             }
             fo = null;
             if (fileToRepairEntriesOf != null) {
-                try {
-                    repairEntries(fileToRepairEntriesOf);
-                } catch (IOException ioex) {
-                    // The Entries will not be repaired at worse
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
-                }
+                repairEntries(fileToRepairEntriesOf);
                 fileToRepairEntriesOf = null;
             }
         }
 
-        private void repairEntries(File file) throws IOException {           
+        private void repairEntries(File file) {           
             try {
                 SvnClient client = Subversion.getInstance().getClient(file);
                 client.resolved(file);
             } catch (SVNClientException ex) {
-                IOException io = new IOException();
-                io.initCause(ex);
-                throw io;
+                ExceptionHandler eh = new ExceptionHandler (ex);
+                eh.annotate();
             }
         }
 

@@ -385,7 +385,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         }
                 
         try {
-            SvnClient client = Subversion.getInstance().getClient(context, support);
+            SvnClient client;
+            try {
+                client = Subversion.getInstance().getClient(context, support);
+            } catch (SVNClientException ex) {
+                ErrorManager.getDefault().notify(ex);
+                return;
+            }
+
             File[] roots = context.getRootFiles();
             for (int i=0; i<roots.length; i++) {
                 if(support.isCanceled()) {
@@ -410,7 +417,8 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
                 }
             }
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ex);
+            ExceptionHandler eh = new ExceptionHandler(ex);
+            eh.annotate();
         }
     }
 
@@ -431,7 +439,8 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
                 client.update(root, SVNRevision.HEAD, true);
             }
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ex);
+            ExceptionHandler eh = new ExceptionHandler(ex);
+            eh.annotate();
         } 
     }
     

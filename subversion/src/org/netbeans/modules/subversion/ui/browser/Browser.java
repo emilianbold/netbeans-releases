@@ -19,17 +19,15 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JPanel;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
@@ -96,7 +94,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             try {
                 getExplorerManager().setSelectedNodes(selectedNodes);    
             } catch (PropertyVetoException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }    
         }
     }
@@ -133,7 +131,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                     support.cancel();
                 }
             } catch (IOException ex) {
-                ex.printStackTrace(); // should not happen
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
             }            
         }
     }

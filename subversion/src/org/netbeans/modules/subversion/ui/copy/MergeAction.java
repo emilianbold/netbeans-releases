@@ -17,12 +17,12 @@ import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -120,8 +120,8 @@ public class MergeAction extends ContextAction {
             }
 
         } catch (SVNClientException ex) {
-            ex.printStackTrace(); // should not hapen
-            return;
+            ExceptionHandler eh = new ExceptionHandler(ex);
+            eh.annotate();
         }
     }
 }

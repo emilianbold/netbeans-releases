@@ -16,6 +16,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -47,7 +48,7 @@ public class SelectPathAction extends AbstractAction {
         try {            
             browser.getExplorerManager().setSelectedNodes(nodes);
         } catch (PropertyVetoException ex) {
-            ex.printStackTrace(); // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }
     }
 

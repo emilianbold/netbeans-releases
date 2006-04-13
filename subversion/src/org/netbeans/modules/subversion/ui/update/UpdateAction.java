@@ -17,13 +17,12 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.*;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.RequestProcessor;
 
 /**
  * Update action
@@ -64,7 +63,7 @@ public class UpdateAction extends ContextAction {
                 try {
                     client = Subversion.getInstance().getClient(repositoryUrl);
                 } catch (SVNClientException ex) {
-                    ex.printStackTrace(); // should not hapen
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
                     return;
                 }
 
@@ -95,9 +94,8 @@ roots_loop:
                         StatusDisplayer.getDefault().setStatusText("Subversion update completed");
                     }
                 } catch (SVNClientException e1) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e1, "Can not update");
-                    err.notify(e1);
+                    ExceptionHandler eh = new ExceptionHandler (e1);
+                    eh.annotate();
                 }
         
             }

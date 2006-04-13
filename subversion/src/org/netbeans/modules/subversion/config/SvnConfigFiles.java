@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -27,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.util.FileUtils;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -115,7 +113,7 @@ public class SvnConfigFiles {
             file.delete();
             servers.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
-            ex.printStackTrace(); //  XXX
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
 
@@ -226,7 +224,7 @@ public class SvnConfigFiles {
         try {
             FileUtils.copyFile (file, targetConfigFile);
         } catch (IOException ex) {
-            ex.printStackTrace(); // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }
     }
 
@@ -239,7 +237,7 @@ public class SvnConfigFiles {
         } catch (FileNotFoundException ex) {
             // do nothing
         } catch (IOException ex) {
-            ex.printStackTrace(); // XXX
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
         Ini system = loadSystemIniFile(fileName);
@@ -260,7 +258,7 @@ public class SvnConfigFiles {
         } catch (FileNotFoundException ex) {
             // XXX create from registry?
         } catch (IOException ex) {
-            ex.printStackTrace(); // XXX
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         
         if(Utilities.isWindows()) {            
@@ -273,7 +271,7 @@ public class SvnConfigFiles {
         } catch (FileNotFoundException ex) {
             // just doesn't exist - ignore
         } catch (IOException ex) {
-            ex.printStackTrace();// XXX 
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
                 
         if(global != null) {

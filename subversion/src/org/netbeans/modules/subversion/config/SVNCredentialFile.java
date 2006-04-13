@@ -12,20 +12,10 @@
  */
 package org.netbeans.modules.subversion.config;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-import org.netbeans.modules.subversion.util.FileUtils;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -54,7 +44,7 @@ public abstract class SVNCredentialFile extends KVFile {
                 fileName += hex;
             }            
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace(); // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e); // should not happen
         }                        
         
         return fileName;

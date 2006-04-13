@@ -19,6 +19,7 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -67,7 +68,7 @@ public class SwitchTo extends CopyDialog {
         } catch (MalformedURLException ex) {
             // should be already checked and 
             // not happen at this place anymore
-            ex.printStackTrace();             
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);            
         }
         return null;
     }    

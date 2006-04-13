@@ -19,11 +19,10 @@ import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -118,7 +117,7 @@ public class ImportStep extends AbstractStep implements DocumentListener {
         try {
             return repositoryPaths.getRepositoryFiles()[0].getFileUrl(); // more files doesn't make sence
         } catch (MalformedURLException ex) {
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } 
         return null;
     }

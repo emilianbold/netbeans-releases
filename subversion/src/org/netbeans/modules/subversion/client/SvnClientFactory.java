@@ -18,6 +18,7 @@ import java.lang.reflect.Proxy;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.config.PasswordFile;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
@@ -113,7 +114,7 @@ public class SvnClientFactory {
             adapter.setUsername(username);
             adapter.setPassword(password);
         } catch (SVNClientException ex) {
-            ex.printStackTrace(); // should not happen
+            ErrorManager.getDefault().notify(ex); // should not happen
         }        
         return adapter;
     }        

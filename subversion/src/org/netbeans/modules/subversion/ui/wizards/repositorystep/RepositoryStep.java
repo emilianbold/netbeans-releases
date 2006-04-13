@@ -103,6 +103,7 @@ public class RepositoryStep
                                                         repository.getUserName(),
                                                         repository.getPassword());
         } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ex);
             invalid(ex.getLocalizedMessage());
             validationDone();
             return; 
@@ -145,7 +146,7 @@ public class RepositoryStep
                     try {                        
                         repositoryFile = new RepositoryFile(repositoryUrl, repositoryFolder, revision);                                                                                                        
                     } catch (MalformedURLException ex) {
-                        ex.printStackTrace(); // should not happen
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
                     }
                 } else {
                     if(invalidMsg[0] == null) {
@@ -172,7 +173,8 @@ public class RepositoryStep
             try {
                 client.cancelOperation(); // XXX do we need this
             } catch (SVNClientException ex) {
-                ex.printStackTrace();  // cannot happen
+                ExceptionHandler eh = new ExceptionHandler(ex); // XXX
+                eh.annotate();
             }
             workerThread.interrupt();
             valid("Action interrupted by user."); // should be a user action, so set again on valid ... 
@@ -250,7 +252,7 @@ public class RepositoryStep
     }
 
     private void storeHistory() {
-        repository.storeHistory();        
+        repository.storeHistory();
     }
     
     public RepositoryFile getRepositoryFile() {

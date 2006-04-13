@@ -75,7 +75,7 @@ public final class DeleteLocalAction extends ContextAction {
         try {
             client = Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ex);
+            ErrorManager.getDefault().notify(ex); 
             return;
         }
 
