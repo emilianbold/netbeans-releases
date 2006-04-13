@@ -20,6 +20,8 @@ import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
@@ -35,7 +37,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class RepositoryPaths implements ActionListener {
+public class RepositoryPaths implements ActionListener, DocumentListener {
     
     private final static RepositoryFile[] EMPTY_REPOSITORY_FILES = new RepositoryFile[0];
 
@@ -67,6 +69,8 @@ public class RepositoryPaths implements ActionListener {
         
         this.repositoryFile = repositoryFile;
         this.repositoryPathTextField = repositoryPathTextField;
+        repositoryPathTextField.getDocument().addDocumentListener(this);
+
         this.browseButton = browseButton;      
         
         browseButton.addActionListener(this);                
@@ -84,6 +88,7 @@ public class RepositoryPaths implements ActionListener {
         assert searchRevisionButton != null;
         
         this.revisionTextField = revisionTextField;
+        revisionTextField.getDocument().addDocumentListener(this);
         this.searchRevisionButton = searchRevisionButton;
     }
 
@@ -222,5 +227,36 @@ public class RepositoryPaths implements ActionListener {
     public void setRepositoryFile(RepositoryFile repositoryFile) {
         this.repositoryFile = repositoryFile;
     }
-    
+
+    public void insertUpdate(DocumentEvent e) {
+        validateUserInput();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        validateUserInput();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        validateUserInput();
+    }
+
+    private void validateUserInput() {
+        try {
+            getRepositoryFiles();
+        } catch (NumberFormatException ex) {
+            browseButton.setEnabled(false);
+            if(searchRevisionButton!=null) {
+                searchRevisionButton.setEnabled(false);
+            }
+            return;
+        } catch (MalformedURLException ex) {
+            browseButton.setEnabled(false);
+            return;
+        }
+        browseButton.setEnabled(true);
+        if(searchRevisionButton!=null) {
+            searchRevisionButton.setEnabled(true);
+        }
+    }
+
 }
