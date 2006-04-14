@@ -150,8 +150,9 @@ public class OptionsPanel extends JPanel {
                                 OptionsCategory category = (OptionsCategory) 
                                     optionCategories.get (i);
                                 OptionsPanelController controller = (OptionsPanelController) categoryToController.get (category);
-                                controller.update ();
                                 updatedCategories.add (category);
+                                if (controller == null) continue;
+                                controller.update ();
                             } catch (Throwable t) {
                                 ErrorManager.getDefault ().notify (t);
                             }
@@ -417,9 +418,13 @@ public class OptionsPanel extends JPanel {
         Iterator it = optionCategories.iterator ();
         while (it.hasNext ()) {
             OptionsCategory category = (OptionsCategory) it.next ();
-            OptionsPanelController controller = category.create ();
-            categoryToController.put (category, controller);
-            controller.addPropertyChangeListener (coltrollerListener);
+            try {
+                OptionsPanelController controller = category.create ();
+                categoryToController.put (category, controller);
+                controller.addPropertyChangeListener (coltrollerListener);
+            } catch (Exception ex) {
+                ErrorManager.getDefault ().notify (ex);
+            }
         }
     }
     
@@ -446,7 +451,12 @@ public class OptionsPanel extends JPanel {
             OptionsCategory category = (OptionsCategory) it.next ();
             OptionsPanelController controller = (OptionsPanelController) 
                 categoryToController.get (category);
-            JComponent component = controller.getComponent (masterLookup);
+            JComponent component = null;
+            if (controller == null) {
+                component = new JLabel (loc ("CTL_Error_Loading_Options"));
+                ((JLabel) component).setHorizontalAlignment (JLabel.CENTER);
+            } else
+                component = controller.getComponent (masterLookup);
             categoryToPanel.put (category, component);
             maxW = Math.max (maxW, component.getPreferredSize ().width);
             maxH = Math.max (maxH, component.getPreferredSize ().height);
