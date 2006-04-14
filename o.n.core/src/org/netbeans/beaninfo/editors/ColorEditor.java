@@ -676,7 +676,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         public void updateChooser () {
             SuperColor sc = ce.getSuperColor ();
             
-            if (palette == sc.getPalette ()) {
+            if (sc != null && palette == sc.getPalette ()) {
                 int i = getIndex (names, sc.getID ());
                 list.setSelectedIndex (i);
             } else 
