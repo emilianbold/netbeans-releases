@@ -188,6 +188,7 @@ public class FileObjectTestHid extends TestBaseHid {
             writeStr(fo1, testStr);
             fo1.setAttribute(attrName,value);
             FileLock lock = fo1.lock();
+            fold.getChildren();
             fo3 = fo1.move(lock,fold,fo2.getExt(),fo2.getName());
             lock.releaseLock();
         } catch (IOException iex) {
@@ -249,6 +250,7 @@ public class FileObjectTestHid extends TestBaseHid {
             writeStr(fo1, testStr);
             fo1.setAttribute(attrName,value);
             FileLock lock = fo1.lock();
+            fold.getChildren();
             fo3 = fo1.move(lock,fold,fo2.getExt(),fo2.getName());
             lock.releaseLock();
         } catch (IOException iex) {
