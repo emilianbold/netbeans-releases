@@ -115,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar"/> <!-- new for 6.0 -->
             <pathelement location="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar"/> <!-- new for 6.0 -->
             <pathelement location="${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar"/>
-            <fileset dir="${netbeans.home}">
+            <fileset dir="${netbeans.home}/..">
                 <include name="ide*/modules/ext/junit-*.jar"/>
             </fileset>
             <pathelement location="${netbeans.home}/../testtools/modules/ext/nbjunit.jar"/>
