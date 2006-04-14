@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,12 +15,12 @@ package org.netbeans.core.startup;
 
 import java.util.Iterator;
 import java.util.Set;
+import org.netbeans.InvalidException;
+import org.netbeans.Module;
+import org.netbeans.Util;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
-import org.netbeans.*;
-
-// May use NbBundle, but preferably nothing else.
 
 /**
  * Utility class to provide localized messages explaining problems
@@ -134,7 +134,13 @@ public final class NbProblemDisplayer {
                     }
                 }
             case Dependency.TYPE_JAVA:
-                return dep.toString();//XXX
+                // XXX would OpenIDE-Module-Java-Dependency-Message be useful?
+                if (dep.getName().equals(Dependency.JAVA_NAME) && dep.getComparison() == Dependency.COMPARE_SPEC) {
+                    return NbBundle.getMessage(NbProblemDisplayer.class, "MSG_problem_java_too_old", dep.getVersion(), Dependency.JAVA_SPEC);
+                } else {
+                    // All other usages unlikely, don't bother making pretty.
+                    return dep.toString();
+                }
             default:
                 throw new IllegalArgumentException(dep.toString());
             }
