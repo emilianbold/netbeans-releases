@@ -14,11 +14,7 @@
 package org.netbeans.modules.subversion;
 
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
-import org.netbeans.modules.masterfs.providers.InterceptionListener2;
-import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.filesystems.*;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
@@ -26,6 +22,7 @@ import org.openide.ErrorManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -33,7 +30,7 @@ import org.tigris.subversion.svnclientadapter.*;
  * 
  * @author Maros Sandor
  */
-class FilesystemHandler implements FileChangeListener, InterceptionListener, InterceptionListener2 {
+class FilesystemHandler extends ProvidedExtensions implements FileChangeListener {
         
     private static final RequestProcessor  eventProcessor = new RequestProcessor("Subversion FS Monitor", 1); // NOI18N
 
@@ -393,11 +390,31 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
 */
     }
 
-    // BEGIN #73042 InterceptionListener2 ~~~~~~~~~~~~~~~~~~~~
+    // BEGIN #73042 ProvidedExtensions ~~~~~~~~~~~~~~~~~~~~
+    public ProvidedExtensions.IOHandler getRenameHandler(final File from, final String newName) {
+        final File to = new File(from.getParentFile(), newName);
+        return (implsRename(from, to)) ?  new ProvidedExtensions.IOHandler() {
+            public void handle() throws IOException {
+                renameImpl(from, to);
+            }
+        } : null;
+    }
 
-    public boolean implsMove(FileObject src, FileObject destFolder, String name, String ext) {
-        File srcFile = FileUtil.toFile(src);
-        File destDir = FileUtil.toFile(destFolder);
+    public ProvidedExtensions.IOHandler getMoveHandler(final File from, final File to) {
+        return (implsMove(from, to)) ?  new ProvidedExtensions.IOHandler() {
+            public void handle() throws IOException {
+                moveImpl(from, to);
+            }
+        } : null;
+    }
+
+
+    public boolean implsRename(File from, File to) {
+        return implsMove(from, to);
+    }
+
+    public boolean implsMove(File srcFile, File to) {
+        File destDir = to.getParentFile();
         if (srcFile != null && destDir != null) {
             FileInformation info = cache.getStatus(srcFile);
             if ((info.getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
@@ -408,27 +425,44 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
         return false;
     }
 
-    public void moveImpl(final FileObject src, final FileObject destFolder, final String name, final String ext) throws IOException {
+    public  void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
+        try {                        
+            boolean force = true; // file with local changes must be forced
+            ISVNClientAdapter client = Subversion.getInstance().getClient();
+            client.removeNotifyListener(cache);  // do not fire events before MFS
+            client.move(srcFile, dstFile, force);
+        } catch (SVNClientException e) {
+            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
+            ex.initCause(e);
+            throw ex;
+        }
+    }
 
+
+    public void renameImpl(File from, File to) throws IOException {
+        moveImpl(from, to);
+    }
+
+    public void moveImpl(final File from, final File to) throws IOException {
         if (SwingUtilities.isEventDispatchThread()) {
-
+            
             // Openide implemetation mistakenly calls FS from AWT
             // relax our asserts by reposting to non-AWT thread and wait
             // and print out warning so original gets fixed
-
+            
             Exception ex = new IllegalThreadStateException("WARNING: above code access filesystem from AWT.\nImagine that Subversion's filesystem handler can connect to server over (slow) network.\nWorkarounding... (it may deadlocks however).");
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
             final Throwable innerT[] = new Throwable[1];
             Runnable outOfAwt = new Runnable() {
                 public void run() {
                     try {
-                        moveImplementation(src, destFolder, name, ext);
+                        svnMoveImplementation(from, to);
                     } catch (Throwable t) {
                         innerT[0] = t;
                     }
                 }
             };
-
+            
             Subversion.getInstance().getRequestProccessor().post(outOfAwt).waitFinished();
             if (innerT[0] != null) {
                 if (innerT[0] instanceof IOException) {
@@ -441,51 +475,13 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
                     throw new IllegalStateException("Unexpected exception class: " + innerT[0]);  // NOI18N
                 }
             }
-
+            
             // end of hack
-
+            
         } else {
-            moveImplementation(src, destFolder, name, ext);
+            svnMoveImplementation(from, to);
         }
-
-
     }
-
-    public void moveImplementation(FileObject src, FileObject destFolder, String name, String ext) throws IOException {
-
-        File srcFile = FileUtil.toFile(src);
-        File destDir = FileUtil.toFile(destFolder);
-        if (ext == null) {
-            ext = ""; // NOI18N
-        }
-        if (ext.length() > 0) {
-            ext = "." + ext; // NOI18N
-        }
-        File dstFile = new File(destDir, name + ext);
-
-        try {                        
-            boolean force = true; // file with local changes must be forced
-            ISVNClientAdapter client = Subversion.getInstance().getClient();
-            client.removeNotifyListener(cache);  // do not fire events before MFS
-            client.move(srcFile, dstFile, force);
-        } catch (SVNClientException e) {
-            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
-            ex.initCause(e);
-            throw ex;
-        }
-        // should be handed by event handler (this)
-//        cache.refresh(srcFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-//        cache.refresh(dstFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-    }
-
-    public boolean implsRename(FileObject src, String name, String ext) {
-        return implsMove(src, src.getParent(), name, ext);
-    }
-
-    public void renameImpl(FileObject src, String name, String ext) throws IOException {
-        moveImpl(src, src.getParent(), name, ext);
-    }
-
     // END #73042 InterceptionListener2 ~~~~~~~~~~~~~~~~~~~~
 
     /**
