@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
@@ -47,6 +47,13 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency> <!-- An artificial runtime dependency on JPDA Debugger Ant Task. We need to have the EditorContext implementation. -->
+                    <code-name-base>org.netbeans.modules.debugger.jpda.ant</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency>
+                        <!-- <release-version>1</release-version> There is no release version -->
                     </run-dependency>
                 </dependency>
                 <dependency>

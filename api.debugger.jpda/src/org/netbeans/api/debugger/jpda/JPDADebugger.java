@@ -33,6 +33,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -95,7 +96,7 @@ public abstract class JPDADebugger {
         String          classPath,
         boolean         suspend
     ) {
-        DebuggerManager.getDebuggerManager ().startDebugging (
+        DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging (
             DebuggerInfo.create (
                 LaunchingDICookie.ID,
                 new Object[] {
@@ -108,6 +109,13 @@ public abstract class JPDADebugger {
                 }
             )
         );
+        if (es.length == 0) {
+            /* Can not throw DebuggerStartException, but it should...
+            throw new DebuggerStartException(
+                    NbBundle.getMessage(JPDADebugger.class, "MSG_NO_DEBUGGER")); */
+            throw new RuntimeException(
+                    NbBundle.getMessage(JPDADebugger.class, "MSG_NO_DEBUGGER"));
+        }
     }
     
     /**
@@ -145,7 +153,8 @@ public abstract class JPDADebugger {
             d.waitRunning ();
             return d;
         }
-        throw new DebuggerStartException (new InternalError ());
+        throw new DebuggerStartException(
+                NbBundle.getMessage(JPDADebugger.class, "MSG_NO_DEBUGGER"));
     }
     
     /**
@@ -175,6 +184,10 @@ public abstract class JPDADebugger {
                     s
                 )
             );
+        if (es.length == 0) {
+            throw new DebuggerStartException(
+                    NbBundle.getMessage(JPDADebugger.class, "MSG_NO_DEBUGGER"));
+        }
     }
     
     /**
@@ -211,7 +224,8 @@ public abstract class JPDADebugger {
             d.waitRunning ();
             return d;
         }
-        throw new DebuggerStartException (new InternalError ());
+        throw new DebuggerStartException(
+                NbBundle.getMessage(JPDADebugger.class, "MSG_NO_DEBUGGER"));
     }
     
     /**
@@ -245,7 +259,8 @@ public abstract class JPDADebugger {
             if (d == null) continue;
             return d;
         }
-        throw new DebuggerStartException (new InternalError ());
+        throw new DebuggerStartException(
+                NbBundle.getMessage(JPDADebugger.class, "MSG_NO_DEBUGGER"));
     }
 
     /**

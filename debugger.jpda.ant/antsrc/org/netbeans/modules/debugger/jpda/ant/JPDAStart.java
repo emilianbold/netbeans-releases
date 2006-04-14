@@ -180,7 +180,12 @@ public class JPDAStart extends Task implements Runnable {
                     lock.wait ();
                     debug ("Wait finished");
                     if (lock [1] != null) {
-                        throw new BuildException ((Throwable) lock [1]);
+                        if (lock[1] instanceof DebuggerStartException) {
+                            //getProject().log(((DebuggerStartException) lock[1]).getLocalizedMessage(), Project.MSG_ERR);
+                            throw new BuildException(((DebuggerStartException) lock[1]).getLocalizedMessage());
+                        } else {
+                            throw new BuildException ((Throwable) lock [1]);
+                        }
                     }
                 } catch (InterruptedException e) {
                     throw new BuildException (e);
