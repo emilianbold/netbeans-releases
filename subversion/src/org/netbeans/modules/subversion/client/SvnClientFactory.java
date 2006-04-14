@@ -106,7 +106,7 @@ public class SvnClientFactory {
         ISVNClientAdapter adapter = createSvnClientAdapter();
         File configDir = null;
         if(pd!=null && pd.getType() == ProxyDescriptor.TYPE_HTTP) {
-            SvnConfigFiles.getInstance().setProxy(pd, repositoryUrl);
+            SvnConfigFiles.getInstance().setProxy(pd, repositoryUrl.getHost());
         }        
         try {
             File file = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigDir()));

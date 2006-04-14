@@ -21,15 +21,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -47,6 +45,8 @@ public class SvnConfigFiles {
 
     private final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   
 
+    private String GROUPS = "groups";
+
     private SvnConfigFiles() {
         // copy config file        
         copyToIDEConfigDir();        
@@ -59,53 +59,60 @@ public class SvnConfigFiles {
     public static SvnConfigFiles getInstance() {
         if(instance==null) {
             instance = new SvnConfigFiles();                    
-        }        
+        }
         return instance;
     }
 
-    public ProxyDescriptor getProxyDescriptor(SVNUrl url) {
-        Ini.Section group = getGroup(url);
+    public ProxyDescriptor getProxyDescriptor(String host) {
+        Ini.Section group = getGroup(host);
         if(group==null) {
             // no proxy specified -> direct
             return ProxyDescriptor.DIRECT;
         }
-        String host = (String) group.get("http-proxy-host");
-        if(host == null || host.length() == 0) {
+        String proxyHost = (String) group.get("http-proxy-host");
+        if(proxyHost == null || proxyHost.length() == 0) {
             // no host specified -> direct
             return ProxyDescriptor.DIRECT;
         }
-        String portString = (String) group.get("http-proxy-port");
-        int port;
-        if(portString == null || portString.length() == 0) {
-            port = 0; // XXX
+        String proxyPortString = (String) group.get("http-proxy-port");
+        int proxyPort;
+        if(proxyPortString == null || proxyPortString.length() == 0) {
+            proxyPort = 0; // XXX
         } else {
-            port = Integer.parseInt(portString); // XXX what if null ?
+            proxyPort = Integer.parseInt(proxyPortString); // XXX what if null ?
         }
         String username = (String) group.get("http-proxy-username");
         String password = (String) group.get("http-proxy-password");
-        return new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, host, port, username, password);    
+        return new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, proxyHost, proxyPort, username, password);    
     }
 
-    public void setProxy(ProxyDescriptor pd, SVNUrl url) {
+    public void setProxy(ProxyDescriptor pd, String host) {
 
         if(pd != null && pd.getHost() != null) {
 
-            Ini.Section group = getGroup(url);
+            Ini.Section group = getGroup(host);
             if(group==null) {
-                group = addGroup(url);
-            }
-        
-            group.put("http-proxy-host", pd.getHost());
-            group.put("http-proxy-port", String.valueOf(pd.getPort()));
-            if(pd.getUserName()!=null) {
-                group.put("http-proxy-username", pd.getUserName());
-            }
-            if(pd.getPassword()!=null) {
-                group.put("http-proxy-password", pd.getPassword());
-            }
+                group = getGroup(pd);
+                if(group==null) {
+                    group = addGroup(host);
+
+                    group.put("http-proxy-host", pd.getHost());
+                    group.put("http-proxy-port", String.valueOf(pd.getPort()));
+                    if(pd.getUserName()!=null) {
+                        group.put("http-proxy-username", pd.getUserName());
+                    }
+                    if(pd.getPassword()!=null) {
+                        group.put("http-proxy-password", pd.getPassword());
+                    }
+                } else {
+                    String groupName = group.getName();
+                    String groupsHosts = (String) getGroups().get(groupName);
+                    getGroups().put(groupName, groupsHosts + "," + host);
+                }
+            }            
         } else {
             // no proxy host means no proxy at all
-            removeGroup(url);
+            removeFromGroup(host);
         }
 
         try {
@@ -117,59 +124,64 @@ public class SvnConfigFiles {
         }
     }
 
-    private Ini.Section addGroup(SVNUrl url) {
+    private Ini.Section addGroup(String host) {
         Ini.Section groups = getGroups();
         int idx = 0;
         String name = "group0";
         while(groups.get(name)!=null) {
-            name = "group" + ++idx;
+            idx++;
+            name = "group" + idx;
         }
         
         Ini.Section group = servers.add(name);
-        groups.put(name, url.getHost());
+        groups.put(name, host);
         return group;
     }
 
-    private void removeGroup(SVNUrl url) {
-        Ini.Section group = getGroup(url);
-        if(group!=null) {
-            Ini.Section groups = getGroups();
-            String urlString = url.toString();
-            for (Iterator it = groups.keySet().iterator(); it.hasNext();) {
-                Object key = (Object) it.next();
-                String value = (String) groups.get(key);
-                if( value != null && match(value, urlString) ) {
-                    it.remove();
-                    // the group is removed, but we will continue just to get sure
-                }                
-            }
-            servers.remove(group);
+    private void removeFromGroup(String host) {
+        Ini.Section group = getGroup(host);
+        if(group != null) {
+            String groupName = group.getName();
+            String[] hosts = ( (String) getGroups().get(groupName) ).split(",");
+            if(hosts.length == 1) {
+                getGroups().remove(groupName);
+                servers.remove(group);
+            } else {
+                StringBuffer newHosts = new StringBuffer();
+                for (int i = 0; i < hosts.length; i++) {
+                    if(!hosts[i].trim().equals(host)) {
+                        newHosts.append(hosts[i]);
+                        if(i < hosts.length - 1) {
+                            newHosts.append(",");
+                        }
+                    }
+                }
+                getGroups().put(groupName, newHosts.toString());
+            }            
         }
     }
-    
 
     private Ini.Section getGroups() {
-        Ini.Section groups = (Ini.Section) servers.get("groups");
+        Ini.Section groups = (Ini.Section) servers.get(GROUPS);
         if(groups==null) {
             groups = servers.add("groups");
         }
         return groups;
     }
 
-    private Ini.Section getGroup(SVNUrl url) {
+    private Ini.Section getGroup(String host) {
         Ini.Section groups = getGroups();
         for (Iterator it = groups.keySet().iterator(); it.hasNext();) {
             String key = (String) it.next();
             String value = ((String) groups.get(key)).trim();
-
-            String host = url.getHost().trim();
+            
             if(match(value, host)) {
                 return (Ini.Section) servers.get(key);
             }
 
             InetAddress hostAddress = null;
             try {
-                hostAddress = InetAddress.getByName(url.getHost().trim());
+                hostAddress = InetAddress.getByName(host);
             } catch (UnknownHostException ex) {
                 // behind a proxy ?
                 return null;
@@ -177,6 +189,23 @@ public class SvnConfigFiles {
             if(match(value, hostAddress.getHostName()) || match(value, hostAddress.getHostAddress()) ) {
                 return (Ini.Section) servers.get(key);
             }            
+        }
+        return null;
+    }
+
+    private Ini.Section getGroup(ProxyDescriptor pd) {
+        for (Iterator it = servers.values().iterator(); it.hasNext();) {
+            Ini.Section group = (Ini.Section) it.next();
+            if (group.getName().equals(GROUPS)) {
+                continue;
+            }
+            if( pd.getHost().equals(group.get("http-proxy-host")) &&
+                String.valueOf(pd.getPort()).equals(group.get("http-proxy-port")) &&
+                (pd.getUserName()==null || pd.getUserName().equals(group.get("http-proxy-username")))  &&
+                (pd.getPassword()==null || pd.getPassword().equals(group.get("http-proxy-password"))) )
+            {
+                return group;
+            }
         }
         return null;
     }
@@ -326,7 +355,7 @@ public class SvnConfigFiles {
             for (Iterator itVariables = sourceSection.keySet().iterator(); itVariables.hasNext();) {
                 String key = (String) itVariables.next();
 
-                if(!isProxyConfiguration(key)) {                    
+                if(!isProxyConfigurationKey(key)) {
                     if(targetSection == null) {
                         targetSection = target.add(sectionName);
                     }                    
@@ -336,21 +365,28 @@ public class SvnConfigFiles {
         }
 
         // delete from target what's missing in source
-        List toRemove = new ArrayList();
+        //List toRemove = new ArrayList();
         for (Iterator itSections = target.keySet().iterator(); itSections.hasNext();) {
             String sectionName = (String) itSections.next();
+
+            if(sectionName.equals(GROUPS)) {
+                continue;
+            }
+
             Ini.Section sourceSection = (Ini.Section) source.get( sectionName );
             Ini.Section targetSection = (Ini.Section) target.get( sectionName );
 
             if(sourceSection == null) {
-                // the whole section is missing -> drop it
-                itSections.remove();
+                // the whole section is missing -> drop it as long there is no "proxy key"
+                if(!isProxyConfigurationSection(targetSection)) {
+                    itSections.remove();
+                }                
                 continue;
             }                    
 
             for (Iterator itVariables = targetSection.keySet().iterator(); itVariables.hasNext();) {
                 String key = (String) itVariables.next();
-                if(!isProxyConfiguration(key)) {
+                if(sourceSection.get(key) == null && !isProxyConfigurationKey(key)) {
                     // a variable is missing -> drop it
                     itVariables.remove();
                 }
@@ -358,7 +394,15 @@ public class SvnConfigFiles {
         }        
     }
 
-    private boolean isProxyConfiguration(String key) {
+    private boolean isProxyConfigurationSection(Ini.Section section) {
+        Collection keys = section.keySet();
+        return keys.contains("http-proxy-host")     ||
+               keys.contains("http-proxy-port")     ||
+               keys.contains("http-proxy-username") ||
+               keys.contains("http-proxy-password");
+    }
+    
+    private boolean isProxyConfigurationKey(String key) {
         return key.equals("http-proxy-host")     ||
                key.equals("http-proxy-port")     ||
                key.equals("http-proxy-username") ||
@@ -402,7 +446,7 @@ public class SvnConfigFiles {
         File tmpFile = FileUtil.normalizeFile(new File(tmpFilePath));
         
         String[] cmdLine = new String[] {
-            "regedit.exe", "/e" , tmpFile.getAbsolutePath(), key       
+            "regedit.exe", "/e" , tmpFile.getAbsolutePath(), key       // XXX don't have to use regedit.exe
         };
         
         Process p = null;

@@ -73,7 +73,8 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     }
 
     private boolean handleAuthenticationError() {
-        Repository repository = new Repository(false, false, "Correct the password, username and proxy settings for ths URL:"); 
+        SVNUrl url = client.getSvnUrl();
+        Repository repository = new Repository(url, false, false, "Correct the password, username and proxy settings for ths URL:");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(repository.getPanel(), "Authentication failed"); 
 
         JButton retryButton = new JButton("Retry"); 
@@ -104,7 +105,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         };
 
         SVNUrl url = client.getSvnUrl();
-        ProxyDescriptor proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url); // XXX don't like the way how the descriptor is get
+        ProxyDescriptor proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost()); 
         Socket proxy = null;
         if (proxyDescriptor != null && proxyDescriptor.getHost() != null ) { // XXX
             ConnectivitySettings connectivitySettings = proxyDescriptor.toConnectivitySettings();

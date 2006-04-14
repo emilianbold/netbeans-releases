@@ -35,7 +35,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.config.PasswordFile;
@@ -54,13 +53,14 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class Repository implements ActionListener, DocumentListener, FocusListener {
     
     private RepositoryPanel repositoryPanel;
-    private ProxyDescriptor proxyDescriptor;   
+    private ProxyDescriptor proxyDescriptor;
     private RequestProcessor.Task updatePasswordTask;
     private volatile boolean internalDocumentChange;   
     private boolean passwordExpected;        
     private boolean valid = true;
     private boolean userVisitedProxySettings;    
     private List listeners;
+
 
     public static final String PROP_VALID = "valid"; // XXX do it via a changelistener
 
@@ -83,6 +83,11 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }
     }    
 
+    public Repository(SVNUrl url, boolean urlEditable, boolean acceptRevision, String titleLabel) {
+        this(urlEditable, acceptRevision, titleLabel);
+        repositoryPanel.urlComboBox.setSelectedItem(url.toString());
+    }
+    
     public Repository(boolean urlEditable, boolean acceptRevision, String titleLabel) {
         getPanel().urlComboBox.setEnabled(urlEditable);
         getPanel().titleLabel.setText(titleLabel);
@@ -157,7 +162,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             if(repository!=null) {
                 url = repository.getUrl();
             }            
-            proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url);
+            proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
             schedulePasswordUpdate();
         }
         textEditor.selectAll();
@@ -205,7 +210,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             
             // XXX the way the usr, password and proxy settings are stored is not symetric and consistent...
             if(userVisitedProxySettings) {
-                SvnConfigFiles.getInstance().setProxy(getProxyDescriptor(), repository.getUrl());                 
+                SvnConfigFiles.getInstance().setProxy(getProxyDescriptor(), repository.getUrl().getHost());
             }            
         }    
         
@@ -309,7 +314,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if(repository != null) {            
             if (repository.getUrl()!=null) {                   
                 if (userVisitedProxySettings == false) {
-                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(repository.getUrl());
+                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(repository.getUrl().getHost());
                 }
                 schedulePasswordUpdate();
             }

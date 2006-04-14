@@ -91,7 +91,7 @@ public class CreateCopyAction extends ContextAction {
                 try{
                     info = client.getInfo(folderToCreate);                                                                
                 } catch (SVNClientException ex) {                                
-                    if(!ExceptionHandler.isWrongUrl(ex)) {
+                    if(!ExceptionHandler.isWrongUrl(ex)) { // XXX what is this for?
                         throw ex;
                     }
                 }            
@@ -103,7 +103,7 @@ public class CreateCopyAction extends ContextAction {
                 if(info == null) {
                     client.mkdir(folderToCreate,
                                  true, 
-                                 "[Netbeans SVN client generated message: create a new folder for the following copy]: " + message); // XXX how shoul be this done                      
+                                 "[Netbeans SVN client generated message: create a new folder for copy]: " + message); 
                 }                            
             }                        
 
