@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -58,7 +58,7 @@ public final class AutoUpgrade {
     
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
-    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { ".netbeans/4.1" });
+    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { ".netbeans/5.0" });
     
     static private File checkPrevious (String[] version) {
         boolean exists;
@@ -108,7 +108,7 @@ public final class AutoUpgrade {
     static void doUpgrade (File source, String oldVersion) 
     throws java.io.IOException, java.beans.PropertyVetoException {
         
-        
+/*
         if ("3.6".equals (oldVersion) || "jstudio_6me_user".equals (oldVersion)) { // NOI18N
             File userdir = new File(System.getProperty ("netbeans.user", "")); // NOI18N
 
@@ -158,7 +158,7 @@ public final class AutoUpgrade {
             Copy.copyDeep (old.getRoot (), mine.getRoot (), includeExclude);
             return;
         }
-        
+*/
 
         File userdir = new File(System.getProperty ("netbeans.user", "")); // NOI18N
         
@@ -179,7 +179,7 @@ public final class AutoUpgrade {
             ErrorManager.USER, "Import: Old version: " // NOI18N
             + oldVersion + ". Importing from " + source + " to " + userdir // NOI18N
         );
-
+        
         File oldConfig = new File (source, "config"); // NOI18N
         org.openide.filesystems.FileSystem old;
         {
@@ -203,7 +203,7 @@ public final class AutoUpgrade {
         
         Copy.copyDeep (old.getRoot (), mine.getRoot (), includeExclude);
         
-        
+/*
         // convert shortcuts ...................................................
         
         // copy Shortcuts to Keymaps/NetBeans
@@ -282,6 +282,7 @@ public final class AutoUpgrade {
         // set current coloring to NetBeans41
         FileObject newEditors = mine.getRoot ().getFileObject ("Editors");
         newEditors.setAttribute ("currentFontColorProfile", "NetBeans41");
+*/
     }
 
     static MultiFileSystem createLayeredSystem(final LocalFileSystem lfs, final XMLFileSystem xmlfs) {
