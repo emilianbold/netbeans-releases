@@ -17,13 +17,6 @@ import java.awt.Component;
 
 import java.util.HashMap;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-
 import org.netbeans.jellytools.JellyTestCase;
 
 import org.netbeans.jemmy.QueueTool;
@@ -287,12 +280,12 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     logMemoryUsage();
                     
                     // PENDING need to check this
-//                    if(testedComponentOperator != null) {
-//                        java.awt.EventQueue.writeOutput("<wait_until_painted time=\""+System.currentTimeMillis()+"\">");
-//                        Component comp = testedComponentOperator.getSource();
-//                        waitUntilPainted(comp);
-//                        java.awt.EventQueue.writeOutput("</wait_until_painted>");
-//                    }
+                    //                    if(testedComponentOperator != null) {
+                    //                        java.awt.EventQueue.writeOutput("<wait_until_painted time=\""+System.currentTimeMillis()+"\">");
+                    //                        Component comp = testedComponentOperator.getSource();
+                    //                        waitUntilPainted(comp);
+                    //                        java.awt.EventQueue.writeOutput("</wait_until_painted>");
+                    //                    }
                     new QueueTool().waitEmpty();
                     
                     measuredTime[i] = getMeasuredTime();
@@ -437,7 +430,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     e.printStackTrace(getLog());
                     getScreenshot("measure");
                     exceptionDuringMeasurement = true;
-                }finally{
+                }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
+                    // XXX export results?
                 }
             }
             
@@ -475,286 +469,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
         
     }
-    
-    /**
-     * Test that measures detailed memory usage.
-     * (not reporting anything from here, the test has to call reportDetailMemoryUsage() in one of its methods!)
-     * <br>
-     * <br>If during measurement exception arise - test fails and no value is reported as Performance Data.
-     * <p>Each test should reset the state in {@link close()} method.</p>
-     */
-    public void measureDetailMemoryUsage() {
-        
-        boolean exceptionDuringMeasurement = false;
-        useTwoOrderTypes = false;
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
-        JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
-        
-        initialize();
-        
-        for (int i=1; i<=repeat_memory && !exceptionDuringMeasurement; i++) {
-            try {
-
-                prepare();
-                
-                testedComponentOperator = open();
-                
-            }catch(Exception exc){ // catch for prepare(), open()
-                exc.printStackTrace(getLog());
-                exceptionDuringMeasurement = true;
-                getScreenshot("exception_during_open");
-            }finally{
-                try{
-                    
-                    close();
-                    
-                    closeAllModal();
-
-                }catch(Exception e){
-                    e.printStackTrace(getLog());
-                    getScreenshot("measure");
-                    exceptionDuringMeasurement = true;
-                }finally{
-                }
-            }
-        }
-        
-        // not reporting anything from here, the test has to call reportDetailMemoryUsage() in one of its methods!
-        //reportDetailMemoryUsage();
-        
-        try {
-            
-            shutdown();
-            
-            closeAllDialogs();
-            
-        }catch (Exception e) {
-            e.printStackTrace(getLog());
-            getScreenshot("shutdown");
-            exceptionDuringMeasurement = true;
-        }finally{
-        }
-        
-        if(exceptionDuringMeasurement)
-            throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
-        
-    }
-    
-    public void reportDetailMemoryUsage(String prefix, int runOrder) {
-
-        log ("----------------------------------------------");
-        // what platform are we running on?
-        String platformString = (System.getProperty("os.name","")+","+System.getProperty("os.arch","")).replace(' ','_');
-        boolean onunix = platformString.equalsIgnoreCase("Linux,i386") || platformString.equalsIgnoreCase("SunOS,sparc");
-        boolean onwindows = platformString.equalsIgnoreCase("Windows_NT,x86") || platformString.equalsIgnoreCase("Windows_2000,x86") ||
-                platformString.equalsIgnoreCase("Windows_XP,x86") || platformString.equalsIgnoreCase("Windows_95,x86") ||
-                platformString.equalsIgnoreCase("Windows_98,x86") || platformString.equalsIgnoreCase("Windows_Me,x86");
-        if (!onunix && !onwindows)
-            return;
-
-        // find process's PID
-        String pid = getPID();
-        if (pid!=null)
-            log ("PID = "+pid);
-        else
-            fail("Process's PID not found.");
-
-        // Full GC several times
-        runGC(5);
-
-        String commandoutput = null;
-        String xtestHome = System.getProperty("xtest.tmpdir");
-        log (commandoutput = measureFootprint (pid, onwindows));
-        String[] outputarray = commandoutput.split("; ");
-        if (outputarray!=null && outputarray.length==4) {
-            String[] rssvsz = outputarray[0].split("/");
-            String[] heap = outputarray[1].split("/");
-            String[] permgen = outputarray[2].split("/");
-            String[] classes = outputarray[3].split("/");
-            reportPerformance (prefix + " Footprint-RSS", Long.valueOf(rssvsz[0]).longValue(), "kB", runOrder);
-            reportPerformance (prefix + " Footprint-VSZ", Long.valueOf(rssvsz[1]).longValue(), "kB", runOrder);
-            reportPerformance (prefix + " Heap-Used", Long.valueOf(heap[0]).longValue(), "kB", runOrder);
-            reportPerformance (prefix + " Heap-Commited", Long.valueOf(heap[1]).longValue(), "kB", runOrder);
-            reportPerformance (prefix + " PermGen-Used", Long.valueOf(permgen[0]).longValue(), "kB", runOrder);
-            reportPerformance (prefix + " PermGen-Commited", Long.valueOf(permgen[1]).longValue(), "kB", runOrder);
-            reportPerformance (prefix + " Classes-Loaded", Long.valueOf(classes[0]).longValue(), "", runOrder);
-            reportPerformance (prefix + " Classes-Unloaded", Long.valueOf(classes[1]).longValue(), "", runOrder);
-        }
-
-        log ("----------------------------------------------");
-    }
-
-    private String getPID() {
-        String xtestWorkdir = System.getProperty("xtest.workdir");
-        if (xtestWorkdir!=null) {
-            File ideRunning = new File(xtestWorkdir,"ide.pid");
-            if (ideRunning.exists()) {
-                try {
-                    LineNumberReader reader = new LineNumberReader(new FileReader(ideRunning));
-                    String line = reader.readLine();
-                    if (line != null)
-                        return line.trim();
-                } catch (IOException ioe) {
-                    ioe.printStackTrace(getLog());
-                    log("IOException when reading PID from ide.pid file");
-                }
-            } else {
-                fail("Cannot find file containing PID of running IDE ("+ideRunning.getAbsolutePath());
-            }
-        } else log("xtest.workdir property is not specified");
-
-        return null;
-    }
-
-    private String measureFootprint (String PID, boolean onwindows) {
-        String result = "";
-
-        if (onwindows) {
-            /*
-                ./pslist -m $PID | tail -1 |
-                {
-                 read NAME0 PID0 VM0 WS WSPK0 PRIV REST0
-                 echo "$WS/$PRIV; " # resident/virtual memory
-                }
-             */
-            String xtestHome = System.getProperty("xtest.tmpdir");
-            String pslist = executeNativeCommand(xtestHome+"/pslist.exe -m "+PID);
-            int pslist_lines = numberOfLines(pslist);
-            String pslist_line = getLine (pslist, pslist_lines-1);
-            result += getItem(pslist_line, 3);
-            result += "/";
-            result += getItem(pslist_line, 5);
-            result += "; ";
-        } else {
-            /*
-                ps -o rss -p $PID | tail -1 |
-                {
-                 read RSS
-                 ps -o vsz -p $PID | tail -1 |
-                 {
-                  read VSZ
-                  echo "$RSS/$VSZ; " # resident/virtual memory
-                 }
-                }
-             */
-            String ps_rss = executeNativeCommand("ps -o rss -p "+PID);
-            int ps_rss_lines = numberOfLines(ps_rss);
-            String ps_vsz = executeNativeCommand("ps -o vsz -p "+PID);
-            int ps_vsz_lines = numberOfLines(ps_vsz);
-            result += getLine(ps_rss,ps_rss_lines-1).trim();
-            result += "/";
-            result += getLine(ps_vsz,ps_vsz_lines-1).trim();
-            result += "; ";
-        }
-
-        /*
-            jstat -gc $PID | tail -1 |
-            {
-             read S0C S1C S0U S1U EC EU OC OU PC PU YGC YGCT FGC FGCT GCT
-             echo "($S0U+$S1U+$EU+$OU)/1" | bc # heap utilization
-             echo "/"
-             echo "($S0C+$S1C+$EC+$OC)/1" | bc # heap capacity
-             echo "; "
-             echo "$PU/1" | bc # utilization of permgen
-             echo "/"
-             echo "$PC/1" | bc # capacity of permgen
-             echo "; "
-            }
-         */
-        String jstat = executeNativeCommand(getJavaBinDirectory()+"jstat -gc "+PID);
-        int jstat_lines = numberOfLines(jstat);
-        String jstat_line = getLine (jstat, jstat_lines-1);
-        int heapU = (int)Math.floor(itemToNumber(getItem(jstat_line,2)) + itemToNumber(getItem(jstat_line,3)) +
-                itemToNumber(getItem(jstat_line,5)) + itemToNumber(getItem(jstat_line,7)));
-        int heapC = (int)Math.floor(itemToNumber(getItem(jstat_line,0)) + itemToNumber(getItem(jstat_line,1)) +
-                itemToNumber(getItem(jstat_line,4)) + itemToNumber(getItem(jstat_line,6)));
-        result += Integer.toString(heapU);
-        result += "/";
-        result += Integer.toString(heapC);
-        result += "; ";
-        result += Integer.toString((int)Math.floor(itemToNumber(getItem(jstat_line,9))));
-        result += "/";
-        result += Integer.toString((int)Math.floor(itemToNumber(getItem(jstat_line,8))));
-        result += "; ";
-
-        /*
-            jstat -class $PID | tail -1 |
-            {
-             read L BL U BU BY TI
-             echo "$L/$U" # loaded/unloaded classes
-            }
-         */
-        String jstat2 = executeNativeCommand(getJavaBinDirectory()+"jstat -class "+PID);
-        int jstat2_lines = numberOfLines(jstat2);
-        String jstat2_line = getLine(jstat2, jstat2_lines-1);
-        result += getItem(jstat2_line, 0);
-        result += "/";
-        result += getItem(jstat2_line, 2);
-
-        return result;
-    }
-
-    private int numberOfLines (String string) {
-        return string==null || string.length()<1 ? 0 : string.split("\n").length;
-    }
-
-    private String getLine (String string, int line) {
-        String[] linestrings = string.split("\n");
-        return linestrings[line];
-    }
-
-    private String getItem (String line, int item) {
-        String[] lineitems = line.split(" ");
-        for (int i=0, j=0; i<lineitems.length; i++)
-            if (lineitems[i].trim().length()>0) {
-                if (item==j)
-                    return lineitems[i];
-                j++;
-            }
-        return "N/A";
-    }
-
-    private float itemToNumber (String item) {
-        return Float.parseFloat(item);
-    }
-
-    private String getJavaBinDirectory (){
-        String separator = System.getProperty("file.separator");
-        String javaDir = System.getProperty("java.home");
-        if (javaDir.endsWith(separator+"jre"))
-            javaDir = javaDir.substring(0,javaDir.length()-4);
-        return javaDir+separator+"bin"+separator;
-    }
-    
-    private String executeNativeCommand (String commandLine){
-            
-        log("Execute command: ["+commandLine+"].");
-        
-        try {
-            Process proc = Runtime.getRuntime().exec(commandLine);
-            proc.waitFor();
-            
-            StringBuffer buffer = new StringBuffer();
-            BufferedReader dataInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            String line;
-            
-            while ((line = dataInput.readLine()) != null) {
-                buffer.append(line);
-                buffer.append('\n');
-            }
-            
-            return buffer.toString();
-            
-        } catch (InterruptedException ie) {
-            ie.printStackTrace(getLog());
-            log("InterruptedException: "+ie.toString());
-        } catch (IOException ioe){
-            ioe.printStackTrace(getLog());
-            log("None output from command, exception arise "+ioe.toString());
-        }
-        return null;
-    }
-
+  
     /**
      * Initialize callback that is called once before the repeated sequence of
      * testet operation is perfromed.
@@ -915,7 +630,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 Thread.currentThread().sleep(500);
                 System.gc();
                 Thread.currentThread().sleep(500);
-            }catch(Exception exc){}
+            }catch(Exception exc){ //just catch exception
+                
+            }
         }
     }
     
@@ -944,8 +661,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         for(int i=1; i<measuredValues.length; i++){
             measuredValuesString = measuredValuesString + " " + measuredValues[i];
             
-            if( (i>1  && measuredValues[i] > expectedTime) || 
-                (i==1 && measuredValues.length==1 && measuredValues[i] > expectedTime) )
+            if( (i>1  && measuredValues[i] > expectedTime) ||
+                    (i==1 && measuredValues.length==1 && measuredValues[i] > expectedTime) )
                 // fail if it's subsequent usage and it's over expected time or it's first usage without any other usages and it's over expected time
                 fail = true;
             else if(i==1 && measuredValues.length > 1 && measuredValues[i] > 2*expectedTime)
@@ -1027,7 +744,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             int code = t.getCode();
             if (code == ActionTracker.TRACK_START
                     // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
-                    || code == track_mouse_event    
+                    || code == track_mouse_event
                     || code == ActionTracker.TRACK_KEY_PRESS) {
                 start = t.getTimeMillis();
             } else if (code == ActionTracker.TRACK_PAINT
@@ -1187,8 +904,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.BW_MODE);
                 else
                     PNGEncoder.captureScreen(bounds_new,getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
-//System.err.println("XX "+rm.getRepaintedArea());
-//                PNGEncoder.captureScreen(rm.getRepaintedArea(),getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
+                //System.err.println("XX "+rm.getRepaintedArea());
+                //                PNGEncoder.captureScreen(rm.getRepaintedArea(),getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
             }
         } catch (Exception exc) {
             log(" Exception rises during capturing screenshot of measurement ");
