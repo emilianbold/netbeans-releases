@@ -83,7 +83,13 @@ public class SwitchToAction extends ContextAction {
 
     static void performSwitch(RepositoryFile repository, boolean replaceModifications, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
         try {
-            ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+            ISVNClientAdapter client;
+            try {
+                client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+            } catch (SVNClientException ex) {
+                ErrorManager.getDefault().notify(ex);
+                return;
+            }
             if(replaceModifications) {
                 // get rid of all changes ...
                 // doesn't wok for added (new) files

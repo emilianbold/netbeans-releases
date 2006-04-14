@@ -41,18 +41,18 @@ public final class CheckoutAction extends CallableSystemAction {
         final SVNUrl repository = wizard.getRepositoryRoot();
         final RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
         final File file = wizard.getWorkdir();        
-
-        final SvnClient client;
-        try {
-            client = Subversion.getInstance().getClient(repository);
-        } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ex); // should not happen 
-            return;
-        }
         
         String displayName = org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001");
         SvnProgressSupport support = new SvnProgressSupport(Subversion.getInstance().getRequestProcessor(repository)) {
             public void perform() {
+                final SvnClient client;
+                try {
+                    client = Subversion.getInstance().getClient(repository);
+                } catch (SVNClientException ex) {
+                    ErrorManager.getDefault().notify(ex); // should not happen
+                    return;
+                }
+        
                 try {
                     setDisplayName("checking out ...");
                     checkout(client, repository, repositoryFiles, file, false, this);

@@ -200,7 +200,7 @@ public class Subversion {
     }
 
     // XXX quite is a hot fix
-    public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support, boolean quite) throws SVNClientException {
+    private SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support, boolean quite) throws SVNClientException {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support);
         attachListeners(client, quite);
         return client;

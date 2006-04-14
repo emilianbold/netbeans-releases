@@ -83,7 +83,13 @@ public class MergeAction extends ContextAction {
         }           
 
         try {
-            ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+            ISVNClientAdapter client;
+            try {
+                client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+            } catch (SVNClientException ex) {
+                ErrorManager.getDefault().notify(ex);
+                return;
+            }
 
             if(support.isCanceled()) {
                 return;
