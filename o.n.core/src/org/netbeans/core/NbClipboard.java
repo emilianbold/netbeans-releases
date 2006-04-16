@@ -18,11 +18,15 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.FlavorEvent;
+import java.awt.datatransfer.FlavorListener;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -31,13 +35,13 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.ExClipboard;
 
 public final class NbClipboard extends ExClipboard
-    implements LookupListener, AWTEventListener, Runnable
+implements LookupListener, Runnable, FlavorListener, AWTEventListener
 {
-    private org.openide.ErrorManager log;
+    private Logger log;
     private Clipboard systemClipboard;
     private ExClipboard.Convertor[] convertors;
     private Lookup.Result result;
-    private boolean slowSystemClipboard;
+    final boolean slowSystemClipboard;
     private Transferable last;
     private long lastWindowActivated;
     private long lastWindowDeactivated;
@@ -46,18 +50,28 @@ public final class NbClipboard extends ExClipboard
     public NbClipboard() {
         super("NBClipboard");   // NOI18N
         systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        log = org.openide.ErrorManager.getDefault ().getInstance ("org.netbeans.core.NbClipboard"); // NOI18N
+        log = Logger.getLogger("org.netbeans.core.NbClipboard"); // NOI18N
 
         result = Lookup.getDefault().lookupResult(ExClipboard.Convertor.class);
         result.addLookupListener(this);
+
+        systemClipboard.addFlavorListener(this);
+
         resultChanged(null);
 
         if (System.getProperty("netbeans.slow.system.clipboard.hack") != null) // NOI18N
             slowSystemClipboard = Boolean.getBoolean("netbeans.slow.system.clipboard.hack"); // NOI18N
         else
             slowSystemClipboard = true;
-        
-        if (slowSystemClipboard) {
+
+
+
+
+        if (!slowSystemClipboard) {
+            if (System.getProperty("sun.awt.datatransfer.timeout") == null) { // NOI18N
+                System.setProperty("sun.awt.datatransfer.timeout", "1000"); // NOI18N
+            }
+        } else {
             Toolkit.getDefaultToolkit().addAWTEventListener(
                 this, AWTEvent.WINDOW_EVENT_MASK);
         }
@@ -96,34 +110,36 @@ public final class NbClipboard extends ExClipboard
     // IDE
 
     private RequestProcessor.Task syncTask =
-        new RequestProcessor("System clipboard synchronizer").create(this); // NOI18N
+        new RequestProcessor("System clipboard synchronizer").create(this, true); // NOI18N
 
     private Transferable data;
     private ClipboardOwner dataOwner;
     
-    public synchronized void setContents(Transferable contents, ClipboardOwner owner) {
-        // XXX(-dstrupl) the following line might lead to a double converted
-        // transferable. Can be fixed as Jesse describes in #32485
-        if (log.isLoggable (log.INFORMATIONAL)) {
-            log.log (log.INFORMATIONAL, "setContents called with: "); // NOI18N
-            logFlavors (contents);
-        }
-        contents = convert(contents);
-        if (log.isLoggable (log.INFORMATIONAL)) {
-            log.log (log.INFORMATIONAL, "After conversion:"); // NOI18N
-            logFlavors (contents);
-        }
+    public void setContents(Transferable contents, ClipboardOwner owner) {
+        synchronized (this) {
+            // XXX(-dstrupl) the following line might lead to a double converted
+            // transferable. Can be fixed as Jesse describes in #32485
+            if (log.isLoggable (Level.FINER)) {
+                log.log (Level.FINER, "setContents called with: "); // NOI18N
+                logFlavors (contents, Level.FINER);
+            }
+            contents = convert(contents);
+            if (log.isLoggable (Level.FINER)) {
+                log.log (Level.FINER, "After conversion:"); // NOI18N
+                logFlavors (contents, Level.FINER);
+            }
 
-        if (slowSystemClipboard) {
-            super.setContents(contents, owner);
-        } else {
-	    if (last != null) transferableOwnershipLost(last);
-	    last = contents;
-	}
+            if (slowSystemClipboard) {
+                super.setContents(contents, owner);
+            } else {
+                if (last != null) transferableOwnershipLost(last);
+                last = contents;
+            }
 
-        data = contents;
-        dataOwner = owner;
-        syncTask.schedule(0);
+            data = contents;
+            dataOwner = owner;
+            syncTask.schedule(0);
+        }
         fireClipboardChange();
     }
 
@@ -150,17 +166,17 @@ public final class NbClipboard extends ExClipboard
             }
 
             synchronized (this) {
-                if (log.isLoggable (log.INFORMATIONAL)) {
-                    log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
-                    logFlavors (prev);
+                if (log.isLoggable (Level.FINE)) {
+                    log.log (Level.FINE, "getContents by " + requestor); // NOI18N
+                    logFlavors (prev, Level.FINE);
                 }
                 if (prev == null)  // if system clipboard has no contents
                     return null;
 
                 Transferable res = convert (prev);
-                if (log.isLoggable (log.INFORMATIONAL)) {
-                    log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
-                    logFlavors (res);
+                if (log.isLoggable (Level.FINE)) {
+                    log.log (Level.FINE, "getContents by " + requestor); // NOI18N
+                    logFlavors (res, Level.FINE);
 
                     res = new LoggableTransferable (res);
                 }
@@ -190,9 +206,9 @@ public final class NbClipboard extends ExClipboard
             dataOwner = null;
         }
         if (contents != null) {
-            if (log.isLoggable (log.INFORMATIONAL)) {
-                log.log (log.INFORMATIONAL, "systemClipboard updated:"); // NOI18N
-                logFlavors (contents);
+            if (log.isLoggable (Level.FINE)) {
+                log.log (Level.FINE, "systemClipboard updated:"); // NOI18N
+                logFlavors (contents, Level.FINE);
             }
             systemClipboard.setContents(contents, owner);
             return;
@@ -201,9 +217,9 @@ public final class NbClipboard extends ExClipboard
         try {
             Transferable transferable = systemClipboard.getContents(this);
             super.setContents(transferable, null);
-            if (log.isLoggable (log.INFORMATIONAL)) {
-                log.log (log.INFORMATIONAL, "internal clipboard updated:"); // NOI18N
-                logFlavors (transferable);
+            if (log.isLoggable (Level.FINE)) {
+                log.log (Level.FINE, "internal clipboard updated:"); // NOI18N
+                logFlavors (transferable, Level.FINE);
             }
             fireClipboardChange();
         }
@@ -229,6 +245,21 @@ public final class NbClipboard extends ExClipboard
             syncTask.schedule (0);
         }
     }
+    
+    private void logFlavors (Transferable trans, Level level) {
+        if (trans == null)
+            log.log (level, "  no clipboard contents");
+        else {
+            java.awt.datatransfer.DataFlavor[] arr = trans.getTransferDataFlavors();
+            for (int i = 0; i < arr.length; i++) {
+                log.log (level, "  " + i + " = " + arr[i]);
+            }
+        }
+    }
+
+    public void flavorsChanged(FlavorEvent e) {
+        fireClipboardChange();
+    }
 
     public void eventDispatched(AWTEvent ev) {
         if (!(ev instanceof WindowEvent))
@@ -243,21 +274,10 @@ public final class NbClipboard extends ExClipboard
                 ev.getSource() == lastWindowDeactivatedSource) {
                 activateWindowHack (false);
             }
-            if (log.isLoggable (log.INFORMATIONAL)) {
-                log.log (log.INFORMATIONAL, "window activated scheduling update"); // NOI18N
+            if (log.isLoggable (Level.FINE)) {
+                log.log (Level.FINE, "window activated scheduling update"); // NOI18N
             }
             syncTask.schedule(0);
-        }
-    }
-    
-    private void logFlavors (Transferable trans) {
-        if (trans == null)
-            log.log (log.INFORMATIONAL, "  no clipboard contents");
-        else {
-            java.awt.datatransfer.DataFlavor[] arr = trans.getTransferDataFlavors();
-            for (int i = 0; i < arr.length; i++) {
-                log.log (log.INFORMATIONAL, "  " + i + " = " + arr[i]);
-            }
         }
     }
     
@@ -270,9 +290,9 @@ public final class NbClipboard extends ExClipboard
             this.delegate = delegate;
         }
         public Object getTransferData (DataFlavor flavor) throws UnsupportedFlavorException, java.io.IOException {
-            log.log (log.INFORMATIONAL, "Request for flavor: " + flavor); // NOI18N
+            log.log (Level.FINE, "Request for flavor: " + flavor); // NOI18N
             Object res = delegate.getTransferData (flavor);
-            log.log (log.INFORMATIONAL, "Returning value: " + res); // NOI18N
+            log.log (Level.FINE, "Returning value: " + res); // NOI18N
             return res;
         }
         
@@ -282,7 +302,7 @@ public final class NbClipboard extends ExClipboard
         
         public boolean isDataFlavorSupported (DataFlavor flavor) {
             boolean res = delegate.isDataFlavorSupported (flavor);
-            log.log (log.INFORMATIONAL, "isDataFlavorSupported: " + flavor + " result: " + res); // NOI18N
+            log.log (Level.FINE, "isDataFlavorSupported: " + flavor + " result: " + res); // NOI18N
             return res;
         }
         
