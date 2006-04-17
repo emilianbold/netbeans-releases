@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="libs/external/build.xml"/>
             <include name="junit/external/junit-3.8.2.jar"/>
         </cvsfileset>
-	<zip destfile="nbjunit-${version}-src.zip">
+	<zip destfile="build/nbjunit-${version}-src.zip">
             <fileset refid="sources.set"/>
             <zipfileset file="build/build.xml" fullpath="build.xml"/>
 	</zip>
