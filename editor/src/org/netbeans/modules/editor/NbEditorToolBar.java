@@ -38,7 +38,6 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
-import javax.swing.ActionMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -81,7 +80,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Editor toolbar component.
@@ -592,25 +591,45 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         }
     }
     
-    private Lookup createActionContext() {
+    /**
+     * Not private because of the tests.
+     */
+    Lookup createActionContext() {
 	JTextComponent c = getComponent();
-        DataObject dobj = (c != null) ? NbEditorUtilities.getDataObject(c.getDocument()) : null;
 
+        Lookup nodeLookup = null;
+        DataObject dobj = (c != null) ? NbEditorUtilities.getDataObject(c.getDocument()) : null;
         if (dobj != null){
-            Node node = dobj.getNodeDelegate();
-            return Lookups.singleton(node);
+            nodeLookup = dobj.getNodeDelegate().getLookup();
         }
-        
-        Lookup lookup = null;
+
+        Lookup ancestorLookup = null;
         for (java.awt.Component comp = c; comp != null; comp = comp.getParent()) {
             if (comp instanceof Lookup.Provider) {
-                lookup = ((Lookup.Provider)comp).getLookup ();
+                Lookup lookup = ((Lookup.Provider)comp).getLookup ();
                 if (lookup != null) {
+                    ancestorLookup = lookup;
                     break;
                 }
             }
         }
-        return lookup;
+
+        if (nodeLookup == null) {
+            return ancestorLookup;
+        } else if (ancestorLookup == null) {
+            return nodeLookup;
+        }
+        assert nodeLookup != null && ancestorLookup != null;
+
+        Node node = (Node)nodeLookup.lookup(Node.class);
+        boolean ancestorLookupContainsNode = ancestorLookup.lookup(
+                new Lookup.Template(Node.class)).allInstances().contains(node);
+
+        if (ancestorLookupContainsNode) {
+            return ancestorLookup;
+        } else {
+            return new ProxyLookup(new Lookup[] { nodeLookup, ancestorLookup });
+        }
     }
 
     private void processButton(AbstractButton button) {
