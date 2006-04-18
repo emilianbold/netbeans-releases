@@ -20,7 +20,7 @@ import javax.swing.Action;
  *
  * @author S. Aubrecht
  */
-public class SampleProjectLink extends LinkButton {
+public class SampleProjectLink extends HtmlTextLinkButton {
 
     private String category;
     private String template;

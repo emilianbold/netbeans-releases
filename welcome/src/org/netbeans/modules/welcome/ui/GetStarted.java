@@ -60,7 +60,7 @@ public class GetStarted extends ContentPanel {
                 String headerText = children[i].getNodeDelegate().getDisplayName();
                 JLabel lblTitle = new JLabel( headerText );
                 lblTitle.setFont( HEADER_FONT );
-                lblTitle.setForeground( HEADER_TEXT_COLOR );
+                lblTitle.setForeground( DEFAULT_TEXT_COLOR );
                 lblTitle.setHorizontalAlignment( JLabel.LEFT );
                 lblTitle.setOpaque( false );
                 lblTitle.setBorder( HEADER_TEXT_BORDER );
@@ -97,6 +97,7 @@ public class GetStarted extends ContentPanel {
             LinkAction la = new LinkAction( dob );
             LinkButton lb = new LinkButton( la );
             lb.setIcon( BULLET_ICON );
+            lb.setForeground( HEADER_TEXT_COLOR );
             panel.add( lb, new GridBagConstraints( 0,row++,1,1,0.0,0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
                 new Insets(row==1? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT-3,0,2*TEXT_INSETS_RIGHT), 0, 0 ) );

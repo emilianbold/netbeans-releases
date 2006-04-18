@@ -87,6 +87,7 @@ public class Samples extends ContentPanel implements Constants {
 
     protected void addLink( JPanel panel, String category, String title ) {
         SampleProjectLink link = new SampleProjectLink( category, null, title );
+        link.setForeground( HEADER_TEXT_COLOR );
         panel.add( link, new GridBagConstraints( 0, row++, 1, 1, 0.0, 0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
                 new Insets(row==1 ? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT-3,

@@ -138,7 +138,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                         int row = 0;
                         if (date != null) {
                             JLabel label = new JLabel( date );
-                            label.setFont( REGULAR_FONT.deriveFont( REGULAR_FONT.getStyle(), REGULAR_FONT.getSize()-1 ) );
+                            label.setFont( RSS_DESCRIPTION_FONT );
                             panel.add( label, new GridBagConstraints(0,row++,1,1,0.0,0.0,
                                     GridBagConstraints.WEST,GridBagConstraints.NONE,
                                     new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
@@ -155,7 +155,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
                         if (description != null) {
                             JLabel label = new JLabel( "<html>"+trimHtml( description ) );
-                            label.setFont( REGULAR_FONT.deriveFont( REGULAR_FONT.getStyle(), REGULAR_FONT.getSize()-1 ) );
+                            label.setFont( RSS_DESCRIPTION_FONT );
                             panel.add( label, new GridBagConstraints(0,row++,1,1,1.0,1.0,
                                     GridBagConstraints.WEST,GridBagConstraints.BOTH,
                                     new Insets(0,TEXT_INSETS_LEFT+5,0,TEXT_INSETS_RIGHT),0,0 ) );
