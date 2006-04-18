@@ -353,7 +353,7 @@ public class FileInformation implements Serializable {
     }
 
     public String toString() {
-        return "Text: " + status + " " + getStatusText(status) + "\nProp: " + propStatus + " " + getStatusText(status);
+        return "Text: " + status + " " + getStatusText(status) + "\nProp: " + propStatus + " " + getStatusText(propStatus);
     }
 }
 
