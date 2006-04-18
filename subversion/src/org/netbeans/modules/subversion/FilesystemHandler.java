@@ -167,10 +167,8 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         }
     }
 
-    public void beforeCreate(FileObject parent, String name, boolean isFolder) {
-        
-        if (true) return; // XXX depends on #75168
-
+    // XXX depends on #75168
+    public void beforeCreate(FileObject parent, String name, boolean isFolder) {        
         File file = FileUtil.toFile(parent);
         if (file != null) {
             file = new File(file, name);
