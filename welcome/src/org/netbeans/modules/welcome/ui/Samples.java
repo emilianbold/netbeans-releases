@@ -13,16 +13,12 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,6 +27,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.welcome.content.ContentPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
+import org.netbeans.modules.welcome.content.HtmlTextLinkButton;
 import org.netbeans.modules.welcome.content.SampleProjectLink;
 import org.netbeans.modules.welcome.content.Utils;
 import org.openide.filesystems.FileObject;
@@ -39,13 +36,12 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
-import org.openide.windows.TopComponent;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class Samples extends ContentPanel implements Constants, ActionListener {
+public class Samples extends ContentPanel implements Constants {
 
     protected int row = 0;
 
@@ -57,12 +53,19 @@ public class Samples extends ContentPanel implements Constants, ActionListener {
         
         setContent( buildContent() );
 
-        JButton button = new JButton( BundleSupport.getLabel( "NewProject" ) ); // NOI18N
-        button.setFont( BUTTON_FONT );
-        button.setForeground( BUTTON_TEXT_COLOR );
-        button.addActionListener( this );
+        NewProjectButton button = new NewProjectButton();
 
-        setBottomContent( button );
+        JPanel panel = new JPanel( new GridBagLayout() );
+        panel.setOpaque( false );
+
+        panel.add( button, new GridBagConstraints(0,1,1,1,0.0,0.0,
+                GridBagConstraints.SOUTHWEST,GridBagConstraints.HORIZONTAL,
+                new Insets(5,5,0,5),0,0) );
+        panel.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,0.0,
+                GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,
+                new Insets(0,0,0,0),0,0) );
+
+        setBottomContent( panel );
     }
     
     private JComponent buildContent() {
@@ -118,11 +121,19 @@ public class Samples extends ContentPanel implements Constants, ActionListener {
 
         addLink( panel, category, label );
     }
-    
-    public void actionPerformed(ActionEvent e) {
-        Action a = Utils.findAction( "Actions/Project/org-netbeans-modules-project-ui-NewProject.instance" ); // NOI18N
-        if( null != a ) {
-            a.actionPerformed( e );
+
+    private static class NewProjectButton extends HtmlTextLinkButton {
+        public NewProjectButton() {
+            super( BundleSupport.getLabel( "NewProject" ) ); // NOI18N
+            setFont( HEADER_FONT );
+            setForeground( HEADER_TEXT_COLOR );
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Action a = Utils.findAction( "Actions/Project/org-netbeans-modules-project-ui-NewProject.instance" ); // NOI18N
+            if( null != a ) {
+                a.actionPerformed( e );
+            }
         }
     }
 }
