@@ -128,7 +128,10 @@ public class KVFile {
     public void store(File file) throws IOException {
         OutputStream os = null; 
         try {
-            file.delete();
+            File parent = file.getParentFile();
+            if(parent!=null && !parent.exists()) {
+                parent.mkdirs();
+            }
             os = FileUtils.createOutputStream(file);            
             for (Iterator it = getMap().keySet().iterator(); it.hasNext();) {
                 Key key = (Key) it.next();

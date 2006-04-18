@@ -70,7 +70,7 @@ public class PasswordFile extends SVNCredentialFile {
                 }
             }
             
-            // no password file nothing - let's create an empty one
+            // no password file - let's create an empty one then...
             nbPasswordFile.setRealmString(realmString);
             nbPasswordFile.setPasstype(PASSTYPE_SIMPLE);
             nbPasswordFile.setPassword("");
