@@ -112,7 +112,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 } catch (MalformedURLException ex) {
                     // ignore, should not happen
                 }
-                proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
+                if(!userVisitedProxySettings) {
+                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());                    
+                }                
                 ProxySelector selector = new ProxySelector();
                 selector.setProxyDescriptor(proxyDescriptor);
                 ProxyDescriptor pd = selector.selectProxy();
