@@ -24,7 +24,6 @@ import java.nio.channels.FileChannel;
 import java.util.HashSet;
 import java.util.Set;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileAlreadyLockedException;
 
 
 /** 
@@ -62,7 +61,7 @@ public class WriteLockUtils {
         }
         
         final File parentFile = file.getParentFile();
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         
         sb.append(WriteLockUtils.PREFIX);//NOI18N
         sb.append(file.getName());//NOI18N
