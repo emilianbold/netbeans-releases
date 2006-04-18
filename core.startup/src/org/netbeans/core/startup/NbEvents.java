@@ -239,7 +239,7 @@ final class NbEvents extends Events {
     private void dumpModulesList(Collection modules) {
         Iterator it = modules.iterator();
         if (! it.hasNext()) throw new IllegalArgumentException();
-        StringBuffer buf = new StringBuffer(modules.size() * 100 + 1);
+        StringBuilder buf = new StringBuilder(modules.size() * 100 + 1);
         buf.append(NbBundle.getMessage(NbEvents.class, "TEXT_finish_enable_modules"));
         String lineSep = System.getProperty("line.separator");
         buf.append(lineSep);
