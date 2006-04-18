@@ -16,13 +16,14 @@ import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.InvalidKeyException;
 import java.util.*;
+import javax.net.ssl.SSLKeyException;
 import javax.swing.SwingUtilities;
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -119,6 +120,15 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     throw t;
                 }
                 throw ite;
+            } catch (SSLKeyException ex) {
+                if(ex.getCause() instanceof InvalidKeyException) {
+                    InvalidKeyException ike = (InvalidKeyException) ex.getCause();
+                    if(ike.getMessage().toLowerCase().equals("illegal key size or default parameters")) {
+                        ExceptionHandler.handleInvalidKeyException(ike);
+                    }
+                    return null; // XXX hm
+                }
+                throw ex;
             }
         }
     }
@@ -202,13 +212,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             throw t;
         }
         
-        ExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client);
-        try {
-            return eh.handleException();
-        } catch (SVNClientException ex) {
-            //eh.annotate();
-            throw ex;
-        }
+        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client);        
+        return eh.handleException();        
     }
      
 }

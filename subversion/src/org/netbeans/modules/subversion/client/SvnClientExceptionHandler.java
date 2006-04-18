@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.security.InvalidKeyException;
 
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
@@ -62,14 +63,14 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         this.client = client;
     }  
     
-    public boolean handleException() throws SVNClientException {
+    public boolean handleException() throws Exception {
         if(isAuthentication(getException())) {
             return handleAuthenticationError();
         } if(isNoCertificate(getException())) {
             return handleNoCertificateError();
         }
 
-        return super.handleException();
+        throw getException();
     }
 
     private boolean handleAuthenticationError() {
@@ -93,7 +94,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     }
 
     // XXX refactor, move, clean up ...
-    private boolean handleNoCertificateError() {
+    private boolean handleNoCertificateError() throws Exception {
         // XXX copy the certificate if it already exists
 
         TrustManager[] trust = new TrustManager[] {
@@ -140,8 +141,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             }
             socket.startHandshake();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return false;
+            throw ex;
         }        
 
         X509Certificate cert = null;
