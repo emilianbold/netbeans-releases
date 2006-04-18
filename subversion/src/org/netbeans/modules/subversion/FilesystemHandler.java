@@ -14,6 +14,7 @@
 package org.netbeans.modules.subversion;
 
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.*;
 import org.openide.util.RequestProcessor;
@@ -167,7 +168,27 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     }
 
     public void beforeCreate(FileObject parent, String name, boolean isFolder) {
-        // not interested
+        
+        if (true) return; // XXX depends on #75168
+
+        File file = FileUtil.toFile(parent);
+        if (file != null) {
+            file = new File(file, name);
+            if (file.exists() == false) {
+                int status = cache.getStatus(file).getStatus();
+                if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+                    try {
+                        SvnClient client = Subversion.getInstance().getClient();
+                        client.revert(file, false);
+                        file.delete();
+                    } catch (SVNClientException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                }
+            }
+        }
+        
+
     }
     
     public void createFailure(FileObject parent, String name, boolean isFolder) {
@@ -332,20 +353,6 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
 
         if ((status & FileInformation.STATUS_MANAGED) == 0) return;
 
-        if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
-/*
-            StandardAdminHandler sah = new StandardAdminHandler();
-            Entry entry = null;
-            try {
-                entry = sah.getEntry(file);
-            } catch (IOException e) {
-            }
-            if (entry != null && !entry.isDirectory() && entry.isUserFileToBeRemoved()) {
-                cvsUndoRemoveLocally(sah, file, entry);    
-            }
-*/
-            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }
 //        if (properties_changed) cache.directoryContentChanged(file.getParentFile());
         if (file.isDirectory()) cache.directoryContentChanged(file);
     }
