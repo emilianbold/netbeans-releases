@@ -114,8 +114,23 @@ public class Samples extends ContentPanel implements Constants {
         String category = null;
 
         FileObject origFile = categoryDO.getPrimaryFile();
+        DataFolder df = DataFolder.findFolder( origFile );
+        if( null != df ) {
+            DataObject[] categoryChildren = df.getChildren();
+            boolean hasSubFoldersOnly = true;
+            for( int i=0; i<categoryChildren.length; i++ ) {
+                if( !categoryChildren[i].getPrimaryFile().isFolder() ) {
+                    hasSubFoldersOnly = false;
+                    break;
+                }
+            }
+            if( hasSubFoldersOnly && categoryChildren.length > 0 ) {
+                origFile = categoryChildren[0].getPrimaryFile();
+            }
+        }
         category = origFile.getPath();
         category = category.replaceFirst( "Templates/Project/", "" ); // NOI18N // NOI18N
+
 
         String label = categoryDO.getNodeDelegate().getDisplayName();
 
