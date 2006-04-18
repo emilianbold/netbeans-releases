@@ -595,7 +595,6 @@ public abstract class Properties {
             if (typeID == null) return defaultValue;
             if (typeID.equals ("# null"))
                 return null; 
-            if (typeID == null) return defaultValue;
             if (!typeID.startsWith ("# ")) {
                 if (typeID.startsWith ("\"")) {
                     String s = getString (propertyName, BAD_STRING);
@@ -697,7 +696,6 @@ public abstract class Properties {
         public void setArray (String propertyName, Object[] value) {
             impl.setProperty (propertyName, "# array");
             impl.setProperty (propertyName + ".array_type", value.getClass ().getComponentType ().getName ());
-            if (value == null) return;
             Properties p = getProperties (propertyName);
             int i, k = value.length;
             p.setInt ("length", k);
@@ -732,7 +730,6 @@ public abstract class Properties {
         public void setCollection (String propertyName, Collection value) {
             if (value == null) return;
             impl.setProperty (propertyName, "# " + value.getClass ().getName ());
-            if (value == null) return;
             Properties p = getProperties (propertyName);
             Iterator it = value.iterator ();
             int i = 0;
@@ -772,7 +769,6 @@ public abstract class Properties {
         public void setMap (String propertyName, Map value) {
             if (value == null) return;
             impl.setProperty (propertyName, "# " + value.getClass ().getName ());
-            if (value == null) return;
             Properties p = getProperties (propertyName);
             Iterator it = value.keySet ().iterator ();
             int i = 0;

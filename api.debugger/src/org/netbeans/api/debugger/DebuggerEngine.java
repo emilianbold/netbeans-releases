@@ -112,9 +112,7 @@ public final class DebuggerEngine {
         Object[] services1 = new Object [services.length + 1];
         System.arraycopy (services, 0, services1, 0, services.length);
         services1 [services1.length - 1] = this;
-        Lookup privateLookup = (services == null) ? 
-            (Lookup) new Lookup.MetaInf (typeID) :
-            new Lookup.Compound (
+        Lookup privateLookup = new Lookup.Compound (
                 new Lookup.Instance (services1),
                 new Lookup.MetaInf (typeID)
             );
