@@ -161,9 +161,11 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             SVNUrl url = null;
             if(repository!=null) {
                 url = repository.getUrl();
-            }            
-            proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
-            schedulePasswordUpdate();
+            }    
+            if (url != null) {
+                proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
+                schedulePasswordUpdate();
+            }
         }
         textEditor.selectAll();
         textEditor.getDocument().addDocumentListener(this);
