@@ -160,7 +160,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     }
 
     private static boolean isHandledLocally(Method method, Object[] args) {
-        return locallyHandledMethod.contains(method.getName());
+        boolean exec = ISVNSTATUS_IMPL.equals("exec");
+        return !exec && locallyHandledMethod.contains(method.getName());
     }
 
     private Object handleLocally(Method method, Object[] args) throws LocalSubversionException {
