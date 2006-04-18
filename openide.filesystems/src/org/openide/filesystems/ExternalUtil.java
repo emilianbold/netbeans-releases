@@ -97,11 +97,7 @@ final class ExternalUtil extends Object {
     }
 
     private static synchronized boolean isInitialized() {
-        if (repository == null) {
-            return false;
-        }
-
-        return true;
+        return repository != null;
     }
 
     /**
