@@ -127,6 +127,15 @@ public final class ImportWizard implements ChangeListener {
             return panels;
         }
 
+        public void previousPanel() {
+            if(current() == importStep) {
+                // just a dummy to force setting the message in
+                // through importStep.validateUserInput(); in  nextPanel()
+                importStep.invalid(null);
+            }
+            super.previousPanel();
+        }
+
         public void nextPanel() {            
             if(current() == repositoryStep) {                                            
                 importStep.setup(repositoryStep.getRepositoryFile());                

@@ -99,18 +99,21 @@ public class ImportStep extends AbstractStep implements DocumentListener {
     }
 
     public void setup(RepositoryFile repositoryFile) {
-        if(repositoryPaths == null) {
-            repositoryPaths = 
-                new RepositoryPaths (
-                    repositoryFile,
-                    importPanel.repositoryPathTextField,
-                    importPanel.browseRepositoryButton
-                );                   
-            repositoryPaths.setupBrowserBehavior(true, false, false, actions);
-        } else {
-            repositoryPaths.setRepositoryFile(repositoryFile);
-        }                                
-        importPanel.repositoryPathTextField.setText(repositoryFile.getPath());        
+        if(importPanel.repositoryPathTextField.getText().trim().equals("")) {
+            // no value set yet ...
+            if(repositoryPaths == null) {
+                repositoryPaths =
+                    new RepositoryPaths (
+                        repositoryFile,
+                        importPanel.repositoryPathTextField,
+                        importPanel.browseRepositoryButton
+                    );
+                repositoryPaths.setupBrowserBehavior(true, false, false, actions);
+            } else {
+                repositoryPaths.setRepositoryFile(repositoryFile);
+            }
+            importPanel.repositoryPathTextField.setText(repositoryFile.getPath());
+        }
     }
 
     public SVNUrl getRepositoryFolderUrl() {
