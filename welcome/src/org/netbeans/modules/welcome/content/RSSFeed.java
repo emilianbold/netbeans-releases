@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import javax.swing.JButton;
@@ -177,6 +178,13 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                 //schedule feed reload
                 reloadTimer = RequestProcessor.getDefault().post( this, RSS_FEED_TIMER_RELOAD_MILLIS );
             } catch( UnknownHostException uhE ) {
+                setCursor( Cursor.getDefaultCursor() );
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        setContent( buildProxyPanel() );
+                    }
+                });
+            } catch( SocketException sE ) {
                 setCursor( Cursor.getDefaultCursor() );
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
