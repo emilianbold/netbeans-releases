@@ -271,11 +271,7 @@ public final class Main extends Object {
     }
 
     // read environment properties from external file, if any
-    try {
-        readEnvMap ();
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
+    readEnvMap ();
 
     // initialize the URL factory
     initializeURLFactory();
@@ -334,29 +330,15 @@ public final class Main extends Object {
     Introspector.setBeanInfoSearchPath(allbisp);
 
 
-    // -----------------------------------------------------------------------------------------------------
-    // 7. Initialize FileSystems
-    assert Repository.getDefault() instanceof NbRepository : "Has to be NbRepository: " + Repository.getDefault(); // NOI18N
-    StartLog.logProgress ("Repository initialized"); // NOI18N
-
-
-    // -----------------------------------------------------------------------------------------------------
-    // License check
     try {
         if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+	    // -----------------------------------------------------------------------------------------------------
+	    // License check
             if (!handleLicenseCheck()) {
                 org.netbeans.TopSecurityManager.exit(0);
             }
-        }
-    } catch (Exception e) {
-        ErrorManager.getDefault().notify(e);
-    }
-    StartLog.logProgress ("License check performed"); // NOI18N
-    
-    // -----------------------------------------------------------------------------------------------------
-    // Upgrade
-    try {
-        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+	    // -----------------------------------------------------------------------------------------------------
+	    // Upgrade
             if (!handleImportOfUserDir ()) {
                 org.netbeans.TopSecurityManager.exit(0);
             }
@@ -364,7 +346,7 @@ public final class Main extends Object {
     } catch (Exception e) {
         ErrorManager.getDefault().notify(e);
     }
-    StartLog.logProgress ("Upgrade wizard consulted"); // NOI18N
+    StartLog.logProgress ("License check performed and upgrade wizard consulted"); // NOI18N
 
     //
     // 8.5 - we can show the splash only after the upgrade wizard finished
@@ -380,6 +362,7 @@ public final class Main extends Object {
     // -----------------------------------------------------------------------------------------------------
     // 9. Modules
     
+    assert Repository.getDefault() instanceof NbRepository : "Has to be NbRepository: " + Repository.getDefault(); // NOI18N
     getModuleSystem ();
     
     // property editors are registered in modules, so wait a while before loading them
@@ -615,7 +598,7 @@ public final class Main extends Object {
     /** Reads system properties from a file on a disk and stores them 
      * in System.getPropeties ().
      */
-    private static void readEnvMap () throws IOException {
+    private static void readEnvMap () {
         java.util.Properties env = System.getProperties ();
         
 	Map<String, String> m = System.getenv();
