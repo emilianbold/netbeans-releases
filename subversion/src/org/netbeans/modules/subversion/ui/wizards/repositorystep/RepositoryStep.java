@@ -33,6 +33,7 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
+import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
@@ -98,8 +99,9 @@ public class RepositoryStep
         backgroundValidationThread = Thread.currentThread();
         final SvnClient client;
         try {
+            ProxyDescriptor pd = SvnConfigFiles.getInstance().getProxyDescriptor(selectedRepository.getUrl().getHost());
             client = Subversion.getInstance().getClient(selectedRepository.getUrl(),
-                                                        getProxyDescriptor(), 
+                                                        pd, 
                                                         repository.getUserName(),
                                                         repository.getPassword());
         } catch (SVNClientException ex) {
@@ -266,11 +268,7 @@ public class RepositoryStep
             invalid(ex.getLocalizedMessage()); 
             return null;
         }
-    }                   
-    
-    private ProxyDescriptor getProxyDescriptor() {
-        return repository.getProxyDescriptor();
-    }
+    }                       
 
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Repository.PROP_VALID)) {

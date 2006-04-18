@@ -101,13 +101,27 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     }
     
     private void onProxyConfiguration() {
-        ProxySelector selector = new ProxySelector();
-        selector.setProxyDescriptor(proxyDescriptor);
-        ProxyDescriptor pd = selector.selectProxy();
-        if (pd != null) {
-            proxyDescriptor = pd;            
-            userVisitedProxySettings = true;
-        }
+        // don't call SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
+        // in awt
+        RequestProcessor requestProcessor = new RequestProcessor().getDefault();
+        requestProcessor.post(new Runnable() {
+            public void run() {
+                SVNUrl url = null;
+                try {
+                    url = getSelectedRepository().getUrl();
+                } catch (MalformedURLException ex) {
+                    // ignore, should not happen
+                }
+                proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
+                ProxySelector selector = new ProxySelector();
+                selector.setProxyDescriptor(proxyDescriptor);
+                ProxyDescriptor pd = selector.selectProxy();
+                if (pd != null) {
+                    proxyDescriptor = pd;
+                    userVisitedProxySettings = true;
+                }
+            }
+        });
     }    
 
     private RepositoryPanel createPanel() {
@@ -212,7 +226,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             
             // XXX the way the usr, password and proxy settings are stored is not symetric and consistent...
             if(userVisitedProxySettings) {
-                SvnConfigFiles.getInstance().setProxy(getProxyDescriptor(), repository.getUrl().getHost());
+                SvnConfigFiles.getInstance().setProxy(proxyDescriptor, repository.getUrl().getHost());
             }            
         }    
         
@@ -391,10 +405,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     private void onPasswordChange() {
         cancelPasswordUpdate();
-    }
-
-    public ProxyDescriptor getProxyDescriptor() {
-        return proxyDescriptor;
     }
 
     public RepositoryPanel getPanel() {
