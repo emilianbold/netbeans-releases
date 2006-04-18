@@ -77,7 +77,7 @@ public class Samples extends ContentPanel implements Constants {
         panel.add( new JLabel(), new GridBagConstraints(1, row++, 1, 1, 1.0, 1.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
 
-        JScrollPane scroll = new RelativeSizeScrollPane( panel, 0.45f, 30 );
+        JScrollPane scroll = new RelativeSizeScrollPane( panel, 0.30f, 30 );
         scroll.getViewport().setOpaque( false );
         scroll.setOpaque( false );
         scroll.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
