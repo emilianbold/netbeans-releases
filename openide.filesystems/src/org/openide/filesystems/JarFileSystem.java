@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -98,7 +99,7 @@ public class JarFileSystem extends AbstractFileSystem {
     private transient Cache strongCache;
 
     /** The soft part of the cache reference. For simplicity never null*/
-    private transient Reference softCache = new SoftReference(null);
+    private transient Reference<Cache> softCache = new SoftReference<Cache>(null);
     private transient FileObject foRoot;
     private transient FileChangeListener fcl;
 
@@ -130,7 +131,7 @@ public class JarFileSystem extends AbstractFileSystem {
      * @param fo is FileObject. It`s reference yourequire to get.
      * @return Reference to FileObject
      */
-    protected Reference createReference(FileObject fo) {
+    protected Reference<FileObject> createReference(FileObject fo) {
         aliveCount++;
 
         if ((checkTime > 0) && (watcherTask == null)) {
@@ -566,12 +567,12 @@ public class JarFileSystem extends AbstractFileSystem {
         throw new IOException();
     }
 
-    protected Enumeration attributes(String name) {
+    protected Enumeration<String>  attributes(String name) {
         Attributes attr = getManifest().getAttributes(name);
 
         if (attr != null) {
-            class ToString implements org.openide.util.Enumerations.Processor {
-                public Object process(Object obj, Collection ignore) {
+            class ToString implements org.openide.util.Enumerations.Processor<Object, String> {
+                public String process(Object obj, Collection<Object> ignore) {
                     return obj.toString();
                 }
             }
@@ -600,7 +601,7 @@ public class JarFileSystem extends AbstractFileSystem {
         ois.defaultReadObject();
         closeSync = new Object();
         strongCache = null;
-        softCache = new SoftReference(null);
+        softCache = new SoftReference<Cache>(null);
         aliveCount = 0;
 
         try {
@@ -747,7 +748,7 @@ public class JarFileSystem extends AbstractFileSystem {
                     Cache newCache = new Cache(en);
                     lastModification = root.lastModified();
                     strongCache = newCache;
-                    softCache = new SoftReference(newCache);
+                    softCache = new SoftReference<Cache>(newCache);
 
                     return newCache;
                 } catch (Throwable t) {
@@ -821,7 +822,7 @@ public class JarFileSystem extends AbstractFileSystem {
      * JarFS if often queried for its FOs e.g. by java parser, which
      * leaves the references immediatelly.
      */
-    private class Ref extends WeakReference implements Runnable {
+    private class Ref extends WeakReference<FileObject> implements Runnable {
         public Ref(FileObject fo) {
             super(fo, Utilities.activeReferenceQueue());
         }
@@ -1063,7 +1064,7 @@ public class JarFileSystem extends AbstractFileSystem {
         byte[] names = new byte[1000];
         private int nameOffset = 0;
         int[] EMPTY = new int[0];
-        private HashMap folders = new HashMap();
+        private Map<String, Folder> folders = new HashMap<String, Folder>();
 
         public Cache(Enumeration en) {
             parse(en);

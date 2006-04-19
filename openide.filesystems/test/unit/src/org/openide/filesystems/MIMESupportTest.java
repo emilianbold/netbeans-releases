@@ -49,7 +49,7 @@ public class MIMESupportTest extends NbTestCase {
         String result = FileUtil.getMIMEType(fo);
         assertEquals("some content found", expResult, result);
         
-        WeakReference r = new WeakReference(fo);
+        WeakReference<FileObject> r = new WeakReference<FileObject>(fo);
         fo = null;
         assertGC("Can be GCed", r);
     }

@@ -13,6 +13,7 @@
 package org.openide.filesystems;
 
 import java.lang.ref.Reference;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.AbstractFileSystem.*;
@@ -38,7 +39,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     private java.util.Date created = new java.util.Date();
 
     /** maps String to Entry */
-    private Map entries = initEntry();
+    private Map<String, Entry> entries = initEntry();
     
     /** Creates new MemoryFS */
     public MemoryFileSystem() {
@@ -133,8 +134,11 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
         return false;
     }
 
-    public Enumeration attributes(String name) {
-        return isValidEntry(name) ? Collections.enumeration(getOrCreateEntry(name).attrs.keySet()) : org.openide.util.Enumerations.empty();
+    public Enumeration<String> attributes(String name) {
+        if (!isValidEntry(name)) {
+            return org.openide.util.Enumerations.empty();
+        }
+        return Collections.enumeration(getOrCreateEntry(name).attrs.keySet());
     }
 
     public String[] children(String f) {
@@ -146,7 +150,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
             f = f + "/";
         }
 
-        HashSet l = new HashSet();
+        Set<String> l = new HashSet<String>();
 
         //System.out.println("Folder: " + f);
         synchronized(entries) {
@@ -292,31 +296,35 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
         getOrCreateEntry(name).attrs.put(attrName, value);
     }
 
-    private Map initEntry() {
-	return Collections.synchronizedMap(!ERR.isLoggable(Level.FINE) ? new Hashtable() : new Hashtable() {
-	    public Object get(Object key) {
-		Object retval = super.get(key);
+    private Map<String, Entry> initEntry() {
+        if (!ERR.isLoggable(Level.FINE)) {
+            return new ConcurrentHashMap<String, MemoryFileSystem.Entry>();
+        }
+
+	return new ConcurrentHashMap<String, MemoryFileSystem.Entry>() {
+	    public MemoryFileSystem.Entry get(String key) {
+		MemoryFileSystem.Entry retval = super.get(key);
 		logMessage("called: GET" + " key: "+key + " result: " + retval);//NOI18N    		
 		return retval;
 	    }
 
-	    public Object put(Object key, Object value) {
-		Object retval = super.put(key, value);
+	    public MemoryFileSystem.Entry put(String key, MemoryFileSystem.Entry value) {
+		MemoryFileSystem.Entry retval = super.put(key, value);
 		logMessage("called: PUT" + " key: "+key  + " value: "+value+ " result: " + retval);//NOI18N		
 		return retval;            
 	    }        
 
-	    public Object remove(Object key) {
-		Object retval = super.remove(key);
+	    public MemoryFileSystem.Entry remove(String key) {
+		MemoryFileSystem.Entry retval = super.remove(key);
 		logMessage("called: REMOVE" + " key: "+key + " result: " + retval);//NOI18N		
 		return retval;
 	    }
-	});
+	};
     }
     
     static final class Entry {
         /** String, Object */
-        public HashMap attrs = new HashMap();
+        public Map<String, Object> attrs = new HashMap<String, Object>();
         public byte[] data;
         public java.util.Date last;
 	private final String entryName;

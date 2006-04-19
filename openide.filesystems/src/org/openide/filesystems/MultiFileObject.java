@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -35,7 +36,7 @@ import java.util.Set;
 *
 * @author Jaroslav Tulach,
 */
-final class MultiFileObject extends AbstractFolder implements FileChangeListener {
+final class MultiFileObject extends AbstractFolder implements FileObject.PriorityFileChangeListener {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -2343651324897646809L;
 
@@ -49,7 +50,7 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
             }
         };
 
-    static final ThreadLocal attrAskedFileObject = new ThreadLocal();
+    static final ThreadLocal<FileObject> attrAskedFileObject = new ThreadLocal<FileObject>();
 
     /** list of objects that we delegate to and that already
     * has been created.
@@ -60,7 +61,7 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
     private FileObject leader;
 
     /** Reference to lock or null */
-    private Reference lock;
+    private Reference<MfLock> lock;
 
     /** listener */
     private FileChangeListener weakL;
@@ -80,8 +81,8 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
     public MultiFileObject(MultiFileSystem fs, MultiFileObject parent, String name) {
         super(fs, parent, name);
 
-        weakL = (MfoWeakListener) org.openide.util.WeakListeners.create(
-                MfoWeakListener.class, FileChangeListener.class, this, null
+        weakL = org.openide.util.WeakListeners.create(
+                FileObject.PriorityFileChangeListener.class, FileChangeListener.class, this, null
             );
 
         update();
@@ -119,7 +120,7 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
         FileSystem[] arr = mfs.getDelegates();
 
         Set now = (delegates == null) ? Collections.EMPTY_SET : delegates;
-        HashSet del = new HashSet(arr.length * 2);
+        Set<FileObject> del = new HashSet<FileObject>(arr.length * 2);
         FileObject led = null;
 
         String name = getPath();
@@ -305,7 +306,7 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
     /** All objects that are beyond this one.
     * @return enumeration of FileObject
     */
-    private Enumeration delegates() {
+    private Enumeration<FileObject> delegates() {
         return getMultiFileSystem().delegates(getPath());
     }
 
@@ -341,10 +342,10 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
     */
     protected final String[] list() {
         Properties exclude = new Properties();
-        LinkedList addList = new LinkedList();
-        HashSet addSet = new HashSet(101);
+        List<String> addList = new LinkedList<String>();
+        Set<String> addSet = new HashSet<String>(101);
 
-        Enumeration it = delegates();
+        Enumeration<FileObject> it = delegates();
 
         while (it.hasMoreElements()) { // cycle 1
 
@@ -589,9 +590,9 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
         }
 
         java.util.Set set = getMultiFileSystem().createLocksOn(getPath());
-        FileLock l = new MfLock(leader, delegates(), set);
+        MfLock l = new MfLock(leader, delegates(), set);
 
-        lock = new WeakReference(l);
+        lock = new WeakReference<MfLock>(l);
 
         //    Thread.dumpStack ();
         //    System.out.println ("Locking file: " + this); // NOI18N
@@ -871,7 +872,7 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
     }
 
     private final Enumeration getAttributes(String path) {
-        Set s = new HashSet();
+        Set<String> s = new HashSet<String>();
         FileSystem[] systems = getMultiFileSystem().getDelegates();
 
         // [PENDING] will not remove from the enumeration voided-out attributes
@@ -1496,12 +1497,6 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
         return leader;
     }
 
-    /** Overloaded WeakListener.FileChange only to be able recognize this listener
-     *  by means of instanceof.
-     */
-    static interface MfoWeakListener extends FileChangeListener {
-    }
-
     /** Special value used to indicate null masking of an attribute.
      * The level is zero in simple cases; incremented when one MFS asks
      * another to store a VoidValue.
@@ -1535,7 +1530,7 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
     */
     private class MfLock extends FileLock {
         /** lock for all files (map from FileObject to FileLock) */
-        private Map map = new HashMap(11);
+        private Map<FileObject, FileLock> map = new HashMap<FileObject, FileLock>(11);
 
         /**
         * @param leader leader file object
@@ -1638,6 +1633,5 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
             return super.toString() + " for " + MultiFileObject.this + " valid=" + isValid(); // NOI18N
         }
     }
-
     // MfLock
 }

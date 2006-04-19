@@ -516,11 +516,9 @@ public abstract class FileObject extends Object implements Serializable {
     * @param rec whether to enumerate recursively
     * @return enumeration of type <code>FileObject</code>
     */
-    public Enumeration getChildren(final boolean rec) {
-        class WithChildren implements Enumerations.Processor {
-            public Object process(Object obj, Collection toAdd) {
-                FileObject fo = (FileObject) obj;
-
+    public Enumeration<? extends FileObject> getChildren(final boolean rec) {
+        class WithChildren implements Enumerations.Processor<FileObject, FileObject> {
+            public FileObject process(FileObject fo, Collection<FileObject> toAdd) {
                 if (rec && fo.isFolder()) {
                     toAdd.addAll(Arrays.asList(fo.getChildren()));
                 }
@@ -536,7 +534,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @param rec whether to recursively list subfolders
     * @return enumeration of type <code>FileObject</code> (satisfying {@link #isFolder})
     */
-    public Enumeration getFolders(boolean rec) {
+    public Enumeration<? extends FileObject> getFolders(boolean rec) {
         return Enumerations.filter(getChildren(rec), new OnlyFolders(true));
     }
 
@@ -752,8 +750,10 @@ public abstract class FileObject extends Object implements Serializable {
      *  listeners.
      */
     static boolean isPriorityListener(FileChangeListener fcl) {
-        return (fcl instanceof MultiFileObject.MfoWeakListener);
+        return (fcl instanceof PriorityFileChangeListener);
     }
+
+    interface PriorityFileChangeListener extends FileChangeListener {}
 
     private class ED extends FileSystem.EventDispatcher {
         private int op;
@@ -780,7 +780,7 @@ public abstract class FileObject extends Object implements Serializable {
                 this.op = fe.getFile().isFolder() ? FCLSupport.FOLDER_CREATED : FCLSupport.DATA_CREATED;
             }
 
-            java.util.LinkedList newEnum = new java.util.LinkedList(); // later lazy                
+            java.util.LinkedList<FileChangeListener> newEnum = new java.util.LinkedList<FileChangeListener>(); // later lazy                
 
             while (en.hasMoreElements()) {
                 FileChangeListener fcl = (FileChangeListener) en.nextElement();
@@ -847,14 +847,14 @@ public abstract class FileObject extends Object implements Serializable {
 
     /** Filters folders or data files.
      */
-    private static final class OnlyFolders implements Enumerations.Processor {
+    private static final class OnlyFolders implements Enumerations.Processor<FileObject, FileObject> {
         private boolean folders;
 
         public OnlyFolders(boolean folders) {
             this.folders = folders;
         }
 
-        public Object process(Object obj, Collection coll) {
+        public FileObject process(FileObject obj, Collection<FileObject> coll) {
             FileObject fo = (FileObject) obj;
 
             if (folders) {

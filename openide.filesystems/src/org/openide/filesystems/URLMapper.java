@@ -65,9 +65,9 @@ public abstract class URLMapper {
     public static final int NETWORK = 2;
 
     /** results with URLMapper instances*/
-    private static Lookup.Result result;
+    private static Lookup.Result<URLMapper> result;
     private static final List CACHE_JUST_COMPUTING = new ArrayList();
-    private static final ThreadLocal threadCache = new ThreadLocal();
+    private static final ThreadLocal<List> threadCache = new ThreadLocal<List>();
 
     static {
         DefaultURLMapperProxy.setDefault(new DefaultURLMapper());
@@ -149,7 +149,7 @@ public abstract class URLMapper {
      * @deprecated Use {@link #findFileObject} instead.
      */
     public static FileObject[] findFileObjects(URL url) {
-        Set retSet = new LinkedHashSet();
+        Set<FileObject> retSet = new LinkedHashSet<FileObject>();
 
         Iterator instances = getInstances().iterator();
 
@@ -163,7 +163,7 @@ public abstract class URLMapper {
             }
         }
 
-        return (FileObject[]) retSet.toArray(new FileObject[retSet.size()]);
+        return retSet.toArray(new FileObject[retSet.size()]);
     }
 
     /** Find an appropiate instance of FileObject that addresses this url
@@ -220,10 +220,10 @@ public abstract class URLMapper {
             threadCache.set(CACHE_JUST_COMPUTING);
         }
 
-        ArrayList res = null;
+        ArrayList<URLMapper> res = null;
 
         try {
-            res = new ArrayList(result.allInstances());
+            res = new ArrayList<URLMapper>(result.allInstances());
             {
                 // XXX hack to put default last, since we cannot easily adjust META-INF/services/o.o.f.URLM order to our tastes
                 // (would need to ask *all other* impls to be earlier somewhere)
@@ -299,7 +299,7 @@ public abstract class URLMapper {
             }
 
             Enumeration en = Repository.getDefault().getFileSystems();
-            LinkedList list = new LinkedList();
+            LinkedList<FileObject> list = new LinkedList<FileObject>();
             String fileName = f.getAbsolutePath();
 
             while (en.hasMoreElements()) {

@@ -39,7 +39,7 @@ class EventControl {
     private AtomicActionLink currentAtomAction;
 
     /** List of requests */
-    private LinkedList requestsQueue;
+    private LinkedList<FileSystem.EventDispatcher> requestsQueue;
 
     /**
      * Method that can fire events directly, postpone them, fire them in
@@ -111,7 +111,7 @@ class EventControl {
         }
 
         if (requests++ == 0) {
-            requestsQueue = new LinkedList();
+            requestsQueue = new LinkedList<FileSystem.EventDispatcher>();
         }
     }
 
@@ -156,9 +156,9 @@ class EventControl {
         }
 
         if (firePriority) {
-            requestsQueue = new LinkedList();
+            requestsQueue = new LinkedList<FileSystem.EventDispatcher>();
 
-            LinkedList newReqQueue = invokeDispatchers(true, reqQueueCopy);
+            LinkedList<FileSystem.EventDispatcher> newReqQueue = invokeDispatchers(true, reqQueueCopy);
 
             synchronized (this) {
                 while ((requestsQueue != null) && !requestsQueue.isEmpty()) {
@@ -171,8 +171,8 @@ class EventControl {
         }
     }
 
-    private LinkedList invokeDispatchers(boolean priority, LinkedList reqQueueCopy) {
-        LinkedList newEnum = new LinkedList();
+    private LinkedList<FileSystem.EventDispatcher> invokeDispatchers(boolean priority, LinkedList reqQueueCopy) {
+        LinkedList<FileSystem.EventDispatcher> newEnum = new LinkedList<FileSystem.EventDispatcher>();
 
         while ((reqQueueCopy != null) && !reqQueueCopy.isEmpty()) {
             FileSystem.EventDispatcher r = (FileSystem.EventDispatcher) reqQueueCopy.removeFirst();

@@ -22,7 +22,7 @@ import java.util.*;
  */
 class ListenerList {
     private Class evListenerClass;
-    private List listenerList;
+    private List<EventListener> listenerList;
     private Object[] listenerArray = null;
 
     /**
@@ -30,7 +30,7 @@ class ListenerList {
      */
     ListenerList(Class evListenerClass) {
         this.evListenerClass = evListenerClass;
-        listenerList = Collections.synchronizedList(new ArrayList());
+        listenerList = Collections.synchronizedList(new ArrayList<EventListener>());
     }
 
     /**

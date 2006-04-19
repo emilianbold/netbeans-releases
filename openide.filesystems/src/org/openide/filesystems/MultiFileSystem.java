@@ -143,11 +143,11 @@ public class MultiFileSystem extends FileSystem {
 
         getMultiRoot().updateAllAfterSetDelegates(oldSystems);
 
-        List oldList = Arrays.asList(oldSystems);
-        List newList = Arrays.asList(systems);
+        List<FileSystem> oldList = Arrays.asList(oldSystems);
+        List<FileSystem> newList = Arrays.asList(systems);
 
         // notify removed filesystems
-        HashSet toRemove = new HashSet(oldList);
+        Set<FileSystem> toRemove = new HashSet<FileSystem>(oldList);
         toRemove.removeAll(newList);
 
         for (Iterator iter = toRemove.iterator(); iter.hasNext();) {
@@ -159,7 +159,7 @@ public class MultiFileSystem extends FileSystem {
         }
 
         // notify added filesystems
-        HashSet toAdd = new HashSet(newList);
+        Set<FileSystem> toAdd = new HashSet<FileSystem>(newList);
         toAdd.removeAll(oldList);
 
         for (Iterator iter = toAdd.iterator(); iter.hasNext();) {
@@ -225,8 +225,8 @@ public class MultiFileSystem extends FileSystem {
     /** Merge actions from all delegates.
     */
     public SystemAction[] getActions() {
-        ArrayList al = new ArrayList(101); // randomly choosen constant
-        HashSet uniq = new HashSet(101); // not that randommly choosen
+        List<SystemAction> al = new ArrayList<SystemAction>(101); // randomly choosen constant
+        Set<SystemAction> uniq = new HashSet<SystemAction>(101); // not that randommly choosen
 
         FileSystem[] del = this.getDelegates();
 
@@ -244,12 +244,12 @@ public class MultiFileSystem extends FileSystem {
             }
         }
 
-        return (SystemAction[]) al.toArray(new SystemAction[al.size()]);
+        return al.toArray(new SystemAction[al.size()]);
     }
 
     public SystemAction[] getActions(final Set foSet) {
-        final ArrayList al = new ArrayList(101); // randomly choosen constant
-        final HashSet uniq = new HashSet(101); // not that randommly choosen
+        List<SystemAction> al = new ArrayList<SystemAction>(101); // randomly choosen constant
+        Set<SystemAction> uniq = new HashSet<SystemAction>(101); // not that randommly choosen
 
         final FileSystem[] del = this.getDelegates();
 
@@ -267,7 +267,7 @@ public class MultiFileSystem extends FileSystem {
             }
         }
 
-        return (SystemAction[]) al.toArray(new SystemAction[al.size()]);
+        return al.toArray(new SystemAction[al.size()]);
     }
 
     /* Finds file when its name is provided.
@@ -373,12 +373,12 @@ public class MultiFileSystem extends FileSystem {
     * @param rec proceed recursivelly
     * @return enumeration of String with names of hidden files
     */
-    protected static Enumeration hiddenFiles(FileObject folder, boolean rec) {
-        Enumeration allFiles = folder.getChildren(rec);
+    protected static Enumeration<String> hiddenFiles(FileObject folder, boolean rec) {
+        Enumeration<? extends FileObject> allFiles = folder.getChildren(rec);
 
-        class OnlyHidden implements Enumerations.Processor {
-            public Object process(Object obj, Collection ignore) {
-                String sf = ((FileObject) obj).getPath();
+        class OnlyHidden implements Enumerations.Processor<FileObject, String> {
+            public String process(FileObject obj, Collection<FileObject> ignore) {
+                String sf = obj.getPath();
 
                 if (sf.endsWith(MASK)) {
                     return sf.substring(0, sf.length() - MASK.length());
@@ -559,13 +559,11 @@ public class MultiFileSystem extends FileSystem {
     * @param name of resource to find
     * @return enumeration of FileObject
     */
-    Enumeration delegates(final String name) {
-        Enumeration en = Enumerations.array(systems);
+    Enumeration<FileObject> delegates(final String name) {
+        Enumeration<FileSystem> en = Enumerations.array(systems);
 
-        class Resources implements Enumerations.Processor {
-            public Object process(Object obj, Collection ignore) {
-                FileSystem fs = (FileSystem) obj;
-
+        class Resources implements Enumerations.Processor<FileSystem, FileObject> {
+            public FileObject process(FileSystem fs, Collection<FileSystem> ignore) {
                 if (fs == null) {
                     return null;
                 } else {

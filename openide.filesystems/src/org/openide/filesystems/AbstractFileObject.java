@@ -42,7 +42,7 @@ final class AbstractFileObject extends AbstractFolder {
     private static final char PATH_SEP = '/';
 
     /** Reference to lock or null */
-    private Reference lock;
+    private Reference<FileLock> lock;
 
     /** cache to remember if this object is folder or not */
     private Boolean folder;
@@ -219,7 +219,7 @@ final class AbstractFileObject extends AbstractFolder {
         getAbstractFileSystem().info.lock(getPath());
 
         FileLock l = new AfLock();
-        lock = new WeakReference(l);
+        lock = new WeakReference<FileLock>(l);
 
         //    Thread.dumpStack ();
         //    System.out.println ("Locking file: " + this); // NOI18N
@@ -336,7 +336,7 @@ final class AbstractFileObject extends AbstractFolder {
     * @param fo FileObject
     * @return Reference to FileObject
     */
-    protected final Reference createReference(FileObject fo) {
+    protected final Reference<FileObject> createReference(FileObject fo) {
         return (getAbstractFileSystem().createReference(fo));
     }
 

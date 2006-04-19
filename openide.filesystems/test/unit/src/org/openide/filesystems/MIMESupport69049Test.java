@@ -49,7 +49,7 @@ public class MIMESupport69049Test extends TestCase {
 
     public void testProblemWithRecursionInIssue69049() throws Throwable {
         Lkp lkp = (Lkp)Lookup.getDefault();
-        
+        @SuppressWarnings("unchecked")
         class Pair extends AbstractLookup.Pair implements Runnable {
             public MIMEResolver[] all;
             public MIMEResolver[] all2;
@@ -114,6 +114,7 @@ public class MIMESupport69049Test extends TestCase {
         Pair run1 = new Pair();
         Pair run2 = new Pair();
 
+
         RequestProcessor.Task t1 = new RequestProcessor("t1").post(run1);
         RequestProcessor.Task t2 = new RequestProcessor("t2").post(run2, 20, Thread.NORM_PRIORITY);
         
@@ -171,7 +172,7 @@ public class MIMESupport69049Test extends TestCase {
         }
         
         public void turn (MIMEResolver c) {
-            ArrayList l = new ArrayList();
+            ArrayList<Object> l = new ArrayList<Object>();
             l.add(err);
             l.add(c);
             ic.set (l, null);

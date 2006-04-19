@@ -86,11 +86,9 @@ public class FileSystemCapability extends Object {
     * @return enumeration of FileSystems that satifies this capability
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
-    public Enumeration fileSystems() {
-        class FFS implements org.openide.util.Enumerations.Processor {
-            public Object process(Object obj, Collection ignore) {
-                FileSystem fs = (FileSystem) obj;
-
+    public Enumeration<? extends FileSystem> fileSystems() {
+        class FFS implements org.openide.util.Enumerations.Processor<FileSystem, FileSystem> {
+            public FileSystem process(FileSystem fs, Collection<FileSystem> ignore) {
                 return fs.getCapability().capableOf(FileSystemCapability.this) ? fs : null;
             }
         }
@@ -124,12 +122,12 @@ public class FileSystemCapability extends Object {
     * @return enumeration of {@link FileObject}s
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
-    public Enumeration findAllResources(String name) {
-        Vector v = new Vector(8);
-        Enumeration en = fileSystems();
+    public Enumeration<? extends FileObject> findAllResources(String name) {
+        Vector<FileObject> v = new Vector<FileObject>(8);
+        Enumeration<? extends FileSystem> en = fileSystems();
 
         while (en.hasMoreElements()) {
-            FileSystem fs = (FileSystem) en.nextElement();
+            FileSystem fs = en.nextElement();
             FileObject fo = fs.findResource(name);
 
             if (fo != null) {
@@ -184,9 +182,9 @@ public class FileSystemCapability extends Object {
     * @return enumeration of {@link FileObject}s
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
-    public final Enumeration findAll(String aPackage, String name, String ext) {
-        Enumeration en = fileSystems();
-        Vector ret = new Vector();
+    public final Enumeration<? extends FileObject> findAll(String aPackage, String name, String ext) {
+        Enumeration<? extends FileSystem> en = fileSystems();
+        Vector<FileObject> ret = new Vector<FileObject>();
 
         while (en.hasMoreElements()) {
             FileSystem fs = (FileSystem) en.nextElement();

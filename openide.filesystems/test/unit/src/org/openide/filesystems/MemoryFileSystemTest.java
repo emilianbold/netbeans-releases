@@ -25,7 +25,7 @@ import org.openide.filesystems.*;
  * @author  David Strupl
  * @version
  */
-public class MemoryFileSystemTest extends FileSystemFactoryHid {
+public class MemoryFileSystemTest extends FileSystemFactoryHid {    
     /** Creates new JarFileSystemTest */
     public MemoryFileSystemTest(Test test) {
         super(test);

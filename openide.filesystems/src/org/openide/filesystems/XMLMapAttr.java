@@ -89,8 +89,9 @@ import java.util.*;
  *
  * @author rmatous
  */
+@SuppressWarnings("unchecked")
 final class XMLMapAttr implements Map {
-    Map /*<String,Attr>*/ map;
+    Map/*<String,Attr>*/ map;
 
     /** Creates new XMLMapAttr and delegetaor is instanced */
     public XMLMapAttr() {
@@ -243,7 +244,7 @@ final class XMLMapAttr implements Map {
         }
 
         //pw.println(blockPrefix+"<fileobject name=\""+fileName+"\">");// NOI18N
-        SortedSet attrNames = new TreeSet();
+        SortedSet<String> attrNames = new TreeSet<String>();
         Iterator entryIter = map.entrySet().iterator();
 
         while (entryIter.hasNext()) {
@@ -314,7 +315,7 @@ final class XMLMapAttr implements Map {
         return map.hashCode();
     }
 
-    public synchronized java.util.Set keySet() {
+    public synchronized java.util.Set<String> keySet() {
         return map.keySet();
     }
 

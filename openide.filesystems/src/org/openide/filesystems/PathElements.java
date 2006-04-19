@@ -32,13 +32,13 @@ final class PathElements {
     private StringTokenizer tokenizer;
 
     /** tokens */
-    private List tokens;
+    private List<String> tokens;
 
     /** Creates new PathElements */
     public PathElements(String name) {
         this.name = name;
         tokenizer = new StringTokenizer(name, DELIMITER);
-        tokens = new ArrayList(10);
+        tokens = new ArrayList<String>(10);
     }
 
     /**

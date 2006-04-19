@@ -31,7 +31,6 @@ import java.util.StringTokenizer;
  * @author  rm111737
  */
 public class TestUtilHid {
-
     private static int cnt = 0;
     private static NumberFormat cntFormat = new DecimalFormat("000");
     public  static final File locationOfTempFolder (String name) throws IOException {
@@ -198,7 +197,7 @@ public class TestUtilHid {
             //System.out.println(element);
             this.element = element;
         }
-        Map children = new HashMap ();
+        Map<String,ResourceElement> children = new HashMap<String,ResourceElement> ();
         void add (String resource) {
             add (new StringTokenizer (resource,"/"));
         }

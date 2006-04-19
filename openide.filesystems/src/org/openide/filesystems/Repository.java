@@ -49,14 +49,14 @@ public class Repository implements Serializable {
     static final long serialVersionUID = -6344768369160069704L;
 
     /** list of filesystems (FileSystem) */
-    private ArrayList fileSystems;
-    private transient ArrayList fileSystemsClone;
+    private ArrayList<FileSystem> fileSystems;
+    private transient ArrayList<FileSystem> fileSystemsClone;
 
     /** the system filesystem */
     private FileSystem system;
 
     /** hashtable that maps system names to FileSystems */
-    private Hashtable names;
+    private Hashtable<String, FileSystem> names;
     private transient FCLSupport fclSupport;
 
     // [PENDING] access to this hashtable is apparently not propertly synched
@@ -65,7 +65,8 @@ public class Repository implements Serializable {
     /** hashtable for listeners on changes in the filesystem.
     * Its elements are of type (RepositoryListener, RepositoryListener)
     */
-    private Hashtable listeners = new Hashtable();
+    private Hashtable<RepositoryListener,RepositoryListener> listeners =
+            new Hashtable<RepositoryListener,RepositoryListener>();
 
     /** vetoable listener on systemName property of filesystem */
     private VetoableChangeListener vetoListener = new VetoableChangeListener() {
@@ -132,8 +133,8 @@ public class Repository implements Serializable {
     */
     private void init() {
         // empties the pool
-        fileSystems = new ArrayList();
-        names = new Hashtable();
+        fileSystems = new ArrayList<FileSystem>();
+        names = new Hashtable<String, FileSystem>();
         addFileSystem(system);
     }
 
@@ -155,6 +156,7 @@ public class Repository implements Serializable {
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     public final void addFileSystem(FileSystem fs) {
+
         boolean fireIt = false;
 
         synchronized (this) {
@@ -163,7 +165,7 @@ public class Repository implements Serializable {
                 // new filesystem
                 fs.setRepository(this);
                 fileSystems.add(fs);
-                fileSystemsClone = (ArrayList) fileSystems.clone();
+                fileSystemsClone = new ArrayList<FileSystem>(fileSystems);
 
                 String systemName = fs.getSystemName();
 
@@ -214,8 +216,7 @@ public class Repository implements Serializable {
 
             if (fireIt = fileSystems.remove(fs)) {
                 fs.setRepository(null);
-
-                fileSystemsClone = (ArrayList) fileSystems.clone();
+                fileSystemsClone = new ArrayList<FileSystem>(fileSystems);
 
                 // the filesystem realy was here
                 if (fs.isValid()) {
@@ -267,7 +268,7 @@ public class Repository implements Serializable {
                 throw new IllegalArgumentException(message.toString());
             }
 
-            ArrayList newList = new ArrayList(fileSystems.size());
+            ArrayList<FileSystem> newList = new ArrayList<FileSystem>(fileSystems.size());
             int len = perm.length;
 
             for (int i = 0; i < len; i++) {
@@ -275,7 +276,7 @@ public class Repository implements Serializable {
             }
 
             fileSystems = newList;
-            fileSystemsClone = (ArrayList) fileSystems.clone();
+            fileSystemsClone = new ArrayList<FileSystem>(fileSystems);
         }
 
         fireFileSystemReordered(perm);
@@ -305,8 +306,8 @@ public class Repository implements Serializable {
     * @return enumeration of type {@link FileSystem}
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
-    public final Enumeration getFileSystems() {
-        ArrayList tempFileSystems = fileSystemsClone;
+    public final Enumeration<? extends FileSystem> getFileSystems() {
+        ArrayList<FileSystem> tempFileSystems = fileSystemsClone;
 
         return java.util.Collections.enumeration(tempFileSystems);
     }
@@ -315,7 +316,7 @@ public class Repository implements Serializable {
     * @return enumeration of type {@link FileSystem}
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
-    public final Enumeration fileSystems() {
+    public final Enumeration<? extends FileSystem> fileSystems() {
         return getFileSystems();
     }
 
@@ -325,7 +326,7 @@ public class Repository implements Serializable {
      * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
     public final FileSystem[] toArray() {
-        ArrayList tempFileSystems = fileSystemsClone;
+        ArrayList<FileSystem> tempFileSystems = fileSystemsClone;
 
         FileSystem[] fss = new FileSystem[tempFileSystems.size()];
         tempFileSystems.toArray(fss);
@@ -376,7 +377,7 @@ public class Repository implements Serializable {
     */
     public final synchronized void readExternal(ObjectInput ois)
     throws IOException, ClassNotFoundException {
-        ArrayList temp = new ArrayList(10);
+        ArrayList<FileSystem> temp = new ArrayList<FileSystem>(10);
 
         for (;;) {
             Object obj = ois.readObject();
@@ -491,14 +492,14 @@ public class Repository implements Serializable {
     * @return enumeration of {@link FileObject}s
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
-    public final Enumeration findAllResources(String name) {
+    public final Enumeration<? extends FileObject> findAllResources(String name) {
         assert FileUtil.assertDeprecatedMethod();
 
-        Vector v = new Vector(8);
-        Enumeration en = getFileSystems();
+        Vector<FileObject> v = new Vector<FileObject>(8);
+        Enumeration<? extends FileSystem> en = getFileSystems();
 
         while (en.hasMoreElements()) {
-            FileSystem fs = (FileSystem) en.nextElement();
+            FileSystem fs = en.nextElement();
             FileObject fo = fs.findResource(name);
 
             if (fo != null) {
@@ -521,11 +522,11 @@ public class Repository implements Serializable {
     * @return enumeration of {@link FileObject}s
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
-    public final Enumeration findAll(String aPackage, String name, String ext) {
+    public final Enumeration<? extends FileObject> findAll(String aPackage, String name, String ext) {
         assert FileUtil.assertDeprecatedMethod();
 
-        Enumeration en = getFileSystems();
-        Vector ret = new Vector();
+        Enumeration<? extends FileSystem> en = getFileSystems();
+        Vector<FileObject> ret = new Vector<FileObject>();
 
         while (en.hasMoreElements()) {
             FileSystem fs = (FileSystem) en.nextElement();

@@ -33,7 +33,7 @@ final class RefreshRequest extends Object implements Runnable {
     private static RequestProcessor REFRESHER = new RequestProcessor("FS refresher"); // NOI18N
 
     /** fs to work on */
-    private Reference system;
+    private Reference<FileSystem> system;
 
     /** enumeration of folders Reference (FileObjects) to process */
     private Enumeration en;
@@ -49,7 +49,7 @@ final class RefreshRequest extends Object implements Runnable {
     * @param ms refresh time
     */
     public RefreshRequest(AbstractFileSystem fs, int ms) {
-        system = new WeakReference(fs);
+        system = new WeakReference<FileSystem>(fs);
         refreshTime = ms;
         task = REFRESHER.post(this, ms, Thread.MIN_PRIORITY);
     }

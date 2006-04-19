@@ -79,6 +79,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Jaroslav Tulach
  */
+@SuppressWarnings("unchecked")
 public class DefaultAttributes extends Object implements AbstractFileSystem.Attr, AbstractFileSystem.List {
     static final long serialVersionUID = -5801291358293736478L;
 
@@ -455,7 +456,6 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
                     it.remove();
                 }
             }
-
             t.put(arr[1], v);
 
             //      System.out.println ("xyz[0] = " + arr[0] + " xyz[1] = " + arr[1] + " value: " + v); // NOI18N

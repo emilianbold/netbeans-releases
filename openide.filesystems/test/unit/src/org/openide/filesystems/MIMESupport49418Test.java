@@ -15,6 +15,7 @@ package org.openide.filesystems;
 
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup.Pair;
 
 /**
  * Trying to mimic IZ 49418.
@@ -27,7 +28,7 @@ public class MIMESupport49418Test extends NbTestCase {
     private static final String MIME_TYPE = "text/x-opqr";
 
     public MIMESupport49418Test(String name) {
-        super(name);
+        super(name);        
     }
 
     protected void setUp() throws Exception {
@@ -50,7 +51,8 @@ public class MIMESupport49418Test extends NbTestCase {
     /**
      * This is a pair that as a part of its instanceOf method queries the URL resolver.
      */
-    private static class QueryingPair extends org.openide.util.lookup.AbstractLookup.Pair {
+    @SuppressWarnings("unchecked")
+    private static class QueryingPair extends Pair {
         public boolean beBroken;
 
         public String getId() {

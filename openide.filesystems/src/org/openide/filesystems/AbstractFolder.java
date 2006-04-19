@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,9 +46,6 @@ abstract class AbstractFolder extends FileObject {
 
     /** default extension separator */
     private static final char EXT_SEP = '.';
-
-    /** empty hash map to mark that we are initialized */
-    private static final HashMap EMPTY = new HashMap(0);
 
     /** file system */
     private FileSystem system;
@@ -71,7 +69,7 @@ abstract class AbstractFolder extends FileObject {
     private String[] children;
 
     /** map that assignes file object to names. (String, Reference (AbstractFileObject)) */
-    private HashMap map;
+    private Map<String, Reference<FileObject>> map;
 
     /** listeners */
     private ListenerList listeners;
@@ -212,7 +210,7 @@ abstract class AbstractFolder extends FileObject {
         }
 
         int size = children.length;
-        ArrayList aList = new ArrayList();
+        ArrayList<FileObject> aList = new ArrayList<FileObject>();
 
         for (int i = 0; i < size; i++) {
             FileObject f = getChild(children[i]);
@@ -222,7 +220,7 @@ abstract class AbstractFolder extends FileObject {
             }
         }
 
-        return (FileObject[]) aList.toArray(new FileObject[0]);
+        return aList.toArray(new FileObject[0]);
     }
 
     /** Tries to find a resource.
@@ -349,8 +347,8 @@ abstract class AbstractFolder extends FileObject {
     * @param fo FileObject
     * @return Reference to FileObject
     */
-    protected Reference createReference(FileObject fo) {
-        return (new WeakReference(fo));
+    protected Reference<FileObject> createReference(FileObject fo) {
+        return (new WeakReference<FileObject>(fo));
     }
 
     /** Obtains enumeration of all existing subfiles.
@@ -361,7 +359,7 @@ abstract class AbstractFolder extends FileObject {
         }
 
         Iterator it = map.values().iterator();
-        ArrayList ll = new ArrayList(map.size() + 2);
+        ArrayList<FileObject> ll = new ArrayList<FileObject>(map.size() + 2);
 
         while (it.hasNext()) {
             Reference r = (Reference) it.next();
@@ -381,7 +379,7 @@ abstract class AbstractFolder extends FileObject {
             }
         }
 
-        return (AbstractFolder[]) ll.toArray(EMPTY_ARRAY);
+        return  ll.toArray(EMPTY_ARRAY);
     }
 
     final boolean isInitialized() {
@@ -394,16 +392,15 @@ abstract class AbstractFolder extends FileObject {
     * @param rec should it be recursive or not
     * @return enumeration of AbstractFolders
     */
-    final Enumeration existingSubFiles(boolean rec) {
+    final Enumeration<AbstractFolder> existingSubFiles(boolean rec) {
         if (!rec) {
             return Enumerations.array(subfiles());
         } else {
-            class P implements org.openide.util.Enumerations.Processor {
-                public Object process(Object o, Collection toAdd) {
-                    AbstractFolder af = (AbstractFolder) o;
+            class P implements org.openide.util.Enumerations.Processor<AbstractFolder, AbstractFolder> {
+                public AbstractFolder process(AbstractFolder af, Collection<AbstractFolder> toAdd) {
                     toAdd.addAll(Arrays.asList(af.subfiles()));
 
-                    return o;
+                    return af;
                 }
             }
 
@@ -591,7 +588,7 @@ abstract class AbstractFolder extends FileObject {
 
             if (map == null) {
                 // create empty map to mark that we are initialized
-                map = EMPTY;
+                map = Collections.emptyMap();
 
                 if (children == null) {
                     children = new String[] {  };
@@ -663,7 +660,7 @@ abstract class AbstractFolder extends FileObject {
                 check();
             }
 
-            Object o = map.put(name, new WeakReference(null));
+            Reference<FileObject> o = map.put(name, new WeakReference<FileObject>(null));
 
             if (o != null) {
                 map.put(name, o);
@@ -692,8 +689,8 @@ abstract class AbstractFolder extends FileObject {
 
             // refresh of folder checks children
             final String[] newChildren = getNewChildren(list);
-            final Set addedNames;
-            final Map removedPairs;
+            final Set<String> addedNames;
+            final Map<String, FileObject> removedPairs;
 
             synchronized (this) {
                 if ((children == null) && (newChildren == null)) {
@@ -701,20 +698,20 @@ abstract class AbstractFolder extends FileObject {
                 }
 
                 final int initialCapacity = (newChildren != null) ? (((newChildren.length * 4) / 3) + 1) : 0;
-                final HashMap newMap = new HashMap(initialCapacity); /*<String, AbstractFileObject>*/
+                final HashMap<String, Reference<FileObject>> newMap = new HashMap<String, Reference<FileObject>>(initialCapacity);
 
                 /*Just for firing event*/
-                addedNames = new HashSet(initialCapacity); /*<String>*/
+                addedNames = new HashSet<String>(initialCapacity);
 
                 if (newChildren != null) {
-                    final Reference removedRef = (Reference) ((map != null) ? map.get(removed) : null);
+                    final Reference<FileObject> removedRef = ((map != null) ? map.get(removed) : null);
 
                     for (int i = 0; i < newChildren.length; i++) {
                         final String child = newChildren[i];
-                        Reference foRef = null;
+                        Reference<FileObject> foRef = null;
 
                         if (map != null) {
-                            foRef = (Reference) map.remove(child);
+                            foRef = map.remove(child);
 
                             if (((foRef != null) && (added != null) && (removed != null) && child.equals(removed))) {
                                 // needs cvs checkout
@@ -737,7 +734,7 @@ abstract class AbstractFolder extends FileObject {
                             }
 
                             // create new empty reference
-                            foRef = new WeakReference(null);
+                            foRef = new WeakReference<FileObject>(null);
                         }
 
                         newMap.put(child, foRef);
@@ -766,7 +763,7 @@ abstract class AbstractFolder extends FileObject {
                 fire && (added == null) && (removed == null) && !getFileSystem().isReadOnly() &&
                     !(this instanceof MultiFileObject)
             ) {
-                Set nameFilter = nameFilter = new HashSet();
+                Set<String> nameFilter = nameFilter = new HashSet<String>();
 
                 if (addedNames != null) {
                     nameFilter.addAll(addedNames);
@@ -817,20 +814,14 @@ abstract class AbstractFolder extends FileObject {
         }
     }
 
-    private Map /*<String, AbstractFileObject>*/ dereferenceValues(
-        final Map /*<String, Reference (AbstractFileObject)> */ map
-    ) {
-        Map retVal = new HashMap(map.size());
-        Iterator it = map.entrySet().iterator();
-
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String) entry.getKey();
+    private Map<String, FileObject> dereferenceValues(final Map<String, Reference<FileObject>>  map) {
+        Map<String, FileObject> retVal = new HashMap<String, FileObject>(map.size());
+        for (String name : map.keySet()) {
             AbstractFolder child = getChild(name, false);
 
             if (child != null) {
                 retVal.put(name, child);
-            }
+            }            
         }
 
         return retVal;
@@ -852,10 +843,10 @@ abstract class AbstractFolder extends FileObject {
 
     private static String[] stripNulls(final String[] children) {
         String[] newChildren = children;
-        Collection childrenList = new ArrayList(Arrays.asList(newChildren));
+        Collection<String> childrenList = new ArrayList<String>(Arrays.asList(newChildren));
 
-        for (Iterator iterator = childrenList.iterator(); iterator.hasNext();) {
-            Object child = iterator.next();
+        for (Iterator<String> iterator = childrenList.iterator(); iterator.hasNext();) {
+            String child = iterator.next();
 
             if (child == null) {
                 iterator.remove();

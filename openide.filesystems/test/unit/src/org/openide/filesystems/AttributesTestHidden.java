@@ -53,12 +53,13 @@ public class AttributesTestHidden extends TestBaseHid {
      *  BugFix: #10637 
      *  Probably problem:      
      */
-    public void testAttribute01 () throws IOException {
+    @SuppressWarnings("unchecked")
+    public void testAttribute01() throws IOException {
         assertTrue (TEST_ERR,testedFS != null);
         if (testedFS.isReadOnly ()) return;                
         
         FileObject foTested = testedFS.getRoot ();
-        List list  = new LinkedList ();
+        List<String> list  = new LinkedList<String> ();
         
         
         int i = 0;
@@ -71,7 +72,6 @@ public class AttributesTestHidden extends TestBaseHid {
         try {
             Thread.sleep(300);
         } catch (InterruptedException iex){}
-        
         list = (List)foTested.getAttribute (COMMON_ATTR_STRING);
         assertTrue ("Caching problem in attributes: "+list.size(),list.size() == i);
     }

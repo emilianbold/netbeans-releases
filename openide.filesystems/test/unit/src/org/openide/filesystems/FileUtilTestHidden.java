@@ -149,7 +149,7 @@ public class FileUtilTestHidden extends TestBaseHid {
     public void testIsParentOf () throws Exception {
         if (this.testedFS instanceof JarFileSystem) return;
         
-        final List events = new ArrayList();
+        final List<FileEvent> events = new ArrayList<FileEvent>();
         assertNotNull(root);
         final FileObject parent = root.getFileObject("fileutildir");
         assertNotNull(parent);
@@ -177,7 +177,7 @@ public class FileUtilTestHidden extends TestBaseHid {
     public void testIsParentOf3 () throws Exception {
         if (this.testedFS instanceof JarFileSystem) return;
         
-        final List events = new ArrayList();
+        final List<FileEvent> events = new ArrayList<FileEvent>();
         assertNotNull(root);
         final FileObject[] fileObjects = new FileObject[]{
             root.getFileObject("fileutildir"),

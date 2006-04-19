@@ -25,7 +25,8 @@ import junit.textui.TestRunner;
  * @author Jesse Glick
  */
 public class MultiFileSystemMaskTest extends NbTestCase {
-    
+
+
     public MultiFileSystemMaskTest(String name) {
         super(name);
     }
@@ -41,8 +42,8 @@ public class MultiFileSystemMaskTest extends NbTestCase {
     }
     
     private static String childrenNames(FileObject folder) {
-        FileObject[] kids = folder.getChildren();
-        List l = new ArrayList();
+        FileObject[] kids = folder.getChildren();        
+        List<String> l = new ArrayList<String>();
         for (int i = 0; i < kids.length; i++) {
             l.add(kids[i].getNameExt());
         }

@@ -28,7 +28,8 @@ import org.openide.filesystems.*;
  * @version 
  */
 public abstract class FileSystemFactoryHid extends NbTestSetup {
-    private static Map map = new HashMap ();
+    private static Map<Test, List<FileSystemFactoryHid>> map =
+            new HashMap<Test, List<FileSystemFactoryHid>> ();
     private static String className;
     
 
@@ -100,9 +101,9 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
     }
     
     private   void addToMap (Test test) {    
-        List s = (List)map.get (test);
+        List<FileSystemFactoryHid> s = map.get (test);
         if (s == null) {
-            s = new LinkedList();
+            s = new LinkedList<FileSystemFactoryHid>();
         } 
         s.add(this);
         map.put(test ,s );                                                        

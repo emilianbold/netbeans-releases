@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class XMLFileSystemTestHid extends TestBaseHid {
+
     private String[] resources = new String[] {"a/b/c"};
     XMLFileSystem xfs = null;
     
@@ -300,8 +301,8 @@ public class XMLFileSystemTestHid extends TestBaseHid {
     }
     
     private static class FSListener extends FileChangeAdapter {
-        public List events = new ArrayList();
-        public List change = new ArrayList();
+        public List<FileEvent> events = new ArrayList<FileEvent>();
+        public List<FileEvent> change = new ArrayList<FileEvent>();
         
         
         public void fileRenamed(FileRenameEvent fe) {

@@ -2374,7 +2374,7 @@ public class FileObjectTestHid extends TestBaseHid {
         fsTestFrameworkErrorAssert  ("Unexpected setUp behaviour: root == null: " + getResourcePrefix(), root != null);
     }
     
-    private List makeList(Enumeration e) {
+    private List makeList(Enumeration<? extends FileObject> e) {
         List l = new LinkedList();
         while (e.hasMoreElements()) {
             l.add(e.nextElement());

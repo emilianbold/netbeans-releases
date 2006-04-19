@@ -49,6 +49,7 @@ import org.openide.util.WeakListeners;
 /** Common utilities for handling files.
  * This is a dummy class; all methods are static.
  */
+@SuppressWarnings("unchecked")
 public final class FileUtil extends Object {
     
     /** Normal header for ZIP files. */

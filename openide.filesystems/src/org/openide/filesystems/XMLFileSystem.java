@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -107,7 +108,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
     // <?xml version="1.0"?>
     // <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
     // <filesystem>...</filesystem>
-    private static final Map DTD_MAP = new HashMap();
+    private static final Map<String, String> DTD_MAP = new HashMap<String, String>();
 
     static {
         DTD_MAP.put("-//NetBeans//DTD Filesystem 1.0//EN", "org/openide/filesystems/filesystem.dtd"); //NOI18N
@@ -436,20 +437,20 @@ public final class XMLFileSystem extends AbstractFileSystem {
     public void removeNotify() {
     }
 
-    protected Reference createReference(FileObject fo) {
+    protected Reference<FileObject> createReference(FileObject fo) {
         return new FileObjRef(fo);
     }
 
     private void refreshChildrenInAtomicAction(AbstractFolder fo, ResourceElem resElem) {
         try {
             beginAtomicAction();
-            Collection oldChildren = new HashSet(Collections.list(fo.existingSubFiles(true)));
+            Collection<AbstractFolder> oldChildren = new HashSet<AbstractFolder>(Collections.list(fo.existingSubFiles(true)));
             
             refreshChildren(fo, resElem);
             
-            Collection newChildren = Collections.list(fo.existingSubFiles(true));
+            Collection<AbstractFolder> newChildren = Collections.list(fo.existingSubFiles(true));
             oldChildren.removeAll(newChildren);
-            for (Iterator it = oldChildren.iterator(); it.hasNext();) {
+            for (Iterator<AbstractFolder> it = oldChildren.iterator(); it.hasNext();) {
                 AbstractFileObject invalid = (AbstractFileObject)it.next();
                 if (invalid.validFlag) {
                     invalid.validFlag = false;
@@ -467,7 +468,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             initializeReference(rootRef = new FileObjRef(fo), resElem);
         }
 
-        java.util.List nameList = resElem.getChildren();
+        java.util.List<String> nameList = resElem.getChildren();
         String[] names = new String[nameList.size()];
         ResourceElem[] children = new ResourceElem[names.length];
 
@@ -526,10 +527,10 @@ public final class XMLFileSystem extends AbstractFileSystem {
     
     /** Temporary hierarchical structure of resources. Used while parsing.*/
     private static class ResourceElem {
-        private java.util.List children;
-        private java.util.List names;
+        private java.util.List<ResourceElem> children;
+        private java.util.List<String> names;
         private byte[] content;
-        private java.util.List urlContext = new ArrayList();
+        private java.util.List<URL> urlContext = new ArrayList<URL>();
         private XMLMapAttr foAttrs;
         private boolean isFolder;
         private String uri;
@@ -540,8 +541,8 @@ public final class XMLFileSystem extends AbstractFileSystem {
             this.urlContext.addAll(Arrays.asList(urlContext));
 
             if (isFolder) {
-                children = new ArrayList();
-                names = new ArrayList();
+                children = new ArrayList<ResourceElem>();
+                names = new ArrayList<String>();
             }
         }
 
@@ -551,8 +552,8 @@ public final class XMLFileSystem extends AbstractFileSystem {
             this.urlContext.add(urlContext);
 
             if (isFolder) {
-                children = new ArrayList();
-                names = new ArrayList();
+                children = new ArrayList<ResourceElem>();
+                names = new ArrayList<String>();
             }
         }
 
@@ -574,7 +575,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             return retVal;
         }
 
-        java.util.List getChildren() {
+        java.util.List<String> getChildren() {
             return names;
         }
 
@@ -876,7 +877,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
     /** Strong reference to FileObject. To FileObject may be attached attributes (XMLMapAttr)
      *  and info about if it is folder or not.
      */
-    private static class FileObjRef extends WeakReference {
+    private static class FileObjRef extends WeakReference<FileObject> {
         private FileObject fo;
         private Object content;
         private XMLMapAttr foAttrs;
@@ -946,11 +947,11 @@ public final class XMLFileSystem extends AbstractFileSystem {
             }
         }
 
-        public Enumeration attributes() {
+        public Enumeration<String> attributes() {
             if (foAttrs == null) {
                 return org.openide.util.Enumerations.empty();
             } else {
-                HashSet s = new HashSet(foAttrs.keySet());
+                Set<String> s = new HashSet<String>(foAttrs.keySet());
 
                 return Collections.enumeration(s);
             }
@@ -1189,8 +1190,8 @@ public final class XMLFileSystem extends AbstractFileSystem {
         private static final int ATTR_CODE = "attr".hashCode(); // NOI18N
         private ResourceElem rootElem;
         private boolean validate = false;
-        Stack resElemStack = new Stack();
-        Stack elementStack = new Stack();
+        Stack<ResourceElem> resElemStack = new Stack<ResourceElem>();
+        Stack<String> elementStack = new Stack<String>();
         URL urlContext;
         private Map dtdMap;
         private ResourceElem topRE;
@@ -1342,11 +1343,11 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
         public void startDocument() throws SAXException {
             super.startDocument();
-            resElemStack = new Stack();
+            resElemStack = new Stack<ResourceElem>();
             resElemStack.push(rootElem);
             topRE = rootElem;
 
-            elementStack = new Stack();
+            elementStack = new Stack<String>();
             elementStack.push("<root>"); // NOI18N
         }
 

@@ -31,10 +31,10 @@ final class StreamPool extends Object {
     private static final boolean ANNOTATE_UNCLOSED_STREAMS = Boolean.getBoolean(
             "org.openide.filesystems.annotateUnclosedStreams"
         ); // NOI18N
-    private static Map fo2StreamPool = new WeakHashMap();
-    private static Map fs2StreamPool = new WeakHashMap();
-    private Set iStreams;
-    private Set oStreams;
+    private static Map<FileObject, StreamPool> fo2StreamPool = new WeakHashMap<FileObject, StreamPool>();
+    private static Map<FileSystem, StreamPool> fs2StreamPool = new WeakHashMap<FileSystem, StreamPool>();
+    private Set<InputStream> iStreams;
+    private Set<OutputStream> oStreams;
 
     /** Creates new StreamPool */
     private StreamPool() {
@@ -245,17 +245,17 @@ final class StreamPool extends Object {
         return strPool;
     }
 
-    private Set iStream() {
+    private Set<InputStream> iStream() {
         if (iStreams == null) {
-            iStreams = new WeakSet();
+            iStreams = new WeakSet<InputStream>();
         }
 
         return iStreams;
     }
 
-    private Set oStream() {
+    private Set<OutputStream> oStream() {
         if (oStreams == null) {
-            oStreams = new WeakSet();
+            oStreams = new WeakSet<OutputStream>();
         }
 
         return oStreams;

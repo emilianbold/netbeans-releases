@@ -23,12 +23,12 @@ import java.util.*;
  */
 public abstract class TestBaseHid extends MultiThreadedTestCaseHid {
     /** Support for events*/
-    protected  List fileChangedL = new ArrayList ();
-    protected List fileDCreatedL  = new ArrayList ();
-    protected  List fileFCreatedL  = new ArrayList ();
-    protected  List fileDeletedL  = new ArrayList ();
-    protected  List fileRenamedL  = new ArrayList ();   
-    protected  List fileAttrChangedL  = new ArrayList ();       
+    protected  List<FileEvent> fileChangedL = new ArrayList<FileEvent> ();
+    protected List<FileEvent> fileDCreatedL  = new ArrayList<FileEvent> ();
+    protected  List<FileEvent> fileFCreatedL  = new ArrayList<FileEvent> ();
+    protected  List<FileEvent> fileDeletedL  = new ArrayList<FileEvent> ();
+    protected  List<FileRenameEvent> fileRenamedL  = new ArrayList<FileRenameEvent> ();
+    protected  List<FileAttributeEvent> fileAttrChangedL  = new ArrayList<FileAttributeEvent> ();
 
     private FileChangeListener defListener;
     private String resourcePrefix = "";
@@ -90,12 +90,12 @@ public abstract class TestBaseHid extends MultiThreadedTestCaseHid {
 
 //
     private void reinitDefListener() {
-        fileChangedL = new ArrayList ();
-        fileDCreatedL  = new ArrayList ();
-        fileFCreatedL  = new ArrayList ();
-        fileDeletedL  = new ArrayList ();
-        fileRenamedL  = new ArrayList ();   
-        fileAttrChangedL  = new ArrayList ();
+        fileChangedL = new ArrayList<FileEvent> ();
+        fileDCreatedL  = new ArrayList<FileEvent> ();
+        fileFCreatedL  = new ArrayList<FileEvent> ();
+        fileDeletedL  = new ArrayList<FileEvent> ();
+        fileRenamedL  = new ArrayList<FileRenameEvent> ();
+        fileAttrChangedL  = new ArrayList<FileAttributeEvent> ();
     }
 
     protected final void deregisterDefaultListener (FileObject fo) {

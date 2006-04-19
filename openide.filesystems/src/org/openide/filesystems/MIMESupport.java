@@ -17,13 +17,13 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -45,9 +45,9 @@ final class MIMESupport extends Object {
      * to be as effective as any other more complex caching due to typical
      * access pattern from DataSystems.
      */
-    private static final WeakReference EMPTY = new WeakReference(null);
-    private static WeakReference lastFo = EMPTY;
-    private static WeakReference lastCfo = EMPTY;
+    private static final Reference<FileObject> EMPTY = new WeakReference<FileObject>(null);
+    private static Reference<FileObject> lastFo = EMPTY;
+    private static Reference<FileObject> lastCfo = EMPTY;
     private static Object lock = new Object();
     
     /** for logging and test interaction */
@@ -86,8 +86,8 @@ final class MIMESupport extends Object {
             return cfo.getMIMEType(def);
         } finally {
             synchronized (lock) {
-                lastFo = new WeakReference(fo);
-                lastCfo = new WeakReference(cfo);
+                lastFo = new WeakReference<FileObject>(fo);
+                lastCfo = new WeakReference<FileObject>(cfo);
             }
         }
     }
@@ -107,7 +107,7 @@ final class MIMESupport extends Object {
     }
 
     private static class CachedFileObject extends FileObject implements FileChangeListener {
-        static Lookup.Result result;
+        static Lookup.Result<MIMEResolver> result;
         private static Object resolvers; // call getResolvers instead 
         /** resolvers that were here before we cleaned them */
         private static MIMEResolver[] previousResolvers;
@@ -127,7 +127,7 @@ final class MIMESupport extends Object {
         }
 
         private static MIMEResolver[] getResolvers() {
-            Set creators;
+            Set<Thread> creators;
             synchronized (CachedFileObject.class) {
                 if (resolvers instanceof MIMEResolver[]) {
                     return (MIMEResolver[])resolvers;
@@ -144,7 +144,7 @@ final class MIMESupport extends Object {
                         return (MIMEResolver[]) toRet;
                     }
                 } else {
-                    creators = new HashSet();
+                    creators = new HashSet<Thread>();
                     resolvers = creators;
                 }
 
@@ -314,7 +314,7 @@ final class MIMESupport extends Object {
             return fileObj.getAttribute(attrName);
         }
 
-        public Enumeration getFolders(boolean rec) {
+        public Enumeration<? extends FileObject> getFolders(boolean rec) {
             return fileObj.getFolders(rec);
         }
 
@@ -416,7 +416,7 @@ final class MIMESupport extends Object {
             return fileObj.createFolder(name);
         }
 
-        public Enumeration getChildren(boolean rec) {
+        public Enumeration<? extends FileObject>  getChildren(boolean rec) {
             return fileObj.getChildren(rec);
         }
 

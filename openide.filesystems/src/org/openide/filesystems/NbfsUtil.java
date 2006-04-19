@@ -47,9 +47,9 @@ final class NbfsUtil {
         // which has no privileges, needs to make and use an nbfs: URL, since this
         // may be the URL used by e.g. ClassLoader.getResource for resources.
         try {
-            return (URL) AccessController.doPrivileged(
-                new PrivilegedExceptionAction() {
-                    public Object run() throws Exception {
+            return AccessController.doPrivileged(
+                new PrivilegedExceptionAction<URL>() {
+                    public URL run() throws Exception {
                         // #30397: the fsPart name cannot be null
                         return new URL(FileURL.PROTOCOL, host, -1, file, FileURL.HANDLER); // NOI18N
                     }

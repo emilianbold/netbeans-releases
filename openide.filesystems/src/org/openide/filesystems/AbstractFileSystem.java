@@ -218,8 +218,8 @@ public abstract class AbstractFileSystem extends FileSystem {
     * @param fo is FileObject. It`s reference yourequire to get.
     * @return Reference to FileObject
     */
-    protected Reference createReference(FileObject fo) {
-        return (new WeakReference(fo));
+    protected Reference<FileObject> createReference(FileObject fo) {
+        return (new WeakReference<FileObject>(fo));
     }
 
     /** This method allows to find Reference to resourceName
@@ -259,8 +259,8 @@ public abstract class AbstractFileSystem extends FileSystem {
                         l = getClass().getClassLoader();
                     }
 
-                    Class c = Class.forName("org.openide.actions.FileSystemRefreshAction", true, l); // NOI18N
-                    SystemAction ra = (SystemAction) SharedClassObject.findObject(c, true);
+                    Class<?> c = Class.forName("org.openide.actions.FileSystemRefreshAction", true, l); // NOI18N
+                    SystemAction ra = SharedClassObject.findObject(c.asSubclass(SystemAction.class), true);
 
                     // initialize the SYSTEM_ACTIONS
                     SYSTEM_ACTIONS = new SystemAction[] { ra };
@@ -354,21 +354,21 @@ public abstract class AbstractFileSystem extends FileSystem {
      * @param fo the starting point for the recursive fileobject search
      * @return enumeration of currently existing fileobjects.
      */
-    protected final Enumeration existingFileObjects(FileObject fo) {
-        class OnlyValidAndDeep implements org.openide.util.Enumerations.Processor {
-            public Object process(Object obj, Collection toAdd) {
-                if (obj instanceof Reference) {
-                    obj = ((Reference) obj).get();
-                }
+    protected final Enumeration<? extends FileObject> existingFileObjects(FileObject fo) {
+        return existingFileObjects((AbstractFolder) fo);
+    }
 
-                AbstractFileObject file = (AbstractFileObject) obj;
+    final Enumeration<? extends FileObject> existingFileObjects(AbstractFolder fo) {
+        class OnlyValidAndDeep implements org.openide.util.Enumerations.Processor<Reference<AbstractFolder>,FileObject> {
+            public FileObject process(Reference<AbstractFolder> obj, Collection<Reference<AbstractFolder>> toAdd) {
+                AbstractFolder file = obj.get();
 
                 if (file != null) {
-                    FileObject[] arr = file.subfiles();
+                    AbstractFolder[] arr = file.subfiles();
 
                     // make the array weak
                     for (int i = 0; i < arr.length; i++) {
-                        toAdd.add(new WeakReference(arr[i]));
+                        toAdd.add(new WeakReference<AbstractFolder>(arr[i]));
                     }
 
                     return file.isValid() ? file : null;
@@ -378,10 +378,13 @@ public abstract class AbstractFileSystem extends FileSystem {
             }
         }
 
+        Reference<AbstractFolder> ref =  new WeakReference<AbstractFolder>(fo);
+        Enumeration<Reference<AbstractFolder>> singleEn =  org.openide.util.Enumerations.<Reference<AbstractFolder>>singleton(ref);
         return org.openide.util.Enumerations.removeNulls(
-            org.openide.util.Enumerations.queue(org.openide.util.Enumerations.singleton(fo), new OnlyValidAndDeep())
+            org.openide.util.Enumerations.queue(singleEn, new OnlyValidAndDeep())
         );
     }
+
 
     /**
     * @return if value of lastModified should be cached

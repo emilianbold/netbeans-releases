@@ -74,8 +74,7 @@ import org.openide.util.Lookup;
  
  * @author Jaroslav Tulach
  */
-public class URLMapper50984Test extends NbTestCase {
-    
+public class URLMapper50984Test extends NbTestCase {    
     public URLMapper50984Test(String name) {
         super(name);
     }
@@ -142,6 +141,7 @@ public class URLMapper50984Test extends NbTestCase {
     
     /** This is a pair that as a part of its instanceOf method queries the URL resolver.
      */
+    @SuppressWarnings("unchecked")
     private static class QueryingPair extends org.openide.util.lookup.AbstractLookup.Pair {
         public static boolean beBroken;
         

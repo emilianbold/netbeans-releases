@@ -74,7 +74,7 @@ public abstract class FileSystem implements java.io.Serializable {
 
     /** Used for synchronization purpose*/
     private static Object internLock = new Object();
-    private transient static ThreadLocal thrLocal = new ThreadLocal();
+    private transient static ThreadLocal<EventControl> thrLocal = new ThreadLocal<EventControl>();
 
     /** Empty status */
     private static final Status STATUS_NONE = new Status() {
