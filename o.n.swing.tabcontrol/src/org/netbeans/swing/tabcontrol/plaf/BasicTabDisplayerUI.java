@@ -7,24 +7,38 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.swing.tabcontrol.plaf;
 
-import javax.swing.event.ListDataEvent;
-import org.netbeans.swing.tabcontrol.TabData;
-import org.netbeans.swing.tabcontrol.TabDisplayer;
-import org.netbeans.swing.tabcontrol.TabbedContainer;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataEvent;
+import org.netbeans.swing.tabcontrol.TabData;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 
 /**
@@ -33,13 +47,13 @@ import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
  * and data from various objects relating to the tab displayer, which it creates and
  * installs.  Basically, the things that are involved are:
  * <ul>
- * <li>A layout model (TabLayoutModel) - A data model providing the positions and sizes of tabs</li>
- * <li>A state model (TabState) - A data model which tracks state data (selected, pressed, etc.)
+ * <li>A layout model ({@link TabLayoutModel}) - A data model providing the positions and sizes of tabs</li>
+ * <li>A state model ({@link TabState}) - A data model which tracks state data (selected, pressed, etc.)
  *     for each tab, and can be queried when a tab is painted to determine how that should be done.</li>
- * <li>A selection model (SingleSelectionModel) - Which tracks which tab is selected</li>
- * <li>The TabDisplayer component itself</li>
- * <li>The TabDisplayer's data model, which contains the list of tab names, their icons and
- *     tooltips and the user object (or Component) they identify</li>
+ * <li>A selection model ({@link javax.swing.SingleSelectionModel}) - Which tracks which tab is selected</li>
+ * <li>The {@link TabDisplayer} component itself</li>
+ * <li>The {@link TabDisplayer}'s data model, which contains the list of tab names, their icons and
+ *     tooltips and the user object (or {@link java.awt.Component}) they identify</li>
  * <li>Assorted listeners on the component and data models, specifically
  *       <ul><li>A mouse listener that tells the state model when a state-affecting event
  *               has happened, such as the mouse entering a tab</li>
@@ -48,27 +62,27 @@ import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
  *               changes on the displayer component</li>
  *           <li>A component listener to attach and detach listeners when the component is shown/
  *               hidden, and if neccessary, notify the layout model when the component is resized</li>
- *           <li>A default TabCellRenderer, which is what will actually paint the tabs, and which
+ *           <li>A default {@link TabCellRenderer}, which is what will actually paint the tabs, and which
  *               is also responsible for providing some miscellaneous data such as the number of
  *               pixels the layout model should add to tab widths to make room for decorations,
  *               etc.</li>
  *       </ul>
  * </ul>
- * The usage pattern of this class is similar to other ComponentUI subclasses - <code>installUI()</code>
- * is called via <code>JComponent.updateUI()</code>.  InstallUI initializes protected fields which
+ * The usage pattern of this class is similar to other {@link javax.swing.plaf.ComponentUI} subclasses -
+ * {@link javax.swing.plaf.ComponentUI#installUI}
+ * is called via {@link JComponent#updateUI}.  <code>installUI</code> initializes protected fields which
  * subclasses will need, in a well defined way; abstract methods are provided for subclasses to
  * create these objects (such as the things listed above), and convenience implementations of some
- * are provided. <code>Under no circumstances</code> should subclasses modify these protected fields -
+ * are provided. <strong>Under no circumstances</strong> should subclasses modify these protected fields -
  * due to the circuitousness of the way Swing installs UIs, they cannot be declared final, but should
  * be treated as read-only.
  * <p>
  * The goal of this class is to make it quite easy to implement new appearances
- * for tabs:  To create a new appearance, implement a TabCellRenderer that can 
+ * for tabs:  To create a new appearance, implement a {@link TabCellRenderer} that can 
  * paint individual tabs as desired.  This is made even easier via the 
- * TabPainter interface - simply create the painting logic needed there.  Then
- * subclass BasicTabDisplayerUI and include any painting logic for the background,
- * scroll buttons, etc. needed.  A good example is <a href="AquaEditorTabDisplayerUI">
- * AquaEditorTabDisplayerUI</a>
+ * {@link TabPainter} interface - simply create the painting logic needed there.  Then
+ * subclass <code>BasicTabDisplayerUI</code> and include any painting logic for the background,
+ * scroll buttons, etc. needed.  A good example is {@link AquaEditorTabDisplayerUI}.
  *
  */
 public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
@@ -750,7 +764,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
      * TabState object, so it can update which tab indices are flashing in
      * "attention" mode, if any.
      */
-    protected class BasicModelListener extends ModelListener {
+    protected class BasicModelListener extends AbstractTabDisplayerUI.ModelListener {
         public void contentsChanged(ListDataEvent e) {
             super.contentsChanged(e);
             tabState.contentsChanged(e);
