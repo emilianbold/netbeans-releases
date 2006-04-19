@@ -19,6 +19,7 @@ import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
 import org.openide.*;
+import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
@@ -65,6 +66,15 @@ public class ConflictResolvedAction extends ContextAction {
                             return;
                         }
                         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+
+                        // auxiliary files disappear, synch with FS
+                        File parent = file.getParentFile();
+                        if (parent != null) {
+                            FileObject folder = FileUtil.toFileObject(parent);
+                            if (folder != null) {
+                                folder.refresh();
+                            }
+                        }
                     } catch (SVNClientException ex) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
