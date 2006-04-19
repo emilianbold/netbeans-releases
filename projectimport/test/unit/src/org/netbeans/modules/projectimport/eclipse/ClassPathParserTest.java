@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -24,12 +22,6 @@ public class ClassPathParserTest extends NbTestCase {
     
     public ClassPathParserTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ClassPathParserTest.class);
-        
-        return suite;
     }
     
     public void testParse_71770() throws Exception {
