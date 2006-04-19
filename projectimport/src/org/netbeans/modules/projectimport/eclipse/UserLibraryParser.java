@@ -35,16 +35,20 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
 final class UserLibraryParser extends DefaultHandler {
     
     // elements names
-    private static final String USER_LIBRARY = "userlibrary";
-    private static final String ARCHIVE = "archive";
+    private static final String USER_LIBRARY = "userlibrary"; // NOI18N
+    private static final String ARCHIVE = "archive"; // NOI18N
+    private static final String ATTRIBUTES = "attributes"; // NOI18N
+    private static final String ATTRIBUTE = "attribute"; // NOI18N
     
     // attributes names
-    private static final String PATH_ATTR = "path";
+    private static final String PATH_ATTR = "path"; // NOI18N
     
     // indicates current position in a xml document
     private static final int POSITION_NONE = 0;
     private static final int POSITION_USER_LIBRARY = 1;
     private static final int POSITION_ARCHIVE = 2;
+    private static final int POSITION_ATTRIBUTES = 3;
+    private static final int POSITION_ATTRIBUTE = 4;
     
     private int position = POSITION_NONE;
     private StringBuffer chars;
@@ -90,8 +94,8 @@ final class UserLibraryParser extends DefaultHandler {
                     position = POSITION_USER_LIBRARY;
                     jars = new HashSet();
                 } else {
-                    throw (new SAXException("First element has to be "
-                            + USER_LIBRARY + ", but is " + localName));
+                    throw (new SAXException("First element has to be " // NOI18N
+                            + USER_LIBRARY + ", but is " + localName)); // NOI18N
                 }
                 break;
             case POSITION_USER_LIBRARY:
@@ -100,8 +104,20 @@ final class UserLibraryParser extends DefaultHandler {
                     position = POSITION_ARCHIVE;
                 }
                 break;
+            case POSITION_ARCHIVE:
+                if (localName.equals(ATTRIBUTES)) {
+                    // ignored in the meantime - prepared for future (see #75112)
+                    position = POSITION_ATTRIBUTES;
+                }
+                break;
+            case POSITION_ATTRIBUTES:
+                if (localName.equals(ATTRIBUTE)) {
+                    // ignored in the meantime - prepared for future (see #75112)
+                    position = POSITION_ATTRIBUTE;
+                }
+                break;
             default:
-                throw (new SAXException("Unknown element reached: "
+                throw (new SAXException("Unknown element reached: " // NOI18N
                         + localName));
         }
     }
@@ -116,10 +132,16 @@ final class UserLibraryParser extends DefaultHandler {
             case POSITION_ARCHIVE:
                 position = POSITION_USER_LIBRARY;
                 break;
+            case POSITION_ATTRIBUTES:
+                position = POSITION_ARCHIVE;
+                break;
+            case POSITION_ATTRIBUTE:
+                position = POSITION_ATTRIBUTES;
+                break;
             default:
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
-                        "Unknown state reached in UserLibraryParser, " +
-                        "position: " + position);
+                        "Unknown state reached in UserLibraryParser, " + // NOI18N
+                        "position: " + position); // NOI18N
         }
         chars.setLength(0);
     }
