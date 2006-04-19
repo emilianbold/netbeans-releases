@@ -94,20 +94,6 @@ public final class DefaultPlugin extends JUnitPlugin {
                                          .createClassPath(testRoots)
                                          .findAllResources(testResName);
         if (testFiles.isEmpty()) {
-            String sourceClsName = baseResName.replace('/', '.');
-            String testClsName = !fo.isFolder()
-                                 ? getTestClassName(sourceClsName)
-                                 : getSuiteName(sourceClsName);
-            String msgKey = 
-                    !fo.isFolder()
-                    ? "MSG_test_class_not_found"                    //NOI18N
-                    : (sourceClsName.length() != 0)
-                          ? "MSG_testsuite_class_not_found"         //NOI18N
-                          : "MSG_testsuite_class_not_found_def_pkg";//NOI18N
-            TestUtil.notifyUser(
-                    NbBundle.getMessage(getClass(), msgKey,
-                                        testClsName, sourceClsName),
-                    ErrorManager.INFORMATIONAL);
             return null;            //PENDING - offer creation of new test class
         } else {
             return getOppositeLocation(sourceLocation,
