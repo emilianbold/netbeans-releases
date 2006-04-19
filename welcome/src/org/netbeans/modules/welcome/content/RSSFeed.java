@@ -46,7 +46,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
+class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
     
     private static final int NEWS_COUNT = 10;
     private static final String RSS_FEED = "RSSFeed"; // NOI18N
@@ -57,6 +57,8 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
     private RequestProcessor.Task reloadTimer;
     private long lastReload = 0;
+
+    public static final String FEED_CONTENT_PROPERTY = "feedContent";
     
     public RSSFeed( String url ) {
         this.url = url;
@@ -75,6 +77,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     private void setContent( Component content ) {
         setViewportView( content );
         setCursor( Cursor.getDefaultCursor() );
+        firePropertyChange( FEED_CONTENT_PROPERTY, null, content );
     }
     
     public void reload() {

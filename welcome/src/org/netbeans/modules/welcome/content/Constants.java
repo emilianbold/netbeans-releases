@@ -66,26 +66,48 @@ public interface Constants {
     static final String SUN_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/sun_logo.png"; // NOI18N
     static final String JAVA_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/java_logo.png"; // NOI18N
 
-    static final String HEADER_TOP_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/t_topleft.png"; // NOI18N
-    static final String HEADER_TOP_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/t_topright.png"; // NOI18N
-    static final String HEADER_BOTTOM_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/t_bottomleft.png"; // NOI18N
-    static final String HEADER_BOTTOM_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/t_bottomright.png"; // NOI18N
-    static final String HEADER_TOP_IMAGE = "org/netbeans/modules/welcome/resources/t_top.png"; // NOI18N
-    static final String HEADER_BOTTOM_IMAGE = "org/netbeans/modules/welcome/resources/t_bottom.png"; // NOI18N
-    static final String HEADER_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/t_left.png"; // NOI18N
-    static final String HEADER_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/t_right.png"; // NOI18N
+    static final String SEL_HEADER_TOP_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/t_topleft.png"; // NOI18N
+    static final String SEL_HEADER_TOP_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/t_topright.png"; // NOI18N
+    static final String SEL_HEADER_BOTTOM_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/t_bottomleft.png"; // NOI18N
+    static final String SEL_HEADER_BOTTOM_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/t_bottomright.png"; // NOI18N
+    static final String SEL_HEADER_TOP_IMAGE = "org/netbeans/modules/welcome/resources/t_top.png"; // NOI18N
+    static final String SEL_HEADER_BOTTOM_IMAGE = "org/netbeans/modules/welcome/resources/t_bottom.png"; // NOI18N
+    static final String SEL_HEADER_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/t_left.png"; // NOI18N
+    static final String SEL_HEADER_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/t_right.png"; // NOI18N
 
-    static final String FOOTER_TOP_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/b_topleft.png"; // NOI18N
-    static final String FOOTER_TOP_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/b_topright.png"; // NOI18N
-    static final String FOOTER_BOTTOM_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/b_bottomleft.png"; // NOI18N
-    static final String FOOTER_BOTTOM_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/b_bottomright.png"; // NOI18N
-    static final String FOOTER_TOP_IMAGE = "org/netbeans/modules/welcome/resources/b_top.png"; // NOI18N
-    static final String FOOTER_BOTTOM_IMAGE = "org/netbeans/modules/welcome/resources/b_bottom.png"; // NOI18N
-    static final String FOOTER_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/b_left.png"; // NOI18N
-    static final String FOOTER_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/b_right.png"; // NOI18N
+    static final String SEL_FOOTER_TOP_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/b_topleft.png"; // NOI18N
+    static final String SEL_FOOTER_TOP_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/b_topright.png"; // NOI18N
+    static final String SEL_FOOTER_BOTTOM_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/b_bottomleft.png"; // NOI18N
+    static final String SEL_FOOTER_BOTTOM_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/b_bottomright.png"; // NOI18N
+    static final String SEL_FOOTER_TOP_IMAGE = "org/netbeans/modules/welcome/resources/b_top.png"; // NOI18N
+    static final String SEL_FOOTER_BOTTOM_IMAGE = "org/netbeans/modules/welcome/resources/b_bottom.png"; // NOI18N
+    static final String SEL_FOOTER_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/b_left.png"; // NOI18N
+    static final String SEL_FOOTER_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/b_right.png"; // NOI18N
 
-    static final String LEFT_SIDE_IMAGE = "org/netbeans/modules/welcome/resources/leftside.png"; // NOI18N
-    static final String RIGHT_SIDE_IMAGE = "org/netbeans/modules/welcome/resources/rightside.png"; // NOI18N
+    static final String SEL_LEFT_SIDE_IMAGE = "org/netbeans/modules/welcome/resources/leftside.png"; // NOI18N
+    static final String SEL_RIGHT_SIDE_IMAGE = "org/netbeans/modules/welcome/resources/rightside.png"; // NOI18N
+
+
+    static final String DESEL_HEADER_TOP_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/desel_t_topleft.png"; // NOI18N
+    static final String DESEL_HEADER_TOP_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/desel_t_topright.png"; // NOI18N
+    static final String DESEL_HEADER_BOTTOM_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/desel_t_bottomleft.png"; // NOI18N
+    static final String DESEL_HEADER_BOTTOM_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/desel_t_bottomright.png"; // NOI18N
+    static final String DESEL_HEADER_TOP_IMAGE = "org/netbeans/modules/welcome/resources/desel_t_top.png"; // NOI18N
+    static final String DESEL_HEADER_BOTTOM_IMAGE = "org/netbeans/modules/welcome/resources/desel_t_bottom.png"; // NOI18N
+    static final String DESEL_HEADER_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/desel_t_left.png"; // NOI18N
+    static final String DESEL_HEADER_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/desel_t_right.png"; // NOI18N
+
+    static final String DESEL_FOOTER_TOP_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/desel_b_topleft.png"; // NOI18N
+    static final String DESEL_FOOTER_TOP_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/desel_b_topright.png"; // NOI18N
+    static final String DESEL_FOOTER_BOTTOM_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/desel_b_bottomleft.png"; // NOI18N
+    static final String DESEL_FOOTER_BOTTOM_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/desel_b_bottomright.png"; // NOI18N
+    static final String DESEL_FOOTER_TOP_IMAGE = "org/netbeans/modules/welcome/resources/desel_b_top.png"; // NOI18N
+    static final String DESEL_FOOTER_BOTTOM_IMAGE = "org/netbeans/modules/welcome/resources/desel_b_bottom.png"; // NOI18N
+    static final String DESEL_FOOTER_LEFT_IMAGE = "org/netbeans/modules/welcome/resources/desel_b_left.png"; // NOI18N
+    static final String DESEL_FOOTER_RIGHT_IMAGE = "org/netbeans/modules/welcome/resources/desel_b_right.png"; // NOI18N
+
+    static final String DESEL_LEFT_SIDE_IMAGE = "org/netbeans/modules/welcome/resources/desel_leftside.png"; // NOI18N
+    static final String DESEL_RIGHT_SIDE_IMAGE = "org/netbeans/modules/welcome/resources/desel_rightside.png"; // NOI18N
 
     static final Stroke LINK_IN_FOCUS_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,
         BasicStroke.JOIN_BEVEL, 0, new float[] {2, 3}, 0);

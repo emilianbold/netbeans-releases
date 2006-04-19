@@ -25,7 +25,7 @@ import org.openide.ErrorManager;
  * The welcome screen.
  * @author  Richard Gregor
  */
-class WelcomeComponent extends TopComponent{
+public class WelcomeComponent extends TopComponent{
     static final long serialVersionUID=6021472310161712674L;
     private static WeakReference/*<WelcomeComponent>*/ component = 
                 new WeakReference(null); 
@@ -56,7 +56,7 @@ class WelcomeComponent extends TopComponent{
             return;
 
         add( content, BorderLayout.CENTER );
-        setFocusable( true );
+        setFocusable( false );
     }
         
     /* Singleton accessor. As WelcomeComponent is persistent singleton this
@@ -112,18 +112,6 @@ class WelcomeComponent extends TopComponent{
     private void initAccessibility(){
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WelcomeComponent.class, "ACS_Welcome_DESC")); // NOI18N
     }
-    
-//    public void requestFocus(){
-//        super.requestFocus();
-//        content.requestFocus();
-//    }
-//    
-//    public boolean requestFocusInWindow(){
-//        boolean res = super.requestFocusInWindow();
-//        content.requestFocusInWindow();
-//        return res;
-//    }
-    
 
     /**
      * #38900 - lazy addition of GUI components
@@ -154,11 +142,6 @@ class WelcomeComponent extends TopComponent{
             doInitialize();
         }
         super.componentShowing();
-    }
-
-    protected void componentActivated() {
-        super.componentActivated();
-        content.requestFocus();
     }
 }
 

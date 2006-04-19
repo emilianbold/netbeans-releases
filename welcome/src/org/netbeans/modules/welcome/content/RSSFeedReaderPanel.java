@@ -15,6 +15,7 @@ package org.netbeans.modules.welcome.content;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
 import javax.swing.JComponent;
 
 /**
@@ -22,7 +23,7 @@ import javax.swing.JComponent;
  * @author S. Aubrecht
  */
 public abstract class RSSFeedReaderPanel extends ContentPanel {
-    
+
     /** Creates a new instance of AbstractFeedReaderPanel */
     public RSSFeedReaderPanel( String key ) {
         super( BundleSupport.getLabel( key ) );
@@ -32,7 +33,9 @@ public abstract class RSSFeedReaderPanel extends ContentPanel {
     }
 
     protected JComponent buildContent( String url ) {
-        return new RSSFeed( url );
+        RSSFeed feed = new RSSFeed( url );
+        feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
+        return feed;
     }
 
     public void setSize(Dimension d) {
@@ -75,5 +78,18 @@ public abstract class RSSFeedReaderPanel extends ContentPanel {
                 d.width = FEED_PANEL_MAX_WIDTH;
         }
         return d;
+    }
+
+    protected void feedContentLoaded() {
+        
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if( RSSFeed.FEED_CONTENT_PROPERTY.equals( evt.getPropertyName() ) ) {
+            feedContentLoaded();
+        } else {
+            super.propertyChange( evt );
+        }
+
     }
 }
