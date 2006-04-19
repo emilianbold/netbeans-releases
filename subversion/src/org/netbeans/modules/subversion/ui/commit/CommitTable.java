@@ -37,7 +37,7 @@ import java.util.*;
  * 
  * @author Maros Sandor
  */
-class CommitTable implements AncestorListener, TableModelListener {
+public class CommitTable implements AncestorListener, TableModelListener {
 
     private CommitTableModel    tableModel;
     private JTable              table;
@@ -127,7 +127,7 @@ class CommitTable implements AncestorListener, TableModelListener {
         setDefaultColumnSizes();
     }
 
-    void setNodes(SvnFileNode[] nodes) {
+    public void setNodes(SvnFileNode[] nodes) {
         tableModel.setNodes(nodes);
     }
 

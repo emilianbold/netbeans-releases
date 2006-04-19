@@ -14,14 +14,18 @@ package org.netbeans.modules.subversion.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.io.File;
 import java.text.MessageFormat;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
+import org.netbeans.modules.subversion.ui.wizards.importstep.ImportPreviewStep;
 import org.netbeans.modules.subversion.ui.wizards.importstep.ImportStep;
 import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
+import org.netbeans.modules.subversion.util.Context;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -36,15 +40,16 @@ public final class ImportWizard implements ChangeListener {
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
     private ImportStep importStep;
-    
+    private ImportPreviewStep importPreviewStep;
+
     private String errorMessage;
     private WizardDescriptor wizardDescriptor;
     private PanelsIterator wizardIterator;
     
-    private final String defaultFolderNameToImport;
+    private final Context context;
     
-    public ImportWizard(String defaultFolderName) {
-        this.defaultFolderNameToImport = defaultFolderName;
+    public ImportWizard(Context context) {
+        this.context = context;
     }
     
     public boolean show() {
@@ -93,16 +98,24 @@ public final class ImportWizard implements ChangeListener {
      * various properties for them influencing wizard appearance.
      */
     private class PanelsIterator extends WizardDescriptor.ArrayIterator {                
+
         PanelsIterator() {            
         }
 
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];            
+
             repositoryStep = new RepositoryStep(false);
             repositoryStep.addChangeListener(ImportWizard.this);
-            importStep = new ImportStep(new BrowserAction[] { new CreateFolderAction(defaultFolderNameToImport)});
+
+            File file = context.getRootFiles()[0];
+            importStep = new ImportStep(new BrowserAction[] { new CreateFolderAction(file.getName())}, file);
             importStep.addChangeListener(ImportWizard.this);
-            panels = new  WizardDescriptor.Panel[] {repositoryStep, importStep};
+
+            importPreviewStep = new ImportPreviewStep(context);
+
+            panels = new  WizardDescriptor.Panel[] {repositoryStep, importStep, importPreviewStep};
+
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -138,8 +151,11 @@ public final class ImportWizard implements ChangeListener {
 
         public void nextPanel() {            
             if(current() == repositoryStep) {                                            
-                importStep.setup(repositoryStep.getRepositoryFile());                
-            }            
+                importStep.setup(repositoryStep.getRepositoryFile());
+            }
+            if(current() == importStep) {                                                            
+                importPreviewStep.setup();
+            }
             super.nextPanel();
             if(current() == importStep) {                                                            
                 importStep.validateUserInput();
@@ -160,8 +176,9 @@ public final class ImportWizard implements ChangeListener {
         return importStep.getRepositoryFolderUrl();
     }
 
-    public boolean checkoutAfterImport() {
-        return importStep.checkoutAfterImport();
+    public Map getCommitFiles() {
+        return importPreviewStep.getCommitFiles();
     }
+
 }
 

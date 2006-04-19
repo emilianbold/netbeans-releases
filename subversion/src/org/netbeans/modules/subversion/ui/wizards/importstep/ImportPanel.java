@@ -51,10 +51,7 @@ public class ImportPanel extends javax.swing.JPanel {
 
         jLabel2.setText("Specify the repository folder you want to import in");
 
-        checkoutCheckBox.setSelected(true);
-        checkoutCheckBox.setText("Checkout after import");
-        checkoutCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        checkoutCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        progressPanel.setLayout(new java.awt.BorderLayout());
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -63,16 +60,16 @@ public class ImportPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 592, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(jLabel4)
                         .add(15, 15, 15)
-                        .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                        .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
                         .add(3, 3, 3)
                         .add(browseRepositoryButton))
                     .add(jLabel2)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
-                    .add(checkoutCheckBox))
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 592, Short.MAX_VALUE)
+                    .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 592, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -88,9 +85,9 @@ public class ImportPanel extends javax.swing.JPanel {
                 .add(26, 26, 26)
                 .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                .add(23, 23, 23)
-                .add(checkoutCheckBox)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+                .add(11, 11, 11)
+                .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -98,12 +95,12 @@ public class ImportPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseRepositoryButton = new javax.swing.JButton();
-    final javax.swing.JCheckBox checkoutCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     final javax.swing.JTextArea messageTextArea = new javax.swing.JTextArea();
+    final javax.swing.JPanel progressPanel = new javax.swing.JPanel();
     final javax.swing.JTextField repositoryPathTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
     

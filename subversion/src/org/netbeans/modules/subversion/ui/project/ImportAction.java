@@ -14,10 +14,8 @@
 package org.netbeans.modules.subversion.ui.project;
 
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.util.FileUtils;
-import org.openide.ErrorManager;
+import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
 import org.openide.nodes.Node;
@@ -30,12 +28,9 @@ import java.io.*;
 import java.util.*;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -87,107 +82,38 @@ public final class ImportAction extends NodeAction {
         if (nodes.length == 1) {
             final File importDirectory = lookupImportDirectory(nodes[0]);
             if (importDirectory != null) {
-                ImportWizard wizard = new ImportWizard(nodes[0].getName());
+
+                List list = new ArrayList(1);
+                list.add(importDirectory);
+                Context context = new Context(Collections.EMPTY_LIST, list, Collections.EMPTY_LIST);
+                ImportWizard wizard = new ImportWizard(context);
                 if (!wizard.show()) return;
                 
-                final SVNUrl repositoryUrl = wizard.getRepositoryUrl();
-                final SVNUrl repositoryFolderUrl = wizard.getRepositoryFolderUrl(); 
-                final String message = wizard.getMessage();        
-                final boolean checkout = wizard.checkoutAfterImport();          
-                
-                final SvnClient client;
-                try {
-                    client = Subversion.getInstance().getClient(repositoryUrl, true);
-                } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    return;
-                }
-
-                performAction(repositoryUrl, repositoryFolderUrl, message, checkout, importDirectory, client);
+                Map commitFiles = wizard.getCommitFiles();
+                String message = wizard.getMessage();
+                        
+                performAction(context, commitFiles, message);
             }
         }
     }
 
-    private void performAction(final SVNUrl repositoryUrl,
-                               final SVNUrl repositoryFolderUrl,
-                               final String message,
-                               final boolean checkout,
-                               final File importDirectory,
-                               final SvnClient client)
-    {
-        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
+    private void performAction(final Context context,
+                               final Map commitFiles,
+                               final String message)
+    {        
+        
+        SVNUrl repository = SvnUtils.getRepositoryRootUrl(context.getRootFiles()[0]);
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport(rp) {
-            public void perform() {
-                try{                   
-
-                    client.doImport(importDirectory, repositoryFolderUrl, message, true);
-
-                    if(isCanceled()) {
-                        return;
-                    }
-
-                    if(checkout) {                        
-
-                        RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };
-                        File checkoutFile = new File(importDirectory.getAbsolutePath() + ".co");
-                        CheckoutAction.checkout(client, repositoryUrl, repositoryFile, checkoutFile, true, this);
-                        if(isCanceled()) {
-                            return;
-                        }
-                        
-                        copyMetadata(checkoutFile, importDirectory);
-                        refreshRecursively(importDirectory);
-
-                        if(isCanceled()) {
-                            return;
-                        }
-                        FileUtils.deleteRecursively(checkoutFile);
-                    }                            
-                } catch (SVNClientException ex) {
-                    ExceptionHandler eh = new ExceptionHandler(ex);
-                    eh.annotate();
-                } 
+            public void perform() {                    
+                CommitAction.performCommit(message, commitFiles, context, this);
             }
         };
-        support.start("Importing");
+        support.start("Comitting...");
     }
 
-    private void deleteDirectory(File file) {
-         File[] files = file.listFiles();
-         if(files !=null || files.length > 0) {
-             for (int i = 0; i < files.length; i++) {
-                 if(files[i].isDirectory()) {
-                     deleteDirectory(files[i]);
-                 } else {
-                    files[i].delete();
-                 }             
-             }            
-         }
-         file.delete();
-    }
-    
     public boolean cancel() {
         return true;
-    }
-
-    private void refreshRecursively(File folder) {
-        if (folder == null) return;
-        refreshRecursively(folder.getParentFile());
-        Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-    }
-
-    private void copyMetadata(File sourceFolder, File targetFolder) {
-        // XXX there is already somewhere a utility method giving the metadata file suffix - ".svn", "_svn", ...
-        FileUtils.copyDirFiles(new File(sourceFolder.getAbsolutePath() + "/.svn"), new File(targetFolder.getAbsolutePath() + "/.svn"), true);
-        targetFolder.setLastModified(sourceFolder.lastModified());
-        File[] files = sourceFolder.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            if(files[i].isDirectory() && !files[i].getName().equals(".svn")) {
-                copyMetadata(files[i], new File(targetFolder.getAbsolutePath() + "/" + files[i].getName()));
-            } else {
-                (new File(targetFolder.getAbsolutePath() + "/" + files[i].getName())).setLastModified(files[i].lastModified());
-            }
-        }
     }
     
     private File lookupImportDirectory(Node node) {

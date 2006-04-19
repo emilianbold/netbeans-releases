@@ -18,8 +18,6 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -32,9 +30,7 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -108,7 +104,7 @@ public class CommitAction extends ContextAction {
         commit(ctx);
     }
 
-    private static void performCommit(String message, Map commitFiles, Context ctx, SvnProgressSupport support) {        
+    public static void performCommit(String message, Map commitFiles, Context ctx, SvnProgressSupport support) {        
         try {
                                                
             SvnClient client;
