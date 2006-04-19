@@ -340,6 +340,10 @@ public class JavaFormatSupport extends ExtFormatSupport {
      *  the given token.
      */
     public TokenItem findStatementStart(TokenItem token) {
+        return findStatementStart(token, true);
+    }
+    
+    public TokenItem findStatementStart(TokenItem token, boolean outermost) {
         TokenItem t = findStatement(token);
         if (t != null) {
             switch (t.getTokenID().getNumericID()) {
@@ -364,13 +368,13 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         case JavaTokenContext.IF_ID:
                         case JavaTokenContext.WHILE_ID:
                         case JavaTokenContext.SYNCHRONIZED_ID:
-                            return findStatementStart(t);
+                            return findStatementStart(t, outermost);
 
                         case JavaTokenContext.ELSE_ID: // 'else' then ';'
                             // Find the corresponding 'if'
                             TokenItem ifss = findIf(scss);
                             if (ifss != null) { // 'if' ... 'else' then ';'
-                                return findStatementStart(ifss);
+                                return findStatementStart(ifss, outermost);
 
                             } else { // no valid starting 'if'
                                 return scss; // return 'else'
@@ -391,13 +395,13 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                     case JavaTokenContext.IF_ID:
                                     case JavaTokenContext.WHILE_ID:
                                     case JavaTokenContext.SYNCHRONIZED_ID:
-                                        return findStatementStart(bscss);
+                                        return findStatementStart(bscss, outermost);
 
                                     case JavaTokenContext.ELSE_ID:
                                         // Find the corresponding 'if'
                                         ifss = findIf(bscss);
                                         if (ifss != null) { // 'if' ... 'else' ... ';'
-                                            return findStatementStart(ifss);
+                                            return findStatementStart(ifss, outermost);
 
                                         } else { // no valid starting 'if'
                                             return bscss; // return 'else'
@@ -423,7 +427,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                     // Find the corresponding 'if'
                                     TokenItem ifss = findIf(lbss);
                                     if (ifss != null) { // valid 'if'
-                                        return findStatementStart(ifss);
+                                        return findStatementStart(ifss, outermost);
                                     } else {
                                         return lbss; // return 'else'
                                     }
@@ -432,7 +436,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                     // Find the corresponding 'try'
                                     TokenItem tryss = findTry(lbss);
                                     if (tryss != null) { // valid 'try'
-                                        return findStatementStart(tryss);
+                                        return findStatementStart(tryss, outermost);
                                     } else {
                                         return lbss; // return 'catch'
                                     }
@@ -442,7 +446,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                 case JavaTokenContext.IF_ID:
                                 case JavaTokenContext.WHILE_ID:
                                 case JavaTokenContext.SYNCHRONIZED_ID:
-                                    return findStatementStart(lbss);
+                                    return findStatementStart(lbss, outermost);
 
                             }
                             
@@ -465,14 +469,18 @@ public class JavaFormatSupport extends ExtFormatSupport {
                 case JavaTokenContext.ELSE_ID:
                     // Find the corresponding 'if'
                     TokenItem ifss = findIf(t);
-                    return (ifss != null) ? findStatementStart(ifss) : t;
+                    return (ifss != null) ? findStatementStart(ifss, outermost) : t;
 
                 case JavaTokenContext.DO_ID:
                 case JavaTokenContext.FOR_ID:
                 case JavaTokenContext.IF_ID:
                 case JavaTokenContext.WHILE_ID:
                 case JavaTokenContext.SYNCHRONIZED_ID:
-                    return findStatementStart(t);
+                    if (!outermost) {
+                        return t;
+                    } else {
+                        return findStatementStart(t, outermost);
+                    }
                     
                 case JavaTokenContext.IDENTIFIER_ID:
                     return t;
@@ -629,7 +637,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         break;
 
                     case JavaTokenContext.LBRACE_ID:
-                        TokenItem lbss = findStatementStart(t);
+                        TokenItem lbss = findStatementStart(t, false);
                         if (lbss == null) {
                             lbss = t;
                         }
