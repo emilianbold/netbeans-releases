@@ -49,39 +49,53 @@ public class ConflictResolvedAction extends ContextAction {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     ErrorManager.getDefault().notify(ErrorManager.USER, ex);
                 }
-                FileStatusCache cache = Subversion.getInstance().getStatusCache();
 
                 if (client == null) {
                     return;
                 }
-        
+                
                 for (int i = 0; i<files.length; i++) {
                     if(isCanceled()) {
                         return;
                     }
                     File file = files[i];
-                    try {
-                        client.resolved(file);
-                        if(isCanceled()) {
-                            return;
-                        }
-                        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-
-                        // auxiliary files disappear, synch with FS
-                        File parent = file.getParentFile();
-                        if (parent != null) {
-                            FileObject folder = FileUtil.toFileObject(parent);
-                            if (folder != null) {
-                                folder.refresh();
-                            }
-                        }
-                    } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
+                    ConflictResolvedAction.perform(file, client);
                 }
             }
         };
         support.start();        
+    }
+
+
+    public static void perform(File file) {
+        SvnClient client = null;
+        try {
+            client = Subversion.getInstance().getClient(file);
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+        }
+        perform(file, client);
+    }
+
+    private static void perform(File file, SvnClient client) {
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+
+        try {
+            client.resolved(file);
+            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+
+            // auxiliary files disappear, synch with FS
+            File parent = file.getParentFile();
+            if (parent != null) {
+                FileObject folder = FileUtil.toFileObject(parent);
+                if (folder != null) {
+                    folder.refresh();
+                }
+            }
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }        
     }
 
 }

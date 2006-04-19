@@ -17,6 +17,7 @@ import java.io.*;
 import java.util.*;
 import java.awt.*;
 import javax.swing.*;
+import org.netbeans.modules.subversion.ui.commit.ConflictResolvedAction;
 import org.netbeans.spi.diff.*;
 
 import org.openide.DialogDisplayer;
@@ -98,10 +99,10 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         
         final Difference[] diffs = copyParts(true, file, f1, true);
         if (diffs.length == 0) {
-            DialogDisplayer.getDefault ().notify (new org.openide.NotifyDescriptor.Message(
-                org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "NoConflictsInFile", file)));
-            return ;
+            ConflictResolvedAction.perform(file);  // remove conflict status
+            return;
         }
+
         copyParts(false, file, f2, false);
         //GraphicalMergeVisualizer merge = new GraphicalMergeVisualizer();
         String originalLeftFileRevision = leftFileRevision;
