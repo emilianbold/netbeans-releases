@@ -7,6 +7,9 @@
 package org.netbeans.bluej.export;
 
 import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -31,12 +34,17 @@ public class ExportPanel extends javax.swing.JPanel {
         txtFolder = new javax.swing.JTextField();
         btnFolder = new javax.swing.JButton();
 
-        lblWarning.setText("<html>This will convert your BlueJ project to become a full-fledged Netbeans J2SE project. In the process, <b>it will copy your sources to the new destination and split classes and tests</b></html>");
+        lblWarning.setText("<html>This will convert your BlueJ project to become a full-fledged Netbeans J2SE project. <p>\nIn the process, <b>it will copy your sources to the new destination and split classes and tests</b>. \n<p>Additionally, any libraries defined within BlueJ will be copied to the project's libs subdirectory.</html>");
         lblWarning.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         lblFolder.setText("New Project Location :");
 
         btnFolder.setText("Browse...");
+        btnFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFolderActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -49,7 +57,7 @@ public class ExportPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(lblFolder)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(txtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+                        .add(txtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnFolder)))
                 .addContainerGap())
@@ -67,6 +75,23 @@ public class ExportPanel extends javax.swing.JPanel {
                 .addContainerGap(156, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFolderActionPerformed
+                JFileChooser chooser = new JFileChooser();
+                FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+                chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+                chooser.setMultiSelectionEnabled( false );
+                int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( this ) ); // Sow the chooser
+                if (txtFolder.getText().length() > 0) {
+                    chooser.setCurrentDirectory(new File(txtFolder.getText().trim()));
+                }
+                if ( option == JFileChooser.APPROVE_OPTION ) {
+                    
+                    File file = chooser.getSelectedFile();
+                    txtFolder.setText(FileUtil.normalizeFile(file).getAbsolutePath());
+                }
+
+    }//GEN-LAST:event_btnFolderActionPerformed
     
     public File getNewProjectLocation() {
         return new File(txtFolder.getText());

@@ -18,7 +18,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lblFolder" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="txtFolder" pref="132" max="32767" attributes="0"/>
+                      <Component id="txtFolder" pref="144" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnFolder" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -46,7 +46,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="lblWarning">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;This will convert your BlueJ project to become a full-fledged Netbeans J2SE project. In the process, &lt;b&gt;it will copy your sources to the new destination and split classes and tests&lt;/b&gt;&lt;/html&gt;"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;This will convert your BlueJ project to become a full-fledged Netbeans J2SE project. &lt;p&gt;&#xa;In the process, &lt;b&gt;it will copy your sources to the new destination and split classes and tests&lt;/b&gt;. &#xa;&lt;p&gt;Additionally, any libraries defined within BlueJ will be copied to the project&apos;s libs subdirectory.&lt;/html&gt;"/>
         <Property name="verticalAlignment" type="int" value="1"/>
       </Properties>
     </Component>
@@ -61,6 +61,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Browse..."/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnFolderActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

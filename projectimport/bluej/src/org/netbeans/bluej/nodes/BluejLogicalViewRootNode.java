@@ -108,7 +108,7 @@ public class BluejLogicalViewRootNode extends AbstractNode {
 ////        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null)); // NOI18N
 ////        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
         actions.add(null);
-//TEMP         actions.add(new ConvertToJ2SEAction(getProject(getLookup())));
+         actions.add(new ConvertToJ2SEAction(getProject(getLookup())));
         actions.add(CommonProjectActions.setAsMainProjectAction());
 //        actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());

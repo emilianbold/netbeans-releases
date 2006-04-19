@@ -291,7 +291,7 @@ public final class BluejProject implements Project, AntProjectListener {
         }
         
         public String getName() {
-            return PropertyUtils.getUsablePropertyName(getDisplayName() + getProjectDirectory().getName());
+            return PropertyUtils.getUsablePropertyName(getProjectDirectory().getName());
         }
         
         public String getDisplayName() {
