@@ -67,15 +67,16 @@ public class ConflictResolvedAction extends ContextAction {
     }
 
 
+    /** Marks as resolved or shows error dialog. */
     public static void perform(File file) {
         SvnClient client = null;
         try {
             client = Subversion.getInstance().getClient(file);
+            perform(file, client);
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
-        }
-        perform(file, client);
+            ExceptionHandler eh = new ExceptionHandler (ex);
+            eh.annotate();
+        }        
     }
 
     private static void perform(File file, SvnClient client) {
@@ -94,7 +95,8 @@ public class ConflictResolvedAction extends ContextAction {
                 }
             }
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            ExceptionHandler eh = new ExceptionHandler (ex);
+            eh.annotate();
         }        
     }
 

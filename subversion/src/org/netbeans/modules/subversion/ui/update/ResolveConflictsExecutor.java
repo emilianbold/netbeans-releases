@@ -422,14 +422,8 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             }
         }
 
-        private void repairEntries(File file) {           
-            try {
-                SvnClient client = Subversion.getInstance().getClient(file);
-                client.resolved(file);
-            } catch (SVNClientException ex) {
-                ExceptionHandler eh = new ExceptionHandler (ex);
-                eh.annotate();
-            }
+        private void repairEntries(File file) {
+            ConflictResolvedAction.perform(file);
         }
 
     }
