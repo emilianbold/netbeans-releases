@@ -69,6 +69,10 @@ public class RepositoryStep
 
     private boolean acceptRevision;
 
+    private String invalidMsg;
+
+    private SvnClient client;
+
     public RepositoryStep(boolean acceptRevision) {
         this.acceptRevision = acceptRevision;
     }
@@ -97,92 +101,69 @@ public class RepositoryStep
         }
         
         backgroundValidationThread = Thread.currentThread();
-        final SvnClient client;
         try {
-            ProxyDescriptor pd = SvnConfigFiles.getInstance().getProxyDescriptor(selectedRepository.getUrl().getHost());
-            client = Subversion.getInstance().getClient(selectedRepository.getUrl(),
-                                                        pd, 
-                                                        repository.getUserName(),
-                                                        repository.getPassword());
-        } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ex);
-            invalid(ex.getLocalizedMessage());
-            validationDone();
-            return; 
-        }
-         
-        repositoryFile = null; // reset
-        
-        final String invalidMsg[] = new String[1]; // ret value
-        Runnable worker = new Runnable() {
-            private void fail(String msg) {
-                invalidMsg[0] = msg;
-            }
-            public void run() {
-                invalid(null);                
-
-                storeConfigValues();
-                
-                ISVNInfo info = null;                
-                try {      
-                    info = client.getInfo(selectedRepository.getUrl());                                                                                                        
-                } catch (SVNClientException ex) {
-                    ExceptionHandler eh = new ExceptionHandler(ex);
-                    eh.annotate();
-                    invalidMsg[0] = ExceptionHandler.parseExceptionMessage(ex);                    
-                }
-                
-                if(info != null) {                    
-                    SVNUrl repositoryUrl = info.getRepository();
-                    if(repositoryUrl==null) {
-                        // XXX see issue #72810 and #72921. workaround! 
-                        repositoryUrl = selectedRepository.getUrl();                        
-                    }
-                    SVNRevision revision = selectedRepository.getRevision();                                   
-                    String[] repositorySegments = repositoryUrl.getPathSegments();
-                    String[] selectedSegments = selectedRepository.getUrl().getPathSegments();
-                    String[] repositoryFolder = new String[selectedSegments.length - repositorySegments.length];
-                    System.arraycopy(selectedSegments, repositorySegments.length, 
-                                     repositoryFolder, 0, 
-                                     repositoryFolder.length);
-                    try {                        
-                        repositoryFile = new RepositoryFile(repositoryUrl, repositoryFolder, revision);                                                                                                        
-                    } catch (MalformedURLException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
-                    }
-                } else {
-                    if(invalidMsg[0] == null) {
-                        invalidMsg[0] = "No information available for :" + selectedRepository.getUrl();
-                    }
-                }
-            }
-        };
-
-        Thread workerThread = new Thread(worker, "SVN Repository Probe");  // NOI18N
-        workerThread.start();
-        try {
-            workerThread.join();
-            if (invalidMsg[0] == null) {
-                valid();
-                storeHistory();
-            } else {
-                valid(invalidMsg[0]);
-            }
-        } catch (InterruptedException e) {
-            //invalid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2023"));  // NOI18N
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread);
+            invalid(null);
+            invalidMsg = null;
+            
             try {
-                client.cancelOperation(); // XXX do we need this
+                ProxyDescriptor pd = SvnConfigFiles.getInstance().getProxyDescriptor(selectedRepository.getUrl().getHost());
+                client = Subversion.getInstance().getClient(selectedRepository.getUrl(),
+                                                            pd,
+                                                            repository.getUserName(),
+                                                            repository.getPassword());
             } catch (SVNClientException ex) {
-                ExceptionHandler eh = new ExceptionHandler(ex); // XXX
+                ErrorManager.getDefault().notify(ex);
+                invalid(ex.getLocalizedMessage());
+                validationDone();
+                client = null;
+                return;
+           }
+
+            repositoryFile = null; // reset
+
+            storeConfigValues();
+
+            ISVNInfo info = null;                
+            try {      
+                info = client.getInfo(selectedRepository.getUrl());                                                                                                        
+            } catch (SVNClientException ex) {
+                ExceptionHandler eh = new ExceptionHandler(ex);
                 eh.annotate();
+                invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
+            } finally {
+               client = null;
             }
-            workerThread.interrupt();
-            valid("Action interrupted by user."); // should be a user action, so set again on valid ... 
-            err.notify(ErrorManager.INFORMATIONAL, e);
+
+            if(info != null) {                    
+                SVNUrl repositoryUrl = info.getRepository();
+                if(repositoryUrl==null) {
+                    // XXX see issue #72810 and #72921. workaround! 
+                    repositoryUrl = selectedRepository.getUrl();                        
+                }
+                SVNRevision revision = selectedRepository.getRevision();                                   
+                String[] repositorySegments = repositoryUrl.getPathSegments();
+                String[] selectedSegments = selectedRepository.getUrl().getPathSegments();
+                String[] repositoryFolder = new String[selectedSegments.length - repositorySegments.length];
+                System.arraycopy(selectedSegments, repositorySegments.length, 
+                                 repositoryFolder, 0, 
+                                 repositoryFolder.length);
+                try {                        
+                    repositoryFile = new RepositoryFile(repositoryUrl, repositoryFolder, revision);                                                                                                        
+                } catch (MalformedURLException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+                }
+            } else {
+                invalidMsg = "No information available for :" + selectedRepository.getUrl();
+                return;
+            }
         } finally {
             backgroundValidationThread = null;
+            if(invalidMsg == null) {
+              valid();
+              storeHistory();
+            } else {
+              valid(invalidMsg);
+            }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     validationDone();
@@ -220,6 +201,15 @@ public class RepositoryStep
     public void stop() {
         if (backgroundValidationThread != null) {
             backgroundValidationThread.interrupt();
+            invalidMsg = "Action cancelled by user.";
+            if(client != null) {
+                try {
+                    client.cancelOperation(); 
+                } catch (SVNClientException ex) {
+                    ExceptionHandler eh = new ExceptionHandler(ex); 
+                    eh.annotate();
+                }
+            }
         }
     }
     
