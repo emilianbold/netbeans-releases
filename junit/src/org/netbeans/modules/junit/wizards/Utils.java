@@ -521,6 +521,9 @@ public final class Utils {
         if (nullsCount == 0) {
             return fileObjs;
         }
+        if (nullsCount == fileObjs.length) {
+            return new FileObject[0];
+        }
         
         final FileObject[] fileObjsNew
                 = new FileObject[fileObjs.length - nullsCount];
@@ -529,11 +532,8 @@ public final class Utils {
             FileObject fileObj = fileObjs[index++];
             if (fileObj != null) {
                 fileObjsNew[indexNew++] = fileObj;
-            } else {
-                nullsCount--;
             }
         }
-        assert nullsCount == 0;
         return fileObjsNew;
     }
 
