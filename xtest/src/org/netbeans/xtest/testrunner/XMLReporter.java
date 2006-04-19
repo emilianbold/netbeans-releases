@@ -64,8 +64,10 @@ public class XMLReporter implements JUnitTestListener {
     private File resultsDirectory;
     private OutputStream outStream;
     private File outFile;
-    
-    private static String UNKNOWN_TEST = "unknown";
+
+    private static final String DID_NOT_FINISH_TEST = "Did not finish.";
+    private static final String DID_NOT_START_TEST = "Did not start.";
+    private static final String UNKNOWN_TEST = "unknown";
     private String currentTestName = UNKNOWN_TEST;
     private String currentClassName = UNKNOWN_TEST;
     private String currentSuiteName = UNKNOWN_TEST;
@@ -111,6 +113,10 @@ public class XMLReporter implements JUnitTestListener {
             // error takes precedens before fail
             return;
         }
+       // check whether result was already set to pass (it can happen when addFailure is called after endTest)
+        if(currentTestCase.xmlat_result == UnitTestCase.TEST_PASS) {
+            testsPassed--;
+        }
         currentTestCase.xml_cdata = stackTraceToString(assertionFailedError);
         currentTestCase.xmlat_message = assertionFailedError.getMessage();
         currentTestCase.xmlat_result = UnitTestCase.TEST_FAIL;
@@ -126,7 +132,7 @@ public class XMLReporter implements JUnitTestListener {
         }
     }
     
-    public void endTest(junit.framework.Test test) {       
+    public void endTest(junit.framework.Test test) {
         // test didn't hangs so it isn't error.
         testsErrors--;
             
@@ -190,19 +196,29 @@ public class XMLReporter implements JUnitTestListener {
         for (Iterator it = runTestCases.iterator(); it.hasNext();) {
             UnitTestCase testCaseBean = (UnitTestCase)it.next();
             if(testCaseBean.xmlat_class.equals(currentClassName) &&
-                    testCaseBean.xmlat_name.equals(currentTestName)) {
+                    testCaseBean.xmlat_name.equals(currentTestName) &&
+                    testCaseBean.getMessage().equals(DID_NOT_START_TEST)) {
                 currentTestCase = testCaseBean;
                 break;
             }
         }
         if(currentTestCase == null) {
-            // test case not found
-            System.out.println("\n\nERROR in XMLReporter#startTest: Test "+
-                    currentClassName+"#"+currentTestName+" not found in the list.\n\n");
+            // Test case not found. It can happen when the same test run for the second time
+            // or a new test case is added in runtime.
+            // we need to create a new test case bean
+            currentTestCase = new UnitTestCase();
+            currentTestCase.xmlat_name = currentTestName;
+            currentTestCase.xmlat_class = currentClassName;
+            currentTestCase.xmlat_result = UnitTestCase.TEST_UNKNOWN;
+            // add the testcase to the current suite
+            runTestCases.add(currentTestCase);
+            currentTestSuite.xmlel_UnitTestCase = (UnitTestCase[])(runTestCases.toArray(new UnitTestCase[0]));
+            testsTotal++;
+            testsErrors++;
         }
         // Change message from "Did not start" to "Did not finish". Message is
         // then updated in endTest, addFailure or addError.
-        currentTestCase.xmlat_message = "Did not finish.";
+        currentTestCase.xmlat_message = DID_NOT_FINISH_TEST;
 
         // here comes the statistics for up to date results
         currentTestSuite.xmlat_testsTotal = testsTotal;
@@ -320,7 +336,7 @@ public class XMLReporter implements JUnitTestListener {
             }
             testCaseBean.xmlat_class = test.getClass().getName();
             testCaseBean.xmlat_result = UnitTestCase.TEST_UNKNOWN;
-            testCaseBean.xmlat_message = "Did not start.";
+            testCaseBean.xmlat_message = DID_NOT_START_TEST;
             // add the testcase to the current suite
             runTestCases.add(testCaseBean);
         }
