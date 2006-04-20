@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Search for CHANGEME in this document when copying and using it: -->
 <!--
                 Sun Public License Notice
 
@@ -9,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="../nbbuild/javadoctools/apichanges.xsl"?>
@@ -79,15 +78,20 @@ is the proper place.
 
         <change>
             <api name="editor"/>
-            <summary>Fake mime-type text/base was removed</summary>
+            <summary>Fake MIME type <code>text/base</code> was removed</summary>
             <version major="1" minor="24"/>
             <date day="27" month="7" year="2005"/>
             <author login="mroskanin"/>
-            <compatibility addition="no"/>
+            <compatibility semantic="incompatible" modification="yes">
+                <p>
+                    Modules formerly registering objects in this layer location
+                    will need to move their registrations for them to continue working.
+                </p>
+            </compatibility>
             <description>
-        Fake mime-type folder Editors/text/base/ 
-        formerly used for global objects common for all mime types, was removed. 
-        Now all common objects can be placed into Editors folder directly.
+        Fake MIME type folder <code>Editors/text/base/</code>
+        formerly used for global objects common for all MIME types, was removed.
+        Now all common objects can be placed into the <code>Editors/</code> folder directly.
             </description>
         </change>
 
@@ -105,7 +109,7 @@ is the proper place.
 
           AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
 
-                SEE CHANGEME/apichanges.xml
+                SEE editor/apichanges.xml
 
 -->
     <head>
