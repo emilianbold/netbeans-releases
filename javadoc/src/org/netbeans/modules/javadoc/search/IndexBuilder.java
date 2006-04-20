@@ -19,6 +19,8 @@ import java.text.Collator;
 import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.html.HTML;
 
 
 import javax.swing.text.html.parser.*;
@@ -46,7 +48,8 @@ public class IndexBuilder implements Runnable, ChangeListener {
 
     private static RequestProcessor.Task    task;
     
-    private final ErrorManager err;
+    private static final ErrorManager err =
+            ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexBuilder"); // NOI18N;
     
     private Reference cachedData;
     
@@ -72,7 +75,6 @@ public class IndexBuilder implements Runnable, ChangeListener {
     private IndexBuilder() {
         this.jdocRegs = JavadocRegistry.getDefault();
         this.jdocRegs.addChangeListener(this);
-        err = ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexBuilder"); // NOI18N
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("new IndexBuilder");
         }
@@ -167,6 +169,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
         FileObject docRoots[] = jdocRegs.getDocRoots();
         // XXX needs to be able to listen to result; when it changes, call scheduleTask()
         Map m = new WeakHashMap();
+//        long startTime = System.nanoTime();
 
         for ( int ifCount = 0; ifCount < docRoots.length; ifCount++ ) {
             FileObject fo = docRoots[ifCount];
@@ -239,6 +242,9 @@ public class IndexBuilder implements Runnable, ChangeListener {
                 this.filesystemInfo = m;
             }
         }
+
+//        long elapsedTime = System.nanoTime() - startTime;
+//        System.out.println("\nElapsed time[nano]: " + elapsedTime);
     }
     
     /**
@@ -246,50 +252,28 @@ public class IndexBuilder implements Runnable, ChangeListener {
      * May return null if there is no title tag, or "" if it is empty.
      */
     private String parseTitle(FileObject html) {
+        TitleParser tp = null;
+
         try {
-            // #32551: first try to find title the easy way, only then fall back.
-            // XXX character set may be an issue here...
-            BufferedReader b = new BufferedReader(new InputStreamReader(html.getInputStream()));
-            String line;
-            while ((line = b.readLine()) != null) {
-                if (line.equalsIgnoreCase("<title>")) { // NOI18N
-                    String title = b.readLine();
-                    if (title != null) {
-                        String next = b.readLine();
-                        if ("</title>".equalsIgnoreCase(next)) { // NOI18N
-                            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                                err.log("Fast parsing of " + title);
-                            }
-                            return title;
-                        }
-                    }
-                }
-            }
-            // OK, fall back to slower parsing mode.
-            final String[] title = new String[1];
-            // XXX technically this should use an encoding according to the HTML character
-            // set specification...
-            Reader r = new InputStreamReader(html.getInputStream());
+            // #71979: html parser used again to fix encoding issues.
+            // I have measured no difference if the parser or plain file reading
+            // is used (#32551).
+            // In case the parser is stopped as soon as it finds the title it is
+            // even faster than the previous fix.
+            Reader r = new BufferedReader(new InputStreamReader(html.getInputStream()));
             try {
-                class TitleParser extends Parser {
-                    public TitleParser() throws IOException {
-                        super(DTD.getDTD("html32")); // NOI18N
-                    }
-                    protected void handleTitle(char[] text) {
-                        title[0] = new String(text);
-                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                            err.log("Slow parsing of " + title[0]);
-                        }
-                    }
-                }
-                new TitleParser().parse(r);
-                return title[0];
+                tp = new TitleParser(r);
+                tp.parse(r);
+                return tp.getTitle();
             } finally {
                 r.close();
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-            return null;
+            String title = tp == null? null: tp.getTitle();
+            if (title == null) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            }
+            return title;
         }
     }
 
@@ -300,6 +284,67 @@ public class IndexBuilder implements Runnable, ChangeListener {
         // Give it a small delay to avoid restarting too many times e.g. during
         // project switch:
         task.schedule(100);
+    }
+
+    private static final class TitleParser extends Parser {
+        private final Reader in;
+        private String encoding;
+        private String title;
+
+        public TitleParser(Reader in) throws IOException {
+            super(DTD.getDTD("html32")); // NOI18N
+            this.in = in;
+        }
+
+        public String getTitle() {
+            return this.title;
+        }
+
+        protected void handleTitle(char[] text) {
+            this.title = String.valueOf(text);
+            if (encoding != null) {
+                // in case of system and file charsets differ translate title
+                try {
+                    this.title = new String(this.title.getBytes(), encoding);
+                } catch (UnsupportedEncodingException ex) {
+                    // ignore
+                    err.notify(ErrorManager.EXCEPTION, ex);
+                }
+            }
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("Parsing of " + this.title + ", using charset " + encoding); // NOI18N
+            }
+            // we have what we want so stop the parser to save some milliseconds
+            // for something useful
+            try {
+                in.close();
+            } catch (IOException ex) {
+                // ignore
+                err.notify(ErrorManager.EXCEPTION, ex);
+            }
+        }
+
+        protected void handleStartTag(TagElement tag) {
+            // look around for a charset
+            if (this.encoding == null && tag.getHTMLTag() == HTML.Tag.META) {
+                SimpleAttributeSet attrs = getAttributes();
+                Object value = attrs.getAttribute(HTML.Attribute.CONTENT);
+
+                if (value instanceof String) {
+                    StringTokenizer tk = new StringTokenizer((String) value, ";"); // NOI18N
+                    while (tk.hasMoreTokens()) {
+                        String str = tk.nextToken().trim();
+                        if (str.startsWith("charset")) {        //NOI18N
+                            str = str.substring(7).trim();
+                            if (str.charAt(0) == '=') {
+                                this.encoding = str.substring(1).trim();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
