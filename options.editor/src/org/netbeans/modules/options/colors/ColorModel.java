@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.BufferedReader;
@@ -28,16 +27,12 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Set;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -46,18 +41,14 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
-
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
@@ -66,15 +57,8 @@ import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-
-/**
- *
- * @author Administrator
- */
 public class ColorModel {
     
     static final String         ALL_LANGUAGES = NbBundle.getMessage
@@ -210,9 +194,11 @@ public class ColorModel {
      * @return Collection of AttributeSets or null
      */
     public Collection /*<Category>*/ getHighlightings (String profile) {
-        Collection r = editorSettings.getHighlightings (profile).values ();
-        if (r == null) return null;
-        return hideDummyCategories (r);
+        Map m = editorSettings.getHighlightings(profile);
+        if (m == null) {
+            return null;
+        }
+        return hideDummyCategories(m.values());
     }
     
     public Collection /*<Category>*/ getHighlightingDefaults (String profile) {

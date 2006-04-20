@@ -1,12 +1,18 @@
 /*
- * SyntaxColoringPanel1.java
- *
- * Created on January 18, 2006, 11:53 AM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.options.colors;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -35,7 +41,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
@@ -713,6 +718,9 @@ PropertyChangeListener {
         Vector v = (Vector) m.get (language);
         if (v == null) {
             Collection c = colorModel.getCategories (profile, language);
+            if (c == null) {
+                c = Collections.EMPTY_SET; // XXX OK?
+            }
             List l = new ArrayList (c);
             Collections.sort (l, new CategoryComparator ());
             v = new Vector (l);
