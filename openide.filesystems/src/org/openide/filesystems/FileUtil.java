@@ -49,7 +49,6 @@ import org.openide.util.WeakListeners;
 /** Common utilities for handling files.
  * This is a dummy class; all methods are static.
  */
-@SuppressWarnings("unchecked")
 public final class FileUtil extends Object {
     
     /** Normal header for ZIP files. */
@@ -63,7 +62,7 @@ public final class FileUtil extends Object {
     /** transient attributes which should not be copied
     * of type Set<String>
     */
-    static final Set transientAttributes = new HashSet();
+    static final Set<String> transientAttributes = new HashSet<String>();
 
     static {
         transientAttributes.add("templateWizardURL"); // NOI18N
@@ -78,7 +77,7 @@ public final class FileUtil extends Object {
     }
 
     /* mapping of file extensions to content-types */
-    private static Dictionary map = new Hashtable();
+    private static Dictionary<String, String> map = new Hashtable<String, String>();
 
     static {
         // Set up at least this one statically, because it is so basic;
@@ -88,7 +87,7 @@ public final class FileUtil extends Object {
     }
 
     /** Cache for {@link #isArchiveFile(FileObject)}. */
-    private static final Map /*<FileObject,boolean>*/ archiveFileCache = new WeakHashMap();
+    private static final Map<FileObject,Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
 
     private FileUtil() {
     }
@@ -555,7 +554,8 @@ public final class FileUtil extends Object {
         JarEntry je;
 
         // files with extended attributes (name, DefaultAttributes.Table)
-        HashMap attributes = new HashMap(7);
+        HashMap<String, DefaultAttributes.Table> attributes =
+                new HashMap<String, DefaultAttributes.Table>(7);
 
         jis = new JarInputStream(is);
 
