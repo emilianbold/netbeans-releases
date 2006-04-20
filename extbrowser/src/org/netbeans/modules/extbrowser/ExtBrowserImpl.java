@@ -7,19 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.extbrowser;
 
-import java.awt.*;
-import java.beans.*;
-import java.io.*;
-import java.net.*;
-import javax.swing.*;
-
-import org.openide.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.net.URL;
 import org.openide.awt.HtmlBrowser;
 
 /**
@@ -27,7 +23,7 @@ import org.openide.awt.HtmlBrowser;
  *
  * @author Radim Kubacki
  */
-public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
+public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
         
     /** standart helper variable */
     protected PropertyChangeSupport pcs;
@@ -122,26 +118,4 @@ public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
         pcs.removePropertyChangeListener (l);
     }
 
-    /**
-     * Returns whether given protocol is internal or not. 
-     * (Internal protocols cannot be displayed by external viewers.
-     * They must be wrapped somehow.)
-     *
-     * @return true if protocol is internal, false otherwise
-     */
-    private static boolean isInternalProtocol (String protocol) {
-        // internal protocols cannot be displayed in external viewer
-        if (protocol.equals ("nbfs")               // NOI18N
-        ||  protocol.equals ("nbres")              // NOI18N
-        ||  protocol.equals ("nbrescurr")          // NOI18N
-        ||  protocol.equals ("nbresloc")           // NOI18N
-        ||  protocol.equals ("nbrescurrloc"))      // NOI18N
-            return true;
-        
-        if (protocol.startsWith ("nb"))            // NOI18N
-            return true;
-        
-        return false;
-    }
-    
 }
