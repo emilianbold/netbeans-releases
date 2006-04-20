@@ -43,6 +43,10 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     
     public void run() {        
         startProgress();
+        performIntern();
+    }
+
+    protected void performIntern() {
         try {
             interruptibleThread = Thread.currentThread();
             Diagnostics.println("Start - " + displayName);
@@ -53,7 +57,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         }
     }
 
-    public abstract void perform();
+    protected abstract void perform();
 
     public synchronized boolean isCanceled() {
         return canceled;

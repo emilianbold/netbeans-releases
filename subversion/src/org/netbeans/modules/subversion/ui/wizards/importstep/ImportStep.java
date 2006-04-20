@@ -36,6 +36,7 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
@@ -46,6 +47,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -53,22 +55,14 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * @author Tomas Stupka
  */
-public class ImportStep extends AbstractStep implements DocumentListener, WizardDescriptor.AsynchronousValidatingPanel {
+public class ImportStep extends AbstractStep implements DocumentListener, WizardDescriptor.AsynchronousValidatingPanel, WizardDescriptor.FinishablePanel {
     
     private ImportPanel importPanel;
 
     private RepositoryPaths repositoryPaths;
     private BrowserAction[] actions;
-    private File importDirectory;
-
-    private Thread backgroundValidationThread;
-
-    private ProgressHandle progress;
-    private JPanel progressComponent;
-    private JLabel progressLabel;
-    private String invalidMsg;
-
-    private SvnClient client;
+    private File importDirectory;       
+    private WizardStepProgressSupport support;
     
     public ImportStep(BrowserAction[] actions, File importDirectory) {
         this.actions = actions;
@@ -89,160 +83,18 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     }
 
     protected void validateBeforeNext() {
-
-            if(!validateUserInput()) {
-                validationDone();
-                return;
-            }
         try {
-            backgroundValidationThread = Thread.currentThread();
-            try {
-                client = Subversion.getInstance().getClient(repositoryPaths.getRepositoryUrl());
-            } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ex);
-                valid(ex.getLocalizedMessage());
-                validationDone();
-                client = null;
-                return;
-            } 
-
-            invalidMsg = null;
-            invalid(null);
-
-            try {
-                SVNUrl repositoryUrl = repositoryPaths.getRepositoryUrl();
-                SVNUrl repositoryFolderUrl = getRepositoryFolderUrl();
-                client.mkdir(repositoryFolderUrl, getImportMessage());
-
-                RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };
-                File checkoutFile = new File(importDirectory.getAbsolutePath() + ".co");
-                // support - let's handle it as an atomic operation
-                CheckoutAction.checkout(client, repositoryUrl, repositoryFile, checkoutFile, true, null);
-
-                copyMetadata(checkoutFile, importDirectory);
-                refreshRecursively(importDirectory);
-
-                FileUtils.deleteRecursively(checkoutFile);
-
-            } catch (SVNClientException ex) {
-                ExceptionHandler eh = new ExceptionHandler(ex);
-                eh.annotate();
-                invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
-            } finally {
-                client = null;
+            if(support != null) {
+                support.performInCurrentThread(NbBundle.getMessage(RepositoryStep.class, "BK2012")); // XXX wrong message
             }
-
-   
         } finally {
-            backgroundValidationThread = null;
-            if(invalidMsg != null) {
-                valid(invalidMsg);
-            } else {
-                valid();
-            }
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    validationDone();
-                }
-            });
-        }          
+            support = null;
+        }
     }   
 
-    private void deleteDirectory(File file) {
-         File[] files = file.listFiles();
-         if(files !=null || files.length > 0) {
-             for (int i = 0; i < files.length; i++) {
-                 if(files[i].isDirectory()) {
-                     deleteDirectory(files[i]);
-                 } else {
-                    files[i].delete();
-                 }             
-             }            
-         }
-         file.delete();
-    }
-
-    private void refreshRecursively(File folder) {
-        if (folder == null) return;
-        refreshRecursively(folder.getParentFile());
-        Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-    }
-
-    private void copyMetadata(File sourceFolder, File targetFolder) {
-        // XXX there is already somewhere a utility method giving the metadata file suffix - ".svn", "_svn", ...
-        FileUtils.copyDirFiles(new File(sourceFolder.getAbsolutePath() + "/.svn"), new File(targetFolder.getAbsolutePath() + "/.svn"), true);
-        targetFolder.setLastModified(sourceFolder.lastModified());
-        File[] files = sourceFolder.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            if(files[i].isDirectory() && !files[i].getName().equals(".svn")) {
-                copyMetadata(files[i], new File(targetFolder.getAbsolutePath() + "/" + files[i].getName()));
-            } else {
-                (new File(targetFolder.getAbsolutePath() + "/" + files[i].getName())).setLastModified(files[i].lastModified());
-            }
-        }
-    }
-
     public void prepareValidation() {
-        progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryStep.class, "BK2012")); // NOI18N
-        JComponent bar = ProgressHandleFactory.createProgressComponent(progress);
-        JButton stopButton = new JButton(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2022")); // NOI18N
-        stopButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                stop();
-            }
-        });
-        progressComponent = new JPanel();
-        progressComponent.setLayout(new BorderLayout(6, 0));
-        progressLabel = new JLabel();
-        progressComponent.add(progressLabel, BorderLayout.NORTH);
-        progressComponent.add(bar, BorderLayout.CENTER);
-        progressComponent.add(stopButton, BorderLayout.LINE_END);
-        progress.start(/*2, 5*/);
-        importPanel.progressPanel.setVisible(true);
-        importPanel.progressPanel.add(progressComponent, BorderLayout.SOUTH);
-        importPanel.progressPanel.revalidate();
-
-        setEditable(false);
-
-        OutputLogger logger = new OutputLogger(); // XXX to use the logger this way is a hack
-        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + this.getClass().getName() + ".prepareValidation()");
-    }
-
-    private void validationDone() {
-        progress.finish();
-        importPanel.progressPanel.remove(progressComponent);
-        importPanel.progressPanel.revalidate();
-        importPanel.progressPanel.repaint();
-        importPanel.progressPanel.setVisible(false);
-        setEditable(true);
-
-        OutputLogger logger = new OutputLogger(); // XXX to use the logger this way is a hack
-        if(isValid()) {
-            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + this.getClass().getName() + ".validationDone() - finnished");
-        } else {
-            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + this.getClass().getName() + ".validationDone() - finnished with error");
-        }
-    }
-
-    private void setEditable(boolean editable) {
-        importPanel.browseRepositoryButton.setEnabled(editable);
-        importPanel.messageTextArea.setEditable(editable);
-        importPanel.repositoryPathTextField.setEditable(editable);
-    }
-    
-    public void stop() {
-        if (backgroundValidationThread != null) {
-            backgroundValidationThread.interrupt();
-            invalidMsg = "Action cancelled by user.";
-            if(client != null) {
-                try {
-                    client.cancelOperation(); 
-                } catch (SVNClientException ex) {
-                    ExceptionHandler eh = new ExceptionHandler(ex); 
-                    eh.annotate();
-                }
-            }
-        }
+        support = new ImportProgressSupport(importPanel.progressPanel);
+        support.startProgress();
     }
 
     public boolean validateUserInput() {
@@ -313,5 +165,127 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         return null;
     }
 
+    public void stop() {
+        if(support != null) {
+            support.cancel();
+        }
+    }
+
+    public boolean isFinishPanel() {
+        return true;
+    }
+
+    private class ImportProgressSupport extends WizardStepProgressSupport {
+        public ImportProgressSupport(JPanel panel) {
+            super(panel);
+        }
+        public void perform() {
+            String invalidMsg = null;
+            try {
+                if(!validateUserInput()) {
+                    return;
+                }        
+
+                invalid(null);
+
+                SvnClient client;
+                try {
+                    client = Subversion.getInstance().getClient(repositoryPaths.getRepositoryUrl(), this);
+                } catch (SVNClientException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    valid(ex.getLocalizedMessage());
+                    return;
+                }
+
+                try {
+                    SVNUrl repositoryUrl = repositoryPaths.getRepositoryUrl();
+                    SVNUrl repositoryFolderUrl = getRepositoryFolderUrl();
+                    try {
+                        client.mkdir(repositoryFolderUrl, getImportMessage());
+                    } catch (SVNClientException ex) {
+                        if(ExceptionHandler.isFileAlreadyExists(ex)) {
+                            // ignore
+                        } else {
+                            throw ex;
+                        }                        
+                    }
+                    if(isCanceled()) {
+                        return;
+                    }
+
+                    RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };
+                    File checkoutFile = new File(importDirectory.getAbsolutePath() + ".co");
+                    CheckoutAction.checkout(client, repositoryUrl, repositoryFile, checkoutFile, true, this);
+                    if(isCanceled()) {
+                        FileUtils.deleteRecursively(checkoutFile);
+                        return;
+                    }
+
+                    copyMetadata(checkoutFile, importDirectory);
+                    refreshRecursively(importDirectory);
+                    FileUtils.deleteRecursively(checkoutFile);
+                    if(isCanceled()) {                        
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn"));
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn"));
+                        refreshRecursively(importDirectory);
+                        return;
+                    }
+                } catch (SVNClientException ex) {
+                    ExceptionHandler eh = new ExceptionHandler(ex);
+                    eh.annotate();
+                    invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
+                }
+
+            } finally {
+                if(isCanceled()) {
+                    valid("Action cancelled by user.");
+                } else if(invalidMsg != null) {
+                    valid(invalidMsg);
+                } else {
+                    valid();
+                }
+            }
+        }            
+
+        public void setEditable(boolean editable) {
+            importPanel.browseRepositoryButton.setEnabled(editable);
+            importPanel.messageTextArea.setEditable(editable);
+            importPanel.repositoryPathTextField.setEditable(editable);
+        }
+
+        private void deleteDirectory(File file) {
+             File[] files = file.listFiles();
+             if(files !=null || files.length > 0) {
+                 for (int i = 0; i < files.length; i++) {
+                     if(files[i].isDirectory()) {
+                         deleteDirectory(files[i]);
+                     } else {
+                        files[i].delete();
+                     }
+                 }
+             }
+             file.delete();
+        }
+
+        private void refreshRecursively(File folder) {
+            if (folder == null) return;
+            refreshRecursively(folder.getParentFile());
+            Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        }
+
+        private void copyMetadata(File sourceFolder, File targetFolder) {
+            // XXX there is already somewhere a utility method giving the metadata file suffix - ".svn", "_svn", ...
+            FileUtils.copyDirFiles(new File(sourceFolder.getAbsolutePath() + "/.svn"), new File(targetFolder.getAbsolutePath() + "/.svn"), true);
+            targetFolder.setLastModified(sourceFolder.lastModified());
+            File[] files = sourceFolder.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                if(files[i].isDirectory() && !files[i].getName().equals(".svn")) {
+                    copyMetadata(files[i], new File(targetFolder.getAbsolutePath() + "/" + files[i].getName()));
+                } else {
+                    (new File(targetFolder.getAbsolutePath() + "/" + files[i].getName())).setLastModified(files[i].lastModified());
+                }
+            }
+        }
+    };
 }
 

@@ -39,6 +39,19 @@ import java.util.*;
  */
 public class CommitTable implements AncestorListener, TableModelListener {
 
+    public static String [] COMMIT_COLUMNS = new String [] {
+                                            CommitTableModel.COLUMN_NAME_NAME,
+                                            CommitTableModel.COLUMN_NAME_STATUS,
+                                            CommitTableModel.COLUMN_NAME_ACTION,
+                                            CommitTableModel.COLUMN_NAME_PATH
+                                        };
+
+    public static String [] IMPORT_COLUMNS = new String [] {
+                                            CommitTableModel.COLUMN_NAME_NAME,                                            
+                                            CommitTableModel.COLUMN_NAME_ACTION,
+                                            CommitTableModel.COLUMN_NAME_PATH
+                                        };
+    
     private CommitTableModel    tableModel;
     private JTable              table;
     private JComponent          component;
@@ -46,8 +59,8 @@ public class CommitTable implements AncestorListener, TableModelListener {
     private TableSorter sorter;
     private String[]    columns;
 
-    public CommitTable(JLabel label) {
-        tableModel = new CommitTableModel();
+    public CommitTable(JLabel label, String[] columns) {
+        tableModel = new CommitTableModel(columns);
         tableModel.addTableModelListener(this);
         sorter = new TableSorter(tableModel);
         table = new JTable(sorter);

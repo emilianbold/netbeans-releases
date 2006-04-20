@@ -70,7 +70,11 @@ public final class ImportWizard implements ChangeListener {
             {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks                
                 repositoryStep.stop();
+                importStep.stop();
             }            
+        } else if (value == WizardDescriptor.FINISH_OPTION) {
+            // must be initialized so we may retrieve the commitFiles in the ImportAcyion
+            importPreviewStep.setup();
         }
         return finnished;
     }    

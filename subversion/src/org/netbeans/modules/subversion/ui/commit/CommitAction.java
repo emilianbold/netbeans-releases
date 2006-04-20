@@ -56,7 +56,7 @@ public class CommitAction extends ContextAction {
 
         // show commit dialog
         CommitPanel panel = new CommitPanel();
-        CommitTable data = new CommitTable(panel.filesLabel);
+        CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS);
         SvnFileNode[] nodes;
         ArrayList nodesList = new ArrayList(files.length);
 

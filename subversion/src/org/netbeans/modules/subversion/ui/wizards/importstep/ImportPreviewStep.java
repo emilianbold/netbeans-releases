@@ -47,7 +47,8 @@ public class ImportPreviewStep extends AbstractStep {
         if (previewPanel == null) {
             previewPanel = new PreviewPanel();
 
-            table = new CommitTable(previewPanel.tableLabel);
+            table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS);
+            previewPanel.tableLabel.setText("Commit files");
             JComponent component = table.getComponent();
             previewPanel.tablePanel.setLayout(new BorderLayout());
             previewPanel.tablePanel.add(component, BorderLayout.CENTER);

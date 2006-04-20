@@ -66,13 +66,8 @@ class CommitTableModel extends AbstractTableModel {
      * Create stable with name, status, action and path columns
      * and empty nodes {@link #setNodes model}.
      */
-    public CommitTableModel() {
-        setColumns(new String [] {
-            COLUMN_NAME_NAME,
-            COLUMN_NAME_STATUS,
-            COLUMN_NAME_ACTION,
-            COLUMN_NAME_PATH
-        });
+    public CommitTableModel(String[] columns) {
+        setColumns(columns);
         setNodes(new SvnFileNode[0]);
     }
 
