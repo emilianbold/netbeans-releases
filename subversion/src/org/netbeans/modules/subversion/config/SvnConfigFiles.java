@@ -51,8 +51,6 @@ public class SvnConfigFiles {
         // copy config file        
         copyToIDEConfigDir();        
         // get the nb servers file merged with the systems servers files
-
-        // XXX this could be expensive - don't run in awt !!!
         servers = loadNetbeansIniFile("servers"); 
     }
 
@@ -246,19 +244,26 @@ public class SvnConfigFiles {
         return false;
     }
 
-    private void copyToIDEConfigDir () {
-        File file = FileUtil.normalizeFile(new File(getUserConfigPath() + "/config"));
-        File targetConfigFile = new File(getNBConfigDir() + "/" + "config");
-        targetConfigFile = FileUtil.normalizeFile(targetConfigFile);
+    private void copyToIDEConfigDir () {      
+        Ini config = loadSystemIniFile("config");
+
+        // patch store-auth-creds to "no"
+        Ini.Section auth = (Ini.Section)config.get("auth");
+        if(auth == null) {
+            auth = config.add("auth");
+        }
+        auth.put("store-auth-creds", "no");
+
+        File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/config"));
         try {
-            FileUtils.copyFile (file, targetConfigFile);
+            config.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }
     }
 
     private Ini loadNetbeansIniFile(String fileName) {
-        File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/" + fileName));        
+        File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/" + fileName));       
         Ini nbIni = null;
         try {
             file.createNewFile();
