@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,22 +17,18 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -40,7 +36,6 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -221,7 +216,7 @@ public final class TopLogging {
      */
     static Handler createStreamHandler (PrintStream pw) {
         StreamHandler s = new StreamHandler (
-            pw, NbFormater.FORMATTER
+            pw, NbFormatter.FORMATTER
         );
         return s;
     }
@@ -229,7 +224,7 @@ public final class TopLogging {
     private static java.util.logging.Handler streamHandler;
     private static synchronized java.util.logging.Handler streamHandler () {
         if (streamHandler == null) {
-            StreamHandler sth = new StreamHandler (OLD_ERR, NbFormater.FORMATTER);
+            StreamHandler sth = new StreamHandler (OLD_ERR, NbFormatter.FORMATTER);
             sth.setLevel(Level.ALL);
             streamHandler = new NonClose(sth, 500);
         }
@@ -258,9 +253,9 @@ public final class TopLogging {
                 
                 FileOutputStream fout = new FileOutputStream(f, false);
                 BufferedOutputStream bout = new BufferedOutputStream(fout);
-                Handler h = new StreamHandler(fout, NbFormater.FORMATTER);
+                Handler h = new StreamHandler(fout, NbFormatter.FORMATTER);
                 h.setLevel(Level.ALL);
-                h.setFormatter(NbFormater.FORMATTER);
+                h.setFormatter(NbFormatter.FORMATTER);
                 defaultHandler = new NonClose(h, 5000);
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -341,14 +336,14 @@ public final class TopLogging {
 
     /** Modified formater for use in NetBeans.
      */
-    private static final class NbFormater extends java.util.logging.Formatter {
+    private static final class NbFormatter extends java.util.logging.Formatter {
         private static String lineSeparator = System.getProperty ("line.separator"); // NOI18N
-        static java.util.logging.Formatter FORMATTER = new NbFormater ();
+        static java.util.logging.Formatter FORMATTER = new NbFormatter ();
 
         
         public String format(java.util.logging.LogRecord record) {
             String message = formatMessage(record);
-            if (message.indexOf('\n') != -1 && record.getThrown() == null) {
+            if (message != null && message.indexOf('\n') != -1 && record.getThrown() == null) {
                 // multi line messages print witout any wrappings
                 return message;
             }
@@ -356,8 +351,10 @@ public final class TopLogging {
             StringBuffer sb = new StringBuffer();
             sb.append(record.getLevel().getLocalizedName());
             addLoggerName (sb, record);
-            sb.append(": ");
-            sb.append(message);
+            if (message != null) {
+                sb.append(": ");
+                sb.append(message);
+            }
             sb.append(lineSeparator);
             if (record.getThrown() != null) {
                 try {
