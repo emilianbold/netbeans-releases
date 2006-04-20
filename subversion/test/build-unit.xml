@@ -11,7 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project basedir="." default="all" name="build-unit">
+<project basedir="." default="all" name="subversion/main/test-unit">
 
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
     <!--    Add this property to enable test debugging-->

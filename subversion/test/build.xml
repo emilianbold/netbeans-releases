@@ -12,16 +12,14 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="Subversion Tests" basedir="." default="all">
-
+<project name="subversion/main/test" basedir="." default="all">
     <!-- Name of tested module -->
     <property name="xtest.module" value="subversion/main"/>
-    
+ 
     <!-- Imports buildtests, cleantests, runtest, cleanresults, realclean, printconfig targets. -->
     <import file="../../../nbbuild/templates/xtest.xml"/>
-    
-     <!-- default testtypes, attributes and executors -->
-    <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="validation"/>
-    
+
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
+    <property name="xtest.testtype" value="unit"/>
+    <property name="xtest.attribs" value="stable,ide,validation"/>
 </project>
