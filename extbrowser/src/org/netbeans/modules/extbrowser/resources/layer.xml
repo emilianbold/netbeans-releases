@@ -8,11 +8,10 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
   <folder name="Services">
     <folder name="Browsers">
@@ -69,9 +68,9 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="IExplorerBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
       <attr name="FirefoxBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
 
-      <attr name="IExplorerBrowser.settings/MozillaBrowser.settings" boolvalue="true"/>
-      <attr name="MozillaBrowser.settings/FirefoxBrowser.settings" boolvalue="true"/>
-      <attr name="FirefoxBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
+      <attr name="IExplorerBrowser.settings/FirefoxBrowser.settings" boolvalue="true"/>
+      <attr name="FirefoxBrowser.settings/MozillaBrowser.settings" boolvalue="true"/>
+      <attr name="MozillaBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
 
       <!-- Other browsers order -->
       <attr name="SimpleExtBrowser.settings/SwingBrowser.ser" boolvalue="true"/>
