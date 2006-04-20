@@ -183,12 +183,14 @@ sub checkline {
             && ! m,/\*\*,
             && ! m,//.*",
             && ! m,get(Message|LocalizedFile),
-            && ! m,\. ?log\s*\(,
+            && ! m,\. ?(log|warning|fine|finer)\s*\(,
+            && ! m,\@SuppressWarnings\s*\(,
             && ! m,new HelpCtx\s*\(,
             && ! m,new PropertyDescriptor\s*\(,
             && ! m,setIconBase\s*\(,
             && ! m,loadImage\s*\(,
             && ! m,getResource(AsStream)?\s*\(,
+            && ! m,findResource ?\s*\(,
             && m,".+", 
            ); 
 }
