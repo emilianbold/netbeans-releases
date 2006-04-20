@@ -60,9 +60,11 @@ public class EnumEditor extends PropertyEditorSupport
     public String getAsText() {
         Object value = getValue();
         int n = enumerationValues.length / 3;
-        for (int i=0; i < n; i++)
-            if (enumerationValues[i*3 + 1].equals(value))
+        for (int i=0; i < n; i++) {
+            Object eVal = enumerationValues[i*3 + 1];
+            if ((eVal == null && value == null) || (eVal != null && eVal.equals(value)))
                 return enumerationValues[i*3].toString();
+        }
 
         return enumerationValues.length > 0 ?
                  enumerationValues[0].toString() : null;
@@ -73,11 +75,13 @@ public class EnumEditor extends PropertyEditorSupport
 
         Object value = getValue();
         int n = enumerationValues.length / 3;
-        for (int i=0; i < n; i++)
-            if (enumerationValues[i*3 + 1].equals(value)) {
+        for (int i=0; i < n; i++) {
+            Object eVal = enumerationValues[i*3 + 1];
+            if ((eVal == null && value == null) || (eVal != null && eVal.equals(value))) {
                 initString = (String) enumerationValues[i*3 + 2];
                 break;
             }
+        }
 
         if (initString == null)
             initString = enumerationValues.length > 2 ?
