@@ -27,10 +27,9 @@ public class SampleProjectLink extends HtmlTextLinkButton {
 
     /** Creates a new instance of SampleProjectLink */
     public SampleProjectLink( String category, String template, String title ) {
-        super( title );
+        super( title, true );
         this.category = category;
         this.template = template;
-        setIcon( BULLET_ICON );
     }
 
     public void actionPerformed( ActionEvent e ) {

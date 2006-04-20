@@ -147,13 +147,12 @@ class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
                                     new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
                         }
 
-                        WebLink linkButton = new WebLink( title, link );
+                        WebLink linkButton = new WebLink( title, link, true );
                         linkButton.setFont( HEADER_FONT );
                         linkButton.setForeground( HEADER_TEXT_COLOR );
-                        linkButton.setIcon( BULLET_ICON );
                         panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,1.0,
                                 GridBagConstraints.WEST,GridBagConstraints.BOTH,
-                                new Insets(0,0,2,TEXT_INSETS_RIGHT),0,0 ) );
+                                new Insets(0,3,2,TEXT_INSETS_RIGHT),0,0 ) );
 
 
                         if (description != null) {

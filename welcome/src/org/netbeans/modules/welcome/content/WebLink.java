@@ -24,12 +24,12 @@ public class WebLink extends HtmlTextLinkButton {
     private String url;
 
     /** Creates a new instance of WebLink */
-    public WebLink( String key ) {
-        this( BundleSupport.getLabel( key ), BundleSupport.getURL( key ) );
+    public WebLink( String key, boolean showBullet ) {
+        this( BundleSupport.getLabel( key ), BundleSupport.getURL( key ), showBullet );
     }
 
-    public WebLink( String label, String url ) {
-        super( label );
+    public WebLink( String label, String url, boolean showBullet ) {
+        super( label, showBullet );
         this.url = url;
     }
 

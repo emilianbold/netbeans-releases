@@ -122,9 +122,6 @@ public interface Constants {
 
     static final Border HEADER_TEXT_BORDER = BorderFactory.createEmptyBorder( 1, TEXT_INSETS_LEFT, 1, TEXT_INSETS_RIGHT );
 
-    static final Icon BULLET_ICON = new BulletIcon();
-
-
     static final int FEED_PANEL_MAX_WIDTH = 650;
     static final int FEED_PANEL_MIN_WIDTH = 200;
 }

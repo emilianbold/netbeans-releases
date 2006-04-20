@@ -90,7 +90,7 @@ public class Samples extends ContentPanel implements Constants {
         link.setForeground( HEADER_TEXT_COLOR );
         panel.add( link, new GridBagConstraints( 0, row++, 1, 1, 0.0, 0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                new Insets(row==1 ? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT-3,
+                new Insets(row==1 ? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,
                 0,TEXT_INSETS_RIGHT/2+UIManager.getInt("ScrollBar.width")), 0, 0 ) ); // NOI18N
     }
 
@@ -140,7 +140,7 @@ public class Samples extends ContentPanel implements Constants {
 
     private static class NewProjectButton extends HtmlTextLinkButton {
         public NewProjectButton() {
-            super( BundleSupport.getLabel( "NewProject" ) ); // NOI18N
+            super( BundleSupport.getLabel( "NewProject" ), false ); // NOI18N
             setFont( HEADER_FONT );
             setForeground( HEADER_TEXT_COLOR );
         }

@@ -24,8 +24,8 @@ public class LinkButton extends HtmlTextLinkButton {
 
     private Action action;
 
-    public LinkButton( Action a ) {
-        this( a.getValue( Action.NAME ).toString() );
+    public LinkButton( Action a, boolean showBullet ) {
+        this( a.getValue( Action.NAME ).toString(), showBullet );
         this.action = a;
         Object icon = a.getValue( Action.SMALL_ICON );
         if( null != icon && icon instanceof Icon )
@@ -35,8 +35,8 @@ public class LinkButton extends HtmlTextLinkButton {
             setToolTipText( tooltip.toString() );
     }
 
-    public LinkButton( String label ) {
-        super( label );
+    public LinkButton( String label, boolean showBullet ) {
+        super( label, showBullet );
     }
 
     public void actionPerformed(ActionEvent e) {

@@ -36,7 +36,7 @@ public class Blogs extends RSSFeedReaderPanel {
     }
 
     protected JComponent buildBottomContent() {
-        WebLink allBlogs = new WebLink( "AllBlogs" ); // NOI18N
+        WebLink allBlogs = new WebLink( "AllBlogs", false ); // NOI18N
         allBlogs.setFont( HEADER_FONT );
         allBlogs.setForeground( HEADER_TEXT_COLOR );
 
