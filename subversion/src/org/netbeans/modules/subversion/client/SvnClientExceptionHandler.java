@@ -88,7 +88,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             adapter.setUsername(repository.getUserName());
             adapter.setPassword(repository.getPassword());
 
-            // XXX here should be handled the proxy setting - the whole thing is a mess, its a wonder it works at all ...
+            repository.storeConfigValues();
         }        
         return ret;
     }
