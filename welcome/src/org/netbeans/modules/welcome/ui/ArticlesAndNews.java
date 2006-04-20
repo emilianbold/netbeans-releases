@@ -21,6 +21,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.autoupdate.Settings;
 import org.netbeans.modules.welcome.WelcomeComponent;
+import org.netbeans.modules.welcome.content.BundleSupport;
+import org.netbeans.modules.welcome.content.CombinationRSSFeed;
+import org.netbeans.modules.welcome.content.RSSFeed;
 import org.netbeans.modules.welcome.content.RSSFeedReaderPanel;
 import org.netbeans.modules.welcome.content.WebLink;
 import org.openide.windows.WindowManager;
@@ -45,7 +48,9 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
                 url +=  "?unique=" + ideId; // NOI18N
             }
         }
-        return super.buildContent( url );
+        RSSFeed feed = new CombinationRSSFeed( url, BundleSupport.getURL("News") ); // NOI18N
+        feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
+        return feed;
     }
 
     protected JComponent buildBottomContent() {

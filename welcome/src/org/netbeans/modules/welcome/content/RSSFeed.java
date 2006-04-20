@@ -46,9 +46,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
+public class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
     
-    private static final int NEWS_COUNT = 10;
+    protected static final int NEWS_COUNT = 10;
     private static final String RSS_FEED = "RSSFeed"; // NOI18N
     private static final String HTML_VIEWER = "HTMLViewer"; // NOI18N
     
@@ -72,6 +72,10 @@ class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
         setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
 
         HttpProxySettings.getDefault().addPropertyChangeListener( this );
+    }
+    
+    RSSFeed() {
+        this( null );
     }
     
     private void setContent( Component content ) {
@@ -205,7 +209,7 @@ class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
         }
     }
     
-    protected String getTextContent(Node node) {
+    protected static String getTextContent(Node node) {
         Node child = node.getFirstChild();
         if( null == child )
             return null;
