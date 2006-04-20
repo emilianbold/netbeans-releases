@@ -26,16 +26,17 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.OutputLogger;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientDescriptor;
+import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
-import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -60,18 +61,11 @@ public class RepositoryStep
     private Repository repository;        
     private RepositoryStepPanel panel;    
 
-    private JLabel progressLabel;
-    private ProgressHandle progress;
-    private JComponent progressComponent;           
-    private Thread backgroundValidationThread;
-
     private RepositoryFile repositoryFile;    
 
     private boolean acceptRevision;
 
-    private String invalidMsg;
-
-    private SvnClient client;
+    private WizardStepProgressSupport support;
 
     public RepositoryStep(boolean acceptRevision) {
         this.acceptRevision = acceptRevision;
@@ -94,150 +88,20 @@ public class RepositoryStep
     }
 
     protected void validateBeforeNext() {    
-        final Repository.SelectedRepository selectedRepository = getSelectedRepository();
-        if (selectedRepository==null) {
-            validationDone();
-            return;
-        }
-        
-        backgroundValidationThread = Thread.currentThread();
         try {
-            invalid(null);
-            invalidMsg = null;
-            
-            try {
-                ProxyDescriptor pd = SvnConfigFiles.getInstance().getProxyDescriptor(selectedRepository.getUrl().getHost());
-                client = Subversion.getInstance().getClient(selectedRepository.getUrl(),
-                                                            pd,
-                                                            repository.getUserName(),
-                                                            repository.getPassword());
-            } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ex);
-                invalid(ex.getLocalizedMessage());
-                validationDone();
-                client = null;
-                return;
-           }
-
-            repositoryFile = null; // reset
-
-            storeConfigValues();
-
-            ISVNInfo info = null;                
-            try {      
-                info = client.getInfo(selectedRepository.getUrl());                                                                                                        
-            } catch (SVNClientException ex) {
-                ExceptionHandler eh = new ExceptionHandler(ex);
-                eh.annotate();
-                invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
-            } finally {
-               client = null;
-            }
-
-            if(info != null) {                    
-                SVNUrl repositoryUrl = info.getRepository();
-                if(repositoryUrl==null) {
-                    // XXX see issue #72810 and #72921. workaround! 
-                    repositoryUrl = selectedRepository.getUrl();                        
-                }
-                SVNRevision revision = selectedRepository.getRevision();                                   
-                String[] repositorySegments = repositoryUrl.getPathSegments();
-                String[] selectedSegments = selectedRepository.getUrl().getPathSegments();
-                String[] repositoryFolder = new String[selectedSegments.length - repositorySegments.length];
-                System.arraycopy(selectedSegments, repositorySegments.length, 
-                                 repositoryFolder, 0, 
-                                 repositoryFolder.length);
-                try {                        
-                    repositoryFile = new RepositoryFile(repositoryUrl, repositoryFolder, revision);                                                                                                        
-                } catch (MalformedURLException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
-                }
-            } else {
-                invalidMsg = "No information available for :" + selectedRepository.getUrl();
-                return;
+            if(support != null) {
+                support.performInCurrentThread(NbBundle.getMessage(RepositoryStep.class, "BK2012"));
             }
         } finally {
-            backgroundValidationThread = null;
-            if(invalidMsg == null) {
-              valid();
-              storeHistory();
-            } else {
-              valid(invalidMsg);
-            }
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    validationDone();
-                }
-            });
-        }    
+            support = null;
+        }
     }
     
     public void prepareValidation() {
-        progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryStep.class, "BK2012")); // NOI18N
-        JComponent bar = ProgressHandleFactory.createProgressComponent(progress);
-        JButton stopButton = new JButton(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2022")); // NOI18N
-        stopButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                stop();
-            }
-        });
-        progressComponent = new JPanel();
-        progressComponent.setLayout(new BorderLayout(6, 0));
-        progressLabel = new JLabel();
-        progressComponent.add(progressLabel, BorderLayout.NORTH);
-        progressComponent.add(bar, BorderLayout.CENTER);
-        progressComponent.add(stopButton, BorderLayout.LINE_END);
-        progress.start(/*2, 5*/);
-        panel.progressPanel.setVisible(true);
-        panel.progressPanel.add(progressComponent, BorderLayout.SOUTH);
-        panel.progressPanel.revalidate();
-
-        setEditable(false);
-
-        OutputLogger logger = new OutputLogger(); // XXX to use the logger this way is a hack
-        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + this.getClass().getName() + ".prepareValidation()");
-    }
-
-    public void stop() {
-        if (backgroundValidationThread != null) {
-            backgroundValidationThread.interrupt();
-            invalidMsg = "Action cancelled by user.";
-            if(client != null) {
-                try {
-                    client.cancelOperation(); 
-                } catch (SVNClientException ex) {
-                    ExceptionHandler eh = new ExceptionHandler(ex); 
-                    eh.annotate();
-                }
-            }
-        }
+        support = new RepositoryStepProgressSupport(panel.progressPanel);
+        support.startProgress();
     }
     
-    private void progress(String message) {
-        if (progressLabel != null) {
-            progressLabel.setText(message);
-        }
-    }
-
-    private void validationDone() {
-        progress.finish();
-        panel.progressPanel.remove(progressComponent);
-        panel.progressPanel.revalidate();
-        panel.progressPanel.repaint();
-        panel.progressPanel.setVisible(false);
-        setEditable(true);
-
-        OutputLogger logger = new OutputLogger(); // XXX to use the logger this way is a hack
-        if(isValid()) {
-            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + this.getClass().getName() + ".validationDone() - finnished");
-        } else {
-            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + this.getClass().getName() + ".validationDone() - finnished with error");
-        }
-    }
-    
-    private void setEditable(boolean editable) {
-        repository.setEditable(editable);        
-    }
         
     void storeConfigValues() {
         repository.storeConfigValues();        
@@ -269,6 +133,98 @@ public class RepositoryStep
             }
         }
     }
+
+    public void stop() {
+        if(support != null) {
+            support.cancel();
+        }
+    }
+
+    private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
+
+        public RepositoryStepProgressSupport(JPanel panel) {
+            super(panel);
+        }
+
+        public void perform() {
+            final Repository.SelectedRepository selectedRepository = getSelectedRepository();
+            if (selectedRepository == null) {
+                return;
+            }
+            String invalidMsg = null;
+            try {
+                invalid(null);                
+
+                SvnClient client;
+                try {
+                    ProxyDescriptor pd = SvnConfigFiles.getInstance().getProxyDescriptor(selectedRepository.getUrl().getHost());
+                    client = Subversion.getInstance().getClient(selectedRepository.getUrl(),
+                                                                pd,
+                                                                repository.getUserName(),
+                                                                repository.getPassword());
+                } catch (SVNClientException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    invalidMsg = ex.getLocalizedMessage();
+                    return;
+                }
+
+                repositoryFile = null; // reset
+
+                storeConfigValues();
+                if(isCanceled()) {
+                    return;
+                }
+
+                ISVNInfo info = null;
+                try {
+                    info = client.getInfo(selectedRepository.getUrl());
+                } catch (SVNClientException ex) {
+                    ExceptionHandler eh = new ExceptionHandler(ex);
+                    eh.annotate();
+                    invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
+                } 
+                if(isCanceled()) {
+                    return;
+                }
+
+                if(info != null) {
+                    SVNUrl repositoryUrl = info.getRepository();
+                    if(repositoryUrl==null) {
+                        // XXX see issue #72810 and #72921. workaround!
+                        repositoryUrl = selectedRepository.getUrl();
+                    }
+                    SVNRevision revision = selectedRepository.getRevision();
+                    String[] repositorySegments = repositoryUrl.getPathSegments();
+                    String[] selectedSegments = selectedRepository.getUrl().getPathSegments();
+                    String[] repositoryFolder = new String[selectedSegments.length - repositorySegments.length];
+                    System.arraycopy(selectedSegments, repositorySegments.length,
+                                     repositoryFolder, 0,
+                                     repositoryFolder.length);
+                    try {
+                        repositoryFile = new RepositoryFile(repositoryUrl, repositoryFolder, revision);
+                    } catch (MalformedURLException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+                    }
+                } else {
+                    invalidMsg = "No information available for :" + selectedRepository.getUrl();
+                    return;
+                }
+            } finally {
+                if(isCanceled()) {
+                    valid("Action canceled by user");
+                } else if(invalidMsg == null) {
+                  valid();
+                  storeHistory();
+                } else {
+                  valid(invalidMsg);
+                }                
+            }
+        }
+
+        public void setEditable(boolean editable) {
+            repository.setEditable(editable);        
+        }        
+    };
 
 }
 
