@@ -33,6 +33,7 @@ import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ModuleSystem;
 import org.netbeans.core.startup.layers.SessionManager;
+import org.netbeans.core.ui.SwingBrowser;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -458,6 +459,10 @@ public abstract class NbTopManager {
         public NbBrowser() {
             IDESettings settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
             HtmlBrowser.Factory browser = settings.getWWWBrowser();
+            if (browser == null) {
+                // Fallback.
+                browser = new SwingBrowser();
+            }
             // try if an internal browser is set and possibly try to reuse an 
             // existing component
             if (browser.createHtmlBrowserImpl().getComponent() != null) {
