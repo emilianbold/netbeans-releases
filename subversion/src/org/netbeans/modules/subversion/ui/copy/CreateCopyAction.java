@@ -68,12 +68,12 @@ public class CreateCopyAction extends ContextAction {
 
         final CreateCopy createCopy = new CreateCopy(repositoryRoot, root.getName(), isChanged);
         if(createCopy.showDialog()) {
-            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this,  createRequestProcessor(nodes), nodes) {
+            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this,  nodes) {
                 public void perform() {
                     performCopy(createCopy, repositoryRoot, root, this);
                 }
             };
-            support.start();
+            support.start(createRequestProcessor(nodes));
         }
     }
 

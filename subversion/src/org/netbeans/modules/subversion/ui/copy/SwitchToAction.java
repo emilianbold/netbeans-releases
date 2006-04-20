@@ -71,14 +71,14 @@ public class SwitchToAction extends ContextAction {
      
         final SwitchTo switchTo = new SwitchTo(repositoryRoot, root);
         if(switchTo.showDialog()) {
-            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
                 public void perform() {
                     RepositoryFile repository = switchTo.getRepositoryFile();
                     boolean replaceModifications = switchTo.replaceModifications();
                     performSwitch(repository, replaceModifications, repositoryRoot, root, this);
                 }
             };
-            support.start();
+            support.start(createRequestProcessor(nodes));
         }        
     }
 

@@ -286,14 +286,13 @@ public abstract class ContextAction extends NodeAction {
         private final Node[] nodes;
         private long progressStamp;
 
-        public ProgressSupport(ContextAction action, RequestProcessor rp, Node[] nodes) {
-            super(rp);
+        public ProgressSupport(ContextAction action, Node[] nodes) {
             this.action = action;
             this.nodes = nodes;
         }
 
-        public RequestProcessor.Task start() {
-            return start(action.getRunningName(nodes));
+        public RequestProcessor.Task start(RequestProcessor  rp) {
+            return start(rp, action.getRunningName(nodes));
         }
 
         public abstract void perform();

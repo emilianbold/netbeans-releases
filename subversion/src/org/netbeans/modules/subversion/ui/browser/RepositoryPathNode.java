@@ -200,7 +200,7 @@ public class RepositoryPathNode extends AbstractNode {
 
         public void listRepositoryPath() {
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(pathEntry.getRepositoryFile().getRepositoryUrl());
-            SvnProgressSupport support = new SvnProgressSupport(rp) {
+            SvnProgressSupport support = new SvnProgressSupport() {
                 public void perform() {
                     try {
                         Collection cl = client.listRepositoryPath(pathEntry, this);
@@ -218,7 +218,7 @@ public class RepositoryPathNode extends AbstractNode {
                     }
                 }
             };
-            support.start(org.openide.util.NbBundle.getMessage(Browser.class, "BK2001"));
+            support.start(rp, org.openide.util.NbBundle.getMessage(Browser.class, "BK2001"));
         }
 
         private static Node errorNode(Exception ex) {

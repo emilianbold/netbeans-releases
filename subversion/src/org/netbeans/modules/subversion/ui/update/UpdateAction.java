@@ -56,7 +56,7 @@ public class UpdateAction extends ContextAction {
         final File[] roots = ctx.getRootFiles();
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
 
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
 
                 ISVNClientAdapter client;
@@ -100,7 +100,7 @@ roots_loop:
         
             }
         };            
-        support.start();
+        support.start(createRequestProcessor(nodes));
     }
 
 }

@@ -87,12 +87,12 @@ public class CommitAction extends ContextAction {
 
             SVNUrl repository = getSvnUrl(ctx);
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-            SvnProgressSupport support = new SvnProgressSupport(rp) {
+            SvnProgressSupport support = new SvnProgressSupport() {
                 public void perform() {                    
                     performCommit(message, commitFiles, ctx, this);
                 }
             };
-            support.start("Comitting...");
+            support.start(rp, "Comitting...");
         }
 
         // if OK setup sequence of add, remove and commit calls

@@ -43,7 +43,7 @@ public final class CheckoutAction extends CallableSystemAction {
         final File file = wizard.getWorkdir();        
         
         String displayName = org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001");
-        SvnProgressSupport support = new SvnProgressSupport(Subversion.getInstance().getRequestProcessor(repository)) {
+        SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
                 final SvnClient client;
                 try {
@@ -87,7 +87,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
             }
         };
-        support.start("checkout");
+        support.start(Subversion.getInstance().getRequestProcessor(repository), "checkout");
 
     }
     

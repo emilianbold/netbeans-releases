@@ -43,12 +43,12 @@ public class RevertModificationsAction extends ContextAction {
 
     protected void performContextAction(final Node[] nodes) {
         final Context ctx = getContext(nodes);
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
                 performRevert(ctx, this);
             }
         };            
-        support.start();
+        support.start(createRequestProcessor(nodes));
     }
 
     /** Recursive revert */

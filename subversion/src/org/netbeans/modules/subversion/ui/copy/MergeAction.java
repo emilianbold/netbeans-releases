@@ -64,12 +64,12 @@ public class MergeAction extends ContextAction {
      
         final Merge merge = new Merge(repositoryRoot, root);           
         if(merge.showDialog()) {
-            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
                 public void perform() {
                     performMerge(merge, repositoryRoot, root, this);
                 }
             };
-            support.start();
+            support.start(createRequestProcessor(nodes));
         }        
     }
 

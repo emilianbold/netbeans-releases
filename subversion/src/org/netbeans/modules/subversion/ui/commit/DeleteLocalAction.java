@@ -61,12 +61,12 @@ public final class DeleteLocalAction extends ContextAction {
         }
         
         final Context ctx = getContext(nodes);
-        ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+        ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
                 performDelete(ctx, this);
             }
         };
-        support.start();        
+        support.start(createRequestProcessor(nodes));        
     }
     
     public static void performDelete(Context ctx, SvnProgressSupport support) {

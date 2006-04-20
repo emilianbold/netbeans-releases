@@ -66,7 +66,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
     }
 
     public void performContextAction(final Node[] nodes) {
-        ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+        ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
                 SvnModuleConfig config = SvnModuleConfig.getDefault();
                 int status = getActionStatus(nodes);
@@ -90,7 +90,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
                 }
             }
         };
-        support.start();
+        support.start(createRequestProcessor(nodes));
     }
 
 }

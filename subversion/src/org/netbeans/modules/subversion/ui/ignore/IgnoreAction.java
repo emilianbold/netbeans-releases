@@ -111,7 +111,7 @@ public class IgnoreAction extends ContextAction {
 
         final File files[] = SvnUtils.getCurrentContext(nodes).getFiles();
         final int actionStatus = getActionStatus(nodes);
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
 
                 SvnClient client = Subversion.getInstance().getClient();               
@@ -144,7 +144,7 @@ public class IgnoreAction extends ContextAction {
                 }
             }
         };            
-        support.start();
+        support.start(createRequestProcessor(nodes));
     }
 
     protected boolean asynchronous() {

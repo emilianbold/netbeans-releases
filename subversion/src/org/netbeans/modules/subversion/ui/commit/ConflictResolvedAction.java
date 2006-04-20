@@ -39,7 +39,7 @@ public class ConflictResolvedAction extends ContextAction {
         final Context ctx = getContext(nodes);
         final File[] files = ctx.getFiles();
 
-        ProgressSupport support = new ContextAction.ProgressSupport(this, createRequestProcessor(nodes), nodes) {
+        ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
 
                 SvnClient client = null;
@@ -63,7 +63,7 @@ public class ConflictResolvedAction extends ContextAction {
                 }
             }
         };
-        support.start();        
+        support.start(createRequestProcessor(nodes));        
     }
 
 

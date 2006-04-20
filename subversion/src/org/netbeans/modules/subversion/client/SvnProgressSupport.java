@@ -31,17 +31,12 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     private Cancellable delegate; 
     private boolean canceled;
     private Thread interruptibleThread;
-
-    private final RequestProcessor rp;
+    
     private ProgressHandle progressHandle = null;    
     private String displayName = "";
     private String originalDisplayName = "";
     
-    public SvnProgressSupport(RequestProcessor rp) {
-        this.rp = rp;        
-    }
-
-    public RequestProcessor.Task start(String displayName) {
+    public RequestProcessor.Task start(RequestProcessor rp, String displayName) {
         setDisplayName(displayName);
         return rp.post(this);        
     }

@@ -314,12 +314,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     private void onUpdateAction() {
         SVNUrl repository = CommitAction.getSvnUrl(context);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport(rp) {
+        SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {                
                 executeUpdate(this);
             }            
         };
-        support.start("Updating...");        
+        support.start(rp, "Updating...");
     }
     
     /**
@@ -348,13 +348,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
 
         SVNUrl repository = CommitAction.getSvnUrl(context);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport(rp) {
+        SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {                
                 executeStatus(this);
                 setupModels();
             }            
         };
-        onRefreshTask = support.start("Refreshing...");
+        onRefreshTask = support.start(rp, "Refreshing...");
         return onRefreshTask;
     }
 

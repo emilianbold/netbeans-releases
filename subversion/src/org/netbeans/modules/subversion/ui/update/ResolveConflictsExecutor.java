@@ -54,12 +54,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     private final File file;
 
     public ResolveConflictsExecutor(File file) {
-        super(null);
-        this.file = file;
-    }
-
-    public ResolveConflictsExecutor(File file, RequestProcessor rp) {
-        super(rp);
+        super();
         this.file = file;
     }
 
