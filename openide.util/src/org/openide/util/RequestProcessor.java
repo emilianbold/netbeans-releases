@@ -50,7 +50,7 @@ import org.openide.ErrorManager;
  *  </PRE>
  *  <STRONG>Note:</STRONG> Please think twice before implementing some periodic
  *  background activity. It is generally considered evil if it will run
-    regardless of user actions and the IDE state, even while the application
+    regardless of user actions and the application state, even while the application
     is minimized / not currently used.
  * <LI>Having something done in some other thread but properly ordered:
  *  Create a private instance of the
@@ -68,7 +68,7 @@ import org.openide.ErrorManager;
  * <STRONG>Note:</STRONG> If you don't need to serialize your requests but
  * you're generating them in bursts, you should use your private
  * <CODE>RequestProcessor</CODE> instance with limited throughput (probably
- * set to 1), the IDE would try to run all your requests in parallel otherwise.
+ * set to 1), NetBeans would try to run all your requests in parallel otherwise.
  *
  * <P>
  * Since version 6.3 there is a conditional support for interruption of long running tasks.

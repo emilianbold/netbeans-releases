@@ -1,15 +1,15 @@
 <!--
-   -                 Sun Public License Notice
-   - 
-   - The contents of this file are subject to the Sun Public License
-   - Version 1.0 (the "License"). You may not use this file except in
-   - compliance with the License. A copy of the License is available at
-   - http://www.sun.com/
-   - 
-   - The Original Code is NetBeans. The Initial Developer of the Original
-   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
-   - Microsystems, Inc. All Rights Reserved.
-  -->
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 
 <html>
 <head>
@@ -88,7 +88,7 @@ features.</p>
 <h2><a name="node-intro">What is a Node?</a></h2>
 
 A node provides the visual representation and apparent behavior of
-most objects in the IDE. It may be used to represent a data object
+most objects in NetBeans. It may be used to represent a data object
 from the Datasystems API (and provide a more UI-friendly wrapper
 around that data object), or it may be created separately for a
 special purpose. For example, every icon displayed in the Explorer is
@@ -104,7 +104,7 @@ data.
 <h3><a name="javabean-intro">JavaBeans and nodes</a></h3>
 
 A node is a sort of extension to the JavaBeans concept, adding some
-features that were necessary for the full functioning of the IDE. Some
+features that were necessary for the full functioning of explorer views. Some
 key components that were missing from the
 
 <a href="http://java.sun.com/beans/docs/spec.html">JavaBeans specification</a>:
@@ -116,10 +116,10 @@ key components that were missing from the
 <a href="@JDK@/java/beans/beancontext/package-summary.html">Bean Context API</a>
 
 provides basic support for hierarchies of Beans in a tree structure,
-but not enough to handle the requirements of the IDE, such as special
+but not enough to handle the requirements of NetBeans, such as special
 support for various kinds of child containment policies.
 
-<li>Cookies, actions, and other IDE-specific interfaces are better
+<li>Cookies, actions, and other NetBeans-specific interfaces are better
 placed as direct Java-level API requirements, rather than always
 needing to use casts or introspection to determine their availability.
 
@@ -149,12 +149,9 @@ Using the
 
 <a href="@org-openide-explorer@/org/openide/explorer/doc-files/api.html">Explorer API</a>,
 
-the IDE (or any module) can create a variety of different
+you can create a variety of different
 <em>presentations</em> for any tree or subtree of the Nodes
-hierarchy. As an example, the node tree representing the system
-Templates folder in the IDE can be viewed in the Explorer just like
-any other file folder; but the same nodes are used in a different
-presentation in the dialog for creating a new object from template.
+hierarchy.
 
 <p>The Explorer interactions with nodes include actions that the node
 provides (generally available in a right-click context menu);
@@ -164,8 +161,8 @@ support, as well as reordering of children, deletion, and creation of
 new children; displayable names and icons, which may be sensitive to
 the state of the node; and so on.
 
-<p>Importantly, nodes are not dead data - they are live components of
-the IDE. So, actions taken in one part of the system will frequently
+<p>Importantly, nodes are not dead data - they are live components.
+So, actions taken in one part of the system will frequently
 cause open Explorer views to refresh to display the new node structure
 (for example, after pasting a component onto a form); and conversely,
 actions that seem natural to do in the Explorer will usually be
@@ -206,8 +203,8 @@ case, the node's actual behaviors and properties would literally be
 the same as those of the JavaBean. The Bean would not generally be
 stored in a user filesystem, and its node may be present anywhere.
 
-<li>System settings in the Control Panel. These are used for their
-property sheets, which dynamically modify aspects of the IDE's
+<li>Settings in the (old) Advanced Options. These are used for their
+property sheets, which dynamically modify aspects of NetBeans'
 behavior and persist across sessions.
 
 <li>The Component Palette - the list of tabs, and the components on
@@ -227,7 +224,7 @@ project's operation, such as a build procedure.
 
 The point is that most aspects of UI integration can be handled well
 with appropriate use of nodes; modules which use them to good effect
-will blend into the rest of IDE naturally from a user's perspective,
+will blend into the rest of NetBeans naturally from a user's perspective,
 and probably be easier to write as well.
 
 </div>
@@ -452,7 +449,7 @@ and
 <a href="../Node.html#hasCustomizer()"><code>Node.hasCustomizer()</code></a>
 
 turned on. The exact way in which the customizer will be displayed is
-determined by the IDE, but typically it will be popped up in a dialog
+determined by NetBeans, but typically it will be popped up in a dialog
 or non-modal window; it should be tied to the node's properties
 however appropriate.
 
@@ -1058,7 +1055,7 @@ could have permitted strings from the clipboard to be pasted onto it,
 performing some action of its choice.
 
 <p>If the node winds up having multiple paste types available at once,
-the IDE may display all of them, say in a submenu. They will be
+NetBeans may display all of them, say in a submenu. They will be
 displayed in the same order as they were added.
 
 <li>Since <code>AbstractNode</code> by default just looks for the secret data

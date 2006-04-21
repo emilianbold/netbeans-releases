@@ -251,7 +251,7 @@ public final class Utilities {
         return activeReferenceQueue;
     }
 
-    /** Get the operating system on which the IDE is running.
+    /** Get the operating system on which NetBeans is running.
     * @return one of the <code>OS_*</code> constants (such as {@link #OS_WINNT})
     */
     public static final int getOperatingSystem() {
@@ -304,14 +304,14 @@ public final class Utilities {
         return operatingSystem;
     }
 
-    /** Test whether the IDE is running on some variant of Windows.
+    /** Test whether NetBeans is running on some variant of Windows.
     * @return <code>true</code> if Windows, <code>false</code> if some other manner of operating system
     */
     public static final boolean isWindows() {
         return (getOperatingSystem() & OS_WINDOWS_MASK) != 0;
     }
 
-    /** Test whether the IDE is running on some variant of Unix.
+    /** Test whether NetBeans is running on some variant of Unix.
     * Linux is included as well as the commercial vendors.
     * @return <code>true</code> some sort of Unix, <code>false</code> if some other manner of operating system
     */

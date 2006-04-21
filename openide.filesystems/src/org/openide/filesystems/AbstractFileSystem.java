@@ -7,13 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.filesystems;
 
-import org.openide.util.SharedClassObject;
-import org.openide.util.actions.SystemAction;
+package org.openide.filesystems;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,15 +20,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
-
+import org.openide.util.SharedClassObject;
+import org.openide.util.actions.SystemAction;
 
 /**
  * This convenience implementation does much of the hard work of
@@ -71,7 +68,7 @@ import java.util.StringTokenizer;
  *
  * <p>It also specifies the raw implementation of two basic types of actions: getting input and output streams
  * for the file; and locking and unlocking it physically (optional and not to be confused with locking within
- * the IDE).
+ * NetBeans).
  *
  * <h4>Change member</h4>
  *
@@ -80,13 +77,13 @@ import java.util.StringTokenizer;
  *
  * <h4>Attribute member</h4>
  *
- * {@link #attr} is an {@link AbstractFileSystem.Attr} allowing the IDE to read and write serializable
+ * {@link #attr} is an {@link AbstractFileSystem.Attr} allowing NetBeans to read and write serializable
  * attributes (meta-information) to be associated with the file. Such attributes are not much used any more, but
  * they are occasionally.
  *
  * <p>There is a default implementation in {@link DefaultAttributes} which stores attributes in a file called
  * <code>.nbattrs</code> in each folder for which a file has some attributes, using XML augmented by Java
- * serialization, though the regular filesystems in the IDE now instead store all attributes globally in
+ * serialization, though the regular filesystems in NetBeans now instead store all attributes globally in
  * <code>$userdir/var/attributes.xml</code>. If you do use <code>DefaultAttributes</code>, use it not only for
  * {@link #attr} but also for {@link #list} (passing in a separate private {@link AbstractFileSystem.List}
  * implementation to its constructor) in order to filter the <code>.nbattrs</code> files from view.
@@ -688,7 +685,7 @@ public abstract class AbstractFileSystem extends FileSystem {
 
         /** Lock the file.
         * May do nothing if the underlying storage does not support locking.
-        * This does not affect locking using {@link FileLock} within the IDE, however.
+        * This does not affect locking using {@link FileLock} within NetBeans, however.
         * @param name name of the file
         * @throws FileAlreadyLockedException if the file is already locked
         */

@@ -1,16 +1,15 @@
 <!--
-   -                 Sun Public License Notice
-   - 
-   - The contents of this file are subject to the Sun Public License
-   - Version 1.0 (the "License"). You may not use this file except in
-   - compliance with the License. A copy of the License is available at
-   - http://www.sun.com/
-   - 
-   - The Original Code is NetBeans. The Initial Developer of the Original
-   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
-   - Microsystems, Inc. All Rights Reserved.
-  -->
+               Sun Public License Notice
 
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <html>
 <head>
 <title>Window System API</title>
@@ -97,12 +96,12 @@ As a rule, modules should not create their own top-level windows
 
 <a href="@JDK@/java/awt/Window.html"><code>java.awt.Window</code></a>),
 
-since these would exist without the knowledge of the IDE's window
+since these would exist without the knowledge of NetBeans' window
 manager. This window manager is capable of manipulating application
 windows and panels, including docking and undocking them into
 tabbed frames, and making the window configuration persistent across
 sessions. Well-behaved modules will use the API so as to integrate
-nicely into the feel of the rest of the IDE.
+nicely into the feel of the rest of the application.
 
 <h3><a name="overview-top">Top components and docking</a></h3>
 
@@ -113,7 +112,7 @@ has to be <em>docked</em>, in order to be manipulated by window system.
 If the <em>top component</em> isn't <em>docked</em> it can be used as an
 ordinary Swing JComponent, e.g by adding it another container (possibly
 <em>docked top component</em>) without window system knowledge about it.
-Almost everything visible in the IDE is a top component, except the Main Window
+Almost everything visible in NetBeans is a top component, except the Main Window
 (which is treated specially because of its centrality), and dialog
 boxes.
 
@@ -128,7 +127,7 @@ may provide special actions in this list as well.
 <p>At any given time, one top component is <em>active</em>. It will
 be the last docked top component containing focus, and of course will
 be in the selected tab. This component serves as the base for a number
-of things in the IDE; for example, the <em>current node
+of things in NetBeans; for example, the <em>current node
 selection</em> is controlled by the active component.
 
 <h3><a name="overview-clone">Cloning</a></h3>
@@ -142,7 +141,7 @@ with the effect that the same file will be open in each view.
 
 <h3><a name="overview-group">Groups</a></h3>
 
-The IDE starts off with the groups "form", "debugger", etc.
+NetBeans starts off with the groups "form", "debugger", etc.
 to group windows according to their expected
 applicability. The groups manage opening and closing of top components belonging
 to the group accodring the user work flow. User can influence which of the top
@@ -150,7 +149,7 @@ component should be opened at the group opening, or remamained opened at the
 group closing etc. The group is usualy opened/closed when user starts/finishes
 some specific taks, like GUI editing and debugging.
 
-<p>The IDE tries to save the current window configuration when it
+<p>NetBeans tries to save the current window configuration when it
 exits, including the positions of all modes, the arrangement of
 modes, and the components present in each mode; and grouos, their state; and
 then restore this configuration when next started.
@@ -376,7 +375,7 @@ delegate, which is usually the intuitive behavior as well.
 If you are writing a top component with a complex configuration or
 other instance state not associated with a data object, you may
 want to specially support its serialization, so that the same
-configuration will be restored after IDE
+configuration will be restored after NetBeans
 restart. This is not difficult to do; you just need to hook into
 the externalization methods of <code>TopComponent</code>:
 
@@ -467,10 +466,10 @@ pertaining to the Window System. You must save the icon yourself,
 though most users will set the icon in the constructor. Remember
 that a <code>TopComponent</code> must have a <strong>default
 constructor</strong> in order to be deserialized. In older versions of
-the IDE this needed to be public; this is no longer necessary.
+NetBeans this needed to be public; this is no longer necessary.
 
 <p>Persistent singleton implementations (i.e. where only one instance of the class
-should exist in the IDE) are possible; just remember to assign the default
+should exist in NetBeans) are possible; just remember to assign the default
 instance both in the default constructor, and also in the <code>readResolve</code>
 method. To force deserialization of singleton instance by window system method
 <code>WindowManager.findTopComponent(String)</code> must be used. Pass unique TopComponent
@@ -510,7 +509,7 @@ TopComponent subclass by overriding API method <code>TopComponent.getPersistence
 
 <dd>The system will not try to serialize your component. Suitable for
 transient windows that the user would not generally wish to save
-across IDE restarts as well as for windows containing data which cannot
+across NetBeans restarts as well as for windows containing data which cannot
 by its nature be persisted correctly.
 
 <dt><code>TopComponent.PERSISTENCE_ONLY_OPENED</code>
@@ -525,7 +524,7 @@ mode and so on) when closed.
 
 <dd>The system will try to serialize your component always.
 Suitable for many types of windows that should be saved even if closed.
-User can close and reopen such component anytime even after IDE restart.
+User can close and reopen such component anytime even after NetBeans restart.
 Such components are often singletons and have view action so user is able
 to open/reopen component.
 
@@ -641,7 +640,7 @@ to listen to.
 
 <h3><a name="xml-overview">Overview</a></h3>
 
-<P>The window system layout used by the IDE is based on modes.</P>
+<P>The window system layout used by NetBeans is based on modes.</P>
 
 <P>The was needed in two areas - modules
 and initial layout. What does this mean? Modules had limited
@@ -1099,7 +1098,7 @@ types:</p>
     </LI>
     <LI>Dynamic top components<BR>
         Some components have dynamic character, which means that new
-        instances of such components are needed during IDE runtime.
+        instances of such components are needed during the NetBeans runtime.
         Another typical characteristic is cloneability. All editors like
         java source, html, xml or form editors fall into this category.
     </LI>
@@ -1274,7 +1273,7 @@ honored.</p>
 From the first look at XML modes layout, module developer can think that
 it may be useful only for initial layout, but not during runtime.</p>
 <p>That's not completely true, because modes layout changes are saved into
-system filesystem of the IDE, under <B>system/</B> subdirectory.</p>
+system filesystem of NetBeans, under <B>system/</B> subdirectory.</p>
 
 </div>
 
@@ -1376,7 +1375,7 @@ in either direction will probably be made asynchronously according to
 the discretion of the window system implementation, so no module
 should rely on the exact timing. In fact the window system may decide
 to defer writing structural changes back to files until it is
-necessary (for example at project switch time or during IDE shutdown).</p>
+necessary (for example at project switch time or during NetBeans shutdown).</p>
 
 <p>To improve safety, changes made at the file level ought to be run
 in a filesystem atomic action. An additional guard is to look for and

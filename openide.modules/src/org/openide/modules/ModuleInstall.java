@@ -7,16 +7,16 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.modules;
 
 import org.openide.util.SharedClassObject;
 
-
 /**
-* Provides hooks for a custom module that may be inserted into the IDE.
+* Provides hooks for a custom module that may be inserted into NetBeans.
 * If needed this class should be extended by the main class of a module.
 *
 * <p>Simple modules will likely not need a main class--just a few entries in the manifest file.
@@ -59,7 +59,7 @@ public class ModuleInstall extends SharedClassObject {
     }
 
     /**
-     * Called when the module is first installed into the IDE.
+     * Called when the module is first installed.
      * Should perform whatever setup functions are required.
      * The default implementation calls restored.
      * <p>Typically, would do one-off functions, and then also call {@link #restored}.
@@ -76,7 +76,7 @@ public class ModuleInstall extends SharedClassObject {
     }
 
     /**
-     * Called when an already-installed module is restored (during IDE startup).
+     * Called when an already-installed module is restored (during startup).
      * Should perform whatever initializations are required.
      * <p>Note that it is possible for module code to be run before this method
      * is called, and that code must be ready nonetheless. For example, data loaders
@@ -113,23 +113,23 @@ public class ModuleInstall extends SharedClassObject {
     }
 
     /**
-     * Called when the module is uninstalled (from a running IDE).
-     * Should remove whatever functionality from the IDE that it had registered.
+     * Called when the module is uninstalled (from a running NetBeans instance).
+     * Should remove whatever functionality that it had registered.
     */
     public void uninstalled() {
     }
 
     /**
-     * Called when the IDE is about to exit. The default implementation returns <code>true</code>.
+     * Called when NetBeans is about to exit. The default implementation returns <code>true</code>.
      * The module may cancel the exit if it is not prepared to be shut down.
-    * @return <code>true</code> if it is ok to exit the IDE
+    * @return <code>true</code> if it is ok to exit
     */
     public boolean closing() {
         return true;
     }
 
     /**
-     * Called when all modules agreed with closing and the IDE will be closed.
+     * Called when all modules agreed with closing and NetBeans will be closed.
     */
     public void close() {
     }

@@ -82,7 +82,7 @@ authors.
 
 <h2><a name="what-are">What are Modules?</a></h2>
 
-<em>Modules</em> permit the IDE to be extended
+<em>Modules</em> permit NetBeans to be extended
 dynamically. All of the Open APIs are designed to be used for purposes
 of implementing modules. Modules may range in complexity from a single
 Java class, properly packaged, to do something elementary such as add
@@ -93,7 +93,7 @@ Java profiling suite.
 <p>All modules are distributed and installed as JAR files. The basic
 format should be rather familiar; classes constituting the module are
 <a href="#how-jar">archived in the JAR</a>, and special entries in the
-<a href="#how-manifest">manifest file</a> are recognized by the IDE.
+<a href="#how-manifest">manifest file</a> are recognized.
 
 <h3><a name="rel-std">Related Standards</a></h3>
 
@@ -115,7 +115,7 @@ modules and of modules to the system.
 <p>All modules have some set of basic properties that indicate which
 types of features they provide, which Java classes implement these
 features, and what special option settings should be used when
-installing these features into the IDE. Some of this information is
+installing these features. Some of this information is
 listed in the
 
 <a href="http://java.sun.com/products/j2se/1.5.0/docs/guide/jar/manifest.html">manifest file</a>
@@ -137,12 +137,6 @@ giving additional more specific deployment information.
 <p>For basic cases, you should need to do very little to create a module
 besides writing the basic source code.</p>
 
-<!-- XXX currently tips.html is not published anywhere:
-<p class="nonnormative">Please see a list of <a
-href="../../doc-files/tips.html">tips</a> on writing modules,
-installing them into the IDE, testing and debugging them.</p>
--->
-
 <h3><a name="how-jar">Build a JAR</a></h3>
 
 <p>All module implementation classes must reside in a JAR file. If you
@@ -151,18 +145,9 @@ so as to make independent upgrades possible, you should do so by
 creating multiple modules and relating them using <a
 href="#how-vers">versioning</a>.</p>
 
-<p class="nonnormative">To create the JAR, just use the standard JDK's
-
-<a href="http://java.sun.com/products/j2se/1.5.0/docs/guide/jar/">JAR
-tool</a>. You will need to add a custom manifest file, so use the
-<code>-m</code> option to specify the additional contents. (Note that
-<code>-m</code> will automatically merge the contents of your manifest
-file with anything it would normally add, so e.g. signatures will be
-automatically created properly.)</p>
-
 <h3><a name="how-manifest">Writing the manifest</a></h3>
 
-A module is recognized as such by the IDE, by virtue of its having
+A module is recognized as such by NetBeans, by virtue of its having
 a special magic tag in the global section of the manifest:
 <code>OpenIDE-Module</code>. Its value should be an arbitrary
 identifier (with a format similar to that of a Java package name)
@@ -278,10 +263,10 @@ OpenIDE-Module-Class: Action
 </pre>
 
 Module authors are strongly encouraged to use the
-module development support in the IDE
+module development support in the NetBeans IDE
 which among other advantages, provides interactive parsing of
 manifests that can help the beginning API developer immediately see
-how the IDE will parse his manifest, including possible parse errors.
+how NetBeans will parse his manifest, including possible parse errors.
 
 <p>If you have troubles with a manifest, check to make sure you have
 the suggested extra blank line at the end. Some JDKs may have trouble
@@ -298,7 +283,7 @@ write if the <a href="#std-sec">standard module sections</a> and
 <a href="#how-layer">layers</a> do not
 cover everything you need to do. Even if you do write such a class,
 standard sections and layers may still be used for any part of the module's
-integration into the IDE which is conventional - the main class need
+integration which is conventional - the main class need
 only handle the exceptional parts.
 
 <p>To use a main install class, just extend the
@@ -310,8 +295,7 @@ base class. Your class must be able to be
 <a href="@JDK@/java/beans/Beans.html#instantiate(java.lang.ClassLoader,%20java.lang.String)">instantiated as a JavaBean</a>.
 
 There are several methods which you may override, and may do anything
-which is required to make the module cleanly enter and exit the
-IDE.</p>
+which is required to make the module cleanly enter and exit NetBeans.</p>
 
 <div class="nonnormative">
 
@@ -354,11 +338,11 @@ public class ModuleHandler extends <a href="../ModuleInstall.html">ModuleInstall
 </div>
 
 <p>The <code>installed</code> handler may do more or less what it
-wishes - it will be called in a running IDE. The same applies to
+wishes - it will be called in a running NetBeans instance. The same applies to
 <code>uninstalled</code> and <code>closing</code>. However,
 <code>restored</code> is more delicate in that it may be called
-during earlier phases of IDE initialization. Therefore, it should
-not use presentation-oriented features of the IDE, such as the
+during earlier phases of NetBeans initialization. Therefore, it should
+not use presentation-oriented features of NetBeans, such as the
 Explorer or Window System APIs. However, the other APIs are
 acceptable to use in <code>restored</code>, including
 <code>DialogDisplayer</code>.
@@ -369,7 +353,7 @@ acceptable to use in <code>restored</code>, including
 
 method will be called just once when
 a module is updated to a new version - when the new version is loaded
-into the IDE for the first time (in a new session), the method is called
+into NetBeans for the first time (in a new session), the method is called
 and the previous version number is accessible. Neither <code>installed</code>
 nor <code>uninstalled</code> will be (automatically) called in this case.
 It is a module author's responsibility to make sure that new versions of a
@@ -377,7 +361,7 @@ module are capable of "cleaning up" obsoleted installations created by older
 versions, as far back as a user is likely to be directly upgrading.
 
 <p>Some module installer classes may desire to keep state across
-IDE sessions, for example if they require specific instructions on
+sessions, for example if they require specific instructions on
 what to uninstall that can only be gotten during the installation
 process. All installers are automatically
 
@@ -408,7 +392,7 @@ called, as it may be done when deciding whether to even begin loading.</p>
 
 <h4><a name="installation-clean">"Installation-clean" modules</a></h4>
 
-Since the IDE can better manage modules when their resources are
+Since NetBeans can better manage modules when their resources are
 declared to exist, rather than procedurally installed, it is desirable
 to use declarative APIs whenever possible. Consider the following
 definition of an "installation-clean module":
@@ -435,8 +419,8 @@ no externalized state.
 (these will then just call <code>restored</code>).
 
 <li>May override <code>uninstalled</code> but only to undo the effects
-of <code>restored</code> or other changes made by the module in the
-IDE while running. May override <code>closing</code> and/or
+of <code>restored</code> or other changes made by the module
+while running. May override <code>closing</code> and/or
 <code>close</code> but only to undo the effects of changes made by the
 module while running.
 
@@ -446,14 +430,8 @@ module while running.
 
 </ol>
 
-Modules which are not installation-clean may not work as well in
-conjunction with future "session" support for projects, and may
-interfere with creation of "virgin" builds of the IDE (those that
-merge module resources into an installation directory but do not
-actually prime the IDE by running it once).
-
 <p>Additionally it is recommended not to use <code>restored</code> to
-add an object to the running IDE where use of the module layer would
+add an object to the running NetBeans instance where use of the module layer would
 suffice, nor to modify persistent state in <code>restored</code> or
 <code>validate</code> that might affect a future call to the same
 method. When possible it is best not to have a
@@ -469,7 +447,7 @@ particular time):
 <ol>
 
 <li>Including any libraries in the <samp>lib/ext/</samp> directory, as
-these cannot be added to or reloaded while the IDE is running.
+these cannot be added to or reloaded while NetBeans is running.
 
 <li>Using the <samp>docs/</samp> directory as a place to store module
 JavaHelp rather than inside the JAR.
@@ -479,13 +457,13 @@ extensions to point to resources which are not in or below the
 directory containing the referring JAR (i.e. inclusion of
 <samp>../</samp> or absolute paths).
 
-<li>Including any files in the IDE installation other than the module
+<li>Including any files in the NetBeans installation other than the module
 JAR in the <samp>modules/</samp> directory and any extensions declared
 directly or indirectly via <code>Class-Path</code> beneath the
 <samp>modules/</samp> directory (for example in
 <samp>modules/ext/</samp>) and any locale variants of the above JARs;
 except insofar as the presence of such files does not in and of itself
-change the functionality of the IDE and is not required for the module
+change the functionality of NetBeans and is not required for the module
 to operate (for example mounts of documentation ZIPs declared in the
 layer); even then this is discouraged if there is an alternative as it
 complicates ad-hoc module installation though Auto Update may be fine.
@@ -507,7 +485,7 @@ Its contents specify some files that the module will add to the
 
 <a href="@org-openide-filesystems@/org/openide/filesystems/Repository.html#getDefaultFileSystem()">system filesystem</a>
 
-controlling much of the IDE's configuration. This filesystem is composed of many read-only XML layer filesystems
+controlling much of NetBeans' configuration. This filesystem is composed of many read-only XML layer filesystems
 as well as a writable layer corresponding to the <code>config</code> subdirectory of the user directory.</p>
 
 <p>The XML format is relatively simple. There is an
@@ -569,17 +547,17 @@ taking no arguments.</p>
 
 <p>The primary advantage of using layers is that they are declarative
 rather than procedural, so you can install many kinds of extensions to
-the IDE's behavior without any Java code, only XML. A related
+NetBeans' behavior without any Java code, only XML. A related
 advantage is that unlike <code>ModuleInstall</code>, there is no need
 for multiple kinds of logic for module installation, restoration,
 uninstallation, and upgrading; the "files" added by the layer are not
-stored to disk and are loaded by the IDE in every session from the
+stored to disk and are loaded by NetBeans in every session from the
 XML, so when the module is uninstalled or upgraded its associated
 files are correctly removed or changed, respectively, without any
 extra work. (If the user customizes the files, however, their
 customizations <em>are</em> stored to disk, and thus form a permanent
 "patch" against the baseline configuration provided by the module.)
-Not all parts of the IDE's configuration can be customized using files on
+Not all parts of NetBeans' configuration can be customized using files on
 the system filesystem and thus by layers, but many things can.</p>
 
 <p>Some common things that layers tend to be used for:</p>
@@ -590,7 +568,7 @@ the system filesystem and thus by layers, but many things can.</p>
 
 <a href="@org-openide-actions@/org/openide/actions/doc-files/api.html#adv-install">actions</a>
 
-into the IDE's global menus, toolbars, or keymap.</li>
+into NetBeans' global menus, toolbars, or keymap.</li>
 
 <li>Create templates in the folder <samp>Templates/</samp>.</li>
 
@@ -644,7 +622,7 @@ place A before B in its ordering. For example, the XML:
 &lt;/<font class="function-name">folder</font>&gt;
 </pre>
 
-will cause the IDE to try to keep <samp>first.txt</samp> before
+will cause NetBeans to try to keep <samp>first.txt</samp> before
 <samp>second.txt</samp>. Things to remember:
 
 <ol>
@@ -681,7 +659,7 @@ A and B.
 </ol>
 
 <p>The resource path pointing to the layer is automatically localized
-by the IDE every time the module is installed or restored; if there
+by NetBeans every time the module is installed or restored; if there
 are locale-specific variants, they are <em>merged</em> with the main
 layer. More-specific variants can simply add files to the set
 installed by the module; however they take precedence over the
@@ -825,15 +803,15 @@ their manifest, and correspondingly request such versions from
 other modules. (You may have at most one dependency between any single pair of modules, however.)
 The Versioning Specification provides similar
 numbering for (some, but not all) Java packages, as well as the
-core Java Platform APIs and Virtual Machine Specification. The
-IDE also has such versions which may be used to request a
+core Java Platform APIs and Virtual Machine Specification.
+NetBeans also has such versions which may be used to request a
 general level of Open API support (using specification versions) or
 a particular NetBeans build (using implementation versions).
 
 <p>Since the Versioning Specification does not address incompatible
 changes (those which would break existing code), but these are in
-practice <em>occasionally</em> necessary (however painful), both
-modules and the IDE itself may provide a separate integral number
+practice <em>occasionally</em> necessary (however painful),
+modules may provide a separate integral number
 giving the <em>incompatible release version</em>. You may only
 request a particular release version, not subsequent ones, and you
 <em>must</em> specify the release version if there is one
@@ -860,8 +838,7 @@ for an implementation version with this syntax.
 hard. First of all, feature names: a module is named according to
 the <code>OpenIDE-Module</code> tag, which should look like a Java
 package name, but may be followed by a slash and release number
-(e.g. <code>com.mycom.mymodule/3</code>); the IDE itself is named
-<code>IDE</code>, again usually with a slash and release number;
+(e.g. <code>com.mycom.mymodule/3</code>);
 Java packages are just named by the package name; the Java Platform
 APIs are named by <code>Java</code>; and the Java Virtual Machine
 by <code>VM</code>.
@@ -919,7 +896,6 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.modules.applet/1 > 1.0
 OpenIDE-Module-Package-Dependencies: javax.television > 0.9
 OpenIDE-Module-Java-Dependencies: Java = 1.2.1b4, VM > 1.0
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.0
 OpenIDE-Module-Provides: javax.television.TunerProvider, javax.television.RemoteControl
 OpenIDE-Module-Requires: org.netbeans.javahelp.api.Help
 </pre>
@@ -948,13 +924,13 @@ dependencies for several reasons:
 
 <p>You may specify a sample class name in square brackets immediately
 after the package name (or indeed instead of it). Giving a class name
-together with a package name requests that the IDE first try to load
+together with a package name requests that NetBeans first try to load
 that class (it must be able to, so choose a class in the extension you
 know will be there); then the versioning information is checked. (If
 the sample class is simply in the desired package, you may omit the
 package qualification as a shortcut.) This
 addresses the second problem. Giving just a class name in square
-brackets with no preceding package name indicates that the IDE should
+brackets with no preceding package name indicates that NetBeans should
 only ensure that the named class is loadable, bypassing the Versioning
 specification mechanisms. This addresses the first problem.</p>
 
@@ -964,7 +940,7 @@ specification mechanisms. This addresses the first problem.</p>
 again <code>javax.television</code>, where it is known that a class
 <code>javax.television.TunerProvider</code> is part of the package.
 The extension is stored in <samp>modules/ext/television.jar</samp>
-relative to the IDE's installation directory:
+relative to the cluster directory:
 
 <pre>
 OpenIDE-Module: com.mycom.mymodule/1
@@ -992,8 +968,8 @@ class, or examine the manifest of the JAR you depend upon.
 <code>java.vm.specification.version</code> and
 <code>java.vm.version</code>.
 
-<li>For the IDE, this information is printed to the console when
-the IDE starts up, and also appears in <code>netbeans.log</code>.
+<li>For NetBeans, this information is printed to the console during
+start-up, and also appears in <code>var/log/messages.log</code>.
 
 </ol>
 
@@ -1107,8 +1083,7 @@ further customization.
 
 <h3><a name="sec-action">Action</a></h3>
 
-The class <code>Action</code> installs a system action into the
-IDE. Refer to the
+The class <code>Action</code> installs a system action into NetBeans. Refer to the
 
 <a href="@org-openide-actions@/org/openide/actions/doc-files/api.html">Actions API</a>
 
@@ -1146,7 +1121,7 @@ class).
 direct control. For example, if you are writing a data loader, you
 should specify which actions will be provided by default in its
 data objects' popups. This type of use <em>does not</em> require
-global installation; it can include standard IDE actions, as well
+global installation; it can include standard NetBeans actions, as well
 as your own. Please see the
 
 <a href="@org-openide-actions@/org/openide/actions/doc-files/api.html#attach">Actions API</a>
@@ -1187,7 +1162,7 @@ may take precedence over a more general one:
 
 <dt><code>Install-Before: <i>classname</i></code>
 
-<dd>Instructs the IDE to try to install this data loader before
+<dd>Instructs NetBeans to try to install this data loader before
 another, so as to give it higher precedence: it will be given the
 opportunity to scan over potential data objects first. The
 <i>classname</i> should specify the <strong>representation class</strong> of the other
@@ -1204,7 +1179,7 @@ You may supply multiple class names separated by commas.
 
 <dt><code>Install-After: <i>classname</i></code>
 
-<dd>Exactly like <code>Install-Before</code>, except that the IDE will
+<dd>Exactly like <code>Install-Before</code>, except that NetBeans will
 attempt to install this loader <em>after</em> another, so as to give
 it lower precedence.
 
@@ -1227,7 +1202,7 @@ module is installed, at which time they will take effect.
 
 <h2><a name="deploy">Deployment of Modules</a></h2>
 
-<p>This section describes how a module may be deployed to a user's IDE.</p>
+<p>This section describes how a module may be deployed to a user's NetBeans instance.</p>
 
 <h3><a name="related-files">Related Files</a></h3>
 
@@ -1296,14 +1271,7 @@ must be available before any module is even loaded.</p>
 
 <h3><a name="downloading">Downloading</a></h3>
 
-One scenario is that the user will just download the module from
-the Web somewhere as a JAR file. The module may be stored to disk,
-and either dropped into the IDE's <code>modules/</code> directory
-(where it will be automatically installed upon the next IDE
-restart) or manually installed from an arbitrary location using the
-context menu on the <b>Modules</b> node in the options dialog. Children of this
-node represent available modules and permit them to be dynamically
-uninstalled or reinstalled.
+One scenario is that the user will just download an NBM and install from the Module Manager.
 
 <p>More user-friendly is the Update Center, a feature specific to
 the NetBeans core implementation (i.e. its mechanism is not specified by
@@ -1316,7 +1284,7 @@ This functionality is provided by the Auto Update module.
 Upgrades of modules can be customized by calling <code>ModuleInstall.updated()</code>.
 This permits you to manually remove obsoleted actions, delete old
 templates, etc. - remove anything not handled by the module manifest
-which is nevertheless part of the IDE's persistent state.
+which is nevertheless part of NetBeans' persistent state.
 With the advent of XML layers, most of these reasons for using <code>updated()</code>
 have disappeared.
 
@@ -1348,20 +1316,20 @@ forward-compatible for upgrading to proceed smoothly.
 
 It may be possible for multiple modules to be installed at once, or
 for a module to specify a dependency which is not satisfied. How
-does the IDE handle such cases?
+does NetBeans handle such cases?
 
-<p>First of all, when the IDE starts up, all previously-installed
+<p>First of all, when NetBeans starts up, all previously-installed
 modules are restored, calling the <code>restored</code> methods on
 their install classes if present. (Sections are installed before
 this method is called.) If multiple modules are being restored
-(which is normally the case), the IDE installs them in an
+(which is normally the case), NetBeans installs them in an
 arbitrary order. However, if some of them specify
 dependencies on other modules, the order may be adjusted so as to
 make sure that the one specifying the dependency is installed after
 the one it depends on.
 
-<p>Now, when the IDE is running, modules may be installed into it,
-possibly a cluster of them at once. In such a case, the IDE first
+<p>Now, when NetBeans is running, modules may be installed into it,
+possibly a cluster of them at once. In such a case, NetBeans first
 checks to make sure that all the prospective modules satisfy their
 dependencies, either on system or Java features; already-installed
 modules; or other modules in the prospective cluster. If any
@@ -1372,7 +1340,7 @@ ordered according to dependencies as above, and then installed in
 that order.
 
 <p><em>Caution:</em> it is forbidden to install modules which have
-cyclic dependencies on one another, as the IDE would be unable to
+cyclic dependencies on one another, as NetBeans would be unable to
 determine which order to install them in! In fact, it will signal
 an error and not install such modules. Generally such a situation
 means that you should "factor out" the common required
@@ -1446,7 +1414,7 @@ prevent file changes from being fired halfway through.</p>
 
 In the current API there is no particular provision for security in
 modules: all modules are assumed to be trusted, and have access to
-all of the IDE's features (including the abilities of the Java VM
+all NetBeans' features (including the abilities of the Java VM
 running as an application) if they require them. So, users should
 not install arbitrary modules from potentially dangerous
 sources. Given the density of callbacks and the fine-grained object
@@ -1456,11 +1424,11 @@ code is not feasible.
 <p>Code which creates new classloaders and loads other code indirectly
 should, however, be aware that the created classloaders are generally
 subject to regular security restrictions, unless code is loaded from
-within the IDE installation, or certain forms of <code>NbClassLoader</code>
+within the NetBeans installation, or certain forms of <code>NbClassLoader</code>
 are used. When in doubt, explicitly define the protection domains for
 classloaders you create.
 
-<p>The IDE <em>currently</em> loads each module in its own classloader,
+<p>NetBeans <em>currently</em> loads each module in its own classloader,
 which means illegal dependencies between modules will result in errors.
 
 <p>The Update Center supports certificate-based signing of

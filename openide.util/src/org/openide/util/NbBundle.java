@@ -7,22 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.util;
 
-import org.openide.ErrorManager;
-
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-
 import java.net.URL;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -38,6 +33,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.jar.Attributes;
+import org.openide.ErrorManager;
 
 /** Convenience class permitting easy loading of localized resources of various sorts.
 * Extends the functionality of the default Java resource support, and interacts
@@ -336,8 +332,8 @@ public class NbBundle extends Object {
     * Get a resource bundle with the default class loader and locale/branding.
     * <strong>Caution:</strong> {@link #getBundle(Class)} is generally
     * safer when used from a module as this method relies on the module's
-    * classloader to currently be part of the system classloader. The
-    * IDE does add enabled modules to this classloader, however calls to
+    * classloader to currently be part of the system classloader. NetBeans
+    * does add enabled modules to this classloader, however calls to
     * this variant of the method made in <a href="@org-openide-modules@/org/openide/modules/ModuleInstall.html#validate()">ModuleInstall.validate</a>,
     * or made soon after a module is uninstalled (due to background threads)
     * could fail unexpectedly.

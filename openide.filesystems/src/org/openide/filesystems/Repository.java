@@ -7,31 +7,28 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.filesystems;
 
-import org.openide.util.io.NbMarshalledObject;
+package org.openide.filesystems;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
-
+import org.openide.util.io.NbMarshalledObject;
 
 /**
  * Holder for system filesystem, used for most of NetBeans' runtime configuration.
@@ -138,9 +135,10 @@ public class Repository implements Serializable {
         addFileSystem(system);
     }
 
-    /** Gets the default filesystem of the IDE.
-    * @return the default filesystem
-    */
+    /**
+     * Gets the NetBeans default (system, configuration) filesystem.
+     * @return the default filesystem
+     */
     public final FileSystem getDefaultFileSystem() {
         return system;
     }

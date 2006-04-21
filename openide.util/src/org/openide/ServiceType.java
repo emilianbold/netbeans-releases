@@ -7,24 +7,27 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-
-import java.beans.*;
-
+import java.beans.Introspector;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Enumeration;
-
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Enumerations;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /** This class represents an abstract subclass for services
 * (compilation, execution, debugging, etc.) that can be registered in
@@ -35,7 +38,7 @@ import java.util.Enumeration;
  *   is now {@link Lookup} as described in <a href="util/doc-files/api.html#lookup">
  *   services registration and lookup</a> page.
 */
-public abstract class ServiceType extends Object implements java.io.Serializable, HelpCtx.Provider {
+public abstract class ServiceType extends Object implements Serializable, HelpCtx.Provider {
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7573598174423654252L;
 
@@ -185,14 +188,15 @@ public abstract class ServiceType extends Object implements java.io.Serializable
         }
     }
 
-    /** The registry of all services. This class is provided by the implementation
-    * of the IDE and should hold all of the services registered to the system.
+    /**
+     * The registry of all services. This class is provided by the NetBeans core
+    * and should hold all of the services registered to the system.
     * <P>
     * This class can be serialized to securely save settings of all
     * services in the system.
     * @deprecated Use lookup instead.
     */
-    public static abstract class Registry implements java.io.Serializable {
+    public static abstract class Registry implements Serializable {
         /** suid */
         final static long serialVersionUID = 8721000770371416481L;
 
@@ -206,19 +210,19 @@ public abstract class ServiceType extends Object implements java.io.Serializable
         * @return an enumeration of all matching {@link ServiceType}s
         */
         public <T extends ServiceType> Enumeration<T> services(final Class<T> clazz) {
-            class IsInstance implements org.openide.util.Enumerations.Processor<ServiceType,T> {
-                public T process(ServiceType obj, java.util.Collection ignore) {
+            class IsInstance implements Enumerations.Processor<ServiceType,T> {
+                public T process(ServiceType obj, Collection ignore) {
                     return clazz.isInstance(obj) ? clazz.cast(obj) : null;
                 }
             }
 
-            return org.openide.util.Enumerations.filter(services(), new IsInstance());
+            return Enumerations.filter(services(), new IsInstance());
         }
 
         /** Getter for list of all service types.
         * @return a list of {@link ServiceType}s
         */
-        public abstract java.util.List getServiceTypes();
+        public abstract List getServiceTypes();
 
         /** Setter for list of service types. This permits changing
         * instances of the objects but only within the types that are already registered
@@ -228,7 +232,7 @@ public abstract class ServiceType extends Object implements java.io.Serializable
         * @param arr a list of {@link ServiceType}s
         * @deprecated Better to change service instance files instead.
         */
-        public abstract void setServiceTypes(java.util.List arr);
+        public abstract void setServiceTypes(List arr);
 
         /** Find the service type implemented as a given class.
          * The whole registry is searched for a service type of that exact class (subclasses do not count).

@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -67,7 +67,7 @@ storage of file-like data.
 
 This API pertains only to manipulating files on disk (or whatever
 storage mechanism a filesystem may use), and makes no reference to
-their contents nor to how they are being used elsewhere in the IDE
+their contents nor to how they are being used elsewhere in NetBeans
 (beyond whether or not they are locked). If you are looking for
 information on how to create custom content types, use the editor,
 create Explorer nodes corresponding to files, etc., this API is not
@@ -290,7 +290,7 @@ on disk (using <code>JarFileSystem</code>). It is possible to implement your own
 purposes (normally by subclassing <code>AbstractFileSystem</code> and perhaps registering a corresponding
 <code>URLMapper</code>).
 
-<p>The Filesystems API also includes a couple of special implementations which are used by the core of the IDE
+<p>The Filesystems API also includes a couple of special implementations which are used by the NetBeans core
 to assemble the system filesystem used for application configuration, and could also be used by module writers
 in some circumstances: <code>MultiFileSystem</code> and <code>XMLFileSystem</code>. See their Javadoc for more
 information.

@@ -7,32 +7,41 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util.actions;
 
-import java.util.logging.Logger;
-import org.openide.ErrorManager;
-import org.openide.util.*;
-
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
-
-import java.io.*;
-
 import java.net.URL;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-
-import javax.swing.*;
-
+import java.util.Set;
+import java.util.Vector;
+import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.JToolBar;
+import org.openide.util.HelpCtx;
+import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 
 /**
-* The common predecessor of callable actions in the IDE.
+* A base class for user-visible actions.
 * <P>
-* Also implements the Swing {@link Action} to enable use
+* Implements the Swing {@link Action} interface to enable use
 * with the Swing action model.
 * <p>An action class is a <em>singleton</em>, i.e. should generally contain no instance state.
 * Rather, subclassing and use of abstract protected methods should be used
@@ -153,7 +162,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     * <p>Since 4.11, will be performed directly in the event thread.
     * @param ev the event triggering the action
     */
-    public abstract void actionPerformed(java.awt.event.ActionEvent ev);
+    public abstract void actionPerformed(ActionEvent ev);
 
     /** Initialize the action.
     * The default implementation just enabled it.
@@ -344,7 +353,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     * @deprecated Use {@link org.openide.util.Utilities#actionsToPopup}
     */
     public static JPopupMenu createPopupMenu(SystemAction[] actions) {
-        return org.openide.util.Utilities.actionsToPopup(actions, org.openide.util.Utilities.actionsGlobalContext());
+        return Utilities.actionsToPopup(actions, Utilities.actionsGlobalContext());
     }
 
     /** Icon based on a component (such as a text label).

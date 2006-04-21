@@ -766,7 +766,7 @@ public class XMLDataObject extends MultiDataObject {
     }
 
     /**
-     * Add a given entity resolver to IDE resolver chain.
+     * Add a given entity resolver to the NetBeans resolver chain.
      * The resolver chain is searched by private chaining resolver
      * until some registered resolver succed.
      *
@@ -786,7 +786,7 @@ public class XMLDataObject extends MultiDataObject {
     }
 
     /**
-     * Remove a given entity resolver from IDE resolver chain.
+     * Remove a given entity resolver from the NetBeans resolver chain.
      *
      * <P>Every created parser use global entity resolver and then chain.
      *
@@ -819,7 +819,7 @@ public class XMLDataObject extends MultiDataObject {
     
     /**
      * Registers new Info to particular XML document content type as 
-     * recognized by DTD public id. The registration is valid until IDE JVM termination.
+     * recognized by DTD public id. The registration is valid until JVM termination.
      *
      * @param publicId used as key
      * @param info associated value or null to unregister
@@ -991,7 +991,7 @@ public class XMLDataObject extends MultiDataObject {
     /** 
      * Parser that parses XML document header to get some hints from it (such as DOCTYPE public ID.
      * It is named as InfoParser for historical reasons as it originally parsed
-     * a coupled file (with xmlinfo extension) that contained IDE related metadata.
+     * a coupled file (with xmlinfo extension) that contained NetBeans-related metadata.
      * That mechanism was replaced by /xml/lookup/<mangled pid> registrations and
      * by file attributes.
      */

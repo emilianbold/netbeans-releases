@@ -65,8 +65,9 @@ import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 
-/** Embeddable visual component to be displayed in the IDE.
- * This is the basic unit of display in the IDE--windows should not be
+/**
+ * Embeddable visual component to be displayed in NetBeans.
+ * This is the basic unit of display--windows should not be
  * created directly, but rather use this class.
  * A top component may correspond to a single window, but may also
  * be a tab (e.g.) in a window. It may be docked or undocked,

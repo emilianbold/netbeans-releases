@@ -7,27 +7,22 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.windows;
 
-import org.openide.ErrorManager;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+package org.openide.windows;
 
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Window;
-
 import java.beans.PropertyChangeListener;
-
 import java.io.Serializable;
-
 import java.util.Set;
-
 import javax.swing.SwingUtilities;
-
+import org.openide.ErrorManager;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * Manages window system.
@@ -98,17 +93,18 @@ public abstract class WindowManager extends Object implements Serializable {
      * @since 4.13 */
     public abstract Set getModes();
 
-    /** Get the Main Window of the IDE.
+    /**
+     * Gets the NetBeans Main Window.
     * This should ONLY be used for:
     * <UL>
     *   <LI>using the Main Window as the parent for dialogs</LI>
     *   <LI>using the Main Window's position for preplacement of windows</LI>
     * </UL>
-    * @return the Main Window of the IDE
+    * @return the Main Window
     */
-    public abstract java.awt.Frame getMainWindow();
+    public abstract Frame getMainWindow();
 
-    /** Called after a Look&amp;Feel change to update the IDE's UI.
+    /** Called after a Look&amp;Feel change to update the NetBeans UI.
     * Should call {@link javax.swing.JComponent#updateUI} on all opened windows.
     */
     public abstract void updateUI();

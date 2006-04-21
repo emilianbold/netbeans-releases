@@ -40,9 +40,8 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
-/** Represents one JavaBean in the nodes hierarchy.
-* It provides all methods that are needed for communication between
-* the IDE and the bean.
+/**
+ * Represents a JavaBeans component as a node.
 * <p>You may use this node type for an already-existing JavaBean (possibly
 * using BeanContext) in order for its JavaBean properties to be reflected
 * as corresponding node properties. Thus, it serves as a compatibility wrapper.

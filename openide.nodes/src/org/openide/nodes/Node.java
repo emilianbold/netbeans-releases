@@ -13,7 +13,6 @@
 
 package org.openide.nodes;
 
-
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.beans.FeatureDescriptor;
@@ -41,7 +40,7 @@ import org.openide.util.datatransfer.PasteType;
 
 /** A <em>node</em> represents one element in a hierarchy of objects (beans).
 * It provides all methods that are needed for communication between
-* the IDE and the bean.
+* an explorer view and the bean.
 * <P>
 * The node has three purposes:
 * <OL>

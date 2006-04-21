@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -48,7 +48,7 @@ the process is manually stopped (by the user or via its
 <code>ExecutorTask</code>), so if you catch this it is best not to
 print its stack trace. Also, the executed code within this method may
 invoke <code>System.exit</code> to end the application, without
-shutting down the IDE.
+shutting down NetBeans.
 
 <p>
 A class running in
@@ -130,13 +130,13 @@ executors.
 Typically, implementors of executors (or other external services such
 as compilation) will wish for any I/O via standard system streams
 (input, output, and error) to be redirected to the Output Window,
-rather than going to the IDE's console (and logfile) where the user
+rather than going to the NetBeans console (and logfile) where the user
 will not normally see it. In some cases, executed applications are
 also expected or permitted to invoke <code>System.exit</code> to
-terminate themselves, which should be prevented from terminating the
-IDE itself.
+terminate themselves, which should be prevented from terminating
+NetBeans itself.
 
-<p>The IDE provides two forms of support for these considerations,
+<p>NetBeans provides two forms of support for these considerations,
 which complement one another in that they cover both <em>dynamic</em>
 scope (code run within a certain thread group and time window) and
 quasi-<em>lexical</em> scope (code derived from a certain
@@ -215,7 +215,7 @@ using dynamic scope.
 
 The supplied <code>Runnable</code> is run
 asynchronously in its own thread and thread group, i.e. well-isolated
-from the rest of the IDE. Any uses of the system I/O streams within
+from the rest of NetBeans. Any uses of the system I/O streams within
 that thread group will automatically be trapped and redirected to the
 <code>InputOutput</code>. Note that code which creates new threads
 will normally create them in the same thread group as the calling
@@ -226,7 +226,7 @@ example,
 
 <a href="@org-openide-util@/org/openide/util/RequestProcessor.html#post(java.lang.Runnable)"><code>RequestProcessor.post(Runnable)</code></a>
 
-will execute code in the IDE's main thread group, not the one created
+will execute code in NetBeans' main thread group, not the one created
 by the execution engine.
 
 <p>The supplied task name is optional and may be <code>null</code>. If
@@ -265,7 +265,7 @@ attempted uses of
 <a href="@JDK@/java/lang/Runtime.html#exit(int)"><code>Runtime.exit(int)</code></a>).
 
 If an exit is attempted within the task's dynamic scope (i.e. thread
-group), this is caught by the IDE's security manager implementation,
+group), this is caught by the NetBeans security manager implementation,
 and the task is instead stopped (as if by
 
 <a href="../ExecutorTask.html#stop()"><code>ExecutorTask.stop()</code></a>).
@@ -307,7 +307,7 @@ with <code>ExecutionEngine.execute(...)</code>.
 <p><code>NbClassLoader</code> does not specially handle
 <code>System.exit</code> calls since such code need not be in any
 particular thread group, so it does not make sense to try to stop some
-task. Rather, any code in the system which is outside the IDE's
+task. Rather, any code in the system which is outside the NetBeans
 standard trusted codebase which tries to exit the VM will receive a
 security exception. Note that this exception specifically does nothing
 in response to <code>printStackTrace()</code>, which is usually
@@ -316,8 +316,7 @@ common in executors just prints any received stack traces, whereas
 <code>System.exit</code> should simply end the task without triggering
 a noisy and confusing <code>SecurityException</code> trace.
 
-<p>The IDE's trusted codebase is currently set by
-<code>bin/ide.policy</code> in the installation directory, and
+<p>The NetBeans trusted codebase
 specifies that Java platform code, code loaded from modules (including
 test modules), and code loaded from an <code>NbClassLoader</code> with
 the <code>InputOutput</code> constructor is to be trustworthy; other
@@ -328,7 +327,7 @@ Such code can still call
 
 <a href="@org-openide-util@/org/openide/LifecycleManager.html#exit()"><code>LifecycleManager.exit()</code></a>
 
-to explicitly exit the IDE.
+to explicitly exit NetBeans.
 
 </ol>
 
@@ -349,7 +348,7 @@ creates a <em>new</em> <code>ExecutorTask</code> which provides the
 additional needed behavior and returns it in proxy, while keeping the
 original for its own use.
 
-<p>The main trick involves program termination (from the IDE). If the
+<p>The main trick involves program termination (from NetBeans). If the
 code calling <code>ProcessExecutor.execute</code> pays attention to
 its returned task and directly calls <code>ExecutorTask.stop</code> on
 this task, then there is no problem: this method is directly

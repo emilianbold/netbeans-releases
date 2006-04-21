@@ -1,15 +1,15 @@
 <!--
-   -                 Sun Public License Notice
-   - 
-   - The contents of this file are subject to the Sun Public License
-   - Version 1.0 (the "License"). You may not use this file except in
-   - compliance with the License. A copy of the License is available at
-   - http://www.sun.com/
-   - 
-   - The Original Code is NetBeans. The Initial Developer of the Original
-   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-   - Microsystems, Inc. All Rights Reserved.
-  -->
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 
 <html><head>
 <title>Editor API</title>
@@ -116,9 +116,9 @@ is planned to make creation of new editor kits easier.</p></li>
 <h2><a name="overview">Overview</a></h2>
 
 <p>The Editor API may be used at a first cut for two purposes: accessing
-editor-related functionality from within the IDE for use by other
-modules and the core IDE itself; and implementing a custom editor that
-can be inserted into the IDE as a module, replacing or supplementing
+editor-related functionality from within NetBeans for use by other
+modules; and implementing a custom editor that
+can be inserted into NetBeans as a module, replacing or supplementing
 the NetBeans-supplied one.</p>
 
 <div class="nonnormative">
@@ -139,9 +139,9 @@ file.
 
 <li>A "data object" is created for the form, using the "form" <a
 href="@org-openide-loaders@/org/openide/loaders/doc-files/api.html">data loader</a>; in this case
-there is a standard IDE <a
-href="@org-openide-modules@/org/openide/modules/doc-files/api.html">module</a> (installed in the
-IDE system modules area) for the Form Editor. This module includes the
+there is a standard NetBeans <a
+href="@org-openide-modules@/org/openide/modules/doc-files/api.html">module</a>
+for the Form Editor. This module includes the
 implementation of the Form Editor; but it is invoked only through a
 loader, which recognizes a <code>.form</code> file associated with a
 <code>.java</code> file;
@@ -236,7 +236,7 @@ corresponding update in the source; but in this case, the
 
 <em>is</em> checked, since the user should not be able to arbitrarily
 rename or otherwise affect members used by the Form Editor without its
-consent! The IDE actions implementing such modifications will use
+consent! NetBeans actions implementing such modifications will use
 
 <a href="../NbDocument.WriteLockable.html#runAtomicAsUser(java.lang.Runnable)"><code>NbDocument.WriteLockable.runAtomicAsUser(...)</code></a>
 
@@ -553,7 +553,7 @@ move your annotation in front of any others:</p>
 ann.<a href="../Annotation.html#moveToFront()">moveToFront</a>();
 </pre>
 
-<p>The IDE presents GUI settings to the user in which it is possible to
+<p>NetBeans presents GUI settings to the user in which it is possible to
 customize the attributes of annotation types - for example, foreground
 and background color. Remember however that some editor implementations
 may find it difficult or impossible to accurately display all of these
@@ -796,7 +796,7 @@ Now just provide appropriate implementations of
 <h2><a name="new-editor">Implementing a Custom Editor</a></h2>
 
 It is possible to integrate a custom editor (presumably for textual
-content types) into the IDE, in place of the default
+content types) into NetBeans, in place of the default
 editor. The basic requirement is that it conform to the Swing
 EditorKit conventions. The Swing Text system is rather complex, so if
 you are not familiar with it you should look at <a
@@ -804,16 +804,16 @@ href="http://java.sun.com/products/jfc/tsc/text/text/text.html">Using
 the Swing Text Package</a>.
 
 <p>Beyond being a generic EditorKit, there are two significant pieces of
-functionality used by the IDE which the editor should support if at
+functionality used by NetBeans which the editor should support if at
 all possible:
 
 <ul>
 
-<li>Be able to mark IDE-supplied blocks of text as read-only, and
+<li>Be able to mark NetBeans-supplied blocks of text as read-only, and
 prevent the user from editing or removing these blocks.
 
 <li>Be able to mark certain lines of the document (or parts of lines)
-with IDE-supplied <em>annotations</em>, e.g. background color, gutter
+with NetBeans-supplied <em>annotations</em>, e.g. background color, gutter
 glyphs, or as much as feasible, and change these display markings upon
 request.
 
@@ -849,14 +849,14 @@ so on is completely optional-->.
 This is really the central problem in creating a compliant editor. If
 you want to completely skip this step, it is possible to return a
 plain <code>Document</code> from the registered editor kit; however
-this will not support guards (or IDE attributes either), and so if the
+this will not support guards (or NetBeans attributes either), and so if the
 user edits what should have been a guarded block, they may cause
-errors in the code, and their edits may be overwritten by the IDE. If
+errors in the code, and their edits may be overwritten by NetBeans. If
 you implement <code>StyledDocument</code>, it is assumed you are
 handling guard blocks, but again it is up to you to actually do so
-correctly - the IDE cannot determine this.
+correctly - NetBeans cannot determine this.
 
-<p>There is very little to the way the IDE indicates
+<p>There is very little to the way NetBeans indicates
 guarding. Essentially, it is just a character attribute, <a
 href="../NbDocument.html#GUARDED"><code>NbDocument.GUARDED</code></a>,
 which will be set to <code>Boolean.TRUE</code> for guarded characters,
@@ -901,7 +901,7 @@ context of a user-initiated Swing action, or by
 
 <a href="../NbDocument.html#runAtomicAsUser(javax.swing.text.StyledDocument,%20java.lang.Runnable)"><code>NbDocument.runAtomicAsUser(...)</code></a>.
 
-Internal IDE code may freely insert or remove text (typically using
+Internal NetBeans module code may freely insert or remove text (typically using
 
 <a href="../NbDocument.html#insertGuarded(javax.swing.text.StyledDocument,%20int,%20java.lang.String)"><code>NbDocument.insertGuarded(...)</code></a>
 
@@ -914,7 +914,7 @@ forbidden.
 <p>It is preferable, though optional, for the editor to visually mark
 guarded areas, say with a special background color. It is your
 responsibility to choose a color or another appearance for this
-purpose, however. Possibly the IDE will specify a
+purpose, however. Possibly NetBeans will specify a
 
 <a href="@JDK@/javax/swing/text/StyleConstants.ColorConstants.html#Background"><code>StyleConstants.ColorConstants.Background</code></a>
 
@@ -1019,7 +1019,7 @@ recommended implementation.
 
 <h4>Testing guard blocks</h4>
 
-If you are not able to test live in the IDE, try doing something like this:
+If you are not able to test live in NetBeans, try doing something like this:
 
 <p><code>
 SimpleAttributeSet sas=new SimpleAttributeSet();<br>
@@ -1108,10 +1108,10 @@ In the future there may be shared parsing support.
 
 <h3><a name="printing">Printing</a></h3>
 
-<p>If you want your editor to support printing of its contents from
-the IDE, you might just provide no special support. In this case,
+<p>If you want your editor to support printing of its contents,
+you might just provide no special support. In this case,
 printing should be able to work with plain text. If you have a styled
-document, it is possible that the IDE will be able to run through the
+document, it is possible that NetBeans will be able to run through the
 entire contents of the document; for each paragraph, retrieve its
 <code>Style</code>, and for each character, its attribute set; and
 then attempt to convert these (Swing) formatting specifications into
@@ -1154,7 +1154,7 @@ desired to print embedded images.
 
 It is desirable for your <code>StyledDocument</code> implementation to
 be able to lock the document against write access, as this will make
-certain operations (performed by the IDE, not in response to user
+certain operations (performed by NetBeans, not in response to user
 events) more reliable and safer. In order to do this, please
 implement
 
@@ -1213,7 +1213,7 @@ it is quite possible for an innocent user action (e.g. attempting to
 rename a JavaBean property) to interfere with a guard block, and the
 document should <em>not</em> be left half-modified after such a
 mistake. On the other hand, a failure in the block of
-<code>runAtomic</code> is more likely to be an bug in some IDE module,
+<code>runAtomic</code> is more likely to be an bug in some module,
 and not the user's fault; so perfect recovery is of course less
 important, as the bug should be fixed anyway.
 
@@ -1238,11 +1238,11 @@ insertions and deletions in nearby text, but also specifies the
 direction the marker will move to when text is inserted at that
 position.
 
-<p>If this is not done, the IDE creates its own replacement.
+<p>If this is not done, NetBeans creates its own replacement.
 
 <h3><a name="scrolling">Scrolling to display</a></h3>
 
-<p>The IDE sometimes asks the editor to scroll the display so that a
+<p>NetBeans sometimes asks the editor to scroll the display so that a
 given line will be displayed. You should not need to do anything
 special to support this;
 
@@ -1259,16 +1259,16 @@ example, if your editor provides an
 <a href="@JDK@/javax/swing/Action.html">action</a>
 
 for reindenting a section of text, it is best if this action can be
-integrated into the rest of the IDE consistently: a "Reindent" item
+integrated into the rest of NetBeans consistently: a "Reindent" item
 under the "Edit" menu on the main toolbar, active when your editor has
 focus; a button with an icon representing reindentation placed onto
-the IDE's toolbar; a context menu item within the editor pane named
+the NetBeans toolbar; a context menu item within the editor pane named
 "Reindent"; a keyboard shortcut <code>Ctrl-R</code>; etc.
 
 <p>While it might be possible to add some of these things manually
-into the IDE's action containers (like the "Main Window" entry in the
+into the NetBeans action containers (like the "Main Window" entry in the
 Environment, visible in the Explorer), this is discouraged as that
-makes it more difficult for the IDE to manage actions added by various
+makes it more difficult for NetBeans to manage actions added by various
 modules.
 
 <p>Instead, you should use the <a
@@ -1281,7 +1281,7 @@ href="@org-openide-actions@/org/openide/actions/doc-files/api.html">Actions API<
 <h4>Default toolbar</h4>
 
 Although it is best to use the Actions API to specify in your module's
-manifest file which actions to install where in the IDE, the IDE may
+manifest file which actions to install where, NetBeans may
 also create a toolbar attached to the editor window which will reflect
 all displayable actions supported by your editor, automatically. This
 may be better for less-commonly used actions which it would be
@@ -1311,7 +1311,7 @@ event listeners to it.
 <h4>Standard actions</h4>
 
 <p>A few basic editing commands you do <em>not</em> need to explicitly
-present to the IDE; this will be done for you automatically. The IDE
+present to NetBeans; this will be done for you automatically. NetBeans
 tests whether an editor kit provides (from its
 <code>EditorKit.getActions()</code> method) any actions with certain
 names. Default instances of these are also available in the
@@ -1348,11 +1348,11 @@ the text, e.g. a specific line number.</td></tr>
 affecting clipboard.</td></tr>
 <tr><td><code>undo</code></td><td>Undo action. See package
 <a href="@JDK@/javax/swing/undo/package-summary.html"><code>javax.swing.undo</code></a> for help. Currently not specially
-supported by the IDE, except to call your action.</td></tr>
+supported, except to call your action.</td></tr>
 <tr><td><code>redo</code></td><td>Redo action. Ditto.</td></tr>
 </table>
 
-<p>The corresponding items in the IDE's "Edit" menu, and other
+<p>The corresponding items in the NetBeans "Edit" menu, and other
 standard invocations such as from the system toolbar, will
 automatically invoke these actions on your document, if you supply
 them. You should use
@@ -1360,7 +1360,7 @@ them. You should use
 <a href="@JDK@/javax/swing/Action.html#isEnabled()"><code>Action.isEnabled()</code></a>
 
 to indicate whether your action is ready, and thus whether or not the
-corresponding UI elements in the IDE should be grayed out.
+corresponding UI elements should be grayed out.
 
 <h3><a name="undo">Undo/redo support</a></h3>
 
@@ -1368,7 +1368,7 @@ It is desirable for your document's user-level edit actions to implement
 
 <a href="@JDK@/javax/swing/undo/UndoableEdit.html"><code>UndoableEdit</code></a>,
 
-so that the IDE can smoothly provide Undo/Redo support for the editor
+so that NetBeans can smoothly provide Undo/Redo support for the editor
 from the standard places (e.g. in the Edit menu). Note that
 
 <a href="@JDK@/javax/swing/text/AbstractDocument.html"><code>AbstractDocument</code></a>,
@@ -1378,20 +1378,20 @@ for example, already provides this support.
 <h3><a name="cust">Customization</a></h3>
 
 This API does not provide any special mechanism for allowing the user
-to customize aspects of the editor's operation from the IDE; if you
+to customize aspects of the editor's operation from the GUI; if you
 want to do this, please use the <a
 href="@org-openide-options@/org/openide/options/doc-files/api.html">Options API</a>.
 
 <h3><a name="install">Installing</a></h3>
 
-It should be straightforward to install the new editor into the
-IDE - you will make a JAR file containing a manifest with attributes
-recognized by the IDE as constituting an IDE <a
+It should be straightforward to install the new editor -
+you will make a JAR file containing a manifest with attributes
+recognized by NetBeans as constituting a <a
 href="@org-openide-modules@/org/openide/modules/doc-files/api.html">module</a>, and just call
 
 <a href="@JDK@/javax/swing/JEditorPane.html#registerEditorKitForContentType(java.lang.String,%20java.lang.String)"><code>javax.swing.JEditorPane.registerEditorKitForContentType(...)</code></a>,
 
-and the IDE should subsequently use it.
+and NetBeans should subsequently use it.
 
 <h4>Implementing a module with editor support</h4>
 

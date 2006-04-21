@@ -1,15 +1,15 @@
 <!--
-   -                 Sun Public License Notice
-   - 
-   - The contents of this file are subject to the Sun Public License
-   - Version 1.0 (the "License"). You may not use this file except in
-   - compliance with the License. A copy of the License is available at
-   - http://www.sun.com/
-   - 
-   - The Original Code is NetBeans. The Initial Developer of the Original
-   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
-   - Microsystems, Inc. All Rights Reserved.
-  -->
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 
 <html>
 <head>
@@ -55,17 +55,14 @@ for the relevant classes.
 <h2><a name="intro">What are Options?</a></h2>
 
 NetBeans <em>system options</em> are groupings of user-settable
-properties which a module author desires to make available to the IDE
+properties which a module author desires to make available
 for two purposes: allowing a user to view and modify the existing
-settings pertaining to a module; and allowing the IDE to store these
+settings pertaining to a module; and allowing NetBeans to store these
 options to disk when it needs to, in a centralized operation (so that
-it is easy for an administrator to see where all IDE settings reside).
+it is easy for an administrator to see where all NetBeans settings reside).
 
 <p>Options installed into the system are automatically saved to disk
-when the IDE exits and reloaded when it starts up again. They are also
-refreshed when the user project changes. All the available options are
-visible in the IDE's Explorer under a master "Control Panel" node, for
-easy access.
+when changed.
 
 <h2><a name="make-opt">Creating a System Option</a></h2>
 
@@ -83,7 +80,7 @@ First you must subclass
 variable members can be static. You should create one static member
 (typically) for each property that you want to provide, and also give
 it a sensible default value. Regardless, the option should have a
-default constructor so that the IDE can instantiate it.
+default constructor so that it can be instantiated.
 
 <p><em>Note</em> that all property values must be serializable!
 

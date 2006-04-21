@@ -1,15 +1,15 @@
 <!--
-   -                 Sun Public License Notice
-   - 
-   - The contents of this file are subject to the Sun Public License
-   - Version 1.0 (the "License"). You may not use this file except in
-   - compliance with the License. A copy of the License is available at
-   - http://www.sun.com/
-   - 
-   - The Original Code is NetBeans. The Initial Developer of the Original
-   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
-   - Microsystems, Inc. All Rights Reserved.
-  -->
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 
 <html>
 <head>
@@ -149,7 +149,7 @@ explained.
 <h3><a name="instances">Working with Instances</a></h3>
 
 Central to the management of services and many other aspects of
-the IDE's configuration is the notion of
+NetBeans' configuration is the notion of
 <em>instances</em>. An instance is just any Java object, generally
 of a particular type appropriate to its use, which is provided from
 some object (generally, a data object) using
@@ -193,7 +193,7 @@ produces an instance of the class <code>com.mycom.mymodule.MyAction</code>.</p>
 
 <p>Since reflection is used to create the new instance, just as in the
 realm of JavaBeans, the class must be loadable from your module or
-otherwise from within the IDE (technically, via the classloader found
+otherwise from within NetBeans (technically, via the classloader found
 by querying Lookup for <code>ClassLoader</code>);
 public; and have a public no-argument constructor.
 (Or be a
@@ -343,8 +343,8 @@ interfaces under consideration: e.g. <code>javax.swing.Action</code>
 and <code>org.xml.sax.EntityResolver</code>. For each interface, there
 is code to find registered instances, all under the
 <samp>Services/</samp> folder. Furthermore, using either of these
-interfaces is relatively rare, and might not happen at all during an
-IDE session; and the implementations of the instances are complicated
+interfaces is relatively rare, and might not happen at all during a
+NetBeans session; and the implementations of the instances are complicated
 and involve a lot of code, so it is undesirable (for performance
 reasons) to load these implementations unless and until they are
 really needed. If you write the layers simply like this:
@@ -494,7 +494,7 @@ be returned. For example, if the implementations were present in the
 <samp>Services</samp> folder as <samp>*.instance</samp> files, then
 folder order would control this.
 
-<p>As mentioned above, the IDE's default lookup searches in the
+<p>As mentioned above, the NetBeans default lookup searches in the
 <samp>Services</samp> folder and its subfolders for instances whose
 class matches the requested class. Technically, it looks for data
 objects with <code>InstanceCookie.Of</code> claiming to match the
@@ -600,7 +600,7 @@ full state of the instance itself, which must be stored.
 
 The ID permits you to track which instance from all those available in
 the lookup result was last selected by the user, and find the "same"
-instance later, perhaps after a restart of the IDE. The exact form of
+instance later, perhaps after a restart of NetBeans. The exact form of
 the ID is the private knowledge of the implementor of the lookup, but
 typically if the instance has been provided via layer the ID will
 mention the name of the file from which it was derived.
@@ -762,7 +762,7 @@ that declares which module provides this setting. You give the full
 code name (including a slash followed by the major release version, if applicable)
 of the module and its specification version. The purpose of
 this element becomes apparent if the user ever customizes the setting
-file, thus writing the changes to disk (for example in the IDE's
+file, thus writing the changes to disk (for example in the
 <samp>system/Services/</samp> folder), and then uninstalls the module:
 keeping the name of the declaring module in the file ensures that with
 the module uninstalled, the system will quietly ignore the stale
@@ -941,7 +941,7 @@ corresponding options folder, the template will be available.</p>
 
 <p>In addition to providing services, it is desirable to display them
 to the user as well. This is done, as is customary in other aspects of
-the IDE's configuration, by displaying customized variants of the data
+NetBeans configuration, by displaying customized variants of the data
 nodes coming from the system filesystem. The root folder for
 displaying options is called <samp>UI/Services/</samp>. Its subfolders
 govern the display of the options available in the system.</p>
@@ -964,8 +964,8 @@ folder, in practice a few types of things are used:</p>
 
 <ul>
 
-<li><p>Symbolic links to settings files displayed elsewhere. In the
-IDE's options, these will appear as the real setting. For example:</p>
+<li><p>Symbolic links to settings files displayed elsewhere. In
+NetBeans' old-style options, these will appear as the real setting. For example:</p>
 
 <pre>
 &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"UI"</font>&gt;

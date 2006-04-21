@@ -7,26 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.execution;
 
-import java.text.Format;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.*;
+import java.io.Serializable;
+import java.text.Format;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Logger;
-
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
-//for OpenVMS conditional execution change
-import java.io.FileOutputStream;
-import java.io.BufferedOutputStream;
 
 /** Encapsulates start information for a process. It allows the user to
 * specify the process name to execute and arguments to provide. The progammer
@@ -39,7 +35,7 @@ import java.io.BufferedOutputStream;
 *
 * @author  Ian Formanek, Jaroslav Tulach
 */
-public final class NbProcessDescriptor extends Object implements java.io.Serializable {
+public final class NbProcessDescriptor extends Object implements Serializable {
 
     private static final long serialVersionUID = -4535211234565221486L;
     
@@ -129,15 +125,15 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
     
     /** Executes the process with arguments, processName and envp formatted by the provided
     * format. Also the envp properties are passed to the executed process,
-    * and a working directory may be supplied. Optionally the environment variables of the IDE may
+    * and a working directory may be supplied. Optionally the environment variables of the NetBeans JVM may
     * be appended to (replaced when there is overlap) instead of specifying
-    * all of the environment variables from scratch. This requires the IDE's
-    * launcher to translate environment variables to system properties prefixed
+    * all of the environment variables from scratch. This requires the NetBeans core
+    * to translate environment variables to system properties prefixed
     * by <samp>Env-</samp> in order to work correctly.
     *
     * @param format format to be applied to arguments, process and envp supplied by user. It can be <code>null</code> if no formatting should be done.
     * @param envp list of properties to be applied to the process, or <code>null</code> to leave unspecified
-    * @param appendEnv if true and <code>envp</code> is not <code>null</code>, append or replace IDE's environment
+    * @param appendEnv if true and <code>envp</code> is not <code>null</code>, append or replace JVM's environment
     * @param cwd the working directory to use, or <code>null</code> if this should not be specified
     * @return handle to executed process.
     * @exception IOException if the start of the process fails, or if setting the working directory is not supported

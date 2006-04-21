@@ -440,7 +440,7 @@ public abstract class Children extends Object {
     }
 
     /** Called when the list of nodes for this children
-     * object is no longer needed by the IDE.
+     * object is no longer needed.
      * Typical implementations at this time remove all
      * children to save memory (or clear the keys for
      * {@link Children.Keys} etc.).

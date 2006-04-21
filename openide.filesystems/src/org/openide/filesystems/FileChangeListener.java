@@ -7,15 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import java.util.EventListener;
 
 /** Listener for changes in <code>FileObject</code>s. Can be attached to any <code>FileObject</code>.
 * <P>
-* When attached to a file it listens for file changes (due to saving from the IDE) and
+* When attached to a file it listens for file changes (due to saving from inside NetBeans) and
 * for deletes and renames.
 * <P>
 * When attached to a folder it listens for all actions taken on this folder.
@@ -25,9 +27,8 @@ package org.openide.filesystems;
 * @see FileObject#addFileChangeListener
 *
 * @author Jaroslav Tulach, Petr Hamernik
-* @version 0.16, May 6, 1998
 */
-public interface FileChangeListener extends java.util.EventListener {
+public interface FileChangeListener extends EventListener {
     /** Fired when a new folder is created. This action can only be
      * listened to in folders containing the created folder up to the root of
      * filesystem.

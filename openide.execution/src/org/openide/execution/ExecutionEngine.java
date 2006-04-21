@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -40,8 +40,8 @@ public abstract class ExecutionEngine extends Object {
      */
     public abstract ExecutorTask execute(String name, Runnable run, InputOutput io);
 
-    /** Trap accesses to
-     * Users that want to link their classes with the IDE should do this through
+    /**
+     * Users that want to link their classes with NetBeans module classes should do this through
      * internal execution. The {@link NbClassLoader} used in internal execution will assume that calling
      * this method and giving the permission collection to the class being defined will
      * trigger automatic redirection of system output, input, and error streams into the given I/O tab.

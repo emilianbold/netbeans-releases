@@ -7,25 +7,28 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util.io;
 
-import org.openide.ErrorManager;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.Arrays;
 
-import java.io.*;
-
-
-/** Object that holds serialized reference to another object.
-* Inspirated by java.rmi.MarshalledObject but modified to
-* work with NetBeans and its modules. So no annotations are
-* stored with the bytestream and when the object
-* is deserialized it is assumed to be produced by the core IDE
-* or one of installed modules or it is located in the repository.
-*
-*
-*/
+/**
+ * Object that holds serialized reference to another object.
+ * Inspired by java.rmi.MarshalledObject but modified to
+ * work with NetBeans and its modules. So no annotations are
+ * stored with the bytestream and when the object
+ * is deserialized it is assumed to be produced by
+ * some installed module.
+ */
 public final class NbMarshalledObject implements Serializable {
     /** serial version UID */
     private static final long serialVersionUID = 7842398740921434354L;
@@ -52,7 +55,7 @@ public final class NbMarshalledObject implements Serializable {
     * @param obj the object to be serialized (must be serializable)
     * @exception IOException the object is not serializable
     */
-    public NbMarshalledObject(Object obj) throws java.io.IOException {
+    public NbMarshalledObject(Object obj) throws IOException {
         if (obj == null) {
             hash = 17;
 
@@ -77,8 +80,7 @@ public final class NbMarshalledObject implements Serializable {
     /**
     * Returns a new copy of the contained marshalledobject.
     * The object is deserialized by NbObjectInputStream, so it
-    * is assumed that it can be located by core IDE, a module
-    * or in the repository.
+    * is assumed that it can be located in some module.
     *
     * @return a copy of the contained object
     * @exception IOException on any I/O problem
@@ -97,7 +99,6 @@ public final class NbMarshalledObject implements Serializable {
             return ois.readObject();
         } catch (RuntimeException weird) {
             // Probably need to know what the bad ser actually was.
-            IOException ioe = new IOException(weird.toString());
             StringBuffer buf = new StringBuffer((objBytes.length * 2) + 20);
             buf.append("Bad ser data: "); // NOI18N
 
@@ -112,7 +113,8 @@ public final class NbMarshalledObject implements Serializable {
                 buf.append(HEX[b % 16]);
             }
 
-            ErrorManager.getDefault().annotate(ioe, ErrorManager.UNKNOWN, buf.toString(), null, weird, null);
+            IOException ioe = new IOException(weird.toString() + ": " + buf); // NOI18N
+            ioe.initCause(weird);
             throw ioe;
         } finally {
             ois.close();
@@ -140,7 +142,7 @@ public final class NbMarshalledObject implements Serializable {
         if ((obj != null) && obj instanceof NbMarshalledObject) {
             NbMarshalledObject other = (NbMarshalledObject) obj;
 
-            return java.util.Arrays.equals(objBytes, other.objBytes);
+            return Arrays.equals(objBytes, other.objBytes);
         } else {
             return false;
         }

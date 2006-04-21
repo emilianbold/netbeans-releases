@@ -725,7 +725,7 @@ public abstract class FileObject extends Object implements Serializable {
 
     /** Get URL that can be used to access this file.
      * If the file object does not correspond to a disk file or JAR entry,
-     * the URL will only be usable within the IDE as it uses a special protocol handler.
+     * the URL will only be usable within NetBeans as it uses a special protocol handler.
      * Otherwise an attempt is made to produce an external URL.
     * @return URL of this file object
     * @exception FileStateInvalidException if the file is not valid

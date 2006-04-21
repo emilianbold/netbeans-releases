@@ -7,17 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.explorer.propertysheet;
 
 import java.beans.PropertyEditor;
 
-
 /**
  * An extension interface for property editors that hides
- * all the necessary communication with the IDE. ExPropertyEditor
+ * all the necessary communication with the property sheet. ExPropertyEditor
  * is able to accept an instance of PropertyEnv class - this
  * environment passes additional information to the editor.
  * The <code>PropertyEnv</code> instance is typically used
@@ -44,7 +44,7 @@ public interface ExPropertyEditor extends PropertyEditor {
     public static final String PROPERTY_HELP_ID = "helpID"; // NOI18N
 
     /**
-     * This method is called by the IDE to pass
+     * This method is called by the property sheet to pass
      * the environment to the property editor.  The typical use case is for
      * the ExPropertyEditor to call <code>
      * env.getFeatureDescriptor().getValue (String key)</code> to retrieve

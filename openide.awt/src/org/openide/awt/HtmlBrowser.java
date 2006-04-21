@@ -7,15 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.awt;
 
-import org.openide.ErrorManager;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+package org.openide.awt;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -24,17 +20,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
+import java.net.MalformedURLException;
 import java.net.URL;
-
 import java.util.Iterator;
-
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -48,11 +40,14 @@ import javax.swing.JToolBar;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-
+import org.openide.ErrorManager;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
 * Object that provides viewer for HTML pages.
-* <p>If all you want to do is to show some URL in the IDE's normal way, this
+* <p>If all you want to do is to show some URL, this
 * is overkill. Just use {@link HtmlBrowser.URLDisplayer#showURL} instead. Using <code>HtmlBrowser</code>
 * is appropriate mainly if you want to embed a web browser in some other GUI component
 * (if the user has selected an external browser, this will fall back to a simple Swing
@@ -326,29 +321,29 @@ public class HtmlBrowser extends JPanel {
         head.setLayout(new BorderLayout(11, 0));
 
         JPanel p = new JPanel(new GridBagLayout());
-        p.add(bBack = new ToolbarButton(iBack));
+        p.add(bBack = new JButton(iBack));
         bBack.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Back"));
         bBack.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Back_Mnemonic").charAt(0));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 0, 5);
-        p.add(bForward = new ToolbarButton(iForward), gbc);
+        p.add(bForward = new JButton(iForward), gbc);
         bForward.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Forward"));
         bForward.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Forward_Mnemonic").charAt(0));
-        p.add(bStop = new ToolbarButton(iStop));
+        p.add(bStop = new JButton(iStop));
         bStop.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Stop"));
         bStop.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Stop_Mnemonic").charAt(0));
         gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 0, 5);
-        p.add(bReload = new ToolbarButton(iReload), gbc);
+        p.add(bReload = new JButton(iReload), gbc);
         bReload.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Reload"));
         bReload.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Reload_Mnemonic").charAt(0));
-        p.add(bHome = new ToolbarButton(iHome));
+        p.add(bHome = new JButton(iHome));
         bHome.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Home"));
         bHome.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Home_Mnemonic").charAt(0));
         gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 0, 5);
-        p.add(bHistory = new ToolbarButton(iHistory), gbc);
+        p.add(bHistory = new JButton(iHistory), gbc);
         bHistory.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_History"));
         bHistory.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_History_Mnemonic").charAt(0));
 
@@ -431,11 +426,11 @@ public class HtmlBrowser extends JPanel {
         URL URL;
 
         try {
-            URL = new java.net.URL(str);
-        } catch (java.net.MalformedURLException ee) {
+            URL = new URL(str);
+        } catch (MalformedURLException ee) {
             try {
-                URL = new java.net.URL("http://" + str); // NOI18N
-            } catch (java.net.MalformedURLException e) {
+                URL = new URL("http://" + str); // NOI18N
+            } catch (MalformedURLException e) {
                 if (browserImpl instanceof SwingBrowserImpl) {
                     ((SwingBrowserImpl) browserImpl).setStatusText(
                         NbBundle.getMessage(SwingBrowserImpl.class, "FMT_InvalidURL", new Object[] { str })
@@ -898,8 +893,8 @@ public class HtmlBrowser extends JPanel {
         }
 
         /** 
-         * API clients usage: Call this method to display your URL in browser which is currently
-         * selected in IDE. Typically for external browsers this method is 
+         * API clients usage: Call this method to display your URL in some browser.
+         * Typically for external browsers this method is 
          * non-blocking, doesn't wait until page gets displayed. Also, failures
          * are reported using dialog. However note that as there are other
          * implementations of this method, actual behaviour may be different.

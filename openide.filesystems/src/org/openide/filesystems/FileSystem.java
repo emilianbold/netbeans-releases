@@ -7,26 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.MessageFormat;
+import java.util.List;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
-import java.beans.*;
-
-import java.io.IOException;
-
-import java.text.MessageFormat;
-
-import java.util.Enumeration;
-import java.util.List;
-
-
 /** Interface that provides basic information about a virtual
-* filesystem in the IDE. Classes that implement it
+* filesystem. Classes that implement it
 * should follow JavaBean conventions because when a new
 * instance of a filesystem class is inserted into the system, it should
 * permit the user to modify it with standard Bean properties.
@@ -39,7 +39,7 @@ import java.util.List;
 * {@link Repository#findFileSystem same name} in the Repository.
 * @author Jaroslav Tulach
 */
-public abstract class FileSystem implements java.io.Serializable {
+public abstract class FileSystem implements Serializable {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -8931487924240189180L;
 
@@ -266,7 +266,7 @@ public abstract class FileSystem implements java.io.Serializable {
         }
     }
 
-    /** Returns <code>true</code> if the filesystem is default one of the IDE.
+    /** Returns <code>true</code> if the filesystem is default.
      * @see Repository#getDefaultFileSystem
     */
     public final boolean isDefault() {
