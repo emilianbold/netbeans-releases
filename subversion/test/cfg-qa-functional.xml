@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="tag,validation" executor="ide" name="versioning">
 	<testset dir="qa-functional/src">
             <patternset>
-                
+                <include name="org/netbeans/test/subversion/main/checkout/CheckoutUITest.class"/>
             </patternset>
         </testset>
     </testbag>	
