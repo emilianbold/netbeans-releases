@@ -8,14 +8,14 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 Author: Jiri.Skrivanek@sun.com
 -->
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 
 <library version="1.0">
-    <name>NB JUnit IDE</name>
+    <name>nb-junit-ide</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/junit/resources/Bundle</localizing-bundle>
     <volume>
