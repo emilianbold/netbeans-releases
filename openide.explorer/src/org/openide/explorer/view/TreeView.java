@@ -533,6 +533,14 @@ public abstract class TreeView extends JScrollPane {
     // Processing functions
     //
 
+    public void validate() {
+        Children.MUTEX.readAccess(new Runnable() {
+            public void run() {
+                TreeView.super.validate();
+            }
+        });
+    }
+
     /** Initializes the component and lookup explorer manager.
     */
     public void addNotify() {
