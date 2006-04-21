@@ -18,11 +18,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintStream;
+import java.util.Calendar;
 import org.netbeans.xtest.util.NativeKill;
 import org.netbeans.xtest.util.PNGEncoder;
 
 /**
  * Kill IDE when timeout expires.
+ * You can test it if you decrease timeout: ant -Dxtest.timeout=60000
  */
 public class IdeWatchdog implements Runnable {
     
@@ -35,8 +37,8 @@ public class IdeWatchdog implements Runnable {
             String xtestWorkdir = args[0];
             if(new File(xtestWorkdir, "watchdog.killed").exists()) {
                 // IDE was killed => print message
-                System.out.println("XTest: Hard timeout occured - trying to kill IDE");
-                System.out.println("XTest: IDE killed.");
+                System.out.println(Calendar.getInstance().getTime());
+                System.out.println("XTest: IDE killed because hard timeout was reached.");
             } else {
                 // stop watchdog
                 new File(xtestWorkdir, "watchdog.finish").createNewFile();
@@ -50,8 +52,11 @@ public class IdeWatchdog implements Runnable {
         ideWatchdog.xtestWorkdir = args[2];
         String ideUserdir = args[3];
 
+        // Because we run watchdog in separate VM we cannot see output messages.
+        // Even if we redirect it to a file, it can't be deleted sometimes.
+        // So, if you want to debug it uncomment the following line
         // redirect output stream
-        System.setOut(new PrintStream(new FileOutputStream(new File(ideWatchdog.xtestWorkdir, "watchdog.log"))));
+        //System.setOut(new PrintStream(new FileOutputStream(new File(ideWatchdog.xtestWorkdir, "watchdog.log"))));
         System.out.println("TIMEOUT="+timeout);
         System.out.println("XTEST.HOME="+xtestHome);
         System.out.println("XTEST.WORKDIR="+ideWatchdog.xtestWorkdir);
