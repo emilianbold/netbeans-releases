@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
@@ -34,21 +36,20 @@ import org.openide.nodes.*;
  * @author Jesse Glick
  */
 public class DataObjectInvalidationTest extends LoggingTestCaseHid {
-    org.openide.ErrorManager err;
-    
-    // SEE ALSO:
-    // FolderInstanceTest.testFolderInstanceNeverPassesInvObjects
-    // DataFolderTest.testPropChildrenFiredAfterInvalidation
+    Logger log;
     
     public DataObjectInvalidationTest(String name) {
         super(name);
     }
+
+    protected Level logLevel() {
+        return Level.FINE;
+    }
     
     protected void setUp() throws IOException {
         clearWorkDir();
-        
-        err = org.openide.ErrorManager.getDefault().getInstance("TEST-" + getName());
-        
+
+        log = Logger.getLogger("TEST-" + getName());
         registerIntoLookup(new Pool());
     }
     
@@ -147,47 +148,6 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         Node[] nodes = folderkids.getNodes(true);
         assertEquals("Number of children", 1, nodes.length);
         assertEquals("Correct node delegate", "slownode", nodes[0].getShortDescription());
-    }
-    
-    /** Tests that the loader pool does not
-     * try to create a DataObject for a given file object more
-     * than once.
-     * Refer to #15898.
-     */
-    public void testDataObjectsCreatedOncePerFile() throws Exception {
-        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
-            "folder/file.slow",
-        });
-        FileObject folder = lfs.findResource("folder");
-        DataLoader l = DataLoader.getLoader(SlowDataLoader.class);
-        err.log("Registering the slow loader");
-        Pool.setExtra(l);
-        
-        err.log("Clearing the counts");
-        SlowDataLoader.createCount = 0;
-        SlowDataObject.createCount = 0;
-        err.log("Counts cleared");
-        
-        DataFolder f = DataFolder.findFolder(folder);
-        
-        err.log("Folder created: " + f);
-        
-        Node foldernode = f.getNodeDelegate();
-        
-        err.log("Node created: " + foldernode);
-        
-        Children folderkids = foldernode.getChildren();
-        
-        err.log("Children are here");
-        assertEquals("Getting a folder node does not start automatically scanning children", 0, SlowDataLoader.createCount);
-        assertEquals("Getting a folder node does not finish automatically scanning children", 0, SlowDataObject.createCount);
-        
-        Node[] keep = folderkids.getNodes(true);
-        
-        err.log("Nodes for children are computed: " + keep.length);
-        
-        assertEquals("After getting folder node children, a data object is not started to be created >1 time", 1, SlowDataLoader.createCount);
-        assertEquals("After getting folder node children, a data object is not successfully created >1 time", 1, SlowDataObject.createCount);
     }
     
     /** See #15902.
@@ -301,7 +261,7 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
     
     public static final class SlowDataLoader extends UniFileLoader {
         public static int createCount = 0;
-        private static ErrorManager ERR = ErrorManager.getDefault().getInstance("SlowDataLoader");
+        private static Logger ERR = Logger.getLogger("SlowDataLoader");
         public SlowDataLoader() {
             super(SlowDataObject.class.getName());
         }
@@ -313,9 +273,9 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
             return "Slow";
         }
         protected MultiDataObject createMultiObject(FileObject pf) throws IOException {
-            ERR.log("in createMultiObject for: " + pf);
+            ERR.info("in createMultiObject for: " + pf);
             SlowDataObject o = new SlowDataObject(pf, this);
-            ERR.log("created object : " + o);
+            ERR.info("created object : " + o);
             //new Exception("creating for: " + pf + " count=" + createCount).printStackTrace();
             return o;
         }
@@ -326,12 +286,12 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         public SlowDataObject(FileObject pf, MultiFileLoader loader) throws IOException {
             super(pf, loader);
             synchronized (loader) {
-                SlowDataLoader.ERR.log("Incrementing SlowDataObject count to " + ++createCount);
-                SlowDataLoader.ERR.log("Incrementing SlowDataLoader count to " + ++SlowDataLoader.createCount);
+                SlowDataLoader.ERR.info("Incrementing SlowDataObject count to " + ++createCount);
+                SlowDataLoader.ERR.info("Incrementing SlowDataLoader count to " + ++SlowDataLoader.createCount);
                 
                 // in case somebody is listening on the loader for our creation
                 // let him wake up
-                SlowDataLoader.ERR.log("Wake up sleepers");
+                SlowDataLoader.ERR.info("Wake up sleepers");
                 loader.notifyAll ();
             }
             
@@ -347,7 +307,7 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
             
             
             ok = Thread.currentThread();
-            SlowDataLoader.ERR.log("End of constructor");
+            SlowDataLoader.ERR.info("End of constructor");
         }
         protected Node createNodeDelegate() {
             return new SlowDataNode(this);
