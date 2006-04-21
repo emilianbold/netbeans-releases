@@ -13,6 +13,7 @@
 
 package org.openide.explorer;
 
+import java.util.logging.Level;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 import org.openide.explorer.*;
@@ -43,9 +44,12 @@ public class ExplorerActionsTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(ExplorerActionsTest.class));
-        System.exit (0);
+    protected Level logLevel() {
+        return Level.FINER;
+    }
+
+    protected boolean runInEQ() {
+        return true;
     }
 
     public void testGlobalStateInExplorerActionsIsImportant () throws Exception {
