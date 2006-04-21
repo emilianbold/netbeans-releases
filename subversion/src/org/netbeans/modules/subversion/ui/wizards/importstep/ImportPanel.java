@@ -38,7 +38,7 @@ public class ImportPanel extends javax.swing.JPanel {
         jLabel4 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
-        setName("Message");
+        setName("Repository folder");
         jLabel1.setText("Specify the message:");
 
         messageTextArea.setColumns(20);
