@@ -50,6 +50,14 @@ public class IgnoreAction extends ContextAction {
         }
     }
 
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    }
+
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    }
+    
     public int getActionStatus(Node [] nodes) {
         return getActionStatus(SvnUtils.getCurrentContext(nodes).getFiles());
     }
