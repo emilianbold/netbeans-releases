@@ -1956,7 +1956,7 @@ implements Outputable, Timeoutable {
 	}
 
 	public boolean checkCell(JTableOperator oper, int row, int column) {
-	    Object value = ((JTable)oper.getSource()).getValueAt(row, column);
+	    Object value = ((JTable)oper.getSource()).getModel().getValueAt(row, column);
 	    return(comparator.equals((value != null) ?
 				     value.toString() :
 				     null,

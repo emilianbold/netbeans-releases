@@ -41,7 +41,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.util.NameComponentChooser;
 
 /**
@@ -88,7 +87,17 @@ public class JTableOperatorTest extends TestCase {
             {"Alison", "Huml",     "Rowing",        new Integer(3),  new Boolean(true)},
             {"Kathy",  "Walrath",  "Knitting",      new Integer(2),  new Boolean(false)},
             {"Sharon", "Zakhour",  "Speed reading", new Integer(20), new Boolean(true)},
-            {"Philip", "Milne",    "Pool", new Integer(10), new Boolean(false)}
+            {"Philip", "Milne",    "Pool",          new Integer(10), new Boolean(false)},
+            {"Mary",   "Campione", "Snowboarding",  new Integer(5),  new Boolean(false)},
+            {"Alison", "Huml",     "Rowing",        new Integer(3),  new Boolean(true)},
+            {"Kathy",  "Walrath",  "Knitting",      new Integer(2),  new Boolean(false)},
+            {"Sharon", "Zakhour",  "Speed reading", new Integer(20), new Boolean(true)},
+            {"Philip", "Milne",    "Pool",          new Integer(10), new Boolean(false)},
+            {"Mary",   "Campione", "Snowboarding",  new Integer(5),  new Boolean(false)},
+            {"Alison", "Huml",     "Rowing",        new Integer(3),  new Boolean(true)},
+            {"Kathy",  "Walrath",  "Knitting",      new Integer(2),  new Boolean(false)},
+            {"Sharon", "Zakhour",  "Speed reading", new Integer(20), new Boolean(true)},
+            {"XXXXXX", "Milne",    "Pool",          new Integer(10), new Boolean(false)}
         };
         
         table = new JTable(data, columns);
@@ -96,7 +105,7 @@ public class JTableOperatorTest extends TestCase {
         JScrollPane scrollPane = new JScrollPane(table);
         
         frame.getContentPane().add(scrollPane);
-        frame.pack();
+        frame.setSize(300, 200);
         frame.setLocationRelativeTo(null);
     }
     
@@ -189,6 +198,10 @@ public class JTableOperatorTest extends TestCase {
     
     /**
      * Test findCell method.
+     *
+     * <p>
+     *  Added last test for issue #51882.
+     * </p>
      */
     public void testFindCell() {
         frame.setVisible(true);
@@ -210,6 +223,9 @@ public class JTableOperatorTest extends TestCase {
         
         Point point2 = operator1.findCell(new NameComponentChooser("Mary"), rows, columns, 0);
         assertNotNull(point2);
+        
+        Point point3 = operator1.findCell("XXXXXX", new Operator.DefaultStringComparator(true, true), 0);
+        assertNotNull(point3);
     }
     
     /**
@@ -414,12 +430,14 @@ public class JTableOperatorTest extends TestCase {
         
         JTableOperator operator1 = new JTableOperator(operator);
         assertNotNull(operator1);
-        
+
+        /*
         try {
             operator1.waitCellComponent(new NameComponentChooser("1234"), 0, 0);
         }
         catch(TimeoutExpiredException exception) {
         }
+         */
     }
     
     /**
@@ -995,7 +1013,7 @@ public class JTableOperatorTest extends TestCase {
         JTableOperator operator1 = new JTableOperator(operator);
         assertNotNull(operator1);
         
-        assertEquals(5, operator1.getRowCount());
+        assertEquals(15, operator1.getRowCount());
     }
     
     /**
