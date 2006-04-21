@@ -63,7 +63,9 @@
                 </context-menu>
             </view>
             <subprojects>
-                <project>../lib</project>
+                <project>../libbean</project>
+                <project>../libutil14</project>
+                <project>../libutil15</project>
             </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
