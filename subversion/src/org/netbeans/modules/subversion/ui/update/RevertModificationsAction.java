@@ -22,7 +22,9 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -42,6 +44,9 @@ public class RevertModificationsAction extends ContextAction {
     }
 
     protected void performContextAction(final Node[] nodes) {
+        if(!confirmed()) {
+            return;
+        }
         final Context ctx = getContext(nodes);
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
@@ -51,6 +56,19 @@ public class RevertModificationsAction extends ContextAction {
         support.start(createRequestProcessor(nodes));
     }
 
+    private static boolean confirmed() {
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                "Do you want to overwrite selected files with their previous version?",
+                "Confirm overwrite",
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                null,
+                null
+        );
+        Object option = DialogDisplayer.getDefault().notify(descriptor);
+        return option == NotifyDescriptor.YES_OPTION;
+    }
+        
     /** Recursive revert */
     public static void performRevert(Context ctx, SvnProgressSupport support) {
         SvnClient client;
