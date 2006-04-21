@@ -161,7 +161,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     }
     
     private void initDnD() {
-        DropTarget dt = new DropTarget(this, dnd);
+        DropTarget dt = new DropTarget(this, getDnd());
     }
     
     DataFolder getFolder() {
@@ -311,7 +311,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     private static DataFlavor buttonDataFlavor = new DataFlavor( DataObject.class, "Toolbar Item" );
     private static DataFlavor actionDataFlavor = new DataFlavor( Node.class, "Action Node" );
 
-    private DnDSupport dnd = new DnDSupport();
+    private DnDSupport dnd;
     private class DnDSupport implements DragSourceListener, DragGestureListener, DropTargetListener, DragSourceMotionListener {
         private DragSource dragSource = new DragSource();
         
@@ -613,7 +613,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         
         super.addImpl (c, constraints, idx);
         if( !("grip".equals(c.getName()) || (c instanceof JToolBar.Separator)) ) {
-            dnd.register(c);
+            getDnd().register(c);
         }
     }
     
@@ -1427,5 +1427,12 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                 retValue = getUnknownIcon();
             return retValue;
         }
+    }
+
+    private DnDSupport getDnd() {
+        if (dnd == null) {
+            dnd = new DnDSupport();
+        }
+        return dnd;
     }
 } // end of class Toolbar
