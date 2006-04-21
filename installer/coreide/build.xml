@@ -75,15 +75,9 @@ Microsystems, Inc. All Rights Reserved.
         <include name="lib/ppk/*.jar"/>
         <include name="distributables/platform/ext/*.jar"/>
       </fileset>
-      <fileset dir="../libbean">
-        <include name="dist/*.jar"/>
-      </fileset>
-      <fileset dir="../libutil14">
-        <include name="dist/*.jar"/>
-      </fileset>
-      <fileset dir="../libutil15">
-        <include name="dist/*.jar"/>
-      </fileset>
+      <pathelement path="../libbean/dist/libbean.jar"/>
+      <pathelement path="../libutil14/dist/libutil14.jar"/>
+      <pathelement path="../libutil15/dist/libutil15.jar"/>
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
