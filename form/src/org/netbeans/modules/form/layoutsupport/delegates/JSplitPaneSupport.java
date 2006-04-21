@@ -459,7 +459,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
         }
 
         public Node.Property[] getProperties() {
-            if (properties == null)
+            if (properties == null) {
                 properties = new Node.Property[] {
                     new FormProperty(
                             "SplitConstraints splitPosition", // NOI18N
@@ -488,6 +488,8 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
                         } // capabilities (compatibility with previous versions)
                     }
                 };
+                properties[0].setValue("NOI18N", Boolean.TRUE); // NOI18N
+            }
 
             return properties;
         }

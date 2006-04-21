@@ -90,7 +90,8 @@ public class I18nPanel extends JPanel {
     public I18nPanel(PropertyPanel propertyPanel, boolean withButtons, Project project, FileObject file) {
         this.project = project;
         this.file = file;
-        this.propertyPanel = propertyPanel; 
+        this.propertyPanel = propertyPanel;
+        this.propertyPanel.setFile(file);
         this.propertyPanel.setEnabled(project != null);
 
         // Init bundle.
@@ -117,7 +118,7 @@ public class I18nPanel extends JPanel {
 
         emptyPanel.setBundleText(bundleKey);
         if (contentsShown) {
-            contentsPanelPlaceholder.remove(contentsPanel);
+            contentsPanelPlaceholder.remove(propertyPanel);
             contentsPanelPlaceholder.add(emptyPanel);
             contentsPanelPlaceholder.validate();
             contentsPanelPlaceholder.repaint();
@@ -129,7 +130,7 @@ public class I18nPanel extends JPanel {
     public void showPropertyPanel() {
         if (!contentsShown) {
             contentsPanelPlaceholder.remove(emptyPanel);
-            contentsPanelPlaceholder.add(contentsPanel);
+            contentsPanelPlaceholder.add(propertyPanel);
             contentsPanelPlaceholder.validate();
             contentsPanelPlaceholder.repaint();
             contentsShown = true;
@@ -142,22 +143,23 @@ public class I18nPanel extends JPanel {
     /**
      * Reset associated project to a new value
      */
-    public void setProject(Project project) {
-        ((ResourcePanel)resourcePanel).setProject(project);
-        propertyPanel.setEnabled(project != null);
-
-    }
-
-    public Project getProject() { 
-        return ((ResourcePanel)resourcePanel).getProject();
-    }
+//    public void setProject(Project project) {
+////        ((ResourcePanel)resourcePanel).setProject(project);
+//        propertyPanel.setEnabled(project != null);
+//
+//    }
+//
+//    public Project getProject() { 
+//        return ((ResourcePanel)resourcePanel).getProject();
+//    }
     
     /**
      * Sets the file associated with this panel -- the one, which
      * is localized
      */ 
     public void setFile(FileObject file) {
-        ((ResourcePanel)resourcePanel).setFile(file);
+//        ((ResourcePanel)resourcePanel).setFile(file);
+        propertyPanel.setFile(file);
     }
     
     /**
@@ -165,7 +167,8 @@ public class I18nPanel extends JPanel {
      * is localized
      */ 
     public FileObject getFile() {
-        return ((ResourcePanel)resourcePanel).getFile();
+//        return ((ResourcePanel)resourcePanel).getFile();
+        return propertyPanel.getFile();
     }
 
     
@@ -186,8 +189,8 @@ public class I18nPanel extends JPanel {
     public void setI18nString(I18nString i18nString) {
         this.i18nString = i18nString;
 
-        ((PropertyPanel)propertyPanel).setI18nString(i18nString);
-        ((ResourcePanel)resourcePanel).setI18nString(i18nString);        
+        propertyPanel.setI18nString(i18nString);
+//        ((ResourcePanel)resourcePanel).setI18nString(i18nString);        
         
         showPropertyPanel();
     }
@@ -242,7 +245,8 @@ public class I18nPanel extends JPanel {
                 if (peer != null) {
                     try {
                         DataObject peerDataObject = DataObject.find(peer);
-                        ((ResourcePanel)resourcePanel).setResource(peerDataObject);
+//                        ((ResourcePanel)resourcePanel).setResource(peerDataObject);
+                        propertyPanel.setResource(peerDataObject);
                         return;
                     } catch (IOException ex) {
                         // no default resource
@@ -254,9 +258,9 @@ public class I18nPanel extends JPanel {
     }
     
     /** Creates <code>ResourcePanel</code>. */
-    private JPanel createResourcePanel() {
-        return new ResourcePanel(project, file);
-    }
+//    private JPanel createResourcePanel() {
+//        return new ResourcePanel(project, file);
+//    }
     
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_I18nPanel"));        
@@ -334,7 +338,6 @@ public class I18nPanel extends JPanel {
 
         contentsPanelPlaceholder.setLayout(new javax.swing.BoxLayout(contentsPanelPlaceholder, javax.swing.BoxLayout.Y_AXIS));
 
-        contentsPanelPlaceholder.setPreferredSize(new java.awt.Dimension(520, 460));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -344,18 +347,17 @@ public class I18nPanel extends JPanel {
         gridBagConstraints.weighty = 1.0;
         add(contentsPanelPlaceholder, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void myInitComponents() {
-        resourcePanel = createResourcePanel();
-        contentsPanel = new JPanel();
-        contentsPanel.setLayout(new BoxLayout(contentsPanel, BoxLayout.Y_AXIS));
+//        resourcePanel = createResourcePanel();
+//        contentsPanel = new JPanel();
+//        contentsPanel.setLayout(new BoxLayout(contentsPanel, BoxLayout.Y_AXIS));
 
-        contentsPanel.add(resourcePanel);
-        contentsPanel.add(propertyPanel);
+//        contentsPanel.add(resourcePanel);
+//        contentsPanel.add(propertyPanel);
         contentsShown = true;
-        contentsPanelPlaceholder.add(contentsPanel);
+        contentsPanelPlaceholder.add(propertyPanel);
         
       
         propertyPanel.addPropertyChangeListener(PropertyPanel.PROP_STRING, 
@@ -365,17 +367,18 @@ public class I18nPanel extends JPanel {
                                                     }
                                                 });
         
-        resourcePanel.addPropertyChangeListener(ResourcePanel.PROP_RESOURCE, 
-                WeakListeners.propertyChange(
+        propertyPanel.addPropertyChangeListener(PropertyPanel.PROP_RESOURCE,
+//                WeakListeners.propertyChange(
                     new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
-                            if(ResourcePanel.PROP_RESOURCE.equals(evt.getPropertyName())) {
-                            buttonsEnableDisable();
-                            ((PropertyPanel)propertyPanel).updateAllValues();
+                            if(PropertyPanel.PROP_RESOURCE.equals(evt.getPropertyName())) {
+                                buttonsEnableDisable();
+    //                            ((PropertyPanel)propertyPanel).updateAllValues();
+                            }
                         }
                     }
-                },resourcePanel
-               )
+//                },resourcePanel
+//               )
         );
         
     }
@@ -415,8 +418,8 @@ public class I18nPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private EmptyPropertyPanel emptyPanel;
-    private javax.swing.JPanel resourcePanel;
-    private javax.swing.JPanel propertyPanel;
-    private javax.swing.JPanel contentsPanel;
+//    private javax.swing.JPanel resourcePanel;
+    private PropertyPanel propertyPanel;
+//    private javax.swing.JPanel contentsPanel;
 
 }

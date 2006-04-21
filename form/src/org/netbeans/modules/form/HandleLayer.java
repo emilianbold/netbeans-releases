@@ -404,10 +404,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             FormModel formModel = formDesigner.getFormModel();
             LayoutModel layoutModel = formModel.getLayoutModel();
             if (layoutModel != null) {
-                Iterator iter = formModel.getMetaComponents().iterator();
                 Map idToNameMap = new HashMap();
-                while (iter.hasNext()) {
-                    RADComponent comp = (RADComponent)iter.next();
+                for (RADComponent comp : formModel.getAllComponents()) {
                     if (comp != formModel.getTopRADComponent())
                         idToNameMap.put(comp.getId(), comp.getName());
                 }
@@ -419,10 +417,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 FormModel formModel = formDesigner.getFormModel();
                 LayoutModel layoutModel = formModel.getLayoutModel();
                 if (layoutModel != null) {
-                    Iterator iter = formModel.getMetaComponents().iterator();
                     Map idToNameMap = new HashMap();
-                    while (iter.hasNext()) {
-                        RADComponent comp = (RADComponent)iter.next();
+                    for (RADComponent comp : formModel.getAllComponents()) {
                         idToNameMap.put(comp.getId(), comp.getName());
                     }
                     FormDataObject formDO = formDesigner.getFormEditor().getFormDataObject();

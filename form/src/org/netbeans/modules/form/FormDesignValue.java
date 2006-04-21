@@ -65,9 +65,9 @@ public interface FormDesignValue extends java.io.Serializable {
      *
      * @param targetFormProperty the FormProperty the copied value will be set to
      * @return the new FormDesignValue instance or null if it's impossible to copy 
-     *         the particular subtype.
+     *         the particular subtype; may also return the represented real value
      */
-    public FormDesignValue copy(FormProperty targetFormProperty);
+    public Object copy(FormProperty targetFormProperty);
     
     //
     // In the future, some methods for handling persistence

@@ -230,7 +230,7 @@ public class FormI18nSupport extends JavaI18nSupport {
                 int index2 = -1;
                 
                 if(!comp1.equals(comp2)) {
-                    Object[] components = formModel.getMetaComponents().toArray();
+                    Object[] components = formModel.getAllComponents().toArray();
                     
                     for(int i=0; i<components.length; i++) {
                         if(comp1.equals(components[i]))
@@ -382,7 +382,7 @@ public class FormI18nSupport extends JavaI18nSupport {
                 return;
 
             // All components in current FormDataObject.
-            Collection c = ((FormDataObject)sourceDataObject).getFormEditor().getFormModel().getMetaComponents();
+            Collection c = ((FormDataObject)sourceDataObject).getFormEditor().getFormModel().getAllComponents();
             Iterator it = c.iterator();
 
             // search thru all RADComponents in the form

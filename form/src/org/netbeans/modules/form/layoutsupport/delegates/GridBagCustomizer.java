@@ -361,7 +361,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
     class FormListener implements FormModelListener {
         public void formChanged(FormModelEvent[] events) {
-            if (GridBagCustomizer.this.isShowing()) {
+            if (events != null && GridBagCustomizer.this.isShowing()) {
                 boolean modifying = false;
                 for (int i=0; i < events.length; i++)
                     if (events[i].isModifying()) {

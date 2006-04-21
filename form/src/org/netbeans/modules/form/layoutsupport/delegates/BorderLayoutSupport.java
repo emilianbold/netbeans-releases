@@ -341,7 +341,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
         }
 
         public Node.Property[] getProperties() {
-            if (properties == null)
+            if (properties == null) {
                 properties = new FormProperty[] {
                     new FormProperty(
                             "BorderConstraints direction", // NOI18N
@@ -366,6 +366,8 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
                         } // capabilities (compatibility with previous versions)
                     }
                 };
+                properties[0].setValue("NOI18N", Boolean.TRUE); // NOI18N
+            }
 
             return properties;
         }

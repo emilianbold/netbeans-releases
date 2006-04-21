@@ -37,9 +37,27 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class JavaResourceHolder extends ResourceHolder {
 
+    private String selectedLocale;
+
     /** Constructor. */
     public JavaResourceHolder() {
         super(new Class[] {PropertiesDataObject.class});
+    }
+
+    /**
+     * Sets design time localization - i.e. where to look for values
+     * preferentially (methods getValueForKey and getCommentForKey). If not
+     * found in the given file entry directly, then parent entries are tried
+     * (just like ResourceBundle would do at runtime).
+     * @param locale including initial underscore (e.g. _cs_CZ)
+     */
+    public void setLocalization(String locale) {
+        selectedLocale = locale;
+    }
+
+    private String getLocalizationFileName() {
+        return selectedLocale != null && !selectedLocale.equals("") ? // NOI18N
+               resource.getName() + selectedLocale : resource.getName();
     }
 
     /** Implements superclass abstract method.
@@ -49,6 +67,14 @@ public class JavaResourceHolder extends ResourceHolder {
             return new String[0];
 
         return ((PropertiesDataObject)resource).getBundleStructure().getKeys();
+    }
+
+    /**
+     * Finds a free key in the bundle for given suggested key name.
+     */
+    public String findFreeKey(String keySpec) {
+        BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
+        return bundleStructure != null ? bundleStructure.findFreeKey(keySpec) : null;
     }
 
     /** Implements superclass abstract method. Gets value for specified key. 
@@ -77,16 +103,26 @@ public class JavaResourceHolder extends ResourceHolder {
         if (bundleStructure == null)
             return null;
 
-        // Get item from the first file entry which contains the key.
-        // Is looks in default (=primary) entry first.
-        for(int i=0; i<bundleStructure.getEntryCount(); i++) {
-            Element.ItemElem item = bundleStructure.getItem(i, key);
-            if(item != null) return item;
-        }
-
-        return null;            
+        return bundleStructure.getItem(getLocalizationFileName(), key);
     }
-    
+
+    /**
+     * Gets all data (values, comments) for given key across all locales.
+     */
+    public Object getAllData(String key) {
+        BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
+        return bundleStructure != null ? bundleStructure.getAllData(key) : null;
+    }
+
+    /**
+     * Restores data for given key (obtained sooner from getAllData method).
+     */
+    public void setAllData(String key, Object data) {
+        BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
+        if (bundleStructure != null)
+            bundleStructure.setAllData(key, (String[])data);
+    }
+
     /** Implements superclass abstract method. Adds new property (key-valkue pair) to resource object. 
      * @param key key value, if it is <code>null</code> nothing is done
      * @param value 'value' value, can be <code>null</code>
@@ -97,27 +133,37 @@ public class JavaResourceHolder extends ResourceHolder {
         if(resource == null || key == null) return;
 
         String keyValue     = key.toString();
-        String valueValue   = value == null ? "" : value.toString();
+        String valueValue   = value == null ? "" : value.toString(); // NOI18N
         String commentValue = comment;
         
-        // write to bundle primary file
+        // write to bundle file(s)
         BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
-        PropertiesStructure propStructure = bundleStructure.getNthEntry(0).getHandler().getStructure();
-        Element.ItemElem item = propStructure.getItem(keyValue);
-
-        if(item == null) {
-            // Item doesn't exist in this entry -> create it.
-            propStructure.addItem(keyValue, valueValue, commentValue);
-        } else if(!item.getValue().equals(valueValue) && forceNewValue) {
-            item.setValue(valueValue);
-            item.setComment(commentValue);
+        if (bundleStructure != null) {
+            bundleStructure.addItem(getLocalizationFileName(),
+                                    keyValue, valueValue, commentValue,
+                                    forceNewValue);
         }
     }
 
+    /**
+     * Removes property of given key from all locale files of the bundle.
+     */
+    public void removeProperty(Object key) {
+        BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
+        if (bundleStructure != null)
+            bundleStructure.removeItem(key.toString());
+    }
 
     /** Implements superclass abstract method. Creates template of type clazz 
      * which have to be of <code>PropertiesDataObject</code> type in our case. */
     protected DataObject createTemplate(Class clazz) throws IOException {
+        return getTemplate();
+    }
+
+    /**
+     * Returns template data object for properties file.
+     */
+    public static DataObject getTemplate() throws IOException {
         FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
 
         FileObject fileObject = defaultFS.findResource("Templates/Other/properties.properties"); // NOI18N

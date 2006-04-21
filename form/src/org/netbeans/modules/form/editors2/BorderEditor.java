@@ -51,10 +51,10 @@ public final class BorderEditor extends PropertyEditorSupport
 {
     /** Icon base for unknown border node. */
     private static final String UNKNOWN_BORDER_BASE =
-        "org/netbeans/modules/form/editors2/unknownBorder"; // NOI18N
+        "org/netbeans/modules/form/editors2/unknownBorder.gif"; // NOI18N
     /** Icon base for no border node. */
     private static final String NO_BORDER_BASE =
-        "org/netbeans/modules/form/editors2/nullBorder"; // NOI18N
+        "org/netbeans/modules/form/editors2/nullBorder.gif"; // NOI18N
 
     private static Node.Property[] EMPTY_PROPERTIES = new Node.Property[0];
     
@@ -291,7 +291,10 @@ public final class BorderEditor extends PropertyEditorSupport
                     && borderSupport.getBorderClass() == nodeBDS.getBorderClass())
                 {
                     try {
-                        nodeBDS = new BorderDesignSupport(borderSupport, propertyContext);
+                        nodeBDS.setPropertyContext(propertyContext);
+                        FormUtils.copyProperties(borderSupport.getProperties(),
+                                                 nodeBDS.getProperties(),
+                                                 FormUtils.CHANGED_ONLY|FormUtils.DISABLE_CHANGE_FIRING|FormUtils.DONT_CLONE_VALUES);
                     }
                     catch (Exception ex) {
                         ex.printStackTrace();
@@ -406,7 +409,7 @@ public final class BorderEditor extends PropertyEditorSupport
         NoBorderNode() {
             super(Children.LEAF);
             setDisplayName(getBundle().getString("LAB_NoBorder")); // NOI18N
-            setIconBase(NO_BORDER_BASE);
+            setIconBaseWithExtension(NO_BORDER_BASE);
         }
     }
 
@@ -416,7 +419,7 @@ public final class BorderEditor extends PropertyEditorSupport
         UnknownBorderNode(Object border) {
             super(Children.LEAF);
             setBorder(border);
-            setIconBase(UNKNOWN_BORDER_BASE);
+            setIconBaseWithExtension(UNKNOWN_BORDER_BASE);
         }
 
         void setBorder(Object border) {

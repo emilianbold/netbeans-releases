@@ -424,6 +424,8 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             throw iae;
         }
 
+        i18nComponentRename(name); // do before the component has new name
+
         String oldName = var.getName();
 
         formModel.getCodeStructure().renameVariable(oldName, name);
@@ -1228,14 +1230,17 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
     }
 
     protected PropertyChangeListener createPropertyListener() {
-        return new PropertyListener();
+        return new PropertyListenerConvertor();
     }
 
     protected void setPropertyListener(FormProperty property) {
         if (propertyListener == null)
             propertyListener = createPropertyListener();
-        if (propertyListener != null)
+        if (propertyListener != null) {
             property.addPropertyChangeListener(propertyListener);
+            if (propertyListener instanceof FormProperty.ValueConvertor)
+                property.addValueConvertor((FormProperty.ValueConvertor)propertyListener);
+        }
     }
 //    protected PropertyChangeListener getPropertyListener() {
 //        if (propertyListener == null)
@@ -1245,18 +1250,21 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
 
     /** Listener class for listening to changes in component's properties.
      */
-    protected class PropertyListener implements PropertyChangeListener {
+    private class PropertyListenerConvertor implements PropertyChangeListener, FormProperty.ValueConvertor {
         public void propertyChange(PropertyChangeEvent evt) {
             Object source = evt.getSource();
             if (!(source instanceof FormProperty))
                 return;
 
-            String propName = ((FormProperty)source).getName();
+            FormProperty property = (FormProperty) source;
+            String propName = property.getName();
             String eventName = evt.getPropertyName();
 
             if (FormProperty.PROP_VALUE.equals(eventName)
                 || FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName))
             {   // property value has changed (or value and editor together)
+                i18nPropertyChanged(evt);
+
                 Object oldValue = evt.getOldValue();
                 Object newValue = evt.getNewValue();
                 formModel.fireComponentPropertyChanged(
@@ -1280,6 +1288,39 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                     getNodeReference().firePropertyChangeHelper(
                                             propName, null, null);
             }
+        }
+
+        public Object convert(Object value, FormProperty property) {
+            return i18nPropertyConvert(value, property);
+        }
+    }
+
+    // -----
+    // i18n automation
+
+    Object i18nPropertyConvert(Object value, FormProperty property) {
+        if (isInModel() && formModel.isUndoRedoRecording()) {
+            Object val = FormProperty.getEnclosedValue(value);
+            Object intVal = I18nSupport.internationalizeProperty(val, property, RADComponent.this);
+            if (intVal != val)
+                return intVal;
+        }
+        return value; // do nothing
+    }
+
+    void i18nComponentRename(String newName) {
+        if (isInModel()) {
+            I18nSupport.componentRenamed(this, newName);
+        }
+    }
+
+    void i18nPropertyChanged(PropertyChangeEvent ev) {
+        if (isInModel() && formModel.isFormLoaded()) {
+            I18nSupport.updateStoredValue(
+                    FormProperty.getEnclosedValue(ev.getOldValue()), // in case it is ValueWithEditor
+                    FormProperty.getEnclosedValue(ev.getNewValue()), // in case it is ValueWithEditor
+                    (FormProperty)ev.getSource(),
+                    RADComponent.this);
         }
     }
 
@@ -1421,7 +1462,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         public ButtonGroupPropertyEditor() {
             super();
             setBeanTypes(new Class[] { javax.swing.ButtonGroup.class });
-            setComponentCategory(OTHER_COMPONENTS);
+            setComponentCategory(NONVISUAL_COMPONENTS);
         }
         
         public String getDisplayName() {

@@ -15,38 +15,30 @@
 package org.netbeans.modules.i18n;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.properties.PropertiesDataObject; // PENDING
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeOperation;
-import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import java.net.URL;
 import org.netbeans.api.project.ProjectInformation;
-import org.openide.ErrorManager;
 import org.netbeans.api.queries.VisibilityQuery;
 
 
@@ -145,7 +137,9 @@ public class SelectorUtils {
      * @return root <code>Node</code> 
      */
     static public Node bundlesNode(Project prj, FileObject file, boolean includeFiles) {
-        java.util.List nodes = new LinkedList();      
+        java.util.List nodes = new LinkedList();
+        if (prj == null)
+            prj = FileOwnerQuery.getOwner(file);
 
         ClassPath cp = ClassPath.getClassPath(file, ClassPath.EXECUTE);
         if (cp != null) nodes.addAll(getRootNodes(prj, getRoots(cp), BUNDLES_FILTER, includeFiles));
@@ -315,6 +309,14 @@ public class SelectorUtils {
 	 throw new UserCancelException();
        }
   }
+
+    public static DataObject selectOrCreateBundle(FileObject refFile, DataObject template) {
+        Node rootNode = bundlesNode(null, refFile, true);
+        FileSelector fs = new FileSelector(refFile, template);
+        fs.getDialog(I18nUtil.getBundle().getString ("CTL_Template_Dialog_Title"), null) // NOI18N
+            .setVisible(true);
+        return fs.isConfirmed() ? fs.getSelectedDataObject() : null;
+    }
 
   /** Panel used by <code>instantiateTemplate</code> method. */
   private static class ObjectNameInputPanel extends JPanel {

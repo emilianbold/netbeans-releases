@@ -2341,14 +2341,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 && value instanceof String
                 && metacomp instanceof RADVisualFormContainer)
             {
-                RADComponent[] nvComps =
-                    metacomp.getFormModel().getOtherComponents(false);
-                for (int j=0; j < nvComps.length; j++)
-                    if (nvComps[j] instanceof RADMenuComponent
-                        && value.equals(nvComps[j].getName()))
-                    {
-                        RADMenuComponent menuComp =
-                            (RADMenuComponent) nvComps[j];
+                for (RADComponent mc : metacomp.getFormModel().getOtherComponents()) {
+                    if (mc instanceof RADMenuComponent && value.equals(mc.getName())) {
+                        RADMenuComponent menuComp = (RADMenuComponent) mc;
                         RADVisualFormContainer formCont =
                             (RADVisualFormContainer) metacomp;
                         menuComp.getFormModel().removeComponentImpl(menuComp, false);
@@ -2356,6 +2351,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         menuComp.setParentComponent(formCont);
                         break;
                     }
+                }
                 continue;
             }
 
@@ -2691,25 +2687,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
         buf1.append("\" ?>\n\n"); // NOI18N
 
         // store "Other Components"
-        RADComponent[] nonVisuals = formModel.getOtherComponents(false);
+        Collection<RADComponent> otherComps = formModel.getOtherComponents();
 
         // compatibility hack for saving form's menu bar (part I)
-        if (formCont != null && formCont.getContainerMenu() != null) {
-            RADComponent[] comps = new RADComponent[nonVisuals.length + 1];
-            System.arraycopy(nonVisuals, 0, comps, 0, nonVisuals.length);
-            comps[nonVisuals.length] = formCont.getContainerMenu();
-            nonVisuals = comps;
-        }
+        RADComponent formMenuComp = formCont != null ? formCont.getContainerMenu() : null;
 
-        if (nonVisuals.length > 0) {
+        if (otherComps.size() > 0 || formMenuComp != null) {
             buf2.append(ONE_INDENT);
             addElementOpen(buf2, XML_NON_VISUAL_COMPONENTS);
-
-            for (int i = 0; i < nonVisuals.length; i++)
-                saveAnyComponent(nonVisuals[i],
+            for (RADComponent metacomp : otherComps) {
+                saveAnyComponent(metacomp,
                                  buf2, ONE_INDENT + ONE_INDENT,
                                  true);
-
+            }
+            if (formMenuComp != null) {
+                saveAnyComponent(formMenuComp,
+                                 buf2, ONE_INDENT + ONE_INDENT,
+                                 true);
+            }
             buf2.append(ONE_INDENT);
             addElementClose(buf2, XML_NON_VISUAL_COMPONENTS);
         }

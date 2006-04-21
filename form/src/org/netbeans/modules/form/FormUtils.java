@@ -42,6 +42,7 @@ public class FormUtils
     public static final int CHANGED_ONLY = 1;
     public static final int DISABLE_CHANGE_FIRING = 2;
     public static final int PASS_DESIGN_VALUES = 4;
+    public static final int DONT_CLONE_VALUES = 8;
 
     private static final Object CLASS_EXACTLY = new Object();
     private static final Object CLASS_AND_SUBCLASSES = new Object();
@@ -144,7 +145,9 @@ public class FormUtils
                 "wrapStyleWord", PROP_PREFERRED },
         { "javax.swing.JEditorPane", CLASS_AND_SUBCLASSES,
                 "border", PROP_PREFERRED,
-                "font", PROP_PREFERRED },
+                "font", PROP_PREFERRED,
+                "contentType", PROP_PREFERRED,
+                "editorKit", PROP_PREFERRED },
         { "javax.swing.JEditorPane", CLASS_AND_SWING_SUBCLASSES,
                 "hyperlinkListeners", PROP_HIDDEN },
         { "javax.swing.JTextPane", CLASS_EXACTLY,
@@ -327,7 +330,10 @@ public class FormUtils
             "model", "selectedItem" },
         { "java.awt.TextComponent",
             "text", "selectionStart",
-            "text", "selectionEnd" }
+            "text", "selectionEnd" },
+        { "javax.swing.JEditorPane",
+            "contentType", "text",
+            "editorKit", "text" }
     };
 
     /** List of components that should never be containers; some of them are
@@ -549,38 +555,44 @@ public class FormUtils
 
             try {
                 // get and clone property value
-                Object propertyValue = snProp.getValue();                
-                if (!(propertyValue instanceof FormDesignValue)) {
-                    try { // clone common property value                        
-                        FormModel formModel = (sfProp == null) ? null : sfProp.getPropertyContext().getFormModel();                        
-                        propertyValue = FormUtils.cloneObject(propertyValue, formModel);
+                Object propertyValue = snProp.getValue();
+                Object copiedValue = propertyValue;
+                if ((mode & DONT_CLONE_VALUES) == 0) {
+                    if (!(propertyValue instanceof FormDesignValue)) {
+                        try { // clone common property value                        
+                            FormModel formModel = (sfProp == null) ? null : sfProp.getPropertyContext().getFormModel();                        
+                            copiedValue = FormUtils.cloneObject(propertyValue, formModel);
+                        }
+                        catch (CloneNotSupportedException ex) {} // ignore, don't report
                     }
-                    catch (CloneNotSupportedException ex) {} // ignore, don't report
-                }
-                else { // handle FormDesignValue                    
-                    Object val = ((FormDesignValue)propertyValue).copy(tfProp);
-                    if (val != null)
-                        propertyValue = val;
-                    else if ((mode & PASS_DESIGN_VALUES) == 0)
-                        continue; // cannot just pass the same design value
+                    else { // handle FormDesignValue                    
+                        Object val = ((FormDesignValue)propertyValue).copy(tfProp);
+                        if (val != null)
+                            copiedValue = val;
+                        else if ((mode & PASS_DESIGN_VALUES) == 0)
+                            continue; // cannot just pass the same design value
+                    }
                 }
 
                 // set property value
                 if (tfProp != null) {
                     boolean firing = tfProp.isChangeFiring();
                     tfProp.setChangeFiring((mode & DISABLE_CHANGE_FIRING) == 0);
-                    tfProp.setValue(propertyValue);
+                    tfProp.setValue(copiedValue);
                     tfProp.setChangeFiring(firing);
                 }
-                else tnProp.setValue(propertyValue);
+                else tnProp.setValue(copiedValue);
 
                 if (sfProp != null && tfProp != null) {
                     // also clone current PropertyEditor
                     PropertyEditor sPrEd = sfProp.getCurrentEditor();
                     PropertyEditor tPrEd = tfProp.getCurrentEditor();
                     if (sPrEd != null
-                        && (tPrEd == null 
-                            || sPrEd.getClass() != tPrEd.getClass()))
+                        && (tPrEd == null
+                            || sPrEd.getClass() != tPrEd.getClass())
+                        && (propertyValue == copiedValue
+                            || (propertyValue != null && copiedValue != null
+                                && propertyValue.getClass() == copiedValue.getClass())))
                     {
                         tPrEd = sPrEd instanceof RADConnectionPropertyEditor ?
                             new RADConnectionPropertyEditor(tfProp.getValueType()) :
@@ -1008,7 +1020,7 @@ public class FormUtils
         }
         
     }
-    
+
     public static List/*RADComponent*/ getSelectedLayoutComponents(Node[] nodes) {
         if ((nodes == null) || (nodes.length < 1))
             return null;

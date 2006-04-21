@@ -287,7 +287,7 @@ public class I18nManager {
             i18nPanelWRef = new WeakReference(i18nPanel);
 
         } else {
-            i18nPanel.setProject(project);
+//            i18nPanel.setProject(project);
             i18nPanel.setFile(sourceDataObject.getPrimaryFile());
         }
 

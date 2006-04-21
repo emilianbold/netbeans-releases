@@ -42,7 +42,7 @@ public class RADVisualComponent extends RADComponent {
 //    transient private RADVisualContainer parent;
 
     private Node.Property[] constraintsProperties;
-    private ConstraintsListener constraintsListener;
+    private ConstraintsListenerConvertor constraintsListener;
 
     private MetaAccessibleContext accessibilityData;
     private FormProperty[] accessibilityProperties;
@@ -286,6 +286,7 @@ public class RADVisualComponent extends RADComponent {
                 // we suppose the constraint property is not a RADProperty...
                 prop.addVetoableChangeListener(getConstraintsListener());
                 prop.addPropertyChangeListener(getConstraintsListener());
+                prop.addValueConvertor(getConstraintsListener());
 
                 prop.setPropertyContext(
                     new RADProperty.RADPropertyContext(this));
@@ -299,14 +300,14 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
-    private ConstraintsListener getConstraintsListener() {
+    private ConstraintsListenerConvertor getConstraintsListener() {
         if (constraintsListener == null)
-            constraintsListener = new ConstraintsListener();
+            constraintsListener = new ConstraintsListenerConvertor();
         return constraintsListener;
     }
 
-    private class ConstraintsListener implements VetoableChangeListener,
-                                                 PropertyChangeListener
+    private class ConstraintsListenerConvertor implements VetoableChangeListener,
+                             PropertyChangeListener, FormProperty.ValueConvertor
     {
         public void vetoableChange(PropertyChangeEvent ev)
             throws PropertyVetoException
@@ -317,6 +318,8 @@ public class RADVisualComponent extends RADComponent {
                 && (FormProperty.PROP_VALUE.equals(eventName)
                     || FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName)))
             {
+                i18nPropertyChanged(ev);
+
                 LayoutSupportManager layoutSupport = getParentLayoutSupport();
                 int index = getComponentIndex();
                 LayoutConstraints constraints =
@@ -348,6 +351,10 @@ public class RADVisualComponent extends RADComponent {
                 }
                 catch (PropertyVetoException ex) {} // should not happen
             }
+        }
+
+        public Object convert(Object value, FormProperty property) {
+            return i18nPropertyConvert(value, property);
         }
     }
 

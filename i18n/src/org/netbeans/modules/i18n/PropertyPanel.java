@@ -18,7 +18,8 @@ package org.netbeans.modules.i18n;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.util.Arrays;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
@@ -26,6 +27,9 @@ import javax.swing.event.DocumentListener;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 
 /**
@@ -41,13 +45,19 @@ public class PropertyPanel extends JPanel {
     /** property representing the I18String. Change is fired when the i18string changes.
      * Old and new objects are not sent with the notification.
      */
-    public static final String PROP_STRING = "propString"; 
+    public static final String PROP_STRING = "propString"; // NOI18N
+
+    /** Name for resource property. */
+    public static final String PROP_RESOURCE = "property_resource"; // NOI18N
     
     /** Helper name for dummy action command. */
     private static final String DUMMY_ACTION = "dont_proceed"; // NOI18N
     
     /** Customized <code>I18nString</code>. */
     protected I18nString i18nString;
+
+    /** the file for that resource should be selected **/
+    private FileObject file;
 
     /** Internal flag to block handling of changes to the key jtextfield,
      * which didn't originate from the user but from the code. If this is >0, 
@@ -90,9 +100,18 @@ public class PropertyPanel extends JPanel {
         firePropertyChange(PROP_STRING, null,null);
     }
 
-    
+    /** Sets the file for that resource should be selected **/
+    public void setFile(FileObject fo) {
+        this.file = fo;
+    }
+
+    public FileObject getFile() {
+        return file;
+    }
+
     /** Initializes UI values. */
     void updateAllValues() {
+        resourceText.setText(getResourceName(i18nString.getSupport().getResourceHolder().getResource()));
         updateBundleKeys();        
         updateKey();
         updateValue();
@@ -160,15 +179,61 @@ public class PropertyPanel extends JPanel {
         updateKey();
     }
     
+     /** Helper method. Changes resource. */
+    private void changeResource(DataObject resource) {
+        if(resource == null)
+            throw new IllegalArgumentException();
+
+        DataObject oldValue = i18nString.getSupport().getResourceHolder().getResource();
+        
+        if(oldValue != null && oldValue.equals(resource))
+            return;
+        
+        i18nString.getSupport().getResourceHolder().setResource(resource);
+        String newResourceValue = i18nString.getSupport().getResourceHolder()
+                                  .getValueForKey(i18nString.getKey());
+        if (newResourceValue != null) {
+            i18nString.setValue(newResourceValue);
+        }
+        updateAllValues();
+
+        firePropertyChange(PROP_RESOURCE, oldValue, resource);
+
+        I18nUtil.getOptions().setLastResource2(resource);
+    }
+
+    public void setResource(DataObject resource) {
+        if (isResourceClass(resource.getClass())) {
+            changeResource(resource);
+        }
+    }        
+
+    private boolean isResourceClass(Class clazz) {
+        return Arrays.asList(i18nString.getSupport().getResourceHolder().getResourceClasses()).contains(clazz);
+    }
+
+    private String getResourceName(DataObject resource) {
+        if(resource == null) {
+            return ""; // NOI18N
+        }
+        else {
+            String name = Util.getResourceName(file, resource.getPrimaryFile(), '.', false );
+            return name != null ? name : ""; // NOI18N
+        }
+    }
+
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_PropertyPanel"));        
-        valueText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_valueText"));        
-        commentText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_commentText"));        
-        replaceFormatButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_Format"));        
-        replaceFormatTextField.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_replaceFormatTextField"));        
+        this.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_PropertyPanel")); // NOI18N
+        valueText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_valueText")); // NOI18N
+        commentText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_commentText")); // NOI18N
+        replaceFormatButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_Format")); // NOI18N
+        replaceFormatTextField.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_replaceFormatTextField")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_BrowseButton")); // NOI18N
+        resourceText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_ResourceText")); // NOI18N
     }
     
     private void myInitComponents() {
+        argumentsButton.setVisible(false);
         // hook the Key combobox edit-field for changes
         ((javax.swing.JTextField)keyBundleCombo.getEditor().getEditorComponent()).
                 getDocument().addDocumentListener(new DocumentListener() {              
@@ -211,8 +276,6 @@ public class PropertyPanel extends JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
-
         commentLabel = new javax.swing.JLabel();
         commentScroll = new javax.swing.JScrollPane();
         commentText = new javax.swing.JTextArea();
@@ -224,23 +287,17 @@ public class PropertyPanel extends JPanel {
         replaceFormatTextField = new javax.swing.JTextField();
         replaceFormatLabel = new javax.swing.JLabel();
         replaceFormatButton = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-
-        setLayout(new java.awt.GridBagLayout());
+        jLabel1 = new javax.swing.JLabel();
+        resourceText = new javax.swing.JTextField();
+        argumentsButton = new javax.swing.JButton();
+        browseButton = new javax.swing.JButton();
 
         commentLabel.setLabelFor(commentText);
         commentLabel.setText(I18nUtil.getBundle().getString("LBL_Comment"));
         commentLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Comment_Mnem")).charAt(0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
-        add(commentLabel, gridBagConstraints);
 
         commentText.setColumns(40);
-        commentText.setRows(3);
+        commentText.setRows(2);
         commentText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 commentTextFocusLost(evt);
@@ -249,38 +306,16 @@ public class PropertyPanel extends JPanel {
 
         commentScroll.setViewportView(commentText);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
-        add(commentScroll, gridBagConstraints);
-
         keyLabel.setLabelFor(keyBundleCombo);
         keyLabel.setText(I18nUtil.getBundle().getString("LBL_Key"));
         keyLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Key_Mnem")).charAt(0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
-        add(keyLabel, gridBagConstraints);
 
         valueLabel.setLabelFor(valueText);
         valueLabel.setText(I18nUtil.getBundle().getString("LBL_Value"));
         valueLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Value_Mnem")).charAt(0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 11, 0);
-        add(valueLabel, gridBagConstraints);
 
         valueText.setColumns(40);
-        valueText.setRows(3);
+        valueText.setRows(2);
         valueText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 valueTextFocusLost(evt);
@@ -289,30 +324,12 @@ public class PropertyPanel extends JPanel {
 
         valueScroll.setViewportView(valueText);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 11, 11);
-        add(valueScroll, gridBagConstraints);
-
         keyBundleCombo.setEditable(true);
         keyBundleCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 keyBundleComboActionPerformed(evt);
             }
         });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
-        add(keyBundleCombo, gridBagConstraints);
 
         replaceFormatTextField.setColumns(40);
         replaceFormatTextField.setEditable(false);
@@ -323,25 +340,9 @@ public class PropertyPanel extends JPanel {
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
-        add(replaceFormatTextField, gridBagConstraints);
-
         replaceFormatLabel.setLabelFor(replaceFormatTextField);
         replaceFormatLabel.setText(I18nUtil.getBundle().getString("LBL_ReplaceFormat"));
         replaceFormatLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_ReplaceFormat_Mnem")).charAt(0));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(replaceFormatLabel, gridBagConstraints);
 
         replaceFormatButton.setMnemonic((I18nUtil.getBundle().getString("CTL_Format_Mnem")).charAt(0));
         replaceFormatButton.setText(I18nUtil.getBundle().getString("CTL_Format"));
@@ -351,22 +352,97 @@ public class PropertyPanel extends JPanel {
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 11);
-        add(replaceFormatButton, gridBagConstraints);
+        jLabel1.setLabelFor(resourceText);
+        jLabel1.setText(I18nUtil.getBundle().getString("LBL_BundleName"));
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        add(jPanel1, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(argumentsButton, I18nUtil.getBundle().getString("CTL_Arguments"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        browseButton.setText(I18nUtil.getBundle().getString("CTL_BrowseButton"));
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel1)
+                            .add(valueLabel)
+                            .add(commentLabel)
+                            .add(keyLabel)
+                            .add(replaceFormatLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(resourceText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseButton))
+                            .add(keyBundleCombo, 0, 414, Short.MAX_VALUE)
+                            .add(valueScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
+                            .add(commentScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
+                            .add(replaceFormatTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(argumentsButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(replaceFormatButton)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(resourceText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton))
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(keyLabel)
+                    .add(keyBundleCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(valueLabel)
+                    .add(valueScroll))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(commentLabel)
+                    .add(commentScroll))
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(replaceFormatTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(replaceFormatLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(replaceFormatButton)
+                    .add(argumentsButton))
+                .addContainerGap())
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        ResourceHolder rh = i18nString.getSupport().getResourceHolder();
+        DataObject template;
+        try {
+            template = rh.getTemplate(rh.getResourceClasses()[0]);
+        }
+        catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return;
+        }
+        DataObject resource = SelectorUtils.selectOrCreateBundle(file, template);
+//      DataObject resource = SelectorUtils.selectBundle(this.project, file);
+        if (resource != null) {
+	    changeResource(resource);
+        }
+
+    }//GEN-LAST:event_browseButtonActionPerformed
 
     private void replaceFormatTextFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_replaceFormatTextFieldFocusGained
         // Accessibility
@@ -448,15 +524,18 @@ public class PropertyPanel extends JPanel {
     }//GEN-LAST:event_valueTextFocusLost
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    protected javax.swing.JButton argumentsButton;
+    private javax.swing.JButton browseButton;
     private javax.swing.JLabel commentLabel;
     private javax.swing.JScrollPane commentScroll;
     private javax.swing.JTextArea commentText;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JComboBox keyBundleCombo;
     private javax.swing.JLabel keyLabel;
     private javax.swing.JButton replaceFormatButton;
     private javax.swing.JLabel replaceFormatLabel;
     private javax.swing.JTextField replaceFormatTextField;
+    private javax.swing.JTextField resourceText;
     private javax.swing.JLabel valueLabel;
     private javax.swing.JScrollPane valueScroll;
     private javax.swing.JTextArea valueText;

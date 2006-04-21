@@ -60,6 +60,9 @@ public class FormEditor {
     /** The FormJavaSource for the form */
     private FormJavaSource formJavaSource;
     
+    /** I18nSupport instance for the form */
+    private I18nSupport i18nSupport;
+
     /** List of exceptions occurred during the last persistence operation */
     private List persistenceErrors;
     
@@ -92,7 +95,7 @@ public class FormEditor {
     }
 
     /** @return root node representing the form (in pair with the class node) */
-    public final Node getFormRootNode() {
+    public final FormNode getFormRootNode() {
         return formRootNode;
     }
 
@@ -116,7 +119,14 @@ public class FormEditor {
             codeGenerator = new JavaCodeGenerator();
         return codeGenerator;
     }
-    
+
+    I18nSupport getI18nSupport() {
+        if (i18nSupport == null && formModel != null) {
+            i18nSupport = new I18nSupport(formModel);
+        }
+        return i18nSupport;
+    }
+
     boolean isFormLoaded() {
         return formLoaded;
     }
@@ -155,7 +165,7 @@ public class FormEditor {
         reportErrors(LOADING);
 
         // may do additional setup for just created form
-        checkPostCreationUpdate();
+        postCreationUpdate();
     }
 
     boolean loadForm() {
@@ -474,17 +484,16 @@ public class FormEditor {
      * Destroys all components from {@link #formModel} taged as invalid
      */
     private void destroyInvalidComponents() {
-        List invalidComponents = new ArrayList(formModel.getMetaComponents().size());
+        Collection<RADComponent> allComps = formModel.getAllComponents();
+        List<RADComponent> invalidComponents = new ArrayList(allComps.size());
         // collect all invalid components
-        for (Iterator it = formModel.getMetaComponents().iterator(); it.hasNext();) {
-            RADComponent comp = (RADComponent) it.next();
+        for (RADComponent comp : allComps) {
             if(!comp.isValid()) {
                 invalidComponents.add(comp);
             }
         }              
         // destroy all invalid components
-        for (Iterator it = invalidComponents.iterator(); it.hasNext();) {
-            RADComponent comp = (RADComponent) it.next();
+        for (RADComponent comp : invalidComponents) {
             try {
                 comp.getNodeReference().destroy();
             }
@@ -514,11 +523,12 @@ public class FormEditor {
      * setup that can't be ensured by the static template. For example the type
      * of layout code generation needs to be honored.
      */
-    private void checkPostCreationUpdate() {
+    private void postCreationUpdate() {
         if (formLoaded && formModel != null && !formModel.isReadOnly()
             && needPostCreationUpdate()) // just created via New wizard
         {   // regenerate code according to actual settings and save
             formModel.getSettings().getLayoutCodeTarget(); // make sure layout gen. target is detected
+            formModel.getSettings().getI18nAutoMode(); // make sure auto i18n is detected
             formModel.fireFormChanged(true); // hack: regenerate code immediately
             FormEditorSupport fes = formDataObject.getFormEditorSupport();
             try { // save the form if changed
@@ -603,6 +613,7 @@ public class FormEditor {
             formModel = null;
             codeGenerator = null;
 	    formJavaSource = null;
+            i18nSupport = null;
         }
     }
     
@@ -614,6 +625,9 @@ public class FormEditor {
         // changes in containers in form
         formListener = new FormModelListener() {
             public void formChanged(FormModelEvent[] events) {
+                if (events == null)
+                    return;
+
                 boolean modifying = false;
                 Set changedContainers = events.length > 0 ?
                                           new HashSet() : null;
@@ -730,7 +744,15 @@ public class FormEditor {
 
         dataObjectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
-                if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
+                if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
+                    // FormDataObject's name has changed
+                    String name = formDataObject.getName();
+                    formModel.setName(name);
+                    formRootNode.updateName(name);
+                    // multiview updated by FormEditorSupport
+                    // formModel.fireFormChanged(); // [refactoring may choke if we change code...]
+                }
+                else if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
                     java.awt.EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             Node[] nodes = ComponentInspector.getInstance()
@@ -905,7 +927,13 @@ public class FormEditor {
         FormEditor formEditor = (FormEditor) openForms.get(formModel);
         return formEditor != null ? formEditor.getFormJavaSource() : null;
     }
-    
+
+    /** @return I18nSupport of given form */
+    static I18nSupport getI18nSupport(FormModel formModel) {
+        FormEditor formEditor = (FormEditor) openForms.get(formModel);
+        return formEditor != null ? formEditor.getI18nSupport() : null;
+    }
+
     /** @return FormEditor instance for given form */
     public static FormEditor getFormEditor(FormModel formModel) {
         return (FormEditor) openForms.get(formModel);

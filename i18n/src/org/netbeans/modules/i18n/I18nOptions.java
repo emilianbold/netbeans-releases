@@ -114,7 +114,7 @@ public class I18nOptions extends SystemOption {
     public String getReplaceJavaCode() {
         // Lazy init.
         if(getProperty(PROP_REPLACE_JAVA_CODE) == null)
-            return (String)I18nUtil.getReplaceFormatItems().get(2);
+            return (String)I18nUtil.getDefaultReplaceFormat(false);
         
         return (String)getProperty(PROP_REPLACE_JAVA_CODE);
     }

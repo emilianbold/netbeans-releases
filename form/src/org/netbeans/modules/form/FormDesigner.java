@@ -1372,7 +1372,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             RADVisualComponent tabComp = metacont.getSubComponent(index);
             Node.Property[] props = tabComp.getConstraintsProperties();
             for (int i=0; i<props.length; i++) {
-                if (props[i].getName().equals("TabConstraints tabTitle")) { // NOI18N
+                if (props[i].getName().equals("TabConstraints.tabTitle")) { // NOI18N
                     if (props[i] instanceof FormProperty) {
                         property = (FormProperty)props[i];
                     } else {
@@ -2112,9 +2112,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
         
         private void updateConnectedProperties(RADProperty eventProperty, RADComponent eventComponent){
-            Iterator it = formModel.getMetaComponents().iterator();            
-            while(it.hasNext()){
-                RADComponent component = (RADComponent) it.next();
+            for (RADComponent component : formModel.getAllComponents()){
                 RADProperty[] properties = component.getKnownBeanProperties();
                 for(int i = 0; i < properties.length; i++){
                     try{

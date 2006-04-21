@@ -436,7 +436,7 @@ public abstract class Element implements Serializable {
          */                        
         public void setComment(String newComment) {
             String oldComment = comment.getValue();
-            if (!oldComment.equals(newComment)) {
+            if ((oldComment == null && newComment != null) || (oldComment != null && !oldComment.equals(newComment))) {
                 comment.setValue(newComment);
                 getParent().itemChanged(this);
                 this.firePropertyChange(PROP_ITEM_COMMENT, oldComment, newComment);

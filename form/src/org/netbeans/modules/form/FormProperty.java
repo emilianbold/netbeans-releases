@@ -97,6 +97,8 @@ public abstract class FormProperty extends Node.Property {
     private VetoableChangeSupport vetoableChangeSupport;
     private boolean fireChanges = true;
 
+    private java.util.List<ValueConvertor> convertors;
+
 //    private DesignValueListener designValueListener = null;
 
     // ---------------------------
@@ -201,6 +203,10 @@ public abstract class FormProperty extends Node.Property {
     {
 //        if (!canWrite())
 //            throw new IllegalAccessException("Not a writeable property: "+getName());
+        // let the registered converters do something with the value (e.g. i18n)
+        if (fireChanges)
+            value = convertValue(value);
+
         Object oldValue;
         if (canRead()) {
             try { // get the old value (still the current)
@@ -794,6 +800,34 @@ public abstract class FormProperty extends Node.Property {
         }
     }
 
+    public void addValueConvertor(ValueConvertor conv) {
+        synchronized (this) {
+            if (convertors == null)
+                convertors = new java.util.LinkedList<ValueConvertor>();
+            else
+                convertors.remove(conv);
+            convertors.add(conv);
+        }
+    }
+
+    public void removeValueConvertor(ValueConvertor conv) {
+        synchronized (this) {
+            if (convertors != null)
+                convertors.remove(conv);
+        }
+    }
+
+    protected Object convertValue(Object value) {
+        if (convertors != null) {
+            for (ValueConvertor conv : convertors) {
+                Object val = conv.convert(value, this);
+                if (val != value)
+                    return val;
+            }
+        }
+        return value;
+    }
+
     // ----------------------------
     // private methods
 
@@ -979,6 +1013,16 @@ public abstract class FormProperty extends Node.Property {
         }
     } */
 
+    // -----
+
+    /**
+     * Convertor can be registered on a property and change value comming to
+     * setValue method to something else. Used for automatic i18n.
+     */
+    public interface ValueConvertor {
+        public Object convert(Object value, FormProperty property);
+    }
+
     // ------------
 
     public static final class ValueWithEditor {
@@ -1020,6 +1064,10 @@ public abstract class FormProperty extends Node.Property {
 
             return null;
         }
+    }
+
+    public static Object getEnclosedValue(Object value) {
+        return value instanceof ValueWithEditor ? ((ValueWithEditor)value).getValue() : value;
     }
 
     // ------------

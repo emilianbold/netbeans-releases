@@ -35,7 +35,7 @@ public class PropertyPicker extends javax.swing.JPanel {
         this.requiredType = requiredType;
         initComponents();
 
-        java.util.List componentsList = formModel.getMetaComponents();
+        java.util.List componentsList = formModel.getComponentList();
         Collections.sort(componentsList, new ParametersPicker.ComponentComparator());
         components = new RADComponent[componentsList.size()];
         componentsList.toArray(components);

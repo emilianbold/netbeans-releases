@@ -129,7 +129,7 @@ public class BundleStructure {
     /**
      * Retrieves an index of a file entry representing the given file.
      *
-     * @param  fileName  simple name (excl. path, incl. extension) of the
+     * @param  fileName  simple name (without path and extension) of the
      *                   primary or secondary file
      * @return  index of the entry representing a file with the given filename;
      *          or <code>-1</code> if no such entry is found
@@ -233,6 +233,23 @@ public class BundleStructure {
     }
 
     /**
+     * Finds a free key in the budnle. If the suggested key is not free,
+     * a number is appended to it.
+     */
+    public String findFreeKey(String keySpec) {
+        if (keyList == null) {
+            notifyKeyListNotInitialized();
+        }
+
+        int n = 1;
+        String key = keySpec;
+        while (keyList.contains(key)) {
+            key = keySpec + "_" + n++;
+        }
+        return key;
+    }
+
+    /**
      * Retrieves keyIndex-th key in the entryIndex-th entry from the list,
      * indexed from <code>0</code>.
      *
@@ -280,6 +297,101 @@ public class BundleStructure {
     }
 
     /**
+     * Returns property item of given key from localization corresponding to
+     * given file name. If not found in given file directly then "parent" files
+     * are scanned - the same way as ResourceBundle would work when asked for
+     * locale specific key.
+     * @param localizationFile name of file entry without extension
+     *        corresponding to the desired specific localization
+     */
+    public Element.ItemElem getItem(String localizationFile, String key) {
+        int score = 0; // number of same characters in the file name
+        Element.ItemElem item = null;
+        for (int i=0; i < getEntryCount(); i++) {
+            PropertiesFileEntry pfe = getNthEntry(i);
+            if (pfe != null) {
+                String fName = pfe.getFile().getName();
+                if (localizationFile.startsWith(fName)
+                    && (item == null || fName.length() > score))
+                {   // try to find the item in the entry with longest file name
+                    // matching (most specific localization)
+                    PropertiesStructure ps = pfe.getHandler().getStructure();
+                    if (ps != null) {
+                        Element.ItemElem it = ps.getItem(key);
+                        if (it != null) {
+                            item = it;
+                            score = fName.length();
+                        }
+                    }
+                }
+            }
+        }
+        return item;
+    }
+
+    /**
+     * Gets all data for given key from all locales.
+     * @return String[] array of strings - repeating: locale, value, comments
+     */
+    public String[] getAllData(String key) {
+        List list = null;
+        for (int i=0; i < getEntryCount(); i++) {
+            PropertiesFileEntry pfe = getNthEntry(i);
+            if (pfe != null) {
+                PropertiesStructure ps = pfe.getHandler().getStructure();
+                if (ps != null) {
+                    Element.ItemElem item = ps.getItem(key);
+                    if (item != null) {
+                        String locale = Util.getLocaleSuffix(pfe);
+                        if (list == null) {
+                            list = new ArrayList();
+                        }
+                        list.add(locale);
+                        list.add(item.getValue());
+                        list.add(item.getComment());
+                    }
+                }
+            }
+        }
+        return list != null ? (String[]) list.toArray(new String[list.size()]) : null;
+    }
+
+    public void setAllData(String key, String[] data) {
+        boolean entryCreated = false;
+        for (int i=0; i < data.length; i+=3) {
+            String locale = data[i];
+            PropertiesFileEntry localeFile = null;
+            for (int j=0; j < getEntryCount(); j++) {
+                PropertiesFileEntry pfe = getNthEntry(j);
+                if (pfe != null && Util.getLocaleSuffix(pfe).equals(locale)) {
+                    localeFile = pfe;
+                    break;
+                }
+            }
+            if (localeFile == null) {
+                Util.createLocaleFile(obj, locale.substring(1));
+                entryCreated = true;
+            }
+        }
+        if (entryCreated)
+            updateEntries();
+
+        for (int i=0; i < data.length; i+=3) {
+            String locale = data[i];
+            for (int j=0; j < getEntryCount(); j++) {
+                PropertiesFileEntry pfe = getNthEntry(j);
+                if (pfe != null && Util.getLocaleSuffix(pfe).equals(locale)) {
+                    PropertiesStructure ps = pfe.getHandler().getStructure();
+                    if (ps != null) {
+                        ps.addItem(key, data[i+1], data[i+2]);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
      * Returns count of all unique keys found in all file entries.
      *
      * @return  size of a union of keys from all entries
@@ -294,7 +406,47 @@ public class BundleStructure {
             return 0;       //will not happen
         }
     }
-    
+
+    /**
+     * Adds to or changes an item in specified localization file and its parents.
+     */
+    public void addItem(String localizationFile,
+                        String key, String value, String comment,
+                        boolean changeIfExists)
+    {
+        PropertiesStructure[] ps = getRelatedStructures(localizationFile);
+        boolean changed = false;
+        for (int i=0; i < ps.length; i++) {
+            Element.ItemElem item = ps[i].getItem(key);
+            if (item != null) {
+                if (changeIfExists && !changed && !item.getValue().equals(value)) {
+                    item.setValue(value);
+                    item.setComment(comment);
+                    changed = true; // change only once - in the most specific set
+                }
+            }
+            else {
+                ps[i].addItem(key, value, comment);
+                changed = true; // change only once - in the most specific set
+            }
+        }
+    }
+
+    /**
+     * Deletes item with given key from all files of this bundle.
+     */
+    public void removeItem(String key) {
+        for (int i=0; i < getEntryCount(); i++) {
+            PropertiesFileEntry pfe = getNthEntry(i);
+            if (pfe != null) {
+                PropertiesStructure ps = pfe.getHandler().getStructure();
+                if (ps != null) {
+                    ps.deleteItem(key);
+                }
+            }
+        }
+    }
+
     /**
      * Sorts the keylist according the values of entry which index is given
      * to this method.
@@ -411,7 +563,44 @@ public class BundleStructure {
         Collections.sort(keyList, comparator);
         this.keyList = keyList;
     }
-    
+
+    /**
+     * Collects PropertyStructure objects that are related for given design time
+     * localization - i.e. the structure corresponding to the given file name
+     * plus all the "parents". Sorted from the most specific.
+     * @param localizationFile name of specific file entry (without extension)
+     */
+    private PropertiesStructure[] getRelatedStructures(String localizationFile) {
+        List list = null;
+        for (int i=0; i < getEntryCount(); i++) {
+            PropertiesFileEntry pfe = getNthEntry(i);
+            if (pfe != null) {
+                if (localizationFile.startsWith(pfe.getFile().getName())
+                        && pfe.getHandler().getStructure() != null) {
+                    if (list == null)
+                        list = new ArrayList(4);
+                    list.add(pfe);
+                }
+            }
+        }
+        if (list == null)
+            return new PropertiesStructure[] {};
+
+        Collections.sort(list, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                PropertiesFileEntry pfe1 = (PropertiesFileEntry) o1;
+                PropertiesFileEntry pfe2 = (PropertiesFileEntry) o2;
+                return pfe2.getFile().getName().length() - pfe1.getFile().getName().length();
+            }
+        });
+
+        PropertiesStructure[] array = new PropertiesStructure[list.size()];
+        for (int i=0, n=list.size(); i < n; i++) {
+            array[i] = ((PropertiesFileEntry)list.get(i)).getHandler().getStructure();
+        }
+        return array;
+    }
+
     boolean isReadOnly() {
         boolean canWrite = false;
         for (int i=0; i < getEntryCount(); i++) {

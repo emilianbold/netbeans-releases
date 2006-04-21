@@ -27,12 +27,14 @@ import org.netbeans.modules.form.actions.*;
  */
 
 class FormRootNode extends FormNode {
-    private Node.Property[] syntheticProperties;
+    private Node.Property[] codeGenProperties;
+    private Node.Property[] i18nProperties;
+    private Node.Property[] allProperties;
 
     public FormRootNode(FormModel formModel) {
         super(new RootChildren(formModel), formModel);
         setName("Form Root Node"); // NOI18N
-        setIconBase("org/netbeans/modules/form/resources/formDesigner"); // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/form/resources/formDesigner.gif"); // NOI18N
         updateName(formModel.getName());
     }
 
@@ -68,26 +70,56 @@ class FormRootNode extends FormNode {
     }
     
     public Node.PropertySet[] getPropertySets() {
-        Node.PropertySet ps = new Node.PropertySet(
-                "synthetic", // NOI18N
+        Node.PropertySet codeSet = new Node.PropertySet(
+                "codeGeneration", // NOI18N
                 FormUtils.getBundleString("CTL_SyntheticTab"), // NOI18N
                 FormUtils.getBundleString("CTL_SyntheticTabHint")) // NOI18N
         {
             public Node.Property[] getProperties() {
-                return getSyntheticProperties();
+                return getCodeGenProperties();
             }
         };
-        return new Node.PropertySet[] {ps};
+        Node.PropertySet i18nSet = new Node.PropertySet(
+                "i18n", // NOI18N
+                FormUtils.getBundleString("CTL_I18nTab"), // NOI18N
+                FormUtils.getBundleString("CTL_I18nTabHint")) // NOI18N
+        {
+            public Node.Property[] getProperties() {
+                return getI18nProperties();
+            }
+        };
+        return new Node.PropertySet[] { codeSet, i18nSet };
+    }
+
+    Node.Property[] getCodeGenProperties() {
+        if (codeGenProperties == null)
+            codeGenProperties = createCodeGenProperties();
+        return codeGenProperties;
     }
     
-    Node.Property[] getSyntheticProperties() {
-        if (syntheticProperties == null)
-            syntheticProperties = createSyntheticProperties();
-        return syntheticProperties;
-    }
-    
-    private Node.Property[] createSyntheticProperties() {
+    private Node.Property[] createCodeGenProperties() {
         return FormEditor.getCodeGenerator(getFormModel()).getSyntheticProperties(null);
+    }
+
+    Node.Property[] getI18nProperties() {
+        if (i18nProperties == null)
+            i18nProperties = createI18nProperties();
+        return i18nProperties;
+    }
+    
+    private Node.Property[] createI18nProperties() {
+        return FormEditor.getI18nSupport(getFormModel()).createFormProperties();
+    }
+
+    Node.Property[] getAllProperties() {
+        if (allProperties == null) {
+            int codeGenCount = getCodeGenProperties().length;
+            int i18nCount = getI18nProperties().length;
+            allProperties = new Node.Property[codeGenCount + i18nCount];
+            System.arraycopy(codeGenProperties, 0, allProperties, 0, codeGenCount);
+            System.arraycopy(i18nProperties, 0, allProperties, codeGenCount, i18nCount);
+        }
+        return allProperties;
     }
 
     // ----------------

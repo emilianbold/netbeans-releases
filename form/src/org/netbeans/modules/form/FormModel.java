@@ -45,16 +45,16 @@ public class FormModel
     private RADComponent topRADComponent;
 
     // other components - out of the main hierarchy under topRADComponent
-    private ArrayList otherComponents = new ArrayList(10);
+    private ArrayList<RADComponent> otherComponents = new ArrayList(10);
 
     // holds both topRADComponent and otherComponents
     private ComponentContainer modelContainer;
 
     private LayoutModel layoutModel;
 
-    private Map idToComponents = new HashMap();
+    private Map<String,RADComponent> idToComponents = new HashMap();
 
-//    private boolean formLoaded = false;
+    private boolean formLoaded = false;
 
     private UndoRedo.Manager undoRedoManager;
     private boolean undoRedoRecording = false;
@@ -149,9 +149,9 @@ public class FormModel
         return readOnly;
     }
 
-//    public final boolean isFormLoaded() {
-//        return formLoaded;
-//    }
+    public final boolean isFormLoaded() {
+        return formLoaded;
+    }
 
 //    public final FormDesigner getFormDesigner() {
 //        return FormEditorSupport.getFormDesigner(this);
@@ -172,6 +172,10 @@ public class FormModel
         return modelContainer;
     }
 
+    public Collection<RADComponent> getOtherComponents() {
+        return Collections.unmodifiableCollection(otherComponents);
+    }
+
     public final LayoutModel getLayoutModel() {
         return layoutModel;
     }
@@ -190,52 +194,25 @@ public class FormModel
         return null;
     }
 
-    /** Returns all meta components in the model.
+    /**
+     * Returns list of all components in the model. A new List instance is created.
      */
-    public java.util.List getMetaComponents() {
+    public java.util.List<RADComponent> getComponentList() {
         return new ArrayList(idToComponents.values());
-//        ArrayList list = new ArrayList();
-//        collectMetaComponents(getModelContainer(), list);
-//        return list; //Collections.unmodifiableList(list);
     }
 
-    /** Collects and returns all components in the main visual hierarchy.
-     */
-    public RADVisualComponent[] getVisualComponents() {
-        ArrayList list = new ArrayList();
-        if (topRADComponent instanceof RADVisualComponent)
-            list.add(topRADComponent);
-        if (topRADComponent instanceof RADVisualContainer)
-            collectVisualMetaComponents((RADVisualContainer)topRADComponent, list);
-
-        return (RADVisualComponent[])
-               list.toArray(new RADVisualComponent[list.size()]);
+    public Collection<RADComponent> getAllComponents() {
+        return Collections.unmodifiableCollection(idToComponents.values());
     }
 
-    /** Returns all "other components" (not in the main visual hierarchy).
-     * @param recursively whether also all sub-componets should be collected
-     */
-    public RADComponent[] getOtherComponents(boolean recursively) {
-        java.util.List list;
-        if (recursively) {
-            list = new ArrayList();
-            for (Iterator it=otherComponents.iterator(); it.hasNext(); ) {
-                RADComponent comp = (RADComponent) it.next();
-                list.add(comp);
-                if (recursively && comp instanceof ComponentContainer)
-                    collectMetaComponents((ComponentContainer) comp, list);
-            }
+    public Collection<RADComponent> getNonVisualComponents() {
+        List<RADComponent> list = new ArrayList<RADComponent>(otherComponents.size());
+        for (RADComponent metacomp : otherComponents) {
+            if (!java.awt.Component.class.isAssignableFrom(metacomp.getBeanClass()))
+                list.add(metacomp);
         }
-        else list = otherComponents;
-
-        return (RADComponent[]) list.toArray(new RADComponent[list.size()]);
+        return list;
     }
-
-    // for compatibility with previous version
-//    public RADComponent[] getNonVisualComponents() {
-//        return (RADComponent[]) otherComponents.toArray(
-//                                new RADComponent[otherComponents.size()]); 
-//    }
 
     public FormEvents getFormEvents() {
         if (formEvents == null)
@@ -671,7 +648,7 @@ public class FormModel
     public void fireFormLoaded() {
         t("firing form loaded"); // NOI18N
 
-//        formLoaded = true;
+        formLoaded = true;
         eventBroker = new EventBroker();
 //        if (undoRedoManager != null)
 //            undoRedoManager.discardAllEdits();

@@ -15,22 +15,14 @@ package org.netbeans.modules.i18n;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
-import org.openide.loaders.DataFilter;
 import org.netbeans.api.project.Project;
 import java.util.*;
 import org.openide.nodes.Node;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.nodes.FilterNode;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.openide.loaders.DataObject;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.SourceGroup;
 
 /**
  * Bundle access, ...
@@ -114,18 +106,29 @@ public class Util {
      * classpath.
      */
     public static FileObject getResource(FileObject srcFile, String bundleName) {
-        // try to find it in sources
+        // try to find it in sources of the same project
         ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE);
         if (scp != null) {
             FileObject ret = scp.findResource(bundleName);
             if (ret != null) return ret;
         }
 
-        // or on the execution class-path
+        // try to find in sources of execution classpath
         ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE);
-        if (ecp != null) {
-            FileObject ret = ecp.findResource(bundleName);
-            if (ret != null) return ret;
+        Iterator it = ecp.entries().iterator();
+        while (it.hasNext()) {
+            ClassPath.Entry e = (ClassPath.Entry)it.next();
+            SourceForBinaryQuery.Result r = SourceForBinaryQuery.findSourceRoots(e.getURL());
+            FileObject[] sourceRoots = r.getRoots();
+            for (int i=0; i < sourceRoots.length; i++) {
+                // try to find the bundle under this source root
+                ClassPath cp = ClassPath.getClassPath(sourceRoots[i], ClassPath.SOURCE);
+                if (cp != null) {
+                    FileObject ret = cp.findResource(bundleName);
+                    if (ret != null)
+                        return ret;
+                }
+            }
         }
 
         return null;
@@ -161,4 +164,22 @@ public class Util {
         
     }
 
+    public static boolean isNbBundleAvailable(DataObject srcDataObject) {
+        // is there a good way to recognize that NbBundle is available?
+        // - execution CP may not work if everything is cleaned
+        // - looking for NbBundle.java in sources of execution CP roots is expensive
+        // - checking project impl. class name is ugly
+        // - don't know how to check if there is "org.openide.util" module
+        ClassPath classPath = ClassPath.getClassPath(srcDataObject.getPrimaryFile(), ClassPath.EXECUTE);
+        if (classPath != null && classPath.findResource("org/openide/util/NbBundle.class") != null) // NOI18N
+            return true;
+
+        // hack: check project impl. class name
+        Project p = FileOwnerQuery.getOwner(srcDataObject.getPrimaryFile());
+        if (p != null && p.getClass().getName().startsWith("org.netbeans.modules.apisupport.") // NOI18N
+                && p.getClass().getName().endsWith("Project")) // NOI18N
+            return true;
+
+        return false;
+    }
 }

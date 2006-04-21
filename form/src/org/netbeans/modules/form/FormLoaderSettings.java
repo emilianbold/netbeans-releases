@@ -92,6 +92,11 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the layout code target property. */
     public static final String PROP_LAYOUT_CODE_TARGET = "layoutCodeTarget"; // NOI18N
 
+    /** Name of the automatic i18n property. */
+    public static final String PROP_AUTO_I18N = "i18nAutoMode"; // NOI18N
+    static final int AUTO_I18N_DEFAULT = 0;
+    static final int AUTO_I18N_ON = 1;
+    static final int AUTO_I18N_OFF = 2;
 //    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
 
     // ------------------------------------------
@@ -174,6 +179,9 @@ public class FormLoaderSettings extends SystemOption {
 
     /** The style of generating layout code (GroupLayout etc). */
     private static int layoutCodeTarget;
+
+    /** How newly created forms are set to be internationalized automatically. */
+    private static int i18nAutoMode;
 
 //    private static Map containerBeans;
 
@@ -585,6 +593,16 @@ public class FormLoaderSettings extends SystemOption {
         layoutCodeTarget = target;
         firePropertyChange(PROP_LAYOUT_CODE_TARGET,
                            new Integer(oldValue), new Integer(target));
+    }
+
+    public int getI18nAutoMode() {
+        return i18nAutoMode;
+    }
+
+    public void setI18nAutoMode(int mode) {
+        int oldValue = i18nAutoMode;
+        i18nAutoMode = mode;
+        firePropertyChange(PROP_AUTO_I18N, new Integer(oldValue), new Integer(mode));
     }
 
 //    public Map getContainerBeans() {

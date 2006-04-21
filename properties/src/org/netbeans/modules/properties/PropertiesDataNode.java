@@ -23,11 +23,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.List;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileLock;
@@ -42,12 +39,12 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.FileEntry;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
 
 /** 
  * Node representing a <code>PropertiesDataObject</code>.
@@ -148,18 +145,7 @@ public class PropertiesDataNode extends DataNode {
         PropertiesFileEntry entry = (PropertiesFileEntry)((PropertiesLocaleNode)node).getFileEntry();
         types.add(new EntryPasteType(entry, mode));
     }
-    
-    /** Notifies an error happened when attempted to create locale which exists already. 
-     * @param locale locale which already exists */ 
-    private static void notifyError(String locale) {
-        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-            MessageFormat.format(
-                NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
-                    new Object[] {locale}), NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(msg);
-    }
-    
-    
+
     /** Paste type for <code>PropertiesDataNode</code>. */
     private class EntryPasteType extends PasteType {
 
@@ -237,7 +223,7 @@ public class PropertiesDataNode extends DataNode {
 
         /** Overrides superclass method. */
         public void create() throws IOException {
-            final DataObject propertiesDataObject = (DataObject)getCookie(DataObject.class);
+            final PropertiesDataObject propertiesDataObject = (PropertiesDataObject)getCookie(DataObject.class);
 
             final Dialog[] dialog = new Dialog[1];
             final LocalePanel panel = new LocalePanel();
@@ -250,87 +236,12 @@ public class PropertiesDataNode extends DataNode {
                 DialogDescriptor.OK_OPTION,
                 new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        // OK pressed
                         if (evt.getSource() == DialogDescriptor.OK_OPTION) {
-                            dialog[0].setVisible(false);
-                            dialog[0].dispose();
-
-                            String locale = panel.getLocale().toString();
-
-                            try {
-                                if(locale.length() == 0) {
-                                    // It would mean default locale to create again.
-                                    notifyError(locale);
-                                    return;
-                                }
-
-                                final String newName = PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale;
-
-                                if(propertiesDataObject != null) {
-                                    final FileObject folder = propertiesDataObject.getPrimaryFile().getParent();
-                                    final FileObject defaultFile = propertiesDataObject.getPrimaryFile();
-                                    final PropertiesEditorSupport editor = (PropertiesEditorSupport)propertiesDataObject.getCookie(PropertiesEditorSupport.class);
-
-                                    // Actually create new file.
-                                    // First try to create new file and load it by document content from default(=primary) file.
-                                    if(editor != null && editor.isDocumentLoaded()) {
-                                        // Loading from the document in memory.
-                                        final Document document = editor.getDocument();
-                                        final String[] buffer = new String[1];
-
-                                        // Safely take the text from the document.
-                                        document.render(new Runnable() {
-                                            public void run() {
-                                                try {
-                                                    buffer[0] = document.getText(0, document.getLength());
-                                                } catch(BadLocationException ble) {
-                                                    // Should be not possible.
-                                                    ble.printStackTrace();
-                                                }
-                                            }
-                                        });
-
-                                        if(buffer[0] != null) {
-                                            folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                                                public void run() throws IOException {
-                                                    FileObject newFile = folder.createData(defaultFile.getName() + newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
-                                                    
-                                                    FileLock lock = newFile.lock();
-                                                    try {
-                                                        Writer writer = new PropertiesEditorSupport.NewLineWriter(newFile.getOutputStream(lock), editor.getNewLineType());
-
-                                                        writer.write(buffer[0]);
-                                                        writer.flush();
-                                                        writer.close();
-                                                    } finally {
-                                                        lock.releaseLock();
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    }
-                                    
-                                    // If first attempt failed, copy the default (=primary) file.
-                                    if(folder.getFileObject(defaultFile.getName() + newName, PropertiesDataLoader.PROPERTIES_EXTENSION) == null) {
-                                        folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                                            public void run() throws IOException {
-                                                defaultFile.copy(folder, defaultFile.getName() + newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
-                                            }
-                                        }); // End of annonymous inner class extended from FileSystem.AtomicAction.
-                                    }
-                                }
-                            } catch(IOException ioe) {
-                                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                                    ioe.printStackTrace();
-                                
-                                notifyError(locale);
-                            }
-                            
-                        // Cancel pressed
-                        } else if(evt.getSource() == DialogDescriptor.CANCEL_OPTION) {
-                            dialog[0].setVisible(false);
-                            dialog[0].dispose();
+                        // OK pressed
+                            Util.createLocaleFile(propertiesDataObject, panel.getLocale().toString());
                         }
+                        dialog[0].setVisible(false);
+                        dialog[0].dispose();
                     }
                 }
             );
@@ -340,5 +251,5 @@ public class PropertiesDataNode extends DataNode {
         }
 
     } // End of NewLocaleType class.
-    
+
 }

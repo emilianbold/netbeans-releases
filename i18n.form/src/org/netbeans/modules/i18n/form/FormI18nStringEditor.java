@@ -69,7 +69,7 @@ import org.netbeans.api.project.Project;
 public class FormI18nStringEditor extends PropertyEditorSupport implements FormAwareEditor, NamedPropertyEditor, XMLPropertyEditor {
 
     /** Value of <code>ResourceBundleString</code> this editor is currently editing. */
-    private FormI18nString formI18nString;
+//    private FormI18nString formI18nString;
     
     /** <code>DataObject</code> which have <code>SourceCookie</code>, and which document contains 
      * going-to-be-internatioanlized string.
@@ -112,29 +112,37 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
 
     /** Sets as text. Overrides superclass method to be dummy -> don't throw
      * <code>IllegalArgumentException</code> . */
-    public void setAsText(String text) {}
+    public void setAsText(String text) {
+        setValue(text);
+    }
         
     
     /** Overrides superclass method. 
      * @return text for the current value */
     public String getAsText() {
-        FormI18nString formI18nString = (FormI18nString)getValue();
-        DataObject dataObject = formI18nString.getSupport().getResourceHolder().getResource();
-        
-        if (dataObject == null || formI18nString.getKey() == null) {
-            return bundle.getString("TXT_InvalidValue");
-        } else {
-            DataObject sourceDataObject = formI18nString.getSupport().getSourceDataObject();
-            return MessageFormat.format(
-                bundle.getString("TXT_Key"),
-                new Object[] {
-                    formI18nString.getKey(),
-                    org.netbeans.modules.i18n.Util.
-                    getResourceName(sourceDataObject.getPrimaryFile(),
-                                    dataObject.getPrimaryFile(), '/', false ), // NOI18N
-                }
-            );
-        }     }
+        Object value = getValue();
+        if (value instanceof String)
+            return (String) value;
+
+        FormI18nString i18nString = (FormI18nString) value;
+        return i18nString.getValue();
+//        DataObject dataObject = formI18nString.getSupport().getResourceHolder().getResource();
+//        
+//        if (dataObject == null || formI18nString.getKey() == null) {
+//            return bundle.getString("TXT_InvalidValue");
+//        } else {
+//            DataObject sourceDataObject = formI18nString.getSupport().getSourceDataObject();
+//            return MessageFormat.format(
+//                bundle.getString("TXT_Key"),
+//                new Object[] {
+//                    formI18nString.getKey(),
+//                    org.netbeans.modules.i18n.Util.
+//                    getResourceName(sourceDataObject.getPrimaryFile(),
+//                                    dataObject.getPrimaryFile(), '/', false ), // NOI18N
+//                }
+//            );
+//        }
+    }
 
     /** Overrides superclass method. Gets string, piece of code which will replace the hardcoded
      * non-internationalized string in the source. The default form is:
@@ -145,13 +153,26 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      * <b>java.text.MessageFormat.format(<identifier name>getString("<key name>"), new Object[] {<code set in Parameters and Comments panel>})</b>
      */
     public String getJavaInitializationString() {
-        return ((FormI18nString)getValue()).getReplaceString();
+        return "*/\n\\1NOI18N*/\n\\0" + ((FormI18nString)getValue()).getReplaceString(); // NOI18N
+        // */\n\\1 is a special code mark for line comment
+        // */\n\\0 is a special code mark to indicate that a real code follows
     }
     
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nString</code> value. */
     public Component getCustomEditor() {
-        return new CustomEditor(new FormI18nString((FormI18nString)getValue()), getProject(), sourceDataObject.getPrimaryFile());
+        FormI18nString formI18nString;
+        Object value = getValue();
+        if (value instanceof FormI18nString) {
+            formI18nString = new FormI18nString((FormI18nString)value);
+        }
+        else {
+            formI18nString = createFormI18nString();
+            if(I18nUtil.getOptions().getLastResource2() != null)
+                formI18nString.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+        }
+        return new CustomEditor(formI18nString, getProject(), sourceDataObject.getPrimaryFile());
+//        return new CustomEditor(new FormI18nString((FormI18nString)getValue()), getProject(), sourceDataObject.getPrimaryFile());
     }
     
     private Project getProject() {
@@ -167,36 +188,42 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
 
     /** Overrides superclass method.
      * @return <code>formI18nString</code> */
-    public Object getValue() {
-        if(formI18nString == null) {
-            formI18nString = createFormI18nString();
-
-            if(I18nUtil.getOptions().getLastResource2() != null)
-                formI18nString.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
-        }
-        
-        return formI18nString;
-    }
+//    public Object getValue() {
+//        if(formI18nString == null) {
+//            formI18nString = createFormI18nString();
+//
+//            if(I18nUtil.getOptions().getLastResource2() != null)
+//                formI18nString.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+//        }
+//        
+//        return formI18nString;
+//    }
 
     /** Overrides superclass method.
      * @param value sets the new value for this editor */
     public void setValue(Object object) {
-        if(object instanceof FormI18nString)
-            formI18nString = (FormI18nString)object;
-        else {
-            formI18nString = createFormI18nString();
-            DataObject lastResource = I18nUtil.getOptions().getLastResource2();
-            if (lastResource != null) {
-                formI18nString.getSupport().getResourceHolder()
-                        .setResource(lastResource);
-            }
+        if (object instanceof String && getValue() instanceof FormI18nString) {
+            FormI18nString i18nString = new FormI18nString((FormI18nString)getValue());
+            i18nString.setValue((String)object);
+            object = i18nString;
         }
+        super.setValue(object);
+//        if(object instanceof FormI18nString)
+//            formI18nString = (FormI18nString)object;
+//        else {
+//            formI18nString = createFormI18nString();
+//            DataObject lastResource = I18nUtil.getOptions().getLastResource2();
+//            if (lastResource != null) {
+//                formI18nString.getSupport().getResourceHolder()
+//                        .setResource(lastResource);
+//            }
+//        }
     }
 
     /** Creates <code>FormI18nString</code> instance. Helper method. */
     private FormI18nString createFormI18nString() {
         // Note: Only here we can have support without possible document loading.
-        return new FormI18nString(new FormI18nSupport.Factory().createI18nSupport(sourceDataObject));
+        return new FormI18nString(sourceDataObject);
     }
     
     /** 
@@ -214,7 +241,7 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      * @return Display name of the property editor 
      */
     public String getDisplayName () {
-        return Util.getString("CTL_PropertyEditorName");
+        return NbBundle.getMessage(FormI18nStringEditor.class, "CTL_PropertyEditorName"); // NOI18N
     }
 
 
@@ -316,7 +343,7 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
                 }
             } else {
                 // Read was not succesful (old form or error) -> set old form replace format.
-                formI18nString.setReplaceFormat((String)I18nUtil.getReplaceFormatItems().get(2));
+                formI18nString.setReplaceFormat((String)I18nUtil.getDefaultReplaceFormat(false));
             }
         } catch(NullPointerException npe) {
             throw new IOException ();
@@ -386,6 +413,8 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      * @return the XML DOM element representing a subtree of XML from which the value should be loaded
      */
     public Node storeToXML(Document doc) {
+        FormI18nString formI18nString = (FormI18nString) getValue();
+
         Element element = doc.createElement (XML_RESOURCESTRING);
 
         String bundleName;
@@ -456,12 +485,12 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
             }
 
             // Try to add new key into resource bundle first.
-            i18nString.getSupport().getResourceHolder().addProperty(
-                i18nString.getKey(),
-                i18nString.getValue(),
-                i18nString.getComment(),
-                true  // propagate new value into primary file
-            );
+//            i18nString.getSupport().getResourceHolder().addProperty(
+//                i18nString.getKey(),
+//                i18nString.getValue(),
+//                i18nString.getComment(),
+//                true  // propagate new value into primary file
+//            );
 
             return i18nString;
         }

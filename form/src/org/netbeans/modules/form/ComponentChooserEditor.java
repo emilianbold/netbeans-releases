@@ -31,8 +31,9 @@ public class ComponentChooserEditor implements PropertyEditor,
                                                NamedPropertyEditor
 {
     public static final int ALL_COMPONENTS = 0;
-    public static final int VISUAL_COMPONENTS = 1;
-    public static final int OTHER_COMPONENTS = 2;
+    public static final int NONVISUAL_COMPONENTS = 3;
+//    public static final int VISUAL_COMPONENTS = 1;
+//    public static final int OTHER_COMPONENTS = 2;
 
     private static final String NULL_REF = "null"; // NOI18N
     private static final String INVALID_REF = "default"; // NOI18N
@@ -251,20 +252,15 @@ public class ComponentChooserEditor implements PropertyEditor,
             components.clear();
 
         if (formModel != null) {
-            RADComponent[] comps;
-            if (componentCategory == VISUAL_COMPONENTS)
-                comps = formModel.getVisualComponents();
-            else if (componentCategory == OTHER_COMPONENTS)
-                comps = formModel.getOtherComponents(true);
-            else {
-                java.util.List allComps = formModel.getMetaComponents();
-                comps = (RADComponent[])
-                        allComps.toArray(new RADComponent[allComps.size()]);
-            }
+            Collection<RADComponent> comps;
+            if (componentCategory == NONVISUAL_COMPONENTS)
+                comps = formModel.getNonVisualComponents();
+            else
+                comps = formModel.getAllComponents();
 
-            for (int i=0; i < comps.length; i++)
-                if (acceptBean(comps[i]))
-                    components.add(comps[i]);
+            for (RADComponent metacomp : comps)
+                if (acceptBean(metacomp))
+                    components.add(metacomp);
         }
 
         return components;

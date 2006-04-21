@@ -49,6 +49,11 @@ public abstract class ResourceHolder {
     
     /** Setter for </code>resource</code>. */
     public void setResource(DataObject resource) {
+        if (resource == null) {
+            this.resource = null;
+            return;
+        }
+
         Class clazz = resource.getClass();
 
         // Check if the class of parameter is valid for this ResourceHolder.

@@ -126,6 +126,13 @@ public final class I18nUtil {
         return replaceFormatItems;
     }
 
+    /** Gets default replace format - based on whether the project type is
+     * a NB module project or not. (Module projects use NbBundle preferentially.)
+     */
+    public static String getDefaultReplaceFormat(boolean nbProject) {
+        return (String) getReplaceFormatItems().get(nbProject ? 5 : 2);
+    }
+
     /** Gets <code>replaceHeplItems</code>.*/
     public static List getReplaceHelpItems() {
         if(replaceHelpItems == null) {

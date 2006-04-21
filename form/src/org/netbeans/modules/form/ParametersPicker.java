@@ -69,8 +69,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         Mnemonics.setLocalizedText(codeButton, FormUtils.getBundleString("CTL_CW_UserCode")); // NOI18N
 
         beansList = new ArrayList();
-        for (Iterator it = formModel.getMetaComponents().iterator(); it.hasNext(); ) {
-            RADComponent radComp = (RADComponent) it.next();
+        for (RADComponent radComp : formModel.getAllComponents()) {
             if (requiredType.isAssignableFrom(radComp.getBeanClass()))
                 beansList.add(radComp);
         }

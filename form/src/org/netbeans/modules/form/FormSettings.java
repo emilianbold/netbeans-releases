@@ -44,7 +44,10 @@ public class FormSettings {
         int listenerGenerationStyle = FormLoaderSettings.getInstance().getListenerGenerationStyle();
         settings.put(FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE, new Integer(listenerGenerationStyle));
     }
-    
+
+    // -----
+    // code generation
+
     public int getVariablesModifier() {
         Integer variablesModifier = (Integer)settings.get(FormLoaderSettings.PROP_VARIABLES_MODIFIER);
         return variablesModifier.intValue();
@@ -116,6 +119,43 @@ public class FormSettings {
 
         return layoutCodeTarget;
     }
+
+    // -----
+    // internationalization
+
+    public void setI18nAutoMode(boolean value) {
+        settings.put(FormLoaderSettings.PROP_AUTO_I18N, value ? Boolean.TRUE : Boolean.FALSE);
+    }
+
+    public boolean getI18nAutoMode() {
+        Boolean i18nSetting = (Boolean) settings.get(FormLoaderSettings.PROP_AUTO_I18N);
+        boolean i18nAutoMode;
+        if (i18nSetting != null) {
+            i18nAutoMode = i18nSetting.booleanValue();
+        }
+        else { // no setting available
+            if (FormEditor.getFormEditor(formModel).needPostCreationUpdate()) {
+                int globalI18nAutoMode = FormLoaderSettings.getInstance().getI18nAutoMode();
+                if (globalI18nAutoMode == FormLoaderSettings.AUTO_I18N_DEFAULT) { // detect
+                    i18nAutoMode = FormEditor.getI18nSupport(formModel).isDefaultInternationalizableProject();
+                }
+                else i18nAutoMode = (globalI18nAutoMode == FormLoaderSettings.AUTO_I18N_ON);
+            }
+            else i18nAutoMode = false;
+            setI18nAutoMode(i18nAutoMode);
+        }
+        return i18nAutoMode;
+    }
+
+    public void setFormBundle(String bundleName) {
+        settings.put(I18nSupport.PROP_FORM_BUNDLE, bundleName);
+    }
+
+    public String getFormBundle() {
+        return (String) settings.get(I18nSupport.PROP_FORM_BUNDLE);
+    }
+
+    // -----
 
     void set(String name, Object value) {
         settings.put(name, value);

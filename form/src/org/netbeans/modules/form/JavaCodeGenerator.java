@@ -102,6 +102,14 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private static final String DEFAULT_LISTENER_CLASS_NAME = "FormListener"; // NOI18N
 
+    private static final String CODE_MARK = "*/\n\\"; // NOI18N
+    private static final String MARKED_PROPERTY_CODE = "*/\n\\0"; // NOI18N
+    private static final String PROPERTY_LINE_COMMENT = "*/\n\\1"; // NOI18N
+
+    private static final String RESOURCE_BUNDLE_OPENING_CODE = "java.util.ResourceBundle.getBundle("; // NOI18N
+    private static final String RESOURCE_BUNDLE_CLOSING_CODE = ")."; // NOI18N
+    private Map<String,String> bundleVariables;
+
     private static String variablesHeader;
     private static String variablesFooter;
     private static String eventDispatchCodeComment;
@@ -801,7 +809,7 @@ class JavaCodeGenerator extends CodeGenerator {
         final ResourceBundle bundle = FormUtils.getBundle();
         
         return new PropertySupport.ReadOnly(
-                RADComponent.PROP_NAME,
+                "beanClass", // NOI18N
                 String.class,
                 bundle.getString("MSG_JC_BeanClass"), // NOI18N
                 bundle.getString("MSG_JC_BeanClassDesc")) // NOI18N
@@ -851,14 +859,17 @@ class JavaCodeGenerator extends CodeGenerator {
 
         // create Writer for writing the generated code in
         StringWriter initCodeBuffer = new StringWriter(1024);
-        Writer initCodeWriter;
-        if (formSettings.getUseIndentEngine()) // use original indent engine
-            initCodeWriter = indentEngine.createWriter(
-                                formEditorSupport.getDocument(),
-                                initComponentsOffset,
-                                initCodeBuffer);
-        else
-            initCodeWriter = initCodeBuffer;
+        CodeWriter initCodeWriter;
+        if (formSettings.getUseIndentEngine()) { // use original indent engine
+            initCodeWriter = new CodeWriter(
+                    indentEngine.createWriter(formEditorSupport.getDocument(),
+                                              initComponentsOffset,
+                                              initCodeBuffer),
+                    true);
+        }
+        else {
+            initCodeWriter = new CodeWriter(initCodeBuffer, true);
+        }
         
         if (constructorProperties != null)
             constructorProperties.clear();
@@ -887,9 +898,9 @@ class JavaCodeGenerator extends CodeGenerator {
             if (addLocalVariables(initCodeWriter))
                 initCodeWriter.write("\n"); // NOI18N
 
-            RADComponent[] nonVisualComponents = formModel.getOtherComponents(false);
-            for (int i = 0; i < nonVisualComponents.length; i++) {
-                addCreateCode(nonVisualComponents[i], initCodeWriter);
+            Collection<RADComponent> otherComps = formModel.getOtherComponents();
+            for (RADComponent metacomp : otherComps) {
+                addCreateCode(metacomp, initCodeWriter);
             }
             RADComponent top = formModel.getTopRADComponent();
             addCreateCode(top, initCodeWriter);
@@ -898,14 +909,14 @@ class JavaCodeGenerator extends CodeGenerator {
             if (formModel.getSettings().getListenerGenerationStyle() == CEDL_INNERCLASS
                 && anyEvents())
             {
-                addDispatchListenerDeclaration(initCodeWriter);
+                addDispatchListenerDeclaration(initCodeWriter.getWriter());
                 initCodeWriter.write("\n"); // NOI18N
             }
 
-            for (int i = 0; i < nonVisualComponents.length; i++) {
-                addInitCode(nonVisualComponents[i], initCodeWriter, 0);
+            for (RADComponent metacomp : otherComps) {
+                addInitCode(metacomp, initCodeWriter, 0);
             }
-            if (nonVisualComponents.length > 0)
+            if (otherComps.size() > 0)
                 initCodeWriter.write("\n"); // NOI18N
             addInitCode(top, initCodeWriter, 0);
 
@@ -961,13 +972,15 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 initCodeWriter.write(sizeText);
             }
-            
+
+            // cleanup
             if (constructorProperties != null)
                 constructorProperties.clear();
             if (containerDependentProperties != null)
                 containerDependentProperties.clear();
 	    formModel.getCodeStructure().clearExternalVariableNames();
-	
+            bundleVariables = null;
+
             initCodeWriter.write("}"); // no new line because of fold footer // NOI18N
 
             int listenerCodeStyle = formModel.getSettings().getListenerGenerationStyle();
@@ -979,7 +992,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 initCodeWriter.write(getEventDispatchCodeComment());
                 initCodeWriter.write("\n"); // NOI18N
 
-                generateDispatchListenerCode(initCodeWriter);
+                generateDispatchListenerCode(initCodeWriter.getWriter());
             }
             else listenersInMainClass = null;
 
@@ -989,7 +1002,7 @@ class JavaCodeGenerator extends CodeGenerator {
             else {
                 initCodeWriter.write("\n"); // NOI18N
             }
-            initCodeWriter.close();
+            initCodeWriter.getWriter().close();
 
              // set the text into the guarded block
             String newText = initCodeBuffer.toString();
@@ -1020,15 +1033,18 @@ class JavaCodeGenerator extends CodeGenerator {
                                         formEditorSupport.getDocument());
 
         StringWriter variablesBuffer = new StringWriter(1024);
-        Writer variablesWriter;
+        CodeWriter variablesWriter;
         
-        if (formSettings.getUseIndentEngine())
-            variablesWriter = indentEngine.createWriter(
-                                formEditorSupport.getDocument(),
-                                variablesSection.getBegin().getOffset(),
-                                variablesBuffer);
-        else
-            variablesWriter = variablesBuffer;
+        if (formSettings.getUseIndentEngine()) {
+            variablesWriter = new CodeWriter(
+                    indentEngine.createWriter(formEditorSupport.getDocument(),
+                                              variablesSection.getBegin().getOffset(),
+                                              variablesBuffer),
+                    false);
+        }
+        else {
+            variablesWriter = new CodeWriter(variablesBuffer, false);
+        }
 	    
         try {
 	    
@@ -1039,7 +1055,7 @@ class JavaCodeGenerator extends CodeGenerator {
             
             variablesWriter.write(getVariablesFooterComment());
             variablesWriter.write("\n"); // NOI18N
-            variablesWriter.close();
+            variablesWriter.getWriter().close();
 
             String newText = variablesBuffer.toString();
             if (!formSettings.getUseIndentEngine())
@@ -1053,7 +1069,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }   
     
-    private void addCreateCode(RADComponent comp, Writer initCodeWriter)
+    private void addCreateCode(RADComponent comp, CodeWriter initCodeWriter)
         throws IOException
     {
         if (comp == null)
@@ -1071,7 +1087,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private void addInitCode(RADComponent comp,
-                             Writer initCodeWriter,
+                             CodeWriter initCodeWriter,
                              int level)
         throws IOException
     {
@@ -1079,7 +1095,7 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
 
         generateComponentInit(comp, initCodeWriter);
-        generateComponentEvents(comp, initCodeWriter);
+        generateComponentEvents(comp, initCodeWriter.getWriter());
         if (comp.getParentComponent() == null)
             generateAccessibilityCode(comp, initCodeWriter);
 
@@ -1149,7 +1165,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         String contVarName = (contVar == null) ? null : contVar.getName();
                         SwingLayoutCodeGenerator swingGenerator = getSwingGenerator();
                         swingGenerator.generateContainerLayout(
-                            initCodeWriter,
+                            initCodeWriter.getWriter(),
                             layoutCont,
                             contExprStr,
                             contVarName,
@@ -1171,7 +1187,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private void generateComponentCreate(RADComponent comp,
-                                         Writer initCodeWriter,
+                                         CodeWriter initCodeWriter,
                                          boolean insideMethod)
         throws IOException
     {
@@ -1303,11 +1319,10 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
                 else props = RADComponent.NO_PROPERTIES;
 
-                initCodeWriter.write(creator.getJavaCreationCode(props));
-                initCodeWriter.write(";\n"); // NOI18N
+                initCodeWriter.write(creator.getJavaCreationCode(props) + ";\n"); // NOI18N
 
                 if (exceptions != null)
-                    generateCatchCode(exceptions, initCodeWriter);
+                    generateCatchCode(exceptions, initCodeWriter.getWriter());
             }
         }
 
@@ -1321,7 +1336,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private void generateComponentInit(RADComponent comp,
-                                       Writer initCodeWriter)
+                                       CodeWriter initCodeWriter)
         throws IOException
     {             
         if (comp instanceof RADVisualContainer) {
@@ -1388,7 +1403,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private void generateAccessibilityCode(RADComponent comp,
-                                           Writer initCodeWriter)
+                                           CodeWriter initCodeWriter)
         throws IOException
     {
         Object genType = comp.getAuxValue(AUX_CODE_GENERATION);
@@ -1413,7 +1428,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void generateComponentAddCode(RADComponent comp,
                                           RADVisualContainer container,
-                                          Writer initCodeWriter)
+                                          CodeWriter initCodeWriter)
         throws IOException
     {
         if (comp instanceof RADVisualComponent) {
@@ -1455,7 +1470,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void generateMenuAddCode(RADComponent comp,
                                      RADMenuComponent container,
-                                     Writer initCodeWriter)
+                                     CodeWriter initCodeWriter)
         throws IOException
     {
         if (comp instanceof RADMenuItemComponent
@@ -1475,7 +1490,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void generatePropertySetter(FormProperty prop,
                                         RADComponent comp,
-                                        Writer initCodeWriter) 
+                                        CodeWriter initCodeWriter)
 	throws IOException
     {
 	generatePropertySetter(prop, comp, null, initCodeWriter);
@@ -1484,7 +1499,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private void generatePropertySetter(FormProperty prop,
                                         RADComponent comp,
 					String setterVariable,
-                                        Writer initCodeWriter)
+                                        CodeWriter initCodeWriter)
         throws IOException
     {
         // 1. pre-initialization code
@@ -1528,11 +1543,8 @@ class JavaCodeGenerator extends CodeGenerator {
                      && canUseMnemonics(comp) && isUsingMnemonics(comp))
             {
                 if ((javaStr = prop.getJavaInitializationString()) != null) {
-                    initCodeWriter.write("org.openide.awt.Mnemonics.setLocalizedText("); // NOI18N
-                    initCodeWriter.write(comp.getName());
-                    initCodeWriter.write(", "); // NOI18N
-                    initCodeWriter.write(javaStr);
-                    initCodeWriter.write(");\n"); // NOI18N
+                    initCodeWriter.write("org.openide.awt.Mnemonics.setLocalizedText(" // NOI18N
+                        + comp.getName() + ", " + javaStr + ");\n"); // NOI18N
                 }
             }
             // Mnemonics support - end -	     
@@ -1557,7 +1569,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private void generatePropertyBeanSetterCode(FormProperty prop, 	
 						Object value,
 						String setterVariable, 						
-						Writer initCodeWriter) 
+						CodeWriter initCodeWriter)
 	throws IOException
     {
 	
@@ -1588,7 +1600,7 @@ class JavaCodeGenerator extends CodeGenerator {
 		creator.getJavaCreationCode(
 		    (FormProperty[])creatorProperties.toArray(new FormProperty[creatorProperties.size()]));	
 	
-	String javaStr = "";
+	String javaStr = "";  // NOI18N
 	if(remainingProperties.size() == 0) {		    		    
 	    generateSimpleSetterCode(prop, 
 				      prop.getWriteMethod().getName() + "(" + propertyInitializationString + ")", // NOI18N 
@@ -1597,8 +1609,7 @@ class JavaCodeGenerator extends CodeGenerator {
 	} else if(remainingProperties.size() > 0) {
 	    generateWholePropertyInitialization(prop, propertyType, setterVariable, 
 				 propertyInitializationString, remainingProperties, initCodeWriter);	    	    
-	}		
-		
+	}
     }
             
     private java.util.List getCreatorProperties(CreationDescriptor.Creator creator, FormProperty[] properties) {
@@ -1632,10 +1643,10 @@ class JavaCodeGenerator extends CodeGenerator {
 					      String setterVariable,
 					      String propertyInitializationString, 
 					      java.util.List remainingProperties,
-					      Writer initCodeWriter) 
+					      CodeWriter initCodeWriter)
 	throws IOException					    
     {
-	String variableName = formModel.getCodeStructure().getExternalVariableName(propertyType, true);	
+	String variableName = formModel.getCodeStructure().getExternalVariableName(propertyType, null, true);
 
 	String javaStr = propertyType.getName() + " " + variableName + " = " + propertyInitializationString; // NOI18N		
 	initCodeWriter.write(javaStr);
@@ -1654,7 +1665,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private void generateSimpleSetterCode(FormProperty prop, 
 					   String partialSetterCode, 
 	                                   String setterVariable, 
-					   Writer initCodeWriter)
+					   CodeWriter initCodeWriter)
 	throws IOException
     {
 
@@ -1670,13 +1681,11 @@ class JavaCodeGenerator extends CodeGenerator {
 		exceptions = null;
 	}
 
-	initCodeWriter.write(setterVariable);		    
-	initCodeWriter.write(partialSetterCode);
-	initCodeWriter.write(";\n"); // NOI18N		    
+	initCodeWriter.write(setterVariable + partialSetterCode + ";\n"); // NOI18N
 
 	// add the catch code if needed
 	if (exceptions != null)
-	    generateCatchCode(exceptions, initCodeWriter);	
+	    generateCatchCode(exceptions, initCodeWriter.getWriter());
     }    
     
     // generates code for handling events of one component
@@ -1830,7 +1839,7 @@ class JavaCodeGenerator extends CodeGenerator {
         return metacomp;
     }
 
-    private void addVariables(Writer variablesWriter)
+    private void addVariables(CodeWriter variablesWriter)
         throws IOException
     {
         Iterator it = getSortedVariables(CodeVariable.FIELD,
@@ -1857,7 +1866,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private boolean addLocalVariables(Writer initCodeWriter)
+    private boolean addLocalVariables(CodeWriter initCodeWriter)
         throws IOException
     {
         Iterator it = getSortedVariables(
@@ -1883,7 +1892,7 @@ class JavaCodeGenerator extends CodeGenerator {
         return anyVariable;
     }
 
-    private void generateDeclarationPre(Writer writer, RADComponent metacomp) throws IOException {
+    private void generateDeclarationPre(CodeWriter writer, RADComponent metacomp) throws IOException {
         String preCode = (String)metacomp.getAuxValue(AUX_DECLARATION_PRE);
         if (preCode != null && !preCode.equals("")) { // NOI18N
             writer.write(preCode);
@@ -1891,7 +1900,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private void generateDeclarationPost(Writer writer, RADComponent metacomp) throws IOException {
+    private void generateDeclarationPost(CodeWriter writer, RADComponent metacomp) throws IOException {
         String postCode = (String)metacomp.getAuxValue(AUX_DECLARATION_POST);
         if (postCode != null && !postCode.equals("")) { // NOI18N
             writer.write(postCode);
@@ -2799,7 +2808,113 @@ class JavaCodeGenerator extends CodeGenerator {
         }
         return buffer.toString();
     }
-    
+
+    private String replaceCode(String code, Writer initWriter) throws IOException {
+        int idx = code.indexOf(RESOURCE_BUNDLE_OPENING_CODE);
+        if (idx >= 0) {
+            int endIdx = code.indexOf(RESOURCE_BUNDLE_CLOSING_CODE,
+                                      idx + RESOURCE_BUNDLE_OPENING_CODE.length());
+            if (endIdx >= 0) {
+                String bundleLocation = code.substring(idx + RESOURCE_BUNDLE_OPENING_CODE.length(), endIdx);
+                if (bundleVariables == null) {
+                    bundleVariables = new HashMap();
+                }
+                String varName = bundleVariables.get(bundleLocation);
+                if (varName == null) {
+                    varName = formModel.getCodeStructure().getExternalVariableName(ResourceBundle.class, "bundle", true); // NOI18N
+                    bundleVariables.put(bundleLocation, varName);
+                    initWriter.write("java.util.ResourceBundle " + varName + " = " // NOI18N
+                            + code.substring(idx, endIdx + 1) + "; // NOI18N\n"); // NOI18N
+                }
+                code = varName + code.substring(endIdx + 1);
+            }
+        }
+        return code;
+    }
+
+    /**
+     * Class for filtering generated code - processing special marks in the code
+     * (provided by properties/property editors). This way e.g. code for
+     * ResourceBundle.getBundle is optimized (caching the bundle in a variable)
+     * or line comments for property setters are placed correctly.
+     * [In future pre-init and post-init code could be done this way as well
+     *  (and it would work also for nested properties or layout constraints).]
+     * To work correctly, this class requires to be given complete statements
+     * (so it can add a preceding or following statement).
+     */
+    private class CodeWriter {
+        private Writer writer;
+        private boolean inMethod;
+
+        CodeWriter(Writer writer, boolean method) {
+            this.writer = writer;
+            this.inMethod = method;
+        }
+
+        void write(String str) throws IOException {
+            int idx = str.indexOf(CODE_MARK);
+            if (idx >= 0) {
+                StringBuilder buf = new StringBuilder(str.length());
+                if (idx > 0) {
+                    buf.append(str.substring(0, idx));
+                }
+                String lineComment = null;
+
+                do {
+                    String part;
+                    if (str.startsWith(MARKED_PROPERTY_CODE, idx)) {
+                        int sub = idx + MARKED_PROPERTY_CODE.length();
+                        idx = str.indexOf(CODE_MARK, sub);
+                        part = idx < 0 ? str.substring(sub) : str.substring(sub, idx);
+                        if (inMethod) {
+                            part = replaceCode(part, writer);
+                        } // can't replace in field variable init
+                    }
+                    else if (str.startsWith(PROPERTY_LINE_COMMENT, idx)) {
+                        int sub = idx + PROPERTY_LINE_COMMENT.length();
+                        idx = str.indexOf(CODE_MARK, sub);
+                        String lc = idx < 0 ? str.substring(sub) : str.substring(sub, idx);
+                        if (lineComment == null)
+                            lineComment = lc;
+                        else if (!lineComment.equals(lc))
+                            lineComment = lineComment + " " + lc; // NOI18N
+                        continue;
+                    }
+                    else {
+                        int sub = idx;
+                        idx = str.indexOf(CODE_MARK, sub);
+                        part = idx < 0 ? str.substring(sub) : str.substring(sub, idx);
+                    }
+                    if (lineComment != null) {
+                        int eol = part.indexOf('\n');
+                        if (eol >= 0) {
+                            buf.append(part.substring(0, eol));
+                            buf.append(" // "); // NOI18N
+                            buf.append(lineComment);
+                            buf.append("\n"); // NOI18N
+                            part = part.substring(eol+1);
+                            lineComment = null;
+                        }
+                    }
+                    buf.append(part);
+                }
+                while (idx >= 0);
+
+                if (lineComment != null) {
+                    buf.append(" // "); // NOI18N
+                    buf.append(lineComment);
+                }
+
+                str = buf.toString();
+            }
+            writer.write(str);
+        }
+
+        Writer getWriter() {
+            return writer;
+        }
+    }
+
     //
     // {{{ FormListener
     //
@@ -2807,6 +2922,9 @@ class JavaCodeGenerator extends CodeGenerator {
     private class FormListener implements FormModelListener {
 
         public void formChanged(FormModelEvent[] events) {
+            if (events == null)
+                return;
+
             boolean modifying = false;
             boolean toBeSaved = false;
             boolean toBeClosed = false;

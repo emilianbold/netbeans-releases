@@ -15,7 +15,15 @@
 package org.netbeans.modules.properties;
 
 
+import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Locale;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.loaders.FileEntry;
 
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
@@ -319,4 +327,97 @@ public final class Util extends Object {
 
     }
 
+    /** Notifies an error happened when attempted to create locale which exists already. 
+     * @param locale locale which already exists */ 
+    private static void notifyError(String locale) {
+        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+            MessageFormat.format(
+                NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
+                    new Object[] {locale}), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(msg);
+    }
+    
+    public static void createLocaleFile(PropertiesDataObject propertiesDataObject, String locale) {
+        try {
+            if(locale.length() == 0) {
+                // It would mean default locale to create again.
+                notifyError(locale);
+                return;
+            }
+
+            if(propertiesDataObject != null) {
+                FileObject file = propertiesDataObject.getPrimaryFile();
+                final String newName = file.getName() + PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale;
+                final FileObject folder = file.getParent();
+//                                    final PropertiesEditorSupport editor = (PropertiesEditorSupport)propertiesDataObject.getCookie(PropertiesEditorSupport.class);
+                java.util.Iterator it = propertiesDataObject.secondaryEntries().iterator();
+                while (it.hasNext()) {
+                    FileObject f = ((FileEntry)it.next()).getFile();
+                    if (newName.startsWith(f.getName()) && f.getName().length() > file.getName().length())
+                        file = f;
+                }
+                if (file.getName().equals(newName))
+                    return; // do nothing if the file already exists
+
+                SaveCookie save = (SaveCookie) propertiesDataObject.getCookie(SaveCookie.class);
+                if (save != null)
+                    save.save();
+
+                final FileObject templateFile = file;
+
+                // Actually create new file.
+                // First try to create new file and load it by document content from default(=primary) file.
+/*                                    if(editor != null && editor.isDocumentLoaded()) {
+                    // Loading from the document in memory.
+                    final Document document = editor.getDocument();
+                    final String[] buffer = new String[1];
+
+                    // Safely take the text from the document.
+                    document.render(new Runnable() {
+                        public void run() {
+                            try {
+                                buffer[0] = document.getText(0, document.getLength());
+                            } catch(BadLocationException ble) {
+                                // Should be not possible.
+                                ble.printStackTrace();
+                            }
+                        }
+                    });
+
+                    if(buffer[0] != null) {
+                        folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                            public void run() throws IOException {
+                                FileObject newFile = folder.createData(newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
+
+                                FileLock lock = newFile.lock();
+                                try {
+                                    Writer writer = new PropertiesEditorSupport.NewLineWriter(newFile.getOutputStream(lock), editor.getNewLineType());
+
+                                    writer.write(buffer[0]);
+                                    writer.flush();
+                                    writer.close();
+                                } finally {
+                                    lock.releaseLock();
+                                }
+                            }
+                        });
+                    }
+                } */
+
+                // If first attempt failed, copy the default (=primary) file.
+                if(folder.getFileObject(newName, PropertiesDataLoader.PROPERTIES_EXTENSION) == null) {
+                    folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                        public void run() throws IOException {
+                            templateFile.copy(folder, newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
+                        }
+                    }); // End of annonymous inner class extended from FileSystem.AtomicAction.
+                }
+            }
+        } catch(IOException ioe) {
+            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ioe.printStackTrace();
+
+            notifyError(locale);
+        }
+    }
 }

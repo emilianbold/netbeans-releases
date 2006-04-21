@@ -715,7 +715,7 @@ public class FormModelEvent extends EventObject
                 if (getComponent() == null) { // form synthetic property
                     FormEditor formEditor = FormEditor.getFormEditor(getFormModel());
                     FormRootNode rootNode = (FormRootNode)formEditor.getFormRootNode();
-                    props = rootNode.getSyntheticProperties();
+                    props = rootNode.getAllProperties();
                 } else { // component synthetic property
                     props = getComponent().getSyntheticProperties();
                 }
@@ -754,7 +754,7 @@ public class FormModelEvent extends EventObject
                 if (getComponent() == null) { // form synthetic property
                     FormEditor formEditor = FormEditor.getFormEditor(getFormModel());
                     FormRootNode rootNode = (FormRootNode)formEditor.getFormRootNode();
-                    props = rootNode.getSyntheticProperties();
+                    props = rootNode.getAllProperties();
                 } else { // component synthetic property
                     props = getComponent().getSyntheticProperties();
                 }

@@ -133,7 +133,7 @@ public class FormEditorSupport extends JavaEditor
         } // else do nothing - the listener is already added
     }
     
-    private void detachStatusListeners() {
+    private static void detachStatusListeners() {
         Iterator iter = fsToStatusListener.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry)iter.next();
@@ -213,6 +213,9 @@ public class FormEditorSupport extends JavaEditor
         try {
             if (formEditor != null) {
                 formEditor.saveFormData();
+                I18nSupport i18nSupport = formEditor.getI18nSupport();
+                if (i18nSupport != null)
+                    i18nSupport.autoSave();
             }
             super.saveDocument();
         }
@@ -354,6 +357,9 @@ public class FormEditorSupport extends JavaEditor
 
         super.notifyClosed(); // close java editor
         if (formEditor != null) {
+            I18nSupport i18nSupport = formEditor.getI18nSupport();
+            if (i18nSupport != null)
+                i18nSupport.close();
             formEditor.closeForm();
             formEditor = null;
             multiviewTC = null;

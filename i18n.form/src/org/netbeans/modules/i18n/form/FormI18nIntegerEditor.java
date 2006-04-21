@@ -218,7 +218,7 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
      * @return Display name of the property editor 
      */
     public String getDisplayName () {
-        return Util.getString("PROP_IntegerEditor_name");
+        return NbBundle.getMessage(FormI18nIntegerEditor.class, "PROP_IntegerEditor_name"); // NOI18N
     }
 
 
@@ -317,7 +317,7 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                 }
             } else {
                 // Read was not succesful (old form or error) -> set old form replace format.
-                formI18nInteger.setReplaceFormat((String)I18nUtil.getReplaceFormatItems().get(2));
+                formI18nInteger.setReplaceFormat((String)I18nUtil.getDefaultReplaceFormat(false));
             }
         } catch(NullPointerException npe) {
             throw new IOException ();

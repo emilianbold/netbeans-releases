@@ -526,8 +526,8 @@ public class CodeStructure {
 	return name;
     }        
     
-    public String getExternalVariableName(Class type, boolean register) {
-	String name = getFreeVariableName(null, type);
+    public String getExternalVariableName(Class type, String suggestedName, boolean register) {
+	String name = getFreeVariableName(suggestedName, type);
         if (register) {
             createVariable(CodeVariable.LOCAL, type, name);    
             if(externalVariables == null) {

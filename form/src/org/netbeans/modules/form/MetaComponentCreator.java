@@ -369,6 +369,8 @@ public class MetaComponentCreator {
             return null;
         }
 
+        I18nSupport.internationalizeComponent(newMetaComp);
+
         if (targetPlacement == TARGET_MENU) {
             addMenuComponent(newMetaComp, targetComp);
         }
@@ -805,7 +807,7 @@ public class MetaComponentCreator {
             }
         }
 
-        newMetaComp.setStoredName(formModel.getCodeStructure().getExternalVariableName(compClass, false));
+        newMetaComp.setStoredName(formModel.getCodeStructure().getExternalVariableName(compClass, null, false));
 
         // for some components, we initialize their properties with some
         // non-default values e.g. a label on buttons, checkboxes

@@ -112,7 +112,7 @@ class FormOthersNode extends FormNode {
 
         // FormNodeChildren implementation
         protected void updateKeys() {
-            setKeys(formModel.getOtherComponents(false));
+            setKeys(formModel.getOtherComponents().toArray());
         }
 
         protected Node[] createNodes(Object key) {

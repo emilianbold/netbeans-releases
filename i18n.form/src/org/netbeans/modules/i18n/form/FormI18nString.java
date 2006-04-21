@@ -14,11 +14,11 @@
 
 package org.netbeans.modules.i18n.form;
 
+import org.netbeans.modules.form.I18nValue;
 import org.netbeans.modules.form.FormDesignValue;
-import org.netbeans.modules.form.FormEditor;
-import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.i18n.I18nSupport;
+import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.java.JavaI18nString;
 import org.openide.loaders.DataObject;
 
@@ -31,10 +31,13 @@ import org.openide.loaders.DataObject;
  * @see ResourceBundleStringFormEditor
  * @see org.netbeans.modules.form.FormDesignValue
  */
-public class FormI18nString extends JavaI18nString implements FormDesignValue {
+public class FormI18nString extends JavaI18nString implements I18nValue {
 
-    String bundleName;   
-    
+    String bundleName; // to be saved again if file can't be found after form is loaded
+
+    Object allData; // complete data for given key across all locales
+                    // stored here for undo/redo purposes
+
     /** Creates new <code>FormI18nString</code>. */
     public FormI18nString(I18nSupport i18nSupport) {
         super(i18nSupport);
@@ -51,6 +54,15 @@ public class FormI18nString extends JavaI18nString implements FormDesignValue {
              source.getReplaceFormat());
     }
 
+    FormI18nString(DataObject srcDataObject) {
+        super(new FormI18nSupport.Factory().createI18nSupport(srcDataObject));
+
+        boolean nbBundle = org.netbeans.modules.i18n.Util.isNbBundleAvailable(srcDataObject);
+        if (I18nUtil.getDefaultReplaceFormat(!nbBundle).equals(getReplaceFormat())) {
+            setReplaceFormat(I18nUtil.getDefaultReplaceFormat(nbBundle));
+        }
+    }
+
     private FormI18nString(I18nSupport i18nSupport, String key, String value, String commment, String[] arguments, String replaceFormat) {
         super(i18nSupport);
 
@@ -62,16 +74,17 @@ public class FormI18nString extends JavaI18nString implements FormDesignValue {
         this.replaceFormat = replaceFormat;
     }
 
-    public FormDesignValue copy(FormProperty formProperty) {
-        FormModel formModel = (formProperty == null) ? null : formProperty.getPropertyContext().getFormModel();
-        I18nSupport newSupport = createNewSupport(FormEditor.getFormDataObject(formModel), 
-                                                  support.getResourceHolder().getResource());
-        return new FormI18nString(newSupport, 
-                                  this.getKey(),
-                                  this.getValue(),
-                                  this.getComment(), 
-                                  this.getArguments(), 
-                                  this.getReplaceFormat());        
+    public Object copy(FormProperty formProperty) {
+        return getValue();
+//        FormModel formModel = (formProperty == null) ? null : formProperty.getPropertyContext().getFormModel();
+//        I18nSupport newSupport = createNewSupport(FormEditor.getFormDataObject(formModel), 
+//                                                  support.getResourceHolder().getResource());
+//        return new FormI18nString(newSupport, 
+//                                  this.getKey(),
+//                                  this.getValue(),
+//                                  this.getComment(), 
+//                                  this.getArguments(), 
+//                                  this.getReplaceFormat());        
     }
     
     private static I18nSupport createNewSupport(I18nSupport support) {
@@ -85,12 +98,12 @@ public class FormI18nString extends JavaI18nString implements FormDesignValue {
         }                
         return newSupport;        
     }
-    
+
     /**
      * Implements <code>FormDesignValue</code> interface. Gets design value. 
      * @see org.netbeans.modules.form.FormDesignValue#getDesignValue(RADComponent radComponent) */
     public Object getDesignValue() {
-        String designValue = getSupport().getResourceHolder().getValueForKey(getKey());
+        String designValue = getValue(); //getSupport().getResourceHolder().getValueForKey(getKey());
 
         if(designValue == null)
             return FormDesignValue.IGNORED_VALUE;

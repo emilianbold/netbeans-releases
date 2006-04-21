@@ -313,7 +313,7 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
                 }
             } else {
                 // Read was not succesful (old form or error) -> set old form replace format.
-                formI18nMnemonic.setReplaceFormat((String)I18nUtil.getReplaceFormatItems().get(2));
+                formI18nMnemonic.setReplaceFormat((String)I18nUtil.getDefaultReplaceFormat(false));
             }
         } catch(NullPointerException npe) {
             throw new IOException ();

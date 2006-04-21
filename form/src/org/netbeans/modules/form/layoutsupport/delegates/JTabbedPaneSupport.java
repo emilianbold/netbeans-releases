@@ -399,7 +399,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         public Node.Property[] getProperties() {
             if (properties == null) {
                 properties = new FormProperty[] {
-                    new FormProperty("TabConstraints tabTitle", // NOI18N
+                    new FormProperty("TabConstraints.tabTitle", // NOI18N
                                      String.class,
                                  getBundle().getString("PROP_tabTitle"), // NOI18N
                                  getBundle().getString("HINT_tabTitle")) { // NOI18N

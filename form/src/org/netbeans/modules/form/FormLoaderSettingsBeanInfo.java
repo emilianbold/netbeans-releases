@@ -138,6 +138,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        FormLoaderSettings.class,
                                        "getAssistantShown", // NOI18N
                                        "setAssistantShown"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_AUTO_I18N,
+                                       FormLoaderSettings.class,
+                                       "getI18nAutoMode", // NOI18N
+                                       "setI18nAutoMode"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_DESIGNER_LAF,
                                        FormLoaderSettings.class,
                                        "getDesignerLAF", // NOI18N
@@ -235,6 +239,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[i].setShortDescription(bundle.getString("HINT_ASSISTANT_SHOWN")); // NOI18N
             desc[i].setPreferred(true);
 
+            desc[++i].setDisplayName(bundle.getString("PROP_AUTO_I18N")); // NOI18N
+            desc[i].setShortDescription(bundle.getString("HINT_AUTO_I18N_GLOBAL")); // NOI18N
+            desc[i].setPropertyEditorClass(I18nModeEditor.class);
+            desc[i].setPreferred(true);
+
             desc[++i].setHidden(true);
 
             return desc;
@@ -317,4 +326,23 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 });
         }
     }
+
+    public final static class I18nModeEditor
+                      extends org.netbeans.modules.form.editors.EnumEditor
+    {
+        public I18nModeEditor() {
+            super(new Object[] {
+                    FormUtils.getBundleString("CTL_AUTO_I18N_DEFAULT"), // NOI18N
+                    new Integer(FormLoaderSettings.AUTO_I18N_DEFAULT),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_AUTO_I18N_ON"), // NOI18N
+                    new Integer(FormLoaderSettings.AUTO_I18N_ON),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_AUTO_I18N_OFF"), // NOI18N
+                    new Integer(FormLoaderSettings.AUTO_I18N_OFF),
+                    "" // NOI18N
+                });
+        }
+    }
+
 }

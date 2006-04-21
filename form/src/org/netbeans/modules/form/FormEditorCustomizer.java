@@ -46,6 +46,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     private JRadioButton rbGenerateLocals = new JRadioButton ();
     private JRadioButton rbGenerateFields = new JRadioButton ();
     private JComboBox cbListenerStyle = new JComboBox ();
+    private JComboBox cbAutoI18n = new JComboBox();
 
     private boolean changed = false;
     private boolean listen = false;
@@ -69,19 +70,25 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbListenerStyle.addItem(loc("Anonymous")); // NOI18N
         cbListenerStyle.addItem(loc("InnerClass")); // NOI18N
         cbListenerStyle.addItem(loc("MainClass")); // NOI18N
+        cbAutoI18n.addItem(loc("CTL_AUTO_I18N_DEFAULT")); // NOI18N
+        cbAutoI18n.addItem(loc("CTL_AUTO_I18N_ON")); // NOI18N
+        cbAutoI18n.addItem(loc("CTL_AUTO_I18N_OFF")); // NOI18N
 
         JLabel generateComponetsLabel = new JLabel(loc("Generate_Components")); // NOI18N
         JLabel variableModifierLabel = new JLabel(loc("Variable_Modifier")); // NOI18N
         JLabel listenerStyleLabel = new JLabel(loc("Listener_Style")); // NOI18N
+        JLabel autoI18nLabel = new JLabel(loc("Auto_I18n")); // NOI18N
 
         generateComponetsLabel.setToolTipText(loc("Generate_Components_Hint")); // NOI18N
         variableModifierLabel.setToolTipText(loc("HINT_VARIABLES_MODIFIER")); // NOI18N
         listenerStyleLabel.setToolTipText(loc("HINT_LISTENER_GENERATION_STYLE")); // NOI18N
+        autoI18nLabel.setToolTipText(loc("HINT_AUTO_I18N_GLOBAL")); // NOI18N
         cbFold.setToolTipText(loc("HINT_FOLD_GENERATED_CODE")); // NOI18N
         cbAssistant.setToolTipText(loc("HINT_ASSISTANT_SHOWN")); // NOI18N
 
         variableModifierLabel.setLabelFor(cbModifier);
         listenerStyleLabel.setLabelFor(cbListenerStyle);
+        autoI18nLabel.setLabelFor(cbAutoI18n);
 
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
@@ -91,7 +98,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(generateComponetsLabel)
                     .add(variableModifierLabel)
-                    .add(listenerStyleLabel))
+                    .add(listenerStyleLabel)
+                    .add(autoI18nLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING, false)
                     .add(rbGenerateLocals)
@@ -99,7 +107,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     .add(cbFold)
                     .add(cbAssistant)
                     .add(cbModifier, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(cbListenerStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(cbListenerStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(cbAutoI18n, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -119,6 +128,10 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     .add(listenerStyleLabel)
                     .add(cbListenerStyle))
                 .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(autoI18nLabel)
+                    .add(cbAutoI18n))
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(cbFold)
                 .add(cbAssistant)
                 .addContainerGap()
@@ -132,6 +145,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbModifier.addActionListener (this);
         rbGenerateFields.addActionListener (this);
         rbGenerateLocals.addActionListener (this);
+        cbAutoI18n.addActionListener(this);
     }
     
     private static String loc (String key) {
@@ -168,6 +182,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         else
             cbModifier.setSelectedIndex (1);
         cbListenerStyle.setSelectedIndex (options.getListenerGenerationStyle ());
+        cbAutoI18n.setSelectedIndex(options.getI18nAutoMode());
         listen = true;
         changed = false;
     }
@@ -178,6 +193,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         options.setFoldGeneratedCode (cbFold.isSelected ());
         options.setAssistantShown(cbAssistant.isSelected());
         options.setListenerGenerationStyle (cbListenerStyle.getSelectedIndex ());
+        options.setI18nAutoMode(cbAutoI18n.getSelectedIndex());
         options.setVariablesLocal (rbGenerateLocals.isSelected ());
         switch (cbModifier.getSelectedIndex ()) {
             case 0: options.setVariablesModifier (Modifier.PUBLIC);
