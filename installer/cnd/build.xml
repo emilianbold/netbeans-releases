@@ -35,9 +35,9 @@ Microsystems, Inc. All Rights Reserved.
         <include name="lib/ppk/*.jar"/>
         <include name="distributables/platform/ext/*.jar"/>
       </fileset>
-      <fileset dir="../lib">
-        <include name="dist/*.jar"/>
-      </fileset>
+      <pathelement path="../libbean/dist/libbean.jar"/>
+      <pathelement path="../libutil14/dist/libutil14.jar"/>
+      <pathelement path="../libutil15/dist/libutil15.jar"/>
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
@@ -155,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-ml" depends="init, build-win32-ml, build-unix-ml, build-macosx-ml" description="build the multilanguage installers">
   </target>
  
-  <target name="compile" depends="init, build-library" description="compile custom beans and panels">
+  <target name="compile" depends="init, build-libbean, build-libutil14, build-libutil15" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>
     
     <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" deprecation="true">
@@ -171,13 +171,33 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <!-- Build library -->
-  <target name="build-library" description="compile shared library">
-    <ant dir="../lib" target="jar" inheritAll="false"/>
+  <target name="build-libbean" description="compile shared library">
+    <ant antfile="../libbean/build.xml" target="jar" inheritAll="false"/>
   </target>
-
+                                                                                                                                       
   <!-- Clean library -->
-  <target name="clean-library" description="clean shared library">
-    <ant dir="../lib" target="clean" inheritAll="false"/>
+  <target name="clean-libbean" description="clean shared library">
+    <ant antfile="../libbean/build.xml" target="clean" inheritAll="false"/>
+  </target>
+                                                                                                                                       
+  <!-- Build library -->
+  <target name="build-libutil14" description="compile shared library">
+    <ant antfile="../libutil14/build.xml" target="jar" inheritAll="false"/>
+  </target>
+                                                                                                                                       
+  <!-- Clean library -->
+  <target name="clean-libutil14" description="clean shared library">
+    <ant antfile="../libutil14/build.xml" target="clean" inheritAll="false"/>
+  </target>
+                                                                                                                                       
+  <!-- Build library -->
+  <target name="build-libutil15" description="compile shared library">
+    <ant antfile="../libutil15/build.xml" target="jar" inheritAll="false"/>
+  </target>
+                                                                                                                                       
+  <!-- Clean library -->
+  <target name="clean-libutil15" description="clean shared library">
+    <ant antfile="../libutil15/build.xml" target="clean" inheritAll="false"/>
   </target>
 
   <target name="run" depends="init" description="run the installer">
@@ -195,7 +215,8 @@ Microsystems, Inc. All Rights Reserved.
     </java>
   </target>
   
-  <target name="clean" depends="init, clean-library" description="Clean all build products and temp/backup files.">
+  <target name="clean" depends="init, clean-libbean, clean-libutil14, clean-libutil15" 
+          description="Clean all build products and temp/backup files.">
     <delete>
       <fileset dir=".">
         <include name="**/*~"/>
