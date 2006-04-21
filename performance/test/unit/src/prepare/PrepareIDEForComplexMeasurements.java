@@ -31,6 +31,7 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 import junit.framework.Test;
@@ -72,6 +73,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      */
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PrepareIDEForComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeMemoryToolbar"));
         suite.addTest(new PrepareIDEForComplexMeasurements("openFiles"));
@@ -91,7 +93,9 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      */
     public void closeWelcome(){
         try {
-            new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title")).close();
+            TopComponentOperator tComponent = new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title"));
+            new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
+            tComponent.close();
         }catch(Exception exc){
             test_failed = true;
             fail(exc);
