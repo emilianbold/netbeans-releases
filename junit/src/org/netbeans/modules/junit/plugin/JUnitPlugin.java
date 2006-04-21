@@ -26,8 +26,8 @@ import org.openide.filesystems.FileObject;
  * It declares methods for:
  * <ul>
  *     <li>navigation between source classes and corresponding test classes
- *         ({@link #getUnitTestElement getUnitTestElement},
- *          {@link #getTestedElement getTestedElement})</li>
+ *         ({@link #getTestLocation getTestLocation},
+ *          {@link #getTestedLocation getTestedLocation})</li>
  *     <li>creation of test class skeletons
  *         ({@link #createTests createTests})</li>
  * </ul>
