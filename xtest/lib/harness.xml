@@ -268,10 +268,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="localworkdir-clean">
-        <delete includeEmptyDirs="true">
-            <!-- Excludes possible JVM crash error logs (e.g. hs_err_pid20617.log) -->
-            <fileset dir="${xtest.workdir}" excludes="**/hs_err_*"/>
-        </delete>
+        <delete dir="${xtest.workdir}"/>
     </target>
     
     <!-- =============== -->
