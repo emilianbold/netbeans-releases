@@ -61,6 +61,11 @@ final class JUnitOutputReader {
     private boolean testTaskStarted = false;
     /** */
     private boolean reportStarted = false;
+    /**
+     * did we already get statistics of tests/failures/errors for the current
+     * report?
+     */
+    private boolean testsuiteStatsKnown = false;   //see issue #74979
     
     /** */
     private final AntSession session;
@@ -302,6 +307,9 @@ final class JUnitOutputReader {
             if (report == null) {
                 return;
             }
+            if (testsuiteStatsKnown) {
+                return;                     //see issue #74979
+            }
             
             Matcher matcher = regexp.getSuiteStatsPattern().matcher(msg);
             if (matcher.matches()) {
@@ -318,6 +326,7 @@ final class JUnitOutputReader {
                     assert false;
                 }
             }
+            testsuiteStatsKnown = true;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="Test ... FAILED">
         else if ((suiteName != null)
@@ -721,6 +730,7 @@ final class JUnitOutputReader {
         testcase = null;
         trouble = null;
         report = null;
+        testsuiteStatsKnown = false;
     }
     
 }
