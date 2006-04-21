@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -114,7 +114,7 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public synchronized void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
         String log = "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
-
+        
         // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (10,19) in textfields
         // of some dialogs
         if (w > 10 || h > 19) { // painted region isn't cursor (or painted region is greater than cursor)
@@ -130,7 +130,7 @@ public class LoggingRepaintManager extends RepaintManager {
                 hasDirtyMatches = true;
             }
         }
-//System.out.println(log);        
+        //System.out.println(log);
         super.addDirtyRegion(c, x, y, w, h);
     }
     
@@ -168,16 +168,16 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public void paintDirtyRegions() {
         super.paintDirtyRegions();
-//System.out.println("Done superpaint ("+tr+","+hasDirtyMatches+").");        
+        //System.out.println("Done superpaint ("+tr+","+hasDirtyMatches+").");
         if (tr != null && hasDirtyMatches) {
             lastPaint = System.currentTimeMillis();
             tr.add(tr.TRACK_PAINT, "DONE PAINTING");
-//System.out.println("Done painting.");
+            //System.out.println("Done painting - " +tr);
             hasDirtyMatches = false;
         }
     }
     
-    /** 
+    /**
      * @deprecated use waitNoPaintEvent instead
      */
     public long waitNoEvent(long timeout) {
@@ -224,15 +224,27 @@ public class LoggingRepaintManager extends RepaintManager {
      * @return time of last paint
      */
     public static long measureStartup() {
-        long waitAfterStartup = Long.getLong("org.netbeans.performance.waitafterstartup", 5000).longValue();
-        
         // XXX load our EQ and repaint manager
         ActionTracker tr = ActionTracker.getInstance();
         LoggingRepaintManager rm = new LoggingRepaintManager(tr);
         rm.setEnabled(true);
-//        leq = new LoggingEventQueue(tr);
-//        leq.setEnabled(true);
+        
+        tr.startNewEventList("startupTime");
+        
+        long waitAfterStartup = Long.getLong("org.netbeans.performance.waitafterstartup", 10000).longValue();
         long time = rm.waitNoPaintEvent(waitAfterStartup, true);
+        
+        String fileName = System.getProperty( "org.netbeans.log.startup.logfile" );
+        java.io.File logFile = new java.io.File(fileName.substring(0,fileName.lastIndexOf('.')) + ".xml");
+        
+        tr.stopRecording();
+        try {
+            tr.exportAsXML(new java.io.PrintStream(logFile));
+        }catch(Exception exc){
+            System.err.println("Exception rises during writing log from painting of the main window :");
+            exc.printStackTrace(System.err);
+        }
+        
         rm.setEnabled(false);
         return time;
     }
