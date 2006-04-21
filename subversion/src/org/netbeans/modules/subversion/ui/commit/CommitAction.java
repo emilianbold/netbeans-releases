@@ -22,6 +22,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 import javax.swing.*;
@@ -229,19 +231,55 @@ public class CommitAction extends ContextAction {
 
             // TODO perform removes
 
-            // finally commit
-            File[] files = (File[]) commitCandidates.toArray(new File[0]);
-            client.commit(files, message, false);
-            if(support.isCanceled()) {
-                return;
-            }
-            // XXX intercapt results and update cache
-
+            // group commitCandidates by working copies
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            for (int i = 0; i < files.length; i++) {
-                File file = files[i];
-                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            List workingCopies = new ArrayList();
+            for (Iterator itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
+                File commitCandidateFile = (File) itCommitCandidates.next();
+                List workingCopyList = null;                
+                for (Iterator itWorkingCopies = workingCopies.iterator(); itWorkingCopies.hasNext();) {
+                    List list = (List) itWorkingCopies.next();
+                    File workingCopyFile = (File) list.get(0);
+
+                    // XXX is it correct to presume that files with the same svn-managed root are from the same wc?
+                    File base = SVNBaseDir.getRootDir(new File[] {commitCandidateFile, workingCopyFile});
+                    if(base != null) {
+                        FileInformation status = cache.getStatus(base);
+                        if ((status.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                            // found a list with files from the same working copy
+                            workingCopyList = list;
+                            break;
+                        }
+                    }
+                }
+                if(workingCopyList == null) {
+                    // no list for files from the same wc as commitCandidateFile created yet
+                    workingCopyList = new ArrayList();
+                    workingCopies.add(workingCopyList);
+                }                
+                workingCopyList.add(commitCandidateFile);                
             }
+
+            // finally commit            
+            for (Iterator itCandidates = workingCopies.iterator(); itCandidates.hasNext();) {
+                // one commit for each wc
+                List list = (List) itCandidates.next();
+                File[] files = (File[]) list.toArray(new File[0]);
+                
+                client.commit(files, message, false);
+                if(support.isCanceled()) {
+                    return;
+                }
+
+                // XXX intercapt results and update cache                
+                for (int i = 0; i < files.length; i++) {
+                    cache.refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                }
+                if(support.isCanceled()) {
+                    return;
+                }
+            }                        
+
         } catch (SVNClientException ex) {
             ExceptionHandler eh = new ExceptionHandler(ex);
             eh.annotate();
