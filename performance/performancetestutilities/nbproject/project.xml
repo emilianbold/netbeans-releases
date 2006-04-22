@@ -63,7 +63,7 @@
             <compilation-unit>
                 <package-root>src</package-root>
                 <classpath mode="compile">../../jemmy/builds/jemmy.jar:../../jellytools/builds/jelly2-nb.jar:../../xtest/lib/nbjunit.jar:../../xtest/lib/junit.jar</classpath>
-                <source-level>1.4</source-level>
+                <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
     </configuration>

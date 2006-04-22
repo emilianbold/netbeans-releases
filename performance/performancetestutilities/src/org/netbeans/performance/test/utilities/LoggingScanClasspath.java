@@ -22,7 +22,7 @@ import java.util.ArrayList;
  */
 public class LoggingScanClasspath {
     
-    private static ArrayList data = new ArrayList();
+    private static ArrayList<PerformanceScanData> data = new ArrayList<PerformanceScanData>();
     
     /** Creates a new instance of LoggingScanClasspath */
     public LoggingScanClasspath() {
@@ -38,7 +38,7 @@ public class LoggingScanClasspath {
     
     public static void printMeasuredValues(PrintStream ps){
         for(int i=0; i<data.size(); i++)
-            ps.println((PerformanceScanData)data.get(i));
+            ps.println(data.get(i));
     }
     
     public class PerformanceScanData{

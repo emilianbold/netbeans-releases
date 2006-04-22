@@ -142,7 +142,7 @@ public class ActionTracker {
     }
     
     /** List of event lists. */
-    private LinkedList/*EventList*/ eventLists = null;
+    private LinkedList<EventList> eventLists = null;
     
     /** Events gathered during one event tracking period. */
     private EventList/*Tuple*/ currentEvents = null;
@@ -221,13 +221,13 @@ public class ActionTracker {
      */
     public void startNewEventList(String name) {
         if (eventLists == null)
-            eventLists = new LinkedList();
+            eventLists = new LinkedList<EventList>();
         
         currentEvents = new EventList(name);
         eventLists.add(currentEvents);
         currentEvents.start();
         startRecording();
-        add(TRACK_START, "START", currentEvents.startMillies);
+        add(TRACK_START, "START", currentEvents.startMillies/1000000);
     }
     
     long default_awt_event_mask = AWTEvent.COMPONENT_EVENT_MASK 
@@ -591,7 +591,7 @@ public class ActionTracker {
      * a <code>LinkedList</code> in disguise, so to access objects in
      * the list just use that mechanism.
      */
-    public final class EventList extends LinkedList {
+    public final class EventList extends LinkedList<Tuple> {
         
         private String name = "unknown";
         private long startMillies = -1;
@@ -609,16 +609,16 @@ public class ActionTracker {
         
         /** Cause the "start time" to be recorded.  This value will
          * only be recorded once, and comes from
-         * <code>System.currentTimeMillis()</code>.
+         * <code>System.nanoTime()</code>.
          */
         public void start() {
             if (startMillies == -1) 
-                startMillies = System.currentTimeMillis();
+                startMillies = System.nanoTime();
         }
         
         /** Return the recorded "start time" for this list. */
         public long getStartMillis() {
-            return startMillies;
+            return startMillies/1000000;
         }
         
         public String getName() {
@@ -635,14 +635,17 @@ public class ActionTracker {
     /** Events to record into an EventList.  The code is one of the 
      * ActionTracker.TRACK_xxx values, and the name can be any String
      * that makes sense to you.  The time (millies) comes from
-     * <code>System.currentTimeMillis()</code>.
+     * <code>System.nanoTime()</code>.
      */
     public final class Tuple {
 //        public Tuple(int code, String name) {
-//            this(code, name, System.currentTimeMillis(), (long)0);
+//            this(code, name, System.nanoTime(), (long)0);
 //        }
         public Tuple(int code, String name, long start) {
-            this(code, name, System.currentTimeMillis(), start);
+            this.code = code;
+            this.name = name;
+            this.millies = System.nanoTime();
+            this.diffies = millies - start;
         }
         public Tuple(int code, String name, long millies, long start) {
             this.code = code;
@@ -654,7 +657,8 @@ public class ActionTracker {
         int code;
         String name;
         long millies;
-        long diffies; // Difference from a "start" time
+	/** Difference from a "start" time in millis */
+        long diffies;
         
         /** Get the translation of the code into a String. */
         public String getCodeName() {
@@ -667,9 +671,9 @@ public class ActionTracker {
         
         public String getName() { return name; }
         
-        public long getTimeMillis() { return millies; }
+        public long getTimeMillis() { return millies/1000000; }
         
-        public long getTimeDifference() { return diffies; }
+        public long getTimeDifference() { return diffies/1000000; }
         
         public String toString() {
             return getCodeName() 

@@ -104,7 +104,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     protected static int repeat_memory = Integer.getInteger("org.netbeans.performance.memory.repeat", -1).intValue();
     
     /** Performance data. */
-    private static java.util.ArrayList data;
+    private static java.util.ArrayList<NbPerformanceTest.PerformanceData> data;
     
     /** Warmup finished flag. */
     private static boolean warmupFinished = false;
@@ -134,7 +134,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     protected ComponentOperator testedComponentOperator;
     
     /** Name of test case should be changed. */
-    protected HashMap renamedTestCaseName;
+    protected HashMap<String, String> renamedTestCaseName;
     
     /** Use order just for indentify first and next run, not specific run order */
     public boolean useTwoOrderTypes = true;
@@ -145,7 +145,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      */
     public PerformanceTestCase(String testName) {
         super(testName);
-        renamedTestCaseName = new HashMap();
+        renamedTestCaseName = new HashMap<String, String>();
     }
     
     /**
@@ -175,7 +175,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         leq.setEnabled(true);
          */
         
-        data = new java.util.ArrayList();
+        data = new java.util.ArrayList<NbPerformanceTest.PerformanceData>();
         
     }
     
@@ -281,7 +281,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     
                     // PENDING need to check this
                     //                    if(testedComponentOperator != null) {
-                    //                        java.awt.EventQueue.writeOutput("<wait_until_painted time=\""+System.currentTimeMillis()+"\">");
+                    //                        java.awt.EventQueue.writeOutput("<wait_until_painted time=\""+System.nanoTime()+"\">");
                     //                        Component comp = testedComponentOperator.getSource();
                     //                        waitUntilPainted(comp);
                     //                        java.awt.EventQueue.writeOutput("</wait_until_painted>");
@@ -796,7 +796,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * @return PerformanceData[] performance data
      */
     public NbPerformanceTest.PerformanceData[] getPerformanceData() {
-        return (NbPerformanceTest.PerformanceData[])(data.toArray(new NbPerformanceTest.PerformanceData[0]));
+        return data.toArray(new NbPerformanceTest.PerformanceData[0]);
     }
     
     /**
@@ -820,7 +820,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         String originalTestCaseName = super.getName();
         
         if(renamedTestCaseName.containsKey(originalTestCaseName))
-            return ((String)renamedTestCaseName.get(originalTestCaseName)).replace('|','-'); // workarround for problem on Win, there isn't possible cretae directories with '|'
+            return (renamedTestCaseName.get(originalTestCaseName)).replace('|','-'); // workarround for problem on Win, there isn't possible cretae directories with '|'
         else
             return originalTestCaseName;
     }
@@ -833,7 +833,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         String originalTestCaseName = super.getName();
         
         if(renamedTestCaseName.containsKey(originalTestCaseName))
-            return (String)renamedTestCaseName.get(originalTestCaseName);
+            return renamedTestCaseName.get(originalTestCaseName);
         else
             return originalTestCaseName;
     }

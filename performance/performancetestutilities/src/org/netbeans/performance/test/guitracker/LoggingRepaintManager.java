@@ -34,7 +34,7 @@ public class LoggingRepaintManager extends RepaintManager {
     /** Creates a new instance of LoggingRepaintManager */
     public LoggingRepaintManager(ActionTracker tr) {
         this.tr = tr;
-        lastPaint = System.currentTimeMillis();
+        // lastPaint = System.nanoTime();
     }
     
     /**
@@ -170,7 +170,7 @@ public class LoggingRepaintManager extends RepaintManager {
         super.paintDirtyRegions();
         //System.out.println("Done superpaint ("+tr+","+hasDirtyMatches+").");
         if (tr != null && hasDirtyMatches) {
-            lastPaint = System.currentTimeMillis();
+            lastPaint = System.nanoTime();
             tr.add(tr.TRACK_PAINT, "DONE PAINTING");
             //System.out.println("Done painting - " +tr);
             hasDirtyMatches = false;
@@ -202,19 +202,19 @@ public class LoggingRepaintManager extends RepaintManager {
      * @return time of last painting
      */
     private long waitNoPaintEvent(long timeout, boolean afterPaint) {
-        long current = System.currentTimeMillis();
+        long current = System.nanoTime();
         long first = current;
-        while (((current - lastPaint) < timeout) || ((lastPaint == 0L) && afterPaint)) {
+        while (((current - lastPaint)/1000000 < timeout) || ((lastPaint == 0L) && afterPaint)) {
             try {
-                Thread.currentThread().sleep(Math.min(current - lastPaint + 20, timeout));
+                Thread.currentThread().sleep(Math.min((current - lastPaint)/1000000 + 20, timeout));
             } catch (InterruptedException e) {
                 // XXX what to do here?
             }
-            current = System.currentTimeMillis();
-            if (current - first > MAX_TIMEOUT)
-                return lastPaint;
+            current = System.nanoTime();
+            if ((current - first)/1000000 > MAX_TIMEOUT)
+                return lastPaint/1000000;
         }
-        return lastPaint;
+        return lastPaint/1000000;
     }
     
     /** Utility method used from NetBeans to measure startup time.
