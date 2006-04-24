@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,6 +33,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -164,7 +165,11 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
         Value v = getInnerValue ();
         if (v == null) return 0;
         if (v instanceof ArrayReference) {
-            return ((ArrayReference) v).length ();
+            try {
+                return ((ArrayReference) v).length ();
+            } catch (ObjectCollectedException ocex) {
+                return 0;
+            }
         } else {
             if (fields == null) initFields ();
             return fields.length;
@@ -180,8 +185,12 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
      */
     public Field getField (String name) {
         if (getInnerValue() == null) return null;
-        com.sun.jdi.Field f = 
-            ((ReferenceType) this.getInnerValue().type()).fieldByName (name);
+        com.sun.jdi.Field f;
+        try {
+            f = ((ReferenceType) this.getInnerValue().type()).fieldByName(name);
+        } catch (ObjectCollectedException ocex) {
+            return null;
+        }
         if (f == null) return null;
         return this.getField (
             f, 
@@ -197,28 +206,32 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
     public Field[] getFields (int from, int to) {
         Value v = getInnerValue ();
         if (v == null) return new Field[] {};
-        if (v instanceof ArrayReference && (from > 0 || to < ((ArrayReference) v).length())) {
-            // compute only requested elements
-            Type type = v.type ();
-            ReferenceType rt = (ReferenceType) type;
-            if (to == 0) to = ((ArrayReference) v).length();
-            Field[] elements = getFieldsOfArray (
-                    (ArrayReference) v, 
-                    ((ArrayType) rt).componentTypeName (),
-                    this.getID (),
-                    from, to);
-            return elements;
-        } else {
-            //either the fields are cached or we have to init them
-            if (fields == null) initFields ();
-            if (to != 0) {
-                to = Math.min(fields.length, to);
-                from = Math.min(fields.length, from);
-                Field[] fv = new Field [to - from];
-                System.arraycopy (fields, from, fv, 0, to - from);
-                return fv;
+        try {
+            if (v instanceof ArrayReference && (from > 0 || to < ((ArrayReference) v).length())) {
+                // compute only requested elements
+                Type type = v.type ();
+                ReferenceType rt = (ReferenceType) type;
+                if (to == 0) to = ((ArrayReference) v).length();
+                Field[] elements = getFieldsOfArray (
+                        (ArrayReference) v, 
+                        ((ArrayType) rt).componentTypeName (),
+                        this.getID (),
+                        from, to);
+                return elements;
+            } else {
+                //either the fields are cached or we have to init them
+                if (fields == null) initFields ();
+                if (to != 0) {
+                    to = Math.min(fields.length, to);
+                    from = Math.min(fields.length, from);
+                    Field[] fv = new Field [to - from];
+                    System.arraycopy (fields, from, fv, 0, to - from);
+                    return fv;
+                }
+                return fields;
             }
-            return fields;
+        } catch (ObjectCollectedException ocex) {
+            return new Field[] {};
         }
     }
         
@@ -267,18 +280,22 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
     public Super getSuper () {
         if (getInnerValue () == null) 
             return null;
-        Type t = this.getInnerValue().type();
-        if (!(t instanceof ClassType)) 
+        try {
+            Type t = this.getInnerValue().type();
+            if (!(t instanceof ClassType)) 
+                return null;
+            ClassType superType = ((ClassType) t).superclass ();
+            if (superType == null) 
+                return null;
+            return new SuperVariable(
+                    debugger, 
+                    (ObjectReference) this.getInnerValue(),
+                    superType,
+                    this.id
+                    );
+        } catch (ObjectCollectedException ocex) {
             return null;
-        ClassType superType = ((ClassType) t).superclass ();
-        if (superType == null) 
-            return null;
-        return new SuperVariable(
-                debugger, 
-                (ObjectReference) this.getInnerValue(),
-                superType,
-                this.id
-                );
+        }
     }
     
     /**
@@ -313,7 +330,9 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
                 return sr.value ();
             }
         } catch (VMDisconnectedException ex) {
-            return "";
+            return NbBundle.getMessage(AbstractVariable.class, "MSG_Disconnected");
+        } catch (ObjectCollectedException ocex) {
+            return NbBundle.getMessage(AbstractVariable.class, "MSG_ObjCollected");
         }
     }
     
@@ -387,6 +406,8 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
             return new AbstractVariable (debugger, v, id + method);
         } catch (VMDisconnectedException ex) {
             return null;
+        } catch (ObjectCollectedException ocex) {
+            return null;
         }
     }
     
@@ -401,7 +422,11 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
         try {
             return this.getInnerValue().type().name ();
         } catch (VMDisconnectedException vmdex) {
-            return ""; // The session is gone.
+            // The session is gone.
+            return NbBundle.getMessage(AbstractVariable.class, "MSG_Disconnected");
+        } catch (ObjectCollectedException ocex) {
+            // The object is gone.
+            return NbBundle.getMessage(AbstractVariable.class, "MSG_ObjCollected");
         }
     }
     
@@ -512,7 +537,11 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
         Value value = getInnerValue();
         Type type;
         if (value != null) {
-            type = getInnerValue ().type ();
+            try {
+                type = getInnerValue ().type ();
+            } catch (ObjectCollectedException ocex) {
+                type = null;
+            }
         } else {
             type = null;
         }
@@ -523,19 +552,23 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
             this.staticFields = new Field [0];
             this.inheritedFields = new Field [0];
         } else {
-            ObjectReference or = (ObjectReference) this.getInnerValue();
-            ReferenceType rt = (ReferenceType) type;
-            if (or instanceof ArrayReference) {
-                this.fields = getFieldsOfArray (
-                    (ArrayReference) or, 
-                    ((ArrayType) rt).componentTypeName (),
-                    this.getID (),
-                    0, ((ArrayReference) or).length());
-                this.staticFields = new Field[0];
-                this.inheritedFields = new Field[0];
-            }
-            else {
-                initFieldsOfClass(or, rt, this.getID ());
+            try {
+                ObjectReference or = (ObjectReference) this.getInnerValue();
+                ReferenceType rt = (ReferenceType) type;
+                if (or instanceof ArrayReference) {
+                    this.fields = getFieldsOfArray (
+                        (ArrayReference) or, 
+                        ((ArrayType) rt).componentTypeName (),
+                        this.getID (),
+                        0, ((ArrayReference) or).length());
+                    this.staticFields = new Field[0];
+                    this.inheritedFields = new Field[0];
+                }
+                else {
+                    initFieldsOfClass(or, rt, this.getID ());
+                }
+            } catch (ObjectCollectedException ocex) {
+                // The object is gone => no fields
             }
         }
     }
@@ -547,7 +580,12 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
             int from,
             int to
         ) {
-            List l = ar.getValues(from, to - from);
+            List l;
+            try {
+                l = ar.getValues(from, to - from);
+            } catch (ObjectCollectedException ocex) {
+                l = java.util.Collections.EMPTY_LIST;
+            }
             int i, k = l.size ();
             Field[] ch = new Field [k];
             for (i = 0; i < k; i++) {
@@ -613,7 +651,12 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
         ObjectReference or, 
         String parentID
     ) {
-        Value v = or.getValue (f);
+        Value v;
+        try {
+            v = or.getValue (f);
+        } catch (ObjectCollectedException ocex) {
+            v = null;
+        }
         if ( (v == null) || (v instanceof ObjectReference))
             return new ObjectFieldVariable (
                 debugger,
