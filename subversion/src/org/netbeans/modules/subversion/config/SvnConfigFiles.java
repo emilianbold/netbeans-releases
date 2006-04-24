@@ -147,7 +147,7 @@ public class SvnConfigFiles {
 
         try {
             File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/servers"));
-            file.delete();
+            file.getParentFile().mkdirs();
             servers.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -376,6 +376,7 @@ public class SvnConfigFiles {
 
         File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/config"));
         try {
+            file.getParentFile().mkdirs();
             config.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
@@ -392,8 +393,9 @@ public class SvnConfigFiles {
         File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/" + fileName));       
         Ini nbIni = null;
         try {
-            file.createNewFile();
-            nbIni = new Ini(FileUtils.createInputStream(file));
+            if(file.exists()) {
+                nbIni = new Ini(FileUtils.createInputStream(file));
+            }            
         } catch (FileNotFoundException ex) {
             // do nothing
         } catch (IOException ex) {
