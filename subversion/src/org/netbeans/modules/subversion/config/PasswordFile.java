@@ -15,7 +15,6 @@ package org.netbeans.modules.subversion.config;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.config.KVFile.Key;
-import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -134,7 +133,7 @@ public class PasswordFile extends SVNCredentialFile {
     }
     
     private static File getFile(String realmString) {
-        return new File(SvnConfigFiles.getNBConfigDir() + "auth/svn.simple/" + getFileName(realmString));
+        return new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.simple/" + getFileName(realmString));
     }
     
 }

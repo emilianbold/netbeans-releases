@@ -13,12 +13,12 @@
 package org.netbeans.modules.subversion.client;
 
 import java.awt.Dialog;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.security.InvalidKeyException;
 
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
@@ -38,6 +38,7 @@ import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
+import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -95,8 +96,17 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
     // XXX refactor, move, clean up ...
     private boolean handleNoCertificateError() throws Exception {
-        // XXX copy the certificate if it already exists
 
+        // copy the certificate if it already exists
+        SVNUrl url = client.getSvnUrl();
+        String realmString = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+        File certFile = CertificateFile.getSystemCertFile(realmString);
+        if(certFile.exists()) {
+            FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));
+            return true;
+        }
+
+        // otherwise try  to retrieve the certificate from the server ...
         TrustManager[] trust = new TrustManager[] {
             new X509TrustManager() {
                 public X509Certificate[] getAcceptedIssuers() { return null; }
@@ -105,7 +115,6 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             }
         };
 
-        SVNUrl url = client.getSvnUrl();
         ProxyDescriptor proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost()); 
         Socket proxy = null;
         if (proxyDescriptor != null && proxyDescriptor.getHost() != null ) { 

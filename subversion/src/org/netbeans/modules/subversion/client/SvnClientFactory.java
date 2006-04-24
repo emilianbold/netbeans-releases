@@ -109,7 +109,7 @@ public class SvnClientFactory {
             SvnConfigFiles.getInstance().setProxy(pd, repositoryUrl.getHost());
         }        
         try {
-            File file = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigDir()));
+            File file = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
             adapter.setConfigDirectory(file);
             adapter.setUsername(username);
             adapter.setPassword(password);

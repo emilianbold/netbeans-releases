@@ -36,7 +36,7 @@ import org.openide.util.Utilities;
  * configuration directory (and registry folder in case of windows) merged into the Subversion 
  * modules configuration files. Already present proxy setting values wan't be changed, 
  * the remaining values are always taken from the commandline clients configuration files. 
- * The only exception is the 'store-auth-creds'key, which is always set to 'no'.
+ * The only exception is the 'store-auth-creds' key, which is always set to 'no'.
  * 
  * @author Tomas Stupka
  */
@@ -48,7 +48,7 @@ public class SvnConfigFiles {
      * file used by the Subversion module */
     private Ini servers = null;
 
-    private static final String UNIX_CONFIG_DIR = ".subversion";
+    private static final String UNIX_CONFIG_DIR = ".subversion/";
     private static final String WINDOWS_CONFIG_DIR = "Application Data/Subversion/";
     private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   
     private static final String GROUPS = "groups";
@@ -146,7 +146,7 @@ public class SvnConfigFiles {
         }
 
         try {
-            File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/servers"));
+            File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/servers"));
             file.getParentFile().mkdirs();
             servers.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
@@ -180,7 +180,7 @@ public class SvnConfigFiles {
      * @return the path
      *
      */ 
-    public static String getNBConfigDir() {
+    public static String getNBConfigPath() {
         String nbHome = System.getProperty("netbeans.user");       
         return nbHome + "/config/svn/config/";
     }
@@ -374,7 +374,7 @@ public class SvnConfigFiles {
         }
         auth.put("store-auth-creds", "no");
 
-        File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/config"));
+        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/config"));
         try {
             file.getParentFile().mkdirs();
             config.store(FileUtils.createOutputStream(file));
@@ -390,7 +390,7 @@ public class SvnConfigFiles {
      * @return an Ini instance holding the cofiguration file. 
      */    
     private Ini loadNetbeansIniFile(String fileName) {
-        File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/" + fileName));       
+        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + fileName));       
         Ini nbIni = null;
         try {
             if(file.exists()) {

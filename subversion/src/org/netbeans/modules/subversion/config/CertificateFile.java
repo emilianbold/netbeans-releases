@@ -17,7 +17,7 @@ import java.io.File;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import org.netbeans.modules.subversion.config.KVFile.Key;
-import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Represents a Subversions file holding a X509Certificate for a realmstring.
@@ -32,7 +32,7 @@ public class CertificateFile extends SVNCredentialFile {
     private static final String NEWLINE = System.getProperty("line.separator"); 
     
     public CertificateFile(X509Certificate cert, String realmString, int failures, boolean temporarily) throws CertificateEncodingException {
-        super(new File(SvnConfigFiles.getNBConfigDir() + "auth/svn.ssl.server/" + getFileName(realmString)));
+        super(getNBCertFile(realmString));
         setCert(cert);
         setFailures(failures);
         if(temporarily) {
@@ -57,5 +57,15 @@ public class CertificateFile extends SVNCredentialFile {
     private void setFailures(int failures) {
         setValue(FAILURES, String.valueOf(failures));
     }        
+
+    public static File getSystemCertFile(String realmString) {
+        File file = new File(SvnConfigFiles.getUserConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString));
+        return FileUtil.normalizeFile(file);
+    }
+
+    public static File getNBCertFile(String realmString) {
+        File file = new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString));
+        return FileUtil.normalizeFile(file);
+    }
 
 }
