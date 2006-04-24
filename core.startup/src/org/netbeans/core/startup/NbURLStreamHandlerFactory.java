@@ -67,6 +67,10 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
             }
             _handlers = handlers;
         }
+        if (_handlers == null) {
+            // Too early during startup (#75422)
+            return null;
+        }
         for (int i = 0; i < _handlers.length; i++) {
             URLStreamHandler h = _handlers[i].createURLStreamHandler(protocol);
             if (h != null) {
