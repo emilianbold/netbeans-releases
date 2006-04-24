@@ -18,10 +18,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Stroke;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.border.Border;
-import org.openide.util.Utilities;
 
 /**
  *

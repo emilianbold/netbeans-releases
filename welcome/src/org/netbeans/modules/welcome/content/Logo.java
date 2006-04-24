@@ -22,8 +22,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.welcome.content.Constants;
-import org.netbeans.modules.welcome.content.Utils;
 import org.openide.util.Utilities;
 
 /**
@@ -33,6 +31,18 @@ import org.openide.util.Utilities;
 public class Logo extends JPanel implements Constants, MouseListener {
 
     private String url;
+    
+    public static Logo createSunLogo() {
+        return new Logo( SUN_LOGO_IMAGE, BundleSupport.getURL( "SunLogo" ) ); // NOI18N
+    }
+
+    public static Logo createJavaLogo() {
+        return new Logo( JAVA_LOGO_IMAGE, BundleSupport.getURL( "JavaLogo" ) ); // NOI18N
+    }
+
+    public static Logo createNbLogo() {
+        return new Logo( NB_LOGO_IMAGE, BundleSupport.getURL( "NetBeansLogo" ) ); // NOI18N
+    }
 
     /** Creates a new instance of RecentProjects */
     public Logo( String img, String url ) {

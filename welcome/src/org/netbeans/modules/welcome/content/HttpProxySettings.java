@@ -147,7 +147,7 @@ class HttpProxySettings {
     static void setProxyConfiguration (int proxyType, String host, String port) {
         if (useReflection()) {
             try {
-                mSetProxyType.invoke (settingsInstance, new Object[] {new Integer (proxyType)});
+                mSetProxyType.invoke (settingsInstance, new Object[] {Integer.valueOf (proxyType)});
                 mSetProxyHost.invoke (settingsInstance, new Object[] {host});
                 mSetProxyPort.invoke (settingsInstance, new Object[] {port});
             } catch (Exception e) {

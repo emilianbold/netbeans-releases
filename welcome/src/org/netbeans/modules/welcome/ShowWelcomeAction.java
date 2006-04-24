@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,15 +15,10 @@ package org.netbeans.modules.welcome;
 
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.ImageIcon;
-import javax.swing.JMenuItem;
 
-import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.Utilities;
-import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
 
 /**

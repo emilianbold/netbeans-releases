@@ -38,7 +38,7 @@ public class WelcomeOptions extends SystemOption {
     }
 
     public void setShowOnStartup( boolean show ) {
-        putProperty( PROP_SHOW_ON_STARTUP, new Boolean(show), true );
+        putProperty( PROP_SHOW_ON_STARTUP, Boolean.valueOf(show), true );
     }
 
     public boolean isShowOnStartup() {

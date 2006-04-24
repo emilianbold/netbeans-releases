@@ -49,10 +49,7 @@ import org.xml.sax.SAXException;
 public class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
     
     protected static final int NEWS_COUNT = 10;
-    private static final String RSS_FEED = "RSSFeed"; // NOI18N
-    private static final String HTML_VIEWER = "HTMLViewer"; // NOI18N
     
-    private boolean firstTime = true;
     private String url;
 
     private RequestProcessor.Task reloadTimer;
