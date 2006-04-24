@@ -48,10 +48,11 @@ public class CommitAction extends ContextAction {
     }
 
     protected boolean enable(Node[] nodes) {
+        // XXX could be a performace issue, maybe a msg box in commit would be enough
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(getContext(nodes), FileInformation.STATUS_LOCAL_CHANGE);
         return files.length > 0;
-    }    
+    }
 
     /** Run commit action. Shows UI */
     public static void commit(final Context ctx) {
@@ -237,37 +238,36 @@ public class CommitAction extends ContextAction {
 
             // TODO PETR perform removes
 
-            // group commitCandidates by working copies
+            // group commitCandidates by managed trees
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            List workingCopies = new ArrayList();
+            List managedTrees = new ArrayList();
             for (Iterator itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
                 File commitCandidateFile = (File) itCommitCandidates.next();
-                List workingCopyList = null;                
-                for (Iterator itWorkingCopies = workingCopies.iterator(); itWorkingCopies.hasNext();) {
-                    List list = (List) itWorkingCopies.next();
-                    File workingCopyFile = (File) list.get(0);
+                List managedTreesList = null;                
+                for (Iterator itManagedTrees = managedTrees.iterator(); itManagedTrees.hasNext();) {
+                    List list = (List) itManagedTrees.next();
+                    File managedTreeFile = (File) list.get(0);
 
-                    // XXX is it correct to presume that files with the same svn-managed root are from the same wc?
-                    File base = SVNBaseDir.getRootDir(new File[] {commitCandidateFile, workingCopyFile});
+                    File base = SVNBaseDir.getRootDir(new File[] {commitCandidateFile, managedTreeFile});
                     if(base != null) {
                         FileInformation status = cache.getStatus(base);
                         if ((status.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
                             // found a list with files from the same working copy
-                            workingCopyList = list;
+                            managedTreesList = list;
                             break;
                         }
                     }
                 }
-                if(workingCopyList == null) {
+                if(managedTreesList == null) {
                     // no list for files from the same wc as commitCandidateFile created yet
-                    workingCopyList = new ArrayList();
-                    workingCopies.add(workingCopyList);
+                    managedTreesList = new ArrayList();
+                    managedTrees.add(managedTreesList);
                 }                
-                workingCopyList.add(commitCandidateFile);                
+                managedTreesList.add(commitCandidateFile);                
             }
 
             // finally commit            
-            for (Iterator itCandidates = workingCopies.iterator(); itCandidates.hasNext();) {
+            for (Iterator itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
                 // one commit for each wc
                 List list = (List) itCandidates.next();
                 File[] files = (File[]) list.toArray(new File[0]);
@@ -277,7 +277,7 @@ public class CommitAction extends ContextAction {
                     return;
                 }
 
-                // XXX PETR intercapt results and update cache                
+                // XXX PETR intercapt results and update cache
                 for (int i = 0; i < files.length; i++) {
                     cache.refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 }
