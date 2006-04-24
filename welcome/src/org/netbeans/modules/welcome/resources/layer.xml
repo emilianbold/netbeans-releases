@@ -48,7 +48,6 @@ Microsystems, Inc. All Rights Reserved.
    </folder>
     
     <folder name="WelcomePage">
-        <file name="layout.xml" url="layout.xml"/>
         <folder name="GettingStartedLinks">
 
             <file name="quickstart.url" url="quickstart.url">
