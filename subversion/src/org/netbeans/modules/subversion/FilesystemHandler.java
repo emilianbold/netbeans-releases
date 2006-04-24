@@ -469,7 +469,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 }
             };
             
-            Subversion.getInstance().getRequestProccessor().post(outOfAwt).waitFinished();
+            Subversion.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
             if (innerT[0] != null) {
                 if (innerT[0] instanceof IOException) {
                     throw (IOException) innerT[0];

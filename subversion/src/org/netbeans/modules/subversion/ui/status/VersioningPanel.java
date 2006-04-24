@@ -44,6 +44,7 @@ import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import org.netbeans.modules.subversion.ui.update.UpdateAction;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -312,14 +313,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      * Performs the "cvs update" command on all diplayed roots.
      */ 
     private void onUpdateAction() {
-        SVNUrl repository = CommitAction.getSvnUrl(context);
-        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport() {
-            public void perform() {                
-                executeUpdate(this);
-            }            
-        };
-        support.start(rp, "Updating...");
+        UpdateAction.performUpdate(context);
     }
     
     /**
@@ -350,7 +344,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {                
-                executeStatus(this);
+                StatusAction.executeStatus(context, this);
                 setupModels();
             }            
         };
@@ -375,74 +369,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         }
     }
 
-    /**
-     * Connects to repository and gets recent status.
-     */
-    private void executeStatus(SvnProgressSupport support) {
-
-        if (context == null || context.getRoots().size() == 0) {
-            return;
-        }
-                
-        try {
-            SvnClient client;
-            try {
-                client = Subversion.getInstance().getClient(context, support);
-            } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ex);
-                return;
-            }
-
-            File[] roots = context.getRootFiles();
-            for (int i=0; i<roots.length; i++) {
-                if(support.isCanceled()) {
-                    return;
-                }
-                File root = roots[i];
-                ISVNStatus[] statuses = client.getStatus(root, true, false, true);  // cache refires events
-                if(support.isCanceled()) {
-                    return;
-                }
-
-                for (int s = 0; s < statuses.length; s++) {
-                    if(support.isCanceled()) {
-                        return;
-                    }
-                    ISVNStatus status = statuses[s];
-                    FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                    File file = status.getFile();
-                    SVNStatusKind kind = status.getRepositoryTextStatus();
-//                    System.err.println(" File: " + file.getAbsolutePath() + " repo-status:" + kind );
-                    cache.refresh(file, status);
-                }
-            }
-        } catch (SVNClientException ex) {
-            ExceptionHandler eh = new ExceptionHandler(ex);
-            eh.annotate();
-        }
-    }
-
-    private void executeUpdate(SvnProgressSupport support) {
-
-        if (context == null || context.getRoots().size() == 0) {
-            return;
-        }
-                
-        try {          
-            SvnClient client = Subversion.getInstance().getClient(context, support);
-            File[] roots = context.getRootFiles();
-            for (int i=0; i<roots.length; i++) {
-                if(support.isCanceled()) {
-                    return;
-                }
-                File root = roots[i];
-                client.update(root, SVNRevision.HEAD, true);
-            }
-        } catch (SVNClientException ex) {
-            ExceptionHandler eh = new ExceptionHandler(ex);
-            eh.annotate();
-        } 
-    }
+    
     
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {

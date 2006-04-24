@@ -18,11 +18,15 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.*;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.RequestProcessor;
 
 /**
  * Update action
@@ -101,6 +105,33 @@ roots_loop:
             }
         };            
         support.start(createRequestProcessor(nodes));
+    }
+
+    public static void performUpdate(final Context context) {
+        if (context == null || context.getRoots().size() == 0) {
+            return;
+        }        
+        SVNUrl repository = getSvnUrl(context);
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
+        SvnProgressSupport support = new SvnProgressSupport() {
+            public void perform() {                                                
+                try {
+                    SvnClient client = Subversion.getInstance().getClient(context, this);
+                    File[] roots = context.getRootFiles();
+                    for (int i=0; i<roots.length; i++) {
+                        if(isCanceled()) {
+                            return;
+                        }
+                        File root = roots[i];
+                        client.update(root, SVNRevision.HEAD, true);
+                    }
+                } catch (SVNClientException ex) {
+                    ExceptionHandler eh = new ExceptionHandler(ex);
+                    eh.annotate();
+                }
+            }
+        };
+        support.start(rp, "Updating...");
     }
 
 }

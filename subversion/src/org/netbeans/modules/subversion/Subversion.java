@@ -83,7 +83,7 @@ public class Subversion {
     }
 
     private void cleanup() {
-        getRequestProccessor().post(new Runnable() {
+        getRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
                     Diagnostics.println("Cleaning up");
@@ -341,7 +341,7 @@ public class Subversion {
     /**
      * Serializes all SVN requests (moves them out of AWT).
      */
-    public RequestProcessor getRequestProccessor() {
+    public RequestProcessor getRequestProcessor() {
         return getRequestProcessor(null);
     }
 
