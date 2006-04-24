@@ -97,7 +97,16 @@ public class VersionsCache {
                 throw ioex;
             }
         }
-        // TODO PETR how to cache locally? There are no per file revisions
+
+        // TODO how to cache locally? In SVN there are no per file revisions
+        // like in CVS, revision that comes here is repositoty revision
+        //
+        // Example:
+        // unmodified file has many repository revisions
+        // and effective caching should store just one version
+        // (mapping all repository revisions to it)
+        //
+        // File caching is leveraged in Search History
         assert false: "Not implemented. Can not load revision: " + revision;
         return null;
     }

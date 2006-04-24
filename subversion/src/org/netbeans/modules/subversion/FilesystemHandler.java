@@ -156,7 +156,8 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
             if (fo.isFolder() && svn.isAdministrative(fo.getNameExt())) {
-                // TODO: PETR we need to delete all files created inside administrative folders
+                // TODO we need to delete all files created inside folders
+                // when those become administrative folders (there is no such hook in svn)
                 File f = new File(file, Subversion.INVALID_METADATA_MARKER);
                 try {
                     f.createNewFile();

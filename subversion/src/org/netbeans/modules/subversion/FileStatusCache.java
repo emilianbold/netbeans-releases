@@ -242,7 +242,8 @@ public class FileStatusCache implements ISVNNotifyListener {
      * in when this method is called while processing server output. 
      *
      * <p>Note: it's not necessary if you use Subversion.getClient(), it
-     * updates the cache automatically.  XXX PETR check all usages
+     * updates the cache automatically using onNotify(). It's not
+     * fully reliable for removed files.
      *
      * @param file
      * @param repositoryStatus
@@ -267,7 +268,8 @@ public class FileStatusCache implements ISVNNotifyListener {
         } catch (SVNClientException e) {            
             // unversioned resource is expected getSingleStatus()
             // does not return SVNStatusKind.UNVERSIONED but throws exception instead
-            // XXX PETR why it does not return SVNStatusKind.UNVERSIONED
+            // XXX why svnClientAdapter does not return SVNStatusKind.UNVERSIONED
+            // instead of throwing exception
             if (ExceptionHandler.isUnversionedResource(e) == false) {
                 // missing or damaged entries
                 // or ignored file
@@ -488,7 +490,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         try {
             ISVNClientAdapter client = Subversion.getInstance().getClient(); // XXX use methodcall with repository url if server contact is needed...
             if (Subversion.getInstance().isManaged(dir)) {
-                entries = client.getStatus(dir, false, false);  // XXX PETR should contact server: , true);
+                entries = client.getStatus(dir, false, false); 
             }
         } catch (SVNClientException e) {
             // no or damaged entries
@@ -562,8 +564,6 @@ public class FileStatusCache implements ISVNNotifyListener {
      */ 
     private FileInformation createVersionedFileInformation(File file, ISVNStatus status, ISVNStatus repositoryStatus) {
 
-//        System.err.println("File: "  + file.getAbsolutePath() + " \nstatus: " + statusText(status));  // XXX PETR remove
-
         SVNStatusKind kind = status.getTextStatus();
         SVNStatusKind pkind = status.getPropStatus();
 
@@ -582,8 +582,8 @@ public class FileStatusCache implements ISVNNotifyListener {
             && repositoryStatus.getRepositoryPropStatus() == null) {
                 // no remote change at all
             } else {
-                // TODO PETR systematically handle all statuses
-                // XXX PETR text: replaced
+                // TODO systematically handle all repository statuses
+                // so far above were observed....
                 System.err.println("SVN.FSC: unhandled repository status: " + file.getAbsolutePath());
                 System.err.println("\ttext: " + repositoryStatus.getRepositoryTextStatus());
                 System.err.println("\tprop: " + repositoryStatus.getRepositoryPropStatus());
@@ -620,7 +620,8 @@ public class FileStatusCache implements ISVNNotifyListener {
         } else if (SVNStatusKind.MISSING.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.REPLACED.equals(kind)) {            
-            // TODO:PETR  create new status constant?
+            // XXX  create new status constant? Is it neccesary to visualize
+            // this status or better to use this simplyfication?
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.MERGED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE | remoteStatus, status);
@@ -677,13 +678,15 @@ public class FileStatusCache implements ISVNNotifyListener {
         // I source.java.r45
         // I source.java.r57
         //
-        // XXX PETR  why is not it returned from getSingleStatus() ?
+        // XXX:svnClientAdapter design:  why is not it returned from getSingleStatus() ?
         //
         // after-merge conflicts (even svn st does not recognize as ignored)
         // C source.java
         // ? source.java.working
         // ? source.jave.merge-right.r20
         // ? source.java.merge-left.r0
+        //
+        // XXX:svn-cli design:  why is not it returned from getSingleStatus() ?
         
         String name = file.getName();
         Matcher m = auxConflictPattern.matcher(name);
@@ -707,7 +710,6 @@ public class FileStatusCache implements ISVNNotifyListener {
         } else {
             if (repositoryStatus != REPOSITORY_STATUS_UNKNOWN) {
                 if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.ADDED) {
-                    // XXX PETR fill repositoryStatus.getNodeKind() from svn info in CmdLineClientAdapter
                     boolean folder = repositoryStatus.getNodeKind() == SVNNodeKind.DIR;
                     return new FileInformation(FileInformation.STATUS_VERSIONED_NEWINREPOSITORY, folder);
                 }

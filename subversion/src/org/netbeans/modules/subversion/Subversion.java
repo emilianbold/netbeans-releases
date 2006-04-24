@@ -284,7 +284,7 @@ public class Subversion {
                     SvnClient client = Subversion.getInstance().getClient();
                     client.removeNotifyListener(Subversion.getInstance().getLogger());
 
-                    // XXX PETR RE patterns?
+                    // XXX property can contain shell patterns (almost identical to RegExp)
                     List patterns = client.getIgnoredPatterns(parent);
 
                     for (Iterator i = patterns.iterator(); i.hasNext();) {
@@ -294,7 +294,8 @@ public class Subversion {
                                 return true;
                             }
                         } catch (PatternSyntaxException e) {
-                            // XXX PETR rethrow, assert?
+                            // XXX it's difference between shell and regexp
+                            // or user error (set invalid property), rethrow?
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         }
                     }

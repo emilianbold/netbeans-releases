@@ -70,7 +70,10 @@ public abstract class ContextAction extends NodeAction {
      * {@link  #performContextAction}.
      */
     protected void performAction(final Node[] nodes) {
-        // TODO PETR try to save files in invocation context only
+        // TODO try to save files in invocation context only
+        // list somehow modified file in the context and save
+        // just them.
+        // The same (global save) logic is in CVS, no complaint
         LifecycleManager.getDefault().saveAll();        
         performContextAction(nodes);           
     }
