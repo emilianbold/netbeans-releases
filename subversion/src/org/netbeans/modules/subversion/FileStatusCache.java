@@ -149,7 +149,7 @@ public class FileStatusCache implements ISVNNotifyListener {
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
                 if (root instanceof FlatFolder) {
-                    if (file.getParentFile().equals(root)) {
+                    if (file.equals(root) || file.getParentFile().equals(root)) {
                         set.add(file);
                         break;
                     }
