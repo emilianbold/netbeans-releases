@@ -19,6 +19,7 @@ import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
+ * Represents a file holding the username and password credentials for a realmstring.
  *
  * @author Tomas Stupka
  */
@@ -32,21 +33,23 @@ public class PasswordFile extends SVNCredentialFile {
     private final static Key USERNAME = new Key(3, "username");
 
     private final static String PASSTYPE_SIMPLE = "simple";
-
-    // XXX cache!!!
         
     public PasswordFile (String realmString) {
         super(getFile(realmString));
     }
 
-    public PasswordFile (File file) {
+    private PasswordFile (File file) {
         super(file);
     }
 
-    private static File getFile(String realmString) {
-        return new File(SvnConfigFiles.getNBConfigDir() + "auth/svn.simple/" + getFileName(realmString));
-    }
-
+    /**
+     * Goes through the Netbeans Subversion modules configuration directory and looks
+     * for a file holding the username and password for the givenurl.
+     *
+     * @param svnUrl the url 
+     * @return the file holding the username and password for the givenurl or null 
+     *         if nothing was found    
+     */
     public static PasswordFile findFileForUrl(SVNUrl svnUrl) {
         // create our own realmstring  -
         String realmString = "<" + svnUrl.getProtocol() + "://" + svnUrl.getHost() + ">";
@@ -129,4 +132,9 @@ public class PasswordFile extends SVNCredentialFile {
         }
         return realmStrig.substring(1).startsWith(svnUrl.getProtocol() + "://" + svnUrl.getHost());         
     }
+    
+    private static File getFile(String realmString) {
+        return new File(SvnConfigFiles.getNBConfigDir() + "auth/svn.simple/" + getFileName(realmString));
+    }
+    
 }

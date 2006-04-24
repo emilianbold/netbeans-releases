@@ -20,6 +20,7 @@ import org.netbeans.modules.subversion.config.KVFile.Key;
 import org.openide.ErrorManager;
 
 /**
+ * Represents a Subversions file holding a X509Certificate for a realmstring.
  *
  * @author Tomas Stupka
  */
@@ -29,11 +30,14 @@ public class CertificateFile extends SVNCredentialFile {
     private final static Key FAILURES = new Key(1, "failures");        
     private final static Key REALMSTRING = new Key(2, "svn:realmstring");
     private static final String NEWLINE = System.getProperty("line.separator"); 
-
-    public CertificateFile(X509Certificate cert, String realmString, int failures) throws CertificateEncodingException {
+    
+    public CertificateFile(X509Certificate cert, String realmString, int failures, boolean temporarily) throws CertificateEncodingException {
         super(new File(SvnConfigFiles.getNBConfigDir() + "auth/svn.ssl.server/" + getFileName(realmString)));
         setCert(cert);
         setFailures(failures);
+        if(temporarily) {
+            getFile().deleteOnExit();
+        }
     }
 
     private void setCert(X509Certificate cert) throws CertificateEncodingException {
@@ -41,8 +45,7 @@ public class CertificateFile extends SVNCredentialFile {
         encodedCert = encodedCert.replace(NEWLINE, ""); // XXX where does this come from ????!!!        
         setValue(CERT, encodedCert.getBytes());
     }
-    
-    // XXX the setters do not override the already present value 
+        
     protected void setRealmString(String realm) {
         setValue(REALMSTRING, realm);
     }
@@ -54,9 +57,5 @@ public class CertificateFile extends SVNCredentialFile {
     private void setFailures(int failures) {
         setValue(FAILURES, String.valueOf(failures));
     }        
-
-    public void deleteOnExit() {
-        getFile().deleteOnExit();
-    }
 
 }

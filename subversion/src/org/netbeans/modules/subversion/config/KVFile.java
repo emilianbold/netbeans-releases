@@ -25,15 +25,23 @@ import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.ErrorManager;
 
 /**
+ * Handles the credential or property files used by Subversion.
  *
  * @author Tomas Stupka
  *
  */
 public class KVFile {
     
+    /** a Map holding the entries*/
     private Map map;
+    /** the credential or property file */
     private final File file;            
 
+    /**
+     * Creates a new instance
+     * 
+     * @parameter file the credential or property file
+     */
     public KVFile(File file) {
         this.file = file;
         try {
@@ -45,14 +53,29 @@ public class KVFile {
         }
     }
         
+    /**
+     * Returns the value for the given Key
+     *
+     * @param key 
+     * @return the value stored under the given Key
+     */
     protected byte[] getValue(Key key) {
         return (byte[]) getMap().get(key);
     }
     
+    /**
+     * Stores the given value under the given Key
+     *
+     */
     protected void setValue(Key key, byte[] value) {
         getMap().put(key, value);
     }
  
+    /**
+     * Returns the Map holding the Key and value pairs
+     *
+     * @return map
+     */
     public Map getMap() {
         if(map==null) {
             map = new TreeMap();
@@ -60,7 +83,11 @@ public class KVFile {
         return map;
     }
    
-    void parse() throws IOException {        
+    /**
+     * Parses the instances file.
+     *
+     */
+    private void parse() throws IOException {        
         InputStream is = null;        
         // XXX encoding ?
         try {            
@@ -172,9 +199,18 @@ public class KVFile {
         setValue(key, value.getBytes());
     }
 
+    /**
+     * Represents a key
+     */
     protected static class Key implements Comparable {
+        /** the key index*/
         private final int idx;
+        /** the keys name*/
         private final String name;
+        
+        /** 
+         * creates a new instance 
+         */
         protected Key(int idx, String name) {
             this.name = name;
             this.idx = idx;
@@ -184,7 +220,7 @@ public class KVFile {
         }       
         public String getName() {
             return name;
-        }
+        }                
         public boolean  equals(Object obj) {
             if( !(obj instanceof Key) ) {
                 return false;

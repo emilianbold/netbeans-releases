@@ -176,10 +176,8 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
         CertificateFile cf = null;
         try {
-            cf = new CertificateFile(cert, url.getProtocol() + "://" + url.getHost() + ":" + url.getPort(), 10); // XXX how to get the value for failures
-            if(dialogDescriptor.getValue() == temporarilyButton) {
-                cf.deleteOnExit();
-            }
+            boolean temporarily = dialogDescriptor.getValue() == temporarilyButton;
+            cf = new CertificateFile(cert, url.getProtocol() + "://" + url.getHost() + ":" + url.getPort(), 10, temporarily); // XXX how to get the value for failures            
             cf.store();
         } catch (CertificateEncodingException ex) {
             ErrorManager.getDefault().notify(ex);

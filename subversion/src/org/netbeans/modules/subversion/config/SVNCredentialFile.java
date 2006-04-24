@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import org.openide.ErrorManager;
 
 /**
+ * Handles the Subversion credential files.
  *
  * @author Tomas Stupka
  *
@@ -25,10 +26,16 @@ import org.openide.ErrorManager;
 public abstract class SVNCredentialFile extends KVFile {
         
 
+    /**
+     * Creates sa new instance
+     */
     protected SVNCredentialFile(File file) {
         super(file);
     }        
 
+    /**
+     * Returns the filename for a realmString as a MD5 value in hex form.
+     */
     protected static String getFileName(String realmString) {
         assert realmString != null;        
         String fileName = "";
@@ -50,9 +57,6 @@ public abstract class SVNCredentialFile extends KVFile {
         return fileName;
     }    
     
-    protected abstract String getRealmString();
-    protected abstract void setRealmString(String realm);    
-
-    // XXX serializable
-    
+    protected abstract String getRealmString();    
+    protected abstract void setRealmString(String realm);        
 }
