@@ -211,12 +211,12 @@ public class Subversion {
      * <ul>
      *    <li>prompts user for password if necessary,
      *    <li>let user specify proxy setting on network errors or
-     *    <li>let user cancel operation (XXX then it throws SVN exception subclass)
+     *    <li>let user cancel operation 
      *    <li>logs command execuion into output tab
      *    <li>posts notification events in status cache
      * </ul>
      *
-     * <p>It hanldes cancellability, XXX e.g. by Thread,interrupt?
+     * <p>It hanldes cancellability
      */
     public SvnClient getClient() {        
         SvnClient client = SvnClientFactory.getInstance().createSvnClient();
@@ -284,7 +284,7 @@ public class Subversion {
                     SvnClient client = Subversion.getInstance().getClient();
                     client.removeNotifyListener(Subversion.getInstance().getLogger());
 
-                    // XXX RE patterns?
+                    // XXX PETR RE patterns?
                     List patterns = client.getIgnoredPatterns(parent);
 
                     for (Iterator i = patterns.iterator(); i.hasNext();) {
@@ -294,7 +294,7 @@ public class Subversion {
                                 return true;
                             }
                         } catch (PatternSyntaxException e) {
-                            // XXX rethrow, assert?
+                            // XXX PETR rethrow, assert?
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         }
                     }

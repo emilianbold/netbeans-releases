@@ -23,7 +23,7 @@ import org.openide.util.actions.SystemAction;
  * Abstract base for Show All Changes, Show All Diffs,
  * Update All and Commit All actions.
  *
- * <p>TODO add context listening and resetting logic
+ * <p>TODO PETR add context listening and resetting logic
  *
  * @author Petr Kuzel
  */

@@ -197,7 +197,7 @@ public class SyncFileNode extends AbstractNode {
         }
     }
 
-    // XXX it's not probably called
+    // XXX PETR it's not probably called
     public void destroy() throws IOException {
         super.destroy();
         if (repoload != null) {
@@ -230,7 +230,7 @@ public class SyncFileNode extends AbstractNode {
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             FileInformation finfo =  node.getInformation();
-            finfo.getEntry(node.getFile());  // XXX side effect loads ISVNStatus structure
+            finfo.getEntry(node.getFile());  // XXX PETR side effect loads ISVNStatus structure
             int mask = panel.getDisplayStatuses();
             return finfo.getStatusText(mask);
         }

@@ -41,7 +41,7 @@ import org.tigris.subversion.svnclientadapter.*;
 
 /**
  * Subversion-specific utilities.
- * TODO: Move generic methods to versioncontrol module 
+ * TODO: PETR Move generic methods to versioncontrol module 
  * 
  * @author Maros Sandor
  */
@@ -149,7 +149,7 @@ public class SvnUtils {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
                 if (f != null) {                                                                    
-// XXX                    if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+// XXX PETR                    if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
                     File probe = new File (f, ".svn");
                     File probe2 = new File (f, "_svn");
                     if (probe.isDirectory() || probe2.isDirectory()) {

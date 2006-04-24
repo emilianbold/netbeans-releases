@@ -36,7 +36,7 @@ public final class ActionUtils {
      * @return string without first <samp>&amp;</samp> if there was any
      */
     public static String cutAmpersand(String text) {
-        // XXX should this also be deprecated by something in Mnemonics?
+        // XXX PETR should this also be deprecated by something in Mnemonics?
         int i;
         String result = text;
 

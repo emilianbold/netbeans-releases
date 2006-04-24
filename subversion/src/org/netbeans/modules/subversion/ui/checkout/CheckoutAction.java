@@ -127,7 +127,7 @@ public final class CheckoutAction extends CallableSystemAction {
             } else {
                 destination = workingDir;
             }
-            if(support!=null && support.isCanceled()) { // XXX support!= null && 
+            if(support!=null && support.isCanceled()) { 
                 return;
             }
             client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);

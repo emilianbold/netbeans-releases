@@ -29,7 +29,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  *
  *
  * @author Tomas Stupka
- * XXX polish
  */
 public class SvnClientInvocationHandler implements InvocationHandler {
 

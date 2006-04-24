@@ -129,7 +129,7 @@ public abstract class CopyDialog implements DocumentListener, FocusListener {
         validateUserInput();
     }
 
-    protected abstract void validateUserInput();         // XXX if not, then error message           
+    protected abstract void validateUserInput();         
     
     private void storeValidValues() {
         for (Iterator it = urlComboBoxes.keySet().iterator();  it.hasNext();) {

@@ -47,8 +47,6 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     private JTextComponent repositoryPathTextField;
     private JTextComponent revisionTextField;
     
-    // XXX don't use directly the fields - do it through accessors (cbo...)
-    
     private JButton browseButton;
     private JButton searchRevisionButton;
 
@@ -117,9 +115,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         String[] paths = repositoryPathTextField.getText().trim().split(",");
         RepositoryFile[] ret = new RepositoryFile[paths.length];
         SVNUrl repositoryUrl = getRepositoryUrl();
-
-
-        
+       
         for (int i = 0; i < paths.length; i++) {
             String path = paths[i].trim();
             String repositoryUrlString = getRepositoryUrl().toString();
@@ -134,8 +130,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                     // lets take only the part without the repository base URL
                     ret[i] = new RepositoryFile(repositoryUrl, path.substring(repositoryUrlString.length()), revision);
                 } else {
-                    // XXX some kind of error msg
-                    return EMPTY_REPOSITORY_FILES;
+                    throw new MalformedURLException("The Url " + path + "doesn't start with " + repositoryUrlString);
                 }
             } else {
                 ret[i] = new RepositoryFile(repositoryUrl, path, revision);    

@@ -85,7 +85,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     protected void validateBeforeNext() {
         try {
             if(support != null) {
-                support.performInCurrentThread(NbBundle.getMessage(RepositoryStep.class, "BK2012")); // XXX wrong message
+                support.performInCurrentThread("Importing"); 
             }
         } finally {
             support = null;
@@ -221,7 +221,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn"));
                         refreshRecursively(importDirectory);
                         return;
-                    }                    
+                    }
                 } catch (SVNClientException ex) {
                     ExceptionHandler eh = new ExceptionHandler(ex);
                     eh.annotate();
@@ -263,21 +263,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
             if (folder == null) return;
             refreshRecursively(folder.getParentFile());
             Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }
-
-        private void copyMetadata(File sourceFolder, File targetFolder) {
-            // XXX there is already somewhere a utility method giving the metadata file suffix - ".svn", "_svn", ...
-            FileUtils.copyDirFiles(new File(sourceFolder.getAbsolutePath() + "/.svn"), new File(targetFolder.getAbsolutePath() + "/.svn"), true);
-            targetFolder.setLastModified(sourceFolder.lastModified());
-            File[] files = sourceFolder.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if(files[i].isDirectory() && !files[i].getName().equals(".svn")) {
-                    copyMetadata(files[i], new File(targetFolder.getAbsolutePath() + "/" + files[i].getName()));
-                } else {
-                    (new File(targetFolder.getAbsolutePath() + "/" + files[i].getName())).setLastModified(files[i].lastModified());
-                }
-            }
-        }
+        }        
     };
 }
 

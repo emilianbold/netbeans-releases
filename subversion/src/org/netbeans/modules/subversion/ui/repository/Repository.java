@@ -62,7 +62,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private List listeners;
 
 
-    public static final String PROP_VALID = "valid"; // XXX do it via a changelistener
+    public static final String PROP_VALID = "valid";
 
     private String message;
 

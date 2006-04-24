@@ -108,7 +108,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         SVNUrl url = client.getSvnUrl();
         ProxyDescriptor proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost()); 
         Socket proxy = null;
-        if (proxyDescriptor != null && proxyDescriptor.getHost() != null ) { // XXX
+        if (proxyDescriptor != null && proxyDescriptor.getHost() != null ) { 
             ConnectivitySettings connectivitySettings = proxyDescriptor.toConnectivitySettings();
             try {
                 proxy = new Socket(connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
@@ -198,8 +198,6 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
         dialog.setVisible(true);
     }
-
-    // XXX move. maybe into client?
     
     private void connectProxy(Socket tunnel, String host, int port, String proxyHost, int proxyPort) throws IOException {
       

@@ -524,7 +524,7 @@ public class Annotator {
 
     private static MessageFormat getFormat(String key) {
         String format = NbBundle.getMessage(Annotator.class, key);
-        return new MessageFormat(format/* + " svn"*/);  // FIXME remove after resolving multi annotator oddities
+        return new MessageFormat(format/* + " svn"*/);  // FIXME PETR remove after resolving multi annotator oddities
     }
 
 }

@@ -124,7 +124,7 @@ public class SvnClientFactory {
         if (adapter == null) {
             adapter = new UnsupportedSvnClientAdapter();
         }        
-        // TODO ask user for the svn binary path...
+        // TODO PETR ask user for the svn binary path...
         return adapter;
     }  
     

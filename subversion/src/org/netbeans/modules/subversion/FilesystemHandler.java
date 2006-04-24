@@ -115,7 +115,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 // on the other hand cache keeps all folders regardless their status
                 File probe = file.getParentFile();
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                // XXX STATUS_VERSIONED instead
+                // XXX PETR STATUS_VERSIONED instead
                 if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
                     eventProcessor.post(new FileDeletedTask(file));
                 }
@@ -156,7 +156,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
             if (fo.isFolder() && svn.isAdministrative(fo.getNameExt())) {
-                // TODO: we need to delete all files created inside administrative folders
+                // TODO: PETR we need to delete all files created inside administrative folders
                 File f = new File(file, Subversion.INVALID_METADATA_MARKER);
                 try {
                     f.createNewFile();

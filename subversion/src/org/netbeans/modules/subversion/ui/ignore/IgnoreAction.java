@@ -132,7 +132,7 @@ public class IgnoreAction extends ContextAction {
                     if (actionStatus == IGNORING) {
                         try {
                             client.addToIgnoredPatterns(parent, file.getName());
-                            // XXX for sure ignored
+                            // XXX PETR for sure ignored
                             Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                         } catch (SVNClientException ex) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

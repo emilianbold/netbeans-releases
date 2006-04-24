@@ -50,8 +50,8 @@ public class UpdateAction extends ContextAction {
     }
 
     public void performUpdate(final Node[] nodes) {
-        // FIXME add non-recursive folders splitting
-        // FIXME add shalow logic allowing to ignore nested projects
+        // FIXME PETR add non-recursive folders splitting
+        // FIXME PETR add shalow logic allowing to ignore nested projects
         final Context ctx = getContext(nodes);
         final File[] roots = ctx.getRootFiles();
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
@@ -69,7 +69,7 @@ public class UpdateAction extends ContextAction {
 
                 try {
 
-                    // XXX how to detect conflicts
+                    // XXX PETR how to detect conflicts
                     boolean conflict = false;
 
 roots_loop:

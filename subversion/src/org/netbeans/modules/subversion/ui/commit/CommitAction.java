@@ -128,7 +128,7 @@ public class CommitAction extends ContextAction {
             List removeCandidates = new ArrayList();
             Set commitCandidates = new LinkedHashSet();
 
-            // FIXME commit dirs with modified svn:ignore pooperty 
+            // FIXME PETR commit dirs with modified svn:ignore pooperty
 
             Iterator it = commitFiles.keySet().iterator();
             while (it.hasNext()) {
@@ -138,7 +138,7 @@ public class CommitAction extends ContextAction {
                 SvnFileNode node = (SvnFileNode) it.next();
                 CommitOptions option = (CommitOptions) commitFiles.get(node);
                 if (CommitOptions.ADD_BINARY == option) {
-                    List l = listUnmanagedParents(node);  // FIXME coved scheduled but nor commited files!
+                    List l = listUnmanagedParents(node);  // FIXME PETR coved scheduled but nor commited files!
                     Iterator dit = l.iterator();
                     while (dit.hasNext()) {
                         if(support.isCanceled()) {
@@ -235,7 +235,7 @@ public class CommitAction extends ContextAction {
                 client.addFile(file);
             }
 
-            // TODO perform removes
+            // TODO PETR perform removes
 
             // group commitCandidates by working copies
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
@@ -277,7 +277,7 @@ public class CommitAction extends ContextAction {
                     return;
                 }
 
-                // XXX intercapt results and update cache                
+                // XXX PETR intercapt results and update cache                
                 for (int i = 0; i < files.length; i++) {
                     cache.refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 }

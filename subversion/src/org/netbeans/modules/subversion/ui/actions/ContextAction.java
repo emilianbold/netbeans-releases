@@ -70,13 +70,13 @@ public abstract class ContextAction extends NodeAction {
      * {@link  #performContextAction}.
      */
     protected void performAction(final Node[] nodes) {
-        // TODO try to save files in invocation context only
+        // TODO PETR try to save files in invocation context only
         LifecycleManager.getDefault().saveAll();        
         performContextAction(nodes);           
     }
 
     protected SVNUrl getSvnUrl(Node[] nodes) {
-        return getSvnUrl(getContext(nodes)); // XXX maybe as a parameter
+        return getSvnUrl(getContext(nodes)); 
     }
 
     public static SVNUrl getSvnUrl(Context ctx) {
