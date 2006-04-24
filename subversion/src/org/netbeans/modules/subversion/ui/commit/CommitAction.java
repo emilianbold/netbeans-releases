@@ -22,7 +22,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -32,6 +31,7 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -85,6 +85,7 @@ public class CommitAction extends ContextAction {
         dd.setModal(true);
         JButton commitButton = new JButton("Commit");
         dd.setOptions(new Object[] {commitButton, "Cancel"});
+        dd.setHelpCtx(new HelpCtx(CommitAction.class));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.pack();
         dialog.setVisible(true);
