@@ -213,23 +213,15 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                         return;
                     }
 
-                    RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };
-                    File checkoutFile = new File(importDirectory.getAbsolutePath() + ".co");
-                    CheckoutAction.checkout(client, repositoryUrl, repositoryFile, checkoutFile, true, this);
-                    if(isCanceled()) {
-                        FileUtils.deleteRecursively(checkoutFile);
-                        return;
-                    }
-
-                    copyMetadata(checkoutFile, importDirectory);
+                    RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };                    
+                    CheckoutAction.checkout(client, repositoryUrl, repositoryFile, importDirectory, true, this);
                     refreshRecursively(importDirectory);
-                    FileUtils.deleteRecursively(checkoutFile);
                     if(isCanceled()) {                        
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn"));
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn"));
                         refreshRecursively(importDirectory);
                         return;
-                    }
+                    }                    
                 } catch (SVNClientException ex) {
                     ExceptionHandler eh = new ExceptionHandler(ex);
                     eh.annotate();
