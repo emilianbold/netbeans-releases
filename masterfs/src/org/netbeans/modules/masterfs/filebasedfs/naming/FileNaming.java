@@ -15,24 +15,27 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 
 import java.io.File;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
  * @author Radek Matous
  */
 public interface FileNaming {
     String getName();
-
+    
     FileNaming getParent();
-
+    
     boolean isRoot();
-
+    
     File getFile();
-
-    boolean isFile ();
-
+    
+    boolean isFile();
+    
     Integer getId();
-
+    
     Integer getId(boolean recompute);
-
+    
     boolean rename(String name);
+    boolean rename(String name, ProvidedExtensions.IOHandler handler);
+    
 }

@@ -1,1 +1,2 @@
-org.netbeans.modules.masterfs.providers.InterceptionListenerTest$InterceptionListenerImpl
+org.netbeans.modules.masterfs.providers.InterceptionListenerTest$AnnotationProviderImpl
+org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest$AnnotationProviderImpl

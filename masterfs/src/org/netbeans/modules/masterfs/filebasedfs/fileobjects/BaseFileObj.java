@@ -29,6 +29,7 @@ import javax.swing.event.EventListenerList;
 import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
  * Implements FileObject methods as simple as possible.
@@ -150,7 +151,17 @@ public abstract class BaseFileObj extends FileObject {
         return false;
     }
 
-    public final void rename(final FileLock lock, final String name, final String ext) throws IOException {
+    public void move(FileLock lock, BaseFileObj target, String name, String ext, ProvidedExtensions.IOHandler moveHandler) throws IOException {
+        moveHandler.handle();
+        BaseFileObj result = (BaseFileObj)FileBasedFileSystem.getFileObject(
+                new File(target.getFileName().getFile(),FileInfo.composeName(name,ext)));
+        assert result != null;
+        result.fireFileDataCreatedEvent(false);
+        fireFileDeletedEvent(false);
+    }
+
+
+    public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
         final File file = getFileName().getFile();
         final File parent = file.getParentFile();
 
@@ -171,7 +182,7 @@ public abstract class BaseFileObj extends FileObject {
         final String originalExt = getExt();
         
         //TODO: no lock used
-        if (!NamingFactory.rename(getFileName(),file2Rename.getName())) {
+        if (!NamingFactory.rename(getFileName(),file2Rename.getName(),handler)) {
             FileObject parentFo = getExistingParent();
             String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
@@ -181,6 +192,11 @@ public abstract class BaseFileObj extends FileObject {
         fs.getFactory().rename(); 
         BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
         fireFileRenamedEvent(originalName, originalExt);
+    }
+
+
+    public final void rename(final FileLock lock, final String name, final String ext) throws IOException {
+        rename(lock, name, ext, null);
     }
 
 
@@ -399,6 +415,9 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     abstract protected void setValid(boolean valid);
+
+    abstract public void refresh(final boolean expected, boolean fire);
+
     //TODO: attributes written by VCS must be readable by FileBaseFS and vice versa  
 /**
  * FileBaseFS 

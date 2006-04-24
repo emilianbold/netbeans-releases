@@ -15,6 +15,9 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.ErrorManager;
 
 /**
  * @author Radek Matous
@@ -34,13 +37,22 @@ public class FileName implements FileNaming {
         return (file.getParentFile() == null) ? file.getPath() : file.getName();
     }
 
-    public final boolean rename(final String name) {        
+    public boolean rename(String name, ProvidedExtensions.IOHandler handler) {
         boolean retVal = false;
         final File f = getFile();
 
         if (f.exists()) {
             File newFile = new File(f.getParentFile(), name);
-            retVal = f.renameTo(newFile);
+            if (handler != null) {
+                try {
+                    handler.handle();
+                    retVal = true;
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            } else {
+                retVal = f.renameTo(newFile);
+            }
             if (retVal) {
                 this.name = name;
                 id = NamingFactory.createID(newFile);
@@ -48,7 +60,10 @@ public class FileName implements FileNaming {
         }
         FolderName.freeCaches();
         return retVal;
+    }
 
+    public final boolean rename(final String name) {        
+        return rename(name, null);
     }
 
     public final boolean isRoot() {

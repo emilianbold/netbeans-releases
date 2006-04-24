@@ -14,12 +14,14 @@
 package org.netbeans.modules.masterfs.providers;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -30,12 +32,24 @@ public class InterceptionListenerTest extends NbTestCase  {
     private InterceptionListenerImpl iListener;
     protected void setUp() throws Exception {
         super.setUp();
-        AnnotationProvider ap = (AnnotationProvider)Lookups.metaInfServices(Thread.currentThread().getContextClassLoader()).lookup(AnnotationProvider.class);
-        assertNotNull(ap);
-        iListener = (InterceptionListenerImpl)ap.getInterceptionListener();
+        iListener = lookupImpl();
         assertNotNull(iListener);
         iListener.clear();
         clearWorkDir();
+    }
+
+    private InterceptionListenerImpl lookupImpl() {
+        Lookup.Result result = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader()).
+                lookup(new Lookup.Template(AnnotationProvider.class));
+        Collection all = result.allInstances();
+        for (Iterator it = all.iterator(); it.hasNext();) {
+            AnnotationProvider ap = (AnnotationProvider) it.next();
+            InterceptionListener iil = ap.getInterceptionListener();
+            if (iil != null && !(iil instanceof ProvidedExtensions)) {
+                return (InterceptionListenerImpl)iil;
+            }            
+        }
+        return null;
     }
     
     public InterceptionListenerTest(String testName) {
@@ -93,7 +107,41 @@ public class InterceptionListenerTest extends NbTestCase  {
         }
     }
     
-    public static class InterceptionListenerImpl extends AnnotationProvider implements InterceptionListener {
+    public static class AnnotationProviderImpl extends AnnotationProvider  {
+        private InterceptionListenerImpl impl = new InterceptionListenerImpl();
+        public String annotateName(String name, java.util.Set files) {
+            java.lang.StringBuffer sb = new StringBuffer(name);
+            Iterator it = files.iterator();
+            while (it.hasNext()) {
+                FileObject fo = (FileObject)it.next();
+                try {
+                    sb.append("," +fo.getNameExt());//NOI18N
+                } catch (Exception ex) {
+                    fail();
+                }
+            }
+            
+            return sb.toString() ;
+        }
+        
+        public java.awt.Image annotateIcon(java.awt.Image icon, int iconType, java.util.Set files) {
+            return icon;
+        }
+        
+        public String annotateNameHtml(String name, Set files) {
+            return annotateName(name, files);
+        }
+        
+        public Action[] actions(Set files) {
+            return new Action[]{};
+        }
+        
+        public InterceptionListener getInterceptionListener() {
+            return impl;
+        }
+    }
+    
+    public static class InterceptionListenerImpl implements InterceptionListener {
         private int beforeCreateCalls = 0;
         private int createFailureCalls = 0;
         private int createSuccessCalls = 0;
@@ -132,37 +180,6 @@ public class InterceptionListenerTest extends NbTestCase  {
         
         public void deleteFailure(org.openide.filesystems.FileObject fo) {
             deleteFailureCalls++;
-        }
-        
-        public String annotateName(String name, java.util.Set files) {
-            java.lang.StringBuffer sb = new StringBuffer(name);
-            Iterator it = files.iterator();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject)it.next();
-                try {
-                    sb.append("," +fo.getNameExt());//NOI18N
-                } catch (Exception ex) {
-                    fail();
-                }
-            }
-            
-            return sb.toString() ;
-        }
-        
-        public java.awt.Image annotateIcon(java.awt.Image icon, int iconType, java.util.Set files) {
-            return icon;
-        }
-        
-        public String annotateNameHtml(String name, Set files) {
-            return annotateName(name, files);
-        }
-        
-        public Action[] actions(Set files) {
-            return new Action[]{};
-        }
-        
-        public InterceptionListener getInterceptionListener() {
-            return this;
         }
     }
 }

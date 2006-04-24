@@ -19,6 +19,7 @@ import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
  * @author Radek Matous
@@ -58,11 +59,15 @@ public final class NamingFactory {
             }
         }                        
     }
-    
+
     public static synchronized boolean rename (FileNaming fNaming, String newName) {        
+        return rename(fNaming, newName, null);
+    }
+    
+    public static synchronized boolean rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) {
         boolean retVal = false;
         remove(fNaming, null);
-        retVal = fNaming.rename(newName);
+        retVal = fNaming.rename(newName, handler);
         NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming);
         renameChildren();
         return retVal;

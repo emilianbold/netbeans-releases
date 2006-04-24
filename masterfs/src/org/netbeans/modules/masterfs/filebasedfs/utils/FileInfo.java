@@ -239,5 +239,22 @@ public final class FileInfo {
     public String toString() {
     return getFile().toString();
     }
+
+    public static final String composeName(String name, String ext) {
+        return (ext != null && ext.length() > 0) ? (name + "." + ext) : name;//NOI18N
+    }
+
+    public static final String getName(String name) {
+        int i = name.lastIndexOf('.');
+        
+        /** period at first position is not considered as extension-separator */
+        return (i <= 0) ? name : name.substring(0, i);
+    }
     
+    public static final String getExt(String name) {
+        int i = name.lastIndexOf('.') + 1;
+        
+        /** period at first position is not considered as extension-separator */
+        return ((i <= 1) || (i == name.length())) ? "" : name.substring(i); // NOI18N
+    }
 }

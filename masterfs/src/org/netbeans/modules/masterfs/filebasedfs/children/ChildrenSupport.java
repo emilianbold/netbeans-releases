@@ -20,6 +20,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 
 import java.io.File;
 import java.util.*;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
  * @author Radek Matous
@@ -112,6 +113,10 @@ public final class ChildrenSupport {
                 return id;
             }
             public boolean rename(String name) {
+                // not implemented, as it will not be called
+                throw new IllegalStateException();
+            }
+            public boolean rename(String name, ProvidedExtensions.IOHandler h) {
                 // not implemented, as it will not be called
                 throw new IllegalStateException();
             }

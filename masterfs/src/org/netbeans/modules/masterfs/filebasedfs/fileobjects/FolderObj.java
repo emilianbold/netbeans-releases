@@ -238,13 +238,11 @@ public final class FolderObj extends BaseFileObj {
         }        
     }
 
-
-    public final void refresh(final boolean expected) {
+    public void refresh(final boolean expected, boolean fire) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FOLDER);
         stopWatch.start();
 
         if (isValid()) {
-            boolean isFileCreatedFired = false;
             final ChildrenCache cache = getChildrenCache();
             final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
 
@@ -282,18 +280,22 @@ public final class FolderObj extends BaseFileObj {
                 if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
 
                     if (newChild.isFolder()) {
-                        isFileCreatedFired = true;
+                        if (fire) {
                         newChild.fireFileFolderCreatedEvent(expected);
+                        }
                     } else {
-                        isFileCreatedFired = true;
+                        if (fire) {
                         newChild.fireFileDataCreatedEvent(expected);
+                    }
                     }
 
                 } else if (operationId == ChildrenCache.REMOVED_CHILD) {
                     if (newChild != null) {
                         if (newChild.isValid()) {
                             newChild.setValid(false);
+                            if (fire) {
                             newChild.fireFileDeletedEvent(expected);
+                        }
                         }
                     } else {
                         //TODO: should be rechecked
@@ -308,8 +310,10 @@ public final class FolderObj extends BaseFileObj {
                             }
 
                             fakeInvalid.setValid(false);
+                            if (fire) {
                             fakeInvalid.fireFileDeletedEvent(expected);
                         }
+                    }
                     }
 
                 } else {
@@ -321,10 +325,16 @@ public final class FolderObj extends BaseFileObj {
             if (!validityFlag) {
                 //fileobject is invalidated                
                 setValid(false);                       
+                if (fire) {
                 fireFileDeletedEvent(expected);    
             }
         }         
+        }         
         stopWatch.stop();        
+    }
+    
+    public final void refresh(final boolean expected) {
+        refresh(expected, true);
     }
     
     //TODO: rewrite partly and check FileLocks for existing FileObjects

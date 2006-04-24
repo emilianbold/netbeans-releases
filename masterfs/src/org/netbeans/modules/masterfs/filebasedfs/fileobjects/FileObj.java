@@ -26,8 +26,10 @@ import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
 
 /**
@@ -167,14 +169,14 @@ final class FileObj extends BaseFileObj {
         return false;
     }
 
-    public final void refresh(final boolean expected) {
+    public void refresh(final boolean expected, boolean fire) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
         stopWatch.start();                
         if (isValid()) {
             final long oldLastModified = lastModified;
             setLastModified(getFileName().getFile().lastModified());
 
-            if (oldLastModified != -1 && lastModified != -1 && lastModified != 0 && oldLastModified < lastModified) {
+            if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && oldLastModified < lastModified) {
                 fireFileChangedEvent(expected);
             }
             
@@ -182,10 +184,17 @@ final class FileObj extends BaseFileObj {
             if (!validityFlag) {
                 //fileobject is invalidated
                 setValid(false);
+                if (fire) {
                 fireFileDeletedEvent(expected);    
             }            
         }                 
+        }                 
         stopWatch.stop();
+    }
+    
+
+    public final void refresh(final boolean expected) {
+        refresh(expected, true);
     }
     
 
@@ -234,5 +243,10 @@ final class FileObj extends BaseFileObj {
     final boolean checkLock(final FileLock lock) throws IOException {
         final File f = getFileName().getFile();
         return ((lock instanceof WriteLock) && (((WriteLock) lock).isValid(f)));
+    }
+
+    public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
+        super.rename(lock, name, ext, handler);
+        setLastModified(getFileName().getFile().lastModified());
     }
 }
