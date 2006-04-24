@@ -51,7 +51,7 @@ public class StartLog {
      */
     public static void logStart( String action ) {
         if (willLog()) {
-            impl.start(action, System.currentTimeMillis());
+            impl.start(action, System.nanoTime()/1000000);
             actions.push(action);
             if (DEBUG_NESTING) {
                 places.push(new Throwable("logStart called here:")); // NOI18N
@@ -64,7 +64,7 @@ public class StartLog {
      * @param note some identifying string
      */
     public static void logProgress( String note ) {
-        if( willLog() ) impl.progress( note, System.currentTimeMillis() );
+        if( willLog() ) impl.progress( note, System.nanoTime()/1000000 );
     }
 
     /** Stop running some interval action.
@@ -95,7 +95,7 @@ public class StartLog {
                 // (which is the default).
                 System.exit(1);
             }
-            impl.end(action, System.currentTimeMillis());
+            impl.end(action, System.nanoTime()/1000000);
         }
     }
 
@@ -128,7 +128,7 @@ public class StartLog {
 
     private static class PrintImpl extends StartImpl {
         PrintImpl() {}
-        long zero = System.currentTimeMillis();
+        long zero = System.nanoTime()/1000000;
         private Stack<Long> starts = new Stack<Long>();
         long prog;
         private int indent = 0;
@@ -175,7 +175,7 @@ public class StartLog {
 
     private static class PerformanceTestsImpl extends StartImpl {
         private StringBuffer logs = new StringBuffer();
-        long zero = System.currentTimeMillis();
+        long zero = System.nanoTime()/1000000;
         private Stack<Long> starts = new Stack<Long>();
         long prog;
         private int indent = 0;
