@@ -125,7 +125,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     if(ike.getMessage().toLowerCase().equals("illegal key size or default parameters")) {
                         ExceptionHandler.handleInvalidKeyException(ike);
                     }
-                    return null; // XXX hm
+                    return null; 
                 }
                 throw ex;
             }
