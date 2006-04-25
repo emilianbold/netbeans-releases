@@ -57,7 +57,7 @@ public class LineBreakpoint extends JPDABreakpoint {
     /**
      * Creates a new breakpoint for given parameters.
      *
-     * @param url a url
+     * @param url a string representation of URL of the source file
      * @param lineNumber a line number
      * @return a new breakpoint for given parameters
      */
@@ -72,7 +72,8 @@ public class LineBreakpoint extends JPDABreakpoint {
     }
 
     /**
-     * Gets name of class to stop on.
+     * Gets the string representation of URL of the source file,
+     * which contains the class to stop on.
      *
      * @return name of class to stop on
      */
@@ -81,7 +82,8 @@ public class LineBreakpoint extends JPDABreakpoint {
     }
     
     /**
-     * Sets name of class to stop on.
+     * Sets the string representation of URL of the source file,
+     * which contains the class to stop on.
      *
      * @param url the URL of class to stop on
      */
@@ -183,7 +185,7 @@ public class LineBreakpoint extends JPDABreakpoint {
     }
     
     /**
-     * Returns source name.
+     * Returns the name of the source file.
      *
      * @return a source name or <code>null</code> when no source name is defined.
      */
@@ -192,7 +194,7 @@ public class LineBreakpoint extends JPDABreakpoint {
     }
     
     /**
-     * Sets source name.
+     * Sets the name of the source file.
      *
      * @param sn a new source name or <code>null</code>.
      */
@@ -210,7 +212,7 @@ public class LineBreakpoint extends JPDABreakpoint {
     }
 
     /**
-     * Returns source path.
+     * Returns source path, relative to the source root.
      *
      * @return a source path or <code>null</code> when no source path is defined.
      *
@@ -221,7 +223,7 @@ public class LineBreakpoint extends JPDABreakpoint {
     }
 
     /**
-     * Sets source path.
+     * Sets source path, relative to the source root.
      *
      * @param sp a new source path or <code>null</code>
      *
