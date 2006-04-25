@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion;
 
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.client.*;
+import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.*;
 import org.openide.util.RequestProcessor;
@@ -194,42 +195,43 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     }
 
     /**
-     * We save all CVS metadata to be able to commit files that were
+     * We save all .svn metadata to be able to commit files that were
      * in that directory.
      * 
-     * @param fo FileObject, we are only interested in files inside CVS directory
+     * @param fo FileObject, we are only interested in files inside .svn directory
      */ 
     public void beforeDelete(FileObject fo) {
         if (ignoringEvents()) return;
-        if (fo.isFolder()) {
-            File file = FileUtil.toFile(fo);
-            FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-                saveRecursively(file);
-            }
-        } else {
-            FileObject parent = fo.getParent();
-            if (svn.isAdministrative(parent.getName())) {
-                if ((parent = parent.getParent()) == null) return;
-                File matadataOwner = FileUtil.toFile(parent);
-                saveMetadata(matadataOwner);
-            }
+        File file = FileUtil.toFile(fo);
+        File admin = getUpAdministrative(file);
+        if (admin != null) {
+//            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+//            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                saveMetadata(admin);
+//            }
         }
     }
 
-    private void saveRecursively(File root) {
-        File [] files = root.listFiles();
-        if (files == null) return;   // invalid or deleted folder
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            if (file.isDirectory()) {
-                if (svn.isAdministrative(file.getName())) {
-                    saveMetadata(root);
-                } else {
-                    saveRecursively(file);
-                }
-            }
+    /**
+     * Returns .svn if file lies under it otherwise null.
+     * It scans up to 2nd parental level.
+     */
+    private File getUpAdministrative(File file) {
+        if (file == null) {
+            return null;
         }
+
+        if (file.isFile()) {
+            file = file.getParentFile();
+        }
+        if (file != null && svn.isAdministrative(file)) {
+            return file;
+        }
+        file = file.getParentFile();
+        if (file != null && svn.isAdministrative(file)) {
+            return file;
+        }
+        return null;
     }
 
     public void deleteSuccess(FileObject fo) {
@@ -382,17 +384,20 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
      */ 
     private void saveMetadata(File dir) {
         dir = FileUtil.normalizeFile(dir);
-/*
-        MetadataAttic.setMetadata(dir, null);
-        if (savedMetadata.get(dir) != null) return;
+
+//        MetadataAttic.setMetadata(dir, null);
+        if (savedMetadata.get(dir) != null) {
+            return;
+        }
+
         try {
-            CvsMetadata data = CvsMetadata.readAndRemove(dir);
+            SvnMetadata data = SvnMetadata.read(dir);
             savedMetadata.put(dir, data);
         } catch (IOException e) {
             // cannot read folder metadata, the folder is most probably not versioned
             return;
         }
-*/
+
     }
 
     // BEGIN #73042 ProvidedExtensions ~~~~~~~~~~~~~~~~~~~~
@@ -425,9 +430,23 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
             if ((info.getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
                 return Subversion.getInstance().isManaged(to);
             }
+            // XXX handle file with saved administative
+            // right now they have old status in cache but is it guaranteed?
         }
 
         return false;
+    }
+
+    /**
+     * seeks for .svn. Client shoutd test for isdirectory()!
+     */
+    private File getAdministrative(File file) {            
+        File srcDir = file;
+        if (file.isFile()) {
+            srcDir = file.getParentFile();
+        }
+        File admin = new File(srcDir, ".svn");
+        return admin;
     }
 
     public  void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
@@ -436,26 +455,48 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
             ISVNClientAdapter client = Subversion.getInstance().getClient();
             client.removeNotifyListener(cache);  // do not fire events before MFS
 
-            // prepare destination, it must be under Subversion control
+            
+            File tmpMetadata = null;
+            try {
 
-            File parent;
-            if (dstFile.isDirectory()) {
-                parent = dstFile;
-            } else {
-                parent = dstFile.getParentFile();
-            }
+                // prepare source, restore already deleted metadata
+                // pacakge rename iterates oved content and prematurely
+                // deletes .svn/ folders
+                
+                File srcAdmin = getAdministrative(srcFile);
+                if (srcAdmin.isDirectory() == false) {
+                    SvnMetadata metadata = (SvnMetadata) savedMetadata.get(srcAdmin);
+                    if (metadata != null) {
+                        metadata.save(srcAdmin);
+                        tmpMetadata = srcAdmin;
+                    }
+                }
 
-            if (parent != null) {
-                int status = cache.getStatus(parent).getStatus();
-                assert Subversion.getInstance().isManaged(parent);  // see implsMove above
+                // prepare destination, it must be under Subversion control
 
-                if ((FileInformation.STATUS_VERSIONED & status) == 0) {
-                    addDirectories(parent);
+                File parent;
+                if (dstFile.isDirectory()) {
+                    parent = dstFile;
+                } else {
+                    parent = dstFile.getParentFile();
+                }
+
+                if (parent != null) {
+                    int status = cache.getStatus(parent).getStatus();
+                    assert Subversion.getInstance().isManaged(parent);  // see implsMove above
+
+                    if ((FileInformation.STATUS_VERSIONED & status) == 0) {
+                        addDirectories(parent);
+                    }
+                }
+
+                // perform
+                client.move(srcFile, dstFile, force);
+            } finally {
+                if (tmpMetadata != null) {
+                    FileUtils.deleteRecursively(tmpMetadata);
                 }
             }
-
-            // perform
-            client.move(srcFile, dstFile, force);
         } catch (SVNClientException e) {
             IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
             ex.initCause(e);

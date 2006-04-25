@@ -231,5 +231,28 @@ public class FileUtils {
             }
         }       
     }
+
+    /** Creates new tmp dir in java.io.tmpdir */
+    public static File createTmpFolder(String prefix) {
+        String tmpDir = System.getProperty("java.io.tmpdir");  // NOI18N
+        File tmpFolder = new File(tmpDir);
+        File checkoutFolder = null;
+        try {
+            // generate unique name for tmp folder
+            File tmp = File.createTempFile(prefix, "", tmpFolder);  // NOI18N
+            if (tmp.delete() == false) {
+                return checkoutFolder;
+            }
+            if (tmp.mkdirs() == false) {
+                return checkoutFolder;
+            }
+            checkoutFolder = FileUtil.normalizeFile(tmp);
+        } catch (IOException e) {
+            ErrorManager err = ErrorManager.getDefault();
+            err.notify(e);
+        }
+        return checkoutFolder;
+    }
+
     
 }
