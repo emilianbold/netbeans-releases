@@ -31,6 +31,7 @@ import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 
 /**
+ * Creates a new folder in the browser
  *
  * @author Tomas Stupka
  */
@@ -69,6 +70,9 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                ((RepositoryPathNode) nodes[0]).getEntry().getSvnNodeKind() == SVNNodeKind.DIR;
     }
 
+    /**
+     * Configures this action with the actuall browser instance
+     */
     public void setBrowser(Browser browser) {        
         Browser oldBrowser = getBrowser();
         if(oldBrowser!=null) {

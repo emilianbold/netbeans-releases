@@ -35,6 +35,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 
 /**
+ * Handles the UI for repository browsing.
  *
  * @author Tomas Stupka
  */
@@ -56,11 +57,22 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     private SvnProgressSupport support;
 
     private boolean fileSelectionOnly;
-    
+
+    /**
+     * Creates a new instance, which shows only folders, and with multiple selection
+     */
     public Browser(String title) {                                
         this(title, false, false, false);
     }   
-    
+
+    /**
+     * Creates a new instance
+     *
+     * @param title the browsers window title
+     * @param showFiles 
+     * @param singleSelectionOnly
+     * @param fileSelectionOnly
+     */    
     public Browser(String title, boolean showFiles, boolean singleSelectionOnly, boolean fileSelectionOnly) {
         this.showFiles = showFiles;
         this.fileSelectionOnly = fileSelectionOnly;
@@ -73,6 +85,13 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         getExplorerManager().addVetoableChangeListener(this);                
     }       
 
+    /**
+     * Configures the browser instabnce with the given parameters
+     *
+     * @param repositoryRoot the RepositoryFile representing the repository root
+     * @param select an array of RepositoryFile-s representing the items which has to be selected
+     * @param nodeActions an array of actions from which the context menu on the tree items will be created
+     */
     public void setup(RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions) 
     {        
         if(nodeActions!=null) {
@@ -120,8 +139,11 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         }                
         return (Node[])nodesToSelect.toArray(new Node[nodesToSelect.size()]);                        
     }
-    
-    public void reset() {
+
+    /**
+     * Cancels all running tasks
+     */
+    public void cancel() {
         Node rootNode = getExplorerManager().getRootContext();
         if(rootNode != null) {
             getExplorerManager().setRootContext(Node.EMPTY);

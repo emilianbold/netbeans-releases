@@ -194,7 +194,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                 repositoryPathTextField.setText(paths.toString());
             } 
         } else {
-            browser.reset(); 
+            browser.cancel(); 
         }
     }      
     
