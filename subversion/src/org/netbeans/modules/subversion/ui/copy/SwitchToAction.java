@@ -83,6 +83,15 @@ public class SwitchToAction extends ContextAction {
     }
 
     static void performSwitch(RepositoryFile repository, boolean replaceModifications, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
+        File[][] split = SvnUtils.splitFlatOthers(new File[] {root} );
+        boolean recursive;
+        // there can be only 1 root file
+        if(split[0].length > 0) {
+            recursive = false;
+        } else {
+            recursive = true;
+        }        
+
         try {
             ISVNClientAdapter client;
             try {
@@ -93,15 +102,15 @@ public class SwitchToAction extends ContextAction {
             }
             if(replaceModifications) {
                 // get rid of all changes ...
-                // doesn't wok for added (new) files
-                client.revert(root, true);
+                // doesn't work for added (new) files
+                client.revert(root, recursive);
 
                 if(support.isCanceled()) {
                     return;
                 }
             }
             // ... and switch
-            client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), true);
+            client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), recursive);
             FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
         } catch (SVNClientException ex) {
             ExceptionHandler eh = new ExceptionHandler(ex);

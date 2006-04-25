@@ -57,9 +57,8 @@ public class MergeAction extends ContextAction {
     
     protected void performContextAction(final Node[] nodes) {
         Context ctx = getContext(nodes);        
-        
-        final File root = ctx.getRootFiles()[0];                        
-        SVNUrl url = SvnUtils.getRepositoryRootUrl(root);        
+        final File root = ctx.getRootFiles()[0];
+        SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
      
         final Merge merge = new Merge(repositoryRoot, root);           
@@ -74,6 +73,15 @@ public class MergeAction extends ContextAction {
     }
 
     private void performMerge(Merge merge,  RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
+        File[][] split = SvnUtils.splitFlatOthers(new File[] {root} );
+        boolean recursive;
+        // there can be only 1 root file
+        if(split[0].length > 0) {
+            recursive = false;
+        } else {
+            recursive = true;
+        }        
+
         RepositoryFile mergeFromRepository = merge.getMergeFromRepositoryFile();
         boolean mergeAfter = merge.madeAfter();
         RepositoryFile mergeAfterRepository;
@@ -103,7 +111,7 @@ public class MergeAction extends ContextAction {
                              mergeFromRepository.getRevision(),
                              root,
                              false,
-                             true);
+                             recursive);
             } else {
 
                 ISVNInfo info = client.getInfoFromWorkingCopy(root);
@@ -123,7 +131,7 @@ public class MergeAction extends ContextAction {
                              mergeFromRepository.getRevision(),
                              root,
                              false,
-                             true);                                    
+                             recursive);                                    
             }
 
         } catch (SVNClientException ex) {
