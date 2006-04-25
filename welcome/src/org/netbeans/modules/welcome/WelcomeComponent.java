@@ -106,7 +106,7 @@ public class WelcomeComponent extends TopComponent{
     /** Overriden to explicitely set persistence type of WelcomeComponent
      * to PERSISTENCE_ALWAYS */
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;
     }
     
     private void initAccessibility(){
