@@ -287,6 +287,19 @@ public final class TopLogging {
             defaultHandler = null;
         }
     }
+    static void close() {
+        Handler s = streamHandler;
+        if (s instanceof NonClose) {
+            NonClose ns = (NonClose)s;
+            ns.doClose();
+        }
+
+        Handler d = defaultHandler;
+        if (d != null) {
+            NonClose nd = (NonClose)d;
+            nd.doClose();
+        }
+    }
 
     /** Non closing handler.
      */
@@ -312,11 +325,18 @@ public final class TopLogging {
 
         public void flush() {
             flush.cancel();
+            flush.waitFinished();
             delegate.flush();
         }
 
         public void close() throws SecurityException {
+            flush();
             delegate.flush();
+        }
+
+        public void doClose() throws SecurityException {
+            flush();
+            delegate.close();
         }
 
         public Formatter getFormatter() {

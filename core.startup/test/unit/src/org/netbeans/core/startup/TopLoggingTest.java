@@ -149,8 +149,10 @@ public class TopLoggingTest extends NbTestCase {
         File log2 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.1");
         assertFalse("Currently we rotate just one file: " + log2, log2.canRead());
 
+        TopLogging.close();
         // simulate new start
         TopLogging.flush(true);
+
         TopLogging.initialize();
 
         assertTrue("2 Log file exists: " + log, log.canRead());
@@ -216,8 +218,12 @@ public class TopLoggingTest extends NbTestCase {
 
         String disk = readLog(true);
 
-        if (disk.indexOf("Ahoj" + System.getProperty("line.separator")) == -1) {
-            fail("Expecting 'Ahoj': " + disk);
+        int ah = disk.indexOf("Ahoj");
+        if (ah == -1) {
+            char next = disk.charAt(ah + 4);
+            if (next != 10 && next != 13) {
+                fail("Expecting 'Ahoj': index: " + ah + " next char: " + (int)next + "text:\n" + disk);
+            }
         }
         
         Pattern p = Pattern.compile("IllegalStateException.*Hi");
@@ -228,14 +234,11 @@ public class TopLoggingTest extends NbTestCase {
     }
 
     public void testFlushHappensAfterFewSeconds() throws Exception {
-        Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
+        Logger l = Logger.getLogger(TopLoggingTest.class.getName());
+        l.log(Level.INFO, "First visible message");
 
         Pattern p = Pattern.compile("INFO.*First visible message");
         Matcher m = p.matcher(getStream().toString());
-
-        if (!m.find()) {
-            fail("msg shall be logged: " + getStream().toString());
-        }
 
         Matcher d = null;
         String disk = null;
