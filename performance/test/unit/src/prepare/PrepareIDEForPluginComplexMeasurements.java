@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,6 +56,7 @@ public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplex
      */
     public static Test suite() {
         TestSuite suite = new NbTestSuite();
+        suite.addTest(new PrepareIDEForComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeMemoryToolbar"));
         suite.addTest(new PrepareIDEForPluginComplexMeasurements("openFiles"));
