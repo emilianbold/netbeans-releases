@@ -9,6 +9,17 @@
         </folder>
    </folder>
   <folder name="Services">
+    
+    <folder name="AutoupdateType">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+
+      <file name="bluej.settings" url="autoupdate_xml_type.settings">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+        <attr name="url_key" stringvalue="URL_Default_N"/>
+        <attr name="enabled" boolvalue="true"/>
+      </file>
+    </folder>
+    
       <file name="org-netbeans-bluej-options-BlueJSettings.settings" 
             url="options/BlueJSettings.xml">
       </file>
