@@ -15,6 +15,7 @@ package org.netbeans.modules.welcome.content;
 
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
+import org.openide.util.NbBundle;
 
 public class BundleSupport {
 
@@ -28,7 +29,7 @@ public class BundleSupport {
     private static final String ACD_PREFIX = "ACD_"; // NOI18N
     private static final String MNM_PREFIX = "MNM_"; // NOI18N
     
-    private static ResourceBundle resources = ResourceBundle.getBundle(BUNDLE_NAME);
+    private static ResourceBundle resources = NbBundle.getBundle(BUNDLE_NAME);
     
     public static String getLabel(String bundleKey) {
         return resources.getString(LABEL_PREFIX + bundleKey);
