@@ -252,29 +252,28 @@ public class IndexBuilder implements Runnable, ChangeListener {
      * May return null if there is no title tag, or "" if it is empty.
      */
     private String parseTitle(FileObject html) {
-        TitleParser tp = null;
-
+        String title = null;
         try {
             // #71979: html parser used again to fix encoding issues.
             // I have measured no difference if the parser or plain file reading
             // is used (#32551).
             // In case the parser is stopped as soon as it finds the title it is
             // even faster than the previous fix.
-            Reader r = new BufferedReader(new InputStreamReader(html.getInputStream()));
+            InputStream is = new BufferedInputStream(html.getInputStream(), 1024);
+            SimpleTitleParser tp = new SimpleTitleParser(is);
             try {
-                tp = new TitleParser(r);
-                tp.parse(r);
-                return tp.getTitle();
+                tp.parse();
+                title = tp.getTitle();
             } finally {
-                r.close();
+                is.close();
             }
         } catch (IOException ioe) {
-            String title = tp == null? null: tp.getTitle();
-            if (title == null) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-            }
-            return title;
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
+        if (title == null) { // fallback
+            title = FileUtil.getFileDisplayName(html);
+        }
+        return title;
     }
 
     private synchronized static void scheduleTask() {
@@ -286,64 +285,159 @@ public class IndexBuilder implements Runnable, ChangeListener {
         task.schedule(100);
     }
 
-    private static final class TitleParser extends Parser {
-        private final Reader in;
-        private String encoding;
-        private String title;
+    static final class SimpleTitleParser {
 
-        public TitleParser(Reader in) throws IOException {
-            super(DTD.getDTD("html32")); // NOI18N
-            this.in = in;
+        private char cc;
+        private InputStream is;
+        private String charset;
+        private String title;
+        private int state = CONTINUE;
+
+        private static final int CONTINUE = 0;
+        private static final int EXIT = 0;
+
+        SimpleTitleParser(InputStream is) {
+            this.is = is;
         }
 
         public String getTitle() {
-            return this.title;
+            return title;
         }
 
-        protected void handleTitle(char[] text) {
-            this.title = String.valueOf(text);
-            if (encoding != null) {
-                // in case of system and file charsets differ translate title
-                try {
-                    this.title = new String(this.title.getBytes(), encoding);
-                } catch (UnsupportedEncodingException ex) {
-                    // ignore
-                    err.notify(ErrorManager.EXCEPTION, ex);
+        public void parse() throws IOException {
+            readNext();
+            while (state == CONTINUE) {
+                switch (cc) {
+                    case '<' : // start of tags
+                        handleOpenBrace();
+                        break;
+                    case (char) -1 : // EOF
+                        return;
+                    default:
+                        readNext();
                 }
             }
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("Parsing of " + this.title + ", using charset " + encoding); // NOI18N
-            }
-            // we have what we want so stop the parser to save some milliseconds
-            // for something useful
-            try {
-                in.close();
-            } catch (IOException ex) {
-                // ignore
-                err.notify(ErrorManager.EXCEPTION, ex);
-            }
         }
 
-        protected void handleStartTag(TagElement tag) {
-            // look around for a charset
-            if (this.encoding == null && tag.getHTMLTag() == HTML.Tag.META) {
-                SimpleAttributeSet attrs = getAttributes();
-                Object value = attrs.getAttribute(HTML.Attribute.CONTENT);
+        private void readNext() throws IOException {
+            cc = (char) is.read();
+        }
 
-                if (value instanceof String) {
-                    StringTokenizer tk = new StringTokenizer((String) value, ";"); // NOI18N
-                    while (tk.hasMoreTokens()) {
-                        String str = tk.nextToken().trim();
-                        if (str.startsWith("charset")) {        //NOI18N
-                            str = str.substring(7).trim();
-                            if (str.charAt(0) == '=') {
-                                this.encoding = str.substring(1).trim();
-                                return;
-                            }
+        private void handleOpenBrace() throws IOException {
+            StringBuilder sb = new StringBuilder();
+            while (true) {
+                readNext();
+                switch (cc) {
+                    case '>':  // end of tag
+                        String tag = sb.toString().toLowerCase();
+                        if (tag.startsWith("body")) { // NOI18N
+                            state = EXIT;
+                            return; // exit parsing, no title
+                        } else if (tag.startsWith("meta")) { // NOI18N
+                            handleMetaTag(tag);
+                            return;
+                        } else if (tag.startsWith("title")) { // NOI18N
+                            handleTitleTag();
+                            return;
+
                         }
+                        return;
+                    case (char) -1:  // EOF
+                        return;
+                    case ' ':
+                        if (sb.length() == 0) // ignore leading spaces
+                            break;
+                    default:
+                        sb.append(cc);
+                }
+            }
+
+        }
+
+        private void handleMetaTag(String txt) {
+            // parse something like
+            // <META http-equiv="Content-Type" content="text/html; charset=euc-jp">
+            // see http://www.w3.org/TR/REC-html32#meta
+            String name = ""; // NOI18N
+            String value = ""; // NOI18N
+
+            char tc;
+            char[] txts = txt.toCharArray();
+            int offset = 5; // skip "meta "
+            int start = offset;
+            int state = 0;
+            while (offset < txts.length) {
+                tc = txt.charAt(offset);
+                if (tc == '=' && state == 0) { // end of name
+                    name = String.valueOf(txts, start, offset++ - start).trim();
+                    state = 1;
+                } else if (state == 1 && (tc == '"' || tc == '\'')) { // start of value
+                    start = ++offset;
+                    state = 2;
+                } else if (state == 2 && (tc == '"' || tc == '\'')) { // end of value
+                    value = String.valueOf(txts, start, offset++ - start);
+                    if ("content".equals(name)) { // NOI18N
+                        break;
+                    }
+                    name = ""; // NOI18N
+                    state = 0;
+                    start = offset;
+                } else {
+                    ++offset;
+                }
+
+            }
+
+            StringTokenizer tk = new StringTokenizer(value, ";"); // NOI18N
+            while (tk.hasMoreTokens()) {
+                String str = tk.nextToken().trim();
+                if (str.startsWith("charset")) {        //NOI18N
+                    str = str.substring(7).trim();
+                    if (str.charAt(0) == '=') {
+                        this.charset = str.substring(1).trim();
+                        return;
                     }
                 }
             }
+        }
+
+        private void handleTitleTag() throws IOException {
+            byte[] buf = new byte[200];
+            int offset = 0;
+            while (true) {
+                readNext();
+                switch (cc) {
+                    case (char) -1:  // EOF
+                        return;
+                    case '>': // </title>
+                        if ("</title".equals(new String(buf, offset - 7, 7).toLowerCase())) {
+                            // title is ready
+                            // XXX maybe we should also resolve entities like &gt;
+                            state = EXIT;
+                            if (charset == null) {
+                                title = new String(buf, 0, offset - 7).trim();
+                            } else {
+                                title = new String(buf, 0, offset - 7, charset).trim();
+                            }
+                            return;
+                        }
+                    default:
+                        cc = (cc == '\n' || cc == '\r')? ' ': cc;
+                        if (offset == buf.length) {
+                            buf = enlarge(buf);
+                        }
+                        buf[offset++] = (byte) cc;
+
+                }
+            }
+        }
+
+        private static byte[] enlarge(byte[] b) {
+            byte[] b2 = new byte[b.length + 200];
+            for (int i = 0; i < b.length; i++) {
+                b2[i] = b[i];
+            }
+            return b2;
         }
     }
 
