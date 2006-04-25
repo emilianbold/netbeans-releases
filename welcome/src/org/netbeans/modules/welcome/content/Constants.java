@@ -30,13 +30,15 @@ public interface Constants {
     
     static final Color DEFAULT_BACKGROUND_COLOR = new Color( 255,255,255 );
     static final Color SCREEN_BACKGROUND_COLOR = new Color( 167,165,162 );
+    static final Color SECTION_BACKGROUND_COLOR = new Color( 235,235,235 );
 
     static final Color HEADER_FILL_COLOR = new Color( 251,252,253 );
     static final Color FOOTER_FILL_COLOR = new Color( 255,255,255 );
 
+    static final Color TITLE_TEXT_COLOR = new Color( 217,103,2 );
     static final Color BUTTON_TEXT_COLOR = new Color( 22,75,123 );
     static final Color HEADER_TEXT_COLOR = new Color( 14,27,85 );
-    static final Color SECTION_TEXT_COLOR = new Color( 1,16,86 );
+    static final Color SECTION_TEXT_COLOR = new Color( 96,96,96 );
     static final Color DEFAULT_TEXT_COLOR = new Color( 0,0,0 );
 
     static final String FONT_NAME = "Verdana"; // NOI18N
@@ -119,7 +121,6 @@ public interface Constants {
     static final String RSS_LINK_COLOR = "164B7B";
 
     static final int RSS_FEED_TIMER_RELOAD_MILLIS = 60*60*1000;
-    static final int RSS_CONNECT_ATTEMPT_COUNT = 2;
 
 
     static final int TEXT_INSETS_LEFT = 10;

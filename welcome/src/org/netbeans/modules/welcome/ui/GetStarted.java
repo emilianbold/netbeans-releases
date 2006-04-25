@@ -60,14 +60,15 @@ public class GetStarted extends ContentPanel {
                 String headerText = children[i].getNodeDelegate().getDisplayName();
                 JLabel lblTitle = new JLabel( headerText );
                 lblTitle.setFont( HEADER_FONT );
-                lblTitle.setForeground( DEFAULT_TEXT_COLOR );
+                lblTitle.setForeground( SECTION_TEXT_COLOR );
+                lblTitle.setBackground( SECTION_BACKGROUND_COLOR );
                 lblTitle.setHorizontalAlignment( JLabel.LEFT );
-                lblTitle.setOpaque( false );
+                lblTitle.setOpaque( true );
                 lblTitle.setBorder( HEADER_TEXT_BORDER );
                 panel.add( lblTitle, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
                     GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
                     new Insets(row==1 ? UNDER_HEADER_MARGIN : SECTION_MARGIN,0,
-                        UNDER_SECTION_MARGIN,2*TEXT_INSETS_RIGHT), 0, 0 ) );
+                        UNDER_SECTION_MARGIN,1), 0, 0 ) );
 
                 DataFolder subFolder = DataFolder.findFolder( children[i].getPrimaryFile() );
                 DataObject[] subFolderChildren = subFolder.getChildren();
