@@ -115,8 +115,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 // on the other hand cache keeps all folders regardless their status
                 File probe = file.getParentFile();
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                // XXX PETR STATUS_VERSIONED instead
-                if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0) {
                     eventProcessor.post(new FileDeletedTask(file));
                 }
             }
@@ -424,7 +423,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         if (srcFile != null && destDir != null) {
             FileInformation info = cache.getStatus(srcFile);
             if ((info.getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                return true;
+                return Subversion.getInstance().isManaged(to);
             }
         }
 
@@ -436,6 +435,26 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
             boolean force = true; // file with local changes must be forced
             ISVNClientAdapter client = Subversion.getInstance().getClient();
             client.removeNotifyListener(cache);  // do not fire events before MFS
+
+            // prepare destination, it must be under Subversion control
+
+            File parent;
+            if (dstFile.isDirectory()) {
+                parent = dstFile;
+            } else {
+                parent = dstFile.getParentFile();
+            }
+
+            if (parent != null) {
+                int status = cache.getStatus(parent).getStatus();
+                assert Subversion.getInstance().isManaged(parent);  // see implsMove above
+
+                if ((FileInformation.STATUS_VERSIONED & status) == 0) {
+                    addDirectories(parent);
+                }
+            }
+
+            // perform
             client.move(srcFile, dstFile, force);
         } catch (SVNClientException e) {
             IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
@@ -444,6 +463,25 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         }
     }
 
+    /**
+     * Seeks versioned root and then adds all folders
+     * under Subversion (so it contains metadata),
+     */
+    private void addDirectories(File dir) throws SVNClientException  {
+        File parent = dir.getParentFile();
+        if (parent != null) {
+            int status = cache.getStatus(parent).getStatus();
+            if ((FileInformation.STATUS_VERSIONED & status) == 0) {
+                addDirectories(parent);  // RECURSION
+            }
+            ISVNClientAdapter client = Subversion.getInstance().getClient();
+            client.removeNotifyListener(cache);  // do not fire events before MFS
+            client.addDirectory(dir, false);
+            cache.refresh(dir, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        } else {
+            throw new SVNClientException("Reached FS root, but it's still not Subversion versioned!");
+        }
+    }
 
     public void renameImpl(File from, File to) throws IOException {
         moveImpl(from, to);

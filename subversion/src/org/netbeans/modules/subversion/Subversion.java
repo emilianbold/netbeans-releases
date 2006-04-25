@@ -231,7 +231,9 @@ public class Subversion {
     /**
      * Tests whether a file or directory is managed by Subversion. All files and folders that have a parent with .svn/entriesy
      * file are considered managed by WC. This method accesses disk and should NOT be routinely called.
-     * 
+     *
+     * <p>It works even for non-existing files where cache return UNKNOWN.
+     *
      * @param file a file or directory
      * @return true if the file is under WC management, false otherwise
      */

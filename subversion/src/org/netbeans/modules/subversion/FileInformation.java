@@ -118,7 +118,7 @@ public class FileInformation implements Serializable {
     public static final int STATUS_MANAGED = STATUS_ALL & ~STATUS_NOTVERSIONED_NOTMANAGED;
 
 
-    /** Has local metadata */
+    /** Has local metadata under .svn/ */
     public static final int STATUS_VERSIONED = STATUS_VERSIONED_UPTODATE |
             STATUS_VERSIONED_MODIFIEDLOCALLY |
             STATUS_VERSIONED_MODIFIEDINREPOSITORY |
@@ -126,7 +126,8 @@ public class FileInformation implements Serializable {
             STATUS_VERSIONED_MERGE |
             STATUS_VERSIONED_REMOVEDLOCALLY |
             STATUS_VERSIONED_REMOVEDINREPOSITORY |
-            STATUS_VERSIONED_DELETEDLOCALLY;
+            STATUS_VERSIONED_DELETEDLOCALLY |
+            STATUS_VERSIONED_ADDEDLOCALLY;
 
     public static final int STATUS_IN_REPOSITORY = STATUS_VERSIONED_UPTODATE |
             STATUS_VERSIONED_MODIFIEDLOCALLY |

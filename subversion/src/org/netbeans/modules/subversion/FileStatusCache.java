@@ -447,8 +447,18 @@ public class FileStatusCache implements ISVNNotifyListener {
     // --- Private methods ---------------------------------------------------
 
     private Map getScannedFiles(File dir) {
-        Map files;       
-        if (svn.isAdministrative(dir)) return NOT_MANAGED_MAP;
+        Map files;
+
+        // there are 2nd level nested admin dirs (.svn/tmp, .svn/prop-base, ...)
+
+        if (svn.isAdministrative(dir)) {
+            return NOT_MANAGED_MAP;
+        }
+        File parent = dir.getParentFile();
+        if (parent != null && svn.isAdministrative(parent)) {
+            return NOT_MANAGED_MAP;
+        }
+
         files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (files != null) return files;
         if (isNotManagedByDefault(dir)) {
