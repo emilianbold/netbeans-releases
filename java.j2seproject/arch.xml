@@ -1054,15 +1054,21 @@ Microsystems, Inc. All Rights Reserved.
             <hint>
             As this is some kind of intermodule dependency, it is a kind of API.
             Please describe it and classify according to 
-            <a href="http://openide.netbeans.org/tutorial/api-design.html#categories">
+                <a href="http://openide.netbeans.org/tutorial/api-design.html#categories">
             common stability categories</a>.
             </hint>
         </question>
 -->
  <answer id="resources-read">
-  <p>
-   No.
-  </p>
+    <api group="layer" name="J2SEProjectCustomizer" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-java-j2seproject/Customizer" folder's content is used to construct the project's customizer.
+       It's content is expected to be <code>ProjectCustomizer.CompositeCategoryProvider</code> instances.
+       The lookup passed to the panels contains an instance of <code>Project</code> and <code>org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties</code>
+       Please note that the latter is not part of any public APIs and you need implementation dependency to make use of it.
+     </p>
+    </api>
+
  </answer>
 
 
@@ -1097,6 +1103,62 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="security-policy">
   <p>
    No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="arch-where" when="impl">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the CVS web client at
+                http://www.netbeans.org/download/source_browse.html
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
+ </answer>
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   XXX no answer for compat-deprecation
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  <p>
+   XXX no answer for exec-ant-tasks
   </p>
  </answer>
 

@@ -36,7 +36,7 @@ import org.openide.util.NbBundle;
  *
  * @author  phrebejk
  */
-public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener, CustomizerProviderImpl.SubCategoryProvider {
+public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
     
     public static final String COMPILE = "COMPILE";  //NOI18N
     public static final String RUN = "RUN";          //NOI18N
@@ -45,7 +45,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     
     private final J2SEProjectProperties uiProperties;    
     
-    public CustomizerLibraries( J2SEProjectProperties uiProperties ) {
+    public CustomizerLibraries( J2SEProjectProperties uiProperties, CustomizerProviderImpl.SubCategoryProvider subcat ) {
         this.uiProperties = uiProperties;        
         initComponents();        
         
@@ -118,6 +118,9 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             } 
         });
         testBroken();
+        if (J2SECompositePanelProvider.LIBRARIES.equals(subcat.getCategory())) {
+            showSubCategory(subcat.getSubcategory());
+        }
         
         uiProperties.JAVAC_CLASSPATH_MODEL.addListDataListener( this );
         uiProperties.JAVAC_TEST_CLASSPATH_MODEL.addListDataListener( this );
@@ -182,7 +185,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     }
     
     
-    public void showSubCategory (String name) {
+    private void showSubCategory (String name) {
         if (name.equals(COMPILE)) {
             jTabbedPane1.setSelectedIndex (0);
         }        

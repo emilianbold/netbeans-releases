@@ -65,4 +65,57 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CopyLibs.xml" url="CopyLibs.xml"/>
         </folder>
     </folder>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Customizer">
+                <file name="Sources.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createSources"/>
+                </file>
+                <attr name="Sources.instance/Libraries.instance" boolvalue="true"/>
+                <file name="Libraries.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createLibraries"/>
+                </file>
+                <attr name="Libraries.instance/BuildCategory" boolvalue="true"/>
+                <folder name="BuildCategory">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.Bundle"/>
+                    <file name="Build.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createBuild"/>
+                    </file>
+                    <attr name="Build.instance/Jar.instance" boolvalue="true"/>
+                    <file name="Jar.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createJar"/>
+                    </file>
+                    <attr name="Jar.instance/Javadoc.instance" boolvalue="true"/>
+                    <file name="Javadoc.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createJavadoc"/>
+                    </file>
+                </folder>
+                <attr name="BuildCategory/Run.instance" boolvalue="true"/>
+                <file name="Run.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createRun"/>
+                </file>
+                <attr name="Run.instance/WebServiceCategory" boolvalue="true"/>
+                <folder name="WebServiceCategory">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.Bundle"/>
+                    <file name="Client.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createWebServiceClients"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
