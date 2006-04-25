@@ -25,9 +25,11 @@ import java.util.Locale;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -46,14 +48,13 @@ public class CombinationRSSFeed extends RSSFeed {
     }
 
     protected ArrayList buildHtmlNodeList() throws SAXException, ParserConfigurationException, IOException {
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document domDocument = builder.parse( url1 );
+        Document domDocument = XMLUtil.parse(new InputSource(url1), false, true, new RSSFeed.ErrorCatcher(), org.openide.xml.EntityCatalog.getDefault());
         NodeList items = domDocument.getElementsByTagName("item"); // NOI18N
         ArrayList res = new ArrayList( 2*items.getLength() );
         for( int i=0; i<items.getLength() && i<NEWS_COUNT/2; i++ )
             res.add( items.item( i ) );
 
-        domDocument = builder.parse( url2 );
+        domDocument = XMLUtil.parse(new InputSource(url2), false, true, new RSSFeed.ErrorCatcher(), org.openide.xml.EntityCatalog.getDefault());
         items = domDocument.getElementsByTagName("item"); // NOI18N
         for( int i=0; i<items.getLength() && i<NEWS_COUNT/2; i++ )
             res.add( items.item( i ) );

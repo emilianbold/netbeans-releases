@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -35,15 +37,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
@@ -90,14 +92,37 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     }
 
     protected ArrayList/*<Node>*/ buildHtmlNodeList() throws SAXException, ParserConfigurationException, IOException {
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document domDocument = builder.parse( url );
+        Document domDocument = XMLUtil.parse(new InputSource(url), false, true, new ErrorCatcher(), org.openide.xml.EntityCatalog.getDefault());
         NodeList items = domDocument.getElementsByTagName("item"); // NOI18N
         ArrayList res = new ArrayList( items.getLength() );
         for( int i=0; i<items.getLength(); i++ )
             res.add( items.item( i ) );
         return res;
     }
+
+        /** Inner class error catcher for handling SAXParseExceptions */
+    static class ErrorCatcher implements org.xml.sax.ErrorHandler {
+        private void message(Level level, org.xml.sax.SAXParseException e) {
+            Logger l = Logger.getLogger(RSSFeed.class.getName());
+            l.log(level, "Line number:"+e.getLineNumber()); //NOI18N
+            l.log(level, "Column number:"+e.getColumnNumber()); //NOI18N
+            l.log(level, "Public ID:"+e.getPublicId()); //NOI18N
+            l.log(level, "System ID:"+e.getSystemId()); //NOI18N
+            l.log(level, "Error message:"+e.getMessage()); //NOI18N
+        }
+        
+        public void error(org.xml.sax.SAXParseException e) {
+            message(Level.SEVERE, e); //NOI18N
+        }
+        
+        public void warning(org.xml.sax.SAXParseException e) {
+            message(Level.WARNING,e); //NOI18N
+        }
+        
+        public void fatalError(org.xml.sax.SAXParseException e) {
+            message(Level.SEVERE,e); //NOI18N
+        }
+    } //end of inner class ErrorCatcher
 
     private class Reload extends Thread {
         public void run() {
