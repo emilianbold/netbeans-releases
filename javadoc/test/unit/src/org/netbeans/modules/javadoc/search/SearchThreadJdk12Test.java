@@ -57,14 +57,14 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DataFlavor", dii.getField());
         assertEquals("declaring class", "DataFlavor", dii.getDeclaringClass());
         assertEquals("remark", " - class java.awt.datatransfer.DataFlavor.", dii.getRemark());
-        assertEquals("package", "java.awt.datatransfer.DataFlavor.", dii.getPackage());
+        assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html"));
         // constructor
         dii = (DocIndexItem) diiConsumer.l.get(1);
         assertEquals("field", "DataFlavor()", dii.getField());
         assertEquals("declaring class", "DataFlavor", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for class java.awt.datatransfer.DataFlavor", dii.getRemark());
-        assertEquals("package", "java.awt.datatransfer.DataFlavor.", dii.getPackage());
+        assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html#DataFlavor()"));
     }
     
@@ -84,7 +84,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DatabaseMetaData", dii.getField());
         assertEquals("declaring class", "DatabaseMetaData", dii.getDeclaringClass());
         assertEquals("remark", " - interface java.sql.DatabaseMetaData.", dii.getRemark());
-        assertEquals("package", "java.sql.DatabaseMetaData.", dii.getPackage());
+        assertEquals("package", "java.sql.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/sql/DatabaseMetaData.html"));
     }
 
@@ -104,7 +104,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DataFormatException", dii.getField());
         assertEquals("declaring class", "DataFormatException", dii.getDeclaringClass());
         assertEquals("remark", " - exception java.util.zip.DataFormatException.", dii.getRemark());
-        assertEquals("package", "java.util.zip.DataFormatException.", dii.getPackage());
+        assertEquals("package", "java.util.zip.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/util/zip/DataFormatException.html"));
         
         // DataFormatException(String) - constructor
@@ -112,7 +112,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DataFormatException(String)", dii.getField());
         assertEquals("declaring class", "DataFormatException", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for class java.util.zip.DataFormatException", dii.getRemark());
-        assertEquals("package", "java.util.zip.DataFormatException.", dii.getPackage());
+        assertEquals("package", "java.util.zip.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/util/zip/DataFormatException.html#DataFormatException(java.lang.String)"));
     }
 
@@ -132,7 +132,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "damageLineRange(int, int, Shape, Component)", dii.getField());
         assertEquals("declaring class", "PlainView", dii.getDeclaringClass());
         assertEquals("remark", " - Method in class javax.swing.text.PlainView", dii.getRemark());
-        assertEquals("package", "javax.swing.text.PlainView.", dii.getPackage());
+        assertEquals("package", "javax.swing.text.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/javax/swing/text/PlainView.html#damageLineRange(int, int, java.awt.Shape, java.awt.Component)"));
     }
 
@@ -152,7 +152,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "darkShadow", dii.getField());
         assertEquals("declaring class", "BasicBorders.ButtonBorder", dii.getDeclaringClass());
         assertEquals("remark", " - Variable in class javax.swing.plaf.basic.BasicBorders.ButtonBorder", dii.getRemark());
-        assertEquals("package", "javax.swing.plaf.basic.BasicBorders.", dii.getPackage());
+        assertEquals("package", "javax.swing.plaf.basic.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/javax/swing/plaf/basic/BasicBorders.ButtonBorder.html#darkShadow"));
         
         // darkShadowColor - static variable
@@ -160,7 +160,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "darkShadowColor", dii.getField());
         assertEquals("declaring class", "MetalSliderUI", dii.getDeclaringClass());
         assertEquals("remark", " - Static variable in class javax.swing.plaf.metal.MetalSliderUI", dii.getRemark());
-        assertEquals("package", "javax.swing.plaf.metal.MetalSliderUI.", dii.getPackage());
+        assertEquals("package", "javax.swing.plaf.metal.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/javax/swing/plaf/metal/MetalSliderUI.html#darkShadowColor"));
     }
 
@@ -180,14 +180,14 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DataFlavor", dii.getField());
         assertEquals("declaring class", "java.awt.datatransfer", dii.getDeclaringClass());
         assertEquals("remark", " - Class in java.awt.datatransfer", dii.getRemark());
-        assertEquals("package", "java.awt.datatransfer.DataFlavor.", dii.getPackage());
+        assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html"));
         // constructor
         dii = (DocIndexItem) diiConsumer.l.get(1);
         assertEquals("field", "DataFlavor()", dii.getField());
         assertEquals("declaring class", "DataFlavor", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for class java.awt.datatransfer.DataFlavor", dii.getRemark());
-        assertEquals("package", "java.awt.datatransfer.DataFlavor.", dii.getPackage());
+        assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html#DataFlavor()"));
     }
 
@@ -208,14 +208,14 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DemoHashMap", dii.getField());
         assertEquals("declaring class", "java.util", dii.getDeclaringClass());
         assertEquals("remark", " - Class in java.util", dii.getRemark());
-        assertEquals("package", "java.util.DemoHashMap.", dii.getPackage());
+        assertEquals("package", "java.util.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/util/DemoHashMap.html"));
         // generic constructor DemoHashMap(Map<? extends K, ? extends V>)
         dii = (DocIndexItem) diiConsumer.l.get(1);
         assertEquals("field", "DemoHashMap(Map<? extends K, ? extends V>)", dii.getField());
         assertEquals("declaring class", "DemoHashMap", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for class java.util.DemoHashMap", dii.getRemark());
-        assertEquals("package", "java.util.DemoHashMap.", dii.getPackage());
+        assertEquals("package", "java.util.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/util/DemoHashMap.html#DemoHashMap(java.util.Map)"));
     }
 
@@ -235,7 +235,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "damageLineRange(int, int, Shape, Component)", dii.getField());
         assertEquals("declaring class", "PlainView", dii.getDeclaringClass());
         assertEquals("remark", " - Method in class javax.swing.text.PlainView", dii.getRemark());
-        assertEquals("package", "javax.swing.text.PlainView.", dii.getPackage());
+        assertEquals("package", "javax.swing.text.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/javax/swing/text/PlainView.html#damageLineRange(int, int, java.awt.Shape, java.awt.Component)"));
     }
 
@@ -255,7 +255,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "darkShadow", dii.getField());
         assertEquals("declaring class", "BasicBorders.ButtonBorder", dii.getDeclaringClass());
         assertEquals("remark", " - Variable in class javax.swing.plaf.basic.BasicBorders.ButtonBorder", dii.getRemark());
-        assertEquals("package", "javax.swing.plaf.basic.BasicBorders.", dii.getPackage());
+        assertEquals("package", "javax.swing.plaf.basic.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/javax/swing/plaf/basic/BasicBorders.ButtonBorder.html#darkShadow"));
         
         // darkShadowColor - static variable
@@ -263,7 +263,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "darkShadowColor", dii.getField());
         assertEquals("declaring class", "MetalSliderUI", dii.getDeclaringClass());
         assertEquals("remark", " - Static variable in class javax.swing.plaf.metal.MetalSliderUI", dii.getRemark());
-        assertEquals("package", "javax.swing.plaf.metal.MetalSliderUI.", dii.getPackage());
+        assertEquals("package", "javax.swing.plaf.metal.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/javax/swing/plaf/metal/MetalSliderUI.html#darkShadowColor"));
     }
 
@@ -283,7 +283,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DataFormatException", dii.getField());
         assertEquals("declaring class", "java.util.zip", dii.getDeclaringClass());
         assertEquals("remark", " - Exception in java.util.zip", dii.getRemark());
-        assertEquals("package", "java.util.zip.DataFormatException.", dii.getPackage());
+        assertEquals("package", "java.util.zip.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/util/zip/DataFormatException.html"));
         
         // DataFormatException(String) - constructor
@@ -291,7 +291,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DataFormatException(String)", dii.getField());
         assertEquals("declaring class", "DataFormatException", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for exception java.util.zip.DataFormatException", dii.getRemark());
-        assertEquals("package", "java.util.zip.DataFormatException.", dii.getPackage());
+        assertEquals("package", "java.util.zip.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/util/zip/DataFormatException.html#DataFormatException(java.lang.String)"));
     }
     
@@ -311,7 +311,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DatabaseMetaData", dii.getField());
         assertEquals("declaring class", "java.sql", dii.getDeclaringClass());
         assertEquals("remark", " - Interface in java.sql", dii.getRemark());
-        assertEquals("package", "java.sql.DatabaseMetaData.", dii.getPackage());
+        assertEquals("package", "java.sql.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/sql/DatabaseMetaData.html"));
     }
     
@@ -331,7 +331,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "DemoMemoryType", dii.getField());
         assertEquals("declaring class", "java.lang.management", dii.getDeclaringClass());
         assertEquals("remark", " - Enum in java.lang.management", dii.getRemark());
-        assertEquals("package", "java.lang.management.DemoMemoryType.", dii.getPackage());
+        assertEquals("package", "java.lang.management.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/lang/management/DemoMemoryType.html"));
     }
     
@@ -351,7 +351,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("field", "Deprecated", dii.getField());
         assertEquals("declaring class", "java.lang", dii.getDeclaringClass());
         assertEquals("remark", " - Annotation Type in java.lang", dii.getRemark());
-        assertEquals("package", "java.lang.Deprecated.", dii.getPackage());
+        assertEquals("package", "java.lang.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/lang/Deprecated.html"));
     }
     
