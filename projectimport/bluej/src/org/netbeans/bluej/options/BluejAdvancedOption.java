@@ -17,32 +17,39 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author mkleint
  */
-public class BluejAdvancedOption extends AdvancedOption {
+public class BluejAdvancedOption extends org.netbeans.spi.options.OptionsCategory {
     
     /** Creates a new instance of BluejAdvancedOption */
     public BluejAdvancedOption() {
     }
 
-    public String getDisplayName() {
+    public OptionsPanelController create() {
+        return new Controller();
+    }
+
+    public String getCategoryName() {
         return org.openide.util.NbBundle.getBundle(BluejAdvancedOption.class).getString("AdvanceOption_title");
     }
 
-    public String getTooltip() {
+    public String getTitle() {
         return org.openide.util.NbBundle.getBundle(BluejAdvancedOption.class).getString("AdvancedOption_tooltip");
     }
 
-    public OptionsPanelController create() {
-        return new Controller();
+    public Icon getIcon() {
+        return new ImageIcon(Utilities.loadImage("org/netbeans/bluej/options/Category.png"));
     }
     
     
