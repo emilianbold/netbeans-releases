@@ -136,7 +136,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                     throw e;
                 }
                 if (! connected) {
-                    String resource = url.getFile();
+                    String resource = url.getPath();
                     if (resource.length() > 0 && resource.charAt(0) == '/') resource = resource.substring(1); // NOI18N
                     ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
                     URL target;

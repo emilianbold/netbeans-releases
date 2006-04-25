@@ -78,6 +78,8 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
     public void testNbResourceStreamHandlerAndURLStreamHandlerFactoryMerging() throws Exception {
         // Basic usage of nbres.
         checkNbres("/test/something.html");
+        // Usage of nbres with artificial param.
+        checkNbres("/test/something.html?unique=123456789", "/test/something.html");
         // Test usage with no extension.
         checkNbres("/test/something");
         // Check usage with multiple extensions.
@@ -110,10 +112,14 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
     }
     
     private static void checkNbres(String path) throws Exception {
+        checkNbres(path, path);
+    }
+    
+    private static void checkNbres(String path, String file) throws Exception {
         URL u = new URL("nbres:" + path);
-        assertEquals(path, suck(u));
-        assertEquals(path.endsWith(".html") ? "text/html" : null, contentType(u));
-        assertEquals(path.length(), contentLength(u));
+        assertEquals(file, suck(u));
+        assertEquals(file.endsWith(".html") ? "text/html" : null, contentType(u));
+        assertEquals(file.length(), contentLength(u));
     }
     
     private static void checkNbresLoc(String base, String ext) throws Exception {
