@@ -73,7 +73,7 @@ public final class ImportWizard implements ChangeListener {
                 importStep.stop();
             }            
         } else if (value == WizardDescriptor.FINISH_OPTION) {
-            // must be initialized so we may retrieve the commitFiles in the ImportAcyion
+            // must be initialized so we may retrieve the commitFiles for the ImportAction
             importPreviewStep.setup();
         }
         return finnished;
@@ -156,8 +156,7 @@ public final class ImportWizard implements ChangeListener {
         public void nextPanel() {            
             if(current() == repositoryStep) {                                            
                 importStep.setup(repositoryStep.getRepositoryFile());
-            }
-            if(current() == importStep) {                                                            
+            } else if(current() == importStep) {
                 importPreviewStep.setup();
             }
             super.nextPanel();
