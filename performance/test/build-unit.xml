@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor - Prepare IDE for complex measurements -->
     <target name="prepare_ide_for_complex_measurements" depends="copy_unzip_jedit_project">
         <antcall target="copy_released_ide_cfg_file"/>
+        <antcall target="setup_test_ide"/>
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
             
@@ -51,11 +52,13 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
         
         <antcall target="copy_original_ide_cfg_file"/>
+        <antcall target="teardown_test_ide"/>
     </target>
 
     <!-- Executor - Prepare IDE for complex measurements -->
     <target name="prepare_ide_for_complex_measurements_nb_project" depends="copy_unzip_nb_project">
         <antcall target="copy_released_ide_cfg_file"/>
+        <antcall target="setup_test_ide"/>
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
             
@@ -73,6 +76,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Startup Time with empty userdir -->
     <target name="runcodetest_measure_startup" depends="make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
+        <antcall target="setup_test_ide"/>
         <executeTests pluginName="jvm">
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
@@ -86,6 +90,7 @@ Microsystems, Inc. All Rights Reserved.
             
         </executeTests>
         <antcall target="copy_original_ide_cfg_file"/>
+        <antcall target="teardown_test_ide"/>
     </target>
 
     <!-- Executor for Measure Complex Startup Time -->
