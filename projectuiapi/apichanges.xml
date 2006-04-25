@@ -75,6 +75,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="CompositeCategoryProvider">
+            <api name="general"/>
+            <summary>Ability to construct a project customizer from panels declared in layers.</summary>
+            <version major="1" minor="15"/>
+            <date day="11" month="4" year="2006"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible">
+            </compatibility>
+            <description>
+                Added <code>createCustomizerDialog(String, Lookup, String, ActionListener, HelpCtx)</code> method to ProjectCustomizer.
+                That allows to construct project customizer from a layer folder content. It assumes to find instances of
+                <code>ProjectCustomizer.CompositeCategoryProvider</code>in the layer and constructs the UI from them.
+                The context is passed into the panel via a Lookup instance. What is in the lookup, is up to the individual project
+                implementations.
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer"/>
+            <issue number="74373"/>
+        </change>
         
         <change id="getSetMainProject">
             <api name="general"/>

@@ -16,6 +16,13 @@ package org.netbeans.spi.project.ui.support;
 import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
@@ -26,7 +33,14 @@ import org.netbeans.modules.project.uiapi.CustomizerDialog;
 import org.netbeans.modules.project.uiapi.CustomizerPane;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /** Support for creating dialogs which can be used as project
  * customizers. The dialog may display multiple panels or categories.
@@ -76,6 +90,49 @@ public final class ProjectCustomizer {
         Dialog dialog = CustomizerDialog.createDialog( okOptionListener, innerPane, helpCtx, categories );
         return dialog;
     }
+
+    /**
+     * Creates standard customizer dialog that can be used for implementation of
+     * {@link org.netbeans.spi.project.ui.CustomizerProvider} based on content of a folder in Layers.
+     * Use this method when you want to allow composition and 3rd party additions to your customizer UI.
+     * You don't need to call <code>pack()</code> method on the dialog. The resulting dialog will
+     * be non-modal. <br> 
+     * Call <code>show()</code> on the dialog to make it visible. If you want the dialog to be
+     * closed after user presses the "OK" button you have to call hide() and dispose() on it.
+     * (Usually in the <code>actionPerformed(...)</code> method of the listener
+     * you provided as a parameter. In case of the click on the "Cancel" button
+     * the dialog will be closed automatically.
+     * @since org.netbeans.modules.projectuiapi/1 1.15
+     * @param folderPath the path in the System Filesystem that is used as root for panel composition.
+     *        The content of the folder is assummed to be {@link org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider} instances
+     * @param context the context for the panels, up to the project type what the context shall be, for example org.netbeans.api.project.Project instance
+     * @param preselectedCategory name of one of the supplied categories or null.
+     *        Category with given name will be selected. If  <code>null</code>
+     *        or if the category of given name does not exist the first category will
+     *        be selected.
+     * @param okOptionListener listener which will be notified when the user presses
+     *        the OK button.
+     * @param helpCtx Help context for the dialog, which will be used when the
+     *        panels in the customizer do not specify their own help context.
+     * @return standard project customizer dialog.
+     */
+    public static Dialog createCustomizerDialog( String folderPath,
+                                                 Lookup context,
+                                                 String preselectedCategory,
+                                                 ActionListener okOptionListener,
+                                                 HelpCtx helpCtx) {
+        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(folderPath);
+        if (root == null) {
+            throw new IllegalArgumentException("The designated path " + folderPath + " doesn't exist. Cannot create customizer.");
+        }
+        DataFolder def = DataFolder.findFolder(root);
+        assert def != null : "Cannot find DataFolder for " + folderPath;
+        DelegateCategoryProvider prov = new DelegateCategoryProvider(def, context);
+        return createCustomizerDialog(prov.getSubCategories(),
+                                      prov,
+                                      preselectedCategory, okOptionListener, helpCtx);
+
+    }
     
     /** Creates standard innerPane for customizer dialog.
      */
@@ -112,6 +169,7 @@ public final class ProjectCustomizer {
             }
         }
     }
+
     
     /** Provides components for categories.
      */
@@ -123,6 +181,32 @@ public final class ProjectCustomizer {
          */
         JComponent create( Category category );
         
+    }
+
+    /**
+     * Interface for creation of Customizer categories and their respective UI panels.
+     * Implementations are to be registered in System FileSystem via module layers. Used by the
+     * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer#createCustomizerDialog(String,Lookup,String,ActionListener,HelpCtx)}
+     * @since org.netbeans.modules.projectuiapi/1 1.15
+     */
+    public static interface CompositeCategoryProvider {
+
+        /**
+         * create the Category instance for the given project customizer context.
+         * @param context Lookup instance passed from project The content is up to the project type, please consult documentation
+         * for the project type you want to integrate your panel into.
+         * @return A category instance, can be null, in which case no category and no panels are created for given context.
+         *   The instance is expected to have no subcategories.
+         */
+        Category createCategory( Lookup context );
+
+        /**
+         * create the UI component for given category and context.
+         * @param category Category instance that was created in the createCategory method.
+         * @param context Lookup instance passed from project The content is up to the project type, please consult documentation
+         * for the project type you want to integrate your panel into.
+         */
+        JComponent createComponent (Category category, Lookup context );
     }
     
     /** Describes category of properties to be customized by given component
@@ -246,5 +330,84 @@ public final class ProjectCustomizer {
         }
         
     }
-    
+
+    private static class DelegateCategoryProvider implements CategoryComponentProvider, CompositeCategoryProvider {
+        private Lookup context;
+        private HashMap category2provider;
+        private DataFolder folder;
+        public DelegateCategoryProvider(DataFolder folder, Lookup context) {
+            this(folder, context, new HashMap());
+        }
+
+        private DelegateCategoryProvider(DataFolder folder, Lookup context, HashMap cat2Provider) {
+            this.context = context;
+            this.folder = folder;
+            category2provider = cat2Provider;
+        }
+
+        public JComponent create(ProjectCustomizer.Category category) {
+            CompositeCategoryProvider prov = (CompositeCategoryProvider)category2provider.get(category);
+            assert prov != null : "Category doesn't have a provider associated.";
+            return prov.createComponent(category, context);
+        }
+
+        public ProjectCustomizer.Category[] getSubCategories() {
+            try {
+               return readCategories(folder);
+            } catch (IOException exc) {
+                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot construct Project UI panels", exc);
+                return new ProjectCustomizer.Category[0];
+            } catch (ClassNotFoundException ex) {
+                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot construct Project UI panels", ex);
+                return new ProjectCustomizer.Category[0];
+            }
+        }
+
+
+        private ProjectCustomizer.Category[] readCategories(DataFolder folder) throws IOException, ClassNotFoundException {
+            List toRet = new ArrayList();
+            DataObject[] dobjs = folder.getChildren();
+            for (int i = 0; i < dobjs.length; i++) {
+                if (dobjs[i] instanceof DataFolder) {
+                    CompositeCategoryProvider prov = new DelegateCategoryProvider((DataFolder)dobjs[i], context, category2provider);
+                    ProjectCustomizer.Category cat = prov.createCategory(context);
+                    toRet.add(cat);
+                    category2provider.put(cat, prov);
+                }
+                InstanceCookie cook = (InstanceCookie)dobjs[i].getCookie(InstanceCookie.class);
+                if (cook != null && CompositeCategoryProvider.class.isAssignableFrom(cook.instanceClass())) {
+                    CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
+                    ProjectCustomizer.Category cat = provider.createCategory(context);
+                    if (cat != null) {
+                        assert cat.getSubcategories() == null || cat.getSubcategories().length == 0
+                               : "Cannot have subcategories for declaratively added category. Please declare the subcategories as well."; //NOI18N
+                        toRet.add(cat);
+                        category2provider.put(cat, provider);
+                    }
+                }
+            }
+            return (ProjectCustomizer.Category[])toRet.toArray(new ProjectCustomizer.Category[toRet.size()]);
+        }
+
+        /**
+         * provides category for folder..
+         */
+        public ProjectCustomizer.Category createCategory(Lookup context) {
+            FileObject fo = folder.getPrimaryFile();
+            String dn = fo.getNameExt();
+            try {
+                dn = fo.getFileSystem().getStatus().annotateName(fo.getNameExt(), Collections.singleton(fo));
+            } catch (FileStateInvalidException ex) {
+                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot retrieve display name for folder " + fo.getPath(), ex);
+            }
+            return ProjectCustomizer.Category.create(folder.getName(), dn, null, getSubCategories());
+        }
+
+        /**
+         * provides component for folder category
+         */
+        public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+            return new JPanel();
+        }
+    }
 }
