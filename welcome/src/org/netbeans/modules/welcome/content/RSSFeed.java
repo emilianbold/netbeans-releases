@@ -75,12 +75,16 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         this( null );
     }
     
-    private void setContent( Component content ) {
+    public void setContent( Component content ) {
         setViewportView( content );
         setCursor( Cursor.getDefaultCursor() );
         firePropertyChange( FEED_CONTENT_PROPERTY, null, content );
     }
-    
+
+    public Component getContent() {
+        return getViewport().getView();
+    }
+
     public void reload() {
         new Reload().start();
     }
@@ -98,6 +102,8 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     private class Reload extends Thread {
         public void run() {
             try {
+                lastReload = System.currentTimeMillis();
+
                 setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
                 ArrayList nodeList = buildHtmlNodeList();
@@ -153,7 +159,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                         linkButton.setForeground( HEADER_TEXT_COLOR );
                         panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,1.0,
                                 GridBagConstraints.WEST,GridBagConstraints.BOTH,
-                                new Insets(0,3,2,TEXT_INSETS_RIGHT),0,0 ) );
+                                new Insets(0,5,2,TEXT_INSETS_RIGHT),0,0 ) );
 
 
                         if (description != null) {
@@ -169,8 +175,6 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                                 new Insets(contentRow==1 ? UNDER_HEADER_MARGIN : 0,0,16,0),0,0 ) );
                     }
                 }
-
-                lastReload = System.currentTimeMillis();
 
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
@@ -296,32 +300,6 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         if( HttpProxySettings.PROXY_SETTINGS.equals( evt.getPropertyName() ) ) {
             setViewportView( buildContentLoadingLabel() );
             reload();
-        }
-    }
-
-    private static class NoHorizontalScrollPanel extends JPanel implements Scrollable {
-        public NoHorizontalScrollPanel() {
-            super( new GridBagLayout() );
-        }
-
-        public Dimension getPreferredScrollableViewportSize() {
-            return super.getPreferredSize();
-        }
-
-        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return Utils.getDefaultFontSize();
-        }
-
-        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return 10*Utils.getDefaultFontSize();
-        }
-
-        public boolean getScrollableTracksViewportWidth() {
-            return true;
-        }
-
-        public boolean getScrollableTracksViewportHeight() {
-            return false;
         }
     }
 }

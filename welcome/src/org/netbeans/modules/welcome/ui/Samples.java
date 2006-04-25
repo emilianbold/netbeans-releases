@@ -74,7 +74,7 @@ public class Samples extends ContentPanel implements Constants {
 
         createLinks( panel );
 
-        panel.add( new JLabel(), new GridBagConstraints(1, row++, 1, 1, 1.0, 1.0,
+        panel.add( new JLabel(), new GridBagConstraints(0, row++, 1, 1, 0.0, 1.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
 
         JScrollPane scroll = new RelativeSizeScrollPane( panel, 0.30f, 30 );
@@ -88,8 +88,8 @@ public class Samples extends ContentPanel implements Constants {
     protected void addLink( JPanel panel, String category, String title ) {
         SampleProjectLink link = new SampleProjectLink( category, null, title );
         link.setForeground( HEADER_TEXT_COLOR );
-        panel.add( link, new GridBagConstraints( 0, row++, 1, 1, 0.0, 0.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
+        panel.add( link, new GridBagConstraints( 0, row++, 1, 1, 1.0, 0.0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
                 new Insets(row==1 ? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,
                 0,TEXT_INSETS_RIGHT/2+UIManager.getInt("ScrollBar.width")), 0, 0 ) ); // NOI18N
     }

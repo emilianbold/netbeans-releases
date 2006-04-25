@@ -24,6 +24,7 @@ public class WelcomeOptions extends SystemOption {
     static final long serialVersionUID = 1L;
 
     private static final String PROP_SHOW_ON_STARTUP = "showOnStartup";
+    private static final String PROP_FIRST_TIME_START = "firstTimeStart";
 
     /** Creates a new instance of WelcomeOptions */
     public WelcomeOptions() {
@@ -43,6 +44,18 @@ public class WelcomeOptions extends SystemOption {
 
     public boolean isShowOnStartup() {
         Object res = getProperty( PROP_SHOW_ON_STARTUP );
+        if( null != res && res instanceof Boolean ) {
+            return ((Boolean)res).booleanValue();
+        }
+        return true;
+    }
+
+    public void setFirstTimeStart( boolean firstTime ) {
+        putProperty( PROP_FIRST_TIME_START, Boolean.valueOf(firstTime), true );
+    }
+
+    public boolean isFirstTimeStart() {
+        Object res = getProperty( PROP_FIRST_TIME_START );
         if( null != res && res instanceof Boolean ) {
             return ((Boolean)res).booleanValue();
         }

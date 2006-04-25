@@ -21,8 +21,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.autoupdate.Settings;
 import org.netbeans.modules.welcome.WelcomeComponent;
+import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.CombinationRSSFeed;
+import org.netbeans.modules.welcome.content.NoHorizontalScrollPanel;
 import org.netbeans.modules.welcome.content.RSSFeed;
 import org.netbeans.modules.welcome.content.RSSFeedReaderPanel;
 import org.netbeans.modules.welcome.content.WebLink;
@@ -33,6 +35,8 @@ import org.openide.windows.WindowManager;
  * @author S. Aubrecht
  */
 public class ArticlesAndNews extends RSSFeedReaderPanel {
+
+    private RSSFeed feed;
 
     public ArticlesAndNews() {
         super( "ArticlesAndNews" ); // NOI18N
@@ -48,7 +52,7 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
                 url +=  "?unique=" + ideId; // NOI18N
             }
         }
-        RSSFeed feed = new CombinationRSSFeed( url, BundleSupport.getURL("News") ); // NOI18N
+        feed = new CombinationRSSFeed( url, BundleSupport.getURL("News") ); // NOI18N
         feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
         return feed;
     }
@@ -81,6 +85,33 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
     protected void feedContentLoaded() {
         if( firstTimeLoad ) {
             firstTimeLoad = false;
+
+            WelcomeOptions wo = WelcomeOptions.getDefault();
+            if( wo.isFirstTimeStart() ) {
+                wo.setFirstTimeStart( false );
+                JPanel panel = new NoHorizontalScrollPanel();
+
+                JLabel lblHeader = new JLabel( BundleSupport.getLabel( "FirstTimeHeader" ) ); // NOI18N
+                lblHeader.setFont( WELCOME_HEADER_FONT );
+
+                JLabel lblDescription = new JLabel( BundleSupport.getLabel( "FirstTimeDescription" ) ); // NOI18N
+                lblDescription.setFont( WELCOME_DESCRIPTION_FONT );
+
+                panel.add( lblHeader, new GridBagConstraints(0,0,1,1,0.0,0.0,
+                        GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
+                        new Insets(15,TEXT_INSETS_LEFT,5,TEXT_INSETS_RIGHT),0,0 ) );
+                panel.add( lblDescription, new GridBagConstraints(0,1,1,1,0.0,0.0,
+                        GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
+                        new Insets(0,TEXT_INSETS_LEFT,25,TEXT_INSETS_RIGHT),0,0 ) );
+
+                panel.add( feed.getContent(), new GridBagConstraints(0,2,1,1,1.0,1.0,
+                        GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
+
+                panel.setOpaque( false );
+
+                feed.setContent( panel );
+            }
+
             WelcomeComponent wc = WelcomeComponent.findComp();
             if( null != wc && WindowManager.getDefault().getRegistry().getActivated() == wc )
                 switchFocus();

@@ -80,7 +80,7 @@ public class GetStarted extends ContentPanel {
             }
         }
 
-        panel.add( new JLabel(), new GridBagConstraints(1, row++, 1, 1, 1.0, 1.0,
+        panel.add( new JLabel(), new GridBagConstraints(0, row++, 1, 1, 0.0, 1.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,15,0), 0, 0 ) );
 
         JScrollPane scroll = new RelativeSizeScrollPane( panel, 0.70f, 50 );
@@ -97,8 +97,8 @@ public class GetStarted extends ContentPanel {
             LinkAction la = new LinkAction( dob );
             LinkButton lb = new LinkButton( la, true );
             lb.setForeground( HEADER_TEXT_COLOR );
-            panel.add( lb, new GridBagConstraints( 0,row++,1,1,0.0,0.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
+            panel.add( lb, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
                 new Insets(row==1? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,0,2*TEXT_INSETS_RIGHT), 0, 0 ) );
         }
         return row;

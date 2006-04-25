@@ -18,7 +18,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Stroke;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.border.Border;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -43,6 +45,9 @@ public interface Constants {
     static final Font REGULAR_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE );
     static final Font RSS_DESCRIPTION_FONT = new Font( FONT_NAME, Font.PLAIN, FONT_SIZE-1 );
 
+    static final Font WELCOME_HEADER_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE+3 );
+    static final Font WELCOME_DESCRIPTION_FONT = new Font( FONT_NAME, Font.PLAIN, FONT_SIZE );
+
     static final int BOTTOM_MARGIN = 5;
     static final int UNDER_HEADER_MARGIN = 5;
     static final int ROW_MARGIN = 0;
@@ -56,6 +61,7 @@ public interface Constants {
     static final int BOTTOM_LEFT = 4;
     static final int BOTTOM_RIGHT = 8;
 
+    static final String BULLET_IMAGE = "org/netbeans/modules/welcome/resources/bullet.png"; // NOI18N
     static final String BACKGROUND_IMAGE = "org/netbeans/modules/welcome/resources/welcome_background.png"; // NOI18N
     static final String BACKGROUND_TOP_IMAGE = "org/netbeans/modules/welcome/resources/top_grad.png"; // NOI18N
     static final String BACKGROUND_BOTTOM_IMAGE = "org/netbeans/modules/welcome/resources/bottom_grad.png"; // NOI18N
@@ -121,4 +127,6 @@ public interface Constants {
 
     static final int FEED_PANEL_MAX_WIDTH = 650;
     static final int FEED_PANEL_MIN_WIDTH = 200;
+
+    static final ImageIcon BULLET_ICON = new ImageIcon( Utilities.loadImage( BULLET_IMAGE ) );
 }
