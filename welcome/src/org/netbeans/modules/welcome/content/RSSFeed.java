@@ -126,129 +126,112 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
     private class Reload extends Thread {
         public void run() {
-            for( int k=0; k<RSS_CONNECT_ATTEMPT_COUNT; k++ ) {
-                try {
-                    lastReload = System.currentTimeMillis();
+            try {
+                lastReload = System.currentTimeMillis();
 
-                    setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
+                setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
-                    ArrayList nodeList = buildHtmlNodeList();
-                    final JPanel contentPanel = new NoHorizontalScrollPanel();
-                    contentPanel.setOpaque( false );
-                    int contentRow = 0;
+                ArrayList nodeList = buildHtmlNodeList();
+                final JPanel contentPanel = new NoHorizontalScrollPanel();
+                contentPanel.setOpaque( false );
+                int contentRow = 0;
 
-                    for( int i=0; i<Math.min(nodeList.size(), NEWS_COUNT); i++ ) {
-                        Node node = (Node)nodeList.get(i);
-                        NodeList children = node.getChildNodes();
+                for( int i=0; i<Math.min(nodeList.size(), NEWS_COUNT); i++ ) {
+                    Node node = (Node)nodeList.get(i);
+                    NodeList children = node.getChildNodes();
 
-                        String date = null;
-                        String link = null;
-                        String title = null;
-                        String description = null;
+                    String date = null;
+                    String link = null;
+                    String title = null;
+                    String description = null;
 
-                        for( int j=0; j<children.getLength(); j++ ) {
-                            Node child = children.item(j);
+                    for( int j=0; j<children.getLength(); j++ ) {
+                        Node child = children.item(j);
 
-                            String tag = child.getNodeName();
+                        String tag = child.getNodeName();
 
-                            String content = getTextContent( child );
+                        String content = getTextContent( child );
 
-                            if ((content != null) && content.length() == 0) {
-                                content = null;
-                            }
-
-                            if (tag.equals("title")) { // NOI18N
-                                title = content;
-                            } else if (tag.equals("description")) { // NOI18N
-                                description = content;
-                            } else if (tag.equals("link")) { // NOI18N
-                                link = content;
-                            } else if (tag.equals("date") || tag.equals("pubDate")) { // NOI18N // NOI18N
-                                date = content;
-                            }
+                        if ((content != null) && content.length() == 0) {
+                            content = null;
                         }
 
-                        if( null != title && null != link ) {
-                            JPanel panel = new JPanel( new GridBagLayout() );
-                            panel.setOpaque( false );
-                            int row = 0;
-                            if (date != null) {
-                                JLabel label = new JLabel( date );
-                                label.setFont( RSS_DESCRIPTION_FONT );
-                                panel.add( label, new GridBagConstraints(0,row++,1,1,0.0,0.0,
-                                        GridBagConstraints.WEST,GridBagConstraints.NONE,
-                                        new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
-                            }
+                        if (tag.equals("title")) { // NOI18N
+                            title = content;
+                        } else if (tag.equals("description")) { // NOI18N
+                            description = content;
+                        } else if (tag.equals("link")) { // NOI18N
+                            link = content;
+                        } else if (tag.equals("date") || tag.equals("pubDate")) { // NOI18N // NOI18N
+                            date = content;
+                        }
+                    }
 
-                            WebLink linkButton = new WebLink( title, link, true );
-                            linkButton.setFont( HEADER_FONT );
-                            linkButton.setForeground( HEADER_TEXT_COLOR );
-                            panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,1.0,
+                    if( null != title && null != link ) {
+                        JPanel panel = new JPanel( new GridBagLayout() );
+                        panel.setOpaque( false );
+                        int row = 0;
+                        if (date != null) {
+                            JLabel label = new JLabel( date );
+                            label.setFont( RSS_DESCRIPTION_FONT );
+                            panel.add( label, new GridBagConstraints(0,row++,1,1,0.0,0.0,
+                                    GridBagConstraints.WEST,GridBagConstraints.NONE,
+                                    new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
+                        }
+
+                        WebLink linkButton = new WebLink( title, link, true );
+                        linkButton.setFont( HEADER_FONT );
+                        linkButton.setForeground( HEADER_TEXT_COLOR );
+                        panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,1.0,
+                                GridBagConstraints.WEST,GridBagConstraints.BOTH,
+                                new Insets(0,5,2,TEXT_INSETS_RIGHT),0,0 ) );
+
+
+                        if (description != null) {
+                            JLabel label = new JLabel( "<html>"+trimHtml( description ) );
+                            label.setFont( RSS_DESCRIPTION_FONT );
+                            panel.add( label, new GridBagConstraints(0,row++,1,1,1.0,1.0,
                                     GridBagConstraints.WEST,GridBagConstraints.BOTH,
-                                    new Insets(0,5,2,TEXT_INSETS_RIGHT),0,0 ) );
-
-
-                            if (description != null) {
-                                JLabel label = new JLabel( "<html>"+trimHtml( description ) );
-                                label.setFont( RSS_DESCRIPTION_FONT );
-                                panel.add( label, new GridBagConstraints(0,row++,1,1,1.0,1.0,
-                                        GridBagConstraints.WEST,GridBagConstraints.BOTH,
-                                        new Insets(0,TEXT_INSETS_LEFT+5,0,TEXT_INSETS_RIGHT),0,0 ) );
-                            }
-
-                            contentPanel.add( panel, new GridBagConstraints(0,contentRow++,1,1,1.0,1.0,
-                                    GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
-                                    new Insets(contentRow==1 ? UNDER_HEADER_MARGIN : 0,0,16,0),0,0 ) );
+                                    new Insets(0,TEXT_INSETS_LEFT+5,0,TEXT_INSETS_RIGHT),0,0 ) );
                         }
-                    }
 
-                    SwingUtilities.invokeLater( new Runnable() {
-                        public void run() {
-                            setContent( contentPanel );
-                        }
-                    });
-
-                    //schedule feed reload
-                    reloadTimer = RequestProcessor.getDefault().post( this, RSS_FEED_TIMER_RELOAD_MILLIS );
-
-                    break;
-
-                } catch( UnknownHostException uhE ) {
-                    if( k==RSS_CONNECT_ATTEMPT_COUNT-1 ) {
-                        setCursor( Cursor.getDefaultCursor() );
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                setContent( buildProxyPanel() );
-                            }
-                        });
-                    }
-                } catch( SocketException sE ) {
-                    if( k==RSS_CONNECT_ATTEMPT_COUNT-1 ) {
-                        setCursor( Cursor.getDefaultCursor() );
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                setContent( buildProxyPanel() );
-                            }
-                        });
-                    }
-                } catch( Exception e ) {
-                    if( k==RSS_CONNECT_ATTEMPT_COUNT-1 || e instanceof SAXException ) {
-                        setCursor( Cursor.getDefaultCursor() );
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                setContent( buildErrorLabel() );
-                            }
-                        });
-                        ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                        contentPanel.add( panel, new GridBagConstraints(0,contentRow++,1,1,1.0,1.0,
+                                GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
+                                new Insets(contentRow==1 ? UNDER_HEADER_MARGIN : 0,0,16,0),0,0 ) );
                     }
                 }
 
-                //sleep between connect attempts
-                try {
-                    Thread.sleep( 10*1000 );
-                } catch (InterruptedException ex) {
-                    //ignore
-                }
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        setContent( contentPanel );
+                    }
+                });
+
+                //schedule feed reload
+                reloadTimer = RequestProcessor.getDefault().post( this, RSS_FEED_TIMER_RELOAD_MILLIS );
+
+            } catch( UnknownHostException uhE ) {
+                setCursor( Cursor.getDefaultCursor() );
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        setContent( buildProxyPanel() );
+                    }
+                });
+            } catch( SocketException sE ) {
+                setCursor( Cursor.getDefaultCursor() );
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        setContent( buildProxyPanel() );
+                    }
+                });
+            } catch( Exception e ) {
+                setCursor( Cursor.getDefaultCursor() );
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        setContent( buildErrorLabel() );
+                    }
+                });
+                ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
             }
         }
     }
