@@ -33,40 +33,40 @@ public class MergePanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
 
         setName("Message");
-        mergeAfterRepositoryFolderLabel.setText("Repository Folder:");
-
-        mergeAfterBrowseRepositoryButton.setText("Browse...");
-
-        mergeAfterUrlComboBox.setEditable(true);
-
-        mergeAfterRevisionLabel.setText("Repository Revision:");
-
-        mergeAfterSearchRevisionButton.setText("Search...");
-
-        mergeAfterEmptyLabel.setText("(empty means repository HEAD)");
-
-        mergeFromRepositoryFolderLabel.setText("Repository Folder:");
-
-        mergeFromUrlComboBox.setEditable(true);
-
-        mergeFromBrowseRepositoryButton.setText("Browse...");
-
-        mergeFromSearchRevisionButton.setText("Search...");
-
-        jLabel8.setText("Repository Revision:");
-
-        jLabel9.setText("(empty means repository HEAD)");
+        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel1.setText("Merge from:");
 
-        onlyMadeAfterCheckBox.setText("Merge Only Changes Made After");
-        onlyMadeAfterCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        onlyMadeAfterCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        typeDescriptionLabel.setText("jLabel2");
+
+        org.jdesktop.layout.GroupLayout mergeFiledsPanelLayout = new org.jdesktop.layout.GroupLayout(mergeFiledsPanel);
+        mergeFiledsPanel.setLayout(mergeFiledsPanelLayout);
+        mergeFiledsPanelLayout.setHorizontalGroup(
+            mergeFiledsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 615, Short.MAX_VALUE)
+        );
+        mergeFiledsPanelLayout.setVerticalGroup(
+            mergeFiledsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 263, Short.MAX_VALUE)
+        );
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 615, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 100, Short.MAX_VALUE)
+        );
+
+        jLabel2.setText("Preview:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -75,74 +75,31 @@ public class MergePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(mergeFiledsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(typeDescriptionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(mergeFromRepositoryFolderLabel))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(mergeFromUrlComboBox, 0, 445, Short.MAX_VALUE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(mergeFromBrowseRepositoryButton))
-                                    .add(jLabel9)
-                                    .add(layout.createSequentialGroup()
-                                        .add(mergeFromRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(mergeFromSearchRevisionButton))))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(mergeAfterRevisionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(mergeAfterRepositoryFolderLabel))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(mergeAfterRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(mergeAfterSearchRevisionButton)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                                    .add(mergeAfterUrlComboBox, 0, 445, Short.MAX_VALUE)
-                                    .add(mergeAfterEmptyLabel))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(mergeAfterBrowseRepositoryButton)))
-                        .addContainerGap())
-                    .add(onlyMadeAfterCheckBox)))
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(typeComboBox, 0, 528, Short.MAX_VALUE))
+                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jLabel2))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .add(23, 23, 23)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(mergeFromRepositoryFolderLabel)
-                    .add(mergeFromBrowseRepositoryButton)
-                    .add(mergeFromUrlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(17, 17, 17)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(mergeFromRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(mergeFromSearchRevisionButton)
-                    .add(jLabel8))
+                    .add(typeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .add(25, 25, 25)
+                .add(typeDescriptionLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel9)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 30, Short.MAX_VALUE)
-                .add(onlyMadeAfterCheckBox)
-                .add(24, 24, 24)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(mergeAfterUrlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(mergeAfterBrowseRepositoryButton)
-                    .add(mergeAfterRepositoryFolderLabel))
+                .add(mergeFiledsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(14, 14, 14)
+                .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(mergeAfterRevisionLabel)
-                    .add(mergeAfterSearchRevisionButton)
-                    .add(mergeAfterRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mergeAfterEmptyLabel)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -150,21 +107,11 @@ public class MergePanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    final javax.swing.JButton mergeAfterBrowseRepositoryButton = new javax.swing.JButton();
-    final javax.swing.JLabel mergeAfterEmptyLabel = new javax.swing.JLabel();
-    final javax.swing.JLabel mergeAfterRepositoryFolderLabel = new javax.swing.JLabel();
-    final javax.swing.JLabel mergeAfterRevisionLabel = new javax.swing.JLabel();
-    final javax.swing.JTextField mergeAfterRevisionTextField = new javax.swing.JTextField();
-    final javax.swing.JButton mergeAfterSearchRevisionButton = new javax.swing.JButton();
-    final javax.swing.JComboBox mergeAfterUrlComboBox = new javax.swing.JComboBox();
-    final javax.swing.JButton mergeFromBrowseRepositoryButton = new javax.swing.JButton();
-    final javax.swing.JLabel mergeFromRepositoryFolderLabel = new javax.swing.JLabel();
-    final javax.swing.JTextField mergeFromRevisionTextField = new javax.swing.JTextField();
-    final javax.swing.JButton mergeFromSearchRevisionButton = new javax.swing.JButton();
-    final javax.swing.JComboBox mergeFromUrlComboBox = new javax.swing.JComboBox();
-    final javax.swing.JCheckBox onlyMadeAfterCheckBox = new javax.swing.JCheckBox();
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel2;
+    final javax.swing.JPanel mergeFiledsPanel = new javax.swing.JPanel();
+    final javax.swing.JComboBox typeComboBox = new javax.swing.JComboBox();
+    final javax.swing.JLabel typeDescriptionLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
     
 }

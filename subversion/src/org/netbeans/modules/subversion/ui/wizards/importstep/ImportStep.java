@@ -146,7 +146,9 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     new RepositoryPaths (
                         repositoryFile,
                         importPanel.repositoryPathTextField,
-                        importPanel.browseRepositoryButton
+                        importPanel.browseRepositoryButton,
+                        null,
+                        null
                     );
                 repositoryPaths.setupBrowserBehavior(true, false, false, actions);
             } else {

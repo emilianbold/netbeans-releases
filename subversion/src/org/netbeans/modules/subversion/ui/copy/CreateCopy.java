@@ -12,7 +12,12 @@
  */
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
 import java.net.MalformedURLException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
@@ -24,7 +29,7 @@ import org.openide.ErrorManager;
  *
  * @author Tomas Stupka
  */
-public class CreateCopy extends CopyDialog {
+public class CreateCopy extends CopyDialog implements DocumentListener, FocusListener {
 
     private String context;
     private Object value;    
@@ -40,19 +45,18 @@ public class CreateCopy extends CopyDialog {
             new RepositoryPaths(
                 repositoryRoot, 
                 (JTextComponent) panel.urlComboBox.getEditor().getEditorComponent(),
-                panel.browseRepositoryButton
+                panel.browseRepositoryButton,
+                null,
+                null
             );
         repositoryPaths.setupBrowserBehavior(true, false, false, new BrowserAction[] { new CreateFolderAction(context)} );                
-        
+        repositoryPaths.addPropertyChangeListener(this);
+
         setupUrlComboBox(panel.urlComboBox, CreateCopy.class.getName());
         panel.messageTextArea.getDocument().addDocumentListener(this);
     }    
     
-    protected void validateUserInput() {        
-        if(!validateRepositoryPath(repositoryPaths)) {
-            return;
-        }
-                
+    protected void validateUserInput() {                        
         String text = getCreateCopyPanel().messageTextArea.getText();
         if (text == null || text.length() == 0) {            
             getOKButton().setEnabled(false);        
@@ -81,5 +85,36 @@ public class CreateCopy extends CopyDialog {
 
     boolean getSwitchTo() {
         return getCreateCopyPanel().switchToCheckBox.isSelected();
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        validateUserInput();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        validateUserInput();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        validateUserInput();
+    }
+
+    public void focusGained(FocusEvent e) {
+    }
+
+    public void focusLost(FocusEvent e) {
+        validateUserInput();
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {
+            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
+            if(valid) {
+                // it's a bit more we have to validate
+                validateUserInput();
+            } else {
+                getOKButton().setEnabled(valid);
+            }            
+        }        
     }
 }

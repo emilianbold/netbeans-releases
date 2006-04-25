@@ -42,25 +42,17 @@ public class SwitchTo extends CopyDialog {
                 panel.revisionTextField,
                 panel.searchRevisionButton
             );
+        repositoryPaths.addPropertyChangeListener(this);
+        
         if(root.isFile()) {
             getSwitchToPanel().urlLabel.setText("Repository File");
             repositoryPaths.setupBrowserBehavior(true, true, true, null );
         } else {
             repositoryPaths.setupBrowserBehavior(true, false, false, new BrowserAction[] { new CreateFolderAction(root.getName())});
         }
-        
-        
+                
         setupUrlComboBox(panel.urlComboBox, SwitchTo.class.getName());                
-    }        
-
-    protected void validateUserInput() {           
-        if(!validateRepositoryPath(repositoryPaths)) {
-            return;
-        }
-        
-        getOKButton().setEnabled(true);
-        return;
-    }        
+    }            
     
     RepositoryFile getRepositoryFile() {        
         try {

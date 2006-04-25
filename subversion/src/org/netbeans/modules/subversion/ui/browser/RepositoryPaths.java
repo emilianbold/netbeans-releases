@@ -18,6 +18,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -55,39 +58,36 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     private boolean singleSelection = false;
     private boolean fileSelectionOnly = false;
     private boolean writeable;
-    private BrowserAction[] browserActions;   
-    
-    public RepositoryPaths(RepositoryFile repositoryFile, 
-                           JTextComponent repositoryPathTextField,  
-                           JButton browseButton) 
-    {
-        assert repositoryFile != null;
-        assert repositoryPathTextField != null;
-        assert browseButton != null;
-        
-        this.repositoryFile = repositoryFile;
-        this.repositoryPathTextField = repositoryPathTextField;
-        repositoryPathTextField.getDocument().addDocumentListener(this);
+    private BrowserAction[] browserActions;
 
-        this.browseButton = browseButton;      
-        
-        browseButton.addActionListener(this);                
-    }
+    private boolean valid = false;
+    public static final String PROP_VALID = "valid";
+    private List<PropertyChangeListener> listeners;
     
     public RepositoryPaths(RepositoryFile repositoryFile, 
                            JTextComponent repositoryPathTextField,  
                            JButton browseButton, 
-                           JTextField  revisionTextField, 
+                           JTextField revisionTextField, 
                            JButton searchRevisionButton) 
-    {
-        this(repositoryFile, repositoryPathTextField, browseButton);
-        
-        assert revisionTextField != null;
-        assert searchRevisionButton != null;
-        
-        this.revisionTextField = revisionTextField;
-        revisionTextField.getDocument().addDocumentListener(this);
-        this.searchRevisionButton = searchRevisionButton;
+    {                
+        assert repositoryFile != null;
+        assert (repositoryPathTextField !=null && browseButton != null) ||
+               (revisionTextField != null && searchRevisionButton != null);
+
+        this.repositoryFile = repositoryFile;
+
+        if(repositoryPathTextField!=null) {
+            this.repositoryPathTextField = repositoryPathTextField;
+            repositoryPathTextField.getDocument().addDocumentListener(this);
+            this.browseButton = browseButton;
+            browseButton.addActionListener(this);
+        }        
+
+        if(revisionTextField!=null) {
+            this.revisionTextField = revisionTextField;
+            revisionTextField.getDocument().addDocumentListener(this);
+            this.searchRevisionButton = searchRevisionButton;
+        }                
     }
 
     public void setupBrowserBehavior(boolean singleSelection, boolean showFiles, boolean fileSelectionOnly) {
@@ -102,6 +102,10 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }            
     
     public RepositoryFile[] getRepositoryFiles() throws MalformedURLException, NumberFormatException {
+
+        if(repositoryPathTextField==null) {
+            return new RepositoryFile[] {repositoryFile};
+        }
 
         SVNRevision revision = getRevision();
 
@@ -139,7 +143,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         return ret;
     }
 
-    public void browseRepository() {
+    private void browseRepository() {
         SVNRevision revision = getRevision();
         RepositoryFile[] repositoryFilesToSelect;
         try {
@@ -236,22 +240,55 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }
 
     private void validateUserInput() {
+        boolean oldValue = this.valid;
+        boolean valid = true;
+
         try {
             getRepositoryFiles();
         } catch (NumberFormatException ex) {
-            browseButton.setEnabled(false);
-            if(searchRevisionButton!=null) {
-                searchRevisionButton.setEnabled(false);
-            }
-            return;
-        } catch (MalformedURLException ex) {
-            browseButton.setEnabled(false);
-            return;
+            valid = false;
+        } catch (MalformedURLException ex) {            
+            valid = false;
         }
-        browseButton.setEnabled(true);
+
+        browseButton.setEnabled(valid);
         if(searchRevisionButton!=null) {
-            searchRevisionButton.setEnabled(true);
+            searchRevisionButton.setEnabled(valid);
         }
+
+        if(repositoryPathTextField != null && repositoryPathTextField.getText().equals("")) {
+            valid = false;
+        }
+        
+        if(oldValue != valid) {
+            this.valid = valid;
+            fireValidPropertyChanged(oldValue, valid);
+        };
+
+    }
+
+    private void fireValidPropertyChanged(boolean oldValue, boolean valid) {
+        if(listeners==null) {
+            return;
+        }
+        for (Iterator<PropertyChangeListener> it = listeners.iterator();  it.hasNext();) {
+            PropertyChangeListener l = it.next();
+            l.propertyChange(new PropertyChangeEvent(this, PROP_VALID, new Boolean(oldValue), new Boolean(valid)));
+        }
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        if(listeners==null) {
+            listeners = new ArrayList();
+        }
+        listeners.add(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        if(listeners==null) {
+            return;
+        }
+        listeners.remove(l);
     }
 
 }

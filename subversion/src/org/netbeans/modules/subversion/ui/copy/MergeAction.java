@@ -18,6 +18,7 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
@@ -25,7 +26,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -80,19 +81,10 @@ public class MergeAction extends ContextAction {
             recursive = false;
         } else {
             recursive = true;
-        }        
-
-        RepositoryFile mergeFromRepository = merge.getMergeFromRepositoryFile();
-        boolean mergeAfter = merge.madeAfter();
-        RepositoryFile mergeAfterRepository;
-        if(mergeAfter) {
-            mergeAfterRepository = merge.getMergeAfterRepositoryFile();
-        } else {
-            mergeAfterRepository = null;
-        }           
+        }                
 
         try {
-            ISVNClientAdapter client;
+            SvnClient client;
             try {
                 client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
             } catch (SVNClientException ex) {
@@ -103,36 +95,28 @@ public class MergeAction extends ContextAction {
             if(support.isCanceled()) {
                 return;
             }
-
-            if(mergeAfter) {
-                client.merge(mergeAfterRepository.getFileUrl(), 
-                             mergeAfterRepository.getRevision(),
-                             mergeFromRepository.getFileUrl(), 
-                             mergeFromRepository.getRevision(),
-                             root,
-                             false,
-                             recursive);
+            
+            SVNUrl endUrl = merge.getMergeEndUrl();
+            SVNRevision endRevision = merge.getMergeEndRevision();
+                        
+            SVNUrl startUrl = merge.getMergeStartUrl();
+            SVNRevision startRevision;
+            if(startUrl != null) {                
+                startRevision = merge.getMergeStartRevision();
             } else {
+                // XXX is this the only way we can do it?
+                startUrl = endUrl;
+                ISVNLogMessage[] log = client.getLogMessages(startUrl, new SVNRevision.Number(0), new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
+                startRevision = log[0].getRevision();
+            }                        
 
-                ISVNInfo info = client.getInfoFromWorkingCopy(root);
-                if(support.isCanceled()) {
-                    return;
-                }
-
-                SVNUrl fileUrl = null;
-                if(info == null) {
-                    // oops
-                    return;
-                }
-
-                client.merge(info.getUrl(), 
-                             info.getRevision(), 
-                             mergeFromRepository.getFileUrl(), 
-                             mergeFromRepository.getRevision(),
-                             root,
-                             false,
-                             recursive);                                    
-            }
+            client.merge(startUrl,
+                         startRevision,
+                         endUrl,
+                         endRevision,
+                         root,
+                         false,
+                         recursive);                              
 
         } catch (SVNClientException ex) {
             ExceptionHandler eh = new ExceptionHandler(ex);
