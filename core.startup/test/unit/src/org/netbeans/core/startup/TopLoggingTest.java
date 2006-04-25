@@ -216,7 +216,7 @@ public class TopLoggingTest extends NbTestCase {
 
         String disk = readLog(true);
 
-        if (disk.indexOf("Ahoj\n") == -1) {
+        if (disk.indexOf("Ahoj" + System.getProperty("line.separator")) == -1) {
             fail("Expecting 'Ahoj': " + disk);
         }
         

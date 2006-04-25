@@ -74,7 +74,9 @@ public class TopLoggingOwnConfigClassTest extends NbTestCase {
     }
 
     private String readLog() throws IOException {
-        TopLogging.flush(false);
+        Handler[] ha = Logger.getLogger("").getHandlers();
+        assertEquals("There is one handler", 1, ha.length);
+        ha[0].flush();
 
         assertTrue("Log file exists: " + log, log.canRead());
 
@@ -95,7 +97,7 @@ public class TopLoggingOwnConfigClassTest extends NbTestCase {
             OutputStreamWriter w = new OutputStreamWriter(os);
             w.write("handlers=java.util.logging.FileHandler\n");
             w.write(".level=100\n");
-            w.write("java.util.logging.FileHandler.pattern=" + log +"\n");
+            w.write("java.util.logging.FileHandler.pattern=" + log.toString().replace('\\', '/') +"\n");
             w.close();
 
             LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(os.toByteArray()));

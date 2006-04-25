@@ -83,6 +83,7 @@ public final class TopLogging {
             ex.printStackTrace();
         }
 
+
         Logger logger = Logger.getLogger (""); // NOI18N
 
         Handler[] old = logger.getHandlers();

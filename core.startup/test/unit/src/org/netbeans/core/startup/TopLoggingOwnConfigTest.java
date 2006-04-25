@@ -51,7 +51,7 @@ public class TopLoggingOwnConfigTest extends NbTestCase {
         FileWriter w = new FileWriter(cfg);
         w.write("handlers=java.util.logging.FileHandler\n");
         w.write(".level=100\n");
-        w.write("java.util.logging.FileHandler.pattern=" + log +"\n");
+        w.write("java.util.logging.FileHandler.pattern=" + log.toString().replace('\\', '/') +"\n");
         w.close();
 
 
@@ -79,7 +79,7 @@ public class TopLoggingOwnConfigTest extends NbTestCase {
     }
 
     private String readLog() throws IOException {
-        TopLogging.flush(false);
+        LogManager.getLogManager().reset();
 
         assertTrue("Log file exists: " + log, log.canRead());
 
