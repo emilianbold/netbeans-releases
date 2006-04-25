@@ -29,7 +29,9 @@ import org.openide.util.lookup.AbstractLookup;
 public class MIMESupport69049Test extends TestCase {
     static {
         System.setProperty("org.openide.util.Lookup", "org.openide.filesystems.MIMESupport69049Test$Lkp");
-        Logger.getLogger("").addHandler(new ErrMgr());
+        Logger logger = Logger.getLogger(MIMESupport.class.getName());
+        logger.setLevel(Level.FINEST);
+        logger.addHandler(new ErrMgr());
     }
     
     
