@@ -31,6 +31,7 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
@@ -57,24 +58,45 @@ public class CommitAction extends ContextAction {
     /** Run commit action. Shows UI */
     public static void commit(final Context ctx) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
-
-        if (files.length == 0) {
+        File[] roots = ctx.getFiles();
+        if (roots.length == 0) {
             return;
         }
+        
+        File[][] split = SvnUtils.splitFlatOthers(roots);
+        List<File> fileList = new ArrayList();
+        for (int c = 0; c < split.length; c++) {
+            roots = split[c];
+            boolean recursive = c == 1;
+            if (recursive) {
+                File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
+                for (int i= 0; i < files.length; i++) {
+                    for(int r = 0; r < roots.length; r++) {
+                        if( SvnUtils.isParentOrEqual(roots[r], files[i]) ) {
+                            fileList.add(files[i]);
+                        }                    
+                    }                    
+                }
+            } else {
+                File[] files = SvnUtils.flatten(roots, FileInformation.STATUS_LOCAL_CHANGE);
+                for (int i= 0; i<files.length; i++) {
+                    fileList.add(files[i]);
+                }                
+            }
+        }       
 
         // show commit dialog
         CommitPanel panel = new CommitPanel();
         CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS);
         SvnFileNode[] nodes;
-        ArrayList nodesList = new ArrayList(files.length);
+        ArrayList nodesList = new ArrayList(fileList.size());
 
-        for (int i = 0; i<files.length; i++) {
-            File file = files[i];
+        for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
+            File file = it.next();
             SvnFileNode node = new SvnFileNode(file);
             nodesList.add(node);
-        }
-        nodes = (SvnFileNode[]) nodesList.toArray(new SvnFileNode[files.length]);
+        }        
+        nodes = (SvnFileNode[]) nodesList.toArray(new SvnFileNode[fileList.size()]);
         data.setNodes(nodes);
 
         JComponent component = data.getComponent();

@@ -13,14 +13,16 @@
 
 package org.netbeans.modules.subversion.ui.update;
 
+import java.util.Iterator;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -54,10 +56,25 @@ public class UpdateAction extends ContextAction {
     }
 
     public void performUpdate(final Node[] nodes) {
-        // FIXME PETR add non-recursive folders splitting
         // FIXME PETR add shalow logic allowing to ignore nested projects
         final Context ctx = getContext(nodes);
-        final File[] roots = ctx.getRootFiles();
+        File[] roots = ctx.getRootFiles();
+
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        File[][] split = SvnUtils.splitFlatOthers(roots);
+        final List<File> recursiveFiles = new ArrayList();
+        final List<File> flatFiles = new ArrayList();
+        
+        // recursive files
+        for (int i = 0; i<split[1].length; i++) {
+            recursiveFiles.add(split[1][i]);
+        }        
+        // flat files
+        File[] flatRoots = SvnUtils.flatten(split[0], getDirectoryEnabledStatus());
+        for (int i= 0; i<flatRoots.length; i++) {            
+            flatFiles.add(flatRoots[i]);
+        }
+
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
 
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
@@ -71,32 +88,12 @@ public class UpdateAction extends ContextAction {
                     return;
                 }
 
-                try {
-
-                    // XXX PETR how to detect conflicts
-                    boolean conflict = false;
-
-roots_loop:
-                    for (int i = 0; i<roots.length; i++) {
-                        if(isCanceled()) {
-                            return;
-                        }
-                        client.update(roots[i], SVNRevision.HEAD, true);
-                        ISVNStatus status[] = client.getStatus(roots[i], true, false);
-                        for (int k = 0; k<status.length; k++) {
-                            ISVNStatus s = status[k];
-                            if (SVNStatusUtils.isTextConflicted(s) || SVNStatusUtils.isPropConflicted(s)) {
-                                conflict = true;
-                                break roots_loop;
-                            }
-                        }
+                try {                    
+                    updateRoots(recursiveFiles, this, client, true);
+                    if(isCanceled()) {
+                        return;
                     }
-
-                    if (conflict) {
-                        StatusDisplayer.getDefault().setStatusText("Subversion update caused conflicts!");
-                    } else {
-                        StatusDisplayer.getDefault().setStatusText("Subversion update completed");
-                    }
+                    updateRoots(flatFiles, this, client, false);
                 } catch (SVNClientException e1) {
                     ExceptionHandler eh = new ExceptionHandler (e1);
                     eh.annotate();
@@ -105,6 +102,33 @@ roots_loop:
             }
         };            
         support.start(createRequestProcessor(nodes));
+    }
+
+    private void updateRoots(List<File> roots, ContextAction.ProgressSupport support, ISVNClientAdapter client, boolean recursive) throws SVNClientException {
+        // XXX PETR how to detect conflicts
+        boolean conflict = false;
+roots_loop:        
+        for (Iterator<File> it = roots.iterator(); it.hasNext();) {
+            File root = it.next();
+            if(support.isCanceled()) {
+                break;
+            }
+            client.update(root, SVNRevision.HEAD, recursive);
+            ISVNStatus status[] = client.getStatus(root, true, false);
+            for (int k = 0; k<status.length; k++) {
+                ISVNStatus s = status[k];
+                if (SVNStatusUtils.isTextConflicted(s) || SVNStatusUtils.isPropConflicted(s)) {
+                    conflict = true;
+                    break roots_loop;
+                }
+            }
+        }
+        if (conflict) {
+            StatusDisplayer.getDefault().setStatusText("Subversion update caused conflicts!");
+        } else {
+            StatusDisplayer.getDefault().setStatusText("Subversion update completed");
+        }
+        return;
     }
 
     public static void performUpdate(final Context context) {
