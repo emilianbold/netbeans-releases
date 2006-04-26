@@ -248,7 +248,7 @@ public final class FileInfo {
         int i = name.lastIndexOf('.');
         
         /** period at first position is not considered as extension-separator */
-        return (i <= 0) ? name : name.substring(0, i);
+        return (i <= 0 || i == (name.length()-1)) ? name : name.substring(0, i);
     }
     
     public static final String getExt(String name) {

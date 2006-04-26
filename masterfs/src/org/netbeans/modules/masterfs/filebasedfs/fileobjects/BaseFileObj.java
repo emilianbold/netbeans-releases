@@ -97,46 +97,11 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     public final String getName() {
-        final String name = getFileName ().getName ();
-        final int i = name.lastIndexOf(EXTENSION_SEPARATOR);
-        /** period at first position is not considered as extension-separator */
-        String retVal = i <= 0 || i == name.length() ? name : name.substring(0, i); // NOI18N;
-        assert assertGetNameExt(name, retVal, getExt());
-        if (retVal.endsWith(String.valueOf(UNC_PREFIX)) || retVal.endsWith(PATH_SEPARATOR)) {//NOI18N
-            //TODO: UNCPath workaround
-            File file = getFileName ().getFile ();
-            boolean isPermittedToStripSlash = !(file.getParentFile() == null && new FileInfo(file).isUNCFolder());
-            if (isPermittedToStripSlash) {
-                assert (file.getParentFile() == null);
-                retVal = retVal.substring(0, retVal.length() - 1);
-            }
-        }
-        return retVal;
+        return FileInfo.getName(getNameExt());
     }
 
     public final String getExt() {
-        final String name = getFileName ().getName ();
-        final int i = name.lastIndexOf(EXTENSION_SEPARATOR) + 1;
-        /** period at first position is not considered as extension-separator */
-        String retVal = i <= 1 || i == name.length() ? "" : name.substring(i); // NOI18N;
-        if (retVal.endsWith(String.valueOf(EXTENSION_SEPARATOR)) || retVal.endsWith(PATH_SEPARATOR)) {//NOI18N
-            retVal = retVal.substring(0, retVal.length() - 1);
-        }
-
-        return retVal;
-    }
-
-    private static boolean assertGetNameExt(final String nameExt, final String name, final String ext) {
-        final String computedNameExt;
-        final boolean retVal;
-        if (ext == null || ext.length() == 0) {
-            computedNameExt = name;
-        } else {
-            computedNameExt = name + EXTENSION_SEPARATOR + ext;//NOI18N
-        }
-        retVal = computedNameExt.equals(nameExt);
-        assert retVal : (computedNameExt + " | " + nameExt);//NOI18N
-        return retVal;
+        return FileInfo.getExt(getNameExt());
     }
 
     public final String getPath() {
