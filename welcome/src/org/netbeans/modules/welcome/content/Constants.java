@@ -29,7 +29,7 @@ import org.openide.util.Utilities;
 public interface Constants {
     
     static final Color DEFAULT_BACKGROUND_COLOR = new Color( 255,255,255 );
-    static final Color SCREEN_BACKGROUND_COLOR = new Color( 167,165,162 );
+    static final Color SCREEN_BACKGROUND_COLOR = new Color( 168,167,163 );
     static final Color SECTION_BACKGROUND_COLOR = new Color( 235,235,235 );
 
     static final Color HEADER_FILL_COLOR = new Color( 251,252,253 );
@@ -44,8 +44,8 @@ public interface Constants {
     static final String FONT_NAME = "Verdana"; // NOI18N
     static final int FONT_SIZE = Utils.getDefaultFontSize();
     static final Font BUTTON_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE );
-    static final Font HEADER_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE );
-    static final Font REGULAR_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE );
+    static final Font HEADER_FONT = BUTTON_FONT;
+    static final Font REGULAR_FONT = BUTTON_FONT;
     static final Font RSS_DESCRIPTION_FONT = new Font( FONT_NAME, Font.PLAIN, FONT_SIZE-1 );
 
     static final Font WELCOME_HEADER_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE+3 );
