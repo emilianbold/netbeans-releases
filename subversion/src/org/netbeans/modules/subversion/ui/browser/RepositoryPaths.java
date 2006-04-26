@@ -106,7 +106,8 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         SVNRevision revision = getRevision();
         
         if(repositoryPathTextField==null) {
-            return new RepositoryFile[] {repositoryFile};
+            RepositoryFile rf = new RepositoryFile(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl(), revision);
+            return new RepositoryFile[] {rf};
         }
 
         if(repositoryPathTextField.getText().equals("")) {
