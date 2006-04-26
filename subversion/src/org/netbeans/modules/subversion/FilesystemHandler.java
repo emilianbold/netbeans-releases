@@ -153,18 +153,23 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     public void createSuccess(FileObject fo) {
         if (ignoringEvents()) return;
         File file = FileUtil.toFile(fo);
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            if (fo.isFolder() && svn.isAdministrative(fo.getNameExt())) {
-                // TODO we need to delete all files created inside folders
-                // when those become administrative folders (there is no such hook in svn)
-                File f = new File(file, Subversion.INVALID_METADATA_MARKER);
-                try {
-                    f.createNewFile();
-                } catch (IOException e) {
-                    ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath()); // NOI18N
+        try {
+            Diagnostics.println("[createSuccess " + file);
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                if (fo.isFolder() && svn.isAdministrative(fo.getNameExt())) {
+                    // TODO we need to delete all files created inside folders
+                    // when those become administrative folders (there is no such hook in svn)
+                    File f = new File(file, Subversion.INVALID_METADATA_MARKER);
+                    try {
+                        f.createNewFile();
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath()); // NOI18N
+                    }
                 }
             }
+        } finally {
+            Diagnostics.println("]createSuccess " + file);
         }
     }
 
@@ -172,18 +177,23 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     public void beforeCreate(FileObject parent, String name, boolean isFolder) {        
         File file = FileUtil.toFile(parent);
         if (file != null) {
-            file = new File(file, name);
-            if (file.exists() == false) {
-                int status = cache.getStatus(file).getStatus();
-                if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
-                    try {
-                        SvnClient client = Subversion.getInstance().getClient();
-                        client.revert(file, false);
-                        file.delete();
-                    } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            try {
+                file = new File(file, name);
+                Diagnostics.println("[beforeCreate " + file);
+                if (file.exists() == false) {
+                    int status = cache.getStatus(file).getStatus();
+                    if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+                        try {
+                            SvnClient client = Subversion.getInstance().getClient();
+                            client.revert(file, false);
+                            file.delete();
+                        } catch (SVNClientException ex) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        }
                     }
                 }
+            } finally {
+                Diagnostics.println("]beforeCreate " + file);
             }
         }
         
@@ -203,12 +213,17 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     public void beforeDelete(FileObject fo) {
         if (ignoringEvents()) return;
         File file = FileUtil.toFile(fo);
-        File admin = getUpAdministrative(file);
-        if (admin != null) {
-//            FileStatusCache cache = Subversion.getInstance().getStatusCache();
-//            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-                saveMetadata(admin);
-//            }
+        try {
+            Diagnostics.println("[beforeDelete " + file);
+            File admin = getUpAdministrative(file);
+            if (admin != null) {
+    //            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+    //            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                    saveMetadata(admin);
+    //            }
+            }
+        } finally {
+            Diagnostics.println("]beforeDelete " + file);
         }
     }
 
@@ -237,19 +252,24 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     public void deleteSuccess(FileObject fo) {
         if (ignoringEvents()) return;
         File file = FileUtil.toFile(fo);
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            if (fo.isFolder()) {
-                for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
-                    File dir = (File) i.next();
-                    if (SvnUtils.isParentOrEqual(file, dir)) {
-    //                    CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
-    //                    MetadataAttic.setMetadata(dir, metadata);
-                        i.remove();
+        try {
+            Diagnostics.println("[deleteSuccess " + file);
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                if (fo.isFolder()) {
+                    for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
+                        File dir = (File) i.next();
+                        if (SvnUtils.isParentOrEqual(file, dir)) {
+        //                    CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
+        //                    MetadataAttic.setMetadata(dir, metadata);
+                            i.remove();
+                        }
                     }
+                    refreshRecursively(file);
                 }
-                refreshRecursively(file);
             }
+        } finally {
+            Diagnostics.println("]deleteSuccess " + file);
         }
     }
 
@@ -273,21 +293,26 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     public void deleteFailure(FileObject fo) {
         if (ignoringEvents()) return;
         File file = FileUtil.toFile(fo);
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            if (fo.isFolder()) {
-                for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
-                    File dir = (File) i.next();
-                    if (SvnUtils.isParentOrEqual(file, dir)) {
-                        if (!dir.exists()) {
-    //                        CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
-    //                        MetadataAttic.setMetadata(dir, metadata);
+        try {
+            Diagnostics.println("[deleteFailure " + file);
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                if (fo.isFolder()) {
+                    for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
+                        File dir = (File) i.next();
+                        if (SvnUtils.isParentOrEqual(file, dir)) {
+                            if (!dir.exists()) {
+        //                        CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
+        //                        MetadataAttic.setMetadata(dir, metadata);
+                            }
+                            i.remove();
                         }
-                        i.remove();
                     }
+                    refreshRecursively(file);
                 }
-                refreshRecursively(file);
             }
+        } finally {
+            Diagnostics.println("]deleteFailure " + file);
         }
     }
 
@@ -462,7 +487,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 // prepare source, restore already deleted metadata
                 // pacakge rename iterates oved content and prematurely
                 // deletes .svn/ folders
-                
+
                 File srcAdmin = getAdministrative(srcFile);
                 if (srcAdmin.isDirectory() == false) {
                     SvnMetadata metadata = (SvnMetadata) savedMetadata.get(srcAdmin);
