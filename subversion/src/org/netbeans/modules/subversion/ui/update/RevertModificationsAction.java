@@ -48,7 +48,7 @@ public class RevertModificationsAction extends ContextAction {
     protected void performContextAction(final Node[] nodes) {
         final Context ctx = getContext(nodes);
         final File root = ctx.getRootFiles()[0];
-        SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
+        final SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         
         final RevertModifications revertModifications = new RevertModifications(repositoryFile);
@@ -63,19 +63,6 @@ public class RevertModificationsAction extends ContextAction {
         };            
         support.start(createRequestProcessor(nodes));
     }
-
-//    private static boolean confirmed() {
-//        NotifyDescriptor descriptor = new NotifyDescriptor(
-//                "Do you want to overwrite selected files with their previous version?",
-//                "Confirm overwrite",
-//                NotifyDescriptor.YES_NO_OPTION,
-//                NotifyDescriptor.WARNING_MESSAGE,
-//                null,
-//                null
-//        );
-//        Object option = DialogDisplayer.getDefault().notify(descriptor);
-//        return option == NotifyDescriptor.YES_OPTION;
-//    }
         
     /** Recursive revert */
     public static void performRevert(Context ctx, RevertModifications revertModifications, SvnProgressSupport support) {
@@ -99,16 +86,40 @@ public class RevertModificationsAction extends ContextAction {
             if (recursive == false) {
                 files = SvnUtils.flatten(files, FileInformation.STATUS_REVERTIBLE_CHANGE);
             }
-            for (int i= 0; i<files.length; i++) {
-                if(support.isCanceled()) {
-                    return;
+
+            try {
+                if(revertModifications.isCommits()) {                    
+                    SVNRevision startRevision = revertModifications.getStartRevision();
+                    if(revertModifications.isInclusive()) {
+                        try {
+                            Long start = Long.parseLong(startRevision.toString());
+                            if(start > 0) {
+                                start = start - 1;
+                            }
+                            startRevision = new SVNRevision.Number(start);
+                        } catch (NumberFormatException ex) {
+                            // olala!
+                        }                        
+                    }
+                    SVNRevision endRevision = revertModifications.getEndRevision();
+                    for (int i= 0; i<files.length; i++) {
+                        if(support.isCanceled()) {
+                            return;
+                        }
+                        SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
+                        client.merge(url, endRevision, url, startRevision, files[i], false, recursive);
+                    }
+                } else {
+                    for (int i= 0; i<files.length; i++) {
+                        if(support.isCanceled()) {
+                            return;
+                        }
+                        client.revert(files[i], recursive);
+                    }
                 }
-                try {
-                    client.revert(files[i], recursive);
-                } catch (SVNClientException ex) {
-                    ExceptionHandler eh = new ExceptionHandler (ex);
-                    eh.annotate();
-                }
+            } catch (SVNClientException ex) {
+                ExceptionHandler eh = new ExceptionHandler (ex);
+                eh.annotate();
             }
         }
     }

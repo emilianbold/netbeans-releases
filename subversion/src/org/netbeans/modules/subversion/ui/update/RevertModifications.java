@@ -15,6 +15,8 @@ package org.netbeans.modules.subversion.ui.update;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
@@ -31,7 +33,7 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  *
  * @author Tomas Stupka
  */
-public class RevertModifications implements ActionListener, DocumentListener {
+public class RevertModifications implements ActionListener, DocumentListener, PropertyChangeListener {
 
     private RevertModificationsPanel panel;
     private RepositoryPaths endPath;
@@ -48,6 +50,7 @@ public class RevertModifications implements ActionListener, DocumentListener {
                 getPanel().startRevisionTextField,
                 getPanel().startSearchButton
             );
+        startPath.addPropertyChangeListener(this);
 
         endPath =
             new RepositoryPaths(
@@ -57,6 +60,7 @@ public class RevertModifications implements ActionListener, DocumentListener {
                 getPanel().endRevisionTextField,
                 getPanel().endSearchButton
             );
+        endPath.addPropertyChangeListener(this);
 
         getPanel().lcoalChangesRadioButton.addActionListener(this);
         getPanel().commitsRadioButton.addActionListener(this);
@@ -107,6 +111,10 @@ public class RevertModifications implements ActionListener, DocumentListener {
         return getPanel().commitsRadioButton.isSelected();
     }
 
+    boolean isInclusive() {
+        return getPanel().inclusiveCheckBox.isSelected();
+    }
+    
     public boolean showDialog() {
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, "RevertModifications");
         
@@ -161,4 +169,11 @@ public class RevertModifications implements ActionListener, DocumentListener {
             okButton.setEnabled(true);
         }
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {
+            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
+            okButton.setEnabled(valid);
+        }        
+    }    
 }
