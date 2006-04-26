@@ -18,8 +18,7 @@
       </file>
     </folder>
     
-      <file name="org-netbeans-bluej-options-BlueJSettings.settings" 
-            url="options/BlueJSettings.xml">
+      <file name="org-netbeans-bluej-options-BlueJSettings.settings" url="options/BlueJSettings.xml">
       </file>
   </folder>
     <folder name="Templates">
@@ -50,7 +49,16 @@
                 <attr name="templateCategory" stringvalue="bluej"/>
             </file>
         </folder>
+        <folder name="Project">
+            <folder name="BlueJ">
+                <file name="EmptyBluejProject.zip" url="EmptyBluejProject.zip">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.bluej.wizard.EmptyBluejWizardIterator.createIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/bluej/wizard/EmptyBluejDescription.html"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
 
 </filesystem>
-
