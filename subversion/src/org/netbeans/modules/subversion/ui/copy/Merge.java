@@ -25,6 +25,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
@@ -45,7 +47,9 @@ public class Merge extends CopyDialog implements ItemListener {
         super(new MergePanel(), "Merge " + root.getName() + " to...", "Merge");
 
         MergePanel panel = getMergePanel();
+
         panel.mergeFiledsPanel.setLayout(new BorderLayout());
+        panel.previewPanel.setLayout(new BorderLayout());
 
         panel.typeComboBox.setModel(new DefaultComboBoxModel(
                 new MergeType[] {
@@ -120,6 +124,10 @@ public class Merge extends CopyDialog implements ItemListener {
         panel.mergeFiledsPanel.add(type.getFieldsPanel(), BorderLayout.CENTER);
         panel.mergeFiledsPanel.revalidate();
 
+        panel.previewPanel.removeAll();
+        panel.previewPanel.add(type.getPreviewPanel(), BorderLayout.CENTER);
+        panel.previewPanel.revalidate();
+        
         RepositoryPaths path = type.getMergeStartRepositoryPath();
         if(path!=null) {
             path.addPropertyChangeListener(this);
@@ -134,10 +142,15 @@ public class Merge extends CopyDialog implements ItemListener {
         setupUrlComboBox(type.getEndUrlComboBox(), MERGE_END_URL_HISTORY_KEY);
     }
 
-    private static abstract class MergeType {
+    private static abstract class MergeType implements DocumentListener {
 
         private RepositoryPaths mergeStartRepositoryPaths;
         private RepositoryPaths mergeEndRepositoryPaths;
+        private RepositoryFile repositoryFile;
+
+        MergeType (RepositoryFile repositoryFile) {
+            this.repositoryFile = repositoryFile;
+        }
 
         void init(RepositoryPaths mergeStartRepositoryPaths, JLabel mergeStartRepositoryFolderLabel, RepositoryPaths mergeEndRepositoryPaths, JLabel mergeEndRepositoryFolderLabel, File root) {
             this.mergeStartRepositoryPaths = mergeStartRepositoryPaths;
@@ -157,11 +170,13 @@ public class Merge extends CopyDialog implements ItemListener {
             }
         }
 
-        public abstract String getDisplayName();
-        public abstract String getDescription();
-        public abstract JPanel getFieldsPanel();
-        public abstract JComboBox getStartUrlComboBox();
-        public abstract JComboBox getEndUrlComboBox();
+        protected abstract JPanel getFieldsPanel();
+        protected abstract JPanel getPreviewPanel();
+        protected abstract String getDisplayName();
+        protected abstract String getDescription();        
+        protected abstract JComboBox getStartUrlComboBox();
+        protected abstract JComboBox getEndUrlComboBox();
+        protected abstract void setPreviewLabels();
 
         public SVNUrl getMergeStartUrl() {
             try {
@@ -214,14 +229,35 @@ public class Merge extends CopyDialog implements ItemListener {
         RepositoryPaths getMergeEndRepositoryPath() {
             return mergeEndRepositoryPaths;
         }
+
+        public void insertUpdate(DocumentEvent e) {
+            setPreviewLabels();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            setPreviewLabels();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            setPreviewLabels();
+        }
+
+        protected RepositoryFile getRepositoryFile() {
+            return repositoryFile;
+        }
     }
 
-    private class MergeTwoFoldersType extends MergeType {
+    private class MergeTwoFoldersType extends MergeType  {
 
         private MergeTwoFoldersPanel panel;
+        private TwoFoldersPreviewPanel previewPanel;
 
         public MergeTwoFoldersType(RepositoryFile repositoryRoot, File root) {
-            MergeTwoFoldersPanel panel = (MergeTwoFoldersPanel) getFieldsPanel();
+            super(repositoryRoot);
+
+            panel = new MergeTwoFoldersPanel();
+            previewPanel = new TwoFoldersPreviewPanel();
+
             RepositoryPaths mergeStartRepositoryPaths =
                 new RepositoryPaths(
                     repositoryRoot,
@@ -245,6 +281,10 @@ public class Merge extends CopyDialog implements ItemListener {
                  mergeEndRepositoryPaths,
                  panel.mergeEndRepositoryFolderLabel,
                  root);
+
+            previewPanel.localFolderLabel.setText(root.getAbsolutePath());
+            ((JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
+            ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         }
 
         public String getDisplayName() {
@@ -256,10 +296,11 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         public JPanel getFieldsPanel() {
-            if(panel == null) {
-                panel = new MergeTwoFoldersPanel();
-            }
             return panel;
+        }
+
+        public JPanel getPreviewPanel() {
+            return previewPanel;
         }
 
         public JComboBox getStartUrlComboBox() {
@@ -270,16 +311,26 @@ public class Merge extends CopyDialog implements ItemListener {
             return panel.mergeEndUrlComboBox;
         }
 
+        protected void setPreviewLabels() {
+            previewPanel.repositoryFolderLabel1.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString());
+            previewPanel.repositoryFolderLabel2.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString());
+        }
+        
     }
 
     private static class MergeOneFolderType extends MergeType {
 
         private RepositoryPaths mergeEndRepositoryPaths;
         private MergeOneFolderPanel panel;
+        private OneFolderPreviewPanel previewPanel;
 
         /** Creates a new instance of MergeOneFolderType */
         public MergeOneFolderType(RepositoryFile repositoryRoot, File root) {
-            MergeOneFolderPanel panel = (MergeOneFolderPanel) getFieldsPanel();
+            super(repositoryRoot);
+            
+            panel = new MergeOneFolderPanel();
+            previewPanel = new OneFolderPreviewPanel();
+
             RepositoryPaths mergeStartRepositoryPaths =
                 new RepositoryPaths(
                     repositoryRoot,
@@ -303,6 +354,9 @@ public class Merge extends CopyDialog implements ItemListener {
                  mergeEndRepositoryPaths,
                  null,
                  root);
+            
+            previewPanel.localFolderLabel.setText(root.getAbsolutePath());
+            ((JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         }
 
         public SVNUrl getMergeEndUrl() {
@@ -319,18 +373,23 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         public JPanel getFieldsPanel() {
-            if(panel == null) {
-                panel = new MergeOneFolderPanel();
-            }
             return panel;
         }
 
+        public JPanel getPreviewPanel() {
+            return previewPanel;
+        }
+        
         public JComboBox getStartUrlComboBox() {
             return panel.mergeStartUrlComboBox;
         }
 
         public JComboBox getEndUrlComboBox() {
             return null;
+        }    
+
+        protected void setPreviewLabels() {            
+            previewPanel.repositoryFolderLabel.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString());
         }
 
     }
@@ -339,9 +398,13 @@ public class Merge extends CopyDialog implements ItemListener {
 
         private MergeSinceOriginPanel panel;
         private RepositoryPaths mergeEndRepositoryPaths;
+        private SinceOriginPreviewPanel previewPanel;
 
         public MergeSinceOriginType(RepositoryFile repositoryRoot, File root) {
-            MergeSinceOriginPanel panel = (MergeSinceOriginPanel) getFieldsPanel();
+            super(repositoryRoot);
+            
+            panel = new MergeSinceOriginPanel();
+            previewPanel = new SinceOriginPreviewPanel();
 
             mergeEndRepositoryPaths =
                 new RepositoryPaths(
@@ -353,6 +416,8 @@ public class Merge extends CopyDialog implements ItemListener {
                 );
 
             init(mergeEndRepositoryPaths, panel.mergeEndRepositoryFolderLabel, root);
+            previewPanel.localFolderLabel.setText(root.getAbsolutePath());
+            ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);                     
         }
 
         public String getDisplayName() {
@@ -364,10 +429,11 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         public JPanel getFieldsPanel() {
-            if(panel == null) {
-                panel = new MergeSinceOriginPanel();
-            }
             return panel;
+        }
+
+        public JPanel getPreviewPanel() {
+            return previewPanel;
         }
 
         public SVNUrl getMergeStartUrl() {
@@ -414,6 +480,10 @@ public class Merge extends CopyDialog implements ItemListener {
 
         public JComboBox getEndUrlComboBox() {
             return panel.mergeEndUrlComboBox;
+        }
+
+        protected void setPreviewLabels() {            
+            previewPanel.repositoryFolderLabel.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString());
         }
 
     }    
