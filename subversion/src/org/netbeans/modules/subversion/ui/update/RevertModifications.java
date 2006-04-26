@@ -116,7 +116,7 @@ public class RevertModifications implements ActionListener, DocumentListener, Pr
     }
     
     public boolean showDialog() {
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, "RevertModifications");
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, "Revert Modifications");
         
         okButton = new JButton("Revert");
         dialogDescriptor.setOptions(new Object[] {okButton, "Cancel"});
