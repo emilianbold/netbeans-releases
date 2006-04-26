@@ -146,18 +146,20 @@ public class CLIHandlerTest extends NbTestCase {
         
         File f = runner.resultFile();
         byte[] arr = new byte[(int)f.length()];
-        assertEquals("We know that the size of the file should be int + key_length + 4 for ip address: ", 18, arr.length);
+        int len = arr.length;
+        assertTrue("We know that the size of the file should be int + key_length + 4 for ip address: ", len >=14 && len <= 18);
         FileInputStream is = new FileInputStream(f);
         assertEquals("Fully read", arr.length, is.read(arr));
         is.close();
         
-        for (int i = 0; i < 4; i++) {
-            arr[14 + i]++;
+        byte[] altarr = new byte[18];
+        for (int i = 0; i < 18; i++) {
+            altarr[i] = i<14? arr[i]: 1;
         }
         
         // change the IP at the end of the file
         FileOutputStream os = new FileOutputStream(f);
-        os.write(arr);
+        os.write(altarr);
         os.close();
         
         CLIHandler.Status res = CLIHandler.initialize(
@@ -573,6 +575,10 @@ public class CLIHandlerTest extends NbTestCase {
         }
     }
 
+    public void testGetInetAddressDoesNotBlock () throws Exception {
+        CLIHandler.Status res = cliInitialize(new String[0], Collections.EMPTY_LIST, nullInput, nullOutput, nullOutput, Integer.valueOf(27));
+        assertEquals("CLIHandler init finished" ,0, res.getExitCode());
+    }
     
     public void testServerCanBeStopped () throws Exception {
         class H extends CLIHandler {

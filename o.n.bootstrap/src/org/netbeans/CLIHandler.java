@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import org.openide.util.RequestProcessor;
 
 /**
  * Command Line Interface and User Directory Locker support class.
@@ -427,7 +428,7 @@ public abstract class CLIHandler extends Object {
      * @return a status summary
      */
     static Status initialize(
-        final Args args, Integer block, 
+        final Args args, final Integer block, 
         final Collection handlers, 
         final boolean failOnUnknownOptions, 
         boolean cleanLockFile,
@@ -491,7 +492,7 @@ public abstract class CLIHandler extends Object {
                 
                 server = new Server(arr, block, handlers, failOnUnknownOptions);
                 
-                DataOutputStream os = new DataOutputStream(new FileOutputStream(lockFile));
+                final DataOutputStream os = new DataOutputStream(new FileOutputStream(lockFile));
                 int p = server.getLocalPort();
                 os.writeInt(p);
                 
@@ -500,23 +501,34 @@ public abstract class CLIHandler extends Object {
                 os.write(arr);
                 os.flush();
 
-                try {
-                    // if this turns to be slow due to lookup of getLocalHost
-                    // address, it can be done asynchronously as nobody needs
-                    // the address in the stream if the server is listening
-                    byte[] host = InetAddress.getLocalHost().getAddress();
-                    if (block != null && block.intValue() == 667) {
-                        // this is here to emulate #64004
-                        throw new java.net.UnknownHostException ("dhcppc0"); // NOI18N
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            enterState(27,block);
+                            // if this turns to be slow due to lookup of getLocalHost
+                            // address, it can be done asynchronously as nobody needs
+                            // the address in the stream if the server is listening
+                            byte[] host = InetAddress.getLocalHost().getAddress();
+                            if (block != null && block.intValue() == 667) {
+                                // this is here to emulate #64004
+                                throw new java.net.UnknownHostException ("dhcppc0"); // NOI18N
+                            }
+                            for (int all = 0; all < host.length; all++) {
+                                os.write(host[all]);
+                            }
+                        } catch (UnknownHostException unknownHost) {
+                            // if we just cannot get the address, we can go on
+                            unknownHost.printStackTrace();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        try {
+                            os.close();
+                        } catch (IOException ex) {
+                            // ignore
+                        }
                     }
-                    for (int all = 0; all < host.length; all++) {
-                        os.write(host[all]);
-                    }
-                } catch (UnknownHostException unknownHost) {
-                    // if we just cannot get the address, we can go on
-                    unknownHost.printStackTrace();
-                }
-                os.close();
+                });
                 
                 int execCode = registerFinishInstallation (new Execute () {
                     public int exec () {
@@ -669,7 +681,7 @@ public abstract class CLIHandler extends Object {
                         enterState(33, block);
                     }
                     
-                    boolean isSameHost = false;
+                    boolean isSameHost = true;
                     if (serverAddress != null) {
                         try {
                             isSameHost = Arrays.equals(InetAddress.getLocalHost().getAddress(), serverAddress);
