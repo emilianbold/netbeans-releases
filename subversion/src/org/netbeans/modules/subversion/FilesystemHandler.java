@@ -516,7 +516,38 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 }
 
                 // perform
-                client.move(srcFile, dstFile, force);
+                int retryCounter = 3;
+                while (true) {
+                    try {
+                        client.move(srcFile, dstFile, force);
+                        break;
+                    } catch (SVNClientException e) {
+                        // svn: Working copy '/tmp/co/svn-prename-19/AnagramGame-pack-rename/src/com/toy/anagrams/ui2' locked
+                        if (e.getMessage().endsWith("' locked") && retryCounter > 0) {
+                            // XXX HACK AWT- or FS Monitor Thread performs
+                            // concurrent operation
+                            try {
+                                Thread.sleep(107);
+                            } catch (InterruptedException ex) {
+                                // ignore
+                            }
+                            retryCounter--;
+                            continue;
+                        }
+
+                        // XXX loosing file history is less harm than raising IOException
+                        // that completelly breaks clients (namely refactoring can not handle IOEx)
+                        if (srcFile.renameTo(dstFile)) {
+                            ErrorManager.getDefault().annotate(e, "Relaxing Subversion rename error....");
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                            break;
+                        } else {
+                            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
+                            ex.initCause(e);
+                            throw ex;
+                        }
+                    }
+                }
             } finally {
                 if (tmpMetadata != null) {
                     FileUtils.deleteRecursively(tmpMetadata);
