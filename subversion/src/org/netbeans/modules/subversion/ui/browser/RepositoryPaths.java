@@ -103,11 +103,11 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     
     public RepositoryFile[] getRepositoryFiles() throws MalformedURLException, NumberFormatException {
 
+        SVNRevision revision = getRevision();
+        
         if(repositoryPathTextField==null) {
             return new RepositoryFile[] {repositoryFile};
         }
-
-        SVNRevision revision = getRevision();
 
         if(repositoryPathTextField.getText().equals("")) {
             return EMPTY_REPOSITORY_FILES;
@@ -251,7 +251,9 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             valid = false;
         }
 
-        browseButton.setEnabled(valid);
+        if(browseButton!=null) {
+            browseButton.setEnabled(valid);
+        }        
         if(searchRevisionButton!=null) {
             searchRevisionButton.setEnabled(valid);
         }

@@ -27,6 +27,8 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Reverts local changes.
@@ -44,33 +46,39 @@ public class RevertModificationsAction extends ContextAction {
     }
 
     protected void performContextAction(final Node[] nodes) {
-        if(!confirmed()) {
+        final Context ctx = getContext(nodes);
+        final File root = ctx.getRootFiles()[0];
+        SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
+        final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
+        
+        final RevertModifications revertModifications = new RevertModifications(repositoryFile);
+        if(!revertModifications.showDialog()) {
             return;
         }
-        final Context ctx = getContext(nodes);
+
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
-                performRevert(ctx, this);
+                performRevert(ctx, revertModifications, this);
             }
         };            
         support.start(createRequestProcessor(nodes));
     }
 
-    private static boolean confirmed() {
-        NotifyDescriptor descriptor = new NotifyDescriptor(
-                "Do you want to overwrite selected files with their previous version?",
-                "Confirm overwrite",
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE,
-                null,
-                null
-        );
-        Object option = DialogDisplayer.getDefault().notify(descriptor);
-        return option == NotifyDescriptor.YES_OPTION;
-    }
+//    private static boolean confirmed() {
+//        NotifyDescriptor descriptor = new NotifyDescriptor(
+//                "Do you want to overwrite selected files with their previous version?",
+//                "Confirm overwrite",
+//                NotifyDescriptor.YES_NO_OPTION,
+//                NotifyDescriptor.WARNING_MESSAGE,
+//                null,
+//                null
+//        );
+//        Object option = DialogDisplayer.getDefault().notify(descriptor);
+//        return option == NotifyDescriptor.YES_OPTION;
+//    }
         
     /** Recursive revert */
-    public static void performRevert(Context ctx, SvnProgressSupport support) {
+    public static void performRevert(Context ctx, RevertModifications revertModifications, SvnProgressSupport support) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(ctx, support);
