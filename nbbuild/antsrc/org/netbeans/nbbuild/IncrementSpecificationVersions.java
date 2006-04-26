@@ -79,18 +79,7 @@ public final class IncrementSpecificationVersions extends Task {
                         Matcher m1 = Pattern.compile("(spec\\.version\\.base=)(.+)").matcher(lines[i]);
                         if (m1.matches()) {
                             String old = m1.group(2);
-                            String nue = null;
-                            if (branch) {
-                                Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
-                                if (m2.matches()) {
-                                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
-                                }
-                            } else { // trunk
-                                Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)(\\.0)").matcher(old);
-                                if (m2.matches()) {
-                                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1) + m2.group(3);
-                                }
-                            }
+                            String nue = increment(old, branch, false);
                             if (nue != null) {
                                 lines[i] = m1.group(1) + nue;
                                 spit(pp, "ISO-8859-1", lines);
@@ -113,20 +102,7 @@ public final class IncrementSpecificationVersions extends Task {
                         Matcher m1 = Pattern.compile("(OpenIDE-Module-Specification-Version: )(.+)").matcher(lines[i]);
                         if (m1.matches()) {
                             String old = m1.group(2);
-                            String nue = null;
-                            if (branch) {
-                                Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
-                                if (m2.matches()) {
-                                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
-                                } else if (old.matches("[0-9]+\\.[0-9]+")) {
-                                    nue = old + ".1";
-                                }
-                            } else { // trunk
-                                Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)").matcher(old);
-                                if (m2.matches()) {
-                                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
-                                }
-                            }
+                                String nue = increment(old, branch, true);
                             if (nue != null) {
                                 lines[i] = m1.group(1) + nue;
                                 spit(mf, "UTF-8", lines);
@@ -145,6 +121,44 @@ public final class IncrementSpecificationVersions extends Task {
                 throw new BuildException("While processing " + dir + ": " + e, e, getLocation());
             }
         }
+    }
+
+    /** Does the increment of the specification version to new version.
+     * @return the new version or null if the increment fails
+     */
+    static String increment(String old, boolean branch, boolean manifest) throws NumberFormatException {
+        String nue = null;
+
+        if (manifest) {
+            if (branch) {
+                Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
+                if (m2.matches()) {
+                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                } else if (old.matches("[0-9]+\\.[0-9]+")) {
+                    nue = old + ".1";
+                }
+            } else { // trunk
+                Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)").matcher(old);
+                if (m2.matches()) {
+                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                }
+            }
+        } else {
+            if (branch) {
+                Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
+                if (m2.matches()) {
+                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                }
+            } else { // trunk
+                Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)(\\.0)").matcher(old);
+                if (m2.matches()) {
+                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1) + m2.group(3);
+                }
+            }
+        }
+
+
+        return nue;
     }
 
     private static String[] gulp(File file, String enc) throws IOException {
