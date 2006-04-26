@@ -42,9 +42,20 @@ public class IncrementSpecificationVersionsTest extends NbTestCase {
         assertIncrement("1.0.0", true, false, "1.0.1");
     }
     
+    public void testIncrementLevel4() {
+        String res;
+        
+        assertIncrement("1.2.3.4.5.6.7", 4, true, "1.2.3.4.6");
+        assertIncrement("1.0", 4, true, "1.0.0.0.1");
+        assertIncrement("1.2.3.4.5", 4, true, "1.2.3.4.6");
+    }
     
     private static void assertIncrement(String old, boolean branch, boolean manifest, String res) {
-        String r = IncrementSpecificationVersions.increment(old, branch, manifest);
+        String r = IncrementSpecificationVersions.increment(old, branch ? 2 : 1, manifest);
         assertEquals("Old: " + old + " branch: " + branch + " manifest: " + manifest, res, r);
+    }
+    private static void assertIncrement(String old, int stickyLevel, boolean manifest, String res) {
+        String r = IncrementSpecificationVersions.increment(old, stickyLevel, manifest);
+        assertEquals("Old: " + old + " stickyLevel: " + stickyLevel + " manifest: " + manifest, res, r);
     }
 }

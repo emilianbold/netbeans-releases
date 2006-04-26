@@ -43,7 +43,7 @@ public final class IncrementSpecificationVersions extends Task {
     
     private File nbroot;
     private List/*<String>*/ modules;
-    private boolean branch;
+    private int stickyLevel = -1;
     
     public IncrementSpecificationVersions() {}
     
@@ -56,7 +56,18 @@ public final class IncrementSpecificationVersions extends Task {
     }
     
     public void setBranch(boolean b) {
-        branch = b;
+        setStickyLevel(b ? 2 : 1);
+    }
+
+    /** Number of digits from the begining that are supposed to
+     * stay the same
+     */
+    public void setStickyLevel(int stickyLevel) {
+        if (this.stickyLevel != -1) {
+            throw new BuildException("Only one stickyLevel or branch attribute can be used!");
+        }
+
+        this.stickyLevel = stickyLevel;
     }
 
     public void execute() throws BuildException {
@@ -79,7 +90,7 @@ public final class IncrementSpecificationVersions extends Task {
                         Matcher m1 = Pattern.compile("(spec\\.version\\.base=)(.+)").matcher(lines[i]);
                         if (m1.matches()) {
                             String old = m1.group(2);
-                            String nue = increment(old, branch, false);
+                            String nue = increment(old, stickyLevel, false);
                             if (nue != null) {
                                 lines[i] = m1.group(1) + nue;
                                 spit(pp, "ISO-8859-1", lines);
@@ -102,7 +113,7 @@ public final class IncrementSpecificationVersions extends Task {
                         Matcher m1 = Pattern.compile("(OpenIDE-Module-Specification-Version: )(.+)").matcher(lines[i]);
                         if (m1.matches()) {
                             String old = m1.group(2);
-                                String nue = increment(old, branch, true);
+                                String nue = increment(old, stickyLevel, true);
                             if (nue != null) {
                                 lines[i] = m1.group(1) + nue;
                                 spit(mf, "UTF-8", lines);
@@ -126,37 +137,57 @@ public final class IncrementSpecificationVersions extends Task {
     /** Does the increment of the specification version to new version.
      * @return the new version or null if the increment fails
      */
-    static String increment(String old, boolean branch, boolean manifest) throws NumberFormatException {
+    static String increment(String old, int stickyLevel, boolean manifest) throws NumberFormatException {
         String nue = null;
 
-        if (manifest) {
-            if (branch) {
-                Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
-                if (m2.matches()) {
-                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
-                } else if (old.matches("[0-9]+\\.[0-9]+")) {
-                    nue = old + ".1";
+        switch (stickyLevel) {
+            case 1: // trunk
+                if (manifest) {
+                    Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)").matcher(old);
+                    if (m2.matches()) {
+                        nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                    }
+                } else {
+                    Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)(\\.0)").matcher(old);
+                    if (m2.matches()) {
+                        nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1) + m2.group(3);
+                    }
                 }
-            } else { // trunk
-                Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)").matcher(old);
-                if (m2.matches()) {
-                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                break;
+            case 2: // branch
+                if (manifest) {
+                    Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
+                    if (m2.matches()) {
+                        nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                    } else if (old.matches("[0-9]+\\.[0-9]+")) {
+                        nue = old + ".1";
+                    }
+                } else {
+                    Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
+                    if (m2.matches()) {
+                        nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                    }
                 }
-            }
-        } else {
-            if (branch) {
-                Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
-                if (m2.matches()) {
-                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                break;
+            default:
+                if (stickyLevel < 1) {
+                    throw new BuildException("Invalid sticky level: " + stickyLevel);
                 }
-            } else { // trunk
-                Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)(\\.0)").matcher(old);
-                if (m2.matches()) {
-                    nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1) + m2.group(3);
+                int[] segments = new int[stickyLevel + 1];
+                StringTokenizer tok = new StringTokenizer(old, ".");
+                for (int i = 0; i < segments.length && tok.hasMoreElements(); i++) {
+                    segments[i] = Integer.parseInt(tok.nextToken());
                 }
-            }
+                segments[stickyLevel]++;
+                nue = "";
+                String pref = "";
+                for (int i = 0; i < segments.length; i++) {
+                    nue += pref;
+                    nue += segments[i];
+                    pref = ".";
+                }
+                break;
         }
-
 
         return nue;
     }
@@ -188,5 +219,5 @@ public final class IncrementSpecificationVersions extends Task {
             os.close();
         }
     }
-    
+
 }
