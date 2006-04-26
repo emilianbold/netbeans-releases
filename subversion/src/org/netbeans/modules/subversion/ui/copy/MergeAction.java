@@ -109,7 +109,10 @@ public class MergeAction extends ContextAction {
                 ISVNLogMessage[] log = client.getLogMessages(startUrl, new SVNRevision.Number(0), new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
                 startRevision = log[0].getRevision();
             }                        
-
+            if(support.isCanceled()) {
+                return;
+            }
+            
             client.merge(startUrl,
                          startRevision,
                          endUrl,
