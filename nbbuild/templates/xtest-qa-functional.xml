@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
         </java>
     </target>
     
-    <target name="init-cp">
+    <target name="init-cp" depends="init">
         <!-- If jellytools repository available and jar not up to date, build jelly2-nb.jar -->
         <condition property="need.to.build.jellytools">
             <and>
@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="qa-functional-compiler" depends="init,init-cp">
+    <target name="qa-functional-compiler" depends="init-cp">
         <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
             <classpath refid="test.qa-functional.compile.cp"/>
         </buildTests>
@@ -89,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executors -->
     <!-- ========= -->
     
-    <target name="runidetest" depends="init,init-cp">
+    <target name="runidetest" depends="init-cp">
         <executeTests pluginname="ide">
             <classpath refid="test.qa-functional.run.cp"/>
         </executeTests>
@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Run in IDE's JVM -->
     <!-- ================ -->
 
-    <target name="internal-execution" depends="init,init-cp">
+    <target name="internal-execution" depends="init-cp">
         <taskdef name="internalExecution" classname="org.netbeans.xtest.plugin.ide.IdeInternalExecutionTask" 
                  classpath="${xtest.home}/plugins/ide/lib/xtest-ide-plugin.jar"/>
 
