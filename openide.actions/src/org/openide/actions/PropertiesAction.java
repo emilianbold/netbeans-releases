@@ -150,7 +150,7 @@ public class PropertiesAction extends NodeAction {
             Action customizeAction = (CustomizeAction) SystemAction.get(CustomizeAction.class);
 
             // Retrieve context sensitive action instance if possible.
-            if ((lookup != null) && customizeAction instanceof ContextAwareAction) {
+            if (lookup != null) {
                 customizeAction = ((ContextAwareAction) customizeAction).createContextAwareInstance(lookup);
             }
 
