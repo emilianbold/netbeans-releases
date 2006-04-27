@@ -17,7 +17,6 @@ import org.openide.awt.HtmlRenderer;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
