@@ -31,11 +31,11 @@ import java.util.logging.Logger;
 */
 final class IconManager extends Object {
     /** a value that indicates that the icon does not exists */
-    private static final Object NO_ICON = new Object();
+    private static final ActiveRef NO_ICON = new ActiveRef(null, null, null);
 
-    /** map of resource name to loaded icon (String, SoftRefrence (Image)) or (String, NO_ICON) */
-    private static final HashMap<Object,Object> map = new HashMap<Object,Object>(128);
-    private static final HashMap<String,Object> localizedMap = new HashMap<String,Object>(128);
+    /** map of resource name to loaded icon (key is String or CompositeImageKey */
+    private static final HashMap<Object,ActiveRef> map = new HashMap<Object,ActiveRef>(128);
+    private static final HashMap<String,ActiveRef> localizedMap = new HashMap<String,ActiveRef>(128);
 
     /** Resource paths for which we have had to strip initial slash.
      * @see "#20072"
@@ -50,7 +50,7 @@ final class IconManager extends Object {
     private static final MediaTracker tracker = new MediaTracker(component);
     private static int mediaTrackerID;
     
-    private static Logger ERR = Logger.getLogger(IconManager.class.getName());
+    private static final Logger ERR = Logger.getLogger(IconManager.class.getName());
 
     /**
      * Get the class loader from lookup.
@@ -98,28 +98,29 @@ final class IconManager extends Object {
     static Image getIcon(String resource, boolean localized) {
         if (localized) {
             synchronized (localizedMap) {
-                Object img = localizedMap.get(resource);
+                ActiveRef ref = localizedMap.get(resource);
+                Image img = null;
 
                 // no icon for this name (already tested)
-                if (img == NO_ICON) {
+                if (ref == NO_ICON) {
                     return null;
                 }
 
-                if (img != null) {
+                if (ref != null) {
                     // then it is SoftRefrence
-                    img = ((Reference) img).get();
+                    img = ref.get();
                 }
 
                 // icon found
-                if (img != null) {
-                    return (Image) img;
+                if (ref != null) {
+                    return img;
                 }
 
                 // find localized or base image
                 ClassLoader loader = getLoader();
 
                 // we'll keep the String probably for long time, optimize it
-                resource = new String(resource).intern();
+                resource = new String(resource).intern(); // NOPMD
 
                 String base;
                 String ext;
@@ -134,7 +135,8 @@ final class IconManager extends Object {
                 }
 
                 // #31008. [PENDING] remove in case package cache is precomputed
-                Image baseVariant = getIcon(resource /*base + ext*/, loader, false);
+                java.net.URL baseurl = (loader != null) ? loader.getResource(resource) // NOPMD
+                        : IconManager.class.getClassLoader().getResource(resource);
                 Iterator it = NbBundle.getLocalizingSuffixes();
 
                 while (it.hasNext()) {
@@ -142,7 +144,7 @@ final class IconManager extends Object {
                     Image i;
 
                     if (suffix.length() == 0) {
-                        i = baseVariant;
+                        i = getIcon(resource, loader, false);
                     } else {
                         i = getIcon(base + suffix + ext, loader, true);
                     }
@@ -159,34 +161,8 @@ final class IconManager extends Object {
                 return null;
             }
         } else {
-            return getIcon(resource);
+            return getIcon(resource, getLoader(), false);
         }
-    }
-
-    private static Image getIcon(String name) {
-        Object img = map.get(name);
-
-        // no icon for this name (already tested)
-        if (img == NO_ICON) {
-            return null;
-        }
-
-        if (img != null) {
-            // then it is SoftRefrence
-            img = ((Reference) img).get();
-        }
-
-        // icon found
-        if (img != null) {
-            return (Image) img;
-        }
-
-        ClassLoader loader = getLoader();
-
-        // we'll keep the String probably for long time, optimize it
-        name = new String(name).intern();
-
-        return getIcon(name, loader, false);
     }
 
     /** Finds imager for given resource.
@@ -196,40 +172,40 @@ final class IconManager extends Object {
     *  and is not optimized/interned
     */
     private static Image getIcon(String name, ClassLoader loader, boolean localizedQuery) {
-        Object img = map.get(name);
+        ActiveRef ref = map.get(name);
+        Image img = null;
 
         // no icon for this name (already tested)
-        if (img == NO_ICON) {
+        if (ref == NO_ICON) {
             return null;
         }
 
-        if (img != null) {
-            // then it is SoftRefrence
-            img = ((Reference) img).get();
+        if (ref != null) {
+            img = ref.get();
         }
 
         // icon found
         if (img != null) {
-            return (Image) img;
+            return img;
         }
 
         synchronized (map) {
             // again under the lock
-            img = map.get(name);
+            ref = map.get(name);
 
             // no icon for this name (already tested)
-            if (img == NO_ICON) {
+            if (ref == NO_ICON) {
                 return null;
             }
 
-            if (img != null) {
+            if (ref != null) {
                 // then it is SoftRefrence
-                img = ((Reference) img).get();
+                img = ref.get();
             }
 
             if (img != null) {
                 // cannot be NO_ICON, since it never disappears from the map.
-                return (Image) img;
+                return img;
             }
 
             // path for bug in classloader
@@ -261,10 +237,7 @@ final class IconManager extends Object {
                 Image img2 = toBufferedImage((Image) img);
 
                 //System.err.println("loading icon " + n + " = " + img2);
-                // nonlocalized queries already have the String optimized
-                if (localizedQuery) {
-                    name = new String(name).intern();
-                }
+                name = new String(name).intern(); // NOPMD
 
                 map.put(name, new ActiveRef(img2, map, name));
 
@@ -313,6 +286,9 @@ final class IconManager extends Object {
         // load the image
         new javax.swing.ImageIcon(img);
 
+        if (img.getHeight(null)*img.getWidth(null) > 24*24) {
+            return img;
+        }
         java.awt.image.BufferedImage rep = createBufferedImage(img.getWidth(null), img.getHeight(null));
         java.awt.Graphics g = rep.createGraphics();
         g.drawImage(img, 0, 0, null);
