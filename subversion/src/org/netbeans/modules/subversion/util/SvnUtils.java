@@ -148,16 +148,16 @@ public class SvnUtils {
             for (int j = 0; j < sourceGroups.length; j++) {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
-                if (f != null) {                                                                    
-// XXX PETR                    if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
-                    File probe = new File (f, ".svn");
-                    File probe2 = new File (f, "_svn");
-                    if (probe.isDirectory() || probe2.isDirectory()) {
-                        return true;
-                    }
-                }
+                //if (f != null) { XXX fallback if experimntal should not work
+//                    File probe = new File (f, ".svn");
+//                    File probe2 = new File (f, "_svn");
+//                    if (probe.isDirectory() || probe2.isDirectory()) {
+//                        return true;
+//                    }
+//                }
+                if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true; // XXX experimental
             }
-        }
+    }
         return false;
     }
 
@@ -711,7 +711,7 @@ public class SvnUtils {
         }
         return null;
     }
-    
+
     /**
      * Refreshes statuses of this folder and all its parent folders up to filesystem root.
      * 

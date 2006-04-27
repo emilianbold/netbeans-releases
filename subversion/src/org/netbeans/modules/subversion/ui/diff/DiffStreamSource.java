@@ -77,13 +77,13 @@ public class DiffStreamSource extends StreamSource {
     public String getMIMEType() {
         if (baseFile.isDirectory()) {
             // http://www.rfc-editor.org/rfc/rfc2425.txt
-            return "content/unknown"; // "text/directory";  //XXX no editor for directory MIME type => NPE while constructing EditorKit // NOI18N
+            return "content/unknown"; // "text/directory";  //HACK no editor for directory MIME type => NPE while constructing EditorKit // NOI18N
         }
 
         try {
             init();
         } catch (IOException e) {
-            return null; // XXX null  potentionally kills DiffViewImpl, NPE while constructing EditorKit
+            return null; // XXX use error manager HACK null  potentionally kills DiffViewImpl, NPE while constructing EditorKit
         }
         return mimeType;
     }

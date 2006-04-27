@@ -265,10 +265,10 @@ public class FileStatusCache implements ISVNNotifyListener {
             if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
                 status = null;
             }
-        } catch (SVNClientException e) {            
+        } catch (SVNClientException e) {
+            // svnClientAdapter does not return SVNStatusKind.UNVERSIONED!!!
             // unversioned resource is expected getSingleStatus()
-            // does not return SVNStatusKind.UNVERSIONED but throws exception instead
-            // XXX why svnClientAdapter does not return SVNStatusKind.UNVERSIONED
+            // does not return SVNStatusKind.UNVERSIONED but throws exception instead            
             // instead of throwing exception
             if (ExceptionHandler.isUnversionedResource(e) == false) {
                 // missing or damaged entries
@@ -594,6 +594,7 @@ public class FileStatusCache implements ISVNNotifyListener {
             } else {
                 // TODO systematically handle all repository statuses
                 // so far above were observed....
+                // XXX
                 System.err.println("SVN.FSC: unhandled repository status: " + file.getAbsolutePath());
                 System.err.println("\ttext: " + repositoryStatus.getRepositoryTextStatus());
                 System.err.println("\tprop: " + repositoryStatus.getRepositoryPropStatus());

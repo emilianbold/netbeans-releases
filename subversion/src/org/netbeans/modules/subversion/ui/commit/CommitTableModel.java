@@ -127,7 +127,7 @@ class CommitTableModel extends AbstractTableModel {
         } else if (col.equals(COLUMN_NAME_STATUS)) {
             node = nodes[rowIndex];
             FileInformation finfo =  node.getInformation();
-            finfo.getEntry(node.getFile());  // XXX returned value is not interesting, point is side effect, it loads ISVNStatus structure
+            finfo.getEntry(node.getFile());  // HACK returned value is not interesting, point is side effect, it loads ISVNStatus structure
             return finfo.getStatusText();
         } else if (col.equals(COLUMN_NAME_ACTION)) {
             return commitOptions[rowIndex];

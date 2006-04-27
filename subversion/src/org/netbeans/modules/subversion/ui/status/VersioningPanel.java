@@ -416,7 +416,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         refreshViewTask.schedule(delayMillis);
     }
 
-    // TODO: copy&paste HACK, replace by save/restore of column width/position
+    // HACK copy&paste HACK, replace by save/restore of column width/position
     void deserialize() {
         if (syncTable != null) {
             SwingUtilities.invokeLater(new Runnable() {

@@ -295,10 +295,6 @@ public class CommitAction extends ContextAction {
                 File[] files = (File[]) list.toArray(new File[0]);
                 
                 client.commit(files, message, false);
-                if(support.isCanceled()) {
-                    return;
-                }
-
                 // XXX it's probably already catched by cache's onNotify()
                 for (int i = 0; i < files.length; i++) {
                     cache.refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
