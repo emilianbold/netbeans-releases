@@ -186,7 +186,7 @@ public final class BluejProject implements Project, AntProjectListener {
             helper.createCacheDirectoryProvider(),
             spp,
             new BluejActionProvider( this, getUpdateHelper()),
-            new BluejLogicalViewProvider(thisb),
+            new BluejLogicalViewProvider(this),
 ////            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 ////            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             new ClassPathProviderImpl(this), 
@@ -197,7 +197,7 @@ public final class BluejProject implements Project, AntProjectListener {
             new ProjectOpenedHookImpl(),
             new BluejUnitTestForSourceQuery(this),
 ////            new SourceLevelQueryImpl(evaluator()),
-            new BluejSources (this, evaluator()),
+            new BluejSources (this),
 ////            new J2SESharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new BluejFileBuiltQuery(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl(),
