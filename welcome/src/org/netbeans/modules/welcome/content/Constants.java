@@ -41,7 +41,7 @@ public interface Constants {
     static final Color SECTION_TEXT_COLOR = new Color( 96,96,96 );
     static final Color DEFAULT_TEXT_COLOR = new Color( 0,0,0 );
 
-    static final String FONT_NAME = "Verdana"; // NOI18N
+    static final String FONT_NAME = Utils.getFontName();
     static final int FONT_SIZE = Utils.getDefaultFontSize();
     static final Font BUTTON_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE );
     static final Font HEADER_FONT = BUTTON_FONT;

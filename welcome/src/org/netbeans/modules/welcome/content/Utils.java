@@ -30,6 +30,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -71,6 +72,10 @@ public class Utils {
                 ? systemDefaultFont.getSize()
                 : 12;
         }
+    }
+
+    static String getFontName() {
+        return Utilities.isWindows() ? "Verdana" : null; // NOI18N
     }
 
     public static Action findAction( String key ) {
