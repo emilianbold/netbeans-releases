@@ -13,12 +13,14 @@
 
 package org.netbeans.core.execution.beaninfo.editors;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.JFileChooser;
 
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -26,8 +28,10 @@ import org.openide.util.NbBundle;
 *
 * @author  Ian Formanek
 */
-public class NbProcessDescriptorCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
+public class NbProcessDescriptorCustomEditor extends javax.swing.JPanel
+implements PropertyChangeListener {
     private NbProcessDescriptorEditor editor;
+    private PropertyEnv env;
 
     private static int DEFAULT_WIDTH = 530;
     private static int DEFAULT_HEIGHT = 400;
@@ -36,7 +40,7 @@ public class NbProcessDescriptorCustomEditor extends javax.swing.JPanel implemen
     /** Creates new NbProcessDescriptorCustomEditor
      * @param editor the NbProcessDescriptorEditor
      */
-    public NbProcessDescriptorCustomEditor (NbProcessDescriptorEditor editor) {
+    public NbProcessDescriptorCustomEditor (NbProcessDescriptorEditor editor, PropertyEnv env) {
         this.editor = editor;
         initComponents ();
         
@@ -58,6 +62,9 @@ public class NbProcessDescriptorCustomEditor extends javax.swing.JPanel implemen
         getAccessibleContext().setAccessibleDescription(getString("ACSD_CustomNbProcessDescriptorEditor"));
 
         HelpCtx.setHelpIDString (this, NbProcessDescriptorCustomEditor.class.getName ());
+
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addPropertyChangeListener(this);
     }
 
     public java.awt.Dimension getPreferredSize() {
@@ -70,12 +77,18 @@ public class NbProcessDescriptorCustomEditor extends javax.swing.JPanel implemen
     * @exception InvalidStateException when the custom property editor does not contain a valid property value
     *            (and thus it should not be set)
     */
-    public Object getPropertyValue () throws IllegalStateException {
+    private Object getPropertyValue () throws IllegalStateException {
         if ( editor.pd == null )
             return new NbProcessDescriptor (processField.getText (), argumentsArea.getText () );
         return new NbProcessDescriptor (processField.getText (), argumentsArea.getText (), editor.pd.getInfo ());
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            editor.setValue(getPropertyValue());
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

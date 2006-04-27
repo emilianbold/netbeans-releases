@@ -32,6 +32,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author  Ian Formanek
  */
 public class NbProcessDescriptorEditor extends Object implements ExPropertyEditor {
+    private PropertyEnv env;
 
     /** <code>NbProcessDescriptor</code> to custmize. */
     NbProcessDescriptor pd;
@@ -134,7 +135,7 @@ public class NbProcessDescriptorEditor extends Object implements ExPropertyEdito
      * @return <code>NbProcessDescriptorCustomEditor</code> 
      * @see NbProcessDescriptorCustomEditor */
     public Component getCustomEditor () {
-        return new NbProcessDescriptorCustomEditor (this);
+        return new NbProcessDescriptorCustomEditor (this, env);
     }
 
     /** Adds <code>PropertyChangeListener</code>. Implements 
@@ -155,5 +156,6 @@ public class NbProcessDescriptorEditor extends Object implements ExPropertyEdito
      * @param env Environment passed by the ide.
      */
     public void attachEnv(PropertyEnv env) {
+        this.env = env;
     }
 }
