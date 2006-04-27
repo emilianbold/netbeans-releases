@@ -152,8 +152,13 @@ public class Annotator {
                     textAnnotation = "";  // NOI18N
                 } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
                     textAnnotation = " [" + sticky + "]"; // NOI18N
-                } else  if (sticky == null) {
-                    textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+                } else if (sticky == null) {
+                    String statusText = info.getShortStatusText();
+                    if(!statusText.equals("")) {
+                        textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+                    } else {
+                        textAnnotation = "";
+                    }
                 } else {
                     textAnnotation = " [" + info.getShortStatusText() + "; " + sticky + "]"; // NOI18N
                 }
@@ -261,7 +266,12 @@ public class Annotator {
             } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
                 textAnnotation = " [" + sticky + "]"; // NOI18N
             } else  if (sticky == null) {
-                textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+                String statusText = info.getShortStatusText();
+                if(!statusText.equals("")) {
+                    textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+                } else {
+                    textAnnotation = "";
+                }
             } else {
                 textAnnotation = " [" + info.getShortStatusText() + "; " + sticky + "]"; // NOI18N
             }
@@ -524,7 +534,7 @@ public class Annotator {
 
     private static MessageFormat getFormat(String key) {
         String format = NbBundle.getMessage(Annotator.class, key);
-        return new MessageFormat(format/* + " svn"*/);  // FIXME PETR remove after resolving multi annotator oddities
+        return new MessageFormat(format);  
     }
 
 }
