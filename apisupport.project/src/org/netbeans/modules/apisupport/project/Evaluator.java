@@ -436,7 +436,9 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 bootcp = "${sun.boot.class.path}"; // NOI18N
             }
             props.put("nbjdk.bootclasspath", bootcp); // NOI18N
-            props.put("tools.jar", "${nbjdk.home}/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
+            if (home != null) {
+                props.put("tools.jar", home + "/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
+            }
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 Map/*<String,String>*/ _props = new TreeMap(eval.getProperties());
                 Iterator it = _props.entrySet().iterator();
