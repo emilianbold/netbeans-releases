@@ -111,7 +111,7 @@ public class SetSystemPropertiesAction extends WizardAction {
             
             // ------------------ Core IDE -----------------------------
             keyObject = (SoftwareObjectKey) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "beanCDCCluster", "key");
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "beanSonyEricssonCDCCluster", "key");
             key = resolveString("$L(org.netbeans.installer.cluster.Bundle,CDCCluster.UID)");
             logEvent(this, Log.DBG,"CDC Platform Cluster UID: " + key);
             keyObject.setUID(key);
@@ -124,7 +124,7 @@ public class SetSystemPropertiesAction extends WizardAction {
             keyObject.setVersion(version);
             
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "beanCDCCluster", "key", keyObject);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "beanSonyEricssonCDCCluster", "key", keyObject);
         } catch (ServiceException ex) {
             ex.printStackTrace();
             Util.logStackTrace(this,ex);
