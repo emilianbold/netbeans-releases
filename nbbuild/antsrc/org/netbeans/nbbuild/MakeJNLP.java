@@ -117,6 +117,15 @@ public class MakeJNLP extends Task {
         this.verifyExcludes = s;
     }
 
+    private String permissions;
+    /**
+     * XML fragment pasted into the security part of the .jnlp file.
+     * Should deafult to "&lt;all-permissions/&gt;"
+     */
+    public void setPermissions(String s) {
+        permissions = s;
+    }
+    
     public void execute() throws BuildException {
         if (target == null) throw new BuildException("Output dir must be provided");
         if (files == null) throw new BuildException("modules must be provided");
@@ -187,7 +196,7 @@ public class MakeJNLP extends Task {
             writeJNLP.write("   <description kind='one-line'>" + oneline + "</description>\n");
             writeJNLP.write("   <description kind='short'>" + shrt + "</description>\n");
             writeJNLP.write("  </information>\n");
-            writeJNLP.write("  <security><all-permissions/></security>\n");
+            writeJNLP.write(permissions +"\n");
             writeJNLP.write("  <resources>\n");
             writeJNLP.write("     <jar href='"); writeJNLP.write(jar.getName()); writeJNLP.write("'/>\n");
             
@@ -402,7 +411,7 @@ public class MakeJNLP extends Task {
                 writeJNLP.write("   <title>" + n + "</title>\n");
                 writeJNLP.write("   <vendor>NetBeans</vendor>\n");
                 writeJNLP.write("  </information>\n");
-                writeJNLP.write("  <security><all-permissions/></security>\n");
+                writeJNLP.write(permissions +"\n");
                 writeJNLP.write("  <resources>\n");
                 writeJNLP.write("     <jar href='"); writeJNLP.write(e.getName()); writeJNLP.write("'/>\n");
                 writeJNLP.write("  </resources>\n");

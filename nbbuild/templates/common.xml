@@ -227,7 +227,8 @@ Microsystems, Inc. All Rights Reserved.
         
         <mkdir dir="${jnlp.dest.dir}" />
         
-        <property name="jnlp.codebase" value="$$$$codebase" /> 
+        <property name="jnlp.codebase" value="$$$$codebase" />
+        <property name="jnlp.permissions" value="&lt;security&gt;&lt;all-permissions/&gt;&lt;/security&gt;"/>
         
         <property name="jnlp.verify.excludes" value="" />
         <makejnlp 
@@ -238,6 +239,7 @@ Microsystems, Inc. All Rights Reserved.
             codebase="${jnlp.codebase}"
             verify="true"
             verifyexcludes="${jnlp.verify.excludes}"
+            permissions="${jnlp.permissions}"
         >
             <modules dir="${cluster}" >
                 <include name="${module.jar}" />

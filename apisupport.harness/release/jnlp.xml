@@ -103,6 +103,8 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <property name="jnlp.platform.codebase.own" value="$$$$codebase"/>
         <property name="jnlp.platform.codebase" value="netbeans/"/>
+        <property name="jnlp.permissions" value="&lt;security&gt;&lt;all-permissions/&gt;&lt;/security&gt;"/>
+        
         <mkdir dir="${jnlp.dest.dir}/netbeans"/>
         
         <makejnlp 
@@ -113,6 +115,7 @@ Microsystems, Inc. All Rights Reserved.
             codebase="${jnlp.platform.codebase.own}"
             verify="true"
             verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css"
+            permissions="${jnlp.permissions}"
         >
             <modules refid="jnlp.included.modules"/>
         </makejnlp>
