@@ -168,7 +168,7 @@ public class SvnConfigFiles {
         } else if (Utilities.isWindows()){
             return path + "/" + WINDOWS_CONFIG_DIR;
         } else {
-            // XXX PETR
+            // XXX Mac (e.g. mkleint)
         }
         return "";
     }

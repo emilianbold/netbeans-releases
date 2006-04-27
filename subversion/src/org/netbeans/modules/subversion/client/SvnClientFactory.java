@@ -122,9 +122,12 @@ public class SvnClientFactory {
     private ISVNClientAdapter createSvnClientAdapter() {
         ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
         if (adapter == null) {
+            // TODO ask user for the svn binary path...
+            // null can mean that user does not have proper version
+            // of svn binary in PATH, so let him provide
+            // exact path (and store it for future use)
             adapter = new UnsupportedSvnClientAdapter();
-        }        
-        // TODO PETR ask user for the svn binary path...
+        }                
         return adapter;
     }  
     
