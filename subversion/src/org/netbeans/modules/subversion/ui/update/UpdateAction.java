@@ -77,9 +77,9 @@ public class UpdateAction extends ContextAction {
             recursiveFiles.add(split[1][i]);
         }        
         // flat files
-        File[] flatRoots = SvnUtils.flatten(split[0], getDirectoryEnabledStatus());
-        for (int i= 0; i<flatRoots.length; i++) {            
-            flatFiles.add(flatRoots[i]);
+        //File[] flatRoots = SvnUtils.flatten(split[0], getDirectoryEnabledStatus());
+        for (int i= 0; i<split[0].length; i++) {            
+            flatFiles.add(split[0][i]);
         }
 
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
