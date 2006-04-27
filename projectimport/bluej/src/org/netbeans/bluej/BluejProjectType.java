@@ -21,7 +21,6 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.util.WeakSet;
 
 /**
  * Factory for simple bluej based projects.

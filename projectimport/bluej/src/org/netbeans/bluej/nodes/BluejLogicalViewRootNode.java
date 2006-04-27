@@ -14,9 +14,6 @@
 package org.netbeans.bluej.nodes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -36,18 +33,13 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;

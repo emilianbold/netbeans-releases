@@ -25,8 +25,8 @@ import org.openide.filesystems.FileUtil;
 
 public class EmptyBluejPanelVisual extends JPanel implements DocumentListener {
     
-    public static final String PROP_PROJECT_NAME = "projectName";
-    
+    public static final String PROP_PROJECT_NAME = "projectName"; //NOI18N
+    private static final String WIZ_PANEL_ERROR = "WizardPanel_errorMessage"; //NOI18N
     private EmptyBluejWizardPanel panel;
     
     /** Creates new form PanelProjectLocationVisual */
@@ -159,14 +159,14 @@ public class EmptyBluejPanelVisual extends JPanel implements DocumentListener {
     boolean valid(WizardDescriptor wizardDescriptor) {
         
         if (projectNameTextField.getText().length() == 0) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+            wizardDescriptor.putProperty(WIZ_PANEL_ERROR,
                     "Project Name is not a valid folder name.");
             return false; // Display name not specified
         }
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
             String message = "Project Folder is not a valid path.";
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WIZ_PANEL_ERROR, message);
             return false;
         }
         final File destFolder = FileUtil.normalizeFile(new File(createdFolderTextField.getText()).getAbsoluteFile());
@@ -176,25 +176,25 @@ public class EmptyBluejPanelVisual extends JPanel implements DocumentListener {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+            wizardDescriptor.putProperty(WIZ_PANEL_ERROR,
                     "Project Folder cannot be created.");
             return false;
         }
         
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = "Project Folder is not a valid path.";
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WIZ_PANEL_ERROR, message);
             return false;
         }
         
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+            wizardDescriptor.putProperty(WIZ_PANEL_ERROR,
                     "Project Folder already exists and is not empty.");
             return false;
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", "");
+        wizardDescriptor.putProperty(WIZ_PANEL_ERROR, "");
         return true;
     }
     

@@ -26,9 +26,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.jmi.javamodel.Resource;
@@ -44,8 +42,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -474,26 +470,26 @@ class BluejActionProvider implements ActionProvider {
     
     
     
-    private void showPlatformWarning() {
-        final JButton closeOption = new JButton(NbBundle.getMessage(BluejActionProvider.class, "CTL_BrokenPlatform_Close"));
-        closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BluejActionProvider.class, "AD_BrokenPlatform_Close"));
-        final ProjectInformation pi = (ProjectInformation) this.project.getLookup().lookup(ProjectInformation.class);
-        final String projectDisplayName = pi == null ?
-            NbBundle.getMessage(BluejActionProvider.class,"TEXT_BrokenPlatform_UnknownProjectName")
-            : pi.getDisplayName();
-        final DialogDescriptor dd = new DialogDescriptor(
-                NbBundle.getMessage(BluejActionProvider.class, "TEXT_BrokenPlatform", projectDisplayName),
-                NbBundle.getMessage(BluejActionProvider.class, "MSG_BrokenPlatform_Title"),
-                true,
-                new Object[] {closeOption},
-                closeOption,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null,
-                null);
-        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-        final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
-        dlg.setVisible(true);
-    }
+////    private void showPlatformWarning() {
+////        final JButton closeOption = new JButton(NbBundle.getMessage(BluejActionProvider.class, "CTL_BrokenPlatform_Close"));
+////        closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BluejActionProvider.class, "AD_BrokenPlatform_Close"));
+////        final ProjectInformation pi = (ProjectInformation) this.project.getLookup().lookup(ProjectInformation.class);
+////        final String projectDisplayName = pi == null ?
+////            NbBundle.getMessage(BluejActionProvider.class,"TEXT_BrokenPlatform_UnknownProjectName")
+////            : pi.getDisplayName();
+////        final DialogDescriptor dd = new DialogDescriptor(
+////                NbBundle.getMessage(BluejActionProvider.class, "TEXT_BrokenPlatform", projectDisplayName),
+////                NbBundle.getMessage(BluejActionProvider.class, "MSG_BrokenPlatform_Title"),
+////                true,
+////                new Object[] {closeOption},
+////                closeOption,
+////                DialogDescriptor.DEFAULT_ALIGN,
+////                null,
+////                null);
+////        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+////        final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+////        dlg.setVisible(true);
+////    }
     
     /**
      * Asks user for name of main class

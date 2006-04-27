@@ -86,7 +86,7 @@ public final class ConvertToJ2SEAction extends AbstractAction {
         Method createMethod = j2seclazz.getMethod("createProject", new Class[] {
             File.class, String.class, String.class, String.class
         });
-        Object helper = createMethod.invoke(null, new Object[] {
+        createMethod.invoke(null, new Object[] {
             file, info.getName(), null, null
         });
         handle.progress(5);

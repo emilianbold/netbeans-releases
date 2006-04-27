@@ -14,28 +14,16 @@
 package org.netbeans.bluej;
 
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
-import org.openide.util.Mutex;
-import org.openide.util.RequestProcessor;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.spi.project.support.ant.SourcesHelper;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.Utilities;
 
 
@@ -45,20 +33,14 @@ import org.openide.util.Utilities;
  */
 public class BluejSources implements Sources {
     
-    private final PropertyEvaluator evaluator;
     private BluejProject project;
-    /**
-     * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots} 
-     **/
-    private boolean externalRootsRegistered;    
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
 
     private SourceGroup[] javaSources;
 
     private SourceGroup[] genericSources;
 
-    BluejSources(BluejProject project, PropertyEvaluator evaluator) {
-        this.evaluator = evaluator;
+    BluejSources(BluejProject project) {
         this.project = project;
         javaSources = new SourceGroup[] {new TheOneSourceGroup(project.getProjectDirectory())};
         genericSources = new SourceGroup[] {new TheOneSourceGroup(project.getProjectDirectory())};

@@ -71,18 +71,18 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         return boot;
     }
 
-    private ClassPath getSourcepath(FileObject file) {
+    private ClassPath getSourcepath(FileObject file) { //NOPMD we don't care about the file passed in.. always the project dir is root
         if (source == null) {
             source = ClassPathSupport.createClassPath(new FileObject[] { project.getProjectDirectory() });
         }
         return source;
     }
 
-    private ClassPath getRunTimeClasspath(FileObject file) {
+    private ClassPath getRunTimeClasspath(FileObject file) { //NOPMD we don't care about the file passed in.. always the project dir is root
         return null;
     }
 
-    private ClassPath getCompileTimeClasspath(FileObject file) {
+    private ClassPath getCompileTimeClasspath(FileObject file) { //NOPMD we don't care about the file passed in.. always the project dir is root
         if (compile == null) {
             Collection paths = new ArrayList();
             paths.add(ClassPathFactory.createClassPath(

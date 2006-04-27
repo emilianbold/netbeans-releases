@@ -30,7 +30,6 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.bluej.api.BluejOpenCloseCallback;
 import org.netbeans.bluej.classpath.ClassPathProviderImpl;
 import org.netbeans.bluej.options.BlueJSettings;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -48,7 +47,6 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -64,8 +62,10 @@ import org.w3c.dom.NodeList;
  */
 public final class BluejProject implements Project, AntProjectListener {
     
-    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/bluej/resources/bluejproject.png")); // NOI18N
+    private static final Icon BLUEJ_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/bluej/resources/bluejproject.png")); // NOI18N
 
+    private static final String PROP_BLUEJ_HOME = "bluej.home"; //NOI18N
+    
     // Special properties of the project
     public static final String J2SE_PROJECT_NAME = "j2se.project.name"; // NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
@@ -186,7 +186,7 @@ public final class BluejProject implements Project, AntProjectListener {
             helper.createCacheDirectoryProvider(),
             spp,
             new BluejActionProvider( this, getUpdateHelper()),
-            new BluejLogicalViewProvider(this, evaluator(), spp, refHelper),
+            new BluejLogicalViewProvider(thisb),
 ////            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 ////            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             new ClassPathProviderImpl(this), 
@@ -312,7 +312,7 @@ public final class BluejProject implements Project, AntProjectListener {
         }
         
         public Icon getIcon() {
-            return J2SE_PROJECT_ICON;
+            return BLUEJ_PROJECT_ICON;
         }
         
         public Project getProject() {
@@ -364,14 +364,14 @@ public final class BluejProject implements Project, AntProjectListener {
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    
                     File bjHome = BlueJSettings.getDefault().getHome();
                     if (bjHome != null) {
-                        ep.setProperty("bluej.home", bjHome.getAbsolutePath());
-                        ep.setComment("bluej.home", new String[] {
+                        ep.setProperty(PROP_BLUEJ_HOME, bjHome.getAbsolutePath());
+                        ep.setComment(PROP_BLUEJ_HOME, new String[] {
                             "## the bluej.home property is reset everytime the project is opened in netbeans according to the",
                             "## setting in the IDE that point to the location of the bluej installation.",
                             "## It is required to find and use the libraries located in BLUEJ_HOME/lib/userdir when building the project" 
                         }, true);
                     } else {
-                        ep.remove("bluej.home");
+                        ep.remove(PROP_BLUEJ_HOME);
                     }
                     ep.setProperty("bluej.config.libraries", BlueJSettings.getDefault().getUserLibrariesAsClassPath());
                     ep.setComment("bluej.config.libraries", new String[] {
@@ -458,9 +458,9 @@ public final class BluejProject implements Project, AntProjectListener {
                     EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     File bjHome = BlueJSettings.getDefault().getHome();
                     if (bjHome != null) {
-                        ep.setProperty("bluej.home", bjHome.getAbsolutePath());
+                        ep.setProperty(PROP_BLUEJ_HOME, bjHome.getAbsolutePath());
                     } else {
-                        ep.remove("bluej.home");
+                        ep.remove(PROP_BLUEJ_HOME);
                     }
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {

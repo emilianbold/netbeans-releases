@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -29,9 +28,6 @@ import org.netbeans.bluej.nodes.BluejLogicalViewRootNode;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -44,7 +40,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -54,28 +49,17 @@ import org.openide.util.lookup.Lookups;
  */
 public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbeans.bluej.api.BluejLogicalViewProvider {
     
-    private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("BluejPhysicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
+//    private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("BluejPhysicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
     
     private final BluejProject project;
-//    private final UpdateHelper helper;
-    private final PropertyEvaluator evaluator;
-    private final SubprojectProvider spp;
-    private final ReferenceHelper resolver;
     private List changeListeners;
 
     // Web service client
 //    private static final Object KEY_SERVICE_REFS = "serviceRefs"; // NOI18N
     
-    public BluejLogicalViewProvider(BluejProject project, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
+    public BluejLogicalViewProvider(BluejProject project) {
         this.project = project;
         assert project != null;
-////        this.helper = helper;
-////        assert helper != null;
-        this.evaluator = evaluator;
-        assert evaluator != null;
-        this.spp = spp;
-        assert spp != null;
-        this.resolver = resolver;
     }
     
     public Node createLogicalView() {
@@ -217,8 +201,9 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
             DataObject dobj = (DataObject)getLookup().lookup(DataObject.class);
             if (dobj != null) {
                 FileObject fo = dobj.getPrimaryFile();
-                if(!fo.isValid())
+                if(!fo.isValid()) {
                     return false;
+                }
                 JavaModel.getJavaRepository().beginTrans(false);
                 try {
                     JavaModel.setClassPath(fo);
