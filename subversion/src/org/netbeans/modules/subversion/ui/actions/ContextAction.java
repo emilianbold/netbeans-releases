@@ -301,7 +301,7 @@ public abstract class ContextAction extends NodeAction {
         public abstract void perform();
 
         protected void startProgress() {
-            OutputLogger logger = new OutputLogger();
+            OutputLogger logger = Subversion.getInstance().getLogger();
             logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getRunningName(nodes));
             ProgressHandle progress = getProgressHandle();
             progress.setInitialDelay(500);
@@ -325,7 +325,7 @@ public abstract class ContextAction extends NodeAction {
                 progress.finish();
             }
 
-            OutputLogger logger = new OutputLogger();
+            OutputLogger logger = Subversion.getInstance().getLogger();
             if (isCanceled() == false) {
                 logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + ActionUtils.cutAmpersand(action.getName("", nodes)) + " finished.");
             } else {

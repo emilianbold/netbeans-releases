@@ -19,6 +19,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.Diagnostics;
 import org.netbeans.modules.subversion.OutputLogger;
+import org.netbeans.modules.subversion.Subversion;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
@@ -100,13 +101,13 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     protected void startProgress() {
         getProgressHandle().start();
-        OutputLogger logger = new OutputLogger(); // XXX to use the logger this way is a hack
+        OutputLogger logger = Subversion.getInstance().getLogger(); // XXX to use the logger this way is a hack
         logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName);
     }
 
     protected void finnishProgress() {
         getProgressHandle().finish();
-        OutputLogger logger = new OutputLogger();
+        OutputLogger logger = Subversion.getInstance().getLogger();
         if (isCanceled() == false) {
             logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " finished.");
         } else {
