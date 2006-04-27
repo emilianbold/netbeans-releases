@@ -197,7 +197,7 @@ public class SyncFileNode extends AbstractNode {
         }
     }
 
-    // XXX PETR it's not probably called
+    // XXX it's not probably called, are there another Node lifecycle events
     public void destroy() throws IOException {
         super.destroy();
         if (repoload != null) {
@@ -230,7 +230,7 @@ public class SyncFileNode extends AbstractNode {
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             FileInformation finfo =  node.getInformation();
-            finfo.getEntry(node.getFile());  // XXX PETR side effect loads ISVNStatus structure
+            finfo.getEntry(node.getFile());  // XXX not interested in return value, side effect loads ISVNStatus structure
             int mask = panel.getDisplayStatuses();
             return finfo.getStatusText(mask);
         }

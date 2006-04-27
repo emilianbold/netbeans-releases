@@ -89,7 +89,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         setVersioningComponent(syncTable.getComponent());
         reScheduleRefresh(0);
 
-        // XXX PETR click it in form editor
+        // XXX click it in form editor, probbaly requires  Mattisse >=v2
         jPanel2.setFloatable(false);
         jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
         jPanel2.setLayout(new ToolbarLayout());
@@ -224,11 +224,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
             });
             return;
         }
+        // XXX attach Cancelable hook
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View"));
         try {
             refreshViewThread = Thread.currentThread();
             refreshViewThread.interrupted();  // clear interupted status
-            ph.start();  // XXX PETR created handle does not have set Cancelable hook
+            ph.start();
             final SyncFileNode [] nodes = getNodes(context, displayStatuses);  // takes long
             if (nodes == null) {
                 return;
@@ -242,7 +243,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
                 String currentSticky = "";//nodes[0].getSticky();
                 for (int i = 1; i < nodes.length; i++) {
                     if (Thread.interrupted()) {
-                        // TODO PETR fast clean model
+                        // TODO set model that displays that fact to user
                         return;
                     }
                     String sticky = "";//nodes[i].getSticky();
@@ -415,7 +416,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         refreshViewTask.schedule(delayMillis);
     }
 
-    // TODO: PETR HACK, replace by save/restore of column width/position
+    // TODO: copy&paste HACK, replace by save/restore of column width/position
     void deserialize() {
         if (syncTable != null) {
             SwingUtilities.invokeLater(new Runnable() {

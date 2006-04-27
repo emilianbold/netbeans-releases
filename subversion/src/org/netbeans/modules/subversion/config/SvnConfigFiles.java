@@ -595,7 +595,7 @@ public class SvnConfigFiles {
     // XXX shouldn't be in this case also used the merge only the values witch aren't already present logic?
     private void mergeFromRegistry(String keyPrefix, String svnFile, Ini iniFile) {
         String key = keyPrefix + "\\Software\\Tigris.org\\Subversion\\" + svnFile;
-        String tmpDirPath = System.getProperty("netbeans.user") + "/config/svn/tmp";  // XXX maybe an another location... XXX PETR create temp file
+        String tmpDirPath = System.getProperty("netbeans.user") + "/config/svn/tmp";  // XXX maybe an another location... XXX java.io.tmpdir create temp file
         File tmpDir = FileUtil.normalizeFile(new File(tmpDirPath));
         tmpDir.mkdirs();        
         String tmpFilePath = System.getProperty("netbeans.user") + "/config/svn/tmp/out.reg";                

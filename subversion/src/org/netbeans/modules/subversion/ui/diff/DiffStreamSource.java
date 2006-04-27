@@ -77,20 +77,22 @@ public class DiffStreamSource extends StreamSource {
     public String getMIMEType() {
         if (baseFile.isDirectory()) {
             // http://www.rfc-editor.org/rfc/rfc2425.txt
-            return "content/unknown"; // "text/directory";  //XXX PETR no editor for directory MIME type => NPE // NOI18N
+            return "content/unknown"; // "text/directory";  //XXX no editor for directory MIME type => NPE while constructing EditorKit // NOI18N
         }
 
         try {
             init();
         } catch (IOException e) {
-            return null; // XXX PETR  potentionally kills DiffViewImpl
+            return null; // XXX null  potentionally kills DiffViewImpl, NPE while constructing EditorKit
         }
         return mimeType;
     }
 
     public Reader createReader() throws IOException {
         if (baseFile.isDirectory()) {
-            // XXX PETR return directory listing?
+            // XXX return directory listing?
+            // could be nice te return sorted directory content
+            // such as vim if user "edits" directory
             return new StringReader("[No Content, This is Folder]");
         }
         init();
@@ -98,7 +100,7 @@ public class DiffStreamSource extends StreamSource {
         if (binary) {
             return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle()));
         } else {
-            // XXX PETR implementation dependency, we need Encoding API or rewrite to binary diff
+            // XXX diff implementation dependency, we need Encoding API or rewrite to binary diff
             return EncodedReaderFactory.getDefault().getReader(remoteFile, mimeType);  
         }
     }
@@ -123,7 +125,7 @@ public class DiffStreamSource extends StreamSource {
             }
             failure = null;
         } catch (Exception e) {
-            // TODO PETR detect interrupted IO, i.e. user cancel
+            // TODO detect interrupted IO (exception subclass), i.e. user cancel
             failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
             failure.initCause(e);
             throw failure;

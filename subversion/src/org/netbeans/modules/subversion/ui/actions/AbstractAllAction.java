@@ -23,7 +23,9 @@ import org.openide.util.actions.SystemAction;
  * Abstract base for Show All Changes, Show All Diffs,
  * Update All and Commit All actions.
  *
- * <p>TODO PETR add context listening and resetting logic
+ * <p>TODO add context listening and resetting logic
+ * It means that opened Subversion view, Diff view
+ * should react to newly opened/closed projects.
  *
  * @author Petr Kuzel
  */

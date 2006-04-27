@@ -98,7 +98,7 @@ public final class DeleteLocalAction extends ContextAction {
                     try {
                         client.revert(file, false);
                     } catch (SVNClientException ex) {
-                        // XXX PETR mask (not versioned) it's expected
+                        // XXX use ExceptionHandler
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
                     lock = fo.lock();                    

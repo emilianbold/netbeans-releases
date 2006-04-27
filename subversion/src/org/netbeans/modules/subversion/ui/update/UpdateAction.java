@@ -56,7 +56,14 @@ public class UpdateAction extends ContextAction {
     }
 
     public void performUpdate(final Node[] nodes) {
-        // FIXME PETR add shalow logic allowing to ignore nested projects
+        // FIXME add shalow logic allowing to ignore nested projects
+        // look into CVS, it's very tricky:
+        // project1/
+        //   nbbuild/  (project1)
+        //   project2/
+        //   src/ (project1)
+        //   test/ (project1 but imagine it's in repository, to be updated )
+        // Is there a way how to update project1 without updating project2?
         final Context ctx = getContext(nodes);
         File[] roots = ctx.getRootFiles();
 
@@ -105,7 +112,6 @@ public class UpdateAction extends ContextAction {
     }
 
     private void updateRoots(List<File> roots, ContextAction.ProgressSupport support, ISVNClientAdapter client, boolean recursive) throws SVNClientException {
-        // XXX PETR how to detect conflicts
         boolean conflict = false;
 roots_loop:        
         for (Iterator<File> it = roots.iterator(); it.hasNext();) {
