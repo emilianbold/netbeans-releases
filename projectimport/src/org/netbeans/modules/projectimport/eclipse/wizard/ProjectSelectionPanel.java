@@ -49,7 +49,7 @@ import org.openide.NotifyDescriptor;
 /**
  * Represent "Project to import" step(panel) in the Eclipse importer wizard.
  *
- * @author  mkrauskopf
+ * @author mkrauskopf
  */
 final class ProjectSelectionPanel extends JPanel {
     
@@ -59,7 +59,7 @@ final class ProjectSelectionPanel extends JPanel {
     private static final Logger logger =
             LoggerFactory.getDefault().createLogger(ProjectSelectionPanel.class);
     
-    /** Rendererer for projects */
+    /** Renderer for projects */
     private class ProjectCellRenderer extends JCheckBox
             implements TableCellRenderer {
         public Component getTableCellRendererComponent(JTable table, Object value,
@@ -427,15 +427,15 @@ final class ProjectSelectionPanel extends JPanel {
         add(projectPanel, java.awt.BorderLayout.CENTER);
 
     }// </editor-fold>//GEN-END:initComponents
-        private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDestButtonActionPerformed
-            JFileChooser chooser = new JFileChooser();
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int ret = chooser.showOpenDialog(this);
-            if (ret == JFileChooser.APPROVE_OPTION) {
-                destination.setText(chooser.getSelectedFile().getAbsolutePath());
-            }
+
+    private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDestButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int ret = chooser.showOpenDialog(this);
+        if (ret == JFileChooser.APPROVE_OPTION) {
+            destination.setText(chooser.getSelectedFile().getAbsolutePath());
+        }
     }//GEN-LAST:event_chooseDestButtonActionPerformed
-        
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseDestButton;
