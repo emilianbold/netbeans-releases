@@ -32,6 +32,7 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.settings.HistorySettings;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
@@ -70,7 +71,7 @@ public class CheckoutCompleted implements ActionListener {
         List checkedOutProjects = new LinkedList();
         File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
         // checkout creates new folders and cache must be aware of them
-        refreshRecursively(normalizedWorkingFolder);
+        SvnUtils.refreshRecursively(normalizedWorkingFolder);
         FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
         if (fo != null) {            
             for (int i = 0; i < checkedOutFolders.length; i++) {
@@ -190,17 +191,6 @@ public class CheckoutCompleted implements ActionListener {
         if (panel.againCheckBox.isSelected()) {
            HistorySettings.setFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, 0);
         }
-    }
-
-    /**
-     * Refreshes statuses of this folder and all its parent folders up to filesystem root.
-     * 
-     * @param folder folder to refresh
-     */ 
-    private void refreshRecursively(File folder) {
-        if (folder == null) return;
-        refreshRecursively(folder.getParentFile());
-        Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
     
     private void openProject(Project p) {

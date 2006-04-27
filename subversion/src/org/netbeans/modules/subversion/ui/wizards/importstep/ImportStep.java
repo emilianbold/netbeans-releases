@@ -43,6 +43,7 @@ import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
 import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -217,11 +218,11 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
 
                     RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };                    
                     CheckoutAction.checkout(client, repositoryUrl, repositoryFile, importDirectory, true, this);
-                    refreshRecursively(importDirectory);
+                    SvnUtils.refreshRecursively(importDirectory);
                     if(isCanceled()) {                        
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn"));
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn"));
-                        refreshRecursively(importDirectory);
+                        SvnUtils.refreshRecursively(importDirectory);
                         return;
                     }
                 } catch (SVNClientException ex) {
@@ -260,12 +261,6 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
              }
              file.delete();
         }
-
-        private void refreshRecursively(File folder) {
-            if (folder == null) return;
-            refreshRecursively(folder.getParentFile());
-            Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }        
     };
 }
 

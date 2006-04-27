@@ -53,9 +53,7 @@ public class SvnClientFactory {
     
     public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support)
     throws SVNClientException 
-    {                                
-        //ProxyDescriptor pd = SvnRootSettings.getProxyFor(repositoryUrl);
-                
+    {                                                
         String username = "";
         String password = "";
         PasswordFile passwordFile = PasswordFile.findFileForUrl(repositoryUrl);

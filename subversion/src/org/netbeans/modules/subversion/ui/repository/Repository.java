@@ -256,7 +256,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private void textChanged(final DocumentEvent e) {
         // repost later to AWT otherwise it can deadlock because
         // the document is locked while firing event and we try
-        // synchronously access its content from selectedSvnRoot
+        // synchronously access its content from selected repository
         if (internalDocumentChange) return;
         Runnable awt = new Runnable() {
             public void run() {
@@ -318,7 +318,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     }
     
     /**
-     * On valid SVNUrl loads UI fields from SvnRootSettings.
+     * On valid SVNUrl loads UI fields from Svn Config Files
      * Always updates UI fields visibility.
      */
     private void onSelectedRepositoryChange() {

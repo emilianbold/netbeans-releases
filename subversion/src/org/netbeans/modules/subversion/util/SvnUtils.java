@@ -711,4 +711,15 @@ public class SvnUtils {
         }
         return null;
     }
+    
+    /**
+     * Refreshes statuses of this folder and all its parent folders up to filesystem root.
+     * 
+     * @param folder folder to refresh
+     */ 
+    public static void refreshRecursively(File folder) {
+        if (folder == null) return;
+        refreshRecursively(folder.getParentFile());
+        Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+    }
 }

@@ -273,6 +273,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         }
     }
 
+    // XXX HEY!
     private void refreshRecursively(File file) {
 /*
         CvsMetadata data = MetadataAttic.getMetadata(file);
