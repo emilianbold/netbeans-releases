@@ -19,7 +19,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -35,18 +34,19 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 public class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
     
@@ -91,13 +91,16 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         new Reload().start();
     }
 
-    protected ArrayList/*<Node>*/ buildHtmlNodeList() throws SAXException, ParserConfigurationException, IOException {
-        Document domDocument = XMLUtil.parse(new InputSource(url), false, true, new ErrorCatcher(), org.openide.xml.EntityCatalog.getDefault());
-        NodeList items = domDocument.getElementsByTagName("item"); // NOI18N
-        ArrayList res = new ArrayList( items.getLength() );
-        for( int i=0; i<items.getLength(); i++ )
-            res.add( items.item( i ) );
-        return res;
+    protected ArrayList/*<FeedItem>*/ buildItemList() throws SAXException, ParserConfigurationException, IOException {
+        XMLReader reader = XMLUtil.createXMLReader( false, true );
+        FeedHandler handler = new FeedHandler();
+        reader.setContentHandler( handler );
+        reader.setEntityResolver( org.openide.xml.EntityCatalog.getDefault() );
+        reader.setErrorHandler( new ErrorCatcher() );
+
+        reader.parse( new InputSource(url) );
+
+        return handler.getItemList();
     }
 
         /** Inner class error catcher for handling SAXParseExceptions */
@@ -131,56 +134,28 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
                 setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
-                ArrayList nodeList = buildHtmlNodeList();
+                ArrayList itemList = buildItemList();
                 final JPanel contentPanel = new NoHorizontalScrollPanel();
                 contentPanel.setOpaque( false );
                 int contentRow = 0;
 
-                for( int i=0; i<Math.min(nodeList.size(), NEWS_COUNT); i++ ) {
-                    Node node = (Node)nodeList.get(i);
-                    NodeList children = node.getChildNodes();
+                for( int i=0; i<Math.min(itemList.size(), NEWS_COUNT); i++ ) {
+                    FeedItem item = (FeedItem)itemList.get(i);
 
-                    String date = null;
-                    String link = null;
-                    String title = null;
-                    String description = null;
-
-                    for( int j=0; j<children.getLength(); j++ ) {
-                        Node child = children.item(j);
-
-                        String tag = child.getNodeName();
-
-                        String content = getTextContent( child );
-
-                        if ((content != null) && content.length() == 0) {
-                            content = null;
-                        }
-
-                        if (tag.equals("title")) { // NOI18N
-                            title = content;
-                        } else if (tag.equals("description")) { // NOI18N
-                            description = content;
-                        } else if (tag.equals("link")) { // NOI18N
-                            link = content;
-                        } else if (tag.equals("date") || tag.equals("pubDate")) { // NOI18N // NOI18N
-                            date = content;
-                        }
-                    }
-
-                    if( null != title && null != link ) {
+                    if( null != item.title && null != item.link ) {
                         JPanel panel = new JPanel( new GridBagLayout() );
                         panel.setOpaque( false );
                         int row = 0;
-                        if (date != null) {
+                        if( item.dateTime != null) {
                             JLabel label = new JLabel();
                             label.setFont( RSS_DESCRIPTION_FONT );
-                            label.setText( date );
+                            label.setText( item.dateTime );
                             panel.add( label, new GridBagConstraints(0,row++,1,1,0.0,0.0,
                                     GridBagConstraints.WEST,GridBagConstraints.NONE,
                                     new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
                         }
 
-                        WebLink linkButton = new WebLink( title, link, true );
+                        WebLink linkButton = new WebLink( item.title, item.link, true );
                         linkButton.setFont( HEADER_FONT );
                         linkButton.setForeground( HEADER_TEXT_COLOR );
                         panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,1.0,
@@ -188,10 +163,10 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                                 new Insets(0,5,2,TEXT_INSETS_RIGHT),0,0 ) );
 
 
-                        if (description != null) {
+                        if (item.description != null) {
                             JLabel label = new JLabel();
                             label.setFont( RSS_DESCRIPTION_FONT );
-                            label.setText( "<html>"+trimHtml( description )  ); // NOI18N
+                            label.setText( "<html>"+trimHtml( item.description )  ); // NOI18N
                             panel.add( label, new GridBagConstraints(0,row++,1,1,1.0,1.0,
                                     GridBagConstraints.WEST,GridBagConstraints.BOTH,
                                     new Insets(0,TEXT_INSETS_LEFT+5,0,TEXT_INSETS_RIGHT),0,0 ) );
@@ -328,6 +303,97 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         if( HttpProxySettings.PROXY_SETTINGS.equals( evt.getPropertyName() ) ) {
             setViewportView( buildContentLoadingLabel() );
             reload();
+        }
+    }
+
+    static class FeedHandler implements ContentHandler {
+        private FeedItem currentItem;
+        private StringBuffer textBuffer;
+        private ArrayList /*FeedItem*/ itemList = new ArrayList( 10 );
+
+        public void setDocumentLocator(Locator locator) {
+        }
+
+        public void startDocument() throws SAXException {
+        }
+
+        public void endDocument() throws SAXException {
+        }
+
+        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+        }
+
+        public void endPrefixMapping(String prefix) throws SAXException {
+        }
+
+        public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+            if( itemList.size() < NEWS_COUNT ) {
+                if( "item".equals( localName ) ) { // NOI18N
+                    currentItem = new FeedItem();
+                } else if( "link".equals( localName ) // NOI18N
+                        || "pubDate".equals( localName ) // NOI18N
+                        || "date".equals( localName ) // NOI18N
+                        || "description".equals( localName ) // NOI18N
+                        || "title".equals( localName ) ) { // NOI18N
+                    textBuffer = new StringBuffer( 110 );
+                }
+            }
+        }
+
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if( itemList.size() < NEWS_COUNT ) {
+                if( "item".equals( localName ) ) { // NOI18N
+                    if( null != currentItem && currentItem.isValid() ) {
+                        itemList.add( currentItem );
+                    }
+                    currentItem = null;
+                } else if( null != currentItem && null != textBuffer ) {
+                    String text = textBuffer.toString().trim();
+                    textBuffer = null;
+                    if( 0 == text.length() )
+                        text = null;
+
+                    if( "link".equals( localName ) ) { // NOI18N
+                        currentItem.link = text;
+                    } else if( "pubDate".equals( localName ) // NOI18N
+                            || "date".equals( localName ) ) { // NOI18N
+                        currentItem.dateTime = text;
+                    } else if( "title".equals( localName ) ) { // NOI18N
+                        currentItem.title = text;
+                    } else if( "description".equals( localName ) ) { // NOI18N
+                        currentItem.description = text;
+                    }
+                }
+            }
+        }
+
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            if( null != textBuffer )
+                textBuffer.append( ch, start, length );
+        }
+
+        public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+        }
+
+        public void processingInstruction(String target, String data) throws SAXException {
+        }
+
+        public void skippedEntity(String name) throws SAXException {
+        }
+
+        public ArrayList/*FeedItem*/ getItemList() {
+            return itemList;
+        }
+    }
+
+    static class FeedItem {
+        String title;
+        String link;
+        String description;
+        String dateTime;
+
+        boolean isValid() {
+            return null != title && null != link;
         }
     }
 }

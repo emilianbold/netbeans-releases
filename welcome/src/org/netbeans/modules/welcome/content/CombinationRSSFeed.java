@@ -22,15 +22,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.welcome.content.RSSFeed.ErrorCatcher;
+import org.netbeans.modules.welcome.content.RSSFeed.FeedHandler;
+import org.netbeans.modules.welcome.content.RSSFeed.FeedItem;
 import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  *
@@ -47,17 +46,22 @@ public class CombinationRSSFeed extends RSSFeed {
         this.url2 = url2;
     }
 
-    protected ArrayList buildHtmlNodeList() throws SAXException, ParserConfigurationException, IOException {
-        Document domDocument = XMLUtil.parse(new InputSource(url1), false, true, new RSSFeed.ErrorCatcher(), org.openide.xml.EntityCatalog.getDefault());
-        NodeList items = domDocument.getElementsByTagName("item"); // NOI18N
-        ArrayList res = new ArrayList( 2*items.getLength() );
-        for( int i=0; i<items.getLength() && i<NEWS_COUNT/2; i++ )
-            res.add( items.item( i ) );
+    protected ArrayList/*FeedItem*/ buildItemList() throws SAXException, ParserConfigurationException, IOException {
+        XMLReader reader = XMLUtil.createXMLReader( false, true );
+        FeedHandler handler = new FeedHandler();
+        reader.setContentHandler( handler );
+        reader.setEntityResolver( org.openide.xml.EntityCatalog.getDefault() );
+        reader.setErrorHandler( new ErrorCatcher() );
+        reader.parse( new InputSource(url1) );
 
-        domDocument = XMLUtil.parse(new InputSource(url2), false, true, new RSSFeed.ErrorCatcher(), org.openide.xml.EntityCatalog.getDefault());
-        items = domDocument.getElementsByTagName("item"); // NOI18N
-        for( int i=0; i<items.getLength() && i<NEWS_COUNT/2; i++ )
-            res.add( items.item( i ) );
+        ArrayList res = new ArrayList( 2*NEWS_COUNT );
+        res.addAll( handler.getItemList() );
+
+        handler = new FeedHandler();
+        reader.setContentHandler( handler );
+        reader.parse( new InputSource(url2) );
+
+        res.addAll( handler.getItemList() );
 
         return sortNodes( res );
     }
@@ -70,11 +74,11 @@ public class CombinationRSSFeed extends RSSFeed {
     private static class DateFeedItemComparator implements Comparator {
     private static DateFormat dateFormat = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH ); // NOI18N
         public int compare(Object o1, Object o2) {
-            Node node1 = (Node)o1;
-            Node node2 = (Node)o2;
+            FeedItem item1 = (FeedItem)o1;
+            FeedItem item2 = (FeedItem)o2;
 
-            Date date1 = extractDate( node1 );
-            Date date2 = extractDate( node2 );
+            Date date1 = extractDate( item1 );
+            Date date2 = extractDate( item2 );
 
             if( null == date1 && null == date2 )
                 return 0;
@@ -90,30 +94,10 @@ public class CombinationRSSFeed extends RSSFeed {
             return 0;
         }
 
-        private Date extractDate( Node node ) {
-            NodeList children = node.getChildNodes();
-
-            String date = null;
-
-            for( int j=0; j<children.getLength(); j++ ) {
-                Node child = children.item(j);
-
-                String tag = child.getNodeName();
-
-                String content = getTextContent( child );
-
-                if ((content != null) && content.length() == 0) {
-                    content = null;
-                }
-
-                if (tag.equals("date") || tag.equals("pubDate")) { // NOI18N // NOI18N
-                    date = content;
-                    break;
-                }
-            }
+        private Date extractDate( FeedItem item ) {
             try {
-                if( null != date )
-                    return dateFormat.parse( date );
+                if( null != item.dateTime )
+                    return dateFormat.parse( item.dateTime );
             } catch( ParseException pE ) {
                 //ignore
             }
