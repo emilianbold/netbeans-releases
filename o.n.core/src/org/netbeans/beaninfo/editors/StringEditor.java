@@ -59,7 +59,7 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
         if (val != null) {
             s = val instanceof String ? (String) val : val.toString();
         }
-        return new StringCustomEditor (s, isEditable(), oneline, instructions); // NOI18N
+        return new StringCustomEditor (s, isEditable(), oneline, instructions, this, env); // NOI18N
     }
 
     private static String toAscii(String str) {
@@ -94,8 +94,12 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
     private String instructions=null;
     private boolean oneline=false;
     private boolean customEd=true;
+    private PropertyEnv env;
+
     // bugfix# 9219 added attachEnv() method checking if the user canWrite in text box 
-    public void attachEnv(PropertyEnv env) {        
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
+
         FeatureDescriptor desc = env.getFeatureDescriptor();
         if (desc instanceof Node.Property){
             Node.Property prop = (Node.Property)desc;

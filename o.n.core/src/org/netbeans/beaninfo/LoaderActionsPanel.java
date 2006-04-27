@@ -31,7 +31,7 @@ import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -40,13 +40,19 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Jesse Glick
  */
-public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCustomPropertyEditor, ListCellRenderer {
+public class LoaderActionsPanel extends javax.swing.JPanel implements PropertyChangeListener, ListCellRenderer {
 
     private DefaultListModel model;
     private ExplorerManager mgr;
+    private PropertyEditor editor;
 
     /** Creates new form LoaderActionsPanel */
-    public LoaderActionsPanel (PropertyEditor pe) {
+    public LoaderActionsPanel (PropertyEditor pe, PropertyEnv env) {
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addPropertyChangeListener(this);
+        this.editor = pe;
+
+
         initComponents ();
         model = new DefaultListModel ();
         SystemAction[] actions = (SystemAction[]) pe.getValue ();
@@ -321,10 +327,16 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
      * @exception InvalidStateException when the custom property editor does not contain a valid property value
      *            (and thus it should not be set)
      */
-    public Object getPropertyValue() throws IllegalStateException {
+    private Object getPropertyValue() throws IllegalStateException {
         SystemAction[] actions = new SystemAction[model.getSize ()];
         model.copyInto (actions);
         return actions;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            editor.setValue(getPropertyValue());
+        }
     }
 
     /** Return a component that has been configured to display the specified

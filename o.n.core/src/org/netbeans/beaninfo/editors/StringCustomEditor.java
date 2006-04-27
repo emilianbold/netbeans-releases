@@ -13,8 +13,11 @@
 
 package org.netbeans.beaninfo.editors;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.text.JTextComponent;
@@ -24,12 +27,18 @@ import java.awt.BorderLayout;
 * @author  Ian Formanek
 * @version 1.00, Sep 21, 1998
 */
-public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
+public class StringCustomEditor extends javax.swing.JPanel implements PropertyChangeListener {
     
     static final long serialVersionUID =7348579663907322425L;
     
     boolean oneline=false;
     String instructions = null;
+
+    private PropertyEnv env;
+
+    private PropertyEditor editor;
+
+
     //enh 29294, provide one line editor on request
     /** Create a StringCustomEditor.
      * @param value the initial value for the string
@@ -37,9 +46,15 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
      * @param oneline whether the text component should be a single-line or multi-line component
      * @param instructions any instructions that should be displayed
      */
-    StringCustomEditor (String value, boolean editable, boolean oneline, String instructions) {
+    StringCustomEditor (String value, boolean editable, boolean oneline, String instructions, PropertyEditor editor, PropertyEnv env) {
         this.oneline = oneline;
         this.instructions = instructions;
+        this.env = env;
+        this.editor = editor;
+
+        this.env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        this.env.addPropertyChangeListener(this);
+
         init (value, editable);
    }
     
@@ -167,8 +182,16 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
     * @exception InvalidStateException when the custom property editor does not represent valid property value
     *            (and thus it should not be set)
     */
-    public Object getPropertyValue () throws IllegalStateException {
+    private Object getPropertyValue () throws IllegalStateException {
         return textArea.getText ();
+    }
+
+
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            editor.setValue(getPropertyValue());
+        }
     }
 
     private javax.swing.JScrollPane textAreaScroll;

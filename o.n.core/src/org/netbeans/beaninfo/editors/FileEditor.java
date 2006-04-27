@@ -92,6 +92,8 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
 
     /** Caches last used directory. */
     static File lastCurrentDir;
+
+    private PropertyEnv env;
     
     /** Cached chooser.
      * If you don't cache it, MountIterator in core flickers and behaves weirdly,
@@ -110,6 +112,8 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      * @param env Environment passed by the ide.
      */
     public void attachEnv(PropertyEnv env) {
+        this.env = env;
+
         // clearing to defaults
         directories = true;
         files = true;
@@ -212,7 +216,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             if (curVal instanceof java.io.File) {
                 info = ((java.io.File)curVal).getAbsolutePath();
             }
-            return new StringCustomEditor(info, false, true, null);
+            return new StringCustomEditor(info, false, true, null, this, env);
         }
         if (chooser == null) {
             chooser = createHackedFileChooser();

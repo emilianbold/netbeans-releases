@@ -18,6 +18,8 @@ import java.awt.Image;
 import java.beans.*;
 
 import org.openide.awt.Actions;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.loaders.DataLoader;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -54,14 +56,17 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
             return Utilities.loadImage("org/netbeans/core/resources/objectTypes32.gif"); // NOI18N
     }
 
-    public static class ActionsEditor extends PropertyEditorSupport {
+    public static class ActionsEditor extends PropertyEditorSupport
+    implements ExPropertyEditor {
+
+        private PropertyEnv env;
 
         public boolean supportsCustomEditor () {
             return true;
         }
 
         public Component getCustomEditor () {
-            return new LoaderActionsPanel (this);
+            return new LoaderActionsPanel (this, env);
         }
         
         public String getAsText () {
@@ -78,6 +83,10 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
         
         public void setAsText (String text) throws IllegalArgumentException {
             throw new IllegalArgumentException ();
+        }
+
+        public void attachEnv(PropertyEnv env) {
+            this.env = env;
         }
 
     }

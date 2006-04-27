@@ -18,6 +18,8 @@ import java.awt.Component;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 import javax.swing.JLabel;
@@ -27,14 +29,13 @@ import javax.swing.UIManager;
 import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /**
 *
 * @author   Ian Formanek
 * @version  1.00, 01 Sep 1998
 */
-public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor, KeyListener {
+public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyChangeListener, KeyListener {
     static final long serialVersionUID =-1472891501739636852L;
    
     //XXX this is just a copy of RectangleEditor with the fields and value 
@@ -47,6 +48,9 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
     /** Initializes the Form */
     public InsetsCustomEditor(InsetsEditor editor, PropertyEnv env) {
         this.env=env;
+        this.env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        this.env.addPropertyChangeListener(this);
+
         initComponents ();
         this.editor = editor;
         Insets insets = (Insets)editor.getValue ();
@@ -95,7 +99,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
         return new java.awt.Dimension (280, 160);
     }
 
-    public Object getPropertyValue () throws IllegalStateException {
+    private Object getPropertyValue () throws IllegalStateException {
         try {
             int x = Integer.parseInt (xField.getText ());
             int y = Integer.parseInt (yField.getText ());
@@ -118,6 +122,12 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
         }
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            editor.setValue(getPropertyValue());
+        }
+    }
+    
 
     private void initComponents () {
         setLayout (new java.awt.BorderLayout ());

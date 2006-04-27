@@ -28,10 +28,10 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import org.openide.ErrorManager;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.filesystems.*;
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
@@ -41,7 +41,7 @@ import org.openide.windows.TopComponent;
  * @version 
  */
 class DataFolderPanel extends TopComponent implements
-                    DocumentListener, DataFilter, EnhancedCustomPropertyEditor,
+                    DocumentListener, DataFilter,
                     PropertyChangeListener, VetoableChangeListener {
 
     /** prefered dimmension of the panels */
@@ -70,6 +70,9 @@ class DataFolderPanel extends TopComponent implements
     public DataFolderPanel(DataFolderEditor ed) {
         this();
         editor = ed;
+
+        editor.env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        editor.env.addPropertyChangeListener(this);
     }
     
     /** Creates new form DataFolderPanel */
@@ -307,6 +310,12 @@ class DataFolderPanel extends TopComponent implements
             setTargetFolder (null);
             implSetDataFolder (null);
         }
+
+
+        if (PropertyEnv.PROP_STATE.equals(ev.getPropertyName()) && ev.getNewValue() == PropertyEnv.STATE_VALID) {
+            editor.setValue(getPropertyValue());
+        }
+
     }
 
     /** Fires info to listener.
@@ -799,7 +808,7 @@ class DataFolderPanel extends TopComponent implements
      * @exception InvalidStateException when the custom property editor does not contain a valid property value
      *           (and thus it should not be set)
      */
-    public Object getPropertyValue() throws IllegalStateException {
+    private Object getPropertyValue() throws IllegalStateException {
         if (isValid()) {
             try {
                 df = getTargetFolder(true);

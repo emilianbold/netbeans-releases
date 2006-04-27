@@ -14,11 +14,13 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ResourceBundle;
 
 import org.openide.ErrorManager;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /*
  * DimensionCustomEditorX.java
@@ -30,7 +32,7 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
  *
  * @author  IanFormanek, Vladimir Zboril
  */
-public class DimensionCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
+public class DimensionCustomEditor extends javax.swing.JPanel implements PropertyChangeListener {
 
     static final long serialVersionUID =3718340148720193844L;
 
@@ -38,6 +40,9 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
     public DimensionCustomEditor(DimensionEditor editor) {
         initComponents();
         this.editor = editor;
+        this.editor.env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        this.editor.env.addPropertyChangeListener(this);
+
         Dimension dimension = (Dimension)editor.getValue ();
         
         if (dimension == null) dimension = new Dimension (0, 0);
@@ -62,7 +67,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
         return new java.awt.Dimension (280, 160);
     }
 
-    public Object getPropertyValue () throws IllegalStateException {
+    private Object getPropertyValue () throws IllegalStateException {
         try {
             int width = Integer.parseInt (widthField.getText ());
             int height = Integer.parseInt (heightField.getText ());
@@ -83,6 +88,12 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
         }
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            editor.setValue(getPropertyValue());
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

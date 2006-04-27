@@ -17,6 +17,8 @@ import java.beans.*;
 import java.io.File;
 import java.text.MessageFormat;
 import org.openide.ErrorManager;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
@@ -26,13 +28,15 @@ import org.openide.util.NbBundle;
  * @author  David Strupl
  * @version 
  */
-public class DataFolderEditor extends PropertyEditorSupport {
+public class DataFolderEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
     /** Creates new DataFolderEditor */
     public DataFolderEditor() {
     }
 
     private DataFolderPanel dfPanel;
+
+    PropertyEnv env;
 
     /** This method is intended for use when generating Java code to set
     * the value of the property.  It should return a fragment of Java code
@@ -136,5 +140,9 @@ public class DataFolderEditor extends PropertyEditorSupport {
 
     private static String getString (String s) {
         return org.openide.util.NbBundle.getBundle (DataFolderEditor.class).getString (s);
+    }
+
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
     }
 }
