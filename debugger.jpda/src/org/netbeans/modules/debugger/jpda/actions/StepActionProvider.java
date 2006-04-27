@@ -192,12 +192,15 @@ implements Executor {
                     
                     removeStepRequests (ct.getThreadReference ());
                     int step = ((StepRequest)ev.request()).depth();
-                    stepRequest = getDebuggerImpl ().getVirtualMachine ().
-                        eventRequestManager ().createStepRequest (
-                            ct.getThreadReference (),
-                            StepRequest.STEP_LINE,
-                            step
-                        );
+                    VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+                    if (vm == null) {
+                        return false; // The session has finished
+                    }
+                    stepRequest = vm.eventRequestManager ().createStepRequest (
+                        ct.getThreadReference (),
+                        StepRequest.STEP_LINE,
+                        step
+                    );
                     stepRequest.addCountFilter(1);
                     getDebuggerImpl ().getOperator ().register (stepRequest, this);
                     stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());

@@ -290,9 +290,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
             // 1) redefine classes
             Map map = new HashMap ();
             Iterator i = classes.keySet ().iterator ();
+            VirtualMachine vm = getVirtualMachine();
+            if (vm == null) {
+                return ; // The session has finished
+            }
             while (i.hasNext ()) {
                 String className = (String) i.next ();
-                List classRefs = getVirtualMachine ().classesByName (className);
+                List classRefs = vm.classesByName (className);
                 int j, jj = classRefs.size ();
                 for (j = 0; j < jj; j++)
                     map.put (
@@ -300,7 +304,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         classes.get (className)
                     );
             }
-            getVirtualMachine ().redefineClasses (map);
+            vm.redefineClasses (map);
 
             // update breakpoints
             Session s = (Session) 

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda;
 
+import com.sun.jdi.VirtualMachine;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -35,13 +36,16 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     }
     
     public void addStep(JPDAThread tr) {
-        JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl)debugger;
-        JPDAThreadImpl trImpl = (JPDAThreadImpl)tr;
-        EventRequestManager erm = debuggerImpl.getVirtualMachine().eventRequestManager();
+        JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
+        JPDAThreadImpl trImpl = (JPDAThreadImpl) tr;
+        VirtualMachine vm = debuggerImpl.getVirtualMachine();
+        if (vm == null) {
+            return ; // The session has finished
+        }
+        EventRequestManager erm = vm.eventRequestManager();
         //Remove all step requests -- TODO: Do we want it?
         erm.deleteEventRequests(erm.stepRequests());
-        StepRequest stepRequest = debuggerImpl.getVirtualMachine().
-        eventRequestManager().createStepRequest(
+        StepRequest stepRequest = vm.eventRequestManager().createStepRequest(
             trImpl.getThreadReference(),
             getSize(),
             getDepth()
@@ -56,7 +60,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     public boolean exec (Event event) {
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl)debugger;
         JPDAThreadImpl trImpl = (JPDAThreadImpl)debuggerImpl.getCurrentThread();
-        EventRequestManager erm = debuggerImpl.getVirtualMachine().eventRequestManager();
+        VirtualMachine vm = debuggerImpl.getVirtualMachine();
+        if (vm == null) {
+            return false; // The session has finished
+        }
+        EventRequestManager erm = vm.eventRequestManager();
         erm.deleteEventRequest(event.request());
         firePropertyChange(PROP_STATE_EXEC, null, null);
         if (! getHidden())
