@@ -715,8 +715,9 @@ public class MakeNBM extends Task {
         it = attrNames.iterator();
         while (it.hasNext()) {
             String name = (String) it.next();
-            // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-2_0.dtd
-            //  and www/www/dtds/autoupdate-info-2_0.dtd):
+            // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-*.dtd
+            //  and www/www/dtds/autoupdate-info-*.dtd):
+            // XXX better would be to enumerate the attrs it *does* recognize!
             if (! name.startsWith("OpenIDE-Module")) continue;
             if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue;
             if (name.equals("OpenIDE-Module-Install")) continue;
@@ -724,6 +725,7 @@ public class MakeNBM extends Task {
             if (name.equals("OpenIDE-Module-Description")) continue;
             if (name.equals("OpenIDE-Module-Package-Dependency-Message")) continue;
             if (name.equals("OpenIDE-Module-Public-Packages")) continue;
+            if (name.equals("OpenIDE-Module-Friends")) continue;
             el.setAttribute(name, attr.getValue(name));
         }
         module.appendChild(el);
