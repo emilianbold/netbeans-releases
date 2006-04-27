@@ -59,7 +59,7 @@ import org.netbeans.modules.openide.explorer.PsSettings;
 final class PropUtils {
     /**If true, hides custom editor buttons unless in editing mode.
      * Auto popup of combo boxes is suppressed in this mode */
-    static boolean noCustomButtons = Boolean.getBoolean("netbeans.ps.noCustomButtons"); //NOI18N
+    static final boolean noCustomButtons = Boolean.getBoolean("netbeans.ps.noCustomButtons"); //NOI18N
 
     /**If true, radio button boolean editor will always be used */
     static boolean forceRadioButtons = 
@@ -124,10 +124,6 @@ final class PropUtils {
 
     /** Preferences key for the storage of sort order */
     private static final String PREF_KEY_SORTORDER = "sortOrder"; //NOI18N
-
-    /** A scratch image for use when we need a Graphics object for calculating
-     * size with no parent */
-    static BufferedImage scratch = null;
 
     /** Disabled foreground color */
     static Color disFg = null;
@@ -271,7 +267,7 @@ final class PropUtils {
             }
         };
 
-    private static java.util.List missing = null;
+    private static java.util.List/*<String>*/ missing = null;
 
     // #52179 don't affect just edited properties or their current
     // changes will be lost due to the firing PropertyChangeEvents to
@@ -293,11 +289,9 @@ final class PropUtils {
     static boolean useOptimizedCustomButtonPainting() {
         if (useOptimizedCustomButtonPainting == null) {
             if ("com.sun.java.swing.plaf.WindowsLookAndFeel".equals(UIManager.getLookAndFeel())) { //NOI18N
-                useOptimizedCustomButtonPainting = isXPTheme() ? Boolean.TRUE : Boolean.FALSE;
-            } else if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-                useOptimizedCustomButtonPainting = Boolean.TRUE;
+                useOptimizedCustomButtonPainting = Boolean.valueOf(isXPTheme());
             } else {
-                useOptimizedCustomButtonPainting = Boolean.FALSE;
+                useOptimizedCustomButtonPainting = Boolean.valueOf("Aqua".equals(UIManager.getLookAndFeel().getID()));
             }
         }
 
@@ -395,7 +389,6 @@ final class PropUtils {
     }
 
     public static void dumpStack(Class clazz) {
-        // log(Class,String) only has an effect if INFORMATIONAL logging enabled on that prefix
         if (Logger.getLogger(clazz.getName()).isLoggable(Level.FINE)) {
             StringWriter sw = new StringWriter();
             new Throwable().printStackTrace(new PrintWriter(sw));
