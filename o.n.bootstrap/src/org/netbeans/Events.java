@@ -125,7 +125,7 @@ public abstract class Events {
      * Note that the event type string must be the exact String
      * listed as the constant in this class, not a copy.
      */
-    public final void log(String message, Object[] args) {
+    public final void log(String message, Object ... args) {
         if (Util.err.isLoggable(Level.FINE) &&
                 message != PERF_START && message != PERF_TICK && message != PERF_END) {
             Util.err.fine("EVENT -> " + message + " " + Arrays.asList(args));
@@ -137,41 +137,6 @@ public abstract class Events {
             // which called the logger.
             Util.err.log(Level.WARNING, null, re);
         }
-    }
-    
-    /** Log an event with no arguments.
-     * Convenience method.
-     */
-    public final void log(String message) {
-        log(message, new Object[0]);
-    }
-    
-    /** Log an event with a single argument.
-     * Convenience method.
-     */
-    public final void log(String message, Object arg1) {
-        log(message, new Object[] {arg1});
-    }
-    
-    /** Log an event with two arguments.
-     * Convenience method.
-     */
-    public final void log(String message, Object arg1, Object arg2) {
-        log(message, new Object[] {arg1, arg2});
-    }
-    
-    /** Log an event with three arguments.
-     * Convenience method.
-     */
-    public final void log(String message, Object arg1, Object arg2, Object arg3) {
-        log(message, new Object[] {arg1, arg2, arg3});
-    }
-    
-    /** Log an event with four arguments.
-     * Convenience method.
-     */
-    public final void log(String message, Object arg1, Object arg2, Object arg3, Object arg4) {
-        log(message, new Object[] {arg1, arg2, arg3, arg4});
     }
     
     /** Report an event.
