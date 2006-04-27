@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="init-cp" depends="init">
         <path id="test.unit.compile.cp">
-            <pathelement path="${module.classpath}"/>
+            <pathelement path="${module.run.classpath}"/>
             <pathelement location="${cluster}/${module.jar}"/>
             <pathelement path="${cp.extra}"/>
             <pathelement path="${test.unit.cp.extra}"/>
