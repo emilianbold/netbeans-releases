@@ -153,9 +153,16 @@ public final class Main extends Object {
               //Put a couple things into UIDefaults for the plaf library to process if it wants
                FileObject fo =
                     Repository.getDefault().getDefaultFileSystem().findResource("themes.xml"); //NOI18N
-               if (fo == null) {            // File under system/ failed --> try to load from a .jar
-                    // file in <home>/lib packed as /org/netbeans/core/resources/themes.xml
-                    themeURL = Main.class.getResource("resources/themes.xml"); // NOI18N
+               if (fo == null) {            
+                    // File on SFS failed --> try to load from a jar from path
+                    // /org/netbeans/core/startup/resources/themes.xml
+                    try {
+                        themeURL = new URL("nbresloc:/org/netbeans/core/startup/resources/themes.xml"); //NOI18N
+                        // check whether the file is there:
+                        themeURL.openStream().close();
+                    } catch (IOException ex) {
+                        themeURL = null;
+                    }
                } else {
                     try {
                         themeURL = fo.getURL();
