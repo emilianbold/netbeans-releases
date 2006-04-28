@@ -128,16 +128,24 @@ public class TargetServer {
     
     private AppChangeDescriptor distributeChanges(TargetModule targetModule, ProgressUI ui) throws IOException {
         ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
-        ui.setProgressObject(sfd);
-        ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
-        AppChangeDescriptor acd = sfd.distribute(targetModule, mcr);
-        return acd;
+        try {
+            ui.setProgressObject(sfd);
+            ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
+            AppChangeDescriptor acd = sfd.distribute(targetModule, mcr);
+            return acd;
+        } finally {
+            ui.setProgressObject(null);
+        }
     }
     
     private File initialDistribute(Target target, ProgressUI ui) {
         InitialServerFileDistributor sfd = new InitialServerFileDistributor(dtarget, target);
-        ui.setProgressObject(sfd);
-        return sfd.distribute();
+        try {
+            ui.setProgressObject(sfd);
+            return sfd.distribute();
+        } finally {
+            ui.setProgressObject(null);
+        }
     }
     
     private boolean checkServiceImplementations() {
@@ -679,11 +687,15 @@ public class TargetServer {
         
         ProgressObject startPO = instance.getDeploymentManager().start(modules);
         startEventHandler = new ProgressHandler(startPO);
-        ui.setProgressObject(startPO);
-        
-        StateType startState = startPO.getDeploymentStatus().getState();
-        if (startState == StateType.COMPLETED || startState == StateType.FAILED) {
-            wakeUp();
+        try {
+            ui.setProgressObject(startPO);
+
+            StateType startState = startPO.getDeploymentStatus().getState();
+            if (startState == StateType.COMPLETED || startState == StateType.FAILED) {
+                wakeUp();
+            }
+        } finally {
+            ui.setProgressObject(null);
         }
     }
     
