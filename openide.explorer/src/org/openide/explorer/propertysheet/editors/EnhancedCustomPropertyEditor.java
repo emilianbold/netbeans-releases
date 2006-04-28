@@ -28,7 +28,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 *  custom component can be found in
 *  <a href="http://core.netbeans.org/source/browse/core/execution/src/org/netbeans/core/execution/beaninfo/editors/NbProcessDescriptorEditor.java?r1=1.3&r2=1.4">NbProcessDescriptorEditor</a>
 *  and
-*   <a href="http://core.netbeans.org/source/browse/core/execution/src/org/netbeans/core/execution/beaninfo/editors/NbProcessDescriptorCustomEditor.java?r1=1.3&r2=1.4">NbProcessDescriptorCustomEditor</a>.
+*   <a href="http://core.netbeans.org/source/browse/core/execution/src/org/netbeans/core/execution/beaninfo/editors/NbProcessDescriptorCustomEditor.java?r1=1.3&r2=1.5">NbProcessDescriptorCustomEditor</a>.
 */
 public interface EnhancedCustomPropertyEditor {
     /** Get the customized property value.

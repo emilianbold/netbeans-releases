@@ -31,7 +31,6 @@ import org.openide.util.NbBundle;
 public class NbProcessDescriptorCustomEditor extends javax.swing.JPanel
 implements PropertyChangeListener {
     private NbProcessDescriptorEditor editor;
-    private PropertyEnv env;
 
     private static int DEFAULT_WIDTH = 530;
     private static int DEFAULT_HEIGHT = 400;
