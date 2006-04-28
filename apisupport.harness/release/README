@@ -711,6 +711,12 @@ jnlp.verify.excludes - the default implementation of "jnlp" task in common.xml
   them you can put their full names (relative to your cluster root) into this
   property and separate them by comma.
 
+jnlp.permissions - allows altering of the fragment in the resulting .jnlp file
+  that sets the permissions for individual modules. The default value is
+  &lt;security&gt;&lt;all-permissions/&gt;&lt;/security&gt;
+  If you want to change the default to something else please define the value
+  of the property.
+
 [XXX some of the above should be listed in "Suite Properties"]
 
 
