@@ -421,10 +421,20 @@ public final class SuiteUtils {
         try {
             return (SuiteProject) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction(){
                 public Object run() throws Exception {
+                    Project suite = null;
                     File suiteDir = SuiteUtils.getSuiteDirectory(suiteComponent);
-                    return suiteDir == null ? null :
-                        ProjectManager.getDefault().findProject(
-                            FileUtil.toFileObject(suiteDir));
+                    if (suiteDir != null) {
+                        FileObject fo = FileUtil.toFileObject(suiteDir);
+                        if (fo == null) {
+                            Util.err.log(ErrorManager.WARNING, "Module in the \"" + // NOI18N
+                                    FileUtil.toFile(suiteComponent.getProjectDirectory()).getAbsolutePath() +
+                                    "\" directory claims to be a subcomponent of a suite in the \"" + // NOI18N
+                                    suiteDir.getAbsolutePath() + "\" which does not exist however."); // NOI18N
+                        } else {
+                            suite = ProjectManager.getDefault().findProject(fo);
+                        }
+                    }
+                    return suite;
                 }
             });
         } catch (MutexException e) {
