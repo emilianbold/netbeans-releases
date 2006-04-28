@@ -526,6 +526,17 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   
   <p>
+   
+    <api type="export" group="property" name="netbeans.jnlp.fixPolicy" category="devel">
+        During runtime the JNLP launcher checks whether value <code>true</code> is assigned
+        to this system property. If it is "true" a special security policy is applied
+        for all the code base - it is granting all permissions to all code bases.
+        <strong>Use with care!</strong>. It allows you e.g. to have the module
+        jar files unsigned (they must also not require the all-permissions in
+        their .jnlp file for this to to work).
+    </api>
+  </p>
+  <p>
         <api type="import" group="property" name="org.netbeans.CLIHandler.fast.random" category="friend">
             <p>
                 uses this property provided by core/bootstrap to speedup startup of NetBeans based apps under
