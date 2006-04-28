@@ -56,7 +56,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * @author Tomas Stupka
  */
-public class ImportStep extends AbstractStep implements DocumentListener, WizardDescriptor.AsynchronousValidatingPanel, WizardDescriptor.FinishablePanel {
+public class ImportStep extends AbstractStep implements DocumentListener, WizardDescriptor.AsynchronousValidatingPanel /*, WizardDescriptor.FinishablePanel*/ {
     
     private ImportPanel importPanel;
 
@@ -174,10 +174,12 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         }
     }
 
+    /*
     public boolean isFinishPanel() {
         return true;
     }
-
+    */
+    
     private class ImportProgressSupport extends WizardStepProgressSupport {
         public ImportProgressSupport(JPanel panel) {
             super(panel);
