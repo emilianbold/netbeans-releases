@@ -1654,6 +1654,9 @@ public class Evaluator implements JavaParserVisitor {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
             ieex.initCause(uoex);
             throw ieex;
+        } catch (ObjectCollectedException ocex) {
+            throw new InvalidExpressionException(NbBundle.getMessage(
+                Evaluator.class, "CTL_EvalError_collected"));
         }
     }
 }
