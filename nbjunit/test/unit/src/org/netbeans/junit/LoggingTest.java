@@ -95,7 +95,7 @@ public class LoggingTest extends NbTestCase {
     public void testLoggingUtil() throws Exception {
         Logger log = Logger.getLogger(getName());
         log.log(Level.SEVERE, "Ahoj");
-        log.log(Level.INFO, "Jardo");
+        log.log(Level.FINE, "Jardo");
  
         File f = new File(getWorkDir(), getName() + ".log");
         assertEquals("Log file exists", true, f.exists());

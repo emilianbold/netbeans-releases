@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -100,7 +100,9 @@ public final class Log extends Handler {
         }
 
         Logger l = Logger.getLogger(loggerName);
-        l.setLevel(level);
+        if (l.getLevel().intValue() > level.intValue()) {
+            l.setLevel(level);
+        }
         MyPs ps = new MyPs();
         Log log = new Log(l, ps);
         log.setLevel(level);
@@ -154,12 +156,18 @@ public final class Log extends Handler {
 
 
 
-    static void configure(Level lev, NbTestCase current) throws IOException {
-        String s = "handlers=" + Log.class.getName() + "\n" +
-            ".level=" + lev.intValue() + "\n";
-        ByteArrayInputStream is = new ByteArrayInputStream(s.getBytes("utf-8"));
-        LogManager.getLogManager().readConfiguration(is);
-        
+    static void configure(Level lev, NbTestCase current) {
+        String c = "handlers=" + Log.class.getName() + "\n" +
+                   ".level=" + lev.intValue() + "\n";
+
+        ByteArrayInputStream is = new ByteArrayInputStream(c.getBytes());
+        try {
+            LogManager.getLogManager().readConfiguration(is);
+        } catch (IOException ex) {
+            // exception
+            ex.printStackTrace();
+        }
+
         Log.current = current;
         Log.messages.setLength(0);
         Log.messages.append("Starting test ");

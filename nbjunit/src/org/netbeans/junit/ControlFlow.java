@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Handler;
@@ -128,6 +129,9 @@ final class ControlFlow extends Object {
 
 
             String s = record.getMessage();
+            if (s != null && record.getParameters() != null) {
+                s = MessageFormat.format(s, record.getParameters());
+            }
 
             boolean log = msg != null;
             boolean expectingMsg = false;

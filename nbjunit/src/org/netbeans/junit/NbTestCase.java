@@ -127,6 +127,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      */
     public void run(final TestResult result) {
         if (canRun()) {
+            Level lev = logLevel();
+            if (lev != null) {
+                Log.configure(lev, NbTestCase.this);
+            }
             super.run(result);
         }
     }
@@ -145,11 +149,6 @@ public abstract class NbTestCase extends TestCase implements NbTest {
 
             public void run() {
                 try {
-                    Level lev = logLevel();
-                    if (lev != null) {
-                        Log.configure(lev, NbTestCase.this);
-                    }
-
                     long now = System.currentTimeMillis();
                     try {
                         NbTestCase.super.runTest();

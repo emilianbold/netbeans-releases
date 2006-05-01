@@ -64,7 +64,7 @@ public class NbTestCaseTest extends NbTestCase {
 
         Logger log = Logger.getLogger(getName());
         log.log(Level.SEVERE, "Ahoj");
-        log.log(Level.INFO, "Jardo");
+        log.log(Level.FINE, "Jardo");
 
 
 
