@@ -31,6 +31,7 @@ import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -87,6 +88,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             this.revisionTextField = revisionTextField;
             revisionTextField.getDocument().addDocumentListener(this);
             this.searchRevisionButton = searchRevisionButton;
+            searchRevisionButton.addActionListener(this);
         }                
     }
 
@@ -215,9 +217,11 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }       
     
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource()==browseButton) {
+        if(e.getSource() == browseButton) {
             browseRepository();
-        }        
+        } else if (e.getSource() == searchRevisionButton) {
+            searchRepository();
+        }
     }
 
     public SVNUrl getRepositoryUrl() {
@@ -292,6 +296,11 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return;
         }
         listeners.remove(l);
+    }
+
+    private void searchRepository() {
+        NotifyDescriptor d = new NotifyDescriptor.Message("Prototype, this action is not implemented, yet!");
+        DialogDisplayer.getDefault().notify(d);
     }
 
 }
