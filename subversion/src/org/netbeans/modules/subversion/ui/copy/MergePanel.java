@@ -36,33 +36,33 @@ public class MergePanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
-        setName("Message");
         typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel1.setText("Merge from:");
 
         typeDescriptionLabel.setText("jLabel2");
 
-        org.jdesktop.layout.GroupLayout mergeFiledsPanelLayout = new org.jdesktop.layout.GroupLayout(mergeFiledsPanel);
-        mergeFiledsPanel.setLayout(mergeFiledsPanelLayout);
-        mergeFiledsPanelLayout.setHorizontalGroup(
-            mergeFiledsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 704, Short.MAX_VALUE)
+        mergeFieldsPanel.setMinimumSize(new java.awt.Dimension(350, 500));
+        org.jdesktop.layout.GroupLayout mergeFieldsPanelLayout = new org.jdesktop.layout.GroupLayout(mergeFieldsPanel);
+        mergeFieldsPanel.setLayout(mergeFieldsPanelLayout);
+        mergeFieldsPanelLayout.setHorizontalGroup(
+            mergeFieldsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 747, Short.MAX_VALUE)
         );
-        mergeFiledsPanelLayout.setVerticalGroup(
-            mergeFiledsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 294, Short.MAX_VALUE)
+        mergeFieldsPanelLayout.setVerticalGroup(
+            mergeFieldsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 226, Short.MAX_VALUE)
         );
 
         org.jdesktop.layout.GroupLayout previewPanelLayout = new org.jdesktop.layout.GroupLayout(previewPanel);
         previewPanel.setLayout(previewPanelLayout);
         previewPanelLayout.setHorizontalGroup(
             previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 704, Short.MAX_VALUE)
+            .add(0, 747, Short.MAX_VALUE)
         );
         previewPanelLayout.setVerticalGroup(
             previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 100, Short.MAX_VALUE)
+            .add(0, 73, Short.MAX_VALUE)
         );
 
         jLabel2.setText("Preview:");
@@ -74,13 +74,13 @@ public class MergePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(mergeFiledsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(typeDescriptionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 704, Short.MAX_VALUE)
+                    .add(mergeFieldsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(typeDescriptionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 747, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(typeComboBox, 0, 617, Short.MAX_VALUE))
-                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(typeComboBox, 0, 660, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabel2))
                 .addContainerGap())
         );
@@ -94,8 +94,8 @@ public class MergePanel extends javax.swing.JPanel {
                 .add(25, 25, 25)
                 .add(typeDescriptionLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mergeFiledsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(14, 14, 14)
+                .add(mergeFieldsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 226, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -107,7 +107,7 @@ public class MergePanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    final javax.swing.JPanel mergeFiledsPanel = new javax.swing.JPanel();
+    final javax.swing.JPanel mergeFieldsPanel = new javax.swing.JPanel();
     final javax.swing.JPanel previewPanel = new javax.swing.JPanel();
     final javax.swing.JComboBox typeComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel typeDescriptionLabel = new javax.swing.JLabel();

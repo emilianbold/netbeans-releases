@@ -25,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -48,9 +49,6 @@ public class Merge extends CopyDialog implements ItemListener {
 
         MergePanel panel = getMergePanel();
 
-        panel.mergeFiledsPanel.setLayout(new BorderLayout());
-        panel.previewPanel.setLayout(new BorderLayout());
-
         panel.typeComboBox.setModel(new DefaultComboBoxModel(
                 new MergeType[] {
                        new MergeOneFolderType(repositoryRoot, root),
@@ -60,7 +58,7 @@ public class Merge extends CopyDialog implements ItemListener {
         ));
         panel.typeComboBox.setRenderer(createTypeRenderer());
         panel.typeComboBox.addItemListener(this);
-        mergeTypeSelected(panel, ((MergeType) panel.typeComboBox.getSelectedItem()));
+        mergeTypeSelected(((MergeType) panel.typeComboBox.getSelectedItem()));
     }            
     
     SVNUrl getMergeStartUrl() {
@@ -99,9 +97,8 @@ public class Merge extends CopyDialog implements ItemListener {
         };
     }
 
-    public void itemStateChanged(ItemEvent e) {
-        MergePanel panel = getMergePanel();        
-        MergeType type = (MergeType) e.getItem();
+    public void itemStateChanged(ItemEvent e) {        
+        final MergeType type = (MergeType) e.getItem();
         
         if(e.getStateChange() == e.DESELECTED) {
             RepositoryPaths path = type.getMergeStartRepositoryPath();
@@ -114,19 +111,24 @@ public class Merge extends CopyDialog implements ItemListener {
             }
             return;
         }
-        mergeTypeSelected(panel, type);
-
-        panel.typeDescriptionLabel.setText(type.getDescription());
+        mergeTypeSelected(type);
     }
 
-    private void mergeTypeSelected(MergePanel panel, MergeType type) {
-        panel.mergeFiledsPanel.removeAll();
-        panel.mergeFiledsPanel.add(type.getFieldsPanel(), BorderLayout.CENTER);
-        panel.mergeFiledsPanel.revalidate();
+    private void mergeTypeSelected(MergeType type) {
+        MergePanel panel = getMergePanel();
+        panel.typeDescriptionLabel.setText(type.getDescription());
 
-        panel.previewPanel.removeAll();
-        panel.previewPanel.add(type.getPreviewPanel(), BorderLayout.CENTER);
-        panel.previewPanel.revalidate();
+        panel.previewPanel.removeAll();        
+        panel.previewPanel.setLayout(new BorderLayout());
+        panel.previewPanel.add(type.getPreviewPanel(), BorderLayout.CENTER);        
+        
+        panel.mergeFieldsPanel.removeAll();
+        panel.mergeFieldsPanel.setLayout(new BorderLayout());
+        panel.mergeFieldsPanel.add(type.getFieldsPanel(), BorderLayout.CENTER);
+
+        type.setPreviewLabels();
+        
+        panel.repaint();
         
         RepositoryPaths path = type.getMergeStartRepositoryPath();
         if(path!=null) {
@@ -282,7 +284,7 @@ public class Merge extends CopyDialog implements ItemListener {
                  panel.mergeEndRepositoryFolderLabel,
                  root);
 
-            previewPanel.localFolderLabel.setText(root.getAbsolutePath());
+            previewPanel.localFolderTextField.setText(root.getAbsolutePath());
             ((JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
             ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         }
@@ -312,8 +314,8 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         protected void setPreviewLabels() {
-            previewPanel.repositoryFolderLabel1.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString());
-            previewPanel.repositoryFolderLabel2.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString());
+            previewPanel.repositoryFolderTextField1.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString());
+            previewPanel.repositoryFolderTextField2.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString());
         }
         
     }
@@ -355,7 +357,7 @@ public class Merge extends CopyDialog implements ItemListener {
                  null,
                  root);
             
-            previewPanel.localFolderLabel.setText(root.getAbsolutePath());
+            previewPanel.localFolderTextField.setText(root.getAbsolutePath());
             ((JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         }
 
@@ -389,7 +391,7 @@ public class Merge extends CopyDialog implements ItemListener {
         }    
 
         protected void setPreviewLabels() {            
-            previewPanel.repositoryFolderLabel.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString());
+            previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString());
         }
 
     }
@@ -416,7 +418,7 @@ public class Merge extends CopyDialog implements ItemListener {
                 );
 
             init(mergeEndRepositoryPaths, panel.mergeEndRepositoryFolderLabel, root);
-            previewPanel.localFolderLabel.setText(root.getAbsolutePath());
+            previewPanel.localFolderTextField.setText(root.getAbsolutePath());
             ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);                     
         }
 
@@ -483,7 +485,7 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         protected void setPreviewLabels() {            
-            previewPanel.repositoryFolderLabel.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString());
+            previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString());
         }
 
     }    

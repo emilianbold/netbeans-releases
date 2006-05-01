@@ -26,15 +26,15 @@ public class OneFolderPreviewPanel extends javax.swing.JPanel {
     private void initComponents() {
         jLabel1 = new javax.swing.JLabel();
 
-        setBackground(new java.awt.Color(255, 255, 255));
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/onefolder.png")));
 
-        repositoryFolderLabel.setText(" ");
-        repositoryFolderLabel.setAutoscrolls(true);
-        repositoryFolderLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        repositoryFolderTextField.setEditable(false);
+        repositoryFolderTextField.setText(" ");
+        repositoryFolderTextField.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        localFolderLabel.setText(" ");
-        localFolderLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        localFolderTextField.setEditable(false);
+        localFolderTextField.setText(" ");
+        localFolderTextField.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -42,19 +42,18 @@ public class OneFolderPreviewPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 384, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(1, 1, 1)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(localFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                    .add(repositoryFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))
-                .addContainerGap())
+                    .add(localFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                    .add(repositoryFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(44, 44, 44)
-                .add(repositoryFolderLabel)
-                .add(24, 24, 24)
-                .add(localFolderLabel))
+                .add(41, 41, 41)
+                .add(repositoryFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(25, 25, 25)
+                .add(localFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
             .add(jLabel1)
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -62,8 +61,8 @@ public class OneFolderPreviewPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    final javax.swing.JLabel localFolderLabel = new javax.swing.JLabel();
-    final javax.swing.JLabel repositoryFolderLabel = new javax.swing.JLabel();
+    final javax.swing.JTextField localFolderTextField = new javax.swing.JTextField();
+    final javax.swing.JTextField repositoryFolderTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
     
 }
