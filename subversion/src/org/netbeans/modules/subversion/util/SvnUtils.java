@@ -436,6 +436,60 @@ public class SvnUtils {
     }
 
     /**
+     * Compute relative path to repository root.
+     * For not yet versioned files guess the URL
+     * from parent context.
+     *
+     * <p>I/O intensive avoid calling it frnm AWT.
+     *
+     * @return the repository url or null for unknown
+     * XXX we need this until we get a local implementation for client.getInfoFromWorkingCopy(file);
+     */    
+    public static String getRelativePath(SVNUrl repositoryURL, File file) {
+        String repositoryPath = null;
+        SvnClient client = Subversion.getInstance().getClient();
+        client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
+
+        List path = new ArrayList();
+        while (Subversion.getInstance().isManaged(file)) {
+
+            ISVNStatus status = null;
+            try {
+                status = client.getSingleStatus(file);
+            } catch (SVNClientException ex) {                
+                if (ExceptionHandler.isUnversionedResource(ex) == false) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+
+            if (status != null && status.getUrl() != null) {
+                SVNUrl fileURL = status.getUrl();
+
+                if (fileURL != null && repositoryURL !=  null) {
+                    String fileLink = fileURL.toString();
+                    String repositoryLink = repositoryURL.toString();
+                    repositoryPath = fileLink.substring(repositoryLink.length());
+
+                    Iterator it = path.iterator();
+                    StringBuffer sb = new StringBuffer();
+                    while (it.hasNext()) {
+                        String segment = (String) it.next();
+                        sb.append("/" + segment);
+                    }
+                    repositoryPath += sb.toString();
+                    break;
+                }
+            }
+
+            path.add(0, file.getName());
+            file = file.getParentFile();
+
+        }
+                
+        return repositoryPath;
+    }
+    
+    /**
      * Returns the repository root for the given file.
      * For not yet versioned files guess the URL
      * from parent context.
@@ -449,7 +503,7 @@ public class SvnUtils {
         SvnClient client = Subversion.getInstance().getClient();
         client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
 
-        List path = new ArrayList();
+      //  List path = new ArrayList();
         SVNUrl repositoryURL = null;
         while (Subversion.getInstance().isManaged(file)) {
             ISVNInfo info = null;
@@ -483,18 +537,11 @@ public class SvnUtils {
                 }
 
                 if (repositoryURL != null) {
-                    Iterator it = path.iterator();
-                    StringBuffer sb = new StringBuffer();
-                    while (it.hasNext()) {
-                        String segment = (String) it.next();
-                        sb.append("/" + segment);
-                    }
-                    repositoryURL = repositoryURL.appendPath(sb.toString());
                     break;
                 }
             }
 
-            path.add(0, file.getName());
+           // path.add(0, file.getName());
             file = file.getParentFile();
 
         }

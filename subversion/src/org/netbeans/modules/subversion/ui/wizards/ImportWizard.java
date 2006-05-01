@@ -74,7 +74,7 @@ public final class ImportWizard implements ChangeListener {
             }            
         } else if (value == WizardDescriptor.FINISH_OPTION) {
             // must be initialized so we may retrieve the commitFiles for the ImportAction
-            importPreviewStep.setup();
+            //importPreviewStep.setup();
         }
         return finnished;
     }    
@@ -157,7 +157,10 @@ public final class ImportWizard implements ChangeListener {
             if(current() == repositoryStep) {                                            
                 importStep.setup(repositoryStep.getRepositoryFile());
             } else if(current() == importStep) {
-                importPreviewStep.setup();
+                String repositoryUrl = repositoryStep.getRepositoryFile().getRepositoryUrl().toString();
+                String repositoryFolderUrl = importStep.getRepositoryFolderUrl().toString();
+                String localPath = context.getRootFiles()[0].getAbsolutePath();
+                importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath);
             }
             super.nextPanel();
             if(current() == importStep) {                                                            

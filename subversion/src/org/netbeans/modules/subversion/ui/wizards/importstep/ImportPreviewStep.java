@@ -25,6 +25,7 @@ import org.netbeans.modules.subversion.ui.commit.CommitTable;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.util.Context;
 import org.openide.util.HelpCtx;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * @author Tomas Stupka
@@ -68,14 +69,18 @@ public class ImportPreviewStep extends AbstractStep {
         }        
     }    
 
-    public void setup() {
+    public void setup(String repositoryPath, String rootLocalPath) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
 
         if (files.length == 0) {
             return;
         }
-        
+
+        if(repositoryPath != null) {
+            table.setRootFile(repositoryPath, rootLocalPath);
+        }
+
         SvnFileNode[] nodes;        
         ArrayList nodesList = new ArrayList(files.length);
 

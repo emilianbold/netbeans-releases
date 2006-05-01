@@ -24,6 +24,7 @@ import org.netbeans.modules.subversion.settings.SvnModuleConfig;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.io.File;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Table model for the Commit dialog table.
@@ -37,10 +38,18 @@ class CommitTableModel extends AbstractTableModel {
     static final String COLUMN_NAME_ACTION  = "action"; // NOI18N
     static final String COLUMN_NAME_PATH    = "path"; // NOI18N
 
+    private class RootFile {
+        String repositoryPath;
+        String rootLocalPath;
+    }
+    private Set<SVNUrl> repositoryRoots;
+    private RootFile rootFile;
+
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private static final Map columnLabels = new HashMap(4);
+    private static final Map columnLabels = new HashMap(4);   
+
     {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
         columnLabels.put(COLUMN_NAME_NAME, new String [] {
@@ -132,10 +141,25 @@ class CommitTableModel extends AbstractTableModel {
         } else if (col.equals(COLUMN_NAME_ACTION)) {
             return commitOptions[rowIndex];
         } else if (col.equals(COLUMN_NAME_PATH)) {
-            String shortPath;
-            shortPath = SvnUtils.getRelativePath(nodes[rowIndex].getFile());
-            if (shortPath == null) {
-                shortPath = "[not in repository]";
+            String shortPath = null;
+            // XXX this is a mess
+            if(rootFile != null) {
+                shortPath = rootFile.repositoryPath + nodes[rowIndex].getFile().getAbsolutePath().substring(rootFile.rootLocalPath.length());
+            } else {
+                Set<SVNUrl> url = getRepositoryRoots();
+                for (Iterator<SVNUrl> it = url.iterator(); it.hasNext();) {
+                    SVNUrl nextUrl = it.next();
+                    shortPath = SvnUtils.getRelativePath(nextUrl, nodes[rowIndex].getFile());
+                }
+                if (shortPath == null) {
+                    SVNUrl newUrl = SvnUtils.getRepositoryRootUrl(nodes[rowIndex].getFile());
+                    shortPath = SvnUtils.getRelativePath(newUrl, nodes[rowIndex].getFile());                    
+                    url.add(newUrl);
+                }
+                //shortPath = SvnUtils.getRelativePath(nodes[rowIndex].getFile());
+                if (shortPath == null) {
+                    shortPath = "[not in repository]";
+                }
             }
             return shortPath;
         }
@@ -212,6 +236,19 @@ class CommitTableModel extends AbstractTableModel {
         } else {
             return CommitOptions.ADD_DIRECTORY;
         }
+    }
+
+    private Set getRepositoryRoots() {
+        if(repositoryRoots == null) {
+            repositoryRoots = new HashSet();
+        }
+        return repositoryRoots;
+    }
+
+    void setRootFile(String repositoryPath, String rootLocalPath) {
+        rootFile = new RootFile();
+        rootFile.repositoryPath = repositoryPath;
+        rootFile.rootLocalPath = rootLocalPath;
     }
 
 }

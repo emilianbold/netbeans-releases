@@ -206,9 +206,15 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     SVNUrl repositoryUrl = repositoryPaths.getRepositoryUrl();
                     SVNUrl repositoryFolderUrl = getRepositoryFolderUrl();
                     try {
+                        // if the user came back from the last step and changed the repository folder name,
+                        // then this could be already a working copy ...    
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn"));
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn"));
+                        SvnUtils.refreshRecursively(importDirectory);
+                        
                         client.mkdir(repositoryFolderUrl, getImportMessage());
                     } catch (SVNClientException ex) {
-                        if(ExceptionHandler.isFileAlreadyExists(ex)) {
+                        if(ExceptionHandler.isFileAlreadyExists(ex) ) {
                             // ignore
                         } else {
                             throw ex;

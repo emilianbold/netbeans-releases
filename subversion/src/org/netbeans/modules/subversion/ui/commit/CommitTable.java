@@ -31,6 +31,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableColumnModel;
 import java.awt.Component;
 import java.util.*;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * {@link #getComponent Table} that displays nodes in the commit dialog.
@@ -172,6 +173,10 @@ public class CommitTable implements AncestorListener, TableModelListener {
         // change in commit options may alter name rendering (strikethrough)
         table.repaint();
     }
+
+    public void setRootFile(String repositoryPath, String rootLocalPath) {
+        tableModel.setRootFile(repositoryPath, rootLocalPath);
+    }
     
     private class CommitOptionsCellEditor extends DefaultCellEditor {
 
@@ -262,4 +267,6 @@ public class CommitTable implements AncestorListener, TableModelListener {
                     tableModel.getNode(row2.intValue()).getName());
         }
     }
+
+
 }
