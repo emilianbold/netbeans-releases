@@ -91,7 +91,7 @@ public class SvnConfigFiles {
             // no proxy specified -> direct
             return ProxyDescriptor.DIRECT;
         }
-        String proxyHost = (String) group.get("http-proxy-host");
+        String proxyHost = group.get("http-proxy-host");
         if(proxyHost == null || proxyHost.length() == 0) {
             // no host specified -> direct
             return ProxyDescriptor.DIRECT;
@@ -103,8 +103,8 @@ public class SvnConfigFiles {
         } else {
             proxyPort = Integer.parseInt(proxyPortString); // XXX what if null ?
         }
-        String username = (String) group.get("http-proxy-username");
-        String password = (String) group.get("http-proxy-password");
+        String username = group.get("http-proxy-username");
+        String password = group.get("http-proxy-password");
         return new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, proxyHost, proxyPort, username, password);    
     }
 
@@ -136,7 +136,7 @@ public class SvnConfigFiles {
                     }
                 } else {
                     String groupName = group.getName();
-                    String groupsHosts = (String) getGroups().get(groupName);
+                    String groupsHosts = getGroups().get(groupName);
                     getGroups().put(groupName, groupsHosts + "," + host);
                 }
             }            
@@ -218,7 +218,7 @@ public class SvnConfigFiles {
         Ini.Section group = getGroup(host);
         if(group != null) {
             String groupName = group.getName();
-            String[] hosts = ( (String) getGroups().get(groupName) ).split(",");
+            String[] hosts = getGroups().get(groupName).split(",");
             if(hosts.length == 1) {
                 getGroups().remove(groupName);
                 servers.remove(group);
@@ -243,7 +243,7 @@ public class SvnConfigFiles {
      * @return the groups section
      */ 
     private Ini.Section getGroups() {
-        Ini.Section groups = (Ini.Section) servers.get(GROUPS);
+        Ini.Section groups = servers.get(GROUPS);
         if(groups==null) {
             groups = servers.add("groups");
         }
@@ -259,12 +259,12 @@ public class SvnConfigFiles {
      */ 
     private Ini.Section getGroup(String host) {
         Ini.Section groups = getGroups();
-        for (Iterator it = groups.keySet().iterator(); it.hasNext();) {
-            String key = (String) it.next();
-            String value = ((String) groups.get(key)).trim();
+        for (Iterator<String> it = groups.keySet().iterator(); it.hasNext();) {
+            String key = it.next();
+            String value = groups.get(key).trim();
             
             if(match(value, host)) {
-                return (Ini.Section) servers.get(key);
+                return servers.get(key);
             }
 
             InetAddress hostAddress = null;
@@ -289,8 +289,8 @@ public class SvnConfigFiles {
      * @return the section holding the proxy settings for the given {@link org.netbeans.modules.subversion.config.ProxyDescriptor}
      */ 
     private Ini.Section getGroup(ProxyDescriptor pd) {
-        for (Iterator it = servers.values().iterator(); it.hasNext();) {
-            Ini.Section group = (Ini.Section) it.next();
+        for (Iterator<Ini.Section> it = servers.values().iterator(); it.hasNext();) {
+            Ini.Section group = it.next();
             if (group.getName().equals(GROUPS)) {
                 continue;
             }
@@ -468,17 +468,17 @@ public class SvnConfigFiles {
      * @param target the target ini file in which the values from the source file are going to be merged
      */
     private void merge(Ini source, Ini target) {
-        for (Iterator itSections = source.keySet().iterator(); itSections.hasNext();) {
-            String sectionName = (String) itSections.next();
-            Ini.Section sourceSection = (Ini.Section) source.get( sectionName );
-            Ini.Section targetSection = (Ini.Section) target.get( sectionName );
+        for (Iterator<String> itSections = source.keySet().iterator(); itSections.hasNext();) {
+            String sectionName = itSections.next();
+            Ini.Section sourceSection = source.get( sectionName );
+            Ini.Section targetSection = target.get( sectionName );
 
             if(targetSection == null) {
                 targetSection = target.add(sectionName);
             }
 
-            for (Iterator itVariables = sourceSection.keySet().iterator(); itVariables.hasNext();) {
-                String key = (String) itVariables.next();
+            for (Iterator<String> itVariables = sourceSection.keySet().iterator(); itVariables.hasNext();) {
+                String key = itVariables.next();
 
                 if(!targetSection.containsKey(key)) {
                     targetSection.put(key, sourceSection.get(key));
@@ -496,13 +496,13 @@ public class SvnConfigFiles {
      */
     private void mergeWithoutProxyConfigurations(Ini source, Ini target) {
         // add changes from source
-        for (Iterator itSections = source.keySet().iterator(); itSections.hasNext();) {
-            String sectionName = (String) itSections.next();
-            Ini.Section sourceSection = (Ini.Section) source.get( sectionName );
-            Ini.Section targetSection = (Ini.Section) target.get( sectionName );
+        for (Iterator<String> itSections = source.keySet().iterator(); itSections.hasNext();) {
+            String sectionName = itSections.next();
+            Ini.Section sourceSection = source.get( sectionName );
+            Ini.Section targetSection = target.get( sectionName );
             
-            for (Iterator itVariables = sourceSection.keySet().iterator(); itVariables.hasNext();) {
-                String key = (String) itVariables.next();
+            for (Iterator<String> itVariables = sourceSection.keySet().iterator(); itVariables.hasNext();) {
+                String key = itVariables.next();
 
                 if(!isProxyConfigurationKey(key)) {
                     if(targetSection == null) {
@@ -515,15 +515,15 @@ public class SvnConfigFiles {
 
         // delete from target what's missing in source
         //List toRemove = new ArrayList();
-        for (Iterator itSections = target.keySet().iterator(); itSections.hasNext();) {
-            String sectionName = (String) itSections.next();
+        for (Iterator<String> itSections = target.keySet().iterator(); itSections.hasNext();) {
+            String sectionName = itSections.next();
 
             if(sectionName.equals(GROUPS)) {
                 continue;
             }
 
-            Ini.Section sourceSection = (Ini.Section) source.get( sectionName );
-            Ini.Section targetSection = (Ini.Section) target.get( sectionName );
+            Ini.Section sourceSection = source.get( sectionName );
+            Ini.Section targetSection = target.get( sectionName );
 
             if(sourceSection == null) {
                 // the whole section is missing -> drop it as long there is no "proxy key"
@@ -533,8 +533,8 @@ public class SvnConfigFiles {
                 continue;
             }                    
 
-            for (Iterator itVariables = targetSection.keySet().iterator(); itVariables.hasNext();) {
-                String key = (String) itVariables.next();
+            for (Iterator<String> itVariables = targetSection.keySet().iterator(); itVariables.hasNext();) {
+                String key = itVariables.next();
                 if(sourceSection.get(key) == null && !isProxyConfigurationKey(key)) {
                     // a variable is missing -> drop it
                     itVariables.remove();
@@ -550,7 +550,7 @@ public class SvnConfigFiles {
      * @return true if the section holds some proxy setting values. Otherwise false
      */    
     private boolean isProxyConfigurationSection(Ini.Section section) {
-        Collection keys = section.keySet();
+        Collection<String> keys = section.keySet();
         return keys.contains("http-proxy-host")     ||
                keys.contains("http-proxy-port")     ||
                keys.contains("http-proxy-username") ||

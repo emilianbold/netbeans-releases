@@ -64,7 +64,7 @@ public class CommitAction extends ContextAction {
         }
         
         File[][] split = SvnUtils.splitFlatOthers(roots);
-        List<File> fileList = new ArrayList();
+        List<File> fileList = new ArrayList<File>();
         for (int c = 0; c < split.length; c++) {
             roots = split[c];
             boolean recursive = c == 1;
@@ -89,14 +89,14 @@ public class CommitAction extends ContextAction {
         CommitPanel panel = new CommitPanel();
         CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS);
         SvnFileNode[] nodes;
-        ArrayList nodesList = new ArrayList(fileList.size());
+        ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
 
         for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
             File file = it.next();
             SvnFileNode node = new SvnFileNode(file);
             nodesList.add(node);
         }        
-        nodes = (SvnFileNode[]) nodesList.toArray(new SvnFileNode[fileList.size()]);
+        nodes = nodesList.toArray(new SvnFileNode[fileList.size()]);
         data.setNodes(nodes);
 
         JComponent component = data.getComponent();
@@ -114,7 +114,7 @@ public class CommitAction extends ContextAction {
 
         if (dd.getValue() == commitButton) {
 
-            final Map commitFiles = data.getCommitFiles();
+            final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final String message = panel.messageTextArea.getText();
 
             SVNUrl repository = getSvnUrl(ctx);
@@ -136,7 +136,7 @@ public class CommitAction extends ContextAction {
         commit(ctx);
     }
 
-    public static void performCommit(String message, Map commitFiles, Context ctx, SvnProgressSupport support) {        
+    public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support) {
         try {
                                                
             SvnClient client;
@@ -148,25 +148,25 @@ public class CommitAction extends ContextAction {
             }                   
             support.setDisplayName("Committing...");
 
-            List addCandidates = new ArrayList();
-            List removeCandidates = new ArrayList();
-            Set commitCandidates = new LinkedHashSet();
+            List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
+            List<SvnFileNode> removeCandidates = new ArrayList<SvnFileNode>();
+            Set<File> commitCandidates = new LinkedHashSet<File>();
 
-            Iterator it = commitFiles.keySet().iterator();
+            Iterator<SvnFileNode> it = commitFiles.keySet().iterator();
             while (it.hasNext()) {
                 if(support.isCanceled()) {
                     return;
                 }
-                SvnFileNode node = (SvnFileNode) it.next();
-                CommitOptions option = (CommitOptions) commitFiles.get(node);
+                SvnFileNode node = it.next();
+                CommitOptions option = commitFiles.get(node);
                 if (CommitOptions.ADD_BINARY == option) {
-                    List l = listUnmanagedParents(node);
-                    Iterator dit = l.iterator();
+                    List<File> l = listUnmanagedParents(node);
+                    Iterator<File> dit = l.iterator();
                     while (dit.hasNext()) {
                         if(support.isCanceled()) {
                             return;
                         }
-                        File file = (File) dit.next();
+                        File file = dit.next();
                         addCandidates.add(new SvnFileNode(file));
                         commitCandidates.add(file);
                     }
@@ -186,13 +186,13 @@ public class CommitAction extends ContextAction {
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.ADD_TEXT == option || CommitOptions.ADD_DIRECTORY == option) {
                     // assute no MIME property or startin gwith text
-                    List l = listUnmanagedParents(node);
-                    Iterator dit = l.iterator();
+                    List<File> l = listUnmanagedParents(node);
+                    Iterator<File> dit = l.iterator();
                     while (dit.hasNext()) {
                         if(support.isCanceled()) {
                             return;
                         }
-                        File file = (File) dit.next();
+                        File file = dit.next();
                         addCandidates.add(new SvnFileNode(file));
                         commitCandidates.add(file);
                     }
@@ -211,8 +211,8 @@ public class CommitAction extends ContextAction {
 
             // perform adds
 
-            List addFiles = new ArrayList();
-            List addDirs = new ArrayList();
+            List<File> addFiles = new ArrayList<File>();
+            List<File> addDirs = new ArrayList<File>();
             // XXX waht if user denied directory add but wants to add a file in it?
             it = addCandidates.iterator();
             while (it.hasNext()) {
@@ -231,13 +231,13 @@ public class CommitAction extends ContextAction {
                 return;
             }
 
-            it = addDirs.iterator();
-            Set addedDirs = new HashSet();
-            while (it.hasNext()) {
+            Iterator<File> itFiles = addDirs.iterator();
+            Set<File> addedDirs = new HashSet<File>();
+            while (itFiles.hasNext()) {
                 if(support.isCanceled()) {
                     return;
                 }
-                File dir = (File) it.next();
+                File dir = itFiles.next();
                 if (addedDirs.contains(dir)) {
                     continue;
                 }
@@ -248,12 +248,12 @@ public class CommitAction extends ContextAction {
                 return;
             }
 
-            it = addFiles.iterator();
-            while (it.hasNext()) {
+            itFiles = addFiles.iterator();
+            while (itFiles.hasNext()) {
                 if(support.isCanceled()) {
                     return;
                 }
-                File file = (File) it.next();
+                File file = (File) itFiles.next();
                 client.addFile(file);
             }
 
@@ -262,13 +262,13 @@ public class CommitAction extends ContextAction {
 
             // group commitCandidates by managed trees
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            List managedTrees = new ArrayList();
-            for (Iterator itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
-                File commitCandidateFile = (File) itCommitCandidates.next();
-                List managedTreesList = null;                
-                for (Iterator itManagedTrees = managedTrees.iterator(); itManagedTrees.hasNext();) {
-                    List list = (List) itManagedTrees.next();
-                    File managedTreeFile = (File) list.get(0);
+            List<List<File>> managedTrees = new ArrayList<List<File>>();
+            for (Iterator<File> itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
+                File commitCandidateFile = itCommitCandidates.next();
+                List<File> managedTreesList = null;
+                for (Iterator<List<File>> itManagedTrees = managedTrees.iterator(); itManagedTrees.hasNext();) {
+                    List<File> list = itManagedTrees.next();
+                    File managedTreeFile = list.get(0);
 
                     File base = SVNBaseDir.getRootDir(new File[] {commitCandidateFile, managedTreeFile});
                     if(base != null) {
@@ -282,17 +282,17 @@ public class CommitAction extends ContextAction {
                 }
                 if(managedTreesList == null) {
                     // no list for files from the same wc as commitCandidateFile created yet
-                    managedTreesList = new ArrayList();
+                    managedTreesList = new ArrayList<File>();
                     managedTrees.add(managedTreesList);
                 }                
                 managedTreesList.add(commitCandidateFile);                
             }
 
             // finally commit            
-            for (Iterator itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
+            for (Iterator<List<File>> itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
                 // one commit for each wc
-                List list = (List) itCandidates.next();
-                File[] files = (File[]) list.toArray(new File[0]);
+                List<File> list = itCandidates.next();
+                File[] files = list.toArray(new File[0]);
                 
                 client.commit(files, message, false);
                 // XXX it's probably already catched by cache's onNotify()
@@ -310,8 +310,8 @@ public class CommitAction extends ContextAction {
         } 
     }
 
-    private static List listUnmanagedParents(SvnFileNode node) {
-        List unmanaged = new ArrayList();
+    private static List<File> listUnmanagedParents(SvnFileNode node) {
+        List<File> unmanaged = new ArrayList<File>();
         File file = node.getFile();
         File parent = file.getParentFile();
         while (true) {
@@ -325,10 +325,10 @@ public class CommitAction extends ContextAction {
             }
         }
 
-        List ret = new ArrayList();
-        Iterator it = unmanaged.iterator();
+        List<File> ret = new ArrayList<File>();
+        Iterator<File> it = unmanaged.iterator();
         while (it.hasNext()) {
-            File un = (File) it.next();
+            File un = it.next();
             ret.add(un);
         }
 
