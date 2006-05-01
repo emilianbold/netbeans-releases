@@ -127,7 +127,8 @@ public class RevertModifications implements ActionListener, DocumentListener, Pr
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
         dialog.setVisible(true);
-        boolean ret = dialogDescriptor.getValue()==okButton;
+        dialog.setResizable(false);
+        boolean ret = dialogDescriptor.getValue() == okButton;
         return ret;       
     }
 
