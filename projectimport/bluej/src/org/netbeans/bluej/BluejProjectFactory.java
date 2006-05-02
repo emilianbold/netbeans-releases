@@ -63,28 +63,28 @@ public class BluejProjectFactory implements ProjectFactory {
         
         if (fileObject.getFileObject("nbproject") == null) {
             FileObject nbfolder = fileObject.createFolder("nbproject");
-            InputStream str = getClass().getResourceAsStream("resources/build.xml");
+            InputStream str = BluejProjectFactory.class.getResourceAsStream("resources/build.xml");
             FileObject buildxml = fileObject.createData("build.xml");
             FileLock lock = buildxml.lock();
             OutputStream out = buildxml.getOutputStream(lock);
             copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);
             out.close();
             lock.releaseLock();
-            str = getClass().getResourceAsStream("resources/build-impl.xml");
+            str = BluejProjectFactory.class.getResourceAsStream("resources/build-impl.xml");
             FileObject buildimplxml = nbfolder.createData("build-impl.xml");
             lock = buildimplxml.lock();
             out = buildimplxml.getOutputStream(lock);
             copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);
             out.close();
             lock.releaseLock();
-            str = getClass().getResourceAsStream("resources/project.properties");
+            str = BluejProjectFactory.class.getResourceAsStream("resources/project.properties");
             FileObject props = nbfolder.createData("project.properties");
             lock = props.lock();
             out = props.getOutputStream(lock);
             copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);
             out.close();
             lock.releaseLock();
-            str = getClass().getResourceAsStream("resources/project.xml");
+            str = BluejProjectFactory.class.getResourceAsStream("resources/project.xml");
             FileObject projxml = nbfolder.createData("project.xml");
             lock = projxml.lock();
             out = projxml.getOutputStream(lock);

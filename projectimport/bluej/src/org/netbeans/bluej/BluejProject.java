@@ -329,7 +329,7 @@ public final class BluejProject implements Project, AntProjectListener {
         
     }
     
-    private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
+    private static final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
         ProjectXmlSavedHookImpl() {}
         

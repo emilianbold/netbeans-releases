@@ -52,7 +52,7 @@ public class BluejAdvancedOption extends org.netbeans.spi.options.OptionsCategor
     }
     
     
-    class Controller extends OptionsPanelController {
+    static class Controller extends OptionsPanelController {
         private List listeners = new ArrayList();
         private BlueJPanel panel;
         

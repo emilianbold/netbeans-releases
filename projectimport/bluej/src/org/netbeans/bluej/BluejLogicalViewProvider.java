@@ -141,8 +141,7 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
         private String iconPath = null;
         private FileBuiltQuery.Status status = null;
         private boolean attached = false;
-        private String readmeIconPath = null;
-        
+    
         BigIconFilterNode(Node original) {
             this(original, new BigIconFilterChilden(original));
             
@@ -185,8 +184,6 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                     retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/executable-badge.gif"),
                                                      attached ? 44 : 41, attached ? 5 : 7);
                 }
-            } else if (readmeIconPath != null) {
-                retValue = Utilities.loadImage(readmeIconPath);
             } else {
                 retValue = super.getIcon(type);
             }

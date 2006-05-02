@@ -33,15 +33,11 @@ import org.openide.util.Utilities;
  */
 public class BluejSources implements Sources {
     
-    private BluejProject project;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
-
     private SourceGroup[] javaSources;
 
     private SourceGroup[] genericSources;
 
     BluejSources(BluejProject project) {
-        this.project = project;
         javaSources = new SourceGroup[] {new TheOneSourceGroup(project.getProjectDirectory())};
         genericSources = new SourceGroup[] {new TheOneSourceGroup(project.getProjectDirectory())};
     }
@@ -60,33 +56,15 @@ public class BluejSources implements Sources {
 
 
     public void addChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.add(changeListener);
-        }
+        // we never fire anything
     }
 
     public void removeChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.remove(changeListener);
-        }
-    }
-
-    private void fireChange() {
-        ChangeListener[] _listeners;
-        synchronized (listeners) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (int i = 0; i < _listeners.length; i++) {
-            _listeners[i].stateChanged(ev);
-        }
+        // we never fire anything..
     }
 
     
-    private class TheOneSourceGroup implements SourceGroup {
+    private static class TheOneSourceGroup implements SourceGroup {
 
         private FileObject root;
         
@@ -124,9 +102,11 @@ public class BluejSources implements Sources {
         }
 
         public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+        // we never fire anything
         }
 
         public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+        // we never fire anything
         }
         
     }
