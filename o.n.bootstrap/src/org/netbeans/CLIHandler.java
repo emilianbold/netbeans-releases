@@ -546,9 +546,10 @@ public abstract class CLIHandler extends Object {
                 byte[] key = null;
                 byte[] serverAddress = null;
                 int port = -1;
+                DataInputStream is = null;
                 try {
                     enterState(21, block);
-                    DataInputStream is = new DataInputStream(new FileInputStream(lockFile));
+                    is = new DataInputStream(new FileInputStream(lockFile));
                     port = is.readInt();
                     enterState(22, block);
                     key = new byte[KEY_LENGTH];
@@ -558,11 +559,18 @@ public abstract class CLIHandler extends Object {
                     is.readFully(x);
                     enterState(24, block);
                     serverAddress = x;
-                    is.close();
-                    enterState(25, block);
                 } catch (IOException ex2) {
                     // ok, try to read it once more
                     enterState(26, block);
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException ex3) {
+                            // ignore here
+                        }
+                    }
+                    enterState(25, block);
                 }
                 
                 if (key != null && port != -1) {
