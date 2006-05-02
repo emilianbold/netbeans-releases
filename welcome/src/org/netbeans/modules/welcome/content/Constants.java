@@ -29,7 +29,7 @@ import org.openide.util.Utilities;
 public interface Constants {
     
     static final Color DEFAULT_BACKGROUND_COLOR = new Color( 255,255,255 );
-    static final Color SCREEN_BACKGROUND_COLOR = new Color( 168,167,163 );
+    static final Color SCREEN_BACKGROUND_COLOR = new Color( 232,221,194 );
     static final Color SECTION_BACKGROUND_COLOR = new Color( 235,235,235 );
 
     static final Color HEADER_FILL_COLOR = new Color( 251,252,253 );
