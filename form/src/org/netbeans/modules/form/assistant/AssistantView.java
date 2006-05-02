@@ -20,7 +20,8 @@ import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import javax.swing.*;
 
-import org.jdesktop.layout.*;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.openide.util.Utilities;

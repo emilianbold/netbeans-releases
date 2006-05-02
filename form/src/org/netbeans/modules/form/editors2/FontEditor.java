@@ -26,7 +26,8 @@ import org.netbeans.modules.form.FormModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import org.jdesktop.layout.*;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
