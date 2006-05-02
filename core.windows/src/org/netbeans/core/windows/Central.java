@@ -1237,6 +1237,11 @@ final class Central implements ControllerHandler {
                 mode, View.CHANGE_TOPCOMPONENT_ICON_CHANGED, null, tc));
         }
     }
+    
+    public void resetModel() {
+        model.reset();
+    }
+    
     // Others<<
     
     

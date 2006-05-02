@@ -50,6 +50,13 @@ final class PersistenceHandler implements PersistenceObserver {
     private PersistenceHandler() {
     }
 
+    /**
+     * Clears cached data.
+     */
+    public void clear() {
+        name2mode.clear();
+        name2group.clear();
+    }
     
     public static synchronized PersistenceHandler getDefault() {
         if(defaultInstance == null) {

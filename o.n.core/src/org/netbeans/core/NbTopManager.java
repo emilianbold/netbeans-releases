@@ -290,6 +290,7 @@ public abstract class NbTopManager {
         void hide();
         void load();
         void save();
+        void clear();
         /**
          * This is used by projects/projectui to track the project selection.
          * @since 1.20

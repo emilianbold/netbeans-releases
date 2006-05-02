@@ -65,7 +65,7 @@ final class DefaultModel implements Model {
 
     
     /** Modes structure. */
-    private final ModesSubModel modesSubModel = new ModesSubModel(this);
+    private ModesSubModel modesSubModel = new ModesSubModel(this);
 
     /** Set of TopComponentGroup's. */
     private final Set topComponentGroups = new HashSet(5);
@@ -288,6 +288,20 @@ final class DefaultModel implements Model {
             this.projectName = projectName;
         }
     }
+    
+    public void reset() {
+        mode2model.clear();
+        group2model.clear();
+        mainWindowFrameStateJoined = Frame.NORMAL;
+        mainWindowFrameStateSeparated = Frame.NORMAL;
+        editorAreaState = Constants.EDITOR_AREA_JOINED;
+        editorAreaFrameState = Frame.NORMAL;
+        toolbarConfigName = "Standard"; // NOI18N
+        modesSubModel = new ModesSubModel(this);
+        topComponentGroups.clear();
+        
+    }
+    
     /////////////////////////////////////
     // Mutator methods <<
     /////////////////////////////////////

@@ -85,6 +85,8 @@ public interface Model {
     public void setProjectName(String projectName);
     /** Adds sliding mode into specific side */ 
     public void addSlidingMode(ModeImpl mode, String side);
+    /** Resets the model to an initial state. */
+    public void reset();
     // Mutators (global level) <<
     /////////////////////////////
 

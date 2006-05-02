@@ -1086,6 +1086,13 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         
         return PersistenceManager.getDefault().getGlobalTopComponentID(tc, preferredID);
     }
+    
+    public void resetModel() {
+        central.resetModel();
+        RegistryImpl rimpl = (RegistryImpl)componentRegistry();
+        rimpl.clear();
+    }
+    
     // Manipulating methods (overriding the superclass dummy ones) <<
 
     /** Helper only. */

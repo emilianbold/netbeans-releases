@@ -256,6 +256,13 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         }
     }
     
+    void clear() {
+        activatedTopComponent = null;
+        openSet.clear();
+        currentNodes = null;
+        activatedNodes = null;
+    }
+    
     private static void debugLog(String message) {
         Debug.log(RegistryImpl.class, message);
     }

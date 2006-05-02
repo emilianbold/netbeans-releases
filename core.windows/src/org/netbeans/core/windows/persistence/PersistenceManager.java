@@ -171,6 +171,30 @@ public final class PersistenceManager implements PropertyChangeListener {
         
         return defaultInstance;
     }
+
+    /** Clears our internal state. */
+    public void clear() { 
+        rootModuleFolder = null;
+        rootLocalFolder  = null;
+        compsModuleFolder = null;
+        groupsModuleFolder = null;
+        groupsLocalFolder = null;
+        modesModuleFolder = null;
+        modesLocalFolder = null;
+        windowManagerParser = null;
+        if (changeHandler != null) {
+            changeHandler.stopHandling();
+        }
+        changeHandler = null;
+        topComponent2IDMap.clear();
+        topComponentNonPersistent2IDMap.clear();
+        globalIDSet = new HashSet(30);
+        id2TopComponentMap.clear();
+        id2TopComponentNonPersistentMap.clear();
+        dataobjectToTopComponentMap.clear();
+        invalidIds = new HashSet(10);
+        usedTcIds.clear();
+    }
     
     FileObject getRootModuleFolder () {
         try {

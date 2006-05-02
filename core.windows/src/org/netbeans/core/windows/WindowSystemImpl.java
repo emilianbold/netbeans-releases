@@ -16,6 +16,7 @@ package org.netbeans.core.windows;
 
 
 import org.netbeans.core.NbTopManager;
+import org.netbeans.core.windows.persistence.PersistenceManager;
 
 
 /**
@@ -71,6 +72,22 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
             WindowManagerImpl.getInstance().setProjectName(projectName);
         }
         lastProjectName = projectName;
+    }
+    
+    /**
+     * Implements <code>NbTopManager.WindowSystem</code> interface method. 
+     * Clears the window system model - does not delete the configuration
+     * under Windows2Local! You have to delete the folder before calling
+     * this method to really reset the window system state.
+     */
+    public void clear() {
+        WindowManagerImpl.assertEventDispatchThread();
+        hide();
+        WindowManagerImpl.getInstance().resetModel();
+        PersistenceManager.getDefault().clear();
+        PersistenceHandler.getDefault().clear();
+        load();
+        show();        
     }
     
 }
