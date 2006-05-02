@@ -154,8 +154,9 @@ public final class ImportWizard implements ChangeListener {
         }
 
         public void nextPanel() {            
-            if(current() == repositoryStep) {                                            
-                importStep.setup(repositoryStep.getRepositoryFile());
+            if(current() == repositoryStep) {
+                File file = context.getRootFiles()[0];
+                importStep.setup(repositoryStep.getRepositoryFile().appendPath(file.getName()));
             } else if(current() == importStep) {
                 String repositoryUrl = repositoryStep.getRepositoryFile().getRepositoryUrl().toString();
                 String repositoryFolderUrl = importStep.getRepositoryFolderUrl().toString();
