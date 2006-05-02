@@ -198,7 +198,7 @@ Microsystems, Inc. All Rights Reserved.
     </java>
   </target>
   
-  <target name="clean" depends="init, clean-libbean, clean-libutil14, clean-libutil15" 
+  <target name="clean" depends="init, clean-libbean, clean-libutil14, clean-libutil15"
           description="Clean all build products and temp/backup files.">
     <delete>
       <fileset dir=".">
