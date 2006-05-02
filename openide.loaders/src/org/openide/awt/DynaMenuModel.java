@@ -152,9 +152,7 @@ class DynaMenuModel {
             JComponent[] newones = convertArray(pres.synchMenuPresenters(old));
             if (!compareEqualArrays(old, newones)) {
                 if (menuIndex < 0) {
-                    //warning
                     menuIndex = 0;
-                    System.out.println("what's up menu index is  not found..");
                 } else {
                     for (int i = 0; i < old.length; i++) {
                         if (old[i] != null) {
