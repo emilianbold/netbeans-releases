@@ -99,6 +99,8 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     }
 
     public boolean validateUserInput() {
+        invalid(null);
+        
         String text = importPanel.repositoryPathTextField.getText().trim();
         if (text.length() == 0) {
             invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014"));
@@ -154,9 +156,10 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                 repositoryPaths.setupBrowserBehavior(true, false, false, actions);
             } else {
                 repositoryPaths.setRepositoryFile(repositoryFile);
-            }            
+            }
         }
         importPanel.repositoryPathTextField.setText(repositoryFile.getPath());
+        validateUserInput();
     }
 
     public SVNUrl getRepositoryFolderUrl() {
