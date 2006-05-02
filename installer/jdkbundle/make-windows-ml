@@ -1,5 +1,5 @@
 ant \
 -Dismp.home=$IS_HOME \
--Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_06-fcs-bin-b03-windows-i586-p-27_sep_2005.exe \
--Dbundled.jvm=$JVM_PATH/is-j2re1_4_2_07-windows-i586.exe \
+-Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_07-fcs-bin-b02-windows-i586-p-23_mar_2006.exe \
+-Dbundled.jvm=$JVM_PATH/is-jre1_5_0_06-windows-i586.exe \
 build-windows-ml
