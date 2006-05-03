@@ -172,6 +172,7 @@ public class LocalVariablesTest extends NbTestCase {
             support.stepOver ();
             support.stepOver ();
 
+            sf = support.getDebugger ().getCurrentCallStackFrame ();
             vars = sf.getLocalVariables ();
             assertEquals ("Wrong number of local variables", 4, vars.length);
             Arrays.sort (vars, new Comparator () {
