@@ -517,7 +517,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 }
 
                 // perform
-                int retryCounter = 3;
+                int retryCounter = 6;
                 while (true) {
                     try {
                         client.move(srcFile, dstFile, force);
