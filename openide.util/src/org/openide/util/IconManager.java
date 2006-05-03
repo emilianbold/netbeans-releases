@@ -112,7 +112,7 @@ final class IconManager extends Object {
                 }
 
                 // icon found
-                if (ref != null) {
+                if (img != null) {
                     return img;
                 }
 
@@ -138,7 +138,7 @@ final class IconManager extends Object {
                 java.net.URL baseurl = (loader != null) ? loader.getResource(resource) // NOPMD
                         : IconManager.class.getClassLoader().getResource(resource);
                 Iterator it = NbBundle.getLocalizingSuffixes();
-
+                
                 while (it.hasNext()) {
                     String suffix = (String) it.next();
                     Image i;
@@ -262,10 +262,10 @@ final class IconManager extends Object {
         Image cached;
 
         synchronized (map) {
-            Reference r = (Reference) map.get(k);
+            ActiveRef r = map.get(k);
 
             if (r != null) {
-                cached = (Image) r.get();
+                cached = r.get();
 
                 if (cached != null) {
                     return cached;
