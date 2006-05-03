@@ -26,16 +26,20 @@ public class TwoFoldersPreviewPanel extends javax.swing.JPanel {
     private void initComponents() {
         jLabel1 = new javax.swing.JLabel();
 
+        setBackground(new java.awt.Color(238, 238, 238));
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/twofolders.png")));
 
+        repositoryFolderTextField1.setBackground(new java.awt.Color(238, 238, 238));
         repositoryFolderTextField1.setEditable(false);
         repositoryFolderTextField1.setText("jTextField1");
         repositoryFolderTextField1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
+        repositoryFolderTextField2.setBackground(new java.awt.Color(238, 238, 238));
         repositoryFolderTextField2.setEditable(false);
         repositoryFolderTextField2.setText("jTextField1");
         repositoryFolderTextField2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
+        localFolderTextField.setBackground(new java.awt.Color(238, 238, 238));
         localFolderTextField.setEditable(false);
         localFolderTextField.setText("jTextField1");
         localFolderTextField.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -49,13 +53,14 @@ public class TwoFoldersPreviewPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(1, 1, 1)
-                        .add(repositoryFolderTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(2, 2, 2)
-                        .add(repositoryFolderTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))
+                        .add(repositoryFolderTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(1, 1, 1)
-                        .add(localFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))))
+                        .add(localFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(2, 2, 2)
+                        .add(repositoryFolderTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -67,7 +72,7 @@ public class TwoFoldersPreviewPanel extends javax.swing.JPanel {
                 .add(localFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(25, 25, 25)
                 .add(repositoryFolderTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(35, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     

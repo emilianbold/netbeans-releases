@@ -26,12 +26,15 @@ public class SinceOriginPreviewPanel extends javax.swing.JPanel {
     private void initComponents() {
         jLabel1 = new javax.swing.JLabel();
 
+        setBackground(new java.awt.Color(238, 238, 238));
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/sinceorigin.png")));
 
+        repositoryFolderTextField.setBackground(new java.awt.Color(238, 238, 238));
         repositoryFolderTextField.setEditable(false);
         repositoryFolderTextField.setText("jTextField1");
         repositoryFolderTextField.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
+        localFolderTextField.setBackground(new java.awt.Color(238, 238, 238));
         localFolderTextField.setEditable(false);
         localFolderTextField.setText("jTextField1");
         localFolderTextField.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -44,8 +47,9 @@ public class SinceOriginPreviewPanel extends javax.swing.JPanel {
                 .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 397, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(1, 1, 1)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(repositoryFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
-                    .add(localFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)))
+                    .add(repositoryFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                    .add(localFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

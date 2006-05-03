@@ -54,11 +54,12 @@ public class MergePanel extends javax.swing.JPanel {
             .add(0, 226, Short.MAX_VALUE)
         );
 
+        previewPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         org.jdesktop.layout.GroupLayout previewPanelLayout = new org.jdesktop.layout.GroupLayout(previewPanel);
         previewPanel.setLayout(previewPanelLayout);
         previewPanelLayout.setHorizontalGroup(
             previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 747, Short.MAX_VALUE)
+            .add(0, 743, Short.MAX_VALUE)
         );
         previewPanelLayout.setVerticalGroup(
             previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -79,7 +80,7 @@ public class MergePanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(typeComboBox, 0, 660, Short.MAX_VALUE))
+                        .add(typeComboBox, 0, 682, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabel2))
                 .addContainerGap())
