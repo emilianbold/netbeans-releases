@@ -13,8 +13,13 @@
 
 package org.netbeans.core.startup;
 
+import java.io.IOException;
+import java.text.Collator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.Util;
@@ -144,6 +149,49 @@ public final class NbProblemDisplayer {
             default:
                 throw new IllegalArgumentException(dep.toString());
             }
+        }
+    }
+
+    static void problemMessagesForModules(Appendable writeTo, Set<? extends Module> modules, boolean justRootCause) {
+        try {
+            HashSet<String> names = new HashSet<String>();
+            for (Module m : modules) {
+                names.add(m.getCodeName());
+            }
+
+            HashSet<String> dependantModules = new HashSet<String>();
+            for (Module m : modules) {
+                SortedSet<String> problemTexts = new TreeSet<String>(Collator.getInstance());
+                Iterator pit = m.getProblems().iterator();
+                if (pit.hasNext()) {
+                    while (pit.hasNext()) {
+                        Object problem = pit.next();
+                        if (problem instanceof Dependency && justRootCause) {
+                            Dependency d = (Dependency)problem;
+                            if (
+                                d.getType() == Dependency.TYPE_MODULE &&
+                                names.contains(d.getName())
+                            ) {
+                                dependantModules.add(m.getCodeName());
+                                continue;
+                            }
+                        }
+
+                        problemTexts.add(m.getDisplayName() + " - " + // NOI18N
+                                         NbProblemDisplayer.messageForProblem(m, problem));
+                    }
+                } else {
+                    throw new IllegalStateException("Module " + m + " could not be installed but had no problems"); // NOI18N
+                }
+                for (String s: problemTexts) {
+                    writeTo.append("\n\t").append(s); // NOI18N
+                }
+            }
+            if (!dependantModules.isEmpty()) {
+                writeTo.append("\n\t").append(NbBundle.getMessage(NbProblemDisplayer.class, "MSG_also_dep_modules", dependantModules.size()));
+            }
+        } catch (IOException ex) {
+            throw (IllegalStateException)new IllegalStateException().initCause(ex);
         }
     }
     

@@ -18,7 +18,9 @@ package org.netbeans.core.startup;
 import java.awt.Component;
 import java.io.File;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -113,48 +115,34 @@ final class NbEvents extends Events {
             setStatusText(
                 "Finished deploying test module."); // NOI18N
         } else if (message == FAILED_INSTALL_NEW) {
-            SortedSet<String> problemTexts = new TreeSet<String>(Collator.getInstance());
-            @SuppressWarnings("unchecked") Iterator<Module> it = ((Set<Module>)args[0]).iterator();
-            while (it.hasNext()) {
-                Module m = it.next();
-                Iterator pit = m.getProblems().iterator();
-                if (pit.hasNext()) {
-                    while (pit.hasNext()) {
-                        problemTexts.add(m.getDisplayName() + " - " + // NOI18N
-                                         NbProblemDisplayer.messageForProblem(m, pit.next()));
-                    }
-                } else {
-                    throw new IllegalStateException("Module " + m + " could not be installed but had no problems"); // NOI18N
-                }
+            List<String> problemTexts = new ArrayList<String>();
+            @SuppressWarnings("unchecked") Set<Module> modules = ((Set<Module>)args[0]);
+            {
+                StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new"));
+                NbProblemDisplayer.problemMessagesForModules(buf, modules, false);
+                logger.log(Level.INFO, buf.toString());
             }
-            StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new"));
-	    for (String s: problemTexts) {
-                buf.append("\n\t").append(s); // NOI18N
+            {
+                StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new"));
+                NbProblemDisplayer.problemMessagesForModules(buf, modules, true);
+                String msg = buf.toString();
+                notify(msg, true);
             }
-            String msg = buf.toString();
-            notify(msg, true);
-            logger.log(Level.INFO, msg);
             setStatusText("");
         } else if (message == FAILED_INSTALL_NEW_UNEXPECTED) {
             Module m = (Module)args[0];
             // ignore args[1]: InvalidException
-            StringBuffer buf = new StringBuffer(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
-            Iterator it = m.getProblems().iterator();
-            if (it.hasNext()) {
-                SortedSet<String> problemTexts = new TreeSet<String>(Collator.getInstance());
-                while (it.hasNext()) {
-                    problemTexts.add(NbProblemDisplayer.messageForProblem(m, it.next()));
-                }
-                it = problemTexts.iterator();
-                while (it.hasNext()) {
-                    buf.append(" - "); // NOI18N
-                    buf.append((String)it.next());
-                }
-            } else {
-                throw new IllegalStateException("Module " + m + " could not be installed but had no problems"); // NOI18N
+            {
+                StringBuffer buf = new StringBuffer(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
+                NbProblemDisplayer.problemMessagesForModules(buf, Collections.singleton(m), false);
+                logger.log(Level.INFO, buf.toString());
             }
-            notify(buf.toString(), true);
-            logger.log(Level.INFO, buf.toString());
+
+            {
+                StringBuffer buf = new StringBuffer(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
+                NbProblemDisplayer.problemMessagesForModules(buf, Collections.singleton(m), true);
+                notify(buf.toString(), true);
+            }
             setStatusText("");
         } else if (message == START_READ) {
             setStatusText(
@@ -291,7 +279,6 @@ final class NbEvents extends Events {
             this.warn = type;
             this.text = text;
             //this.options = options;
-            RequestProcessor.Task t = RP.post(this, 0, Thread.MIN_PRIORITY);
             
             if (questions++ == 0) {
                 this.options = new String[] {
@@ -299,6 +286,8 @@ final class NbEvents extends Events {
                     NbBundle.getMessage(Notifier.class, "MSG_exit"),
                 };
             }
+
+            RequestProcessor.Task t = RP.post(this, 0, Thread.MIN_PRIORITY);
             
             if (options != null) {
                 t.waitFinished();
@@ -318,8 +307,8 @@ final class NbEvents extends Events {
             if (options == null) {
                 JOptionPane.showMessageDialog(null, text, msg, type);
             } else {
-                int ret = JOptionPane.showOptionDialog(c, text, msg, 0, type, null, options, options[0]);
-                if (ret == 1) {
+                int ret = JOptionPane.showOptionDialog(c, text, msg, 0, type, null, options, options[1]);
+                if (ret == 1 || ret == -1) { // exit or close
                     TopSecurityManager.exit(1);
                 }
             }
