@@ -116,28 +116,6 @@ public class RepositoryPathNode extends AbstractNode {
         }
     }
 
-    public Image getIcon(int type) {
-        Image img = null;
-        if (type == BeanInfo.ICON_COLOR_16x16) {
-            img = (Image) UIManager.get("Nb.Explorer.Folder.icon");                                         // NOI18N
-        }
-        if (img == null) {
-            img = super.getIcon(type);
-        }
-        return img;
-    }       
-
-    public Image getOpenedIcon(int type) {
-        Image img = null;
-        if (type == BeanInfo.ICON_COLOR_16x16) {
-            img = (Image) UIManager.get("Nb.Explorer.Folder.openedIcon");                                   // NOI18N
-        }
-        if (img == null) {
-            img = super.getIcon(type);
-        }
-        return img;
-    }
-
     public Action[] getActions(boolean context) {
         return client.getActions();
     }

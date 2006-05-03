@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.ui.browser;
 
+import java.awt.Image;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 
@@ -22,10 +23,9 @@ import org.openide.nodes.Children;
  * @author Petr Kuzel
  */
 final class WaitNode extends AbstractNode {
-
     public WaitNode(String name) {
         super(Children.LEAF);
         setDisplayName(name);
-        setIconBaseWithExtension("org/netbeans/modules/subversion/ui/wizards/browser/wait.gif");  // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/wait.gif");  // NOI18N
     }
 }
