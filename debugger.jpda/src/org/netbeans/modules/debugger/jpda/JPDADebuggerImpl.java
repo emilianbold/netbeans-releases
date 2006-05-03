@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -102,7 +102,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
     //private DebuggerEngine              debuggerEngine;
     private VirtualMachine              virtualMachine = null;
     private Exception                   exception;
-    private Thread                      startingThread;
     private int                         state = 0;
     private Operator                    operator;
     private PropertyChangeSupport       pcs;
@@ -239,7 +238,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 else 
                     return;
             }
-            if (!starting && state != STATE_STARTING) {
+            if (!starting && state != STATE_STARTING || exception != null) {
                 return ; // We're already running
             }
             try {
@@ -739,14 +738,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         setState (STATE_STARTING);
     }
     
-    public void setStartingThread (Thread startingThread) {
-        this.startingThread = startingThread;
-    }
-    
-    public void unsetStartingThread() {
-        this.startingThread = null;
-    }
-
     public void setRunning (VirtualMachine vm, Operator o) {
         if (startVerbose) {
             System.out.println("\nS JPDADebuggerImpl.setRunning ()");
@@ -825,8 +816,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
                 (null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
-            if (startingThread != null) startingThread.interrupt ();
-            startingThread = null;
             Operator o = getOperator();
             if (o != null) o.stop();
             try {

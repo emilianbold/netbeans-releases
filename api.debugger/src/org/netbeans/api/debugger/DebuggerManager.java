@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,11 @@ package org.netbeans.api.debugger;
 import java.beans.*;
 import java.util.*;
 import java.util.HashMap;
+
+import org.openide.util.Cancellable;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+
 import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -217,6 +222,10 @@ public final class DebuggerManager {
      * {@link org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider}s
      * installed for Session, and crates a new 
      * {@link DebuggerEngine}(s).
+     * <br>
+     * If the implementation of ACTION_START providers support cancellation (implements {@link Cancellable}),
+     * this startup sequence can be canceled via Thread.interrupt() while
+     * startDebugging() method is waiting for the action providers.
      *
      * @param info debugger startup info
      * @return DebuggerEngines started for given info
@@ -313,8 +322,33 @@ public final class DebuggerManager {
         
         k = engines.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerEngine) engines.get (i)).getActionsManager ().postAction 
+            if (Thread.interrupted()) {
+                break;
+            }
+            Task task = ((DebuggerEngine) engines.get (i)).getActionsManager ().postAction
                 (ActionsManager.ACTION_START);
+            if (task instanceof Cancellable) {
+                try {
+                    task.waitFinished(0);
+                } catch (InterruptedException iex) {
+                    if (((Cancellable) task).cancel()) {
+                        break;
+                    } else {
+                        task.waitFinished();
+                    }
+                }
+            } else {
+                task.waitFinished();
+            }
+        }
+        if (i < k) { // It was canceled
+            int n = i + 1;
+            for (i = 0; i < k; i++) {
+                ActionsManager am = ((DebuggerEngine) engines.get (i)).getActionsManager();
+                if (i < (n - 1)) am.postAction(ActionsManager.ACTION_KILL); // kill the started engines
+                am.destroy();
+            }
+            return new DebuggerEngine[] {};
         }
         
         if (sessionToStart != null)

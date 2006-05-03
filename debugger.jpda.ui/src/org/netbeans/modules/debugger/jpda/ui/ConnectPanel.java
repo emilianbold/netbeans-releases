@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -60,6 +60,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -286,10 +287,18 @@ Controller, ActionListener {
         saveArgs (args, connector);
         
         // Take the start off the AWT EQ:
-        RequestProcessor.getDefault().post(new Runnable() {
+        final RequestProcessor.Task[] startTaskPtr = new RequestProcessor.Task[1];
+        startTaskPtr[0] = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                final Thread theCurrentThread = Thread.currentThread();
                 ProgressHandle progress = ProgressHandleFactory.createHandle(
-                        NbBundle.getMessage(ConnectPanel.class, "CTL_connectProgress"));
+                        NbBundle.getMessage(ConnectPanel.class, "CTL_connectProgress"),
+                        new Cancellable() {
+                            public boolean cancel() {
+                                theCurrentThread.interrupt();
+                                return startTaskPtr[0].isFinished();
+                            }
+                });
                 try {
                     //System.out.println("Before progress.start()");
                     progress.start();

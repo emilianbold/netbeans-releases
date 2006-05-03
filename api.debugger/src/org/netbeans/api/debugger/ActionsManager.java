@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,6 +19,7 @@ import java.util.*;
 
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
+import org.openide.util.Cancellable;
 import org.openide.util.Task;
 
 /** 
@@ -162,10 +163,16 @@ public final class ActionsManager {
             }
         }
         boolean posted = false;
-        final AsynchActionTask task = new AsynchActionTask();
+        int k;
         if (l != null) {
-            int i, k = l.size ();
-            List postedActions = new ArrayList(k);
+            k = l.size ();
+        } else {
+            k = 0;
+        }
+        List postedActions = new ArrayList(k);
+        final AsynchActionTask task = new AsynchActionTask(postedActions);
+        if (l != null) {
+            int i;
             for (i = 0; i < k; i++) {
                 ActionsProvider ap = (ActionsProvider) l.get (i);
                 if (ap.isEnabled (action)) {
@@ -433,9 +440,30 @@ public final class ActionsManager {
     
     // innerclasses ............................................................
     
-    private static class AsynchActionTask extends Task {
+    private static class AsynchActionTask extends Task implements Cancellable {
+        
+        private Collection postedActions;
+        
+        public AsynchActionTask(Collection postedActions) {
+            this.postedActions = postedActions;
+        }
+        
         void actionDone() {
             notifyFinished();
+        }
+
+        public boolean cancel() {
+            for (Iterator it = postedActions.iterator(); it.hasNext(); ) {
+                Object action = it.next();
+                if (action instanceof Cancellable) {
+                    if (!((Cancellable) action).cancel()) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            return true;
         }
     }
     

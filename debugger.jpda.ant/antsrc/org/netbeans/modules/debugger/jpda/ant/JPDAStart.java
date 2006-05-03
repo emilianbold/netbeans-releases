@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -220,7 +220,7 @@ public class JPDAStart extends Task implements Runnable {
                 // TODO: revisit later when http://developer.java.sun.com/developer/bugParade/bugs/4932074.html gets integrated into JDK
                 // This code parses the address string "HOST:PORT" to extract PORT and then point debugee to localhost:PORT
                 // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
-                Map args = lc.defaultArguments ();
+                final Map args = lc.defaultArguments ();
                 String address = lc.startListening (args);
                 int port = -1;
                 try {
@@ -269,22 +269,30 @@ public class JPDAStart extends Task implements Runnable {
                 if (startVerbose)
                     System.out.println("\nS start listening on port " + port);
                 
-                Map properties = new HashMap ();
+                final Map properties = new HashMap ();
                 // uncomment to implement smart stepping with step-outs 
                 // rather than step-ins (for J2ME)
                 // props.put("SS_ACTION_STEPOUT", Boolean.TRUE);
                 properties.put ("sourcepath", sourcePath);
                 properties.put ("name", getName ());
                 properties.put ("jdksources", jdkSourcePath);
-                JPDADebugger.startListening (
-                    lc, 
-                    args, 
-                    new Object[] {properties}
-                );
+                final ListeningConnector flc = lc;
+                // Let it start asynchronously so that the script can go on and start the debuggee
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            JPDADebugger.startListening (
+                                flc,
+                                args,
+                                new Object[] { properties }
+                            );
+                        } catch (DebuggerStartException dsex) {
+                            // Was not able to start up
+                        }
+                    }
+                });
             } catch (java.io.IOException ioex) {
                 lock[1] = ioex;
-            } catch (DebuggerStartException dsex) {
-                lock[1] = dsex;
             } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException icaex) {
                 lock[1] = icaex;
             } finally {

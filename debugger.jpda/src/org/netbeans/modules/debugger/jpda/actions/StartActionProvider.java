@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,6 +35,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.openide.ErrorManager;
+import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
 
@@ -42,7 +43,7 @@ import org.openide.util.RequestProcessor;
 *
 * @author   Jan Jancura
 */
-public class StartActionProvider extends ActionsProvider {
+public class StartActionProvider extends ActionsProvider implements Cancellable {
 //    private static transient String []        stopMethodNames = 
 //        {"main", "start", "init", "<init>"}; // NOI18N
     
@@ -64,6 +65,7 @@ public class StartActionProvider extends ActionsProvider {
 
     private JPDADebuggerImpl debuggerImpl;
     private ContextProvider lookupProvider;
+    private Thread startingThread;
     
     
     public StartActionProvider (ContextProvider lookupProvider) {
@@ -100,7 +102,7 @@ public class StartActionProvider extends ActionsProvider {
             );
     }
     
-    public void postAction(Object action, Runnable actionPerformedNotifier) {
+    public void postAction(Object action, final Runnable actionPerformedNotifier) {
         if (startVerbose)
             System.out.println ("\nS StartActionProvider.postAction ()");
         JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
@@ -125,11 +127,20 @@ public class StartActionProvider extends ActionsProvider {
         
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                debuggerImpl.setStartingThread(Thread.currentThread());
+                //debuggerImpl.setStartingThread(Thread.currentThread());
+                synchronized (StartActionProvider.this) {
+                    startingThread = Thread.currentThread();
+                }
                 try {
                     doStartDebugger(cookie);
+                //} catch (InterruptedException iex) {
+                    // We've interrupted ourselves
                 } finally {
-                    debuggerImpl.unsetStartingThread();
+                    synchronized (StartActionProvider.this) {
+                        startingThread = null;
+                    }
+                    //debuggerImpl.unsetStartingThread();
+                    actionPerformedNotifier.run();
                 }
                 
             }
@@ -142,9 +153,9 @@ public class StartActionProvider extends ActionsProvider {
             System.out.println ("\nS StartActionProvider." +
                 "doAction ().thread"
             );
+        Exception exception = null;
         try {
-            VirtualMachine virtualMachine = cookie.
-                getVirtualMachine ();
+            VirtualMachine virtualMachine = cookie.getVirtualMachine ();
             virtualMachine.setDebugTraceMode (jdiTrace);
 
             final Object startLock = new Object();
@@ -177,24 +188,29 @@ public class StartActionProvider extends ActionsProvider {
                 System.out.println ("\nS StartActionProvider." +
                     "doAction ().thread end: success"
                 );
+        } catch (InterruptedException iex) {
+            exception = iex;
         } catch (IOException ioex) {
-            if (startVerbose)
-                System.out.println ("\nS StartActionProvider." +
-                    "doAction ().thread end: exception " + ioex
-                );
-            debuggerImpl.setException (ioex);
-            ((Session) lookupProvider.lookupFirst 
-                (null, Session.class)).kill ();
+            exception = ioex;
         } catch (Exception ex) {
-            if (startVerbose)
-                System.out.println ("\nS StartActionProvider." +
-                    "doAction ().thread end: exception " + ex
-                );
-            debuggerImpl.setException (ex);
+            exception = ex;
             // Notify! Otherwise bugs in the code can not be located!!!
             ErrorManager.getDefault().notify(ex);
-            ((Session) lookupProvider.lookupFirst 
-                (null, Session.class)).kill ();
+        }
+        if (exception != null) {
+            if (startVerbose)
+                System.out.println ("\nS StartActionProvider." +
+                    "doAction ().thread end: exception " + exception
+                );
+            debuggerImpl.setException (exception);
+            // kill the session that did not start properly
+            final Session session = (Session) lookupProvider.lookupFirst(null, Session.class);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    // Kill it in a separate thread so that the startup sequence can be finished.
+                    session.kill();
+                }
+            });
         }
     }
 
@@ -227,5 +243,16 @@ public class StartActionProvider extends ActionsProvider {
             },
             debuggerImpl.LOCK
         );
+    }
+
+    public boolean cancel() {
+        synchronized (StartActionProvider.this) {
+            if (startingThread != null) {
+                startingThread.interrupt();
+            } else {
+                return true;
+            }
+        }
+        return true;
     }
 }
