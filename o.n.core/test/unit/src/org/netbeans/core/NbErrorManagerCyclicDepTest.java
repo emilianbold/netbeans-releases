@@ -115,12 +115,18 @@ public class NbErrorManagerCyclicDepTest extends NbTestCase {
         public void log(LogRecord record) {
             init();
 
-            errorManager.log(((Integer)levelMap.get(record.getLevel())).intValue(),
-                formatter.format(record));
+            Integer l = (Integer)levelMap.get(record.getLevel());
+            if (l == null) {
+                l = Integer.valueOf(1);
+            }
+            errorManager.log(l.intValue(), formatter.format(record));
             
             if (record.getThrown() != null) {
-                errorManager.notify(((Integer)exceptionLevelMap.get(
-                    record.getLevel())).intValue(), record.getThrown());
+                Integer x = (Integer)exceptionLevelMap.get(record.getLevel());
+                if (x == null) {
+                    x = new Integer(1);
+                }
+                errorManager.notify(x.intValue(), record.getThrown());
             }
         }
     }
