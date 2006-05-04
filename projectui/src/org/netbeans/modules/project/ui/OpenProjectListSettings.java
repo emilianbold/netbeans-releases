@@ -129,7 +129,18 @@ public class OpenProjectListSettings extends SystemOption {
     
     public File getProjectsFolder () {
         String result = (String) this.getProperty (PROP_PROJECTS_FOLDER);
-        if (result == null) {            
+        if (result == null) {
+            File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
+            if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
+                String nbPrjDirName = NbBundle.getMessage(OpenProjectListSettings.class, "DIR_NetBeansProjects");
+                File nbPrjDir = new File(defaultDir, nbPrjDirName);
+                if (nbPrjDir.exists() && nbPrjDir.canWrite()) {
+                    return nbPrjDir;
+                } else {
+                    boolean created = nbPrjDir.mkdir();
+                    if (created) return nbPrjDir; 
+                }
+            }
             result = System.getProperty("user.home");   //NOI18N
         }
         return FileUtil.normalizeFile(new File(result));
