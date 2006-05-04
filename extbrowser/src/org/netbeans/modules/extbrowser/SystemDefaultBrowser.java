@@ -90,10 +90,10 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      * @return browserImpl implementation of browser.
      */
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
-        if (Utilities.isWindows ()) {
-            return new NbDdeBrowserImpl(this);
-        } else if (MUSTANG_DESKTOP_BROWSE != null) {
+        if (MUSTANG_DESKTOP_BROWSE != null) {
             return new MustangBrowserImpl();
+        } else if (Utilities.isWindows ()) {
+            return new NbDdeBrowserImpl(this);
         } else {
             throw new UnsupportedOperationException (NbBundle.getMessage (SystemDefaultBrowser.class, "MSG_CannotUseBrowser"));
         }
@@ -121,7 +121,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      * @return process descriptor that allows to start browser.
      */
     protected NbProcessDescriptor defaultBrowserExecutable () {
-        if (!Utilities.isWindows()) {
+        if (!Utilities.isWindows() || MUSTANG_DESKTOP_BROWSE != null) {
             return new NbProcessDescriptor("", ""); // NOI18N
         }
         
@@ -158,7 +158,9 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         public void setURL(URL url) {
             URL extURL = URLUtil.createExternalURL(url, /* to be safe */false);
             try {
-                MUSTANG_DESKTOP_BROWSE.browse(extURL.toURI());
+		URI uri = extURL.toURI();
+                Logger.getLogger(SystemDefaultBrowser.class.getName()).fine("Calling java.awt.Desktop.browse("+uri+")");
+                MUSTANG_DESKTOP_BROWSE.browse(uri);
             } catch (URISyntaxException e) {
                 assert false : e;
             } catch (IOException e) {
