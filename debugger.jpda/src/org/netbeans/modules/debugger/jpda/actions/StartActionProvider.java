@@ -109,7 +109,10 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             lookupFirst (null, JPDADebugger.class);
         if ( debugger != null && 
              debugger.getVirtualMachine () != null
-        ) return;
+        ) {
+            actionPerformedNotifier.run();
+            return;
+        }
         
         
         final AbstractDICookie cookie = (AbstractDICookie) lookupProvider.
