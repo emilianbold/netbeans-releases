@@ -100,6 +100,85 @@ public class NbProblemDisplayerTest extends NbTestCase {
             fail("There should be note about one missing module: " + msg);
         }
     }
+    public void testFindTheRootCauseForMoreCausesAtOnce() throws Exception {
+        StringBuilder writeTo = new StringBuilder();
+        Set<ProblemModule> modules = new HashSet<ProblemModule>();
+
+        {
+            Manifest mf = new Manifest();
+            mf.getMainAttributes().putValue("OpenIDE-Module", "root.module");
+            ProblemModule pm = new ProblemModule(mf);
+            pm.addProblem(Dependency.create(Dependency.TYPE_JAVA, "Java > 1.30"));
+            pm.addAttr("OpenIDE-Module-Name", "RootModule");
+            modules.add(pm);
+        }
+        {
+            Manifest mf = new Manifest();
+            mf.getMainAttributes().putValue("OpenIDE-Module", "root2.module");
+            ProblemModule pm = new ProblemModule(mf);
+            pm.addProblem(Dependency.create(Dependency.TYPE_JAVA, "Java > 1.35"));
+            pm.addAttr("OpenIDE-Module-Name", "Root2Module");
+            modules.add(pm);
+        }
+        {
+            Manifest mf = new Manifest();
+            mf.getMainAttributes().putValue("OpenIDE-Module", "root3.module");
+            ProblemModule pm = new ProblemModule(mf);
+            pm.addProblem(Dependency.create(Dependency.TYPE_JAVA, "Java > 1.40"));
+            pm.addAttr("OpenIDE-Module-Name", "Root3Module");
+            modules.add(pm);
+        }
+
+        {
+            Manifest mf = new Manifest();
+            mf.getMainAttributes().putValue("OpenIDE-Module", "dep.module");
+            ProblemModule pm = new ProblemModule(mf);
+            pm.addProblem(Dependency.create(Dependency.TYPE_MODULE, "root.module"));
+            pm.addAttr("OpenIDE-Module-Name", "DepModule");
+            modules.add(pm);
+        }
+        {
+            Manifest mf = new Manifest();
+            mf.getMainAttributes().putValue("OpenIDE-Module", "dep2.module");
+            ProblemModule pm = new ProblemModule(mf);
+            pm.addProblem(Dependency.create(Dependency.TYPE_MODULE, "root2.module"));
+            pm.addAttr("OpenIDE-Module-Name", "Dep2Module");
+            modules.add(pm);
+        }
+        {
+            Manifest mf = new Manifest();
+            mf.getMainAttributes().putValue("OpenIDE-Module", "dep3.module");
+            ProblemModule pm = new ProblemModule(mf);
+            pm.addProblem(Dependency.create(Dependency.TYPE_MODULE, "root3.module"));
+            pm.addAttr("OpenIDE-Module-Name", "Dep3Module");
+            modules.add(pm);
+        }
+        
+        NbProblemDisplayer.problemMessagesForModules(writeTo, modules, true);
+
+        String msg = writeTo.toString();
+        if (msg.indexOf("DepModule") >= 0) {
+            fail("There should not be be name of dep.module: " + msg);
+        }
+
+        Locale.setDefault(Locale.US);
+
+        if (msg.toUpperCase().indexOf(" 3 ") == -1) {
+            fail("There should be note about 3 missing modules: " + msg);
+        }
+        if (msg.toUpperCase().indexOf("DEP3") >= 0) {
+            fail("Nothing about Dep3: " + msg);
+        }
+        if (msg.toUpperCase().indexOf("DEP2") >= 0) {
+            fail("Nothing about Dep2: " + msg);
+        }
+        if (msg.toUpperCase().indexOf("1.35") == -1) {
+            fail("Something about Root2: " + msg);
+        }
+        if (msg.toUpperCase().indexOf("1.40") == -1) {
+            fail("Something about Root3: " + msg);
+        }
+    }
 
     private static class ProblemModule extends Module {
         private static final Inst INST = new Inst();
