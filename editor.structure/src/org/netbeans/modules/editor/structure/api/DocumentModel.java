@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.event.DocumentListener;
@@ -34,7 +35,6 @@ import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.editor.structure.DocumentModelProviderFactory;
-import org.netbeans.modules.editor.structure.api.DocumentElement.Attributes;
 import org.netbeans.modules.editor.structure.spi.DocumentModelProvider;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
@@ -131,6 +131,7 @@ public final class DocumentModel {
     private int numReaders = 0;
     private int numWriters = 0;
     private Thread currWriter = null;
+    private Thread currReader = null;
     
     //stores DocumentModel listeners
     private HashSet dmListeners = new HashSet();
@@ -138,6 +139,8 @@ public final class DocumentModel {
     private static final int ELEMENT_REMOVED = 2;
     private static final int ELEMENT_CHANGED = 3;
     private static final int ELEMENT_ATTRS_CHANGED = 4;
+    
+    private static Map locks = new WeakHashMap();
     
     DocumentModel(Document doc, DocumentModelProvider provider) throws DocumentModelException {
         this.doc = (BaseDocument)doc; //type changed in DocumentModel.getDocumentModel(document);
@@ -149,9 +152,9 @@ public final class DocumentModel {
         //init RP & RP task
         requestProcessor = new RequestProcessor(DocumentModel.class.getName());
         task = null;
-
+        
         //create a new root element - this element comprises the entire document
-        addRootElement();        
+        addRootElement();
         
         /*create a sorted set which sorts its elements according to their
         startoffsets and endoffsets.
@@ -165,7 +168,7 @@ public final class DocumentModel {
         
         this.changesWatcher = new DocumentChangesWatcher();
         getDocument().addDocumentListener(WeakListeners.document(changesWatcher, doc));
-
+        
     }
     
     /** Clients uses this method to obtain an instance of the model for a particullar text document.
@@ -175,36 +178,48 @@ public final class DocumentModel {
      * @param doc the text document for which the client wants to create a model
      * @return an initialized DocumentModel instance containing the structural data got from DocumentModelProvider
      */
-    public static synchronized DocumentModel getDocumentModel(Document doc) throws DocumentModelException {
-        if(!(doc instanceof BaseDocument))
-            throw new ClassCastException("Currently it is necessary to pass org.netbeans.editor.BaseDocument instance into the DocumentModel.getDocumentProvider(j.s.t.Document) method.");
-        
-        //first test if the document has already associated a document model
-        WeakReference modelWR = (WeakReference)doc.getProperty(DocumentModel.class);
-        DocumentModel cachedInstance = modelWR == null ? null : (DocumentModel)modelWR.get();
-        if(cachedInstance != null) {
+    public static DocumentModel getDocumentModel(Document doc) throws DocumentModelException {
+        synchronized (getLock(doc)) {
+            if(!(doc instanceof BaseDocument))
+                throw new ClassCastException("Currently it is necessary to pass org.netbeans.editor.BaseDocument instance into the DocumentModel.getDocumentProvider(j.s.t.Document) method.");
+            //first test if the document has already associated a document model
+            WeakReference modelWR = (WeakReference)doc.getProperty(DocumentModel.class);
+            DocumentModel cachedInstance = modelWR == null ? null : (DocumentModel)modelWR.get();
+            if(cachedInstance != null) {
 //            System.out.println("[document model] got from weak reference stored in editor document property");
-            return cachedInstance;
-        } else {
-            //create a new modelx
-            Class editorKitClass = ((BaseDocument)doc).getKitClass();
-            BaseKit kit = BaseKit.getKit(editorKitClass);
-            if (kit != null) {
-                String mimeType = kit.getContentType();
-                //get the provider instance (the provider is a singleton class)
-                DocumentModelProvider provider =
-                        DocumentModelProviderFactory.getDefault().getDocumentModelProvider(mimeType);
-                if(provider != null) {
-                    DocumentModel model = new DocumentModel(doc, provider);
-                    //and put it as a document property
-                    doc.putProperty(DocumentModel.class, new WeakReference(model));
-//                    System.out.println("[document model] created a new instance");
-                    return model;
-                } else
-                    return null; //no provider ??? should not happen?!?!
+                return cachedInstance;
             } else {
-                throw new IllegalStateException("No editor kit for document " + doc + "!");
+                //create a new modelx
+                Class editorKitClass = ((BaseDocument)doc).getKitClass();
+                BaseKit kit = BaseKit.getKit(editorKitClass);
+                if (kit != null) {
+                    String mimeType = kit.getContentType();
+                    //get the provider instance (the provider is a singleton class)
+                    DocumentModelProvider provider =
+                            DocumentModelProviderFactory.getDefault().getDocumentModelProvider(mimeType);
+                    if(provider != null) {
+                        DocumentModel model = new DocumentModel(doc, provider);
+                        //and put it as a document property
+                        doc.putProperty(DocumentModel.class, new WeakReference(model));
+//                    System.out.println("[document model] created a new instance");
+                        return model;
+                    } else
+                        return null; //no provider ??? should not happen?!?!
+                } else {
+                    throw new IllegalStateException("No editor kit for document " + doc + "!");
+                }
             }
+        }
+    }
+    
+    private static Object getLock(Document doc) {
+        synchronized (locks) {
+            Object lock = locks.get(doc);
+            if(lock == null) {
+                lock = new Object();
+                locks.put(doc, lock);
+            }
+            return lock;
         }
     }
     
@@ -707,6 +722,7 @@ public final class DocumentModel {
                 }
                 wait();
             }
+            currReader = Thread.currentThread();
             numReaders += 1;
         } catch (InterruptedException e) {
             throw new Error("Interrupted attempt to aquire read lock");
@@ -720,6 +736,7 @@ public final class DocumentModel {
         }
         assert numReaders > 0 : "Bad read lock state!";
         numReaders -= 1;
+        if(numReaders == 0) currReader = null;
         notify();
     }
     
@@ -729,6 +746,10 @@ public final class DocumentModel {
                 if (Thread.currentThread() == currWriter) {
                     numWriters++;
                     return;
+                }
+                if (Thread.currentThread() == currReader) {
+                    //if this thread has readlock then we can write
+                    return ;
                 }
                 wait();
             }
