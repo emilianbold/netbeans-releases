@@ -50,6 +50,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -509,6 +510,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
      */
     private String findJemmyJar(PropertyEvaluator eval) {
         File f = project.getNbrootFile("jemmy/builds/jemmy.jar", eval); // NOI18N
+        if(f == null) {
+            // try to find jemmy.jar installed by Jemmy module
+            f = InstalledFileLocator.getDefault().locate(
+                    "modules/ext/jemmy.jar", "org.netbeans.modules.jemmy", false);  // NOI18N
+        }
         if (f != null) {
             return f.getAbsolutePath();
         } else {
@@ -521,6 +527,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
      */
     private String findJelly2NbJar(PropertyEvaluator eval) {
         File f = project.getNbrootFile("jellytools/builds/jelly2-nb.jar", eval); // NOI18N
+        if(f == null) {
+            // try to find jelly2-nb.jar installed by Jellytools module
+            f = InstalledFileLocator.getDefault().locate(
+                    "modules/ext/jelly2-nb.jar", "org.netbeans.modules.jellytools", false);  // NOI18N
+        }
         if (f != null) {
             return f.getAbsolutePath();
         } else {
