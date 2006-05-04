@@ -429,7 +429,14 @@ public final class NodeOp extends Object {
             String name = "org.openide.actions." + arr[i] + "Action"; // NOI18N
 
             try {
-                Class c = Class.forName(name);
+                ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                if (l == null) {
+                    l = Thread.currentThread().getContextClassLoader();
+                }
+                if (l == null) {
+                    l = NodeOp.class.getClassLoader();
+                }
+                Class c = Class.forName(name, true, l);
                 ll.add(org.openide.util.actions.SystemAction.get(c));
             } catch (ClassNotFoundException ex) {
                 Logger.getAnonymousLogger().log(Level.WARNING, "NodeOp.java: Missing class " + name, ex); // NOI18N
