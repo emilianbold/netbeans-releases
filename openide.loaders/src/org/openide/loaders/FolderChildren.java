@@ -147,13 +147,19 @@ implements PropertyChangeListener, ChangeListener {
   
     public Node[] getNodes(boolean optimalResult) {
         Node[] res;
+        Object hold;
+
         if (optimalResult) {
             if (checkChildrenMutex()) {
+                err.fine("getNodes(true)"); // NOI18N
                 FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
+                err.fine("getNodes(true): waitProcessingFinished"); // NOI18N
                 RequestProcessor.Task task = refreshChildren();
                 res = getNodes();
+                err.fine("getNodes(true): getNodes: " + res.length); // NOI18N
                 task.schedule(0);
                 task.waitFinished();
+                err.fine("getNodes(true): waitFinished"); // NOI18N
             } else {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("getNodes(true) called while holding the Children.MUTEX") // NOI18N
@@ -161,6 +167,7 @@ implements PropertyChangeListener, ChangeListener {
             }
         }
         res = getNodes();
+        err.fine("getNodes(boolean): post clear task"); // NOI18N
         postClearTask();         // we can clean the references to data objects now
                                  // they are no longer needed
         return res;
