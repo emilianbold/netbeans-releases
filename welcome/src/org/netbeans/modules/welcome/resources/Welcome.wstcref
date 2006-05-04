@@ -7,5 +7,5 @@
 <tc-ref version="2.0" id="Welcome">
     <module name="org.netbeans.modules.welcome" />
     <tc-id id="Welcome" />
-    <state opened="true" />
+    <state opened="false" />
 </tc-ref>
