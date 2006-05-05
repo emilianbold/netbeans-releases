@@ -743,7 +743,7 @@ support. Until modified, layout configuration files lives in modules that define
 together with other module classes.</p>
 
 <p>However, modes layout configuration is likely to change frequently during
-runtime of the system, so then modifications will be stored under (for example) the <b>/system</b>
+runtime of the system, so then modifications will be stored under (for example) the <code>config</code>
 subdirectory of current userdir, as shows example directory tree below.
 Described mechanism is fully driven by XML layers support provided by
 Filesystems API and we needn't care about it more from the perspective of 
@@ -766,8 +766,8 @@ than details of how this filesystem is composed and modified.
 <div class="nonnormative">
 
 <P>Window system is not part of individual projects as it was in previous releases.
-Window system configuration is defined by modules in folder Windows2 and is stored
-localy under $NBUSERDIR/system/Windows2Local. It means that default initial configuration
+Window system configuration is defined by modules in folder <code>Windows2</code> and is stored
+locally under <code>$NBUSERDIR/config/Windows2Local</code>. It means that default initial configuration
 defined by modules and customized configuration are separated to different folders.
 </P>
 
