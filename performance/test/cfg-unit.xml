@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Performance unit tests config">
 
 
-    <testbag testattribs="measure_ide or measure_startup" prio="1" executor="measure_startup" name="Measure IDE startup time">
+    <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="IDE startup time">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>
@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup" prio="10" executor="prepare_ide" name="Prepare IDE for measure startup time with opened files">
+    <testbag testattribs="all or startup or complex_startup" prio="10" executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="prepare/PrepareIDEForComplexMeasurements.class"/>
@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup" prio="11" executor="measure_startup_opened_files" name="Measure IDE startup time complex">
+    <testbag testattribs="all or startup or complex_startup" prio="11" executor="execute_complex_startup" name="IDE complex startup time">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_complex_startup_nb_project" prio="12" executor="measure_startup_opened_files_nb_project" name="Measure IDE startup time with opened NB project">
+    <testbag testattribs="all or startup or complex_startup or complex_startup_nb_project" prio="12" executor="execute_complex_startup_nb_project" name="IDE complex startup time - NB project">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesNBproject"/>
@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_complex_startup_nb_project" prio="22" executor="prepare_ide_nb_project" name="Prepare IDE for measure startup time with opened files from NB project">
+    <testbag testattribs="all or startup or complex_startup or complex_startup_nb_project" prio="22" executor="prepare_ide_nb_project" name="Prepare IDE for complex startup time measurement - NB project">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="prepare/PrepareIDEForPluginComplexMeasurements.class"/>
@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_ide or measure_warmup" prio="30" executor="measure_warmup" name="Measure warm up">
+    <testbag testattribs="all or warmup" prio="30" executor="execute_warmup" name="Warm Up">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureWarmUp.class/testWarmUp"/>		
@@ -69,13 +69,13 @@ Microsystems, Inc. All Rights Reserved.
     
     <executor name="prepare_ide" antfile="build-unit.xml" target="prepare_ide_for_complex_measurements"/>
     
-    <executor name="measure_startup" antfile="build-unit.xml" target="runcodetest_measure_startup"/>
-    <executor name="measure_startup_opened_files" antfile="build-unit.xml" target="runcodetest_measure_complex_startup"/>
+    <executor name="execute_startup" antfile="build-unit.xml" target="runcodetest_measure_startup"/>
+    <executor name="execute_complex_startup" antfile="build-unit.xml" target="runcodetest_measure_complex_startup"/>
     
-    <executor name="measure_warmup" antfile="build-unit.xml" target="runcodetest_measure_warmup"/>
+    <executor name="execute_warmup" antfile="build-unit.xml" target="runcodetest_measure_warmup"/>
     
     <executor name="prepare_ide_nb_project" antfile="build-unit.xml" target="prepare_ide_for_complex_measurements_nb_project"/>
-    <executor name="measure_startup_opened_files_nb_project" antfile="build-unit.xml" target="runcodetest_measure_complex_startup_nb_project"/>
+    <executor name="execute_complex_startup_nb_project" antfile="build-unit.xml" target="runcodetest_measure_complex_startup_nb_project"/>
     
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
     
