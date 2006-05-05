@@ -111,8 +111,8 @@ public final class Setup {
                     firstTitle = "No local file";
                 } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY
                 | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-                    firstRevision = null;
-                    firstTitle = loc.getString("MSG_DiffPanel_LocalDeleted");
+                    firstRevision = REVISION_BASE;
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision });
                 } else {
                     firstRevision = REVISION_BASE;
                     firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision });
