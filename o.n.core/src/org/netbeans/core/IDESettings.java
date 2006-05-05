@@ -131,10 +131,10 @@ public class IDESettings extends SystemOption {
         String host = getProxyHost ();
         String port = getProxyPort();
         String nonProxyHosts = getDefaultNonProxyHosts();
-        System.setProperty (KEY_PROXY_HOST, host);
+        System.setProperty (KEY_PROXY_HOST, normalizeProxyHost (host));
         System.setProperty (KEY_PROXY_PORT, port);
         System.setProperty (KEY_NON_PROXY_HOSTS, nonProxyHosts);
-        System.setProperty (KEY_HTTPS_PROXY_HOST, host);
+        System.setProperty (KEY_HTTPS_PROXY_HOST, normalizeProxyHost (host));
         System.setProperty (KEY_HTTPS_PROXY_PORT, port);
         System.setProperty (KEY_HTTPS_NON_PROXY_HOSTS, nonProxyHosts);
     }
@@ -308,8 +308,8 @@ public class IDESettings extends SystemOption {
         if (!value.equals (oldUserHost)) {
             this.userProxyHost = value;
             if (MANUAL_SET_PROXY == getProxyType ()) {
-                System.setProperty (KEY_PROXY_HOST, value);
-                System.setProperty (KEY_HTTPS_PROXY_HOST, value);
+                System.setProperty (KEY_PROXY_HOST, normalizeProxyHost (value));
+                System.setProperty (KEY_HTTPS_PROXY_HOST, normalizeProxyHost (value));
                 firePropertyChange (PROP_PROXY_HOST, oldUserHost, value);
             }
         }
@@ -367,8 +367,8 @@ public class IDESettings extends SystemOption {
         if (MANUAL_SET_PROXY == getProxyType ()) {
             if (!getUserProxyHost().equals (value)) {
                 setUserProxyHost (value);
-                System.setProperty (KEY_PROXY_HOST, value);
-                System.setProperty (KEY_HTTPS_PROXY_HOST, value);
+                System.setProperty (KEY_PROXY_HOST, normalizeProxyHost (value));
+                System.setProperty (KEY_HTTPS_PROXY_HOST, normalizeProxyHost (value));
             }
         }
         assert false : "Don't set proxy host if proxy type " + getProxyType ();
@@ -602,12 +602,20 @@ public class IDESettings extends SystemOption {
             return ""; // NOI18N
         }
 
-        int i = systemProxy.indexOf (":"); // NOI18N
+        int i = systemProxy.lastIndexOf (":"); // NOI18N
         if (i <= 0 || i >= systemProxy.length () - 1) {
             return ""; // NOI18N
         }
-
+        
         return systemProxy.substring (0, i);
+    }
+    
+    private static String normalizeProxyHost (String proxyHost) {
+        if (proxyHost.toLowerCase ().startsWith ("http://")) { // NOI18N
+            return proxyHost.substring (7, proxyHost.length ());
+        } else {
+            return proxyHost;
+        }
     }
    
     private String getSystemProxyPort () {
@@ -616,7 +624,7 @@ public class IDESettings extends SystemOption {
             return ""; // NOI18N
          }
 
-        int i = systemProxy.indexOf (":"); // NOI18N
+        int i = systemProxy.lastIndexOf (":"); // NOI18N
         if (i <= 0 || i >= systemProxy.length () - 1) {
             return ""; // NOI18N
         }

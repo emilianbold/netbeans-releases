@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,6 +28,9 @@ public class HttpSettingsTest extends NbTestCase {
     private String SYSTEM_PROXY_PORT = "777";
     private String USER_PROXY_HOST = "my.webcache";
     private String USER_PROXY_PORT = "8080";
+
+    private String SILLY_USER_PROXY_HOST = "http://my.webcache";
+    private String SILLY_SYSTEM_PROXY_HOST = "http://system.cache.org";
     
     public HttpSettingsTest (String name) {
         super (name);
@@ -42,6 +45,13 @@ public class HttpSettingsTest extends NbTestCase {
         System.setProperty ("netbeans.system_http_proxy", SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
         settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
         settings.setUserProxyHost (USER_PROXY_HOST);
+        settings.setUserProxyPort (USER_PROXY_PORT);
+    }
+    
+    private void sillySetUp () throws Exception {
+        System.setProperty ("netbeans.system_http_proxy", SILLY_SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
+        settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+        settings.setUserProxyHost (SILLY_USER_PROXY_HOST);
         settings.setUserProxyPort (USER_PROXY_PORT);
     }
     
@@ -79,6 +89,24 @@ public class HttpSettingsTest extends NbTestCase {
         IDESettings againDeserializedSettings = (IDESettings) new NbMarshalledObject (deserializedSettings).get ();
         assertEquals ("New user proxy host returned from deserialized IDESettings after change", "new.cache", againDeserializedSettings.getProxyHost ());
         assertEquals ("New user proxy port returned from deserialized IDESettings after change", "80", againDeserializedSettings.getProxyPort ());
+    }
+    
+    public void testSillySetManualProxy () throws Exception {
+        sillySetUp ();
+        settings.setProxyType (IDESettings.MANUAL_SET_PROXY);
+        assertEquals ("Proxy type MANUAL_SET_PROXY.", IDESettings.MANUAL_SET_PROXY, settings.getProxyType ());
+        assertEquals ("Manual Set Proxy Host from IDESettings: ", SILLY_USER_PROXY_HOST, settings.getProxyHost ());
+        assertEquals ("Manual Set Proxy Port from IDESettings: ", USER_PROXY_PORT, settings.getProxyPort ());
+        assertEquals ("Manual Set Proxy Host from System.getProperty(): ", USER_PROXY_HOST, System.getProperty (IDESettings.KEY_PROXY_HOST));
+        assertEquals ("Manual Set Proxy Port from System.getProperty(): ", USER_PROXY_PORT, System.getProperty (IDESettings.KEY_PROXY_PORT));
+    }
+    
+    public void testAutoDetectSillySetProxy () throws Exception {
+        sillySetUp ();
+        settings.setProxyType (IDESettings.AUTO_DETECT_PROXY);
+        assertEquals ("Proxy type AUTO_DETECT_PROXY.", IDESettings.AUTO_DETECT_PROXY, settings.getProxyType ());
+        assertEquals ("System Proxy Host: ", SYSTEM_PROXY_HOST, System.getProperty (IDESettings.KEY_PROXY_HOST));
+        assertEquals ("System Proxy Port: ", SYSTEM_PROXY_PORT, System.getProperty (IDESettings.KEY_PROXY_PORT));
     }
     
 }
