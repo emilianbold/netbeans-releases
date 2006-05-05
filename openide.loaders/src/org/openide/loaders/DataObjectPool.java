@@ -7,28 +7,41 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.util.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.event.ChangeListener;
-
 import org.openide.ErrorManager;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
-import java.lang.ref.*;
 import org.openide.util.WeakSet;
-import org.openide.util.Lookup;
 
-/** Registraction list of all data objects in the system.
+/** Registration of all data objects in the system.
 * Maps data objects to its handlers.
 *
 * @author Jaroslav Tulach
@@ -163,7 +176,7 @@ implements ChangeListener {
     
         
     
-    /** Executes atomic action with priviledge to create DataObjects.
+    /** Executes atomic action with privilege to create DataObjects.
      */
     public void runAtomicActionSimple (FileObject fo, FileSystem.AtomicAction action) 
     throws java.io.IOException {
@@ -179,7 +192,7 @@ implements ChangeListener {
     // Support for running really atomic actions
     //
     private Thread atomic;
-    private RequestProcessor priviledged;
+    private RequestProcessor privileged;
     /** the folder that is being modified */
     private FileObject blocked;
     public void runAtomicAction (final FileObject target, final FileSystem.AtomicAction action) 
@@ -216,27 +229,27 @@ implements ChangeListener {
         target.getFileSystem ().runAtomicAction(new WrapAtomicAction ());
     }
     
-    /** The thread that runs in atomic action wants to delegate its priviledia
+    /** The thread that runs in atomic action wants to delegate its privilege
      * to somebody else. Used in DataFolder.getChildren that blocks on 
      * Folder Recognizer thread.
      *
-     * @param delegate the priviledged processor
+     * @param delegate the privileged processor
      */
-    public synchronized void enterPriviledgedProcessor (RequestProcessor delegate) {
+    public synchronized void enterPrivilegedProcessor(RequestProcessor delegate) {
         if (atomic == Thread.currentThread()) {
-            if (priviledged != null) throw new IllegalStateException ("Previous priviledged is not null: " + priviledged + " now: " + delegate); // NOI18N
-            priviledged = delegate;
+            if (privileged != null) throw new IllegalStateException ("Previous privileged is not null: " + privileged + " now: " + delegate); // NOI18N
+            privileged = delegate;
         }
         // wakeup everyone in enterRecognition, as this changes the conditions there
         notifyAll ();
     }
     
-    /** Exits the priviledged processor.
+    /** Exits the privileged processor.
      */
-    public synchronized void exitPriviledgedProcessor (RequestProcessor delegate) {
+    public synchronized void exitPrivilegedProcessor(RequestProcessor delegate) {
         if (atomic == Thread.currentThread ()) {
-            if (priviledged != delegate) throw new IllegalStateException ("Trying to unregister wrong priviledged. Prev: " + priviledged + " now: " + delegate); // NOI18N
-            priviledged = null;
+            if (privileged != delegate) throw new IllegalStateException ("Trying to unregister wrong privileged. Prev: " + privileged + " now: " + delegate); // NOI18N
+            privileged = null;
         }
         // wakeup everyone in enterRecognition, as this changes the conditions there
         notifyAll ();
@@ -257,8 +270,8 @@ implements ChangeListener {
                 break;
             }
             
-            if (priviledged != null && priviledged.isRequestProcessorThread()) {
-                // ok, we have priviledged request processor thread
+            if (privileged != null && privileged.isRequestProcessorThread()) {
+                // ok, we have privileged request processor thread
                 break;
             }
             

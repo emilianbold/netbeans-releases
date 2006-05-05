@@ -243,11 +243,11 @@ implements FileChangeListener, DataObject.Container {
     public List getChildrenList () {
         ListTask lt;
         try {
-            DataObjectPool.getPOOL().enterPriviledgedProcessor (PROCESSOR);
+            DataObjectPool.getPOOL().enterPrivilegedProcessor (PROCESSOR);
             lt = getChildrenList (null);
             lt.task.waitFinished();
         } finally {
-            DataObjectPool.getPOOL().exitPriviledgedProcessor (PROCESSOR);
+            DataObjectPool.getPOOL().exitPrivilegedProcessor (PROCESSOR);
         }
         return lt.result;
     }
