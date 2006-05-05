@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
             </and>
         </condition>
         <!-- Cannot use classname="...": "SecurityException: Prohibited package name: java.lang" from ClassLoader.defineClass from AntClassLoader2.defineClassFromData -->
-        <!-- XXX will match spuriously if host JDK is newer than target JDK -->
+        <!-- XXX will match spuriously if host JDK is newer than target JDK (but try ignoresystemclasses="true") -->
         <available property="have-jdk-1.4" resource="java/lang/CharSequence.class" classpath="${nbjdk.bootclasspath}"/>
         <available property="have-jdk-1.5" resource="java/lang/StringBuilder.class" classpath="${nbjdk.bootclasspath}"/>
         <echo level="verbose">nbjdk.active=${nbjdk.active} nbjdk.home=${nbjdk.home} nbjdk.java=${nbjdk.java} nbjdk.javac=${nbjdk.javac} nbjdk.javadoc=${nbjdk.javadoc} nbjdk.bootclasspath=${nbjdk.bootclasspath} nbjdk.valid=${nbjdk.valid} have-jdk-1.4=${have-jdk-1.4} have-jdk-1.5=${have-jdk-1.5}</echo>
