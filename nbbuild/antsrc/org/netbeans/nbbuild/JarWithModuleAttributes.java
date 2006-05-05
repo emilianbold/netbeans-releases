@@ -75,6 +75,10 @@ public class JarWithModuleAttributes extends Jar {
             if (moduleDeps != null) {
                 added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Module-Dependencies", moduleDeps));
             }
+            String javaDep = getProject().getProperty("javac.target");
+            if (javaDep != null && javaDep.matches("[0-9]+(\\.[0-9]+)*")) {
+                added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Java-Dependencies", "Java > " + javaDep));
+            }
             // Check to see if OpenIDE-Module-Implementation-Version is already defined.
             String implVers;
             String ownCnb;
