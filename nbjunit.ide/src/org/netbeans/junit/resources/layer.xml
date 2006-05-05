@@ -30,7 +30,7 @@
             <file name="SimpleNbJUnitTest.java" url="SimpleNbJUnitTest.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.junit.resources.Bundle"/> 
-                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/junit/resources/NbJUnitLogo.gif"/>
+                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/junit/resources/JUnitLogo.png"/>
             </file>
         </folder>
     </folder>
