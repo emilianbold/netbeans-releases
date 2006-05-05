@@ -216,7 +216,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyCh
             int y = Integer.parseInt (yField.getText ());
             int width = Integer.parseInt (widthField.getText ());
             int height = Integer.parseInt (heightField.getText ());
-            editor.setValue (new Rectangle (x, y, width, height));
+            editor.setValue (new Insets (x, y, width, height));
         } catch (NumberFormatException e) {
             // [PENDING beep]
         }
