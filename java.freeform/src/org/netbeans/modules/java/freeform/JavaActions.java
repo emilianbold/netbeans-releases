@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,7 +70,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Handles providing implementations of some Java-oriented IDE-specific actions.
- * @author Jesse Glick
  * @see "issue #46886"
  */
 final class JavaActions implements ActionProvider {
