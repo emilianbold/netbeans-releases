@@ -281,14 +281,14 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
      */
     public void run() throws IOException {
         // Read settings from the dialog.
-        StringTokenizer tok = new StringTokenizer((String) targetComboBox.getSelectedItem(), " ,"); // NOI18N
-        List<String> targetsL = Collections.list(Generics.checkedEnumerationByFilter(tok, String.class));
-        String[] targets;
-        if (targetsL.isEmpty()) {
-            // Run default target.
-            targets = null;
-        } else {
-            targets = targetsL.toArray(new String[targetsL.size()]);
+        String selection = (String) targetComboBox.getSelectedItem();
+        String[] targets = null; // default target unless otherwise specified
+        if (selection != null) {
+            StringTokenizer tok = new StringTokenizer(selection, " ,"); // NOI18N
+            List<String> targetsL = Collections.list(Generics.checkedEnumerationByFilter(tok, String.class));
+            if (!targetsL.isEmpty()) {
+                targets = targetsL.toArray(new String[targetsL.size()]);
+            }
         }
         Properties props = new Properties();
         ByteArrayInputStream bais = new ByteArrayInputStream(propertiesPane.getText().getBytes("ISO-8859-1"));
