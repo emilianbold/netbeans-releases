@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -92,9 +92,9 @@ public class XSLUtils {
         outputFileStream.close();
     }
     
-    public static void transform(File xsl, File inputXML, File outputXML) throws TransformerException {
+    public static void transform(File xsl, File inputXML, File outputXML) throws TransformerException, IOException {
         Transformer transformer = getTransformer(xsl);
-        transform(inputXML,outputXML,xsl);
+        transform(transformer, inputXML, outputXML);
     }
     
     // here are also some extension to Xalan transformer --- these are used by the XTest's XSL scripts
