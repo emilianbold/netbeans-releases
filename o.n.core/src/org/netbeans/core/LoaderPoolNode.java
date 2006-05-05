@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.core.startup.ManifestSection;
 import org.openide.actions.MoveDownAction;
 import org.openide.actions.MoveUpAction;
@@ -611,9 +612,6 @@ public final class LoaderPoolNode extends AbstractNode {
         NbLoaderPool lp = getNbLoaderPool();
         if (lp != null && installationFinished) {
             lp.superFireChangeEvent();
-            if (myChildren != null) {
-                myChildren.update ();
-            }
         }
         
         if (lp != null) {
@@ -774,15 +772,16 @@ public final class LoaderPoolNode extends AbstractNode {
     * Extends Index.MapChildren implementation to map nodes to loaders and to support
     * children reordering.
     */
-    private static final class LoaderChildren extends Children.Keys {
+    private static final class LoaderChildren extends Children.Keys
+    implements ChangeListener {
         public LoaderChildren () {
             update ();
+            getNbLoaderPool().addChangeListener(this);
         }
 
         /** Update the the nodes */
         public void update () {
             List _loaders = new LinkedList ();
-            // Should not need an explicit synch, NBLP.loaders() does this:
             Enumeration e = getNbLoaderPool ().allLoaders ();
             while (e.hasMoreElements ()) _loaders.add (e.nextElement ());
             setKeys (_loaders);
@@ -797,6 +796,10 @@ public final class LoaderPoolNode extends AbstractNode {
                 err.log(Level.WARNING, null, e);
                 return new Node[] { };
             }
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            update();
         }
 
     } // end of LoaderPoolChildren

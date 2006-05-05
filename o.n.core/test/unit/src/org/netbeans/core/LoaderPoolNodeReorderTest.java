@@ -17,6 +17,8 @@ import java.io.*;
 import java.util.*;
 import org.openide.filesystems.*;
 import org.openide.actions.*;
+import org.openide.loaders.DataLoader;
+import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 
@@ -44,15 +46,45 @@ public class LoaderPoolNodeReorderTest extends org.netbeans.junit.NbTestCase {
     }
 
     protected void tearDown () throws java.lang.Exception {
-        LoaderPoolNode.remove (oldL);
-        LoaderPoolNode.remove (newL);
+        for (Enumeration en = LoaderPoolNode.getNbLoaderPool().loaders(); en.hasMoreElements(); ) {
+            DataLoader l = (DataLoader)en.nextElement();
+
+            LoaderPoolNode.remove(l);
+        }
+        LoaderPoolNode.waitFinished();
     }
 
     public void testReorderABit () throws Exception {
-        Node[] arr = extractFixed(LoaderPoolNode.getLoaderPoolNode().getChildren().getNodes());
-        assertEquals(2, arr.length);
-        assertEquals(arr[0].getDisplayName(), oldL.getDisplayName());
-        assertEquals(arr[1].getDisplayName(), newL.getDisplayName());
+        {
+            Node[] arr = extractFixed(LoaderPoolNode.getLoaderPoolNode().getChildren().getNodes());
+            assertEquals(2, arr.length);
+            assertEquals(arr[0].getDisplayName(), oldL.getDisplayName());
+            assertEquals(arr[1].getDisplayName(), newL.getDisplayName());
+        }
+
+        Index idx = (Index) LoaderPoolNode.getLoaderPoolNode().getLookup().lookup(Index.class);
+        assertNotNull("There is index in the node", idx);
+
+        idx.reorder(new int[] { 1, 0 });
+        LoaderPoolNode.waitFinished();
+
+
+        {
+            Node[] arr = extractFixed(LoaderPoolNode.getLoaderPoolNode().getChildren().getNodes());
+            assertEquals(2, arr.length);
+            assertEquals("reord1", arr[1].getDisplayName(), oldL.getDisplayName());
+            assertEquals("reord0", arr[0].getDisplayName(), newL.getDisplayName());
+        }
+
+        idx.reorder(new int[] { 1, 0 });
+        LoaderPoolNode.waitFinished();
+
+        {
+            Node[] arr = extractFixed(LoaderPoolNode.getLoaderPoolNode().getChildren().getNodes());
+            assertEquals(2, arr.length);
+            assertEquals("noreord0", arr[0].getDisplayName(), oldL.getDisplayName());
+            assertEquals("noreord1", arr[1].getDisplayName(), newL.getDisplayName());
+        }
     }
 
 
@@ -71,8 +103,10 @@ public class LoaderPoolNodeReorderTest extends org.netbeans.junit.NbTestCase {
         
         public OldStyleLoader () {
             super (org.openide.loaders.MultiDataObject.class);
+
+            setDisplayName(getClass().getName());
         }
-        
+
         protected org.openide.loaders.MultiDataObject createMultiObject (FileObject fo) throws IOException {
             throw new IOException ("Not implemented");
         }
@@ -92,5 +126,15 @@ public class LoaderPoolNodeReorderTest extends org.netbeans.junit.NbTestCase {
         protected String actionsContext () {
             return "Loaders/IamTheNewBeggining";
         }
+    }
+    public static final class L1 extends OldStyleLoader {
+    }
+    public static final class L2 extends OldStyleLoader {
+    }
+    public static final class L3 extends OldStyleLoader {
+    }
+    public static final class L4 extends OldStyleLoader {
+    }
+    public static final class L5 extends OldStyleLoader {
     }
 }
