@@ -7,45 +7,57 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.settings.convertors;
 
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.io.Writer;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Level;
-
-import org.openide.ErrorManager;
+import javax.swing.JComponent;
+import org.netbeans.modules.settings.Env;
+import org.netbeans.modules.settings.ScheduledRequest;
+import org.netbeans.spi.settings.Convertor;
+import org.netbeans.spi.settings.Saver;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
+import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.AbstractLookup;
-
-import org.netbeans.spi.settings.Convertor;
-import org.netbeans.modules.settings.Env;
-import org.netbeans.modules.settings.ScheduledRequest;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.TopComponent;
 
 /** Convertor handles serialdata format described in
  * http://www.netbeans.org/dtds/sessionsettings-1_0.dtd. The convertor replaces
  * the old org.netbeans.core.projects.SerialDataConvertor.
  * @author  Jan Pokorsky
  */
-public final class SerialDataConvertor extends org.openide.filesystems.FileChangeAdapter
+public final class SerialDataConvertor extends FileChangeAdapter
 implements PropertyChangeListener, FileSystem.AtomicAction {
     /** data object name cached in the attribute to prevent instance creation when
      * its node is displayed.
@@ -87,7 +99,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
      * @param inst the setting object to be written
      * @exception IOException if the object cannot be written
      */
-    public void write (java.io.Writer w, Object inst) throws java.io.IOException {
+    public void write(Writer w, Object inst) throws IOException {
         XMLSettingsSupport.storeToXML10(inst, w, ModuleInfoManager.getDefault().getModuleInfo(inst.getClass()));
     }
     
@@ -220,12 +232,12 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     }
 
     /** process events coming from the file object*/
-    public void fileChanged(org.openide.filesystems.FileEvent fe) {
+    public void fileChanged(FileEvent fe) {
         if (saver != null && fe.firedFrom(saver)) return;
         propertyChange(new PropertyChangeEvent(this, SaveSupport.PROP_FILE_CHANGED, null, null));
     }
     
-    public void fileDeleted(org.openide.filesystems.FileEvent fe) {
+    public void fileDeleted(FileEvent fe) {
         if (saver != null && fe.firedFrom(saver)) return;
         if (saver != null) {
             saver.removePropertyChangeListener(this);
@@ -348,7 +360,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             }
         }
         
-        public Object instanceCreate() throws java.io.IOException, ClassNotFoundException {
+        public Object instanceCreate() throws IOException, ClassNotFoundException {
             Object inst;
             XMLSettingsSupport.SettingsRecognizer recog;
             
@@ -378,7 +390,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             return inst;
         }
         
-        public Class instanceClass() throws java.io.IOException, ClassNotFoundException {
+        public Class instanceClass() throws IOException, ClassNotFoundException {
             // cached
             Object inst = getCachedInstance();
             if (inst != null) {
@@ -465,7 +477,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
      * the origin of file events fired as a consequence of this storing
      */
     private final class SaveSupport implements FileSystem.AtomicAction,
-    SaveCookie, java.beans.PropertyChangeListener, org.netbeans.spi.settings.Saver {
+    SaveCookie, PropertyChangeListener, Saver {
         /** property means setting is changed and should be changed */
         public static final String PROP_SAVE = "savecookie"; //NOI18N
         /** property means setting file content is changed */
@@ -481,7 +493,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         /** file containing persisted setting */
         private final FileObject file;
         /** weak reference to setting object */
-        private final java.lang.ref.WeakReference instance;
+        private final WeakReference instance;
         /** remember whether the DataObject is a template or not; calling isTemplate() is slow  */
         private Boolean knownToBeTemplate = null;
         /** the setting object is serialized, if true ignore prop. change
@@ -493,7 +505,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         
         /** Creates a new instance of SaveSupport  */
         public SaveSupport(Object inst) {
-            this.instance = new java.lang.ref.WeakReference(inst);
+            this.instance = new WeakReference(inst);
             file = getDataObject().getPrimaryFile();
         }
         
@@ -505,8 +517,9 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         /** store setting or provide just SaveCookie? */
         private boolean acceptSave() {
             Object inst = instance.get();
-            if (inst == null || !(inst instanceof java.io.Serializable) ||
-                inst instanceof org.openide.windows.TopComponent) return false;
+            if (inst == null || !(inst instanceof Serializable) ||
+                // XXX bad dep; should perhaps have some marker in the .settings file for this??
+                inst instanceof TopComponent) return false;
             
             return true;
         }
@@ -619,13 +632,13 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             if (inst instanceof SharedClassObject) {
                 ((SharedClassObject)inst).addPropertyChangeListener(this);
             }
-            else if (inst instanceof javax.swing.JComponent) {
-                ((javax.swing.JComponent)inst).addPropertyChangeListener(this);
+            else if (inst instanceof JComponent) {
+                ((JComponent) inst).addPropertyChangeListener(this);
             }
             else {
                 // add propertyChangeListener
                 try {
-                    java.lang.reflect.Method method = inst.getClass().getMethod(
+                    Method method = inst.getClass().getMethod(
                         "addPropertyChangeListener", // NOI18N
                         new Class[] {PropertyChangeListener.class});
                     method.invoke(inst, new Object[] {this});
@@ -651,7 +664,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
          */
         private void unregisterPropertyChangeListener(Object inst) {
             try {
-                java.lang.reflect.Method method = inst.getClass().getMethod(
+                Method method = inst.getClass().getMethod(
                     "removePropertyChangeListener", // NOI18N
                     new Class[] {PropertyChangeListener.class});
                 method.invoke(inst, new Object[] {this});
@@ -685,7 +698,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             getScheduledRequest().forceToFinish();
         }
         
-        private java.io.ByteArrayOutputStream buf;
+        private ByteArrayOutputStream buf;
 
         /** process events coming from a setting object */
         public final void propertyChange(PropertyChangeEvent pce) {
@@ -703,7 +716,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             firePropertyChange(PROP_SAVE);
         }
         
-        public void requestSave() throws java.io.IOException {
+        public void requestSave() throws IOException {
             if (ignoreChange(null)) return;
             isChanged = true;
             firePropertyChange(PROP_SAVE);
@@ -735,8 +748,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         
         /** try to perform atomic action */
         private void try2run() throws IOException {
-            org.openide.filesystems.FileLock lock;
-            java.io.OutputStream los;
+            FileLock lock;
+            OutputStream los;
             synchronized (READWRITE_LOCK) {
                 if (XMLSettingsSupport.err.isLoggable(Level.FINE)) {
                     XMLSettingsSupport.err.fine("saving " + getDataObject()); // NOI18N
@@ -745,7 +758,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                 if (lock == null) return;
                 los = file.getOutputStream(lock);
 
-                java.io.OutputStream os = new java.io.BufferedOutputStream(los, 1024);
+                OutputStream os = new BufferedOutputStream(los, 1024);
                 try {
                     buf.writeTo(os);
                     if (XMLSettingsSupport.err.isLoggable(Level.FINE)) {
@@ -768,8 +781,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             Object inst = instance.get();
             if (inst == null) return ;
             
-            java.io.ByteArrayOutputStream b = new java.io.ByteArrayOutputStream(1024);
-            java.io.Writer w = new java.io.OutputStreamWriter(b, "UTF-8"); // NOI18N
+            ByteArrayOutputStream b = new ByteArrayOutputStream(1024);
+            Writer w = new OutputStreamWriter(b, "UTF-8"); // NOI18N
             try {
                 isWriting = true;
                 Convertor conv = getConvertor();
@@ -810,7 +823,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         }
 
         public Lookup getEnvironment(DataObject dobj) {
-            if (!(dobj instanceof org.openide.loaders.InstanceDataObject)) return Lookup.EMPTY;
+            if (!(dobj instanceof InstanceDataObject)) return Lookup.EMPTY;
             return new SerialDataConvertor(dobj, providerFO).getLookup();
         }
 
