@@ -61,7 +61,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
     }
 
     public void performAction() {
-        if (formModel != null) {
+        if (formDesigner != null) {
             if (java.awt.EventQueue.isDispatchThread())
                 run();
             else
@@ -70,11 +70,17 @@ public class TestAction extends CallableSystemAction implements Runnable {
     }
 
     public void run() {
-        if (!(formModel.getTopRADComponent() instanceof RADVisualComponent))
+        RADVisualComponent topComp = formDesigner.getTopDesignComponent();
+        if (topComp == null)
             return;
 
-        RADVisualComponent topComp = (RADVisualComponent)
-                                     formModel.getTopRADComponent();
+        RADVisualComponent parent = topComp.getParentContainer();
+        while (parent != null) {
+            topComp = parent;
+            parent = topComp.getParentContainer();
+        }
+
+        FormModel formModel = formDesigner.getFormModel();
         RADVisualFormContainer formContainer =
             topComp instanceof RADVisualFormContainer ?
                 (RADVisualFormContainer) topComp : null;
@@ -97,12 +103,15 @@ public class TestAction extends CallableSystemAction implements Runnable {
 
             // set title
             String title = frame.getTitle();
-            if (title == null || "".equals(title))
+            if (title == null || "".equals(title)) { // NOI18N
+                title = topComp == formModel.getTopRADComponent() ?
+                        formModel.getName() : topComp.getName();
                 frame.setTitle(java.text.MessageFormat.format(
                     org.openide.util.NbBundle.getBundle(TestAction.class)
                                                .getString("FMT_TestingForm"), // NOI18N
-                    new Object[] { formModel.getName() }
+                    new Object[] { title }
                 ));
+            }
 
             // prepare close operation
             if (frame instanceof JFrame) {
@@ -161,11 +170,10 @@ public class TestAction extends CallableSystemAction implements Runnable {
 
     // -------
 
-    public void setFormModel(FormModel model) {
-        formModel = model;
-        setEnabled(formModel != null
-                   && formModel.getTopRADComponent() instanceof RADVisualComponent);
+    public void setFormDesigner(FormDesigner designer) {
+        formDesigner = designer;
+        setEnabled(formDesigner != null && formDesigner.getTopDesignComponent() != null);
     }
 
-    private FormModel formModel;
+    private FormDesigner formDesigner;
 }

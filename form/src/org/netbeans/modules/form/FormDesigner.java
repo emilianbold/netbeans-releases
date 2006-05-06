@@ -342,7 +342,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // ------
     // important getters
 
-    FormModel getFormModel() {
+    public FormModel getFormModel() {
         return formModel;
     }
 

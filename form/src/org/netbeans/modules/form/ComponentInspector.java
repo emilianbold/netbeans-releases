@@ -234,7 +234,7 @@ public class ComponentInspector extends TopComponent
         focusedForm = form;
 
         if (form == null) {
-            testAction.setFormModel(null);
+            testAction.setFormDesigner(null);
 
             // swing memory leak workaround
             removeAll();
@@ -244,8 +244,8 @@ public class ComponentInspector extends TopComponent
             getExplorerManager().setRootContext(emptyInspectorNode);
         }
         else {
-            Node[] selectedNodes = FormEditor.getFormDesigner(form.getFormModel()).getSelectedComponentNodes();
-            testAction.setFormModel(form.getFormModel());
+            Node[] selectedNodes = form.getFormDesigner().getSelectedComponentNodes();
+            testAction.setFormDesigner(form.getFormDesigner());
 
             Node formNode = form.getFormRootNode();
             if (formNode == null) { // form not loaded yet, should not happen
