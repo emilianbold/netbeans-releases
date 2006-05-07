@@ -182,15 +182,15 @@ public class NbTestSuite extends TestSuite implements NbTest {
                     }
                 }
 
-                long min = Long.MAX_VALUE;
-                long max = Long.MIN_VALUE;
+                double min = Long.MAX_VALUE;
+                double max = Long.MIN_VALUE;
 
                 {
                     Enumeration en = tests ();
                     while (en.hasMoreElements ()) {
                         Object t = en.nextElement ();
                         if (t instanceof NbTestCase) {
-                            long l = ((NbTestCase)t).getExecutionTime ();
+                            double l = ((NbTestCase)t).getExecutionTime ();
                             
                             if (type == LINEAR) {
                                 l = l / ((NbTestCase)t).getTestNumber ();
