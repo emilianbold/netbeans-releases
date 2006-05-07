@@ -37,7 +37,8 @@ public class CLIOptions extends CLIHandler {
     protected static boolean noLogging = false;
 
     /** The flag whether to show the Splash screen on the startup */
-    protected static boolean noSplash = false;
+    private static Boolean noSplash;
+    
     /* The class of the UIManager to be used for netbeans - can be set by command-line argument -ui <class name> */
     protected static Class uiClass;
     /* The size of the fonts in the UI - 0 pt, the default value is set in NbTheme (for Metal L&F), for other L&Fs is set
@@ -91,7 +92,7 @@ public class CLIOptions extends CLIHandler {
                 System.getProperties().put("org.openide.TopManager", "org.netbeans.core.NonGui"); // NOI18N
                 System.setProperty ("org.openide.TopManager.GUI", "false"); // NOI18N
             } else if (isOption (args[i], "nosplash")) { // NOI18N
-                noSplash = true;
+                noSplash = Boolean.TRUE;
             } else if (isOption (args[i], "noinfo")) { // NOI18N
                 // obsolete switch, ignore
             } else if (isOption (args[i], "nologging")) { // NOI18N
@@ -288,5 +289,14 @@ public class CLIOptions extends CLIHandler {
     
     public static int getFontSize () {
         return uiFontSize;
+    }
+
+    static boolean isNoSplash() {
+        if (noSplash != null) {
+            return noSplash.booleanValue();
+        }
+        
+        String value = NbBundle.getMessage(CLIOptions.class, "SplashOnByDefault"); // NOI18N
+        return !Boolean.valueOf(value);
     }
 }

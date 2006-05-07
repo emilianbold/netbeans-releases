@@ -58,7 +58,7 @@ public final class Main extends Object {
    */
   public static void setSplashMaxSteps(int maxSteps)
   {
-      if (noBar || CLIOptions.noSplash || splash == null)
+      if (noBar || CLIOptions.isNoSplash() || splash == null)
           return;
       splash.setMaxSteps(maxSteps);
   }
@@ -67,7 +67,7 @@ public final class Main extends Object {
    */
   public static void addToSplashMaxSteps(int steps)
   {
-      if (noBar || CLIOptions.noSplash || splash == null)
+      if (noBar || CLIOptions.isNoSplash() || splash == null)
           return;
       splash.addToMaxSteps(steps);
   }
@@ -76,7 +76,7 @@ public final class Main extends Object {
    */
   public static void addAndSetSplashMaxSteps(int steps)
   {
-      if (noBar || CLIOptions.noSplash || splash == null)
+      if (noBar || CLIOptions.isNoSplash() || splash == null)
           return;
       splash.addAndSetMaxSteps(steps);
   }
@@ -92,7 +92,7 @@ public final class Main extends Object {
    */
   public static void incrementSplashProgressBar(int steps)
   {
-      if (noBar || CLIOptions.noSplash || splash == null)
+      if (noBar || CLIOptions.isNoSplash() || splash == null)
           return;
       splash.increment(steps);
   }
@@ -410,7 +410,7 @@ public final class Main extends Object {
      * during startup (Import, Setup). It makes splash screen visible again.
      */
     protected static void showSplash () {
-        if (!CLIOptions.noSplash) {
+        if (!CLIOptions.isNoSplash()) {
             if (splash != null) {
                 if (Splash.isVisible(splash))
                     return;
