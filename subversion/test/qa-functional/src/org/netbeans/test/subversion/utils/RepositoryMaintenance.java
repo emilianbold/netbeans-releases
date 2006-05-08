@@ -9,9 +9,9 @@
 
 package org.netbeans.test.subversion.utils;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -30,21 +30,88 @@ public final class RepositoryMaintenance {
         folder.delete();
     }
     
+    public static int loadRepositoryFromFile(String repoPath, String dumpPath){
+        int value = -1;
+        
+        File repo = new File(repoPath);
+        repo.mkdir();
+        File dump = new File(dumpPath);
+        
+        File tmpOutput = new File(repo.getParent() + File.separator + "output.txt");
+                
+        StreamHandler shFile;
+        StreamHandler shError;
+        StreamHandler shOutput;
+        
+        try {
+            String[] cmd = {"svnadmin", "load", repo.getCanonicalPath()};
+            FileInputStream fis = new FileInputStream(dump);
+            FileOutputStream fos = new FileOutputStream(tmpOutput);
+            Process p = Runtime.getRuntime().exec(cmd);
+            shFile = new StreamHandler(fis, p.getOutputStream());
+            shError = new StreamHandler(p.getErrorStream(), System.out);
+            shOutput = new StreamHandler(p.getInputStream(), fos);
+            shFile.start();
+            shError.start();
+            shOutput.start();
+            value = p.waitFor();
+            shFile.join();
+            shError.join();
+            shOutput.join();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+    
     public static int createRepository(String path) {
         int value = -1;
         
-        String[] cmd = {"svnadmin", "create", path};
         File file = new File(path);
         file.mkdirs();
-
+        
+        String[] cmd = {"svnadmin.exe", "create", path};
+        
         try {
             Process p = Runtime.getRuntime().exec(cmd);
             value = p.waitFor();   
-            value = 1;
         } catch (IOException e) {
+            System.out.println("ex");
         } catch (InterruptedException e) {
+            System.out.println("ex");
         }
-        /*create user/password - test/test
+        
+        return value;
+    }
+    
+    public static String changeFileSeparator(String path, boolean backed) {
+        String changedPath = "";
+        if (!backed) {
+            for (int i = 0; i < path.length(); i++) {
+                if (path.charAt(i) == '\\') {
+                    changedPath += '/';
+                } else {
+                    changedPath += path.charAt(i); 
+                }       
+            }
+        } else {
+            for (int i = 0; i < path.length(); i++) {
+                if (path.charAt(i) == '/') {
+                    changedPath += '\\' + '\\';
+                } else {
+                    changedPath += path.charAt(i); 
+                }       
+            }
+        }
+        return changedPath;
+    }
+    
+}
+
+
+/*create user/password - test/test
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(path + File.separator + "conf" + File.separator + "passwd"));
             String line = "[users]";
@@ -71,6 +138,3 @@ public final class RepositoryMaintenance {
             bw.close();
         } catch (IOException e) {
         } */   
-        return value;
-    }
-}
