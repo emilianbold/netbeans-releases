@@ -29,11 +29,11 @@ import org.netbeans.jemmy.operators.*;
  */
 public class RepositoryStepOperator extends WizardOperator {
 
-    public static final String ITEM_FILE = "file:";
-    public static final String ITEM_HTTP = "http:";
-    public static final String ITEM_HTTPS = "https:";
-    public static final String ITEM_SVN = "svn:";
-    public static final String ITEM_SVNSSH = "svn+ssh:";
+    public static final String ITEM_FILE = "file:///";
+    public static final String ITEM_HTTP = "http://";
+    public static final String ITEM_HTTPS = "https://";
+    public static final String ITEM_SVN = "svn://";
+    public static final String ITEM_SVNSSH = "svn+ssh://";
     
     /**
      * Creates new CheckoutWizardOperator that can handle it.

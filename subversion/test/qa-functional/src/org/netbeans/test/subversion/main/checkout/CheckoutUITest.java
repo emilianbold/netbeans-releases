@@ -21,6 +21,7 @@
  */
 package org.netbeans.test.subversion.main.checkout;
 
+import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jemmy.JemmyProperties;
@@ -30,12 +31,18 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
+import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 
 /**
  *
  * @author peter
  */
 public class CheckoutUITest extends JellyTestCase{
+    
+    public static final String TMP_PATH = "/tmp";
+    public static final String REPO_PATH = "repo";
+    public static final String WORK_PATH = "work";
+    
     String os_name;
     
     /** Creates a new instance of CheckoutUITest */
@@ -69,6 +76,7 @@ public class CheckoutUITest extends JellyTestCase{
         suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
         suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
         suite.addTest(new CheckoutUITest("testAvailableFields"));
+        suite.addTest(new CheckoutUITest("testRepositoryFolder"));        
         
         return suite;
     }
@@ -83,25 +91,25 @@ public class CheckoutUITest extends JellyTestCase{
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator co1so = new RepositoryStepOperator();
-        co1so.selectRepositoryURL(RepositoryStepOperator.ITEM_FILE);
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
         Thread.sleep(1000);
         //
-        co1so.selectRepositoryURL(RepositoryStepOperator.ITEM_SVN);
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVN);
         co1so.txtUser().setText(RepositoryStepOperator.ITEM_SVN);
         co1so.txtPassword().setText(RepositoryStepOperator.ITEM_SVN);
         Thread.sleep(1000);
         //
-        co1so.selectRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
         co1so.txtUser().setText(RepositoryStepOperator.ITEM_SVNSSH);
         co1so.txtPassword().setText(RepositoryStepOperator.ITEM_SVNSSH);
         Thread.sleep(1000);
         //
-        co1so.selectRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
         co1so.txtUser().setText(RepositoryStepOperator.ITEM_HTTP);
         co1so.txtPassword().setText(RepositoryStepOperator.ITEM_HTTP);
         Thread.sleep(1000);
         //
-        co1so.selectRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
         co1so.txtUser().setText(RepositoryStepOperator.ITEM_HTTPS);
         co1so.txtPassword().setText(RepositoryStepOperator.ITEM_HTTPS);
         Thread.sleep(1000);
@@ -267,5 +275,27 @@ public class CheckoutUITest extends JellyTestCase{
         assertNotNull("Password should not be accessible for file:///!!!" ,tee);
         
         co.btCancel().pushNoBlock();
+    }
+    
+    public void testRepositoryFolder() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        RepositoryStepOperator co1so = new RepositoryStepOperator();
+        
+        //create repository... 
+        new File(TMP_PATH).mkdirs();
+        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+        
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+        
+        //next step
+        co1so.next();
+        Thread.sleep(2000);
+        co.btCancel().pushNoBlock();
+        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+        
     }
 }
