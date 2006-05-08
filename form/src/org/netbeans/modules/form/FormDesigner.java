@@ -724,7 +724,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         RADVisualFormContainer formCont = topDesignComponent instanceof RADVisualFormContainer ?
                                           (RADVisualFormContainer) topDesignComponent : null;
         if (formCont == null
-            || formCont.getFormSizePolicy() == RADVisualFormContainer.GEN_BOUNDS
+            || formCont.hasExplicitSize()
             || !isFreeDesignContainer())
         {   // try to obtain stored designer size
             if (formCont != null)
@@ -748,7 +748,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if ((formModel.isFreeDesignDefaultLayout() || isFreeDesignContainer())
             && topDesignComponent instanceof RADVisualComponent
             && (!(topDesignComponent instanceof RADVisualFormContainer)
-                || ((RADVisualFormContainer)topDesignComponent).getFormSizePolicy() != RADVisualFormContainer.GEN_BOUNDS))
+                || !((RADVisualFormContainer)topDesignComponent).hasExplicitSize()))
         {   // new layout container defining designer size
             // designer size not defined explicitly - check minimum size
             Component topComp = (Component) getComponent(topDesignComponent);

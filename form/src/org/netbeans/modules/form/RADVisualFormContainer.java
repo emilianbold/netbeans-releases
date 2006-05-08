@@ -142,7 +142,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     private boolean shouldPersistDesignerSize() {
         // don't persist designer size if form size is defined (persisted)
         // and neither for free design forms
-        return getFormSizePolicy() != GEN_BOUNDS && (getLayoutSupport() != null);
+        return !hasExplicitSize() && (getLayoutSupport() != null);
     }
 
     Dimension setDesignerSizeImpl(Dimension value) {
@@ -192,6 +192,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                                         old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
+    public boolean hasExplicitSize() {
+        return getFormSizePolicy() == GEN_BOUNDS && getGenerateSize();
+    }
+
     public int getFormSizePolicy() {
         return java.awt.Window.class.isAssignableFrom(getBeanClass())
                    || javax.swing.JInternalFrame.class.isAssignableFrom(getBeanClass())
@@ -202,9 +206,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         int old = formSizePolicy;
         formSizePolicy = value;
         if (value == GEN_BOUNDS) {
-            setDesignerSize(getDesignerSize()); // Force recalculation of formSize
-            // designer size should not be persistent if form size is defined
-            setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, null);
+            if (designerSize != null) {
+                setDesignerSize(getDesignerSize()); // Force recalculation of formSize
+                // designer size should not be persistent if form size is defined
+                if (getGenerateSize())
+                    setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, null);
+            }
         }
         else if (!getFormModel().isFreeDesignDefaultLayout()) {
             // designer size should be persistent
