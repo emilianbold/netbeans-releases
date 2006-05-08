@@ -1299,7 +1299,8 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
     // i18n automation
 
     Object i18nPropertyConvert(Object value, FormProperty property) {
-        if (isInModel() && formModel.isUndoRedoRecording()) {
+        if (isInModel() && formModel.isUndoRedoRecording()
+                && property.getPropertyContext().getFormModel() != null) {
             Object val = FormProperty.getEnclosedValue(value);
             Object intVal = I18nSupport.internationalizeProperty(val, property, RADComponent.this);
             if (intVal != val)
