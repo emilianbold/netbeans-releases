@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
-            <name>NetBeans Installer</name>
+            <name>NetBeans Installer Dev</name>
             <properties>
                 <property-file>nbproject/private/private.properties</property-file>
                 <property-file>build.properties</property-file>
