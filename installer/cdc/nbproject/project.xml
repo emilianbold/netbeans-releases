@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
-            <name>NetBeans Mobility Pack for CDC 5.0 Cluster Installer Kit</name>
+            <name>Mobility for CDC Installer Dev</name>
             <properties>
                 <property-file>nbproject/private/private.properties</property-file>
                 <property-file>build.properties</property-file>
