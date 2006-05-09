@@ -49,7 +49,7 @@ public final class RepositoryMaintenance {
             FileOutputStream fos = new FileOutputStream(tmpOutput);
             Process p = Runtime.getRuntime().exec(cmd);
             shFile = new StreamHandler(fis, p.getOutputStream());
-            shError = new StreamHandler(p.getErrorStream(), System.out);
+            shError = new StreamHandler(p.getErrorStream(), System.err);
             shOutput = new StreamHandler(p.getInputStream(), fos);
             shFile.start();
             shError.start();

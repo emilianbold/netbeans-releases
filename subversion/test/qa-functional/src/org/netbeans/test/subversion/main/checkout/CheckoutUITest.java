@@ -27,10 +27,13 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
+import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
+import org.netbeans.test.subversion.operators.WorkDirStepOperator;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 
 /**
@@ -282,20 +285,38 @@ public class CheckoutUITest extends JellyTestCase{
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator co1so = new RepositoryStepOperator();
-        
+    
         //create repository... 
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
-        
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         co1so.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         //next step
         co1so.next();
         Thread.sleep(2000);
-        co.btCancel().pushNoBlock();
-        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         
+        WorkDirStepOperator wdso = new WorkDirStepOperator();
+        wdso.verify();
+        RepositoryBrowserOperator rbo = wdso.browseRepository();
+        rbo.verify();
+        //Try to select folders
+        rbo.selectFolder("branches");
+        rbo.selectFolder("tags");
+        rbo.selectFolder("trunk");
+        rbo.selectFolder("trunk|JavaApp|src|javaapp");
+        rbo.ok();
+        
+        assertEquals("Wrong folder selection!!!", "trunk/JavaApp/src/javaapp", wdso.getRepositoryFolder());
+        rbo = wdso.browseRepository();
+        rbo.selectFolder("trunk|JavaApp");
+        rbo.ok();
+        assertEquals("Wrong folder selection!!!", "trunk/JavaApp", wdso.getRepositoryFolder());
+        wdso.setLocalFolder("/tmp");
+        JFileChooserOperator jfc = wdso.browseLocalFolder();
+        assertEquals("Directory set in wizard not propagated to file chooser:", true, jfc.getCurrentDirectory().getAbsolutePath().endsWith("tmp"));
+        jfc.cancel();
+        co.btCancel().pushNoBlock();
     }
 }

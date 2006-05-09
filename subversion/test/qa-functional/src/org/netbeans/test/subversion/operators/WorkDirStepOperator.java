@@ -19,7 +19,6 @@ package org.netbeans.test.subversion.operators;
 
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.NameComponentChooser;
 
 /**
  * Class implementing all necessary methods for handling "WorkDirStepOperator" NbDialog.
@@ -44,14 +43,14 @@ public class WorkDirStepOperator extends WizardOperator {
     private JLabelOperator _lblSpecifyTheFoldersToCheckoutFromSubversionRepository;
     private JLabelOperator _lblRepositoryRevision;
     private JLabelOperator _lblRepositoryFolders;
-    private JTextFieldOperator _txtJTextField;
+    private JTextFieldOperator repositoryFolder;
     private JButtonOperator _btSearch;
     private JLabelOperator _lblLocalSubversionWorkingCopy;
-    private JTextFieldOperator _txtJTextField2;
+    private JTextFieldOperator repositoryRevision;
     private JLabelOperator _lblEmptyMeansRepositoryHEAD;
-    private JTextFieldOperator _txtJTextField3;
-    private JButtonOperator _btBrowse;
-    private JButtonOperator _btBrowse2;
+    private JTextFieldOperator localFolder;
+    private JButtonOperator _btBrowseRepository;
+    private JButtonOperator _btBrowseLocalFolder;
     private JLabelOperator _lblLocalFolder;
     private JLabelOperator _lblSpecifyTheLocalFolderToCheckoutFoldersInto;
     private JLabelOperator _lblWizardDescriptor$FixedHeightLabel;
@@ -129,11 +128,16 @@ public class WorkDirStepOperator extends WizardOperator {
     /** Tries to find null JTextField in this dialog.
      * @return JTextFieldOperator
      */
-    public JTextFieldOperator txtJTextField() {
-        if (_txtJTextField==null) {
-            _txtJTextField = new JTextFieldOperator(this);
+    public JTextFieldOperator txtRepositoryFolder() {
+        if (repositoryFolder==null) {
+            repositoryFolder = new JTextFieldOperator(this, 2);
         }
-        return _txtJTextField;
+        return repositoryFolder;
+    }
+    
+    public void setRepositoryFolder(String text) {
+        txtRepositoryFolder().clearText();
+        txtRepositoryFolder().typeText(text);
     }
 
     /** Tries to find "Search..." JButton in this dialog.
@@ -159,11 +163,16 @@ public class WorkDirStepOperator extends WizardOperator {
     /** Tries to find null JTextField in this dialog.
      * @return JTextFieldOperator
      */
-    public JTextFieldOperator txtJTextField2() {
-        if (_txtJTextField2==null) {
-            _txtJTextField2 = new JTextFieldOperator(this, 1);
+    public JTextFieldOperator txtRepositoryRevision() {
+        if (repositoryRevision==null) {
+            repositoryRevision = new JTextFieldOperator(this);
         }
-        return _txtJTextField2;
+        return repositoryRevision;
+    }
+    
+    public void setRepositoryRevision(String text) {
+        txtRepositoryRevision().clearText();
+        txtRepositoryRevision().typeText(text);
     }
 
     /** Tries to find "(empty means repository HEAD)" JLabel in this dialog.
@@ -179,31 +188,36 @@ public class WorkDirStepOperator extends WizardOperator {
     /** Tries to find null JTextField in this dialog.
      * @return JTextFieldOperator
      */
-    public JTextFieldOperator txtJTextField3() {
-        if (_txtJTextField3==null) {
-            _txtJTextField3 = new JTextFieldOperator(this, 2);
+    public JTextFieldOperator txtLocalFolder() {
+        if (localFolder==null) {
+            localFolder = new JTextFieldOperator(this, 1);
         }
-        return _txtJTextField3;
+        return localFolder;
+    }
+    
+    public void setLocalFolder(String text) {
+        txtLocalFolder().clearText();
+        txtLocalFolder().typeText(text);
     }
 
     /** Tries to find "Browse..." JButton in this dialog.
      * @return JButtonOperator
      */
-    public JButtonOperator btBrowse() {
-        if (_btBrowse==null) {
-            _btBrowse = new JButtonOperator(this, "Browse...");
+    public JButtonOperator btBrowseRepository() {
+        if (_btBrowseRepository==null) {
+            _btBrowseRepository = new JButtonOperator(this, "Browse", 1);
         }
-        return _btBrowse;
+        return _btBrowseRepository;
     }
 
     /** Tries to find "Browse..." JButton in this dialog.
      * @return JButtonOperator
      */
-    public JButtonOperator btBrowse2() {
-        if (_btBrowse2==null) {
-            _btBrowse2 = new JButtonOperator(this, "Browse...", 1);
+    public JButtonOperator btBrowseLocalFolder() {
+        if (_btBrowseLocalFolder==null) {
+            _btBrowseLocalFolder = new JButtonOperator(this, "Browse", 0);
         }
-        return _btBrowse2;
+        return _btBrowseLocalFolder;
     }
 
     /** Tries to find "Local Folder:" JLabel in this dialog.
@@ -291,25 +305,13 @@ public class WorkDirStepOperator extends WizardOperator {
     // Low-level functionality definition part
     //****************************************
 
-    /** gets text for txtJTextField
+    /**
+     * gets text for txtRepositoryFolder
+     * 
      * @return String text
      */
-    public String getJTextField() {
-        return txtJTextField().getText();
-    }
-
-    /** sets text for txtJTextField
-     * @param text String text
-     */
-    public void setJTextField(String text) {
-        txtJTextField().setText(text);
-    }
-
-    /** types text for txtJTextField
-     * @param text String text
-     */
-    public void typeJTextField(String text) {
-        txtJTextField().typeText(text);
+    public String getRepositoryFolder() {
+        return txtRepositoryFolder().getText();
     }
 
     /** clicks on "Search..." JButton
@@ -318,58 +320,22 @@ public class WorkDirStepOperator extends WizardOperator {
         btSearch().push();
     }
 
-    /** gets text for txtJTextField2
+    /**
+     * gets text for txtRepositoryRevision
+     * 
      * @return String text
      */
-    public String getJTextField2() {
-        return txtJTextField2().getText();
+    public String getRevisionNumber() {
+        return txtRepositoryRevision().getText();
     }
 
-    /** sets text for txtJTextField2
-     * @param text String text
-     */
-    public void setJTextField2(String text) {
-        txtJTextField2().setText(text);
-    }
-
-    /** types text for txtJTextField2
-     * @param text String text
-     */
-    public void typeJTextField2(String text) {
-        txtJTextField2().typeText(text);
-    }
-
-    /** gets text for txtJTextField3
+    /**
+     * gets text for txtLocalFolder
+     * 
      * @return String text
      */
-    public String getJTextField3() {
-        return txtJTextField3().getText();
-    }
-
-    /** sets text for txtJTextField3
-     * @param text String text
-     */
-    public void setJTextField3(String text) {
-        txtJTextField3().setText(text);
-    }
-
-    /** types text for txtJTextField3
-     * @param text String text
-     */
-    public void typeJTextField3(String text) {
-        txtJTextField3().typeText(text);
-    }
-
-    /** clicks on "Browse..." JButton
-     */
-    public void browse() {
-        btBrowse().push();
-    }
-
-    /** clicks on "Browse..." JButton
-     */
-    public void browse2() {
-        btBrowse2().push();
+    public String getLocalFolder() {
+        return txtLocalFolder().getText();
     }
 
     /** clicks on "< Back" JButton
@@ -401,6 +367,19 @@ public class WorkDirStepOperator extends WizardOperator {
     public void help() {
         btHelp().push();
     }
+    
+    public RepositoryBrowserOperator browseRepository() {
+        btBrowseRepository().pushNoBlock();
+        return new RepositoryBrowserOperator();
+    }
+    
+    /** clicks on "Browse..." and returns JFileChooserOperator instance.
+     * @return instance of JFileChooserOperator
+     */
+    public JFileChooserOperator browseLocalFolder() {
+        btBrowseLocalFolder().pushNoBlock();
+        return new JFileChooserOperator();
+    }
 
 
     //*****************************************
@@ -417,14 +396,14 @@ public class WorkDirStepOperator extends WizardOperator {
         lblSpecifyTheFoldersToCheckoutFromSubversionRepository();
         lblRepositoryRevision();
         lblRepositoryFolders();
-        txtJTextField();
+        txtRepositoryFolder();
         btSearch();
         lblLocalSubversionWorkingCopy();
-        txtJTextField2();
+        txtRepositoryRevision();
         lblEmptyMeansRepositoryHEAD();
-        txtJTextField3();
-        btBrowse();
-        btBrowse2();
+        txtLocalFolder();
+        btBrowseRepository();
+        btBrowseLocalFolder();
         lblLocalFolder();
         lblSpecifyTheLocalFolderToCheckoutFoldersInto();
         lblWizardDescriptor$FixedHeightLabel();
@@ -433,16 +412,6 @@ public class WorkDirStepOperator extends WizardOperator {
         btFinish();
         btCancel();
         btHelp();
-    }
-
-    /**
-     * Performs simple test of WorkDirStepOperator
-     * 
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        new WorkDirStepOperator().verify();
-        System.out.println("Checkout2StepOperator verification finished.");
     }
 }
 
