@@ -86,7 +86,7 @@ public abstract class DialogDisplayer {
     private static final class Trivial extends DialogDisplayer {
         public Object notify(NotifyDescriptor nd) {
             JDialog dialog = new StandardDialog(nd.getTitle(), true, nd, null, null);
-            dialog.show();
+            dialog.setVisible(true);
 
             return (nd.getValue() != null) ? nd.getValue() : NotifyDescriptor.CLOSED_OPTION;
         }
