@@ -72,7 +72,7 @@ public final class RepositoryMaintenance {
         File file = new File(path);
         file.mkdirs();
         
-        String[] cmd = {"svnadmin.exe", "create", path};
+        String[] cmd = {"svnadmin", "create", path};
         
         try {
             Process p = Runtime.getRuntime().exec(cmd);
