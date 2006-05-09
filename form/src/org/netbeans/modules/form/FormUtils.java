@@ -617,13 +617,6 @@ public class FormUtils
             if (!prop.isChanged())
                 continue;
 
-            Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
-            if (writeMethod == null
-                || !prop.canWriteToTarget()
-                || !writeMethod.getDeclaringClass().isAssignableFrom(
-                                                         targetBean.getClass()))
-                continue;
-
             try {
                 if (relativeProperties != null) {
                     Object value = prop.getValue();
@@ -637,6 +630,13 @@ public class FormUtils
                         continue;
                     }
                 }
+
+                Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
+                if (writeMethod == null
+                    || !prop.canWriteToTarget()
+                    || !writeMethod.getDeclaringClass().isAssignableFrom(
+                                                             targetBean.getClass()))
+                    continue;
 
                 Object realValue = prop.getRealValue();
                 if (realValue == FormDesignValue.IGNORED_VALUE)

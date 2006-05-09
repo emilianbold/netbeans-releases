@@ -947,9 +947,16 @@ public class VisualReplicator { //implements VisualMapper
 
                     java.lang.reflect.Method writeMethod =
                         property.getPropertyDescriptor().getWriteMethod();
-                    if (writeMethod != null)
+                    if (writeMethod != null) {
                         writeMethod.invoke(targetComp,
                                            new Object[] { propertyComp });
+                    }
+                    else if (propertyComp instanceof ButtonGroup
+                             && targetComp instanceof AbstractButton)
+                    {   // special case - add button to button group
+                        ((ButtonGroup)propertyComp).remove((AbstractButton)targetComp);
+                        ((ButtonGroup)propertyComp).add((AbstractButton)targetComp);
+                    }
                 }
             }
             catch (Exception ex) {} // should not happen, ignore
