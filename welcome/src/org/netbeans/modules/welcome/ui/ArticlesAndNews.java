@@ -20,7 +20,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.autoupdate.Settings;
-import org.netbeans.modules.welcome.WelcomeComponent;
 import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.CombinationRSSFeed;
@@ -28,7 +27,6 @@ import org.netbeans.modules.welcome.content.NoHorizontalScrollPanel;
 import org.netbeans.modules.welcome.content.RSSFeed;
 import org.netbeans.modules.welcome.content.RSSFeedReaderPanel;
 import org.netbeans.modules.welcome.content.WebLink;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -117,10 +115,7 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
         if( firstTimeLoad ) {
             firstTimeLoad = false;
 
-
-            WelcomeComponent wc = WelcomeComponent.findComp();
-            if( null != wc && WindowManager.getDefault().getRegistry().getActivated() == wc )
-                switchFocus();
+            requestAttention();
         }
     }
 }
