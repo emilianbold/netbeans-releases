@@ -130,6 +130,14 @@ public class OpenProjectListSettings extends SystemOption {
     public File getProjectsFolder () {
         String result = (String) this.getProperty (PROP_PROJECTS_FOLDER);
         if (result == null) {
+            // property for overriding default projects dir location
+            String userPrjDir = System.getProperty("netbeans.projects.dir"); // NOI18N
+            if (userPrjDir != null) {
+                File f = new File(userPrjDir);
+                if (f.exists() && f.isDirectory()) {
+                    return FileUtil.normalizeFile(f);
+                }
+            }
             File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
             if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
                 String nbPrjDirName = NbBundle.getMessage(OpenProjectListSettings.class, "DIR_NetBeansProjects");
