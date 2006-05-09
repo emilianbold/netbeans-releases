@@ -67,6 +67,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
     private boolean initialized=false;
     
     /** Called from addNotify. */
+    @SuppressWarnings("deprecation")
     private void completeInitialization() {
         if (initialized) {
             //Do not re-initialize if the dialog has already been used,
@@ -190,7 +191,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
     }
     
     private static String findPathTo(Node rootNode, DataObject dobj) {
-        Stack st = new Stack();
+        Stack<DataObject> st = new Stack<DataObject>();
         DataObject o = dobj;
 
         while (o != null) {
@@ -201,7 +202,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         Children children = rootNode.getChildren();
         Node n = null;
         while (n == null && !st.isEmpty()) {
-            o = (DataObject) st.pop();
+            o = st.pop();
             n = children.findChild(o.getNodeDelegate().getName());
             
             if (n == null) {
@@ -219,7 +220,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             path += File.separator + getFileName(n);
 
             while (!st.isEmpty()) {
-                Node nn = ((DataObject)st.pop()).getNodeDelegate();
+                Node nn = st.pop().getNodeDelegate();
                 path += File.separator + getFileName(nn);
             }
         }
@@ -477,7 +478,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 }
             }
             
-            ArrayList dObjList = new ArrayList(selFiles.length);
+            ArrayList<DataObject> dObjList = new ArrayList<DataObject>(selFiles.length);
             for (int i = 0; i < nodes.length; i++) {
                 if (nodes[i] != null) {
                     DataObject dObj = (DataObject) nodes[i].getCookie(DataObject.class);
@@ -493,7 +494,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 }
             }
             
-            DataObject [] dObjArray = (DataObject []) dObjList.toArray(new DataObject[dObjList.size()]);
+            DataObject [] dObjArray = dObjList.toArray(new DataObject[dObjList.size()]);
             boolean enableOK = false;
             if (dObjArray.length > 0) {
                 enableOK = true;

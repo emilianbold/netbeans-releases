@@ -485,7 +485,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         UIDefaults def = UIManager.getDefaults ();
         Enumeration e = def.keys ();
         
-        java.util.TreeSet names = new java.util.TreeSet();
+        java.util.TreeSet<String> names = new java.util.TreeSet<String>();
         
         while (e.hasMoreElements ()) {
             Object k = e.nextElement ();

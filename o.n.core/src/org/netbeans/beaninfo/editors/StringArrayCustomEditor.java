@@ -32,10 +32,9 @@ import org.openide.util.NbBundle;
 /** A custom editor for array of Strings.
 *
 * @author  Ian Formanek
-* @version 1.00, Sep 21, 1998
 */
 public class StringArrayCustomEditor extends javax.swing.JPanel {
-    private Vector itemsVector;
+    private Vector<String> itemsVector;
     private StringArrayCustomizable editor;
 
     static final long serialVersionUID =-4347656479280614636L;
@@ -43,7 +42,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
     /** Initializes the Form */
     public StringArrayCustomEditor(StringArrayCustomizable sac) {
         editor = sac;
-        itemsVector = new Vector ();
+        itemsVector = new Vector<String> ();
         String[] array = editor.getStringArray ();
         if (array != null)
             for (int i = 0; i < array.length; i++)

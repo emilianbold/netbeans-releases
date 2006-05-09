@@ -25,6 +25,7 @@ import org.openide.util.Lookup;
 *
 * @author   Jaroslav Tulach
 */
+@SuppressWarnings("deprecation")
 public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implements ExPropertyEditor {
 
     /** Name of the custom property that can be passed in PropertyEnv. */
@@ -36,7 +37,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     private String[] tags;
 
     /** class to work on */
-    private Class clazz;
+    private Class<? extends ServiceType> clazz;
 
     /** message key to be used in custom editor */
     private String message;
@@ -61,8 +62,8 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
      * @param clazz the class to use 
      * @param message the message for custom editor
      */
-    public ServiceTypeEditor(Class clazz, String message) {
-        this.clazz = clazz;
+    public ServiceTypeEditor(Class<?> clazz, String message) {
+        this.clazz = clazz.asSubclass(ServiceType.class);
         this.message = message;
     }
 
@@ -79,15 +80,16 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
         }
         Object sup = env.getFeatureDescriptor().getValue(PROPERTY_SUPERCLASS);
         if (sup instanceof Class) {
-            clazz = (Class)sup;
+            @SuppressWarnings("unchecked") Class<? extends ServiceType> c = (Class<? extends ServiceType>)sup;
+	    clazz = c;
         }
     }
     
     /** Updates the list of executors.
      */
     private void updateTags () {
-        java.util.LinkedList names = new java.util.LinkedList ();
-        ServiceType.Registry registry = (ServiceType.Registry)Lookup.getDefault ()
+        java.util.LinkedList<String> names = new java.util.LinkedList<String> ();
+        ServiceType.Registry registry = Lookup.getDefault ()
                 .lookup (ServiceType.Registry.class);
         Enumeration ee = registry.services (clazz);
         while (ee.hasMoreElements()) {

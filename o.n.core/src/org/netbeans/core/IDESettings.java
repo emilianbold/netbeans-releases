@@ -438,16 +438,16 @@ public class IDESettings extends SystemOption {
             
             if (obj instanceof String && !"".equals (obj)) {
                 // use new style
-                Lookup.Item item = Lookup.getDefault ().lookupItem (new Lookup.Template (HtmlBrowser.Factory.class, (String)obj, null));
-                return item == null ? null : (HtmlBrowser.Factory)item.getInstance ();
+                Lookup.Item<HtmlBrowser.Factory> item = Lookup.getDefault ().lookupItem (new Lookup.Template<HtmlBrowser.Factory> (HtmlBrowser.Factory.class, (String)obj, null));
+                return item == null ? null : item.getInstance ();
             }
 
             // the browser is not set yet - find the first one
             if (obj == null || "".equals (obj)) {
-                Lookup.Result res = Lookup.getDefault ().lookupResult(HtmlBrowser.Factory.class);
-                java.util.Iterator it = res.allInstances ().iterator ();
+                Lookup.Result<HtmlBrowser.Factory> res = Lookup.getDefault ().lookupResult(HtmlBrowser.Factory.class);
+                java.util.Iterator<? extends HtmlBrowser.Factory> it = res.allInstances ().iterator ();
                 while (it.hasNext ()) {
-                    Object brow = it.next ();
+                    HtmlBrowser.Factory brow = it.next ();
                     
                     // check if it is not set to be hidden
                     FileObject fo = Repository.getDefault ()
@@ -468,7 +468,7 @@ public class IDESettings extends SystemOption {
                             o = cookie.instanceCreate ();
                             if (o != null 
                             && o.equals (brow)) {
-                                return (HtmlBrowser.Factory)brow;
+                                return brow;
                             }
                         }
                         // exceptions are thrown if module is uninstalled 
@@ -502,7 +502,8 @@ public class IDESettings extends SystemOption {
                 return;
             }
             
-            Lookup.Item item = Lookup.getDefault().lookupItem(new Lookup.Template (HtmlBrowser.Factory.class, null, brow));
+            Lookup.Item<HtmlBrowser.Factory> item = 
+		    Lookup.getDefault().lookupItem(new Lookup.Template<HtmlBrowser.Factory> (HtmlBrowser.Factory.class, null, brow));
             if (item != null) {
                 putProperty (PROP_WWWBROWSER, item.getId (), true);
             } else {

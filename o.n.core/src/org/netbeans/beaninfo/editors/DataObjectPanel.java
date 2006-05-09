@@ -212,7 +212,7 @@ public class DataObjectPanel extends JPanel {
     protected Node findNodeForObj(Node rootNode, DataObject dObj) {
         Node node = null;
         DataFolder df = dObj.getFolder();
-        Vector v = new Vector();
+        Vector<DataFolder> v = new Vector<DataFolder>();
         while (df != null) {
             v.addElement(df);
             df = df.getFolder();
@@ -232,8 +232,8 @@ public class DataObjectPanel extends JPanel {
         return node;
     }
     
-    protected Node findParentNode(Vector v, Children children) {
-        DataFolder df = (DataFolder) v.lastElement();
+    protected Node findParentNode(Vector<DataFolder> v, Children children) {
+        DataFolder df = v.lastElement();
         
         //Node n = children.findChild (df.getPrimaryFile ().getName ());
         Node n = children.findChild(df.getNodeDelegate().getName());

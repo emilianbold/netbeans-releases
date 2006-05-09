@@ -29,16 +29,17 @@ import org.openide.util.Lookup;
 *
 * @author Jaroslav Tulach
 */
+@SuppressWarnings("deprecation")
 public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
 
     private int width_components=0,width_leftcomponent=0;
 
     /** the super class of objects that we display.
     */
-    private Class clazz;
+    private Class<? extends ServiceType> clazz;
 
     /** list of all services */
-    private List services;
+    private List<ServiceType> services;
 
     /** @see ServiceTypeEditor#none */
     private ServiceType none;
@@ -55,7 +56,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
     * @param name string to name the panel with
     * @param none no-op type, or null
     */
-    public ServiceTypePanel(Class clazz, String name, ServiceType none, boolean createNew) {
+    public ServiceTypePanel(Class<? extends ServiceType> clazz, String name, ServiceType none, boolean createNew) {
         this.clazz = clazz;
         this.none = none;
         this.createNew = createNew;
@@ -176,22 +177,22 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
     *
     * @return list of Nodes
     */
-    private List nodes () {
-        services = new ArrayList (20);
-        List l = new LinkedList ();
+    private List<Node> nodes () {
+        services = new ArrayList<ServiceType> (20);
+        List<Node> l = new LinkedList<Node> ();
         ServiceType.Registry registry = (ServiceType.Registry)Lookup.getDefault ()
                 .lookup (ServiceType.Registry.class);
-        Enumeration en = registry.services (clazz);
+        Enumeration<? extends ServiceType> en = registry.services (clazz);
         while (en.hasMoreElements ()) {
             try {
-                Object service = en.nextElement ();
+                ServiceType service = en.nextElement ();
                 if (createNew) {
                     // in this case create a new instance for all types
-                    Object newObject = service.getClass().newInstance();
-                    l.add(new MN((ServiceType)newObject));
+                    ServiceType newObject = (ServiceType)service.getClass().newInstance();
+                    l.add(new MN(newObject));
                     services.add(newObject);
                 } else {
-                    l.add (new MN ((ServiceType)service));
+                    l.add (new MN (service));
                     services.add (service);
                 }
             } catch (java.beans.IntrospectionException ex) {
@@ -315,11 +316,11 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
                              }
                              public Node.Property[] getProperties () {
                                  Node.Property[] props = sets[ii].getProperties ();
-                                 List nueprops = new ArrayList ();
+                                 List<Node.Property> nueprops = new ArrayList<Node.Property> ();
                                  for (int j = 0; j < props.length; j++)
                                      if (! props[j].getName ().equals ("name")) // NOI18N
                                          nueprops.add (props[j]);
-                                 return (Node.Property[]) nueprops.toArray (new Node.Property[nueprops.size ()]);
+                                 return nueprops.toArray (new Node.Property[nueprops.size ()]);
                              }
                          };
             }

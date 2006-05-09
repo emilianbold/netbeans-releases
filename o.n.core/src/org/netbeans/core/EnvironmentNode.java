@@ -38,8 +38,8 @@ final class EnvironmentNode extends AbstractNode {
     private String filter;
     /** icon base for icons of this node */
     private static final String EN_ICON_BASE = "org/netbeans/core/resources/"; // NOI18N
-    /** map between type of node and the parent node for this type (String, Node) */
-    private static java.util.HashMap types = new java.util.HashMap (11);
+    /** map between type of node and the parent node for this type */
+    private static java.util.HashMap<String, Node> types = new java.util.HashMap<String, Node> (11);
     /** A lock for the find method. */
     private static final Object lock = new Object();
 
@@ -66,7 +66,7 @@ final class EnvironmentNode extends AbstractNode {
             Children.MUTEX.readAccess(new Mutex.Action() {
                 public Object run() {
                     synchronized (lock) {
-                        Node n = (Node)types.get (name);
+                        Node n = types.get (name);
                         if (n == null) {
                             DataFolder folder = null;
                             if (TYPE_ENVIRONMENT.equals(name)) {
@@ -93,10 +93,10 @@ final class EnvironmentNode extends AbstractNode {
     
     private static void decorateNode (String name, AbstractNode node) {
         String resourceName = "CTL_" + name + "_name"; // NOI18N
-        String iconBase = EN_ICON_BASE + name.toLowerCase ();
+        String iconBase = EN_ICON_BASE + name.toLowerCase () + ".gif";
         
         node.setDisplayName(NbBundle.getMessage (EnvironmentNode.class, resourceName));
-        node.setIconBase(iconBase);
+        node.setIconBaseWithExtension(iconBase);
     }
         
 

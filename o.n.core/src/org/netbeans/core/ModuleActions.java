@@ -35,11 +35,11 @@ public class ModuleActions extends ActionManager
     /** array of all actions added by modules */
     private static SystemAction[] array;
     /** of (ModuleItem, List (ManifestSection.ActionSection)) */
-    private static Map map = new HashMap (7);
+    private static Map<Object,List<ManifestSection.ActionSection>> map = new HashMap<Object,List<ManifestSection.ActionSection>> (8);
     /** current module */
     private static Object module = null;
-    /** Map of currently running actions, (maps action event to action) */
-    private Map runningActions = new HashMap();
+    /** Map of currently running actions */
+    private Map<ActionEvent,Action> runningActions = new HashMap<ActionEvent,Action>();
 
     public static ModuleActions getDefaultInstance() {
         ActionManager mgr = ActionManager.getDefault();
@@ -62,6 +62,7 @@ public class ModuleActions extends ActionManager
     /** Invokes action in a RequestPrecessor dedicated to performing
      * actions.
      */
+    @SuppressWarnings("deprecation")
     public void invokeAction(final Action a, final ActionEvent e) {
         try {
             org.openide.util.Mutex.EVENT.readAccess (new Runnable() {
@@ -108,9 +109,9 @@ public class ModuleActions extends ActionManager
     }
 
     /** Gets collection of currently running actions. */
-    public Collection getRunningActions() {
+    public Collection<Action> getRunningActions() {
         synchronized(runningActions) {
-            return new ArrayList(runningActions.values());
+            return new ArrayList<Action>(runningActions.values());
         }
     }
      
@@ -136,9 +137,9 @@ public class ModuleActions extends ActionManager
     /** Adds new action to the list.
     */
     public synchronized static void add (ManifestSection.ActionSection a) {
-        List list = (List)map.get (module);
+        List<ManifestSection.ActionSection> list = map.get (module);
         if (list == null) {
-            list = new ArrayList ();
+            list = new ArrayList<ManifestSection.ActionSection> ();
             map.put (module, list);
         }
         list.add (a);
@@ -151,7 +152,7 @@ public class ModuleActions extends ActionManager
     /** Removes new action from the list.
     */
     public synchronized static void remove (ManifestSection.ActionSection a) {
-        List list = (List)map.get (module);
+        List<ManifestSection.ActionSection> list = map.get (module);
         if (list == null) {
             return;
         }
@@ -169,16 +170,16 @@ public class ModuleActions extends ActionManager
     /** Creates the actions.
     */
     private synchronized static SystemAction[] createActions () {
-        Iterator it = map.values ().iterator ();
+        Iterator<List<ManifestSection.ActionSection>> it = map.values ().iterator ();
 
-        ArrayList arr = new ArrayList (map.size () * 5);
+        ArrayList<Object> arr = new ArrayList<Object> (map.size () * 5);
 
         while (it.hasNext ()) {
-            List l = (List)it.next ();
+            List<ManifestSection.ActionSection> l = it.next ();
 
-            Iterator actions = l.iterator ();
+            Iterator<ManifestSection.ActionSection> actions = l.iterator ();
             while (actions.hasNext()) {
-                ManifestSection.ActionSection s = (ManifestSection.ActionSection)actions.next();
+                ManifestSection.ActionSection s = actions.next();
                 
                 try {
                     arr.add (s.getInstance ());
@@ -207,7 +208,7 @@ public class ModuleActions extends ActionManager
      * Several keys may map to the same glass pane - the wait cursor is shown
      * so long as there are any.
      */
-    private static final Map glassPaneUses = new HashMap(); // Map<Object,Component>
+    private static final Map<Object,java.awt.Component> glassPaneUses = new HashMap<Object,java.awt.Component>();
     
     /**
      * Try to find the active window's glass pane.
@@ -256,7 +257,7 @@ public class ModuleActions extends ActionManager
      */
     public static void hideWaitCursor(Object key) {
         assert java.awt.EventQueue.isDispatchThread();
-        java.awt.Component c = (java.awt.Component)glassPaneUses.get(key);
+        java.awt.Component c = glassPaneUses.get(key);
         if (c == null) {
             return;
         }

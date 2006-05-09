@@ -177,6 +177,7 @@ public final class NbSheet extends TopComponent {
 
     /** Transfer the focus to the property sheet.
      */
+    @SuppressWarnings("deprecation")
     public void requestFocus () {
         super.requestFocus();
         propertySheet.requestFocus();
@@ -184,12 +185,14 @@ public final class NbSheet extends TopComponent {
     
     /** Transfer the focus to the property sheet.
      */
+    @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow();
         return propertySheet.requestFocusInWindow();
     }
 
     /** always open global property sheet in its special mode */
+    @SuppressWarnings("deprecation")
     public void open (Workspace workspace) {
         if (global) {
             Workspace realWorkspace = (workspace == null)
@@ -231,7 +234,7 @@ public final class NbSheet extends TopComponent {
         String nodeTitle =  null;
 
         // Fix a bug #12890, copy the nodes to prevent race condition.
-        List copyNodes = new ArrayList(Arrays.asList(nodes));
+        List<Node> copyNodes = new ArrayList<Node>(Arrays.asList(nodes));
 
         Node node = null;
 
@@ -445,10 +448,10 @@ public final class NbSheet extends TopComponent {
     private class SheetNodesListener extends NodeAdapter implements Runnable {
 
         /* maps nodes to their listeners (Node, WeakListener) */
-        private HashMap listenerMap;
+        private HashMap<Node,NodeListener> listenerMap;
 
         /* maps nodes to their proeprty change listeners (Node, WeakListener)*/
-        private HashMap pListenerMap;
+        private HashMap<Node,PropertyChangeListener> pListenerMap;
 
         SheetNodesListener() {}
 
@@ -457,8 +460,8 @@ public final class NbSheet extends TopComponent {
          */
         public void nodeDestroyed(NodeEvent ev) {
             Node destroyedNode = ev.getNode();
-            NodeListener listener = (NodeListener)listenerMap.get(destroyedNode);
-            PropertyChangeListener pListener = (PropertyChangeListener)pListenerMap.get(destroyedNode);
+            NodeListener listener = listenerMap.get(destroyedNode);
+            PropertyChangeListener pListener = pListenerMap.get(destroyedNode);
             // stop to listen to destroyed node
             destroyedNode.removeNodeListener(listener);
             destroyedNode.removePropertyChangeListener(pListener);
@@ -466,8 +469,6 @@ public final class NbSheet extends TopComponent {
             pListenerMap.remove(destroyedNode);
             // close top component (our outer class) if last node was destroyed
             if (listenerMap.isEmpty() && !global) {
-                // bugfix #20039, close this component on all workspaces
-                setCloseOperation (TopComponent.CLOSE_EACH);
                 //fix #39251 start - posting the closing of TC to awtevent thread
                 Mutex.EVENT.readAccess(new Runnable() {
                     public void run() {
@@ -477,14 +478,14 @@ public final class NbSheet extends TopComponent {
                 //fix #39251 end
             } else {
                 setNodesWithoutReattaching(
-                    (Node[])(listenerMap.keySet().toArray(new Node[listenerMap.size()]))
+                    (listenerMap.keySet().toArray(new Node[listenerMap.size()]))
                 );
             }
         }
 
         public void attach (Node[] nodes) {
-            listenerMap = new HashMap(nodes.length * 2);
-            pListenerMap = new HashMap(nodes.length * 2);
+            listenerMap = new HashMap<Node,NodeListener>(nodes.length * 2);
+            pListenerMap = new HashMap<Node,PropertyChangeListener>(nodes.length * 2);
             NodeListener curListener = null;
             PropertyChangeListener pListener = null;
             // start to listen to all given nodes and map nodes to

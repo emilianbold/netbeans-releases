@@ -49,8 +49,8 @@ public class HtmlBrowser extends Object {
             try {
                 org.openide.awt.HtmlBrowser.Factory f = (org.openide.awt.HtmlBrowser.Factory)getValue ();
                 
-                Lookup.Item i = Lookup.getDefault().lookupItem(
-                    new Lookup.Template (org.openide.awt.HtmlBrowser.Factory.class, null, f)
+                Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i = Lookup.getDefault().lookupItem(
+                    new Lookup.Template<org.openide.awt.HtmlBrowser.Factory> (org.openide.awt.HtmlBrowser.Factory.class, null, f)
                 );
                 if (i != null)
                     return i.getDisplayName();
@@ -72,10 +72,8 @@ public class HtmlBrowser extends Object {
                     setValue (null);
                     return;
                 }
-                Lookup.Result r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
-                Iterator it = r.allItems().iterator();
-                while (it.hasNext()) {
-                    Lookup.Item i = (Lookup.Item)it.next();
+                Lookup.Result<org.openide.awt.HtmlBrowser.Factory> r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
+		for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: r.allItems()) {
                     if (str.equals(i.getDisplayName())) {
                         setValue (i.getInstance());
                         return;
@@ -98,11 +96,9 @@ public class HtmlBrowser extends Object {
         }
         
         public java.lang.String[] getTags () {
-            ArrayList list = new ArrayList (4);
-            Lookup.Result r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
-            Iterator it = r.allItems().iterator();
-            while (it.hasNext()) {
-                Lookup.Item i = (Lookup.Item)it.next();
+            ArrayList<String> list = new ArrayList<String> (6);
+            Lookup.Result<org.openide.awt.HtmlBrowser.Factory> r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
+            for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: r.allItems()) {
                 list.add(i.getDisplayName());
             }
             

@@ -46,8 +46,7 @@ class XMLEnvironmentProvider extends SharedClassObject {
 
     private static final long serialVersionUID = 18947L;
     
-    // Map<FileObject, Lookup>
-    private static transient Map envs = new HashMap(11); // 11 expected number of modules using this
+    private static transient Map<FileObject, Lookup> envs = new HashMap<FileObject, Lookup>(11); // 11 expected number of modules using this
     
     // Environment.Provider ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     

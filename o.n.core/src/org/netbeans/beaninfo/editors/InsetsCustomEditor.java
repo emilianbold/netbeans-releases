@@ -43,7 +43,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyCh
     //ArrayOfIntSupport for custom editors, which would just produce the
     //required number of fields
     
-    private HashMap labelMap = new HashMap();
+    private HashMap<JTextField,JLabel> labelMap = new HashMap<JTextField,JLabel>();
     private PropertyEnv env;
     /** Initializes the Form */
     public InsetsCustomEditor(InsetsEditor editor, PropertyEnv env) {
@@ -262,12 +262,12 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyCh
     
     private void handleInvalid(JTextField c) {
         c.setForeground(getErrorColor());
-        findLabelFor(c).setForeground(getErrorColor());
+        labelMap.get(c).setForeground(getErrorColor());
     }
     
     private void handleValid(JTextField c) {
         c.setForeground(getForeground());
-        findLabelFor(c).setForeground(getForeground());
+        labelMap.get(c).setForeground(getForeground());
     }
     
     private Color getErrorColor() {
@@ -276,10 +276,6 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyCh
             c = Color.RED;
         }
         return c;
-    }
-    
-    private JLabel findLabelFor(JTextField c) {
-        return (JLabel) labelMap.get(c);
     }
     
     // Variables declaration - do not modify

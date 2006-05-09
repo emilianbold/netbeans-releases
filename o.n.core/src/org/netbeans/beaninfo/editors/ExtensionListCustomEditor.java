@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,26 +32,26 @@ import org.openide.util.NbBundle;
 /** A custom editor for array of Strings.
 *
 * @author  Ian Formanek
-* @version 1.00, Sep 21, 1998
 */
 public class ExtensionListCustomEditor extends javax.swing.JPanel {
 
-    ExtensionList value;
-    ExtensionListEditor editor;
+    private ExtensionList value;
+    private ExtensionListEditor editor;
     
     static final long serialVersionUID =-4347656479280614636L;
     
+    @SuppressWarnings("unchecked") 
     private String[] getStrings() {
-        List l = new ArrayList ();
+        List<String> l = new ArrayList<String> ();
         if (value == null) return new String[0];
 
-        Enumeration e = value.extensions ();
+        Enumeration<String> e = (Enumeration<String>)value.extensions ();
         while (e.hasMoreElements ()) l.add (e.nextElement ());
                 
-        e = value.mimeTypes ();
+        e = (Enumeration<String>)value.mimeTypes ();
         while (e.hasMoreElements ()) l.add (e.nextElement ());
         
-        return (String[]) l.toArray (new String[l.size ()]);
+        return l.toArray (new String[l.size ()]);
     }
 
     /** Initializes the Form */

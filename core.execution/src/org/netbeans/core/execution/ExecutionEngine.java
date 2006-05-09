@@ -71,10 +71,10 @@ public final class
     private boolean execNodeInited = false;
 
     /** list of ExecutionListeners */
-    private HashSet executionListeners = new HashSet();
+    private HashSet<ExecutionListener> executionListeners = new HashSet<ExecutionListener>();
 
     /** List of running executions */
-    private List runningTasks = Collections.synchronizedList(new ArrayList( 5 ));
+    private List<ExecutorTask> runningTasks = Collections.synchronizedList(new ArrayList<ExecutorTask>( 5 ));
 
     static {
         systemIO.out = new OutputStreamWriter(System.out);
@@ -106,10 +106,10 @@ public final class
     }
     
     /** Returns a snapshot of a collection of tasks which did not ended yet */
-    public Collection getRunningTasks() {
+    public Collection<ExecutorTask> getRunningTasks() {
         // toArray is atomic on synchronized list, contrary to just passing
         // the list to a Collection constructor.
-        return Arrays.asList(runningTasks.toArray());
+        return Arrays.asList(runningTasks.toArray(new ExecutorTask[0]));
     }
     
     /** Returns name of running task */
@@ -168,8 +168,8 @@ public final class
     * @return class path to libraries
     */
     protected NbClassPath createLibraryPath() {
-        List l = NbTopManager.getUninitialized().getModuleJars();
-        return new NbClassPath ((File[]) l.toArray (new File[l.size ()]));
+        @SuppressWarnings("unchecked") List<File> l = NbTopManager.getUninitialized().getModuleJars();
+        return new NbClassPath (l.toArray (new File[l.size ()]));
     }
 
     /** adds a listener */
@@ -200,9 +200,10 @@ public final class
     /** fires event that notifies about new process */
     protected final void fireExecutionStarted (ExecutionEvent ev) {
         runningTasks.add( ev.getProcess() );
-        Iterator iter = ((HashSet) executionListeners.clone()).iterator();
+	@SuppressWarnings("unchecked") 
+        Iterator<ExecutionListener> iter = ((HashSet<ExecutionListener>) executionListeners.clone()).iterator();
         while (iter.hasNext()) {
-            ExecutionListener l = (ExecutionListener) iter.next();
+            ExecutionListener l = iter.next();
             l.startedExecution(ev);
         }
     }
@@ -210,9 +211,10 @@ public final class
     /** fires event that notifies about the end of a process */
     protected final void fireExecutionFinished (ExecutionEvent ev) {
         runningTasks.remove( ev.getProcess() );
-        Iterator iter = ((HashSet) executionListeners.clone()).iterator();
+	@SuppressWarnings("unchecked") 
+        Iterator<ExecutionListener> iter = ((HashSet<ExecutionListener>) executionListeners.clone()).iterator();
         while (iter.hasNext()) {
-            ExecutionListener l = (ExecutionListener) iter.next();
+            ExecutionListener l = iter.next();
             l.finishedExecution(ev);
         }
         ev.getProcess().destroyThreadGroup(base);

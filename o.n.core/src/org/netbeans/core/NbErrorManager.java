@@ -53,7 +53,7 @@ public final class NbErrorManager extends ErrorManager {
     /** logger to delegate to */
     private Logger logger;
     /** mapping of Throwables to errors */
-    private static Map map = new HashMap();
+    private static Map<Throwable,List<Annotation>> map = new HashMap<Throwable,List<Annotation>>();
 
     public NbErrorManager() {
         this("");
@@ -94,14 +94,14 @@ public final class NbErrorManager extends ErrorManager {
         int severity, String message, String localizedMessage,
         Throwable stackTrace, Date date
     ) {
-        Object o = map.get (t);
+        List<Annotation> o = map.get (t);
 
-        List ll;
+        List<Annotation> ll;
         if (o == null) {
-            ll = new ArrayList ();
+            ll = new ArrayList<Annotation> ();
             map.put (t, ll);
         } else {
-            ll = (List)o;
+            ll = o;
         }
 
         ll.add(0,
@@ -117,13 +117,13 @@ public final class NbErrorManager extends ErrorManager {
     * @param arr array of annotations (or null)
     */
     public synchronized Throwable attachAnnotations (Throwable t, Annotation[] arr) {
-        Object o = map.get (t);
-        List l;
+        List<Annotation> o = map.get (t);
+        List<Annotation> l;
         if (o == null) {
-            l = new ArrayList(arr.length + 5);
+            l = new ArrayList<Annotation>(arr.length + 5);
             map.put (t, l);
         } else {
-            l = (List)o;
+            l = o;
         }
         l.addAll(0, Arrays.asList(arr));
         
@@ -217,7 +217,7 @@ public final class NbErrorManager extends ErrorManager {
      */
     Exc createExc(Throwable t, int severity) {
         Annotation[] ann = findAnnotations (t);
-        return new Exc (t, severity, ann, findAnnotations0(t, true, new HashSet()));
+        return new Exc (t, severity, ann, findAnnotations0(t, true, new HashSet<Throwable>()));
     }
 
     public void log(int severity, String s) {
@@ -260,11 +260,11 @@ public final class NbErrorManager extends ErrorManager {
      * a nested exception. Fields should be public, methods public no-arg.
      * Field names should be prefixed with a dot.
      */
-    private static Map NESTS = null; // Map<String,String>
+    private static Map<String,String> NESTS = null;
     private static Throwable extractNestedThrowable(Throwable t) {
         synchronized (NbErrorManager.class) {
             if (NESTS == null) {
-                NESTS = new HashMap();
+                NESTS = new HashMap<String,String>();
                 NESTS.put("javax.xml.parsers.FactoryConfigurationError", "getException"); // NOI18N
                 NESTS.put("javax.xml.transform.TransformerFactoryConfigurationError", "getException"); // NOI18N
                 NESTS.put("org.xml.sax.SAXException", "getException"); // NOI18N
@@ -278,8 +278,8 @@ public final class NbErrorManager extends ErrorManager {
                         Field f = c.getField(getter.substring(1));
                         return (Throwable)f.get(t);
                     } else {
-                        Method m = c.getMethod(getter, null);
-                        return (Throwable)m.invoke(t, null);
+                        Method m = c.getMethod(getter);
+                        return (Throwable)m.invoke(t);
                     }
                 } catch (Exception e) {
                     // Should not happen.
@@ -296,22 +296,22 @@ public final class NbErrorManager extends ErrorManager {
     * @return array of annotations or null
     */
     public synchronized Annotation[] findAnnotations (Throwable t) {
-        return findAnnotations0(t, false, new HashSet());
+        return findAnnotations0(t, false, new HashSet<Throwable>());
     }
 
     /** If recursively is true it is not adviced to print all annotations
      * because a lot of warnings will be printed. But while searching for
      * localized message we should scan all the annotations (even recursively).
      */
-    private synchronized Annotation[] findAnnotations0(Throwable t, boolean recursively, Set alreadyVisited) {
-        List l = (List)map.get (t);
+    private synchronized Annotation[] findAnnotations0(Throwable t, boolean recursively, Set<Throwable> alreadyVisited) {
+        List<ErrorManager.Annotation> l = map.get (t);
         // MissingResourceException should be printed nicely... --jglick
         if (t instanceof MissingResourceException) {
             if (l == null) {
-                l = new ArrayList(1);
+                l = new ArrayList<ErrorManager.Annotation>(1);
             } else {
                 // make a copy, do not modify it
-                l = new ArrayList(l);
+                l = new ArrayList<ErrorManager.Annotation>(l);
             }
             MissingResourceException mre = (MissingResourceException) t;
             String cn = mre.getClassName ();
@@ -329,9 +329,9 @@ public final class NbErrorManager extends ErrorManager {
             Throwable t2 = extractNestedThrowable(t);
             if (t2 != null) {
                 if (l == null) {
-                    l = new ArrayList(1);
+                    l = new ArrayList<ErrorManager.Annotation>(1);
                 } else {
-                    l = new ArrayList(l);
+                    l = new ArrayList<ErrorManager.Annotation>(l);
                 }
                 l.add(new Ann(UNKNOWN, null, null, t2, null));
             }
@@ -351,9 +351,9 @@ public final class NbErrorManager extends ErrorManager {
                     msg = NbBundle.getMessage(NbErrorManager.class, "EXC_sax_parse", String.valueOf(pubid), String.valueOf(sysid));
                 }
                 if (l == null) {
-                    l = new ArrayList(1);
+                    l = new ArrayList<ErrorManager.Annotation>(1);
                 } else {
-                    l = new ArrayList(l);
+                    l = new ArrayList<ErrorManager.Annotation>(l);
                 }
                 l.add(new Ann(UNKNOWN, msg, null, null, null));
             }
@@ -361,9 +361,9 @@ public final class NbErrorManager extends ErrorManager {
         
         if (recursively) {
             if (l != null) {
-                ArrayList al = new ArrayList();
-                for (Iterator i = l.iterator(); i.hasNext(); ) {
-                    Annotation ano = (Annotation)i.next();
+                ArrayList<Annotation> al = new ArrayList<Annotation>();
+                for (Iterator<Annotation> i = l.iterator(); i.hasNext(); ) {
+                    Annotation ano = i.next();
                     Throwable t1 = ano.getStackTrace();
                     if ((t1 != null) && (! alreadyVisited.contains(t1))) {
                         alreadyVisited.add(t1);
@@ -381,7 +381,7 @@ public final class NbErrorManager extends ErrorManager {
             Annotation[] extras = findAnnotations0(cause, true, alreadyVisited);
             if (extras != null && extras.length > 0) {
                 if (l == null) {
-                    l = new ArrayList();
+                    l = new ArrayList<Annotation>();
                 }
                 l.addAll(Arrays.asList(extras));
             }
@@ -593,10 +593,10 @@ public final class NbErrorManager extends ErrorManager {
          */
         void printStackTrace (PrintWriter pw) {
             // #19487: don't go into an endless loop here
-            printStackTrace(pw, new HashSet(10));
+            printStackTrace(pw, new HashSet<Throwable>(10));
         }
         
-        private void printStackTrace(PrintWriter pw, Set/*<Throwable>*/ nestingCheck) {
+        private void printStackTrace(PrintWriter pw, Set<Throwable> nestingCheck) {
             if (t != null && !nestingCheck.add(t)) {
                 // Unlocalized log message - this is for developers of NB, not users
                 log(ErrorManager.WARNING, "WARNING - ErrorManager detected cyclic exception nesting:"); // NOI18N

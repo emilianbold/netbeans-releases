@@ -40,7 +40,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
     private Logger log;
     private Clipboard systemClipboard;
     private ExClipboard.Convertor[] convertors;
-    private Lookup.Result result;
+    private Lookup.Result<ExClipboard.Convertor> result;
     final boolean slowSystemClipboard;
     private Transferable last;
     private long lastWindowActivated;
@@ -82,9 +82,9 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
     }
 
     public synchronized void resultChanged(LookupEvent ev) {
-        Collection c = result.allInstances();
+        Collection<? extends ExClipboard.Convertor> c = result.allInstances();
         ExClipboard.Convertor[] temp = new ExClipboard.Convertor[c.size()];
-        convertors = (ExClipboard.Convertor[]) c.toArray(temp);
+        convertors = c.toArray(temp);
     }
 
     // XXX(-ttran) on Unix (and also on Windows as we discovered recently)

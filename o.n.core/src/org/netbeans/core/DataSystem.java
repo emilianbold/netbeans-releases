@@ -74,7 +74,7 @@ implements RepositoryListener {
         fileSystemPool = fsp;
         this.filter = filter;
         initialize();
-        setIconBase ("org/netbeans/core/resources/repository"); // NOI18N
+        setIconBaseWithExtension ("org/netbeans/core/resources/repository.gif"); // NOI18N
         setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
         setShortDescription (NbBundle.getBundle (DataSystem.class).getString ("CTL_Repository_Hint"));
         getCookieSet ().add (new InstanceSupport.Instance (fsp));
@@ -234,13 +234,13 @@ implements RepositoryListener {
         * @param fs file system to remove
         */
         public void refresh(Repository fileSystemPool, FileSystem fs) {
-            Enumeration en = fileSystemPool.getFileSystems();
-            ArrayList list = new ArrayList();
+            @SuppressWarnings("unchecked") Enumeration<FileSystem> en = (Enumeration<FileSystem>)fileSystemPool.getFileSystems();
+            ArrayList<DataFolder> list = new ArrayList<DataFolder>();
             while (en.hasMoreElements()) {
-                Object o = en.nextElement();
+                FileSystem fsystem = en.nextElement();
                 DataObject root = null;
                 try {
-                    root = DataObject.find(((FileSystem)o).getRoot());
+                    root = DataObject.find(fsystem.getRoot());
                 }
                 catch (DataObjectNotFoundException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -248,7 +248,7 @@ implements RepositoryListener {
                     // (as that seems safer than not accepting it)
                 }
                 if ((root instanceof DataFolder) && getDS().filter.acceptDataObject(root))  {
-                    list.add(root);
+                    list.add((DataFolder)root);
                 }                
             }
             setKeys(list);
@@ -256,7 +256,7 @@ implements RepositoryListener {
         
         private void refreshListRoots(URLMapper mapper) {
             File[] files = File.listRoots();
-            Set rootSet = new LinkedHashSet();
+            Set<DataFolder> rootSet = new LinkedHashSet<DataFolder>();
 
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
@@ -277,7 +277,7 @@ implements RepositoryListener {
                         // (as that seems safer than not accepting it)
                     }
                     if ((root instanceof DataFolder) && getDS().filter.acceptDataObject(root)) {
-                        rootSet.add(root);
+                        rootSet.add((DataFolder)root);
                     }
                 }
             }

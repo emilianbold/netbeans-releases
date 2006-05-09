@@ -25,7 +25,7 @@ import java.util.ArrayList;
 *
 * @author Ales Novak
 */
-final class WindowTable extends HashMap {
+final class WindowTable extends HashMap<Window,TaskThreadGroup> {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -1494996298725028533L;
 
@@ -33,14 +33,14 @@ final class WindowTable extends HashMap {
     private WindowListener winListener;
 
     /** maps ThreadGroup:ArrayList, ArrayList keeps windows */
-    private HashMap windowMap;
+    private HashMap<ThreadGroup,ArrayList<Window>> windowMap;
 
     /**
     *default constructor
     */
     public WindowTable () {
-        super(13);
-        windowMap = new HashMap(13);
+        super(16);
+        windowMap = new HashMap<ThreadGroup,ArrayList<Window>>(16);
         winListener = new WindowAdapter() {
                           public void windowClosed(WindowEvent ev) {
                               Window win;
@@ -51,9 +51,9 @@ final class WindowTable extends HashMap {
     }
 
     public synchronized void putTaskWindow(Window win, TaskThreadGroup grp) {
-        ArrayList vec;
-        if ((vec = (ArrayList) windowMap.get(grp)) == null) {
-            vec = new ArrayList();
+        ArrayList<Window> vec;
+        if ((vec = windowMap.get(grp)) == null) {
+            vec = new ArrayList<Window>();
             windowMap.put(grp, vec);
         }
         vec.add(win);
@@ -62,17 +62,17 @@ final class WindowTable extends HashMap {
     }
 
     public TaskThreadGroup getThreadGroup(Window win) {
-        return (TaskThreadGroup) super.get(win);
+        return super.get(win);
     }
 
     /** closes windows opened by grp ThreadGroup */
     void closeGroup(ThreadGroup grp) {
         Window win;
-        ArrayList vec = (ArrayList) windowMap.get(grp);
+        ArrayList<Window> vec = windowMap.get(grp);
         if (vec == null) return;
-        Iterator ee = vec.iterator();
+        Iterator<Window> ee = vec.iterator();
         while (ee.hasNext()) {
-            (win = (Window) ee.next()).setVisible(false);
+            (win = ee.next()).setVisible(false);
             remove(win);
             if (win != getSharedOwnerFrame()) {
                 win.dispose();
@@ -103,7 +103,7 @@ final class WindowTable extends HashMap {
 
     /** return true if the ThreadGroup has any windows */
     boolean hasWindows(ThreadGroup grp) {
-        ArrayList vec = (ArrayList) windowMap.get(grp);
+        ArrayList<Window> vec = windowMap.get(grp);
         if ((vec == null) || (vec.size() == 0) || hiddenWindows(vec)) {
             return false;
         }
@@ -115,11 +115,11 @@ final class WindowTable extends HashMap {
     * @param grp is a ThreadGroup that belongs to the ArrayList
     * @return true if all windows in the ArrayList vec are invisible
     */
-    private boolean hiddenWindows(ArrayList vec) {
-        Iterator ee = vec.iterator();
+    private boolean hiddenWindows(ArrayList<Window> vec) {
+        Iterator<Window> ee = vec.iterator();
         Window win;
         while (ee.hasNext()) {
-            win = (Window) ee.next();
+            win = ee.next();
             if (win.isVisible()) return false;
         }
         // windows will be removed later
@@ -131,7 +131,7 @@ final class WindowTable extends HashMap {
         Object obj = get(win); // obj is threadgroup
         if (obj == null) return;
         remove(win);
-        ArrayList vec = (ArrayList) windowMap.get(obj);
+        ArrayList<Window> vec = windowMap.get(obj);
         if (vec == null) return;
         vec.remove(win);
     }

@@ -425,22 +425,4 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
                         (c1.getBlue() + c2.getBlue()) / 2);
     }
     
-    public static void main (String[] args) {
-        javax.swing.JFrame jf = new javax.swing.JFrame();
-        javax.swing.JToolBar jtb = new javax.swing.JToolBar();
-        jtb.setUI (new PlainAquaToolbarUI());
-        jf.getContentPane().setLayout (new java.awt.BorderLayout());
-        jf.getContentPane().add (jtb, java.awt.BorderLayout.NORTH);
-        javax.swing.JButton b = new javax.swing.JButton("Some button");
-        jtb.add (b);
-        javax.swing.JButton b2 = new javax.swing.JButton("Another button");
-        jtb.add(b2);
-        
-        jf.setBounds (20,20, 400, 300);
-        
-        javax.swing.JTextArea foo = new javax.swing.JTextArea("Foodbar");
-        jf.getContentPane().add (foo, java.awt.BorderLayout.SOUTH);
-        
-        jf.show();
-    }
 }

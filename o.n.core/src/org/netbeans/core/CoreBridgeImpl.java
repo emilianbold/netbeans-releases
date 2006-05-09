@@ -36,7 +36,7 @@ implements Runnable {
     
     protected void loadDefaultSection (
         org.netbeans.core.startup.ManifestSection s, 
-        org.openide.util.lookup.InstanceContent.Convertor convertor, 
+        org.openide.util.lookup.InstanceContent.Convertor<ManifestSection,Object> convertor, 
         boolean load
     ) {
         if (load) {

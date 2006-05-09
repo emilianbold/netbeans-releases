@@ -51,8 +51,8 @@ class DataFolderPanel extends TopComponent implements
     /** listener to changes in the panel */
     private ChangeListener listener;
 
-    /** system reference (FileSystem) */
-    private Reference  system = new WeakReference (null);
+    /** file system reference */
+    private Reference<FileSystem>  system = new WeakReference<FileSystem> (null);
 
     /** root node */
     private Node rootNode;
@@ -356,7 +356,7 @@ class DataFolderPanel extends TopComponent implements
             SwingUtilities.invokeLater(new Runnable () {
                                             public void run () {
                                                 if (packageName.getText ().length () == 0) {
-                                                    FileSystem fs = (FileSystem)system.get ();
+                                                    FileSystem fs = system.get ();
                                                     if (fs != null) {
                                                         DataFolder df = DataFolder.findFolder (fs.getRoot ());
                                                         setTargetFolder (df);
@@ -499,7 +499,7 @@ class DataFolderPanel extends TopComponent implements
                     }
                 }
 
-                system = new WeakReference (fs);
+                system = new WeakReference<FileSystem> (fs);
 
                 n = NodeOp.findPath (rootNode, st);
 
@@ -559,7 +559,7 @@ class DataFolderPanel extends TopComponent implements
     */
     private DataFolder getTargetFolder(boolean create) throws IOException {
         if (create && isValid()) {
-            FileSystem fs = (FileSystem)system.get ();
+            FileSystem fs = system.get ();
             if (fs != null) {
                 DataFolder folder = DataFolder.findFolder (fs.getRoot ());
                 String currentName = packageName.getText().replace('\\', '/');
@@ -583,7 +583,7 @@ class DataFolderPanel extends TopComponent implements
 
         // first of all test the currently selected nod
         // for location of closest
-        java.util.Collection selected = new java.util.HashSet ();
+        java.util.Collection<Node> selected = new java.util.HashSet<Node> ();
         Node[] nodes = packagesPanel.getExplorerManager().getSelectedNodes();
         for ( int i = 0; i < nodes.length; i++ ) {
             Node n1 = nodes[i];
@@ -691,7 +691,7 @@ class DataFolderPanel extends TopComponent implements
         if (df != null) {
             try {
                 FileSystem fs = df.getPrimaryFile ().getFileSystem ();
-                system = new WeakReference (fs);
+                system = new WeakReference<FileSystem> (fs);
             } catch (FileStateInvalidException ex) {
             }
         }
@@ -707,7 +707,7 @@ class DataFolderPanel extends TopComponent implements
     /** Updates directory name
     */
     private void updateDirectory () {
-        FileSystem fs = (FileSystem)system.get ();
+        FileSystem fs = system.get ();
         if (fs == null) {
             // No known directory?? Leave it blank.
             directoryName.setText(""); // NOI18N
@@ -751,7 +751,7 @@ class DataFolderPanel extends TopComponent implements
             } else {
                 FileSystem fs = null;
                 if (system != null) {
-                    fs = (FileSystem) system.get();
+                    fs =  system.get();
                 }
                 if (df == null && fs!= null) {
                     FileObject fo = fs.getRoot();

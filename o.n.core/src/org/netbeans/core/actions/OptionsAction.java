@@ -83,7 +83,7 @@ public class OptionsAction extends CallableSystemAction {
     private static final String HELP_ID = "org.netbeans.core.actions.OptionsAction"; // NOI18N 
     
     /** Weak reference to the dialog showing singleton options. */
-    private Reference dialogWRef = new WeakReference(null);
+    private Reference<Dialog> dialogWRef = new WeakReference<Dialog>(null);
     
 
     public void performAction () {
@@ -91,7 +91,7 @@ public class OptionsAction extends CallableSystemAction {
         
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
-                Dialog dialog = (Dialog)dialogWRef.get();
+                Dialog dialog = dialogWRef.get();
 
                 if(dialog == null || !dialog.isShowing()) {
                     JButton closeButton = new JButton(NbBundle.getMessage(OptionsAction.class, "CTL_close_button"));
@@ -119,7 +119,7 @@ public class OptionsAction extends CallableSystemAction {
                         Mnemonics.setLocalizedText (additionalButton, name);
                         additionalButton.addActionListener (new ActionListener () {
                             public void actionPerformed (ActionEvent e) {
-                                Dialog dialog = (Dialog) dialogWRef.get ();
+                                Dialog dialog = dialogWRef.get ();
                                 dialog.setVisible (false);
                             }
                         });
@@ -133,7 +133,7 @@ public class OptionsAction extends CallableSystemAction {
                         
                     dialog = DialogDisplayer.getDefault().createDialog(dd);
                     dialog.setVisible(true);
-                    dialogWRef = new WeakReference(dialog);
+                    dialogWRef = new WeakReference<Dialog>(dialog);
                 } else {
                     dialog.toFront();
                 }
@@ -165,14 +165,14 @@ public class OptionsAction extends CallableSystemAction {
         
         private static String TEMPLATES_DISPLAY_NAME = NbBundle.getBundle(OptionsAction.class).getString("CTL_Templates_name"); // NOI18N
         
-        /** list of String[] that should be expanded when the tree is shown */
-        private Collection toExpand;
+        /** list of nodes that should be expanded when the tree is shown */
+        private Collection<Node> toExpand;
         private transient boolean expanded;
         /** root node to use */
         private transient Node rootNode;
         
         // XXX #37673
-        private transient Reference descriptorRef = new WeakReference(null);
+        private transient Reference<DialogDescriptor> descriptorRef = new WeakReference<DialogDescriptor>(null);
         
 
         private OptionsPanel () {
@@ -198,7 +198,7 @@ public class OptionsAction extends CallableSystemAction {
         // #37673 It was requested to update helpCtx according to node selection in explorer.
         public void propertyChange(PropertyChangeEvent evt) {
             if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                DialogDescriptor dd = (DialogDescriptor)descriptorRef.get();
+                DialogDescriptor dd = descriptorRef.get();
                 if(dd != null) {
                     dd.setHelpCtx(getHelpCtx());
                 }
@@ -206,7 +206,7 @@ public class OptionsAction extends CallableSystemAction {
         }
         // #37673
         public void setDialogDescriptor(DialogDescriptor dd) {
-            descriptorRef = new WeakReference(dd);
+            descriptorRef = new WeakReference<DialogDescriptor>(dd);
         }
         
         public HelpCtx getHelpCtx () {
@@ -321,7 +321,7 @@ public class OptionsAction extends CallableSystemAction {
         
         public void prepareNodes() {
             if (toExpand == null) {                        
-                List arr = new ArrayList (101);
+                List<Node> arr = new ArrayList<Node> (101);
                 expandNodes(getRootContext (), 2, arr);               
                 toExpand = arr;
             }
@@ -365,7 +365,7 @@ public class OptionsAction extends CallableSystemAction {
 
         /** Expands the node in explorer.
          */
-        private static void expandNodes (Node n, final int depth, final Collection list) {
+        private static void expandNodes (Node n, final int depth, final Collection<Node> list) {
             if (depth == 0) {
                 return;
             }
@@ -533,12 +533,12 @@ public class OptionsAction extends CallableSystemAction {
                 refreshColumns(true);
             }
             
-            public void expandTheseNodes (Collection paths, Node root) {
-                Iterator it = paths.iterator();
+            public void expandTheseNodes (Collection<Node> paths, Node root) {
+                Iterator<Node> it = paths.iterator();
                 
                 Node first = null;
                 while (it.hasNext()) {
-                    Node n = (Node)it.next();
+                    Node n = it.next();
                     if (first == null) {
                         first = n;
                     }

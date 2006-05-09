@@ -214,7 +214,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
               try {
                   Class clz = Class.forName("org.netbeans.performance.test.guitracker.LoggingRepaintManager"); // NOI18N
                   Method m = clz.getMethod("measureStartup", new Class[] {}); // NOI18N
-                  Object o = m.invoke(null, null);
+                  Object o = m.invoke(null);
                   endOfStartupMeasuring(o);
               } catch (ClassNotFoundException e) {
                   StartLog.logProgress(e.toString());

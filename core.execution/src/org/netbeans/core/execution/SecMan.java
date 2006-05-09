@@ -100,7 +100,7 @@ public class SecMan extends SecurityManager {
     }
     
     /** mostly copied from TopSecurityManager */
-    private static final class PrivilegedCheck implements PrivilegedExceptionAction {
+    private static final class PrivilegedCheck implements PrivilegedExceptionAction<Object> {
         private final int action;
         private final SecMan sm;
         

@@ -50,7 +50,7 @@ final class IOPermissionCollection extends PermissionCollection implements java.
         return delegated.implies(p);
     }
     /** @return Enumeration of all Permissions in this collection. */
-    public Enumeration elements() {
+    public Enumeration<Permission> elements() {
         return delegated.elements();
     }
     /** @param perm a Permission to add. */

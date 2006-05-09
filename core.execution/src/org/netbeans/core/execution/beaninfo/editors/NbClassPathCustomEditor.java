@@ -495,11 +495,12 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
      *           (and thus it should not be set)
      */
     public Object getPropertyValue() throws IllegalStateException {
-        ArrayList list = new ArrayList();
-        for (Enumeration e = listModel.elements(); e.hasMoreElements(); ) {
+        ArrayList<String> list = new ArrayList<String>();
+	@SuppressWarnings("unchecked") Enumeration<String> e = (Enumeration<String>)listModel.elements();
+        while (e.hasMoreElements() ) {
             list.add(e.nextElement());
         }
-        String []arr = (String[]) list.toArray(new String[list.size()]);
+        String []arr = list.toArray(new String[list.size()]);
         return new NbClassPath(arr);
     }
 

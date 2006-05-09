@@ -99,21 +99,21 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
             return;
         }
         StringTokenizer tok = new StringTokenizer(text, separator);
-        java.util.List list = new LinkedList();
+        java.util.List<String> list = new LinkedList<String>();
         while (tok.hasMoreTokens()) {
             String s = tok.nextToken();
             list.add(s.trim());
         }
-        String [] a = (String[])list.toArray(new String[list.size()]);
+        String [] a = list.toArray(new String[list.size()]);
         setValue(a);
     }
 
     public String getJavaInitializationString () {
         if (strings == null) return "null"; // NOI18N
         // [PENDING - wrap strings ???]
-        StringBuffer buf = new StringBuffer ("new String[] {"); // NOI18N
+        StringBuilder buf = new StringBuilder ("new String[] {"); // NOI18N
         buf.append (getStrings(true));
-        buf.append ("}"); // NOI18N
+        buf.append ('}'); // NOI18N
         return buf.toString ();
     }
 

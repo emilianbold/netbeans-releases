@@ -56,13 +56,13 @@ final class FileStateManager {
     /** Singleton instance of FileStateManager */
     private static FileStateManager manager = null;
     /** Cache of collected information */
-    private WeakHashMap info = new WeakHashMap ();
+    private WeakHashMap<FileObject, FileInfo> info = new WeakHashMap<FileObject, FileInfo> ();
     /** Number of layers on {@link SystemFileSystem} */
     private static final int LAYERS_COUNT = 3;
     /** Layers of {@link SystemFileSystem}, LAYER_* constants can be used as indexes. */
     private FileSystem layers [] = new FileSystem [LAYERS_COUNT];
     /** List of listeners listening on changes in file state */
-    private HashMap listeners = new HashMap (10);
+    private HashMap<FileStatusListener,LinkedList<FileObject>> listeners = new HashMap<FileStatusListener,LinkedList<FileObject>> (10);
     /** Listener attached to SessionManager, it refreshes list of layers if some are added or removed */
     private PropertyChangeListener propL = null;
 
@@ -155,13 +155,13 @@ final class FileStateManager {
     
     public final void addFileStatusListener (FileStatusListener l, FileObject mfo) {
         synchronized (listeners) {
-            LinkedList lst = null;
+            LinkedList<FileObject> lst = null;
             if (!listeners.containsKey (l)) {
-                lst = new LinkedList ();
+                lst = new LinkedList<FileObject> ();
                 listeners.put (l, lst);
             }
             else
-                lst = (LinkedList)listeners.get (l);
+                lst = listeners.get (l);
             
             if (!lst.contains (mfo))
                 lst.add (mfo);
@@ -173,7 +173,7 @@ final class FileStateManager {
             if (mfo == null)
                 listeners.remove (l);
             else {
-                LinkedList lst = (LinkedList) listeners.get (l);
+                LinkedList<FileObject> lst = listeners.get (l);
                 if (lst != null) {
                    lst.remove (mfo);
                    if (lst.isEmpty ())
@@ -183,17 +183,18 @@ final class FileStateManager {
         }
     }
 
+    @SuppressWarnings("unchecked") 
     private void fireFileStatusChanged (FileObject mfo) {
-        HashMap h = null;
+        HashMap<FileStatusListener,LinkedList<FileObject>> h = null;
         
         synchronized (listeners) {
-            h = (HashMap)listeners.clone ();
+            h = (HashMap<FileStatusListener,LinkedList<FileObject>>)listeners.clone ();
         }
         
-        Iterator i = h.keySet ().iterator ();
+        Iterator<FileStatusListener> i = h.keySet ().iterator ();
         while (i.hasNext ()) {
-            FileStatusListener l = (FileStatusListener)i.next ();
-            LinkedList lst = (LinkedList)h.get (l);
+            FileStatusListener l = i.next ();
+            LinkedList<FileObject> lst = h.get (l);
             if (lst.contains (mfo))
                 l.fileStatusChanged (mfo);
         }
@@ -262,7 +263,7 @@ final class FileStateManager {
     }
     
     private class FileInfo extends FileChangeAdapter {
-        private WeakReference file = null;
+        private WeakReference<FileObject> file = null;
         
         private int state [] = new int [LAYERS_COUNT];
         private final Object LOCK = new Object ();
@@ -271,7 +272,7 @@ final class FileStateManager {
         private FileChangeListener weakL [] = new FileChangeListener [LAYERS_COUNT];
         
         public FileInfo (FileObject mfo) {
-            file = new WeakReference (mfo);
+            file = new WeakReference<FileObject> (mfo);
             
             // get initial state
             for (int i = 0; i < LAYERS_COUNT; i++) {
@@ -420,7 +421,7 @@ final class FileStateManager {
             // rename can be caused either by renaming fo or by deleting mfo,
             // thus the safe way is to discard this FileInfo from the map and
             // notify listeners about the change 
-            FileObject mfo = (FileObject) file.get ();
+            FileObject mfo = file.get ();
             if (mfo != null && mfo.isValid ()) {
                 discard (mfo);
                 fireFileStatusChanged (mfo);
@@ -430,7 +431,7 @@ final class FileStateManager {
         }
         
         public void fileDataCreated (FileEvent fe) {
-            FileObject mfo = (FileObject) file.get ();
+            FileObject mfo = file.get ();
             if (mfo != null && mfo.isValid ()) {
                 String created = fe.getFile ().getPath();
                 String mfoname = mfo.getPath();
@@ -448,7 +449,7 @@ final class FileStateManager {
         }
         
         public void fileFolderCreated (FileEvent fe) {
-            FileObject mfo = (FileObject) file.get ();
+            FileObject mfo = file.get ();
             if (mfo != null && mfo.isValid ()) {
                 String created = fe.getFile ().getPath();
                 String mfoname = mfo.getPath();
@@ -467,7 +468,7 @@ final class FileStateManager {
         }
         
         public void fileDeleted (FileEvent fe) {
-            FileObject mfo = (FileObject) file.get ();
+            FileObject mfo = file.get ();
             if (mfo != null && mfo.isValid ()) {
                 String deleted = fe.getFile ().getPath();
                 String mfoname = mfo.getPath();

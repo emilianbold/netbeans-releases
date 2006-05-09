@@ -37,12 +37,12 @@ import org.openide.xml.*;
 public final class EntityCatalogImpl extends EntityCatalog {
 
     /** map between publicId and privateId (String, String); must be synchronized */
-    private Map id2uri;  
+    private Map<String, String> id2uri;  
 
     private static final RequestProcessor catalogRP = new RequestProcessor("EntityCatalog/parser"); // NOI18N
 
     /** Creates new EntityCatalogImpl */
-    private EntityCatalogImpl(Map map) {
+    private EntityCatalogImpl(Map<String,String> map) {
         id2uri = map;
     }
     
@@ -70,7 +70,7 @@ public final class EntityCatalogImpl extends EntityCatalog {
     public static class RegistrationProcessor extends DefaultHandler implements XMLDataObject.Processor, InstanceCookie, Runnable, PropertyChangeListener {
 
         private XMLDataObject peer;
-        private Map map;
+        private Map<String, String> map;
         private RequestProcessor.Task parsingTask = catalogRP.create(this);
         private EntityCatalogImpl instance = null;
 
@@ -111,7 +111,7 @@ public final class EntityCatalogImpl extends EntityCatalog {
         // Runnable impl (can be a task body)
 
         public void run() {
-            map = new Hashtable();  //be synchronized
+            map = new Hashtable<String, String>();  //be synchronized
 
             try {
                 String loc = peer.getPrimaryFile().getURL().toExternalForm();

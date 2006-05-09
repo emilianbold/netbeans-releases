@@ -86,21 +86,21 @@ public final class LoaderPoolNode extends AbstractNode {
     private static LoaderChildren myChildren;
 
     /** Array of DataLoader objects */
-    private static List loaders = new ArrayList ();
+    private static List<DataLoader> loaders = new ArrayList<DataLoader> ();
     /** Those which have been modified since being read from the pool */
-    private static Set modifiedLoaders = new HashSet(); // Set<DataLoader>
+    private static Set<DataLoader> modifiedLoaders = new HashSet<DataLoader>();
     /** Loaders by class name */
-    private static Map names2Loaders = new HashMap(200); // Map<String,DataLoader>
+    private static Map<String,DataLoader> names2Loaders = new HashMap<String,DataLoader>(200);
     /** Loaders by representation class name */
-    private static Map repNames2Loaders = new HashMap(200); // Map<String,DataLoader>
+    private static Map<String,DataLoader> repNames2Loaders = new HashMap<String,DataLoader>(200);
 
     /** Map from loader class names to arrays of class names for Install-Before's */
-    private static Map installBefores = new HashMap (); // Map<String,String[]>
+    private static Map<String,String[]> installBefores = new HashMap<String,String[]> ();
     /** Map from loader class names to arrays of class names for Install-After's */
-    private static Map installAfters = new HashMap (); // Map<String,String[]>
+    private static Map<String,String[]> installAfters = new HashMap<String,String[]> ();
 
     /** copy of the loaders to prevent copying */
-    private static Object[] loadersArray;
+    private static DataLoader[] loadersArray;
 
     /** true if changes in loaders should be notified */
     private static boolean installationFinished = false;
@@ -225,7 +225,7 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     private static synchronized void resort () {
         // A partial ordering over loaders based on their Install-* tags:
-        Map deps = new HashMap(); // Map<DataLoader,List<DataLoader>>
+        Map<DataLoader,List<DataLoader>> deps = new HashMap<DataLoader,List<DataLoader>>();
         add2Deps(deps, installBefores, true);
         add2Deps(deps, installAfters, false);
         if (err.isLoggable(Level.FINE)) {
@@ -251,7 +251,7 @@ public final class LoaderPoolNode extends AbstractNode {
      * @param before true if orderings refers to before, false if to after
      * @see Utilities#topologicalSort
      */
-    private static void add2Deps(Map deps, Map orderings, boolean before) {
+    private static void add2Deps(Map<DataLoader,List<DataLoader>> deps, Map orderings, boolean before) {
         Iterator it = orderings.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry e = (Map.Entry)it.next();
@@ -288,10 +288,10 @@ public final class LoaderPoolNode extends AbstractNode {
      * @param a the earlier loader
      * @param b the later loader
      */
-    private static void addDep(Map deps, DataLoader a, DataLoader b) {
-        List l = (List)deps.get(a);
+    private static void addDep(Map<DataLoader,List<DataLoader>> deps, DataLoader a, DataLoader b) {
+        List<DataLoader> l = deps.get(a);
         if (l == null) {
-            deps.put(a, l = new LinkedList());
+            deps.put(a, l = new LinkedList<DataLoader>());
         }
         if (!l.contains(b)) {
             l.add(b);
@@ -432,15 +432,15 @@ public final class LoaderPoolNode extends AbstractNode {
         /*installBefores = (Map)*/ois.readObject ();
         /*installAfters = (Map)*/ois.readObject ();
 
-        HashSet classes = new HashSet ();
-        LinkedList l = new LinkedList ();
+        HashSet<Class> classes = new HashSet<Class> ();
+        LinkedList<DataLoader> l = new LinkedList<DataLoader> ();
         
         Exception deserExc = null; // collects all exceptions thrown by loader deserialization
 
-        Iterator mit = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator(); // Iterator<ModuleInfo>
-        Map modules = new HashMap(); // Map<String,ModuleInfo>
+        Iterator<? extends ModuleInfo> mit = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
+        Map<String,ModuleInfo> modules = new HashMap<String,ModuleInfo>();
         while (mit.hasNext()) {
-            ModuleInfo m = (ModuleInfo)mit.next();
+            ModuleInfo m = mit.next();
             modules.put(m.getCodeNameBase(), m);
         }
 
@@ -552,7 +552,7 @@ public final class LoaderPoolNode extends AbstractNode {
                 l.add (loader);
             }
         }
-        if (l.size() > new HashSet(l).size()) throw new IllegalStateException("Duplicates in " + l); // NOI18N
+        if (l.size() > new HashSet<DataLoader>(l).size()) throw new IllegalStateException("Duplicates in " + l); // NOI18N
 
         loaders = l;
         // Always "resort": if the existing order was in fact compatible with the
@@ -781,8 +781,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
         /** Update the the nodes */
         public void update () {
-            List _loaders = new LinkedList ();
-            Enumeration e = getNbLoaderPool ().allLoaders ();
+            List<DataLoader> _loaders = new LinkedList<DataLoader> ();
+            @SuppressWarnings("unchecked") Enumeration<DataLoader> e = (Enumeration<DataLoader>)getNbLoaderPool ().allLoaders ();
             while (e.hasMoreElements ()) _loaders.add (e.nextElement ());
             setKeys (_loaders);
         }
@@ -827,16 +827,16 @@ public final class LoaderPoolNode extends AbstractNode {
 
         /** Enumerates all loaders. Loaders are taken from children
         * structure of LoaderPoolNode. */
-        protected Enumeration loaders () {
+        protected Enumeration<DataLoader> loaders () {
 
             //
             // prevents from extensive copying
             //
 
-            Object[] arr = loadersArray;
+            DataLoader[] arr = loadersArray;
             if (arr == null) {
                 synchronized (LoaderPoolNode.class) {
-                    arr = loadersArray = loaders.toArray ();
+                    arr = loadersArray = loaders.toArray (new DataLoader[loaders.size()]);
                 }
             }
             return org.openide.util.Enumerations.array (arr);
@@ -916,12 +916,12 @@ public final class LoaderPoolNode extends AbstractNode {
         */
         public Node[] getNodes () {
             Enumeration e = getChildren ().nodes ();
-            List l = new ArrayList ();
+            List<Node> l = new ArrayList<Node> ();
             while (e.hasMoreElements ()) {
                 LoaderPoolItemNode node = (LoaderPoolItemNode) e.nextElement ();
                 if (! node.isSystem) l.add (node);
             }
-            return (Node[]) l.toArray (new Node[l.size ()]);
+            return l.toArray (new Node[l.size ()]);
         }
 
         /** Get the node count. Subclasses must provide this.
@@ -936,10 +936,10 @@ public final class LoaderPoolNode extends AbstractNode {
         */
         public void reorder (int[] perm) {
             synchronized (LoaderPoolNode.class) {
-                Object[] arr = loaders.toArray ();
+                DataLoader[] arr = loaders.toArray (new DataLoader[loaders.size()]);
 
                 if (arr.length == perm.length) {
-                    Object[] target = new Object[arr.length];
+                    DataLoader[] target = new DataLoader[arr.length];
                     for (int i = 0; i < arr.length; i++) {
                         if (target[perm[i]] != null) {
                             throw new IllegalArgumentException ();
@@ -947,7 +947,7 @@ public final class LoaderPoolNode extends AbstractNode {
                         target[perm[i]] = arr[i];
                     }
 
-                    loaders = new ArrayList (Arrays.asList (target));
+                    loaders = new ArrayList<DataLoader> (Arrays.asList (target));
                     update ();
                 } else {
                     throw new IllegalArgumentException ();

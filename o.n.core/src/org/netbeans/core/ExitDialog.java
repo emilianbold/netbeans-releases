@@ -244,7 +244,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             }
 
             result = false;
-            exitDialog.show(); // Show the modal Save dialog
+            exitDialog.setVisible(true); // Show the modal Save dialog
             return result;
 
         }

@@ -224,22 +224,22 @@ public class ExtensionListEditor extends Object implements PropertyEditor,
     /** Used to acquire the current value from the PropertyEditor
      * @return the current value of the property
      */
-    public String[] getStringArray() {
+    @SuppressWarnings("unchecked") public String[] getStringArray() {
         if (value == null) {
             return new String[0];
         }
-        List l = new ArrayList ();
-        Enumeration e = value.extensions ();
+        List<String> l = new ArrayList<String> ();
+        Enumeration<String> e = (Enumeration<String>)value.extensions ();
         while (e.hasMoreElements ())
             l.add (e.nextElement ());
         
         
-        e = value.mimeTypes ();
+        e = (Enumeration<String>)value.mimeTypes ();
         while (e.hasMoreElements ())
             l.add (e.nextElement ());
         
         Collections.sort (l);
-        return (String[]) l.toArray (new String[l.size ()]);
+        return l.toArray (new String[l.size ()]);
     }
 
     /** Used to modify the current value in the PropertyEditor

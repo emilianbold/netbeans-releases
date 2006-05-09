@@ -492,17 +492,17 @@ public class ProductInformationPanel extends JPanel {
         String nbhome = System.getProperty("netbeans.home");
         String nbdirs = System.getProperty("netbeans.dirs");
         
-        Enumeration more;
+        Enumeration<Object> more;
         if (nbdirs != null) {
             more = new StringTokenizer(nbdirs, File.pathSeparator);
         } else {
             more = Enumerations.empty();
         }
             
-        Enumeration all = Enumerations.concat(Enumerations.singleton(nbhome), more);
+        Enumeration<Object> all = Enumerations.concat(Enumerations.singleton(nbhome), more);
         
-        Set/*<File>*/ files = new HashSet();
-        StringBuffer sb = new StringBuffer ();
+        Set<File> files = new HashSet<File>();
+        StringBuilder sb = new StringBuilder ();
         String prefix = "";
         while (all.hasMoreElements ()) {
             String s = (String)all.nextElement ();
@@ -547,18 +547,18 @@ public class ProductInformationPanel extends JPanel {
     }
 
     /** Copies product information into clipboard */
-    private static class CopyProductInfoAction extends CallableSystemAction {
+    private static class CopyProductInfoAction extends CallableSystemAction { // XXX why not pure Swing action
 
         public void performAction() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(getProductVersionValue());
-            sb.append("\n");
+            sb.append('\n');
             sb.append(getJavaValue());
             sb.append("; ");
             sb.append(getVMValue());
-            sb.append("\n");
+            sb.append('\n');
             sb.append(getOperatingSystemValue());
-            sb.append("\n");
+            sb.append('\n');
             sb.append(getSystemLocaleValue());
             sb.append("; ");
             sb.append(getEncodingValue());

@@ -76,7 +76,7 @@ public abstract class CoreBridge {
     
     protected abstract void loadDefaultSection (
         ManifestSection ms, 
-        org.openide.util.lookup.InstanceContent.Convertor convertor, 
+        org.openide.util.lookup.InstanceContent.Convertor<ManifestSection,Object> convertor, 
         boolean add
     ); /*
         if (load) {

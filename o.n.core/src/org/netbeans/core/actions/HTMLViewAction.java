@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,39 +42,18 @@ public class HTMLViewAction extends CallableSystemAction {
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
             NbBundle.getBundle(HTMLViewAction.class).getString("CTL_OpeningBrowser"));
         try {
-            boolean notFound = true;
-            
             Mode mode = WindowManager.getDefault().findMode(MODE_NAME);
             if (mode != null) {
                 TopComponent [] comps = mode.getTopComponents ();
                 if (comps.length > 0) {
                     comps[0].open ();
                     comps[0].requestActive ();
-                    notFound = false;
                 }
-            }
-            // is it open on any workspace?
-            if (notFound) {
-                Workspace [] workspaces = WindowManager.getDefault ().getWorkspaces ();
-                if (workspaces != null) {
-                    for (int i=0; i<workspaces.length; i++) {
-                        mode = workspaces[i].findMode(MODE_NAME);
-                        if (mode != null) {
-                            TopComponent [] comps = mode.getTopComponents ();
-                            if (comps.length > 0) {
-                                comps[0].open ();
-                                comps[0].requestActive ();
-                                notFound = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (notFound) {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(
-                    new java.net.URL(HtmlBrowser.getHomePage ()
-                ));
+		else {
+		    HtmlBrowser.URLDisplayer.getDefault().showURL(
+			    new java.net.URL(HtmlBrowser.getHomePage ()
+			    ));
+		}
             }
         } catch (java.net.MalformedURLException e) {
             if (!HtmlBrowser.getHomePage ().

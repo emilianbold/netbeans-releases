@@ -427,11 +427,10 @@ final class NbInstaller extends ModuleInstaller {
         CoreBridge.getDefault().loadDefaultSection(s, convertor, load);
     }
     
-    private final InstanceContent.Convertor convertor = new Convertor();
-    private final class Convertor implements InstanceContent.Convertor {
+    private final InstanceContent.Convertor<ManifestSection,Object> convertor = new Convertor();
+    private final class Convertor implements InstanceContent.Convertor<ManifestSection,Object> { // or <ManifestSection,SharedClassObject>?
         Convertor() {}
-        public Object convert(Object obj) {
-            ManifestSection s = (ManifestSection)obj;
+        public Object convert(ManifestSection s) {
             try {
                 return s.getInstance();
             } catch (Exception e) {
@@ -444,8 +443,7 @@ final class NbInstaller extends ModuleInstaller {
                 return null;
             }
         }
-        public Class type(Object obj) {
-            ManifestSection s = (ManifestSection)obj;
+        public Class<?> type(ManifestSection s) {
             return s.getSuperclass();
         }
         
@@ -453,7 +451,7 @@ final class NbInstaller extends ModuleInstaller {
          * @param obj the registered object
          * @return the ID for the object
          */
-        public String id(Object obj) {
+        public String id(ManifestSection obj) {
             return obj.toString ();
         }
         
@@ -461,7 +459,7 @@ final class NbInstaller extends ModuleInstaller {
          * @param obj the registered object
          * @return the name representing the object for the user
          */
-        public String displayName(Object obj) {
+        public String displayName(ManifestSection obj) {
             return obj.toString ();
         }
         

@@ -30,7 +30,7 @@ import org.openide.nodes.Node;
 * @author Jaroslav Tulach
 */
 public final class NbPlaces extends Object {
-    private final List listeners = new ArrayList(); // List<ChangeListener>
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     /** No instance outside this class.
     */
@@ -63,7 +63,7 @@ public final class NbPlaces extends Object {
     void fireChange() {
         ChangeListener[] l;
         synchronized (listeners) {
-            l = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+            l = listeners.toArray(new ChangeListener[listeners.size()]);
         }
         ChangeEvent ev = new ChangeEvent(this);
         for (int i = 0; i < l.length; i++) {

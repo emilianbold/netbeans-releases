@@ -47,7 +47,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         // it may come from arbitrary thread
         // retrive per thread instance
         
-        SniffingParser sniffer = (SniffingParser) local.get();
+        SniffingParser sniffer = local.getParser();
         Smell print = sniffer.sniff(fo);
 //        System.err.println("Print of " + fo);
 //        System.err.println("print " + print);
@@ -172,29 +172,29 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
      * Create just one shared parser instance per thread.
      * Consequently one instance cannot be run in paralel eliminating need for sync.
      */
-    private static class LocalSniffingParser extends ThreadLocal {
+    private static class LocalSniffingParser extends ThreadLocal<WeakReference<SniffingParser>> {
         LocalSniffingParser() {}
         
-        private WeakReference wref = null;
+        private WeakReference<SniffingParser> wref = null;
         
-        protected Object initialValue() {            
+        protected WeakReference<SniffingParser> initialValue() {            
             SniffingParser parser = new SniffingParser();
-            wref = new WeakReference(parser);
+            wref = new WeakReference<SniffingParser>(parser);
             return wref;
         }
         
-        public Object get() {
-            WeakReference cache = (WeakReference) super.get();
-            Object cached = cache.get();
+        public SniffingParser getParser() {
+            WeakReference<SniffingParser> cache = get();
+            SniffingParser cached = cache.get();
             if (cached == null) {
                 cached = new SniffingParser();
-                wref = new WeakReference(cached);                
+                wref = new WeakReference<SniffingParser>(cached);                
                 super.set(wref);
             }
             return cached;            
         }
         
-        public void set(Object data) {
+        public void set(WeakReference<SniffingParser> data) {
             // we are read only!
         }
     }

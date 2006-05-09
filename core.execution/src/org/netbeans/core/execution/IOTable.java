@@ -30,7 +30,7 @@ import org.openide.windows.TopComponent;
 *
 * @author Ales Novak
 */
-final class IOTable extends Hashtable {
+final class IOTable extends Hashtable<InputOutput,TaskIO> {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 9096333712401558521L;
 
@@ -41,7 +41,7 @@ final class IOTable extends Hashtable {
     private TaskIO systemIO;
 
     /** hashtable of free TaskIOs - name:TaskIO */
-    private HashMap freeTaskIOs;
+    private HashMap<String, TaskIO> freeTaskIOs;
 
     /**
     * @param base is a base ThreadGroup for tasks
@@ -50,7 +50,7 @@ final class IOTable extends Hashtable {
     public IOTable(ThreadGroup base, TaskIO systemIO) {
         this.base = base;
         this.systemIO = systemIO;
-        freeTaskIOs = new HashMap(11);
+        freeTaskIOs = new HashMap<String, TaskIO>(16);
     }
 
     /** finds top thread group of the calling thread

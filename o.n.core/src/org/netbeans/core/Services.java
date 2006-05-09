@@ -42,15 +42,16 @@ import org.openide.util.io.NbMarshalledObject;
 * @author Jaroslav Tulach
 * @deprecated Obsoleted by lookup and new settings system.
 */
+@SuppressWarnings({"deprecation","unchecked"})
 public final class Services extends ServiceType.Registry implements LookupListener {
     /** serial */
     static final long serialVersionUID =-7558069607307508327L;
     
     /** Result containing all current services. */
-    private Lookup.Result allTypes;
+    private Lookup.Result<ServiceType> allTypes;
     
     /** Mapping between service name and given ServiceType instance. */
-    private Map name2Service;
+    private Map<String, ServiceType> name2Service;
     
     /** Default instance */
     public static Services getDefault () {
@@ -58,7 +59,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     }
     
     public Services() {
-        name2Service = new HashMap();
+        name2Service = new HashMap<String, ServiceType>();
     }
     
     public ServiceType find(Class clazz) {
@@ -67,10 +68,10 @@ public final class Services extends ServiceType.Registry implements LookupListen
     
     /** Override to specially look up no-op services. */
     public ServiceType find (String name) {
-        Map lookupMap = name2Service;
+        Map<String, ServiceType> lookupMap = name2Service;
         ServiceType ret;
         synchronized (lookupMap) {
-            ret = (ServiceType) lookupMap.get(name);
+            ret = lookupMap.get(name);
         }
         
         if (ret == null) {
@@ -84,7 +85,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     }
     
     /** Result containing all current services. */
-    private Lookup.Result getTypesResult() {
+    private Lookup.Result<ServiceType> getTypesResult() {
         boolean init = false;
         synchronized (this) {
             if (allTypes == null) {
@@ -109,8 +110,8 @@ public final class Services extends ServiceType.Registry implements LookupListen
     /** Getter for list of all services types.
     * @return list of ServiceType
     */
-    public java.util.List getServiceTypes () {
-        return new ArrayList(getTypesResult().allInstances());
+    public java.util.List<ServiceType> getServiceTypes () {
+        return new ArrayList<ServiceType>(getTypesResult().allInstances());
     }
     
     /** Setter for list of all services types. This allows to change
@@ -119,22 +120,22 @@ public final class Services extends ServiceType.Registry implements LookupListen
     *
     * @param arr list of ServiceTypes 
     */
-    public synchronized void setServiceTypes (java.util.List arr) {
-        if (arr == null) {
+    public synchronized void setServiceTypes (java.util.List/*<ServiceType>*/ arr0) {
+        if (arr0 == null) {
             throw new NullPointerException();
         }
         
-        arr = ensureSingleness(arr);
+        @SuppressWarnings("unchecked") java.util.List<ServiceType> arr = ensureSingleness((java.util.List<ServiceType>) arr0);
         
-        HashMap services = new HashMap(20); // <service type, DataObject>
+        HashMap<ServiceType,DataObject> services = new HashMap<ServiceType,DataObject>(20); // <service type, DataObject>
         searchServices(NbPlaces.getDefault().findSessionFolder("Services").getPrimaryFile(), services); // NOI18N
         
         // storing services
-        HashMap order = new HashMap(10); // <parent folder, <file>>
-        Iterator it = arr.iterator();
+        HashMap<DataFolder,List<DataObject>> order = new HashMap<DataFolder,List<DataObject>>(10); // <parent folder, <file>>
+        Iterator<ServiceType> it = arr.iterator();
         while (it.hasNext()) {
-            ServiceType st = (ServiceType) it.next();
-            DataObject dobj = (DataObject) services.get(st);
+            ServiceType st = it.next();
+            DataObject dobj = services.get(st);
             
             if (dobj != null) {
                 // store existing
@@ -151,9 +152,9 @@ public final class Services extends ServiceType.Registry implements LookupListen
             // compute order in folders
             if (dobj != null) {
                 DataFolder parent = dobj.getFolder();
-                List orderedFiles = (List) order.get(parent);
+                List<DataObject> orderedFiles = order.get(parent);
                 if (orderedFiles == null) {
-                    orderedFiles = new ArrayList(6);
+                    orderedFiles = new ArrayList<DataObject>(6);
                     order.put(parent, orderedFiles);
                 }
                 orderedFiles.add(dobj);
@@ -161,16 +162,14 @@ public final class Services extends ServiceType.Registry implements LookupListen
         }
         
         // storing order attribute
-        it = order.keySet().iterator();
-        while (it.hasNext()) {
-            DataObject parent = (DataObject) it.next();
-            List orderedFiles = (List) order.get(parent);
+	for (DataObject parent: order.keySet()) {
+            List<DataObject> orderedFiles = order.get(parent);
             if (orderedFiles.size() < 2) continue;
             
-            Iterator files = orderedFiles.iterator();
+            Iterator<DataObject> files = orderedFiles.iterator();
             StringBuffer orderAttr = new StringBuffer(64);
             while (files.hasNext()) {
-                DataObject file = (DataObject) files.next();
+                DataObject file = files.next();
                 orderAttr.append(file.getPrimaryFile().getNameExt()).append('/');
             }
             orderAttr.deleteCharAt(orderAttr.length() - 1);
@@ -183,9 +182,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
         }
         
         // remove remaining services from default FS
-        it = services.values().iterator();
-        while (it.hasNext()) {
-            DataObject dobj = (DataObject) it.next();
+	for (DataObject dobj: services.values()) {
             try {
                 dobj.delete();
             } catch (IOException ex) {
@@ -217,12 +214,10 @@ public final class Services extends ServiceType.Registry implements LookupListen
     
     /** ensure that instance of the service type will be listed just once.
      */
-    private List ensureSingleness(List l) {
-        List newList = new ArrayList(l.size());
-        Iterator it = l.iterator();
+    private List<ServiceType> ensureSingleness(List<ServiceType> l) {
+        List<ServiceType> newList = new ArrayList<ServiceType>(l.size());
         
-        while (it.hasNext()) {
-            ServiceType stype = (ServiceType) it.next();
+	for (ServiceType stype: l) {
             if (newList.contains(stype)) {
                 continue;
             } else {
@@ -234,7 +229,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     }
     
     /** search all data objects containing service type instance. */
-    private void searchServices(FileObject folder, Map services) {
+    private void searchServices(FileObject folder, Map<ServiceType,DataObject> services) {
         FileObject[] fobjs = folder.getChildren();
         for (int i = 0; i < fobjs.length; i++) {
             if (!fobjs[i].isValid()) continue;
@@ -273,7 +268,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     }
     
     /** all services */
-    public Enumeration services () {
+    public Enumeration<ServiceType> services () {
         return Collections.enumeration (getServiceTypes ());
     }
 
@@ -282,7 +277,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     * @return an enumeration of {@link ServiceType}s that are subclasses of
     *    given class
     */
-    public Enumeration services (Class clazz) {
+    public <T extends ServiceType> Enumeration<T> services(Class<T> clazz) {
         if (clazz == null) return org.openide.util.Enumerations.empty();
         Collection res = Lookup.getDefault().lookupAll(clazz);
         return Collections.enumeration(res);
@@ -318,7 +313,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     */
     private void readObject (ObjectInputStream oos)
     throws IOException, ClassNotFoundException {
-        final LinkedList ll = new LinkedList ();
+        final LinkedList<ServiceType> ll = new LinkedList<ServiceType> ();
         for (;;) {
             NbMarshalledObject obj = (NbMarshalledObject)oos.readObject ();
 

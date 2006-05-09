@@ -38,7 +38,7 @@ class NbAuthenticator extends java.net.Authenticator {
         dd.setHelpCtx (new HelpCtx (NbAuthenticator.class.getName () + ".getPasswordAuthentication")); // NOI18N
         passwordPanel.setPrompt( getRequestingPrompt() );
         java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog( dd );
-        dialog.show ();
+        dialog.setVisible (true);
 
         if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) )
             return new java.net.PasswordAuthentication ( passwordPanel.getUsername(), passwordPanel.getPassword() );

@@ -36,7 +36,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel
 implements KeyListener, PropertyChangeListener {
     static final long serialVersionUID =-9015667991684634296L;
    
-    private HashMap labelMap = new HashMap();
+    private HashMap<JTextField, JLabel> labelMap = new HashMap<JTextField, JLabel>();
     private PropertyEnv env;
     /** Initializes the Form */
     public RectangleCustomEditor(RectangleEditor editor, PropertyEnv env) {

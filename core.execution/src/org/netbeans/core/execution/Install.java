@@ -83,22 +83,22 @@ public class Install extends ModuleInstall {
 
         // Add beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
-        java.util.List paths = Arrays.asList(sp);
+        java.util.List<String> paths = Arrays.asList(sp);
         if(!paths.contains(BEANINFO_PATH)) {
-            paths = new ArrayList(paths);
+            paths = new ArrayList<String>(paths);
             paths.add(BEANINFO_PATH);
             Introspector.setBeanInfoSearchPath(
-                (String[])paths.toArray(new String[0]));
+                paths.toArray(new String[0]));
         }
         
         // Add property editor search path.
         sp = PropertyEditorManager.getEditorSearchPath();
         paths = Arrays.asList(sp);
         if(!paths.contains(EDITOR_PATH)) {
-            paths = new ArrayList(paths);
+            paths = new ArrayList<String>(paths);
             paths.add(EDITOR_PATH);
             PropertyEditorManager.setEditorSearchPath(
-                (String[])paths.toArray(new String[0]));
+                paths.toArray(new String[0]));
         }
     }
     
@@ -109,22 +109,22 @@ public class Install extends ModuleInstall {
 
         // Remove beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
-        java.util.List paths = Arrays.asList(sp);
+        java.util.List<String> paths = Arrays.asList(sp);
         if(paths.contains(BEANINFO_PATH)) {
-            paths = new ArrayList(paths);
+            paths = new ArrayList<String>(paths);
             paths.remove(BEANINFO_PATH);
             Introspector.setBeanInfoSearchPath(
-                (String[])paths.toArray(new String[0]));
+                paths.toArray(new String[0]));
         }
         
         // Remove property editor seach path.
         sp = PropertyEditorManager.getEditorSearchPath();
         paths = Arrays.asList(sp); 
         if(paths.contains(EDITOR_PATH)) {
-            paths = new ArrayList(paths);
+            paths = new ArrayList<String>(paths);
             paths.remove(EDITOR_PATH);
             PropertyEditorManager.setEditorSearchPath(
-                (String[])paths.toArray(new String[0]));
+                paths.toArray(new String[0]));
         }
     }
     
@@ -332,7 +332,7 @@ public class Install extends ModuleInstall {
      * actions only. */
     static Collection getPendingTasks() {
         
-        ArrayList pendingTasks = new ArrayList( 10 );
+        ArrayList<Object> pendingTasks = new ArrayList<Object>( 10 ); // Action | ExecutorTask | InternalHandle
         // XXX no access to running actions at the moment
         //pendingTasks.addAll(CallableSystemAction.getRunningActions());
         pendingTasks.addAll(org.netbeans.core.ModuleActions.getDefaultInstance().getRunningActions());
@@ -370,10 +370,10 @@ public class Install extends ModuleInstall {
        if (ee == null) {
            return;
        }
-       ArrayList tasks = new ArrayList(ee.getRunningTasks());
+       ArrayList<ExecutorTask> tasks = new ArrayList<ExecutorTask>(ee.getRunningTasks());
        
-       for ( Iterator it = tasks.iterator(); it.hasNext(); ) {
-           ExecutorTask et = (ExecutorTask) it.next();
+       for ( Iterator<ExecutorTask> it = tasks.iterator(); it.hasNext(); ) {
+           ExecutorTask et = it.next();
            if ( !et.isFinished() ) {
                et.stop();
            }

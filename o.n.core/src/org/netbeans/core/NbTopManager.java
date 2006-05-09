@@ -138,7 +138,7 @@ public abstract class NbTopManager {
      * @param obj source
      * @param conv convertor which postponing an instantiation
      */
-    public final void register(Object obj, InstanceContent.Convertor conv) {
+    public final <T,R> void register(T obj, InstanceContent.Convertor<T,R> conv) {
         MainLookup.register (obj, conv);
     }
     
@@ -149,7 +149,7 @@ public abstract class NbTopManager {
     }
     /** Unregisters the service registered with a convertor.
      */
-    public final void unregister (Object obj, InstanceContent.Convertor conv) {
+    public final <T,R> void unregister (T obj, InstanceContent.Convertor<T,R> conv) {
         MainLookup.unregister (obj, conv);
     }
     
@@ -165,7 +165,7 @@ public abstract class NbTopManager {
     public void showHelp(HelpCtx helpCtx) {
         // Awkward but should work.
         try {
-            Class c = ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass("org.netbeans.api.javahelp.Help"); // NOI18N
+            Class<?> c = ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass("org.netbeans.api.javahelp.Help"); // NOI18N
             Object o = Lookup.getDefault().lookup(c);
             if (o != null) {
                 Method m = c.getMethod("showHelp", new Class[] {HelpCtx.class}); // NOI18N
@@ -209,7 +209,7 @@ public abstract class NbTopManager {
     public static final class NbStatusDisplayer extends org.openide.awt.StatusDisplayer {
         /** Default constructor for lookup. */
         public NbStatusDisplayer() {}
-        private List listeners = null;
+        private List<ChangeListener> listeners = null;
         private String text = ""; // NOI18N
         public void setStatusText(String text) {
             ChangeListener[] _listeners;
@@ -219,7 +219,7 @@ public abstract class NbTopManager {
                 if (listeners == null || listeners.isEmpty()) {
                     return;
                 } else {
-                    _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+                    _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
                 }
             }
             ChangeEvent e = new ChangeEvent(this);
@@ -231,7 +231,7 @@ public abstract class NbTopManager {
             return text;
         }
         public synchronized void addChangeListener(ChangeListener l) {
-            if (listeners == null) listeners = new ArrayList();
+            if (listeners == null) listeners = new ArrayList<ChangeListener>();
             listeners.add(l);
         }
         public synchronized void removeChangeListener(ChangeListener l) {
@@ -242,7 +242,7 @@ public abstract class NbTopManager {
     /** saves all opened objects */
     private static void saveAll () {
         DataObject dobj = null;
-        ArrayList bad = new ArrayList ();
+        ArrayList<DataObject> bad = new ArrayList<DataObject> ();
         DataObject[] modifs = DataObject.getRegistry ().getModified ();
         if (modifs.length == 0) {
             // Do not show MSG_AllSaved
@@ -268,12 +268,12 @@ public abstract class NbTopManager {
         }
         NotifyDescriptor descriptor;
         //recode this part to show only one dialog?
-        Iterator ee = bad.iterator ();
+        Iterator<DataObject> ee = bad.iterator ();
         while (ee.hasNext ()) {
             descriptor = new NotifyDescriptor.Message(
                         MessageFormat.format (
                             NbBundle.getBundle (NbTopManager.class).getString("CTL_Cannot_save"),
-                            new Object[] { ((DataObject)ee.next()).getPrimaryFile().getName() }
+                            new Object[] { ee.next().getPrimaryFile().getName() }
                         )
                     );
             org.openide.DialogDisplayer.getDefault().notify (descriptor);

@@ -35,19 +35,19 @@ import org.openide.util.Mutex;
 *
 * @author Dafe Simonek
 */
-public final class NbKeymap extends Observable implements Keymap, Comparator {
+public final class NbKeymap extends Observable implements Keymap, Comparator<KeyStroke> {
     /** Name of this keymap */
     String name;
     /** Parent keymap */
     Keymap parent;
     /** Hashtable holding KeyStroke > Action mappings */
-    Map bindings;
+    Map<KeyStroke,Action> bindings;
     /** Default action */
     Action defaultAction;
     /** hash table to map (Action -> ArrayList of KeyStrokes) */
-    Map actions;
+    Map<Action,List<KeyStroke>> actions;
     
-    private static List context = new ArrayList();
+    private static List<KeyStroke> context = new ArrayList<KeyStroke>();
     
     public static void resetContext() {
         context.clear();
@@ -61,18 +61,18 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     public static void shiftContext(KeyStroke stroke) {
         context.add(stroke);
 
-        StringBuffer text = new StringBuffer();
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            text.append(getKeyText((KeyStroke)it.next())).append(' ');
+        StringBuilder text = new StringBuilder();
+        for (KeyStroke ks: context) {
+            text.append(getKeyText(ks)).append(' ');
         }
         StatusDisplayer.getDefault().setStatusText(text.toString());        
     }
     
     private static String getKeyText (KeyStroke keyStroke) {
-        if (keyStroke == null) return "";                       // NOI18N
+        if (keyStroke == null) return "";
         String modifText = KeyEvent.getKeyModifiersText 
             (keyStroke.getModifiers ());
-        if ("".equals (modifText))                              // NOI18N   
+        if ("".equals (modifText))       
             return KeyEvent.getKeyText (keyStroke.getKeyCode ());
         return modifText + "+" +                                // NOI18N
             KeyEvent.getKeyText (keyStroke.getKeyCode ()); 
@@ -93,7 +93,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     NbKeymap(final String name, final Keymap parent) {
         this.name = name;
         this.parent = parent;
-        bindings = new HashMap();
+        bindings = new HashMap<KeyStroke,Action>();
     }
 
     public Action getDefaultAction() {
@@ -120,7 +120,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
         Keymap activ = this;
         for (int i=0; i<ctx.length; i++) {
             if (activ == this) {
-                a = (Action) bindings.get(ctx[i]);
+                a = bindings.get(ctx[i]);
                 if ((a == null) && (parent != null)) {
                     a = parent.getAction(ctx[i]);
                 }
@@ -142,7 +142,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
         }
         
         if (activ == this) {
-            a = (Action) bindings.get(key);
+            a = bindings.get(key);
             if ((a == null) && (parent != null)) {
                 a = parent.getAction(key);
             }
@@ -181,8 +181,8 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
         KeyStroke[] keys = null;
         synchronized (this) {
             keys = new KeyStroke[bindings.size()];
-            for (Iterator iter = bindings.keySet().iterator(); iter.hasNext(); ) {
-                keys[i++] = (KeyStroke) iter.next();
+            for (KeyStroke ks: bindings.keySet()) {
+                keys[i++] = ks;
             }
         }
         return keys;
@@ -201,31 +201,30 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     }
 
     public KeyStroke[] getKeyStrokesForAction(Action a) {
-        Map localActions = actions;
+        Map<Action,List<KeyStroke>> localActions = actions;
         if (localActions == null) {
             localActions = buildReverseMapping ();
         }
 
-        List strokes = (List)localActions.get (a);
+        List<KeyStroke> strokes = localActions.get (a);
         if (strokes != null) {
-            return (KeyStroke[])strokes.toArray(new KeyStroke[strokes.size ()]);
+            return strokes.toArray(new KeyStroke[strokes.size ()]);
         } else {
             return new KeyStroke[0];
         }
     }
 
-    private Map buildReverseMapping () {
-        Map localActions = actions = new HashMap ();
+    private Map<Action,List<KeyStroke>> buildReverseMapping () {
+        Map<Action,List<KeyStroke>> localActions = actions = new HashMap<Action,List<KeyStroke>> ();
 
         synchronized (this) {
-            for (Iterator it = bindings.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry curEntry = (Map.Entry)it.next();
-                Action curAction = (Action) curEntry.getValue();
-                KeyStroke curKey = (KeyStroke) curEntry.getKey();
+            for (Map.Entry<KeyStroke,Action> curEntry: bindings.entrySet()) {
+                Action curAction = curEntry.getValue();
+                KeyStroke curKey = curEntry.getKey();
 
-                List keysForAction = (List)localActions.get (curAction);
+                List<KeyStroke> keysForAction = localActions.get (curAction);
                 if (keysForAction == null) {
-                    keysForAction = Collections.synchronizedList (new ArrayList (1));
+                    keysForAction = Collections.synchronizedList (new ArrayList<KeyStroke> (1));
                     localActions.put (curAction, keysForAction);
                 }
                 keysForAction.add (curKey);
@@ -254,11 +253,9 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
         });
     }
     
-    public int compare(Object o1, Object o2) {
+    public int compare(KeyStroke k1, KeyStroke k2) {
         //#47024 and 32733 - "Find" should not be shown as an accelerator,
         //nor should "Backspace" for Delete.  Solution:  The shorter text wins.
-        KeyStroke k1 = (KeyStroke) o1;
-        KeyStroke k2 = (KeyStroke) o2;
         return KeyEvent.getKeyText(k1.getKeyCode()).length() - 
             KeyEvent.getKeyText(k2.getKeyCode()).length();
     }
@@ -278,12 +275,12 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
         notifyObservers();
     }
 
-    void addActionForKeyStrokeMap(Map map) {
-        Set actionsSet = new HashSet();
+    void addActionForKeyStrokeMap(Map<KeyStroke,Action> map) {
+        Set<Action> actionsSet = new HashSet<Action>();
         synchronized (this) {
-            for (Iterator it = map.keySet ().iterator (); it.hasNext (); ) {
-                Object key = it.next ();
-                Object value = map.get(key);
+            for (Iterator<KeyStroke> it = map.keySet ().iterator (); it.hasNext (); ) {
+                KeyStroke key = it.next ();
+                Action value = map.get(key);
                 // Add both old and new action:
                 actionsSet.add(value);
                 actionsSet.add(bindings.put(key, value));
@@ -291,8 +288,8 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
             actions = null;
         }
         
-        for(Iterator it = actionsSet.iterator(); it.hasNext(); ) {
-            updateActionAccelerator((Action)it.next());
+        for(Action a: actionsSet) {
+            updateActionAccelerator(a);
         }
         
         setChanged();
@@ -311,15 +308,15 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     }
 
     public void removeBindings() {
-        Set actionsSet;
+        Set<Action> actionsSet;
         synchronized (this) {
-            actionsSet = new HashSet(bindings.values());
+            actionsSet = new HashSet<Action>(bindings.values());
             bindings.clear();
             actions = null;
         }
         
-        for(Iterator it = actionsSet.iterator(); it.hasNext(); ) {
-            updateActionAccelerator((Action)it.next());
+        for(Action a: actionsSet) {
+            updateActionAccelerator(a);
         }
         
         setChanged();
@@ -345,16 +342,12 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     public static class SubKeymap implements Keymap {
         Object hold;
         Keymap parent;
-        Map bindings;
+        Map<KeyStroke, Action> bindings;
         Action defaultAction;
 
         public SubKeymap(Object hold) {
             this.hold = hold;
-            bindings = new HashMap();
-        }
-        
-        public void setMapping(Map m) {
-            bindings = new HashMap(m);
+            bindings = new HashMap<KeyStroke, Action>();
         }
         
         public String getName() {
@@ -395,13 +388,13 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
 
         public Action[] getBoundActions() {
             synchronized (this) {
-                return (Action[])bindings.values().toArray(new Action[0]);
+                return bindings.values().toArray(new Action[0]);
             }
         }
 
         public KeyStroke[] getBoundKeyStrokes() {
             synchronized (this) {
-                return (KeyStroke[])bindings.keySet().toArray(new KeyStroke[0]);
+                return bindings.keySet().toArray(new KeyStroke[0]);
             }
         }
   

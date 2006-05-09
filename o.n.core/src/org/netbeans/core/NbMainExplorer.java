@@ -39,7 +39,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
 import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -57,11 +56,11 @@ public final class NbMainExplorer extends CloneableTopComponent {
     //  static final long serialVersionUID=-9070275145808944151L;
 
     /** holds list of roots (Node) */
-    private List prevRoots;
+    private List<Node> prevRoots;
 
     /** assignes to each node one top component holding explorer panel
     * (Node, ExplorerTab) */
-    private Map rootsToTCs;
+    private Map<Node, ExplorerTab> rootsToTCs;
 
     /** Listener which tracks changes on the root nodes (which are displayed as tabs) */
     private transient RootsListener rootsListener;
@@ -72,10 +71,11 @@ public final class NbMainExplorer extends CloneableTopComponent {
     public static final int DEFAULT_WIDTH = 350;
     
     /** Mapping module tabs to their root node classes */
-    private static Map moduleTabs;
+    private static Map<Node, ModuleTab> moduleTabs;
 
     /** Default constructor */
     public NbMainExplorer () {
+//	System.out.println("NbMainExplorer.<init>");
         // listening on changes of roots
         rootsListener = new RootsListener();
         NbPlaces p = NbPlaces.getDefault();
@@ -93,10 +93,11 @@ public final class NbMainExplorer extends CloneableTopComponent {
      * If it is not found it is added when parameter tc is not null. When parameter
      * tc is null new ModuleTab is created using default constructor. */
     private static synchronized ModuleTab findModuleTab (Node root, ModuleTab tc) {
+	System.out.println("NbMainExplorer.findModuleTab "+root);
         if (moduleTabs == null) {
-            moduleTabs = new WeakHashMap(5);
+            moduleTabs = new WeakHashMap<Node, ModuleTab>(5);
         }
-        ModuleTab tab = (ModuleTab) moduleTabs.get(root);
+        ModuleTab tab = moduleTabs.get(root);
         if (tab != null) {
             return tab;
         } else {
@@ -115,11 +116,13 @@ public final class NbMainExplorer extends CloneableTopComponent {
     * close this top component, as this top component exists only because of 
     * backward serialization compatibility.
     * Performed with delay, when WS is in consistent state. */
-    public void open (Workspace workspace) {
+    @SuppressWarnings("deprecation")
+    public void open (org.openide.windows.Workspace workspace) {
         doOpen(workspace);
     }
 
-    private void doOpen(Workspace workspace) {
+    @SuppressWarnings("deprecation")
+    private void doOpen(org.openide.windows.Workspace workspace) {
         if (workspace == null) {
             // refresh roots request
             refreshRoots ();
@@ -134,17 +137,19 @@ public final class NbMainExplorer extends CloneableTopComponent {
     }
 
     /** Open all main explorer's top components on current workspace */
+    @SuppressWarnings("deprecation")
     public void openRoots () {
         openRoots(WindowManager.getDefault().getCurrentWorkspace());
     }
 
     /** Open all main explorer's top components on given workspace */
-    public void openRoots (Workspace workspace) {
+    @SuppressWarnings("deprecation")
+    public void openRoots (org.openide.windows.Workspace workspace) {
         // save the tab we should activate
         ExplorerTab toBeActivated = MainTab.lastActivated;
         // perform open operation
         refreshRoots();
-        Node[] rootsArray = (Node[])getRoots().toArray(new Node[0]);
+        Node[] rootsArray = getRoots().toArray(new Node[0]);
         TopComponent tc = null;
         for (int i = 0; i < rootsArray.length; i++) {
             tc = getRootPanel(rootsArray[i]);
@@ -188,7 +193,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         } else {
             if (toBeActivated != null) {
                 final ExplorerTab localActivated = toBeActivated;
-                final Workspace localWorkspace = workspace;
+                final org.openide.windows.Workspace localWorkspace = workspace;
                 SwingUtilities.invokeLater(new Runnable () {
                     public void run () {
                         Mode mode = localWorkspace.findMode(localActivated);
@@ -206,21 +211,20 @@ public final class NbMainExplorer extends CloneableTopComponent {
     /** Refreshes current state of main explorer's top components, so they
     * will reflect new nodes. Called when content of "roots" nodes is changed.
     */
-    final void refreshRoots () {
-        List curRoots = getRoots ();
+    @SuppressWarnings("deprecation") final void refreshRoots () {
+        List<Node> curRoots = getRoots ();
         // first of all we have to close top components for
         // the roots that are no longer present in the roots content
         if (prevRoots != null) {
-            HashSet toRemove = new HashSet(prevRoots);
+            HashSet<Node> toRemove = new HashSet<Node>(prevRoots);
             toRemove.removeAll(curRoots);
             // ^^^ toRemove now contains only roots that are used no more
-            for (Iterator it = rootsToTCs.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry me = (Map.Entry)it.next();
-                Node r = (Node)me.getKey();
+            for (Map.Entry<Node, ExplorerTab> me: rootsToTCs.entrySet()) {
+                Node r = me.getKey();
                 if (toRemove.contains(r)) {
                     // close top component asociated with this root context
                     // on all workspaces
-                    closeEverywhere((TopComponent)me.getValue());
+                    closeEverywhere(me.getValue());
                 }
             }
         } else {
@@ -230,7 +234,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
         // create and open top components for newly added roots
         List workspaces = whereOpened(
-                              (TopComponent[])rootsToTCs().values().toArray(new TopComponent[0])
+                              rootsToTCs().values().toArray(new ExplorerTab[0])
                           );
         for (Iterator iter = curRoots.iterator(); iter.hasNext(); ) {
             Node r = (Node)iter.next();
@@ -242,7 +246,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
                 tc = createTC(r, false);
                 
                 for (Iterator iter2 = workspaces.iterator(); iter2.hasNext(); ) {
-                    tc.open((Workspace)iter2.next());
+                    tc.open((org.openide.windows.Workspace)iter2.next());
                 }
             }
         }
@@ -253,8 +257,9 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
     /** Helper method - closes given top component on all workspaces
     * where it is opened */
+    @SuppressWarnings("deprecation")
     private static void closeEverywhere (TopComponent tc) {
-        Workspace[] workspaces = WindowManager.getDefault().getWorkspaces();
+        org.openide.windows.Workspace[] workspaces = WindowManager.getDefault().getWorkspaces();
         for (int i = 0; i < workspaces.length; i++) {
             if (tc.isOpened(workspaces[i])) {
                 tc.close(workspaces[i]);
@@ -264,9 +269,10 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
     /** Utility method - returns list of workspaces where at least one from
     * given list of top components is opened. */
-    private static List whereOpened (TopComponent[] tcs) {
-        Workspace[] workspaces = WindowManager.getDefault().getWorkspaces();
-        ArrayList result = new ArrayList(workspaces.length);
+    @SuppressWarnings("deprecation")
+    private static List<org.openide.windows.Workspace> whereOpened (TopComponent[] tcs) {
+        org.openide.windows.Workspace[] workspaces = WindowManager.getDefault().getWorkspaces();
+        ArrayList<org.openide.windows.Workspace> result = new ArrayList<org.openide.windows.Workspace>(workspaces.length);
         for (int i = 0; i < workspaces.length; i++) {
             for (int j = 0; j < tcs.length; j++) {
                 if (tcs[j].isOpened(workspaces[i])) {
@@ -286,10 +292,10 @@ public final class NbMainExplorer extends CloneableTopComponent {
     /** @return List of "root" nodes which has following structure:<br>
     * First goes repository, than root nodes added by modules and at last
     * runtime root node */
-    public static List getRoots () {
+    public static List<Node> getRoots () {
         NbPlaces places = NbPlaces.getDefault();
         // build the list of roots
-        LinkedList result = new LinkedList();
+        LinkedList<Node> result = new LinkedList<Node>();
   
         //repository goes first
 /*         
@@ -350,17 +356,17 @@ public final class NbMainExplorer extends CloneableTopComponent {
     }
 
     /** Safe accessor for root context - top component map. */
-    private Map rootsToTCs () {
+    private Map<Node,ExplorerTab> rootsToTCs () {
         if (rootsToTCs == null) {
-            rootsToTCs = new HashMap(7);
+            rootsToTCs = new HashMap<Node,ExplorerTab>(7);
         }
         return rootsToTCs;
     }
 
     /** Safe accessor for list of previous root nodes */
-    private List prevRoots () {
+    private List<Node> prevRoots () {
         if (prevRoots == null) {
-            prevRoots = new LinkedList();
+            prevRoots = new LinkedList<Node>();
         }
         return prevRoots;
     }
@@ -413,7 +419,8 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
     /** @return The mode for main explorer on given workspace.
     * Creates explorer mode if no such mode exists on given workspace */
-    private static Mode explorerMode (Workspace workspace) {
+    @SuppressWarnings("deprecation")
+    private static Mode explorerMode (org.openide.windows.Workspace workspace) {
         Mode result = workspace.findMode("explorer"); // NOI18N
         if (result == null) {
             // create explorer mode on current workspace
@@ -500,7 +507,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
         
         /** Transfer focus to view. */
-        public void requestFocus () {
+        @SuppressWarnings("deprecation") public void requestFocus () {
             super.requestFocus();
             if (view != null) {
                 view.requestFocus();
@@ -508,7 +515,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
         
         /** Transfer focus to view. */
-        public boolean requestFocusInWindow () {
+        @SuppressWarnings("deprecation") public boolean requestFocusInWindow () {
             super.requestFocusInWindow();
             if (view != null) {
                 return view.requestFocusInWindow();
@@ -530,7 +537,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
         /** Ensures that component is valid before opening */
-        public void open (Workspace workspace) {
+        @SuppressWarnings("deprecation") public void open (org.openide.windows.Workspace workspace) {
             setValidRootContext();
             
             super.open(workspace);
@@ -729,7 +736,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
                 }
             }
             
-            public void nodeDestroyed(org.openide.nodes.NodeEvent nodeEvent) {
+            @SuppressWarnings("deprecation") public void nodeDestroyed(org.openide.nodes.NodeEvent nodeEvent) {
                 ExplorerTab.this.setCloseOperation(TopComponent.CLOSE_EACH);
                 ExplorerTab.this.close();
             }            
@@ -812,8 +819,8 @@ public final class NbMainExplorer extends CloneableTopComponent {
             return getDefaultMainTab();
         }
         
-        public void open (Workspace workspace) {
-            Workspace realWorkspace = (workspace == null)
+        @SuppressWarnings("deprecation") public void open (org.openide.windows.Workspace workspace) {
+            org.openide.windows.Workspace realWorkspace = (workspace == null)
                                       ? WindowManager.getDefault().getCurrentWorkspace()
                                       : workspace;
             Mode ourMode = realWorkspace.findMode(this);
@@ -859,6 +866,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         static final long serialVersionUID =8089827754534653731L;
         
         public ModuleTab() {
+//	    System.out.println("NbMainExplorer.ModuleTab");
         }
                 
         

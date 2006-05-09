@@ -83,12 +83,12 @@ public final class SettingChildren extends FilterNode.Children {
     
     private static Action[] removeActions(Action[] allActions, Action[] toDeleteActions) {
         Action[] retVal = allActions;
-        List/*<Action>*/ actions = new ArrayList/* to be mutable */(Arrays.asList(allActions));
+        List<Action> actions = new ArrayList<Action>(Arrays.asList(allActions)); // to be mutable 
         for (int i = 0; i < toDeleteActions.length; i++) {
             Action a = toDeleteActions[i];
             if (actions.contains(a)) {
                 actions.remove(a);
-                retVal = (Action[]) actions.toArray(new Action[0]);
+                retVal = actions.toArray(new Action[0]);
             }                
         }            
         return retVal;
@@ -304,12 +304,12 @@ public final class SettingChildren extends FilterNode.Children {
         }
 
         private static class FSL implements FileStateManager.FileStatusListener {
-            WeakReference node = null;
+            WeakReference<SettingFilterNode> node = null;
             public FSL (SettingFilterNode sfn) {
-                node = new WeakReference (sfn);
+                node = new WeakReference<SettingFilterNode> (sfn);
             }
             public void fileStatusChanged (FileObject mfo) {
-                SettingFilterNode n = (SettingFilterNode) node.get ();
+                SettingFilterNode n = node.get ();
                 if (n == null) {
                     FileStateManager.getDefault ().removeFileStatusListener (this, null);
                     return;
