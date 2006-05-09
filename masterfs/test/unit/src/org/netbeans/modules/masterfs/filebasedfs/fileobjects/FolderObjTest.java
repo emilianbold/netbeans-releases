@@ -138,7 +138,13 @@ public class FolderObjTest extends NbTestCase {
         assertNotNull(root);
         FileObject main = root.createData("Main.java");
         FileUtil.createData(root,"subpackage/newclass.java");
-        final List fileObjects = new ArrayList();
+        final List fileObjects = new ArrayList() {
+            public boolean add(Object o) {
+                assertNotNull(o);
+                return super.add(o);
+            }
+            
+        };
         final TestListener tl = new TestListener(fileObjects);
         fs.addFileChangeListener(tl);
         try {
@@ -158,7 +164,7 @@ public class FolderObjTest extends NbTestCase {
         } finally {
             fs.removeFileChangeListener(tl);
         }
-        assertTrue(fileObjects.isEmpty());
+        assertTrue(fileObjects.get(0).toString(),fileObjects.isEmpty());
         assertNotNull(root.getFileObject("Main.java"));
         assertNotNull(root.getFileObject("subpackage1"));
         assertNotNull(root.getFileObject("subpackage1/newclass.java"));
@@ -181,7 +187,7 @@ public class FolderObjTest extends NbTestCase {
         } finally {
             fs.removeFileChangeListener(tl);
         }
-        assertTrue(fileObjects.isEmpty());
+        assertTrue(fileObjects.get(0).toString(), fileObjects.isEmpty());
         assertNotNull(root.getFileObject("Main.java"));
         assertNotNull(root.getFileObject("Subpackage/newclass.java"));
         assertNull(root.getFileObject("subpackage1"));
