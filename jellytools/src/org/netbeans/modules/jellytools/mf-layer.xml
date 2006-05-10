@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -19,6 +19,20 @@ Author: Jiri.Skrivanek@sun.com
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="jellytools.xml" url="jelly2-library.xml"/>
+        </folder>
+    </folder>
+    
+    <folder name="Templates">
+        <folder name="TestingTools">
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jellytools/testingToolsCategory.html" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jellytools.Bundle"/>
+            <file name="JellyTestCaseTest.java" url="JellyTestCase.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jellytools.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/jellytools/JUnitLogo.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jellytools/JellyTestCase.html" />
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.jellytools.JellyTestCaseWizardIterator.singleton"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
