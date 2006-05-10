@@ -12,6 +12,7 @@ package org.netbeans.test.subversion.main.checkout;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.ProxyConfigurationOperator;
@@ -32,7 +33,7 @@ public class ProxySettingsUITest extends JellyTestCase {
     
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
+        System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
         
     }
@@ -52,7 +53,8 @@ public class ProxySettingsUITest extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ProxySettingsUITest("testProxySettings"));
+        //suite.addTest(new ProxySettingsUITest("testProxySettings"));
+        suite.addTest(new ProxySettingsUITest("testProxyBeforeUrl"));
         return suite;
     }    
     
@@ -74,6 +76,26 @@ public class ProxySettingsUITest extends JellyTestCase {
         pco.setName("name");// NOI18N
         pco.setPassword("password");// NOI18N
         pco.ok();
+        co.btCancel().pushNoBlock();
+    }
+    
+    public void testProxyBeforeUrl() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        RepositoryStepOperator co1so = new RepositoryStepOperator();
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
+        Exception exc = null;
+        ProxyConfigurationOperator pco;
+        try {
+            co1so.invokeProxy();
+        } catch (Exception e) {
+            exc = e;
+            System.out.println("Exception is thrown. Proxy dialog was not opened!!!");
+            System.out.println("http://www.netbeans.org/issues/show_bug.cgi?id=76111");
+            //e.printStackTrace();
+        }
+        assertNotNull(exc);        
         co.btCancel().pushNoBlock();
     }
 }

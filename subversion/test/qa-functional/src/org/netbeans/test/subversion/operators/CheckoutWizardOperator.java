@@ -19,6 +19,7 @@ package org.netbeans.test.subversion.operators;
 
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.*;
+import org.netbeans.test.subversion.operators.actions.CheckoutAction;
 
 /**
  * Class implementing all necessary methods for handling "CheckoutWizardOperator" NbDialog.

@@ -93,28 +93,28 @@ public class CheckoutUITest extends JellyTestCase{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator co1so = new RepositoryStepOperator();
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
+        RepositoryStepOperator rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
         Thread.sleep(1000);
         //
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVN);
-        co1so.txtUser().setText(RepositoryStepOperator.ITEM_SVN);
-        co1so.txtPassword().setText(RepositoryStepOperator.ITEM_SVN);
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVN);
+        rso.txtUser().setText(RepositoryStepOperator.ITEM_SVN);
+        rso.txtPassword().setText(RepositoryStepOperator.ITEM_SVN);
         Thread.sleep(1000);
         //
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
-        co1so.txtUser().setText(RepositoryStepOperator.ITEM_SVNSSH);
-        co1so.txtPassword().setText(RepositoryStepOperator.ITEM_SVNSSH);
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
+        rso.txtUser().setText(RepositoryStepOperator.ITEM_SVNSSH);
+        rso.txtPassword().setText(RepositoryStepOperator.ITEM_SVNSSH);
         Thread.sleep(1000);
         //
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
-        co1so.txtUser().setText(RepositoryStepOperator.ITEM_HTTP);
-        co1so.txtPassword().setText(RepositoryStepOperator.ITEM_HTTP);
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
+        rso.txtUser().setText(RepositoryStepOperator.ITEM_HTTP);
+        rso.txtPassword().setText(RepositoryStepOperator.ITEM_HTTP);
         Thread.sleep(1000);
         //
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
-        co1so.txtUser().setText(RepositoryStepOperator.ITEM_HTTPS);
-        co1so.txtPassword().setText(RepositoryStepOperator.ITEM_HTTPS);
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
+        rso.txtUser().setText(RepositoryStepOperator.ITEM_HTTPS);
+        rso.txtPassword().setText(RepositoryStepOperator.ITEM_HTTPS);
         Thread.sleep(1000);
         co.btCancel().pushNoBlock();
     }
@@ -123,28 +123,28 @@ public class CheckoutUITest extends JellyTestCase{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator co1so = new RepositoryStepOperator();
+        RepositoryStepOperator rso = new RepositoryStepOperator();
         //wrong file
-        co1so.setRepositoryURL("dfile:///");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :dfile:///", co1so.lblWarning().getText());
+        rso.setRepositoryURL("dfile:///");
+        assertEquals("This should be wrong url string!!!", "Invalid svn url :dfile:///", rso.lblWarning().getText());
         //wrong svn
-        co1so.setRepositoryURL("dsvn://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :dsvn://", co1so.lblWarning().getText());
+        rso.setRepositoryURL("dsvn://");
+        assertEquals("This should be wrong url string!!!", "Invalid svn url :dsvn://", rso.lblWarning().getText());
         //space in file
-        co1so.setRepositoryURL("file :///");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :file :///", co1so.lblWarning().getText());
+        rso.setRepositoryURL("file :///");
+        assertEquals("This should be wrong url string!!!", "Invalid svn url :file :///", rso.lblWarning().getText());
         //space in svn
-        co1so.setRepositoryURL("svn ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :svn ://", co1so.lblWarning().getText());
+        rso.setRepositoryURL("svn ://");
+        assertEquals("This should be wrong url string!!!", "Invalid svn url :svn ://", rso.lblWarning().getText());
         //space in http
-        co1so.setRepositoryURL("http ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :http ://", co1so.lblWarning().getText());
+        rso.setRepositoryURL("http ://");
+        assertEquals("This should be wrong url string!!!", "Invalid svn url :http ://", rso.lblWarning().getText());
         //space in https
-        co1so.setRepositoryURL("https ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :https ://", co1so.lblWarning().getText());
+        rso.setRepositoryURL("https ://");
+        assertEquals("This should be wrong url string!!!", "Invalid svn url :https ://", rso.lblWarning().getText());
         //space in svn+ssh
-        co1so.setRepositoryURL("svn+ssh ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :svn+ssh ://", co1so.lblWarning().getText());
+        rso.setRepositoryURL("svn+ssh ://");
+        assertEquals("This should be wrong url string!!!", "Invalid svn url :svn+ssh ://", rso.lblWarning().getText());
         
         co.btCancel().pushNoBlock();
     }
@@ -153,13 +153,13 @@ public class CheckoutUITest extends JellyTestCase{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator co1so = new RepositoryStepOperator();
+        RepositoryStepOperator rso = new RepositoryStepOperator();
         
         //file
-        co1so.selectRepositoryURL(RepositoryStepOperator.ITEM_FILE);
+        rso.selectRepositoryURL(RepositoryStepOperator.ITEM_FILE);
         TimeoutExpiredException tee = null;
         try {
-            JLabelOperator lbl = co1so.lblUser();
+            JLabelOperator lbl = rso.lblUser();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
@@ -167,25 +167,25 @@ public class CheckoutUITest extends JellyTestCase{
         
         tee = null;
         try {
-            JLabelOperator lbl = co1so.lblPassword();
+            JLabelOperator lbl = rso.lblPassword();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull("Password should not be accessible for file:///!!!" ,tee);
         
         //http
-        co1so = new RepositoryStepOperator();
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
-        JLabelOperator lblU = co1so.lblUser();
-        JLabelOperator lblP = co1so.lblPassword();
-        JButtonOperator btnProxy = co1so.btProxyConfiguration();
+        rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
+        JLabelOperator lblU = rso.lblUser();
+        JLabelOperator lblP = rso.lblPassword();
+        JButtonOperator btnProxy = rso.btProxyConfiguration();
         
         //file
-        co1so = new RepositoryStepOperator();
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
+        rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
         tee = null;
         try {
-            JLabelOperator lbl = co1so.lblUser();
+            JLabelOperator lbl = rso.lblUser();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
@@ -193,25 +193,25 @@ public class CheckoutUITest extends JellyTestCase{
         
         tee = null;
         try {
-            JLabelOperator lbl = co1so.lblPassword();
+            JLabelOperator lbl = rso.lblPassword();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull("Password should not be accessible for file:///!!!" ,tee);
         
         //https
-        co1so = new RepositoryStepOperator();
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
-        lblU = co1so.lblUser();
-        lblP = co1so.lblPassword();
-        btnProxy = co1so.btProxyConfiguration();
+        rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
+        lblU = rso.lblUser();
+        lblP = rso.lblPassword();
+        btnProxy = rso.btProxyConfiguration();
         
         //file
-        co1so = new RepositoryStepOperator();
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
+        rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
         tee = null;
         try {
-            JLabelOperator lbl = co1so.lblUser();
+            JLabelOperator lbl = rso.lblUser();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
@@ -219,25 +219,25 @@ public class CheckoutUITest extends JellyTestCase{
         
         tee = null;
         try {
-            JLabelOperator lbl = co1so.lblPassword();
+            JLabelOperator lbl = rso.lblPassword();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull("Password should not be accessible for file:///!!!" ,tee);
         
         //svn
-        co1so = new RepositoryStepOperator();
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVN);
-        lblU = co1so.lblUser();
-        lblP = co1so.lblPassword();
-        btnProxy = co1so.btProxyConfiguration();
+        rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVN);
+        lblU = rso.lblUser();
+        lblP = rso.lblPassword();
+        btnProxy = rso.btProxyConfiguration();
         
         //file
-        co1so = new RepositoryStepOperator();
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
+        rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
         tee = null;
         try {
-            JLabelOperator lbl = co1so.lblUser();
+            JLabelOperator lbl = rso.lblUser();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
@@ -245,25 +245,25 @@ public class CheckoutUITest extends JellyTestCase{
         
         tee = null;
         try {
-            JLabelOperator lbl = co1so.lblPassword();
+            JLabelOperator lbl = rso.lblPassword();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull("Password should not be accessible for file:///!!!" ,tee);
         
         //svn+ssh
-        co1so = new RepositoryStepOperator();
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
-        lblU = co1so.lblUser();
-        lblP = co1so.lblPassword();
-        btnProxy = co1so.btProxyConfiguration();
+        rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
+        lblU = rso.lblUser();
+        lblP = rso.lblPassword();
+        btnProxy = rso.btProxyConfiguration();
         
         //file
-        co1so = new RepositoryStepOperator();
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
+        rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
         tee = null;
         try {
-            JLabelOperator lbl = co1so.lblUser();
+            JLabelOperator lbl = rso.lblUser();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
@@ -271,7 +271,7 @@ public class CheckoutUITest extends JellyTestCase{
         
         tee = null;
         try {
-            JLabelOperator lbl = co1so.lblPassword();
+            JLabelOperator lbl = rso.lblPassword();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
@@ -284,17 +284,17 @@ public class CheckoutUITest extends JellyTestCase{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator co1so = new RepositoryStepOperator();
+        RepositoryStepOperator rso = new RepositoryStepOperator();
     
         //create repository... 
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         //next step
-        co1so.next();
+        rso.next();
         Thread.sleep(2000);
         
         WorkDirStepOperator wdso = new WorkDirStepOperator();
