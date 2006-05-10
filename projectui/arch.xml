@@ -648,6 +648,16 @@ Microsystems, Inc. All Rights Reserved.
       Error manager logging category for things affecting project list.
      </p>
     </api>
+    </li>
+    <li>
+    <api group="property" name="netbeans.projects.dir" type="export" category="private">
+     <p>
+      Property for overriding default location of projects directory
+      which is folder NetBeansProjects under $HOME on Unixes and under default user folder on 
+      Windows (e.g. C:\Documents and Settings\[username]\My Documents\NetBeansProjects). 
+      Directory passed by the property must exist, otherwise default is used.
+     </p>
+    </api>
    </li>
   </ul>
  </answer>
@@ -1126,6 +1136,26 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="security-policy">
   <p>
    No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   No APIs are planned to be deprecated/removed/changed.
   </p>
  </answer>
 
