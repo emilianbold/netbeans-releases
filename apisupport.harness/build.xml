@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass" description="Build NBM archive.">
         <mkdir dir="build"/>
+        <property name="nbm.target.cluster" value=""/> <!-- fallback -->        
         <makenbm file="build/${nbm}"
                  productdir="${cluster}"
                  module="${module.jar}"
@@ -58,7 +59,8 @@ Microsystems, Inc. All Rights Reserved.
                  needsrestart="${nbm.needs.restart}"
                  global="${nbm.is.global}"
                  releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}"> 
+		 moduleauthor="${nbm.module.author}"
+                 targetcluster="${nbm.target.cluster}"> 
             <license>
                 <text>For the main build harness:</text>
                 <file location="${license.file}"/>

@@ -9,14 +9,14 @@ http://www.sun.com/
 
 The Original Code is NetBeans.
 The Initial Developer of the Original Code is Sun Microsystems, Inc.
-Portions Copyright 1997-2005 Sun Microsystems, Inc. All Rights Reserved.
+Portions Copyright 1997-2006 Sun Microsystems, Inc. All Rights Reserved.
 Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 -->
 <project basedir="." default="netbeans" name="ide/branding">
 
   <property name="nbroot" location="../.."/>
   
-  <import file="${nbroot}/nbbuild/default.xml"/> 
+  <import file="${nbroot}/nbbuild/templates/projectized.xml"/>
 
   <property name="locjar.warnMissingDir" value="true"/>
 
@@ -24,7 +24,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   <!-- localized for each of these locales, though.		      -->
   <property name="locjar.brands" value="nb"/>
 
-  <target name="init" depends="default.init" >
+  <target name="init" depends="default.init,basic-init,files-init,build-init" >
 
     <patternset id="ide/branding.files">
       <include name="**/*_nb.jar"/>
@@ -145,22 +145,6 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       jarfile="${cluster}/modules/ext/updater.jar"
     />
 
-  </target>
-
-  <target name="conditional-nbm" depends="nbm"/>
-  
-  <target name="nbm" depends="netbeans" description="Create Localized NBM's">
-    <mkdir dir="build"/>
-    <makenbm 
-       file="build/org-netbeans-modules-ide-branding.nbm"
-       productdir="${cluster}"
-	     homepage="http://ide.${homepage.base}/"
-	     distribution="http://${dist.base}/org-netbeans-modules-ide-branding.nbm"
-       module="modules/org-netbeans-modules-ide-branding.jar"
-    >
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
   </target>
   
     <target name="clean" depends="init" >
