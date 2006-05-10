@@ -187,6 +187,7 @@ public final class BluejProject implements Project, AntProjectListener {
             spp,
             new BluejActionProvider( this, getUpdateHelper()),
             new BluejLogicalViewProvider(this),
+            new BJClassPathExtender(this),
 ////            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 ////            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             new ClassPathProviderImpl(this), 
