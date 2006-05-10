@@ -160,6 +160,35 @@ org.openide.loaders.InstanceDataObject.create</a>. The framework will
 look up the provider registration for the exact class of the object passed
 into the method.
 
+<p> If you have a special setting convertor capable of converting of objects
+of its class and of all of its superclasses you might want to specify also
+attribute <code>settings.subclasses</code> with boolean value set to true like this:
+
+<pre>
+&lt;<font class="function-name">folder</font> name=<font class="string">"xml"</font>&gt;
+  &lt;<font class="function-name">folder</font> name=<font class="string">"memory"</font>&gt;
+    &lt;<font class="function-name">folder</font> name=<font class="string">"org"</font>&gt;
+      &lt;<font class="function-name">folder</font> name=<font class="string">"netbeans"</font>&gt;
+        &lt;<font class="function-name">folder</font> name=<font class="string">"modules"</font>&gt;
+          &lt;<font class="function-name">folder</font> name=<font class="string">"foo"</font>&gt;
+            <font class="comment">&lt;!--allows to create .settings file from memory via InstanceDataObject.create--&gt;</font>
+            &lt;<font class="function-name">file</font> name=<font class="string">"FooSetting"</font>&gt;
+              &lt;<font class="function-name">attr</font> name=<font class="string">"settings.providerPath"</font>
+                 stringvalue=<font class="string">"xml/lookups/Vendor_org_netbeans_modules_foo/DTD_FooSetting_1_0.instance"</font>/&gt;
+              &lt;<font class="function-name">attr</font> name=<font class="string">"settings.subclasses"</font>
+                 boolvalue=<font class="string">"true"</font>/&gt;
+            &lt;<font class="function-name">/file</font>&gt;
+          &lt;<font class="function-name">/folder</font>&gt;
+        &lt;<font class="function-name">/folder</font>&gt;
+      &lt;<font class="function-name">/folder</font>&gt;
+    &lt;<font class="function-name">/folder</font>&gt;
+  &lt;<font class="function-name">/folder</font>&gt;
+&lt;<font class="function-name">/folder</font>&gt;
+</pre>
+
+<p> Please use the attribute <code>settings.subclasses</code> only in case
+you are sure your convertor can handle all subclasses!
+
 <h3><a name="use-composed">Composed Content</a></h3>
 In order to allow to reuse existing convertors and to put their output together
 into one XML document

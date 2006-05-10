@@ -62,6 +62,11 @@ public final class Env implements Environment.Provider {
      * </code>
      */
     public final static String EA_INSTANCE_CREATE = "settings.instanceCreate"; //NOI18N
+    /** file attribute determining whether the registration works also for subclasses of the registering
+     * class. Use of this attribute is optional. The default is false, the value must be boolean, example:
+     * <code>&lt;attr name="settings.subclasses" boolvalue="true"/&gt;</code>
+     */
+    public static final String EA_SUBCLASSES = "settings.subclasses"; // NOI18N
     
     private final FileObject providerFO;
     
@@ -101,19 +106,33 @@ public final class Env implements Environment.Provider {
     /** look up appropriate provider according to clazz */
     public static FileObject findProvider(Class clazz) throws IOException {
         String prefix = "xml/memory/"; //NOI18N
-        String name = clazz.getName().replace('.', '/');
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         FileObject memContext = sfs.findResource(prefix);
         if (memContext == null) throw new java.io.FileNotFoundException("SFS/xml/memory/"); //NOI18N
-        
-        String convertorPath = new StringBuffer(200).append(prefix).
-            append(name).toString(); // NOI18N
-        FileObject fo = sfs.findResource(convertorPath);
-        if (fo != null) {
-            String providerPath = (String) fo.getAttribute(EA_PROVIDER_PATH);
-            if (providerPath != null) {
-                return sfs.findResource(providerPath);
+        Class c = clazz;
+        while (c != null) {
+            String name = c.getName().replace('.', '/');
+            String convertorPath = new StringBuffer(200).append(prefix).
+                append(name).toString(); // NOI18N
+            FileObject fo = sfs.findResource(convertorPath);
+            if (fo != null) {
+                String providerPath = (String) fo.getAttribute(EA_PROVIDER_PATH);
+                if (providerPath != null) {
+                    if (c.equals(clazz)) {
+                        return sfs.findResource(providerPath);
+                    } else {
+                        // check the special subclasses attribute
+                        Object inheritAttribute = fo.getAttribute(EA_SUBCLASSES);
+                        if (inheritAttribute instanceof Boolean) {
+                            boolean subclasses = ((Boolean)inheritAttribute).booleanValue();
+                            if (subclasses) {
+                                return sfs.findResource(providerPath);
+                            }
+                        }
+                    }
+                }
             }
+            c = c.getSuperclass();
         }
         return null;
     }

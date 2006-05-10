@@ -130,6 +130,15 @@ Microsystems, Inc. All Rights Reserved.
                                     <attr name="settings.providerPath"
                                     stringvalue="xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_XML_FooSetting_1_0.instance"/>
                                 </file>
+                                <file name="Bar1Setting">
+                                    <attr name="settings.subclasses" boolvalue="true"/>
+                                    <attr name="settings.providerPath"
+                                    stringvalue="xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_XML_FooSetting_1_0.instance"/>
+                                </file>
+                                <file name="Bar2Setting">
+                                    <attr name="settings.providerPath"
+                                    stringvalue="xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_XML_FooSetting_1_0.instance"/>
+                                </file>
                             </folder>
                         </folder>
                     </folder>

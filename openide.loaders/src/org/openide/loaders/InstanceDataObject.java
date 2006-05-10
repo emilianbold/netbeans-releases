@@ -1476,32 +1476,55 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
     /** path where to find convertor/provider definition */
     private final static String EA_PROVIDER_PATH = "settings.providerPath"; // NOI18N
+    private static final String EA_SUBCLASSES = "settings.subclasses"; // NOI18N
 
     /** look up appropriate convertor according to obj */
     private static FileObject resolveConvertor(Object obj) throws IOException {
         String prefix = "xml/memory"; //NOI18N
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-
+        
         FileObject memContext = sfs.findResource(prefix);
         if (memContext == null) throw new FileNotFoundException("SFS:xml/memory while converting a " + obj.getClass().getName()); //NOI18N
-
-        String[] classes = new String[] {obj.getClass().getName(), Object.class.getName()};
-        for (int i = 0; i < classes.length; i++) {
+        
+        Class clazz = obj.getClass();
+        Class c = clazz;
+        while (c != null) {
+            String className = c.getName();
             String convertorPath = new StringBuffer(200).append(prefix).append('/').
-                append(classes[i].replace('.', '/')).toString(); // NOI18N
+                    append(className.replace('.', '/')).toString(); // NOI18N
             FileObject fo = sfs.findResource(convertorPath);
             if (fo != null) {
                 String providerPath = (String) fo.getAttribute(EA_PROVIDER_PATH);
-                if (providerPath == null) break;
-                FileObject ret = sfs.findResource(providerPath);
-               if (ret == null) {
-                   throw new FileNotFoundException("Invalid settings.providerPath under SFS/xml/memory/ for " + obj.getClass()); // NOI18N
-               } else {
-                   return ret;
-               }
+                if (providerPath == null) {
+                    c = c.getSuperclass();
+                    continue;
+                }
+                if (c.equals(clazz) || Object.class.equals(c)) {
+                    FileObject ret = sfs.findResource(providerPath);
+                    if (ret == null) {
+                        throw new FileNotFoundException("Invalid settings.providerPath under SFS/xml/memory/ for " + clazz); // NOI18N
+                    } else {
+                        return ret;
+                    }
+                } else {
+                    // check the special subclasses attribute
+                    Object inheritAttribute = fo.getAttribute(EA_SUBCLASSES);
+                    if (inheritAttribute instanceof Boolean) {
+                        boolean subclasses = ((Boolean)inheritAttribute).booleanValue();
+                        if (subclasses) {
+                            FileObject ret = sfs.findResource(providerPath);
+                            if (ret == null) {
+                                throw new FileNotFoundException("Invalid settings.providerPath under SFS/xml/memory/ for " + clazz); // NOI18N
+                            } else {
+                                return ret;
+                            }
+                        }
+                    }
+                }
             }
+            c = c.getSuperclass();
         }
-        throw new FileNotFoundException("None convertor was found under SFS/xml/memory/ for " + obj.getClass()); //NOI18N
+        throw new FileNotFoundException("None convertor was found under SFS/xml/memory/ for " + clazz); //NOI18N
     }
 
     private void attachToConvertor(Object obj) throws IOException {
