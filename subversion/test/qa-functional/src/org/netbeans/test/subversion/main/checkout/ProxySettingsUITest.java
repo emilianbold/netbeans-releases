@@ -33,7 +33,7 @@ public class ProxySettingsUITest extends JellyTestCase {
     
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
-        System.out.println(os_name);
+        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
         
     }
@@ -53,7 +53,7 @@ public class ProxySettingsUITest extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new ProxySettingsUITest("testProxySettings"));
+        suite.addTest(new ProxySettingsUITest("testProxySettings"));
         suite.addTest(new ProxySettingsUITest("testProxyBeforeUrl"));
         return suite;
     }    
