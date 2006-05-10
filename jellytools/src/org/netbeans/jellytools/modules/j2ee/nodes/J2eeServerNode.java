@@ -57,14 +57,14 @@ public class J2eeServerNode extends Node {
             "SERVER_REGISTRY_NODE");
     
     /** Creates new instance of J2eeServerNode with given name
-     * @param projectName display name of project
+     * @param serverName display name of project
      */
     public J2eeServerNode(String serverName) {
         super(new RuntimeTabOperator().getRootNode(), SERVERS+"|"+serverName);
     }
     
     /** Finds J2EE Server node with given name
-     * @param projectName display name of project
+     * @param serverName display name of project
      */
     public static J2eeServerNode invoke(String serverName) {
         RuntimeTabOperator.invoke();

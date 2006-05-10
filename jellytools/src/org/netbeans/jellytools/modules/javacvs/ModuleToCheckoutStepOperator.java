@@ -39,7 +39,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  * 
  * @author Jiri.Skrivanek@sun.com
  * @see CheckoutWizardOperator
- * @see BrowseCVSModule
+ * @see BrowseCVSModuleOperator
  * @see BrowseTagsOperator
  */
 public class ModuleToCheckoutStepOperator extends CheckoutWizardOperator {

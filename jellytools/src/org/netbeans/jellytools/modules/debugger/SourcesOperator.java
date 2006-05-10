@@ -68,7 +68,7 @@ public class SourcesOperator extends TopComponentOperator {
 
     /** Returns true if source root is used for debugging and false otherwise.
      * @param source source root
-     * @returns true if source root is used for debugging; false otherwise
+     * @return true if source root is used for debugging; false otherwise
      */
     public boolean isUsed(String source) {
         int row = treeTable().findCellRow(source);

@@ -34,7 +34,7 @@ import org.netbeans.jemmy.JemmyException;
  *      moduleOper.finish();
  * </pre>
  *
- * @see BrowseCVSModule
+ * @see BrowseCVSModuleOperator
  * @see BrowseTagsOperator
  * @see CVSRootStepOperator
  * @see EditCVSRootOperator

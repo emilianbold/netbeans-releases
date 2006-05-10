@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.j2ee.actions;
@@ -17,7 +17,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /** Used to call "Properties" popup menu item or
  * "org.netbeans.modules.j2ee.deployment.impl.ui.actions.CustomizerAction".
- * @see Action
+ * @see org.netbeans.jellytools.actions.Action
  * @author Martin.Schovanek@sun.com */
 public class CustomizerAction extends ActionNoBlock {
     
