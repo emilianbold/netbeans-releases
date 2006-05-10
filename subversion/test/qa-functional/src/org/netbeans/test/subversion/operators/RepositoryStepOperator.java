@@ -253,7 +253,11 @@ public class RepositoryStepOperator extends WizardOperator {
         return _btHelp;
     }
 
-
+    public ProxyConfigurationOperator invokeProxy() {
+        btProxyConfiguration().pushNoBlock();
+        return new ProxyConfigurationOperator();
+    }
+    
     //****************************************
     // Low-level functionality definition part
     //****************************************
@@ -261,7 +265,7 @@ public class RepositoryStepOperator extends WizardOperator {
     /** clicks on "Proxy Configuration..." JButton
      */
     public void proxyConfiguration() {
-        btProxyConfiguration().push();
+        btProxyConfiguration().pushNoBlock();
     }
 
     /** gets text for txtUser
