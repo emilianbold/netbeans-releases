@@ -40,6 +40,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -291,7 +292,12 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
         public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
         }
         public void fileChanged(FileEvent fileEvent) {
-            children.doRefresh(node);
+            //#75991 not posting it results in ugly assertions/exceptions from mdr.
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    children.doRefresh(node);
+                }
+            });
         }
         public void fileDataCreated(FileEvent fileEvent) {
             children.doRefresh(node);
