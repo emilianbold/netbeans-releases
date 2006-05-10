@@ -18,6 +18,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Iterator;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.bluej.classpath.ClassPathProviderImpl;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -53,6 +54,8 @@ public class BJClassPathExtender implements ProjectClassPathExtender{
                 FileUtil.copyFile(fo, libs, fo.getName());
             }
         }
+        ClassPathProviderImpl prov = (ClassPathProviderImpl) project.getLookup().lookup(ClassPathProviderImpl.class);
+        prov.getBluejCPImpl().fireChange();
         return true;
     }
 
@@ -65,6 +68,8 @@ public class BJClassPathExtender implements ProjectClassPathExtender{
         if (newLib == null) {
             FileUtil.copyFile(archiveFile, libs, archiveFile.getName());
         }
+        ClassPathProviderImpl prov = (ClassPathProviderImpl) project.getLookup().lookup(ClassPathProviderImpl.class);
+        prov.getBluejCPImpl().fireChange();
         return true;
     }
 

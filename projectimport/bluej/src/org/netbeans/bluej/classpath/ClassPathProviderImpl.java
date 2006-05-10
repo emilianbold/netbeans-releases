@@ -16,12 +16,14 @@ package org.netbeans.bluej.classpath;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.bluej.BluejProject;
 import org.netbeans.bluej.options.BlueJSettings;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
@@ -42,12 +44,17 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     private ClassPath[] boots;
     private ClassPath[] sources;
     private ClassPath[] compiles;
-
+    
+    private CPImpl cpimpl;
     
     
     /** Creates a new instance of ClassPathProviderImpl */
     public ClassPathProviderImpl(BluejProject prj) {
         project = prj;
+    }
+    
+    public CPImpl getBluejCPImpl() {
+        return cpimpl;
     }
 
     public ClassPath findClassPath(FileObject file, String type) {
@@ -84,57 +91,14 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
     private ClassPath getCompileTimeClasspath(FileObject file) { //NOPMD we don't care about the file passed in.. always the project dir is root
         if (compile == null) {
-            Collection paths = new ArrayList();
-            paths.add(ClassPathFactory.createClassPath(
+            // do we need ant cp as it is?
+                ClassPath antcp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     FileUtil.toFile(project.getProjectDirectory()), project.getAntProjectHelper().getStandardPropertyEvaluator(), 
-                new String[] {"javac.classpath"}))); // NOI18N
-            FileObject libs = project.getProjectDirectory().getFileObject("+libs");
-            if (libs != null) {
-                Collection libJars = new ArrayList();
-                FileObject[] fos = libs.getChildren();
-                for (int i = 0; i < fos.length; i++) {
-                    if (FileUtil.isArchiveFile(fos[i])) {
-                        libJars.add(FileUtil.getArchiveRoot(fos[i]));
-                    }
-                }
-                if (libJars.size() > 0) {
-                    paths.add(ClassPathSupport.createClassPath((FileObject[])libJars.toArray(new FileObject[libJars.size()])));
-                }
-            }
-            File home = BlueJSettings.getDefault().getHome();
-            if (home != null) {
-                File userLibs = new File(new File(home, "lib"), "userlib");
-                FileObject fo = FileUtil.toFileObject(userLibs);
-                if (fo != null) {
-                    Collection libJars = new ArrayList();
-                    FileObject[] fos = fo.getChildren();
-                    for (int i = 0; i < fos.length; i++) {
-                        if (FileUtil.isArchiveFile(fos[i])) {
-                            libJars.add(FileUtil.getArchiveRoot(fos[i]));
-                        }
-                    }
-                    if (libJars.size() > 0) {
-                        paths.add(ClassPathSupport.createClassPath((FileObject[])libJars.toArray(new FileObject[libJars.size()])));
-                    }
-                }
-            }
-            String userPath = BlueJSettings.getDefault().getUserLibrariesAsClassPath();
-            if (userPath.length() > 0) {
-                StringTokenizer tokens = new StringTokenizer(userPath, ":", false);
-                Collection userLibJars = new ArrayList();
-                while (tokens.hasMoreTokens()) {
-                    File fil = new File(tokens.nextToken());
-                    FileObject fo = FileUtil.toFileObject(fil);
-                    if (fo != null && FileUtil.isArchiveFile(fo)) {
-                        userLibJars.add(FileUtil.getArchiveRoot(fo));
-                    }
-                }
-                if (userLibJars.size() > 0) {
-                    paths.add(ClassPathSupport.createClassPath((FileObject[])userLibJars.toArray(new FileObject[userLibJars.size()])));
-                }
-            }
-            compile = ClassPathSupport.createProxyClassPath((ClassPath[])paths.toArray(new ClassPath[paths.size()]));
+                new String[] {"javac.classpath"}));
+            cpimpl = new CPImpl(project);
+            ClassPath bluejcp = ClassPathFactory.createClassPath(cpimpl);
+            compile = ClassPathSupport.createProxyClassPath( new ClassPath[] {antcp, bluejcp} );
         } 
         return compile;
     }
