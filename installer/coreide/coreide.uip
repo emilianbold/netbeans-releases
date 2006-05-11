@@ -591,29 +591,6 @@
             <property name="fileEncoding"/>
             <property name="resolveFileContents">False</property>
         </wizardBean>
-        <wizardBean class="com.installshield.product.wizardbeans.WelcomePanel" id="welcome">
-            <property name="displayName">Welcome Panel</property>
-            <property name="active">True</property>
-            <property name="buildCategories"/>
-            <property name="comments"/>
-            <property name="conditionOperator">AND</property>
-            <property name="conditionSet"/>
-            <property name="bidirectional">True</property>
-            <property name="title"/>
-            <property name="description"/>
-            <property name="navigationOptions">6</property>
-            <property name="htmlHelpResource"/>
-            <property name="helpString"/>
-            <property name="text">$L(org.netbeans.installer.Bundle, InstallWelcomePanel.text)</property>
-            <property name="textSource">1</property>
-            <property name="fileName"/>
-            <property name="fileEncoding"/>
-            <property name="resolveFileContents">False</property>
-            <property name="includeLocalizedFiles">False</property>
-            <property name="contentType">2</property>
-            <property name="showBorder">False</property>
-            <property name="busyMessage"/>
-        </wizardBean>
         <wizardBean class="com.installshield.product.wizardbeans.LicensePanel" id="license">
             <property name="displayName">License Panel</property>
             <property name="active">True</property>
