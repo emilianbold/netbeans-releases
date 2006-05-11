@@ -14,17 +14,24 @@
 package org.netbeans.modules.jellytools;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
@@ -42,7 +49,7 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
     
     /** name of panel Name and Location */
     private final String NAME_AND_LOCATION = NbBundle.getMessage(JellyTestCaseWizardIterator.class,
-                                                                 "LBL_panel_Target");  //NOI18N
+            "LBL_panel_Target");  //NOI18N
     /** index of the current panel */
     private int current;
     /** panel for choosing name and target location of the test class */
@@ -147,7 +154,50 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
     
     /** Create a new file from template. */
     public Set instantiate(TemplateWizard wizard) throws IOException {
-        return Collections.singleton(
-                wizard.getTemplate().createFromTemplate(wizard.getTargetFolder(), wizard.getTargetName()));
+        DataObject createdDO = wizard.getTemplate().createFromTemplate(wizard.getTargetFolder(), wizard.getTargetName());
+        setPackageName(createdDO);
+        return Collections.singleton(createdDO);
+    }
+    
+    /** For Functional Test Packages it is not correctly initialized classpath and that's why
+     * package is not set by createFromTemplate method. We need to get package
+     * from wizard panel and set it after DataObject from template is created.
+     */
+    private void setPackageName(DataObject createdDO) {
+        String packageNameFromPanel;
+        try {
+            // find NetBeans SystemClassLoader in threads hierarchy
+            ThreadGroup tg = Thread.currentThread().getThreadGroup();
+            ClassLoader systemClassloader = Thread.currentThread().getContextClassLoader();
+            while(!systemClassloader.getClass().getName().endsWith("SystemClassLoader")) { // NOI18N
+                tg = tg.getParent();
+                if(tg == null) {
+                    Logger.getAnonymousLogger().log(Level.WARNING, "NetBeans SystemClassLoader not found!"); // NOI18N
+                    // log and ignore
+                    return;
+                }
+                Thread[] list = new Thread[tg.activeCount()];
+                tg.enumerate(list);
+                systemClassloader = list[0].getContextClassLoader();
+            }
+            
+            // get package name from panel
+            Class clazz = Class.forName("org.netbeans.modules.java.project.JavaTargetChooserPanelGUI", false, systemClassloader); //NOI18N
+            Method method = clazz.getDeclaredMethod("getPackageName", null); //NOI18N
+            method.setAccessible(true);
+            packageNameFromPanel = method.invoke(targetPanel.getComponent(), null).toString();
+        } catch (Exception e) {
+            // log and ignore
+            Logger.getAnonymousLogger().log(Level.WARNING, "Problem when using reflection to correct package name.", e); // NOI18N
+            return;
+        }
+        // set package name
+        JavaMetamodel.getDefaultRepository().beginTrans(true);
+        try {
+            Resource res = JavaModel.getResource(createdDO.getPrimaryFile());
+            res.setPackageName(packageNameFromPanel);
+        } finally {
+            JavaMetamodel.getDefaultRepository().endTrans();
+        }
     }
 }
