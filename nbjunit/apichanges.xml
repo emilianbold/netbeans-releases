@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="../../../../../nbbuild/javadoctools/apichanges.xsl"?>
@@ -26,6 +26,23 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    
+    <change id="MockServices">
+        <api name="nbjunit"/>
+        <summary>Added class <code>MockServices</code></summary>
+        <version major="1" minor="30"/>
+        <date day="11" month="5" year="2006"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added new utility to help unit tests create mock implementations
+                of global services for lookup.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="MockServices"/>
+    </change>
+    
     <change id="controlFlow">
       <api name="nbjunit"/>
       <summary>Non-deterministic execution can be made deterministic</summary>
