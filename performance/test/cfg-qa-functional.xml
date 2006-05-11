@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 2nd round -->    
-    <testbag testattribs="(all or actions) and NOT all_faster" prio="5"
+    <testbag testattribs="(all or actions) and NOT once" prio="5"
              executor="ide_performance" name="Actions - UI responsiveness" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
 	    </patternset>
 	</testset>
     </testbag>
-    <testbag testattribs="(all or dialogs) and NOT all_faster" prio="6"
+    <testbag testattribs="(all or dialogs) and NOT once" prio="6"
              executor="ide_performance" name="Dialogs - UI responsiveness" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -69,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
 	    </patternset>
 	</testset>
     </testbag>
-    <testbag testattribs="(all or menus) and NOT all_faster" prio="7"
+    <testbag testattribs="(all or menus) and NOT once" prio="7"
              executor="ide_performance" name="Menus - UI responsiveness" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 3rd round -->    
-    <testbag testattribs="(all or actions) and NOT all_faster" prio="8"
+    <testbag testattribs="(all or actions) and NOT once" prio="8"
              executor="ide_performance" name="Actions - UI responsiveness" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -87,7 +87,7 @@ Microsystems, Inc. All Rights Reserved.
 	    </patternset>
 	</testset>
     </testbag>
-    <testbag testattribs="(all or dialogs) and NOT all_faster" prio="9"
+    <testbag testattribs="(all or dialogs) and NOT once" prio="9"
              executor="ide_performance" name="Dialogs - UI responsiveness" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
 	    </patternset>
 	</testset>
     </testbag>
-    <testbag testattribs="(all or menus) and NOT all_faster" prio="10"
+    <testbag testattribs="(all or menus) and NOT once" prio="10"
              executor="ide_performance" name="Menus - UI responsiveness" >
 	<testset dir="qa-functional/src">
 	    <patternset>
