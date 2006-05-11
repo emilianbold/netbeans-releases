@@ -10,13 +10,18 @@
 package org.netbeans.test.subversion.main.checkout;
 
 import java.io.File;
+import javax.swing.table.TableModel;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.subversion.operators.CommitStepOperator;
+import org.netbeans.test.subversion.operators.CreateNewFolderOperator;
 import org.netbeans.test.subversion.operators.FolderToImportStepOperator;
 import org.netbeans.test.subversion.operators.ImportWizardOperator;
+import org.netbeans.test.subversion.operators.RepositoryBrowserImpOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
@@ -63,6 +68,9 @@ public class ImportUITest extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new ImportUITest("testInvoke"));
         suite.addTest(new ImportUITest("testWarningMessage"));
+        suite.addTest(new ImportUITest("testRepositoryFolderLoad"));
+        suite.addTest(new ImportUITest("testCommitStep"));
+        //suite.addTest(new ImportUITest("testStopProcess"));
         return suite;
     }
     
@@ -99,7 +107,7 @@ public class ImportUITest extends JellyTestCase {
         
         FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
         ftiso.verify();
-        
+       
         //Warning message for empty REPOSITORY FOLDER
         ftiso.setRepositoryFolder("");
         assertEquals("Repository folder must be specified", "Repository folder must be specified", ftiso.lblImportMessageRequired().getText());
@@ -122,6 +130,159 @@ public class ImportUITest extends JellyTestCase {
         System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=76165!!!");
         assertFalse("Finish button should be enabled", ftiso.btFinish().isEnabled());
         iwo.cancel();
+        TestKit.removeAllData(PROJECT_NAME);
+    }
+    
+    public void testRepositoryFolderLoad() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        
+        new File(TMP_PATH).mkdirs();
+        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+        
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+        RepositoryStepOperator rso = new RepositoryStepOperator();
+        //rso.verify();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+        rso.next();
+        Thread.sleep(2000);
+        
+        FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
+        
+        //
+        RepositoryBrowserImpOperator rbo = ftiso.browseRepository();
+        rbo.selectFolder("branches");
+        rbo.selectFolder("tags");
+        rbo.selectFolder("trunk");
+        rbo.selectFolder("trunk|JavaApp|src|javaapp");
+        rbo.ok();
+        assertEquals("Wrong folder selection!!!", "trunk/JavaApp/src/javaapp", ftiso.getRepositoryFolder());
+        
+        /*
+        ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+        rbo = ftiso.browseRepository();
+        rbo.selectFolder("trunk|" + PROJECT_NAME);
+        rbo.selectFolder("branches|release01|" + PROJECT_NAME);
+        rbo.ok();
+        assertEquals("Wrong folder selection!!!", "branches/release01/" + PROJECT_NAME, ftiso.getRepositoryFolder());*/
+        
+        //
+        ftiso.setRepositoryFolder("trunk");
+        rbo = ftiso.browseRepository();
+        rbo.selectFolder("trunk");
+        CreateNewFolderOperator cnfo = rbo.createNewFolder();
+        cnfo.setFolderName(PROJECT_NAME);
+        cnfo.ok();
+        rbo.ok();
+        assertEquals("Wrong folder selection!!!", "trunk", ftiso.getRepositoryFolder());
+        
+        //
+        ftiso.setRepositoryFolder("trunk");
+        rbo = ftiso.browseRepository();
+        rbo.selectFolder("branches");
+        cnfo = rbo.createNewFolder();
+        cnfo.setFolderName("release_01");
+        cnfo.ok();
+        rbo.selectFolder("branches|release_01");
+        cnfo = rbo.createNewFolder();
+        cnfo.setFolderName(PROJECT_NAME);
+        cnfo.ok();
+        rbo.ok();
+        assertEquals("Wrong folder selection!!!", "branches/release_01/" + PROJECT_NAME, ftiso.getRepositoryFolder());
+        
+        iwo.cancel();
+        TestKit.removeAllData(PROJECT_NAME);
+    }
+    
+    public void testCommitStep() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        
+        new File(TMP_PATH).mkdirs();
+        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+        
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+        RepositoryStepOperator rso = new RepositoryStepOperator();
+        //rso.verify();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+        rso.next();
+        Thread.sleep(1000);
+        
+        FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
+        ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+        ftiso.setImportMessage("initial import");
+        ftiso.next();
+        Thread.sleep(1000);
+        CommitStepOperator cso = new CommitStepOperator();
+        cso.verify();
+        
+        JTableOperator table = cso.tabFiles();
+        TableModel model = table.getModel();
+        String[] expected = {"genfiles.properties", "build-impl.xml", "Main.java", "manifest.mf", "src", "project.xml", PROJECT_NAME.toLowerCase(), "nbproject", "project.properties", "test", "build.xml"};
+        String[] actual = new String[model.getRowCount()];
+        for (int i = 0; i < actual.length; i++) {
+            actual[i] = model.getValueAt(i, 0).toString();
+        }
+        assertEquals("Incorrect count of records for addition!!!", 11, model.getRowCount());
+        assertEquals("Some records were omitted from addition", 11, TestKit.compareThem(expected, actual, false));
+        //try to change commit actions
+        cso.selectCommitAction("project.xml", "Add As Text");
+        cso.selectCommitAction("project.xml", "Add As Binary");
+        cso.selectCommitAction("project.xml", "Exclude from Commit");
+        cso.selectCommitAction(1, "Add As Text");
+        cso.selectCommitAction(1, "Add As Binary");
+        cso.selectCommitAction(1, "Exclude from Commit");
+        iwo.cancel();
+        TestKit.removeAllData(PROJECT_NAME);        
+    }
+    
+    public void testStopProcess() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        
+        new File(TMP_PATH).mkdirs();
+        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+        
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+        RepositoryStepOperator rso = new RepositoryStepOperator();
+        //rso.verify();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+        rso.next();
+        //Stop process in 1st step of Import wizard
+        rso.btStop().push();
+        assertEquals("Warning message - process was cancelled by user", "Action canceled by user", rso.lblWarning().getText());
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
+        rso = new RepositoryStepOperator();
+        //rso.verify();
+        
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+        rso.next();
+        
+        FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
+        ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+        ftiso.setImportMessage("initial import");
+        ftiso.next();
+        //Stop process in 2st step of Import wizard
+        ftiso.btStop().push();
+        
+        ftiso = new FolderToImportStepOperator();
+        //ftiso.verify();
+        ftiso.back();
+        
+        rso = new RepositoryStepOperator();
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
+        rso = new RepositoryStepOperator();
+        rso.verify();
+        
         TestKit.removeAllData(PROJECT_NAME);
     }
 }

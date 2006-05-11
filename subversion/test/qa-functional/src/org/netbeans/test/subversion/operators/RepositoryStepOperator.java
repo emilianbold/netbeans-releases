@@ -56,6 +56,7 @@ public class RepositoryStepOperator extends WizardOperator {
     private JComboBoxOperator _cboRepositoryURL;
     private JLabelOperator _lblSpecifySubversionRepositoryLocation;
     private JLabelOperator _lblWizardDescriptor$FixedHeightLabel;
+    private JButtonOperator _btStop;
     private JButtonOperator _btBack;
     private JButtonOperator _btNext;
     private JButtonOperator _btFinish;
@@ -198,11 +199,21 @@ public class RepositoryStepOperator extends WizardOperator {
     
     public JLabelOperator lblWarning() {
         if (_lblWarning == null) {
-            _lblWarning = new JLabelOperator(this, "Invalid svn");
+            _lblWarning = new JLabelOperator(this, 4);
         }
         return _lblWarning;
     }
 
+    /** Tries to find "Stop" JButton in this dialog.
+     * @return JButtonOperator
+     */
+    public JButtonOperator btStop() {
+        if (_btStop==null) {
+            _btStop = new JButtonOperator(this, "Stop");
+        }
+        return _btStop;
+    }
+    
     /** Tries to find "< Back" JButton in this dialog.
      * @return JButtonOperator
      */

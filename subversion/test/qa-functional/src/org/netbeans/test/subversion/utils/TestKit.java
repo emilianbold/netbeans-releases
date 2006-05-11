@@ -74,4 +74,37 @@ public final class TestKit {
         ndo.waitClosed(); 
         //TestKit.deleteRecursively(file);
     }
+    
+    public static int compareThem(Object[] expected, Object[] actual, boolean sorted) {
+        int result = 0;
+        if (expected == null || actual == null)
+            return -1;
+        if (sorted) {
+            if (expected.length != actual.length) {
+                return -1;
+            }
+            for (int i = 0; i < expected.length; i++) {
+                if (((String) expected[i]).equals((String) actual[i])) {
+                    result++;
+                } else {
+                    return -1;
+                }
+            }
+        } else {
+            if (expected.length > actual.length) {
+                return -1;
+            }
+            boolean found = false;
+            for (int i = 0; i < expected.length; i++) {
+                for (int j = 0; j < actual.length; j++) {
+                    if (((String) expected[i]).equals((String) actual[j])) {
+                        result++;
+                        j = actual.length;
+                    }
+                }
+            }
+            return result;
+        }
+        return result; 
+    }
 }

@@ -6,7 +6,6 @@
 package org.netbeans.test.subversion.operators;
 
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.NameComponentChooser;
 
 /**
  * Class implementing all necessary methods for handling "FolderToImportStepOperator" NbDialog.
@@ -36,6 +35,7 @@ public class FolderToImportStepOperator extends ImportWizardOperator {
     private JLabelOperator _lblSpecifyTheRepositoryFolderYouWantToImportIn;
     private JLabelOperator _lblSpecifyTheMessage;
     private JLabelOperator _lblImportMessageRequired;
+    private JButtonOperator _btStop;
     private JButtonOperator _btBack;
     private JButtonOperator _btNext;
     private JButtonOperator _btFinish;
@@ -106,6 +106,16 @@ public class FolderToImportStepOperator extends ImportWizardOperator {
         }
         return _txtRepositoryFolder;
     }
+    
+    /** Tries to find "Stop" JButton in this dialog.
+     * @return JButtonOperator
+     */
+    public JButtonOperator btStop() {
+        if (_btStop==null) {
+            _btStop = new JButtonOperator(this, "Stop");
+        }
+        return _btStop;
+    }
 
     /** Tries to find "Browse..." JButton in this dialog.
      * @return JButtonOperator
@@ -145,7 +155,7 @@ public class FolderToImportStepOperator extends ImportWizardOperator {
      */
     public JLabelOperator lblImportMessageRequired() {
         if (_lblImportMessageRequired==null) {
-            _lblImportMessageRequired = new JLabelOperator(this, "Import message required");
+            _lblImportMessageRequired = new JLabelOperator(this, 5);    
         }
         return _lblImportMessageRequired;
     }
@@ -223,7 +233,7 @@ public class FolderToImportStepOperator extends ImportWizardOperator {
     /** gets text for txtJTextField
      * @return String text
      */
-    public String getRepositoryFodler() {
+    public String getRepositoryFolder() {
         return txtJTextField().getText();
     }
 
@@ -238,9 +248,9 @@ public class FolderToImportStepOperator extends ImportWizardOperator {
         btBrowse().push();
     }
     
-    public RepositoryBrowserOperator browseRepository() {
+    public RepositoryBrowserImpOperator browseRepository() {
         btBrowse().pushNoBlock();
-        return new RepositoryBrowserOperator();
+        return new RepositoryBrowserImpOperator();
     }
 
     /** clicks on "< Back" JButton

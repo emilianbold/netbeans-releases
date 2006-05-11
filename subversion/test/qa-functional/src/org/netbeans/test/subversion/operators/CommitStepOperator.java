@@ -27,7 +27,7 @@ public class CommitStepOperator extends ImportWizardOperator {
     private JLabelOperator _lblSteps;
     private JListOperator _lstSteps;
     private JLabelOperator _lblFilesToImport;
-    private JTableOperator _tabCommitFiles;
+    private JTableOperator _tabFiles;
     private JButtonOperator _btWindowsScrollBarUI$WindowsArrowButton;
     private JButtonOperator _btWindowsScrollBarUI$WindowsArrowButton2;
     private JLabelOperator _lblCommitFiles;
@@ -78,11 +78,11 @@ public class CommitStepOperator extends ImportWizardOperator {
     /** Tries to find null JTable in this dialog.
      * @return JTableOperator
      */
-    public JTableOperator tabCommitFiles() {
-        if (_tabCommitFiles==null) {
-            _tabCommitFiles = new JTableOperator(this);
+    public JTableOperator tabFiles() {
+        if (_tabFiles==null) {
+            _tabFiles = new JTableOperator(this);
         }
-        return _tabCommitFiles;
+        return _tabFiles;
     }
 
     /** Tries to find null WindowsScrollBarUI$WindowsArrowButton in this dialog.
@@ -222,6 +222,23 @@ public class CommitStepOperator extends ImportWizardOperator {
         btHelp().push();
     }
 
+    /** Selects specified commit action for given row.
+     * @param rowIndex index of row to be selected
+     * @param action name of action to be selected
+     */
+    public void selectCommitAction(int rowIndex, String action) {
+        tabFiles().clickOnCell(rowIndex, 1);
+        JComboBoxOperator combo = new JComboBoxOperator(tabFiles());
+        combo.selectItem(action);
+    }
+
+    /** Selects specified commit action for given row.
+     * @param filename name of file to be selected
+     * @param action name of action to be selected
+     */
+    public void selectCommitAction(String filename, String action) {
+        selectCommitAction(tabFiles().findCellRow(filename), action);
+    }
 
     //*****************************************
     // High-level functionality definition part
@@ -234,7 +251,7 @@ public class CommitStepOperator extends ImportWizardOperator {
         lblSteps();
         lstSteps();
         lblFilesToImport();
-        tabCommitFiles();
+        tabFiles();
         btWindowsScrollBarUI$WindowsArrowButton();
         btWindowsScrollBarUI$WindowsArrowButton2();
         lblCommitFiles();
