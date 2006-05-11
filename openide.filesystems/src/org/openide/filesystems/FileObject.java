@@ -17,6 +17,7 @@ import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -476,6 +477,39 @@ public abstract class FileObject extends Object implements Serializable {
     public abstract OutputStream getOutputStream(FileLock lock)
     throws IOException;
 
+    /** Get output stream.
+     * @return output stream to overwrite the contents of this file
+     * @throws IOException if an error occurs (the file is invalid, etc.)
+     * @throws FileAlreadyLockedException if the file is already locked
+     * @since 6.6
+     */
+    public final OutputStream getOutputStream() throws FileAlreadyLockedException, IOException  {
+        final FileLock lock = lock();
+        final OutputStream os;
+        try {
+            os = getOutputStream(lock);
+            return new FilterOutputStream(os) {
+                public void close() throws IOException {
+                    try {
+                        super.close();
+                        lock.releaseLock();
+                    } catch(IOException iex) {
+                        if (lock.isValid()) {
+                            lock.releaseLock();
+                        }
+                        throw iex;
+                    }
+                }
+            };
+        } catch(IOException iex) {
+            if (lock.isValid()) {
+                lock.releaseLock();
+            }
+            throw iex;
+        }
+    }
+
+    
     /** Lock this file.
     * @return lock that can be used to perform various modifications on the file
     * @throws FileAlreadyLockedException if the file is already locked

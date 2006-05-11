@@ -17,6 +17,26 @@ Microsystems, Inc. All Rights Reserved.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="added-FileObject-getOutputStream-without-FileLock-parameter">
+            <api name="filesystems"/>
+            <summary>Added additional method <code>FileObject.getOutpuStream</code>
+                that doesn't take <code>FileLock</code> as a parameter.
+            </summary>
+            <version major="6" minor="6"/>
+            <date day="3" month="5" year="2006"/>
+            <author login="rmatous"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    Although newly added method <code>FileObject.getOutpuStream</code>
+                    doesn't take <code>FileLock</code> as a parameter, the implementation
+                    is responsible for taking a lock before <code>OutputStream</code> is
+                    returned and thus <code>FileAlreadyLockedException</code> exception is thrown
+                    when <code>FileObject</code> is already locked.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+        </change>        
         <change id="semantic-change-in-FileUtil.toFileObject">
             <api name="filesystems"/>
             <summary>

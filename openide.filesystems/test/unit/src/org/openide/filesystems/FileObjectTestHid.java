@@ -18,8 +18,6 @@ import org.openide.util.*;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.net.*;
 
@@ -1781,7 +1779,21 @@ public class FileObjectTestHid extends TestBaseHid {
             if (os != null) os.close();
         }        
     }
-    
+
+    public void testOutputStream75826() throws IOException {
+        checkSetUp();
+        if (testedFS.isReadOnly()) return;
+        FileObject testFo = getTestFile1(root);
+        FileLock lock = testFo.lock();
+        try {
+            testFo.getOutputStream();
+            fail();
+        } catch (IOException ex) {
+        }finally {
+            lock.releaseLock();
+        }
+    }
+        
     /** Test of isReadOnly()  method, of class org.openide.filesystems.FileObject. */                            
     public void testIsReadOnly() {
         FileObject file1 = getTestFile1 (root);        
