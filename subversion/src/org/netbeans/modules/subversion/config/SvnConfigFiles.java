@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -608,7 +609,11 @@ public class SvnConfigFiles {
         Process p = null;
         try {
             p = Runtime.getRuntime().exec(cmdLine);
-            p.waitFor(); // XXX check the exit value, handle the streams
+            StreamHandler shErr = new StreamHandler(p.getErrorStream());
+            StreamHandler shIn = new StreamHandler(p.getInputStream());
+            shErr.start();
+            shIn.start();
+            p.waitFor(); // XXX check the exit value
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);     
             return;
@@ -673,4 +678,21 @@ public class SvnConfigFiles {
         
     }
 
+    private class StreamHandler extends Thread {
+        private InputStream is;
+        private byte[] inputBuffer = new byte[1024];
+        StreamHandler(InputStream is) {
+            this.is = is;
+        }
+        public void run() {
+            try {
+                while(is.read(inputBuffer) != -1) {
+                    // nothing to do
+                };
+                is.close();
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
+        }
+    }
 }
