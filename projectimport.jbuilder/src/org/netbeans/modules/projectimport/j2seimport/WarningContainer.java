@@ -45,6 +45,14 @@ public final class WarningContainer  {
         return this.allWarnings.addAll(toAdd.allWarnings);
     }
     
+    public boolean isEmpty() {
+        return allWarnings.isEmpty();
+    }
+
+    public int size() {
+        return allWarnings.size();
+    }
+    
     
     public Iterator/*<WarningSupport.Warning>*/ getAllWarnings() {
         return allWarnings.iterator();

@@ -92,13 +92,13 @@ public class ImportUtilsTest  extends NbTestCase {
         testProject.addSourceRoot(srcE1);
         testProject.addSourceRoot(srcE2);
         
-        Collection projectDefinitionWarnings = testProject.getWarnings();
-        assertTrue(projectDefinitionWarnings.size() == 0);
+        WarningContainer projectDefinitionWarnings = testProject.getWarnings();
+        assertTrue(projectDefinitionWarnings.isEmpty());
         
         
-        Collection importingWarnings = new HashSet();
+        WarningContainer importingWarnings = new WarningContainer();
         J2SEProject nbProject = ImportUtils.createInstance().importProjectWithoutDependencies(FileUtil.toFileObject(projectDir), testProject, importingWarnings, false);
-        assertTrue(importingWarnings.size() == 0);
+        assertTrue(importingWarnings.isEmpty());
         
         testProject.setAsImported();
         ImportUtilsTest.testSourceRoots(testProject, nbProject);
@@ -127,13 +127,13 @@ public class ImportUtilsTest  extends NbTestCase {
         testProject.addSourceRoot(srcE1);
         testProject.addSourceRoot(srcE2);
         
-        Collection projectDefinitionWarnings = testProject.getWarnings();
+        WarningContainer projectDefinitionWarnings = testProject.getWarnings();
         assertTrue(projectDefinitionWarnings.size() == 1);
         
         
-        Collection importingWarnings = new HashSet();
+        WarningContainer importingWarnings = new WarningContainer();
         J2SEProject nbProject = ImportUtils.createInstance().importProjectWithoutDependencies(FileUtil.toFileObject(projectDir), testProject, importingWarnings, false);
-        assertTrue(importingWarnings.toString(), importingWarnings.size() == 0);
+        assertTrue(importingWarnings.toString(), importingWarnings.isEmpty());
         
         testProject.setAsImported();
         ImportUtilsTest.testSourceRoots(testProject, nbProject);
@@ -165,13 +165,13 @@ public class ImportUtilsTest  extends NbTestCase {
         testProject.addLibrary(library1);
         testProject.addLibrary(library2);
         
-        Collection projectDefinitionWarnings = testProject.getWarnings();
-        assertTrue(projectDefinitionWarnings.size() == 0);
+        WarningContainer projectDefinitionWarnings = testProject.getWarnings();
+        assertTrue(projectDefinitionWarnings.isEmpty());
         
         
-        Collection importingWarnings = new HashSet();
+        WarningContainer importingWarnings = new WarningContainer();
         J2SEProject nbProject = ImportUtils.createInstance().importProjectWithoutDependencies(FileUtil.toFileObject(projectDir), testProject, importingWarnings, false);
-        assertTrue(importingWarnings.size() == 0);
+        assertTrue(importingWarnings.isEmpty());
         
         testProject.setAsImported();
         
@@ -197,7 +197,7 @@ public class ImportUtilsTest  extends NbTestCase {
         assertNotNull(subPrjDirFo);
         
         ImportUtils importInstance = ImportUtils.createInstance();
-        J2SEProject subNbProject = importInstance.importProjectWithoutDependencies(subPrjDirFo, subPrj,new HashSet(), false);
+        J2SEProject subNbProject = importInstance.importProjectWithoutDependencies(subPrjDirFo, subPrj,new WarningContainer(), false);
         assertNotNull(subNbProject);
         
         //testProject.addDependency(subPrj);
