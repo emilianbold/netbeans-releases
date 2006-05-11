@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.util.Date;
@@ -162,13 +163,17 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         validateUserInput();
     }
 
-    public SVNUrl getRepositoryFolderUrl() {
+    public RepositoryFile getRepositoryFile() {
         try {
-            return repositoryPaths.getRepositoryFiles()[0].getFileUrl(); // more files doesn't make sence
+            return repositoryPaths.getRepositoryFiles()[0]; // more files doesn't make sence
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } 
         return null;
+    }
+
+    public SVNUrl getRepositoryFolderUrl() {
+        return getRepositoryFile().getFileUrl();
     }
 
     public void stop() {
@@ -206,28 +211,30 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                 }
 
                 try {
-                    SVNUrl repositoryUrl = repositoryPaths.getRepositoryUrl();
-                    SVNUrl repositoryFolderUrl = getRepositoryFolderUrl();
+                    RepositoryFile repositoryFile = getRepositoryFile();
+                    SVNUrl repositoryUrl = repositoryFile.getRepositoryUrl();
                     try {
                         // if the user came back from the last step and changed the repository folder name,
                         // then this could be already a working copy ...    
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn"));
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn"));
-                        
-                        client.mkdir(repositoryFolderUrl, getImportMessage());
+                        File importDummyFolder = new File(System.getProperty("java.io.tmpdir") + "/" + importDirectory.getName());
+                        importDummyFolder.mkdirs();                     
+                        importDummyFolder.deleteOnExit();
+                        client.doImport(importDummyFolder, repositoryFile.getFileUrl(), getImportMessage(), false);
                     } catch (SVNClientException ex) {
                         if(ExceptionHandler.isFileAlreadyExists(ex) ) {
                             // ignore
                         } else {
                             throw ex;
-                        }                        
+                        }         
                     }
                     if(isCanceled()) {
                         return;
                     }
 
-                    RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };                    
-                    CheckoutAction.checkout(client, repositoryUrl, repositoryFile, importDirectory, true, this);
+                    RepositoryFile[] repositoryFiles = new RepositoryFile[] { repositoryFile };
+                    CheckoutAction.checkout(client, repositoryUrl, repositoryFiles, importDirectory, true, this);
                     SvnUtils.refreshRecursively(importDirectory);
                     // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
                     forceStatusRefresh(importDirectory);  // XXX the same for another implementations like this in the code.... (see SvnUtils.refreshRecursively() )
