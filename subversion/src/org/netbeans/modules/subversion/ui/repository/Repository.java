@@ -310,11 +310,16 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
      * Fast url syntax check. It can invalidate the whole step     
      */
     private void validateSvnUrl() {
+        boolean valid;
         try {
-            setValid(getSelectedRepository() != null, message);
+            valid = getSelectedRepository() != null;
         } catch (Exception ex) {
-            setValid(false, message);
+            valid = false;
         }
+        setValid(valid, message);
+        repositoryPanel.proxySettingsButton.setEnabled(valid);
+        repositoryPanel.userPasswordField.setEnabled(valid);    
+        repositoryPanel.userTextField.setEnabled(valid);  
     }
     
     /**
