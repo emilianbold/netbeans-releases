@@ -176,8 +176,9 @@ public class ImportUITest extends JellyTestCase {
         CreateNewFolderOperator cnfo = rbo.createNewFolder();
         cnfo.setFolderName(PROJECT_NAME);
         cnfo.ok();
+        rbo.selectFolder("trunk|" + PROJECT_NAME);
         rbo.ok();
-        assertEquals("Wrong folder selection!!!", "trunk", ftiso.getRepositoryFolder());
+        assertEquals("Wrong folder selection!!!", "trunk/" + PROJECT_NAME, ftiso.getRepositoryFolder());
         
         //
         ftiso.setRepositoryFolder("trunk");
