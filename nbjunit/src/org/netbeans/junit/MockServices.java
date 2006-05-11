@@ -35,9 +35,9 @@ import junit.framework.AssertionFailedError;
 
 /**
  * Lets you register mock implementations of global services.
- * You might for example do this in {@link TestCase#setUp}.
- * @see org.openide.util.Lookup
- * @see java.util.ServiceLoader
+ * You might for example do this in {@link junit.framework.TestCase#setUp}.
+ * @see <a href="http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/util/Lookup.html"><code>Lookup</code></a>
+ * @see <a href="http://download.java.net/jdk6/docs/api/java/util/ServiceLoader.html"><code>ServiceLoader</code></a>
  * @since org.netbeans.modules.nbjunit/1 1.30
  * @author Jesse Glick, Jaroslav Tulach
  */
@@ -48,15 +48,15 @@ public class MockServices {
     /**
      * Set (or reset) the set of mock services.
      * Clears any previous registration.
-     * After this call, Lookup and ServiceLoader should both
+     * After this call, <code>Lookup</code> and <code>ServiceLoader</code> should both
      * "see" the newly registered classes.
-     * (Other classes really registered in META-INF/services/ will
+     * (Other classes really registered in <code>META-INF/services/</code> will
      * also be available, but after the ones you have registered.)
      * Each class must be public with a public no-arg constructor.
      * @param services a set of service classes to register
      * @throws IllegalArgumentException if some classes are not instantiable as beans
      */
-    public static void setServices(Class... services) throws IllegalArgumentException {
+    public static void setServices(Class<?>... services) throws IllegalArgumentException {
         Thread.currentThread().setContextClassLoader(new ServiceClassLoader(services));
         // Need to also reset global lookup since it caches the singleton and we need to change it.
         try {
@@ -73,9 +73,9 @@ public class MockServices {
     
     private static final class ServiceClassLoader extends ClassLoader {
         
-        private final Class[] services;
+        private final Class<?>[] services;
         
-        public ServiceClassLoader(Class[] services) {
+        public ServiceClassLoader(Class<?>[] services) {
             super(MockServices.class.getClassLoader());
             for (Class c : services) {
                 try {
@@ -110,10 +110,9 @@ public class MockServices {
             String prefix = "META-INF/services/";
             if (name.startsWith(prefix)) {
                 try {
-                    Class xface = loadClass(name.substring(prefix.length()));
+                    Class<?> xface = loadClass(name.substring(prefix.length()));
                     List<String> impls = new ArrayList<String>();
-                    for (Class c : services) {
-                        @SuppressWarnings("unchecked") // OK to be raw type; cannot be generic anyway
+                    for (Class<?> c : services) {
                         boolean assignable = xface.isAssignableFrom(c);
                         if (assignable) {
                             impls.add(c.getName());
