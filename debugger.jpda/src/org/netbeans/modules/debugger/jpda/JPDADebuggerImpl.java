@@ -892,11 +892,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (operator.flushStaledEvents()) {
             return ;
         }
+        setState (STATE_RUNNING);
         synchronized (LOCK) {
-            if (virtualMachine != null)
+            if (virtualMachine != null) {
                 virtualMachine.resume ();
-            // XXX Fires under lock! Is this OK?
-            setState (STATE_RUNNING);
+            }
         }
     }
     
