@@ -878,7 +878,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             File goldenFile = getGoldenFile(goldenFilename);
             File testFile = new File(getWorkDir(),testFilename);
             File diffFile = new File(getWorkDir(),diffFilename);
-            assertFile("Files differ", testFile, goldenFile, diffFile);
+            assertFile("Files differ; check " + diffFile, testFile, goldenFile, diffFile);
         } catch (IOException ioe) {
             fail("Could not obtain working direcory");
         }
