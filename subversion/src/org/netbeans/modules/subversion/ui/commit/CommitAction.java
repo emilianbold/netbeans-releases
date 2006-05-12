@@ -256,7 +256,7 @@ public class CommitAction extends ContextAction {
             // TODO perform removes. especialy package removes where
             // metadata must be replied from SvnMetadata (hold by FileSyatemHandler)
 
-            // group commitCandidates by managed trees
+            // set binary mimetype and group commitCandidates by managed trees
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             List<List<File>> managedTrees = new ArrayList<List<File>>();
             for (Iterator<File> itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
