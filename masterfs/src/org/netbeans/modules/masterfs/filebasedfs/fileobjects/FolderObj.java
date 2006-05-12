@@ -154,7 +154,7 @@ public final class FolderObj extends BaseFileObj {
         if (!isSupported) { 
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N   
         } else if (folder2Create.exists()) {
-            FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N               
+            FSException.io("EXC_CannotCreateExistingFolder", folder2Create.getName(), getPath());// NOI18N               
         } else if (!folder2Create.mkdirs()) {
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N               
         }
@@ -199,10 +199,10 @@ public final class FolderObj extends BaseFileObj {
 
     private void createData(final File file2Create) throws IOException {
         boolean isSupported = new FileInfo(file2Create).isSupportedFile();                        
-        if (!isSupported) { 
+        if (!isSupported) {             
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         } else if (file2Create.exists()) {
-            FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
+            FSException.io("EXC_CannotCreateExistingData", file2Create.getName(), getPath());// NOI18N
         } else if (!file2Create.createNewFile()) {
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         }        
