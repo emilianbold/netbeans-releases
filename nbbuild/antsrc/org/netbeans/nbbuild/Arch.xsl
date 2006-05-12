@@ -179,7 +179,6 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:with-param name="target" select="$target" />
                 <xsl:with-param name="generate-export" select="$generate-export" />
                 <xsl:with-param name="generate-import" select="$generate-import" />
-                <xsl:with-param name="generate-import" select="$generate-import" />
             </xsl:call-template>
         </xsl:for-each>
 
