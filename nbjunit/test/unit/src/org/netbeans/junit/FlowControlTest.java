@@ -7,18 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.junit;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.TestFailure;
 import junit.framework.TestResult;
-
 
 /** Checks that behaviour of LoggingTestCaseHid is correct.
  *
@@ -50,7 +50,7 @@ public class FlowControlTest extends NbTestCase {
     public void testCorrectThreadSwitching() throws Exception {
         
         class Run implements Runnable {
-            public ArrayList events = new ArrayList();
+            public List<Object> events = new ArrayList<Object>();
             
             public void run() {
                 events.add("A");
@@ -99,7 +99,7 @@ public class FlowControlTest extends NbTestCase {
     public void testWorksWithRegularExpressionsAsWell() throws Exception {
         
         class Run implements Runnable {
-            public ArrayList events = new ArrayList();
+            public List<Object> events = new ArrayList<Object>();
             
             public void run() {
                 events.add("A");
@@ -148,7 +148,7 @@ public class FlowControlTest extends NbTestCase {
     public void testLogMessagesCanRepeat() throws Exception {
         
         class Run implements Runnable {
-            public ArrayList events = new ArrayList();
+            public List<Object> events = new ArrayList<Object>();
             
             public void run() {
                 events.add("A");

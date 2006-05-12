@@ -26,7 +26,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 /** Collects log messages.
@@ -41,7 +40,7 @@ public final class Log extends Handler {
     /** initial length of messages */
     private static int initialMessages;
     /** stream to log to */
-    private Reference/*PrintStream*/ log;
+    private Reference<PrintStream> log;
     /** logger we are assigned to */
     private Logger logger;
 
@@ -53,7 +52,7 @@ public final class Log extends Handler {
     /** Creates handler with assigned logger
      */
     private Log(Logger l, PrintStream ps) {
-        log = new WeakReference(ps);
+        log = new WeakReference<PrintStream>(ps);
         logger = l;
     }
 
@@ -178,7 +177,7 @@ public final class Log extends Handler {
 
     private PrintStream getLog(LogRecord record) {
         if (log != null) {
-            PrintStream ps = (PrintStream)log.get();
+            PrintStream ps = log.get();
             if (ps == null) {
                 // gc => remove the handler
                 logger.removeHandler(this);

@@ -7,25 +7,45 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.junit;
 
 import java.awt.EventQueue;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.lang.ref.Reference;
 import java.lang.reflect.Field;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
+import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
-import junit.framework.AssertionFailedError;
-import java.util.*;
-import java.net.URL;
+import org.netbeans.insane.scanner.CountingVisitor;
+import org.netbeans.insane.scanner.ObjectMap;
+import org.netbeans.insane.scanner.ScannerUtils;
+import org.netbeans.insane.scanner.Visitor;
+import org.netbeans.junit.diff.Diff;
 
-import org.netbeans.junit.diff.*;
-import org.netbeans.insane.scanner.*;
 /**
  * NetBeans extension to JUnit's {@link TestCase}.
  * Adds various abilities such as comparing golden files, getting a working
@@ -634,7 +654,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     // hashtable holding all already used logs and correspondig printstreams
-    private Hashtable logStreamTable = null;
+    private Map<String,PrintStream> logStreamTable = null;
     
     private PrintStream getFileLog(String logName) throws IOException {
         OutputStream outputStream;
@@ -642,7 +662,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         
         if ((logStreamTable == null)|(hasTestMethodChanged())) {
             // we haven't used logging capability - create hashtables
-            logStreamTable = new Hashtable();
+            logStreamTable = new HashMap<String,PrintStream>();
             //System.out.println("Created new hashtable");
         } else {
             if (logStreamTable.containsKey(logName)) {
@@ -978,8 +998,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @param ref the referent to object that
      * should be GCed
      */
-    public static void assertGC(String text, java.lang.ref.Reference ref) {
-        assertGC(text, ref, Collections.EMPTY_SET);
+    public static void assertGC(String text, Reference<?> ref) {
+        assertGC(text, ref, Collections.emptySet());
     }
     
     /** Asserts that the object can be garbage collected. Tries to GC ref's referent.
@@ -1002,8 +1022,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      *  assertGC("WeakMap does not hold the key", ref, Collections.singleton(map));
      * </pre>
      */
-    public static void assertGC(String text, java.lang.ref.Reference ref, Set rootsHint) {
-        ArrayList alloc = new ArrayList();
+    public static void assertGC(String text, Reference<?> ref, Set<Object> rootsHint) {
+        List<byte[]> alloc = new ArrayList<byte[]>();
         int size = 100000;
         for (int i = 0; i < 50; i++) {
             if (ref.get() == null) {
@@ -1113,8 +1133,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         return -1; // fail throws for sure
     }
     
-    private static String findRefsFromRoot(final Object target, final Set rootsHint) {
-        final Map objects = new IdentityHashMap();
+    private static String findRefsFromRoot(final Object target, final Set<Object> rootsHint) {
+        final Map<Object,Entry> objects = new IdentityHashMap<Object,Entry>();
         boolean found = false;
         
         Visitor vis = new Visitor() {
@@ -1133,20 +1153,21 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
             
             private void visitRef(Object from, Object to) {
-                ((Entry)objects.get(from)).addOut(to);
-                ((Entry)objects.get(to)).addIn(from);
+                objects.get(from).addOut(to);
+                objects.get(to).addIn(from);
                 if (to == target) throw new RuntimeException("Done");
             }
             
             
             public void visitStaticReference(ObjectMap map, Object to, java.lang.reflect.Field ref) {
-                ((Entry)objects.get(to)).addStatic(ref);
+                objects.get(to).addStatic(ref);
                 if (to == target) throw new RuntimeException("Done");
             }
         };
         
         try {
-            Set s = new HashSet(ScannerUtils.interestingRoots());
+            @SuppressWarnings("unchecked")
+            Set<Object> s = new HashSet<Object>(ScannerUtils.interestingRoots());
             s.addAll(rootsHint);
             ScannerUtils.scanExclusivelyInAWT(ScannerUtils.skipNonStrongReferencesFilter(), vis, s);
         } catch (Exception ex) {
@@ -1160,8 +1181,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             return "Not found!!!";
         }
     }
-    /** BFS scan of incomming refs*/
-    private static String  findRoots(Map objects, Object obj, Set roots) {
+    /** BFS scan of incoming refs*/
+    private static String  findRoots(Map<Object,Entry> objects, Object obj, Set roots) {
         class PathElement {
             private Entry item;
             private PathElement next;
@@ -1182,32 +1203,32 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
         }
         
-        Set visited = new HashSet();
-        Entry fin = (Entry)objects.get(obj);
+        Set<Entry> visited = new HashSet<Entry>();
+        Entry fin = objects.get(obj);
         assert fin != null;
         
         visited.add(fin);
-        LinkedList queue = new LinkedList();
+        List<PathElement> queue = new LinkedList<PathElement>();
         queue.add(new PathElement(fin, null));
         
         while (!queue.isEmpty()) {
-            PathElement act = (PathElement)queue.remove(0);
+            PathElement act = queue.remove(0);
             // any static ref?
             Entry item = act.getItem();
             if (roots.contains(item.getObject())) {
                 return "||root||:" + act;
             }
             
-            Iterator it = item.staticRefs();
+            Iterator<Object> it = item.staticRefs();
             if (it.hasNext()) {
                 Field fld = (Field)it.next();
                 return fld + "->\n" + act;
             }
             
             // follow incomming
-            it = act.getItem().incommingRefs();
+            it = act.getItem().incomingRefs();
             while(it.hasNext()) {
-                Entry ref = (Entry)objects.get(it.next());
+                Entry ref = objects.get(it.next());
                 assert ref != null;
                 
                 // add to the queue if not new
@@ -1250,15 +1271,15 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             return obj;
         }
         
-        public Iterator incommingRefs() {
+        public Iterator<Object> incomingRefs() {
             return Arrays.asList(in).iterator();
         }
         
-        public Iterator staticRefs() {
+        public Iterator<Object> staticRefs() {
             return Arrays.asList(stat).iterator();
         }
         
-        public Iterator outgoingRefs() {
+        public Iterator<Object> outgoingRefs() {
             return Arrays.asList(stat).iterator();
         }
         

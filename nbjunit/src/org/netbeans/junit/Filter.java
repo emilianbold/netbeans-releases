@@ -7,18 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * Filter.java
- *
- * Created on April 25, 2001, 12:34 PM
  */
 
 package org.netbeans.junit;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A helper class, which holds informatino about filtered tests
@@ -250,13 +246,13 @@ strLoop:
     }
     
     private IncludeExclude [] arrayCopy(IncludeExclude [] orig) {
-        LinkedList lst = new LinkedList();
+        List<IncludeExclude> lst = new LinkedList<IncludeExclude>();
         for(int i = 0; i < orig.length; i++)
             if (null != orig[i] && !(orig[i].getName() == null && orig[i].getExpectedFail() == null)) {
                 lst.add(orig[i]);
             }
         
-        return (IncludeExclude [])lst.toArray(new IncludeExclude[0]);
+        return lst.toArray(new IncludeExclude[0]);
     }
     
     

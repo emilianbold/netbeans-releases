@@ -7,23 +7,21 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-
-/*
- * LineDiff.java
- *
- * Created on March 28, 2002, 9:49 AM
  */
 
 package org.netbeans.junit.diff;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
-
-
+import java.util.List;
 
 /**
  * Slow diff with better user-friendly output format.
@@ -100,14 +98,14 @@ public class LineDiff implements Diff {
         
         String[] testLines,passLines;
         //read lines
-        ArrayList tmp=new ArrayList(128);
+        List<String> tmp = new ArrayList<String>(128);
         while ((passLine = second.readLine()) != null) {
             if (ignoreEmptyLines && passLine.trim().length() == 0) {
                 continue;
             }
             tmp.add(passLine);
         }
-        passLines=(String[])(tmp.toArray(new String[tmp.size()]));
+        passLines = tmp.toArray(new String[tmp.size()]);
         tmp.clear();
         second.close();
         //first matching
@@ -140,42 +138,43 @@ public class LineDiff implements Diff {
         if (match || diffFile == null) {
             return !match;
         }
-        testLines=(String[])(tmp.toArray(new String[tmp.size()]));
-        tmp.clear();
+        testLines = tmp.toArray(new String[tmp.size()]);
         
         //make indicies
-        ArrayList[] passindicies=new ArrayList[passLines.length-lastPassIndex];
+        List<List<IndexValue>> passindices = new ArrayList<List<IndexValue>>(passLines.length-lastPassIndex);
         
         for (int i=lastPassIndex;i < passLines.length;i++) {
-            passindicies[i-lastPassIndex]=new ArrayList(testLines.length-lastPassIndex);
+            passindices.set(i-lastPassIndex, new ArrayList<IndexValue>(testLines.length-lastPassIndex));
             for (int j=lastPassIndex;j < testLines.length;j++) {
                 if (compareLines(passLines[i], testLines[j])) { //if equals add to indicies
                     IndexValue iv=new IndexValue(j, i);
-                    passindicies[i-lastPassIndex].add(iv);
+                    passindices.get(i-lastPassIndex).add(iv);
                 }
             }
             //init indicies values - better is to have low difference between indicies (index-passIndex)
-            for (int j=0;j < passindicies[i-lastPassIndex].size();j++) {
-                IndexValue iv=(IndexValue)(passindicies[i-lastPassIndex].get(j));
+            for (int j=0;j < passindices.get(i-lastPassIndex).size();j++) {
+                IndexValue iv = passindices.get(i-lastPassIndex).get(j);
                 iv.value=10.0/(1.0+Math.abs(iv.index-iv.passIndex));
             }
         }
+        
+        List<IndexValue> tmp2 = new ArrayList<IndexValue>();
         //update values (weights) - add value to indicies which has same deltas
-        for (int i=0;i < passindicies.length;i++) {
-            for (int j=0;j < passindicies[i].size();j++) {
-                IndexValue iv=(IndexValue)(passindicies[i].get(j));
-                if (tmp.contains(iv)) continue;
+        for (int i=0; i < passindices.size(); i++) {
+            for (int j=0; j < passindices.get(i).size(); j++) {
+                IndexValue iv = passindices.get(i).get(j);
+                if (tmp2.contains(iv)) continue;
                 int delta=iv.index-iv.passIndex;
-                ArrayList path=new ArrayList(128);
+                List<IndexValue> path = new ArrayList<IndexValue>(128);
                 path.add(iv);
                 int ind=i+1;
-                while (ind < passindicies.length) {
-                    if (passindicies[ind].size() == 0) {
+                while (ind < passindices.size()) {
+                    if (passindices.get(ind).isEmpty()) {
                         break;
                     }
                     boolean found=false;
-                    for (int k=0;k < passindicies[ind].size();k++) {
-                        IndexValue iv2=(IndexValue)(passindicies[ind].get(k));
+                    for (int k=0; k < passindices.get(ind).size(); k++) {
+                        IndexValue iv2 = passindices.get(ind).get(k);
                         int delta2=iv2.index-iv2.passIndex;
                         if (delta2 == delta) {
                             path.add(iv2);
@@ -194,63 +193,62 @@ public class LineDiff implements Diff {
                 for (int k=0;k < path.size();k++) {
                     IndexValue iv2=(IndexValue)(path.get(k));
                     iv2.value*=path.size()*10.0;
-                    tmp.add(iv2);
+                    tmp2.add(iv2);
                 }
             }
         }
-        tmp.clear();
         //preprocessing - sorting
-        for (int i=0;i < passindicies.length;i++) {
-            if (passindicies[i].size() > 1) {
-                Collections.sort(passindicies[i]);
+        for (int i=0; i < passindices.size(); i++) {
+            if (passindices.get(i).size() > 1) {
+                Collections.sort(passindices.get(i));
             }
         }
         //cut matchings with weak weight and which are crossing the heavy weight
         //forward
-        for (int i=0;i < passindicies.length-1;i++) {
-            if (passindicies[i].size() < 1) continue;
+        for (int i=0; i < passindices.size() - 1; i++) {
+            if (passindices.get(i).isEmpty()) continue;
             boolean once=false;
             do {
                 once=false;
-                IndexValue better=(IndexValue)(passindicies[i].get(0));
+                IndexValue better = passindices.get(i).get(0);
                 IndexValue nextbetter=null;
-                if (passindicies[i+1].size() > 0)
-                    nextbetter=(IndexValue)(passindicies[i+1].get(0));
+                if (!passindices.get(i+1).isEmpty())
+                    nextbetter = passindices.get(i+1).get(0);
                 if (nextbetter != null && nextbetter.value > better.value) {
                     if ((nextbetter.index-nextbetter.passIndex) < (better.index-better.passIndex)) {
-                        passindicies[i].remove(better);
+                        passindices.get(i).remove(better);
                         once=true;
                     }
                 }
-            } while (once && passindicies[i].size() > 0);
+            } while (once && !passindices.get(i).isEmpty());
         }
         //backward
-        for (int i=passindicies.length-1;i >= 1;i--) {
-            if (passindicies[i].size() < 1) continue;
+        for (int i = passindices.size() - 1; i >= 1; i--) {
+            if (passindices.get(i).isEmpty()) continue;
             boolean once=false;
             do {
                 once=false;
-                IndexValue better=(IndexValue)(passindicies[i].get(0));
+                IndexValue better = passindices.get(i).get(0);
                 IndexValue prebetter=null;
-                if (passindicies[i-1].size() > 0)
-                    prebetter=(IndexValue)(passindicies[i-1].get(0));
+                if (!passindices.get(i-1).isEmpty())
+                    prebetter = passindices.get(i-1).get(0);
                 if (prebetter != null && prebetter.value > better.value) {
                     if ((prebetter.index-prebetter.passIndex) > (better.index-better.passIndex)) {
-                        passindicies[i].remove(better);
+                        passindices.get(i).remove(better);
                         once=true;
                     }
                 }
-            } while (once && passindicies[i].size() > 0);
+            } while (once && !passindices.get(i).isEmpty());
         }
         //generate result list
-        ArrayList result=new ArrayList(128);
+        List<Result> result=new ArrayList<Result>(128);
         
         for (int i=lastPassIndex;i < passLines.length;i++) {
-            if (passindicies[i-lastPassIndex].size() > 0) {
+            if (!passindices.get(i-lastPassIndex).isEmpty()) {
                 IndexValue best=null;
                 int ind=0;
-                while (best == null && ind < passindicies[i-lastPassIndex].size()) {
-                    IndexValue iv=(IndexValue)(passindicies[i-lastPassIndex].get(ind++));
+                while (best == null && ind < passindices.get(i-lastPassIndex).size()) {
+                    IndexValue iv = passindices.get(i-lastPassIndex).get(ind++);
                     if (testLines[iv.index] != null) {
                         best=iv;
                         testLines[iv.index]=null;
@@ -327,7 +325,7 @@ public class LineDiff implements Diff {
         }
     }
     
-    class Result implements Comparable {
+    class Result implements Comparable<Result> {
         int index;
         String line;
         boolean missing=false;
@@ -337,8 +335,8 @@ public class LineDiff implements Diff {
             this.missing=missing;
         }
         
-        public int compareTo(Object o) {
-            return (index - ((Result)o).index);
+        public int compareTo(Result o) {
+            return index - o.index;
         }
         
         public String toString() {
@@ -346,7 +344,7 @@ public class LineDiff implements Diff {
         }
     }
     
-    class IndexValue implements Comparable {
+    class IndexValue implements Comparable<IndexValue> {
         public int index;
         public int passIndex;
         public double value;
@@ -370,8 +368,8 @@ public class LineDiff implements Diff {
             return (value < v.value);
         }
         
-        public int compareTo(Object o) {
-            return (int)(((IndexValue)o).value-value);
+        public int compareTo(IndexValue o) {
+            return (int) (o.value - value);
         }
         
         public String toString() {

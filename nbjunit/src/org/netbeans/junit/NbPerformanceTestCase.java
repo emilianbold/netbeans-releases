@@ -7,12 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.junit;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /** Default implementation of NbPerformanceTest with added methods to collect
  * measured performance data.
@@ -28,13 +30,13 @@ public class NbPerformanceTestCase extends NbTestCase implements NbPerformanceTe
         super(name);
     }
     
-    private ArrayList data = new ArrayList();
+    private List<NbPerformanceTest.PerformanceData> data = new ArrayList<NbPerformanceTest.PerformanceData>();
     
     /** getter for all measured performance data from current test
      * @return PerformanceData[]
      */    
     public NbPerformanceTest.PerformanceData[] getPerformanceData() {
-        return (NbPerformanceTest.PerformanceData[])(data.toArray(new NbPerformanceTest.PerformanceData[0]));
+        return data.toArray(new NbPerformanceTest.PerformanceData[0]);
     }
     
     /** method for storing and reporting measured performance value,

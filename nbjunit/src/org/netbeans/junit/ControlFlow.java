@@ -7,28 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.junit;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
-import junit.framework.TestResult;
 
 /** Basic skeleton for logging test case.
  *
@@ -59,9 +57,9 @@ final class ControlFlow extends Object {
     
      */
     static void registerSwitches(Logger listenTo, Logger reportTo, String order, int timeout) {
-        LinkedList switches = new LinkedList();
+        LinkedList<Switch> switches = new LinkedList<Switch>();
         
-        HashMap exprs = new HashMap();
+        Map<String,Pattern> exprs = new HashMap<String,Pattern>();
         
         int pos = 0;
         for(;;) {
@@ -81,7 +79,7 @@ final class ControlFlow extends Object {
             String thrName = order.substring(pos + 7, msg).trim();
             String msgText = order.substring(msg + 4, end).trim();
             
-            Pattern p = (Pattern)exprs.get(msgText);
+            Pattern p = exprs.get(msgText);
             if (p == null) {
                 p = Pattern.compile(msgText);
                 exprs.put(msgText, p);
@@ -101,10 +99,10 @@ final class ControlFlow extends Object {
     // Logging support
     //
     private static final class ErrManager extends Handler {
-        private LinkedList switches;
+        private LinkedList<Switch> switches;
         private int timeout;
         /** maps names of threads to their instances*/
-        private java.util.Map threads = new java.util.HashMap();
+        private Map<String,Thread> threads = new HashMap<String,Thread>();
 
         /** the logger to send internal messages to, if any */
         private Logger msg;
@@ -113,7 +111,7 @@ final class ControlFlow extends Object {
         /** assigned to */
         private Logger assigned;
 
-        public ErrManager (LinkedList switches, Logger assigned, Logger msg, int t) {
+        public ErrManager(LinkedList<Switch> switches, Logger assigned, Logger msg, int t) {
             this.switches = switches;
             this.msg = msg;
             this.timeout = t;
@@ -142,7 +140,7 @@ final class ControlFlow extends Object {
                     }
 
 
-                    Switch w = (Switch)switches.getFirst();
+                    Switch w = switches.getFirst();
                     String threadName = Thread.currentThread().getName();
                     boolean foundMatch = false;
 
@@ -158,7 +156,7 @@ final class ControlFlow extends Object {
                             switches.notifyAll();
                             return;
                         }
-                        w = (Switch)switches.getFirst();
+                        w = switches.getFirst();
                         if (w.matchesThread()) {
                             // next message is also from this thread, go on
                             return;
@@ -167,9 +165,7 @@ final class ControlFlow extends Object {
                         foundMatch = true;
                     } else {
                         // compute whether we shall wait or not
-                        java.util.Iterator it = switches.iterator();
-                        while (it.hasNext()) {
-                            Switch check = (Switch)it.next();
+                        for (Switch check : switches) {
                             if (check.matchesMessage(s)) {
                                 expectingMsg = true;
                                 break;
@@ -178,7 +174,7 @@ final class ControlFlow extends Object {
                     }
 
                     // make it other thread run
-                    Thread t = (Thread)threads.get(w.name);
+                    Thread t = threads.get(w.name);
                     if (t != null) {
                         if (log) {
                             loginternal("t: " + threadName + " interrupts: " + t.getName());

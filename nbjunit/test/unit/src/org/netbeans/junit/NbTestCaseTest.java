@@ -7,19 +7,16 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.junit;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.TestResult;
-
 
 /** Regular test of the behaviour.
  *
@@ -74,7 +71,7 @@ public class NbTestCaseTest extends NbTestCase {
         }
         assertEquals("Not logged for FINE: " + s, -1, s.indexOf("Jardo"));
 
-        WeakReference r = new WeakReference(seq);
+        WeakReference<CharSequence> r = new WeakReference<CharSequence>(seq);
         seq = null;
         assertGC("Sequence can go away", r);
 
