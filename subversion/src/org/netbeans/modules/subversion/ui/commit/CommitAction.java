@@ -151,7 +151,8 @@ public class CommitAction extends ContextAction {
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
             List<SvnFileNode> removeCandidates = new ArrayList<SvnFileNode>();
             Set<File> commitCandidates = new LinkedHashSet<File>();
-
+            Set<File> binnaryCandidates = new HashSet<File>();
+            
             Iterator<SvnFileNode> it = commitFiles.keySet().iterator();
             while (it.hasNext()) {
                 if(support.isCanceled()) {
@@ -174,13 +175,9 @@ public class CommitAction extends ContextAction {
                     if(support.isCanceled()) {
                         return;
                     }
-
+                    
                     // set MIME property application/octet-stream
-                    ISVNProperty prop = client.propertyGet(node.getFile(), ISVNProperty.MIME_TYPE);
-                    String s = prop.getValue();
-                    if (s == null || s.startsWith("text/")) {
-                        client.propertySet(node.getFile(), ISVNProperty.MIME_TYPE, "application/octet-stream", false);
-                    }
+                    binnaryCandidates.add(node.getFile());                                     
 
                     addCandidates.add(node);
                     commitCandidates.add(node.getFile());
@@ -265,6 +262,20 @@ public class CommitAction extends ContextAction {
             List<List<File>> managedTrees = new ArrayList<List<File>>();
             for (Iterator<File> itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
                 File commitCandidateFile = itCommitCandidates.next();
+                
+                // set MIME property application/octet-stream
+                if(binnaryCandidates.contains(commitCandidateFile)) {
+                    ISVNProperty prop = client.propertyGet(commitCandidateFile, ISVNProperty.MIME_TYPE);
+                    if(prop != null) {
+                        String s = prop.getValue();
+                        if (s == null || s.startsWith("text/")) {
+                            client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false);
+                        }    
+                    } else {
+                         client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false);
+                    }   
+                }
+                
                 List<File> managedTreesList = null;
                 for (Iterator<List<File>> itManagedTrees = managedTrees.iterator(); itManagedTrees.hasNext();) {
                     List<File> list = itManagedTrees.next();
