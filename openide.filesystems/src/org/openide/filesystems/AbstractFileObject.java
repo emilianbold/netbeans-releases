@@ -405,9 +405,10 @@ final class AbstractFileObject extends AbstractFolder {
             throw new IllegalArgumentException("Use FileUtil.createData() instead!"); // NOI18N
         }
 
+        String fName = null;
         try {
             getFileSystem().beginAtomicAction();
-
+            String n = null;
             synchronized (this) {
                 AbstractFileSystem fs = getAbstractFileSystem();
 
@@ -419,13 +420,18 @@ final class AbstractFileObject extends AbstractFolder {
                     FSException.io("EXC_FisRO", name, fs.getDisplayName()); // NOI18N
                 }
 
-                String n = ((ext == null) || "".equals(ext)) ? name : (name + EXT_SEP + ext); // NOI18N
+                n = ((ext == null) || "".equals(ext)) ? name : (name + EXT_SEP + ext); // NOI18N
 
                 if (!isFolder()) {
                     FSException.io("EXC_FoNotFolder", n, getPath(), fs.getDisplayName()); // NOI18N
                 }
-
-                getAbstractFileSystem().change.createData(getPath() + PATH_SEP + n);
+                
+                fName = getPath() + PATH_SEP + n;
+            }
+            //called outside of sync. block because of #72695    
+            getAbstractFileSystem().change.createData(fName);            
+            
+            synchronized (this) {            
                 registerChild(n);
 
                 AbstractFileObject fo = getAbstractChild(n);
