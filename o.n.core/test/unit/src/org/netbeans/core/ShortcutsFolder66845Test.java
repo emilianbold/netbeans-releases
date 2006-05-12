@@ -7,23 +7,23 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core;
 
 import java.util.Date;
 import javax.swing.text.Keymap;
 import org.netbeans.core.startup.Main;
-import org.netbeans.junit.*;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  * Tests shortcuts folder to ensure it handles wildcard keystrokes correctly. 
@@ -32,10 +32,6 @@ public class ShortcutsFolder66845Test extends NbTestCase {
     private ErrorManager err;
     private Keymap keymap;
 
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-    }
-    
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
@@ -44,8 +40,9 @@ public class ShortcutsFolder66845Test extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        MockServices.setServices(EM.class, NbKeymap.class);
         Main.initializeURLFactory ();
-        keymap = (Keymap) Lookup.getDefault ().lookup (Keymap.class);
+        keymap = Lookup.getDefault().lookup(Keymap.class);
         
         assertNotNull("There is a keymap", keymap);
         ShortcutsFolder.initShortcuts ();
@@ -64,20 +61,7 @@ public class ShortcutsFolder66845Test extends NbTestCase {
         assertEquals("Severity informational", EM.INFORMATIONAL, EM.sev);
     }
 
-    public static final class Lkp extends AbstractLookup {
-        public Lkp() {
-            this(new InstanceContent());
-        }
-
-        private Lkp(InstanceContent ic) {
-            super(ic);
-
-            ic.add(new EM());
-            ic.add(new NbKeymap());
-        }
-    }
-    
-    private static final class EM extends ErrorManager {
+    public static final class EM extends ErrorManager {
         public static int cnt;
         public static int sev;
 

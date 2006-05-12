@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,15 +25,13 @@ import java.util.Properties;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
@@ -45,11 +43,6 @@ import org.openide.windows.OutputWriter;
  */
 public final class JavaAntLoggerTest extends NbTestCase {
     
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Lookup.getDefault();
-    }
-    
     public JavaAntLoggerTest(String name) {
         super(name);
     }
@@ -59,9 +52,10 @@ public final class JavaAntLoggerTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        MockServices.setServices(new Class[] {IOP.class, IFL.class, SFBQ.class});
         simpleAppDir = new File(getDataDir(), "simple-app");
         assertTrue("have dir " + simpleAppDir, simpleAppDir.isDirectory());
-        SFBQ.setSimpleAppDir(simpleAppDir);
+        ((SFBQ) Lookup.getDefault().lookup(SFBQ.class)).setSimpleAppDir(simpleAppDir);
         nonhyperlinkedOut.clear();
         nonhyperlinkedErr.clear();
         hyperlinkedOut.clear();
@@ -91,34 +85,16 @@ public final class JavaAntLoggerTest extends NbTestCase {
         assertTrue("got a hyperlink for Clazz.run NPE in " + hyperlinkedErr, hyperlinkedErr.contains("\tat simpleapp.Clazz.run(Clazz.java:4)"));
     }
     
-    /** Lookup for this test. */
-    public static final class Lkp extends ProxyLookup {
+    public static final class SFBQ implements SourceForBinaryQueryImplementation {
         
-        public Lkp() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {
-                    new IOP(),
-                    new IFL(),
-                    new SFBQ(),
-                }),
-                Lookups.metaInfServices(Lkp.class.getClassLoader()),
-            });
-        }
-        
-    }
-    
-    private static final class SFBQ implements SourceForBinaryQueryImplementation {
-        
-        private static SFBQ INSTANCE;
         private URL buildClasses, buildTestClasses;
         private FileObject src, testSrc;
         
-        public static void setSimpleAppDir(File simpleAppDir) throws Exception {
-            assert INSTANCE != null;
-            INSTANCE.buildClasses = slashify(new File(simpleAppDir, "build" + File.separatorChar + "classes").toURI().toURL());
-            INSTANCE.buildTestClasses = slashify(new File(simpleAppDir, "build" + File.separatorChar + "test" + File.separatorChar + "classes").toURI().toURL());
-            INSTANCE.src = FileUtil.toFileObject(new File(simpleAppDir, "src"));
-            INSTANCE.testSrc = FileUtil.toFileObject(new File(simpleAppDir, "test"));
+        public void setSimpleAppDir(File simpleAppDir) throws Exception {
+            buildClasses = slashify(new File(simpleAppDir, "build" + File.separatorChar + "classes").toURI().toURL());
+            buildTestClasses = slashify(new File(simpleAppDir, "build" + File.separatorChar + "test" + File.separatorChar + "classes").toURI().toURL());
+            src = FileUtil.toFileObject(new File(simpleAppDir, "src"));
+            testSrc = FileUtil.toFileObject(new File(simpleAppDir, "test"));
         }
         
         private static URL slashify(URL u) throws Exception {
@@ -130,11 +106,6 @@ public final class JavaAntLoggerTest extends NbTestCase {
             }
         }
         
-        public SFBQ() {
-            assert INSTANCE == null;
-            INSTANCE = this;
-        }
-
         public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
             if (binaryRoot.equals(buildClasses)) {
                 return new FixedResult(src);
@@ -165,7 +136,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
         
     }
     
-    private static final class IOP extends IOProvider implements InputOutput {
+    public static final class IOP extends IOProvider implements InputOutput {
         
         public IOP() {}
 
@@ -255,7 +226,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
     }
 
     /** Copied from AntLoggerTest. */
-    private static final class IFL extends InstalledFileLocator {
+    public static final class IFL extends InstalledFileLocator {
         public IFL() {}
         public File locate(String relativePath, String codeNameBase, boolean localized) {
             if (relativePath.equals("ant/nblib/bridge.jar")) {

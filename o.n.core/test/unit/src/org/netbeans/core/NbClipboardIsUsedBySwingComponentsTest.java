@@ -7,22 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.awt.datatransfer.*;
-import java.io.IOException;
-import java.util.*;
-import org.netbeans.junit.*;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import junit.textui.TestRunner;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.modules.ModuleInfo;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
-import org.openide.util.datatransfer.*;
 import org.openide.util.datatransfer.ExClipboard;
 
 /** Test that verifies that Clipboard is used by swing components.
@@ -38,7 +35,7 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.netbeans.core.NbClipboardIsUsedBySwingComponentsTest$Lkp");
+        MockServices.setServices(Clip.class);
         System.setProperty ("netbeans.security.nocheck", "true");
         Object clip = Lookup.getDefault ().lookup (ExClipboard.class);
         assertNotNull ("Some clipboard found", clip);
@@ -143,18 +140,7 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
     protected void inMiddleOfSettingUpTheManager() {
     }
     
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new Clip ()); // DataLoaderPool
-        }
-    } // end of Lkp    
-    
-    private static final class Clip extends org.openide.util.datatransfer.ExClipboard {
+    public static final class Clip extends ExClipboard {
         private static int setContents;
         private static int getContents;
         
@@ -162,8 +148,8 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
             super ("Clip");
         }
         
-        protected org.openide.util.datatransfer.ExClipboard.Convertor[] getConvertors () {
-            return new Convertor[0];
+        protected ExClipboard.Convertor[] getConvertors () {
+            return new ExClipboard.Convertor[0];
         }
         
         public void setContents (Transferable contents, ClipboardOwner owner) {

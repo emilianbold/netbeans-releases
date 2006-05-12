@@ -7,36 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide;
-import java.beans.PropertyChangeEvent;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.StringWriter;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
-import javax.swing.event.ChangeEvent;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestResult;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
-import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
-
 
 /** Basic skeleton for logging test case.
  *
@@ -44,22 +34,13 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public abstract class LoggingTestCaseHid extends NbTestCase {
     static {
-        System.setProperty("org.openide.util.Lookup", "org.openide.LoggingTestCaseHid$Lkp");
+        MockServices.setServices(new Class[] {ErrManager.class});
     }
 
     protected LoggingTestCaseHid (String name) {
         super (name);
     }
     
-    public void run(TestResult result) {
-        Lookup l = Lookup.getDefault();
-        assertEquals("We can run only with our Lookup", Lkp.class, l.getClass());
-        Lkp lkp = (Lkp)l;
-        lkp.reset();
-        
-        super.run(result);
-    }
-
     /** If execution fails we wrap the exception with 
      * new log message.
      */
@@ -83,16 +64,6 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
             // do not write to log files anymore
             ErrManager.clear(getName(), System.err);
         }
-    }
-    
-    /** Allows subclasses to register content for the lookup. Can be used in 
-     * setUp and test methods, after that the content is cleared.
-     */
-    protected final void registerIntoLookup(Object instance) {
-        Lookup l = Lookup.getDefault();
-        assertEquals("We can run only with our Lookup", Lkp.class, l.getClass());
-        Lkp lkp = (Lkp)l;
-        lkp.ic.add(instance);
     }
     
     /** Registers hints for controlling thread switching in multithreaded
@@ -158,26 +129,6 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
         ErrManager.switches = switches;
     }
 
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends ProxyLookup {
-        InstanceContent ic;
-        
-        public Lkp () {
-            super(new Lookup[0]);
-        }
-    
-        public void reset() {
-            this.ic = new InstanceContent();
-            AbstractLookup al = new AbstractLookup(ic);
-
-            ic.add (new ErrManager ());
-            
-            setLookups(new Lookup[] { al, Lookups.metaInfServices(getClass().getClassLoader()) });
-
-        }
-    }
     //
     // Logging support
     //

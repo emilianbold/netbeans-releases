@@ -7,13 +7,12 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.favorites;
 
-import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ import java.util.Date;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.AssertionFailedError;
-
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.ErrorManager;
@@ -34,11 +33,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.datatransfer.PasteType;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 public class VisibilityQueryWorksTest extends NbTestCase {
     private FileObject hiddenFO;
@@ -78,11 +72,8 @@ public class VisibilityQueryWorksTest extends NbTestCase {
     protected void setUp () throws Exception {
         clearWorkDir();
 
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        assertEquals("Lookup registered", Lkp.class, Lookup.getDefault().getClass());
-        
-        Lkp lkp = (Lkp)Lookup.getDefault();
-        lkp.init();
+        MockServices.setServices(new Class[] {ErrManager.class, VQI.class});
+        ((VQI) Lookup.getDefault().lookup(VQI.class)).init();
 
         ErrManager.log = getLog();
         err = ErrorManager.getDefault().getInstance("TEST-" + getName() + "");
@@ -170,10 +161,10 @@ public class VisibilityQueryWorksTest extends NbTestCase {
         
         assertNodeForDataObject("hidden object is not there", hiddenDO, false, arr);
         assertEquals("No children at all", 0, arr.length);
-        
-        Lkp lkp = (Lkp)Lkp.getDefault();
-        lkp.showAll = true;
-        lkp.fire();
+
+        VQI vqi = (VQI) Lookup.getDefault().lookup(VQI.class);
+        vqi.showAll = true;
+        vqi.fire();
         
         arr = f.getChildren().getNodes(true);
         assertNodeForDataObject("hidden object is now there", hiddenDO, true, arr);
@@ -235,19 +226,7 @@ public class VisibilityQueryWorksTest extends NbTestCase {
         return null;
     }
     
-    public static final class Lkp extends ProxyLookup
-    implements VisibilityQueryImplementation {
-        public Lkp() {
-            super(new Lookup[0]);
-            InstanceContent ic = new InstanceContent();
-            AbstractLookup al = new AbstractLookup(ic);
-            ic.add(this);
-            ic.add(new ErrManager());
-            
-            Lookup ml = Lookups.metaInfServices(getClass().getClassLoader());
-            
-            setLookups(new Lookup[] { al, ml });
-        }
+    public static final class VQI implements VisibilityQueryImplementation {
         
         public void init() {
             showAll = false;

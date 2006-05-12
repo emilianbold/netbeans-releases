@@ -78,6 +78,7 @@ public class ExplorerPanelTest extends NbTestCase {
     /** Setups the tests.
      */
     protected final void setUp () {
+        // XXX consider replacing with MockServices
         System.setProperty ("org.openide.util.Lookup", "org.openide.explorer.ExplorerPanelTest$Lkp");
         
         Object[] arr = createManagerAndContext (false);

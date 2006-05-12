@@ -20,16 +20,12 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.loader.AntProjectDataLoader;
 import org.apache.tools.ant.module.loader.AntProjectDataObject;
-import org.apache.tools.ant.module.xml.AntProjectSupport;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
 
 // XXX testBasicParsing
@@ -40,23 +36,6 @@ import org.w3c.dom.Document;
  * @author Jesse Glick
  */
 public class AntProjectSupportTest extends NbTestCase {
-    
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        ((Lkp) Lookup.getDefault()).init();
-    }
-    
-    public static final class Lkp extends ProxyLookup {
-        public Lkp() {
-            super(new Lookup[0]);
-        }
-        public void init() {
-            setLookups(new Lookup[] {
-                Lookups.singleton(SharedClassObject.findObject(AntProjectDataLoader.class, true)),
-                Lookups.metaInfServices(Lkp.class.getClassLoader()),
-            });
-        }
-    }
     
     public AntProjectSupportTest(String name) {
         super(name);
@@ -71,6 +50,7 @@ public class AntProjectSupportTest extends NbTestCase {
         File scratchF = getWorkDir();
         scratch = FileUtil.toFileObject(scratchF);
         assertNotNull("FO for " + scratchF, scratch);
+        MockServices.setServices(AntProjectDataLoader.class);
     }
     
     public void testInitiallyInvalidScript() throws Exception {

@@ -15,11 +15,9 @@ package org.apache.tools.ant.module.api;
 
 import java.io.File;
 import java.util.Map;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 // XXX testSubElements
 // XXX testSpecials
@@ -30,10 +28,6 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class IntrospectedInfoTest extends NbTestCase {
     
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-    }
-
     public IntrospectedInfoTest(String name) {
         super(name);
     }
@@ -42,6 +36,7 @@ public class IntrospectedInfoTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        MockServices.setServices(IFL.class);
         ii = IntrospectedInfo.getDefaults();
     }
     
@@ -76,22 +71,7 @@ public class IntrospectedInfoTest extends NbTestCase {
          */
     }
     
-    public static final class Lkp extends ProxyLookup {
-        public Lkp() {
-            try {
-                setLookups(new Lookup[] {
-                    Lookups.fixed(new Object[] {
-                        new IFL(),
-                    }),
-                    Lookups.metaInfServices(Lkp.class.getClassLoader()),
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static final class IFL extends InstalledFileLocator {
+    public static final class IFL extends InstalledFileLocator {
         public IFL() {
             //System.err.println("ant.home=" + System.getProperty("test.ant.home"));
         }

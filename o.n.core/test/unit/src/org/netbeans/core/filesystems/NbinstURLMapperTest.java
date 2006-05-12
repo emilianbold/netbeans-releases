@@ -13,7 +13,6 @@
 
 package org.netbeans.core.filesystems;
 
-import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -26,40 +25,35 @@ import java.net.URLConnection;
 import java.util.StringTokenizer;
 import org.netbeans.core.startup.layers.NbinstURLMapper;
 import org.netbeans.core.startup.layers.NbinstURLStreamHandlerFactory;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.MasterURLMapper;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 public class NbinstURLMapperTest extends NbTestCase {
 
     private static final String FILE_NAME = "test.txt";     //NOI18N
     private static final String FOLDER_NAME = "modules";    //NOI18N
-
-    private FileSystem fs;
+    
     private File testFile;
     private int expectedLength;
-
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-    }
 
     public NbinstURLMapperTest (String testName) throws IOException {
         super (testName);
     }
 
-
     protected void setUp() throws Exception {
-        assertEquals ("My lookup is used ", Lkp.class, Lkp.getDefault().getClass());
-        
         super.setUp();
+        
+        MockServices.setServices(
+                TestInstalledFileLocator.class,
+                NbinstURLStreamHandlerFactory.class,
+                NbinstURLMapper.class,
+                MasterURLMapper.class);
 
         org.netbeans.core.startup.Main.initializeURLFactory ();
         
@@ -90,14 +84,6 @@ public class NbinstURLMapperTest extends NbTestCase {
             }
         }
         this.expectedLength = (int) f.length();
-        this.fs = this.mountFs ();
-        assertNotNull ("Test was not able to mount filesystem.",this.fs);
-    }
-
-
-    protected void tearDown() throws Exception {
-        this.umountFs (this.fs);
-        super.tearDown();
     }
 
     public void testFindFileObject () throws MalformedURLException, IOException {
@@ -130,50 +116,11 @@ public class NbinstURLMapperTest extends NbTestCase {
         }
     }
 
-
-
-
-
-    private FileSystem mountFs () throws IOException {
-        File f = FileUtil.normalizeFile(this.getWorkDir());
-        String parentName;
-        while ((parentName=f.getParent())!=null) {
-            f = new File (parentName);
-        }
-        try {
-            LocalFileSystem fs = new LocalFileSystem ();
-            fs.setRootDirectory (f);
-            Repository.getDefault().addFileSystem(fs);
-            return fs;
-        } catch (PropertyVetoException pve) {
-            return null;
-        }
-    }
-
-    private void umountFs (FileSystem fs) {
-        assertNotNull ("umountFs called with null FileSystem.",fs);
-        Repository.getDefault().removeFileSystem(fs);
-    }
-
-    public static class Lkp extends ProxyLookup {
-        public Lkp () {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {
-                    new TestInstalledFileLocator(),
-                    new NbinstURLStreamHandlerFactory(),
-                    new NbinstURLMapper()}),
-                Lookups.metaInfServices(Lkp.class.getClassLoader()),
-            });
-        }
-    }
-
     public static class TestInstalledFileLocator extends InstalledFileLocator {
 
         private File root;
 
-        public TestInstalledFileLocator () {
-        }
-
+        public TestInstalledFileLocator() {}
 
         public void setRoot (File root) {
             this.root = root;

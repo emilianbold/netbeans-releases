@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -25,10 +26,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -39,42 +36,6 @@ import org.w3c.dom.NodeList;
  */
 public abstract class ShortcutWizardTestBase extends NbTestCase {
     
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-    }
-    
-    public static final class Lkp extends ProxyLookup {
-        public Lkp() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {"repo"}, new Conv()),
-                Lookups.metaInfServices(Lkp.class.getClassLoader()),
-                Lookups.singleton(Lkp.class.getClassLoader()),
-            });
-        }
-        private static final class Conv implements InstanceContent.Convertor<Object,Repository> {
-            public Conv() {}
-            public Repository convert(Object obj) {
-                assert obj == "repo";
-                try {
-                    return new Repo();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-            public String displayName(Object obj) {
-                return obj.toString();
-            }
-            public String id(Object obj) {
-                return obj.toString();
-            }
-            public Class<Repository> type(Object obj) {
-                assert obj == "repo";
-                return Repository.class;
-            }
-        }
-    }
-    
     protected ShortcutWizardTestBase(String name) {
         super(name);
     }
@@ -84,9 +45,11 @@ public abstract class ShortcutWizardTestBase extends NbTestCase {
     private AntProjectCookie project;
     private Element target1;
     protected ShortcutIterator iter;
+    
     private void mkdir(String path) {
         new File(scratchF, path.replace('/', File.separatorChar)).mkdirs();
     }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -103,6 +66,7 @@ public abstract class ShortcutWizardTestBase extends NbTestCase {
         System.setProperty("SYSTEMDIR", new File(scratchF, "system").getAbsolutePath());
         FileObject scratch = FileUtil.toFileObject(scratchF);
         assertNotNull("have a scratch dir", scratch);
+        MockServices.setServices(Repo.class);
         FileObject sfs = Repository.getDefault().getDefaultFileSystem().getRoot();
         FileObject menuFolder = sfs.getFileObject("Menu");
         assertNotNull("have Menu", menuFolder);
@@ -144,7 +108,7 @@ public abstract class ShortcutWizardTestBase extends NbTestCase {
         return true;
     }
     
-    private static final class Repo extends Repository {
+    public static final class Repo extends Repository {
         
         public Repo() throws Exception {
             super(mksystem());

@@ -22,13 +22,12 @@ import java.util.List;
 import java.util.Set;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 // For debugging info, add to nbproject/private/private.properties:
 // test-unit-sys-prop.org.apache.tools.ant.module.bridge.impl.NbBuildLogger.LOG_AT_WARNING=true
@@ -42,10 +41,7 @@ public class AntLoggerTest extends NbTestCase {
     
     static {
         AntLoggerTest.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
     }
-
-    private static final TestLogger LOGGER = new TestLogger();
 
     public AntLoggerTest(String name) {
         super(name);
@@ -53,10 +49,13 @@ public class AntLoggerTest extends NbTestCase {
 
     private File testdir;
     private FileObject testdirFO;
+    private TestLogger LOGGER;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockServices.setServices(IFL.class, Class.forName("org.netbeans.modules.masterfs.MasterURLMapper"), TestLogger.class);
+        LOGGER = Lookup.getDefault().lookup(TestLogger.class);
         LOGGER.reset();
         testdir = new File(this.getDataDir(), "antlogger");
         assertTrue("have a dir " + testdir, testdir.isDirectory());
@@ -64,10 +63,10 @@ public class AntLoggerTest extends NbTestCase {
         assertNotNull("have testdirFO", testdirFO);
     }
 
-    private static void run(FileObject script) throws Exception {
+    private void run(FileObject script) throws Exception {
         run(script, null);
     }
-    private static void run(FileObject script, String[] targets) throws Exception {
+    private void run(FileObject script, String[] targets) throws Exception {
         int res = AntTargetExecutor.createTargetExecutor(new AntTargetExecutor.Env()).execute(new AntProjectSupport(script), targets).result();
         if (res != 0) {
             throw new IOException("Nonzero exit code: " + res + "; messages: " + LOGGER.getMessages());
@@ -155,7 +154,7 @@ public class AntLoggerTest extends NbTestCase {
     /**
      * Sample logger which collects results.
      */
-    private static final class TestLogger extends AntLogger {
+    public static final class TestLogger extends AntLogger {
         
         public boolean interestedInSessionFlag;
         public boolean interestedInAllScriptsFlag;
@@ -262,23 +261,7 @@ public class AntLoggerTest extends NbTestCase {
         
     }
     
-    public static final class Lkp extends ProxyLookup {
-        public Lkp() {
-            try {
-                setLookups(new Lookup[] {
-                    Lookups.fixed(new Object[] {
-                        new IFL(),
-                        Class.forName("org.netbeans.modules.masterfs.MasterURLMapper").newInstance(),
-                        LOGGER,
-                    }),
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static final class IFL extends InstalledFileLocator {
+    public static final class IFL extends InstalledFileLocator {
         public IFL() {}
         @Override
         public File locate(String relativePath, String codeNameBase, boolean localized) {

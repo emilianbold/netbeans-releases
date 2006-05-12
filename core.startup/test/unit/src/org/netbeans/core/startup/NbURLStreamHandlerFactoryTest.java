@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,14 +25,11 @@ import java.net.URLStreamHandlerFactory;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Locale;
-import org.netbeans.core.startup.NbURLStreamHandlerFactory;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 // XXX testNbfsURLStreamHandler
 
@@ -66,13 +63,16 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
     };
     
     static {
-        System.setProperty("org.openide.util.Lookup", L.class.getName());
-        assertTrue(Lookup.getDefault() instanceof L);
-        URL.setURLStreamHandlerFactory(new org.netbeans.core.startup.NbURLStreamHandlerFactory());
+        URL.setURLStreamHandlerFactory(new NbURLStreamHandlerFactory());
     }
     
     public NbURLStreamHandlerFactoryTest(String name) {
         super(name);
+    }
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockServices.setServices(TestClassLoader.class, TestURLStreamHandlerFactory.class);
     }
     
     public void testNbResourceStreamHandlerAndURLStreamHandlerFactoryMerging() throws Exception {
@@ -172,22 +172,11 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
         return conn.getContentLength();
     }
     
-    public static final class L extends ProxyLookup {
-        public L() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {
-                    new TestClassLoader(),
-                    new TestURLStreamHandlerFactory(),
-                }),
-            });
-        }
-    }
-
     /**
      * Only serves requests for resources in {@link #RESOURCES}.
      * "/foo" is serviced with the URL "testurl:/foo".
      */
-    private static final class TestClassLoader extends ClassLoader {
+    public static final class TestClassLoader extends ClassLoader {
         
         protected URL findResource(String name) {
             if (!name.startsWith("/")) {
@@ -205,7 +194,7 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
             }
         }
 
-        protected Enumeration findResources(String name) throws IOException {
+        protected Enumeration<URL> findResources(String name) throws IOException {
             URL u = findResource(name);
             if (u != null) {
                 return Enumerations.singleton(u);
@@ -216,7 +205,7 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
         
     }
     
-    private static final class TestURLStreamHandlerFactory implements URLStreamHandlerFactory {
+    public static final class TestURLStreamHandlerFactory implements URLStreamHandlerFactory {
         
         public URLStreamHandler createURLStreamHandler(String protocol) {
             if (protocol.equals("testurl")) {

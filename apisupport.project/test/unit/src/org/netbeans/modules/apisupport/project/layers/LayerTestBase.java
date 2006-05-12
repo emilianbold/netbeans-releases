@@ -34,6 +34,7 @@ public abstract class LayerTestBase extends NbTestCase {
     
     // Copied from org.netbeans.api.project.TestUtil:
     static {
+        // XXX replace with MockServices
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
     }

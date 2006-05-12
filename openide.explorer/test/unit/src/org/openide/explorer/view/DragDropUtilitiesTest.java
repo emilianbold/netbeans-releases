@@ -17,39 +17,28 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.NodeTransfer;
-import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExClipboard;
-import org.openide.util.datatransfer.ExClipboard.Convertor;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author Jaroslav Tulach
  */
 public class DragDropUtilitiesTest extends NbTestCase {
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-    }
-    
-    
-    private Lkp lookup;
     
     public DragDropUtilitiesTest(String testName) {
         super(testName);
     }
     
     protected void setUp() throws Exception {
-        Lookup l = Lookup.getDefault();
-        assertEquals(Lkp.class, l.getClass());
-        lookup = (Lkp)l;
-        lookup.last = null;
+        MockServices.setServices(new Class[] {MyClipboard.class});
+        last = null;
     }
     
     public void testGetNodeTransferableForSingleNodeCopy() throws Exception {
@@ -60,8 +49,8 @@ public class DragDropUtilitiesTest extends NbTestCase {
         assertEquals("One call to copy", 1, node.copy);
         assertEquals("Also one call to drag which delegates to copy", 1, node.drag);
         assertEquals("No call to cut", 0, node.cut);
-        assertNotNull("Call to convertor", lookup.last);
-        assertTrue("StringSelection got to ExClipboard convertor", lookup.last instanceof StringSelection);
+        assertNotNull("Call to convertor", last);
+        assertTrue("StringSelection got to ExClipboard convertor", last instanceof StringSelection);
     }
     
     public void testGetNodeTransferableForSingleNodeCut() throws Exception {
@@ -72,8 +61,8 @@ public class DragDropUtilitiesTest extends NbTestCase {
         assertEquals("One call to cut", 1, node.cut);
         assertEquals("No call to drag", 0, node.drag);
         assertEquals("No call to copy", 0, node.copy);
-        assertNotNull("Call to convertor", lookup.last);
-        assertTrue("StringSelection got to ExClipboard convertor", lookup.last instanceof StringSelection);
+        assertNotNull("Call to convertor", last);
+        assertTrue("StringSelection got to ExClipboard convertor", last instanceof StringSelection);
     }
     
     public void testMultiTransferableForCopy() throws Exception {
@@ -90,9 +79,9 @@ public class DragDropUtilitiesTest extends NbTestCase {
         assertEquals("No call to cut", 0, node.cut);
         assertEquals("No call to cut", 0, n2.cut);
         
-        assertNotNull("Call to convertor", lookup.last);
-        assertTrue("multi flavor supported", lookup.last.isDataFlavorSupported(ExTransferable.multiFlavor));
-        Object obj = lookup.last.getTransferData(ExTransferable.multiFlavor);
+        assertNotNull("Call to convertor", last);
+        assertTrue("multi flavor supported", last.isDataFlavorSupported(ExTransferable.multiFlavor));
+        Object obj = last.getTransferData(ExTransferable.multiFlavor);
         if (!( obj instanceof MultiTransferObject)) {
             fail("It should be MultiTransferObject: " + obj);
         }
@@ -117,9 +106,9 @@ public class DragDropUtilitiesTest extends NbTestCase {
         assertEquals("No call to copy", 0, node.copy);
         assertEquals("No call to copy on n2", 0, n2.copy);
         
-        assertNotNull("Call to convertor", lookup.last);
-        assertTrue("multi flavor supported", lookup.last.isDataFlavorSupported(ExTransferable.multiFlavor));
-        Object obj = lookup.last.getTransferData(ExTransferable.multiFlavor);
+        assertNotNull("Call to convertor", last);
+        assertTrue("multi flavor supported", last.isDataFlavorSupported(ExTransferable.multiFlavor));
+        Object obj = last.getTransferData(ExTransferable.multiFlavor);
         if (!( obj instanceof MultiTransferObject)) {
             fail("It should be MultiTransferObject: " + obj);
         }
@@ -158,35 +147,21 @@ public class DragDropUtilitiesTest extends NbTestCase {
         }
     }
     
-    public static final class Lkp extends AbstractLookup
-            implements ExClipboard.Convertor {
-        public Transferable last;
-        
-        public Lkp() {
-            this(new InstanceContent());
-        }
-        
-        protected Lkp(InstanceContent ic) {
-            super(ic);
-            ic.add(new MyClipboard(this));
-        }
-        
-        public Transferable convert(Transferable t) {
-            last = t;
-            return t;
-        }
-    }
+    public static Transferable last;
     
-    private static final class MyClipboard extends ExClipboard {
-        private Lkp lookup;
+    public static final class MyClipboard extends ExClipboard {
         
-        public MyClipboard(Lkp lookup) {
+        public MyClipboard() {
             super("Empty");
-            this.lookup = lookup;
         }
         
-        public Convertor[] getConvertors() {
-            return new Convertor[] { lookup };
+        public ExClipboard.Convertor[] getConvertors() {
+            return new ExClipboard.Convertor[] {new ExClipboard.Convertor() {
+                public Transferable convert(Transferable t) {
+                    last = t;
+                    return t;
+                }
+            }};
         }
     }
 }

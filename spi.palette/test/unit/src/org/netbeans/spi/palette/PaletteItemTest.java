@@ -7,17 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.palette;
+
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import junit.framework.Assert;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
@@ -30,8 +32,6 @@ import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -39,12 +39,6 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class PaletteItemTest extends NbTestCase {
   
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
-        ((Lkp)Lookup.getDefault()).setLookup(new Object[] { new RepositoryImpl() });
-    }     
-    
     private static final String PALETTE_ROOT = "FooPalette";
     private static final String ITEMS_FOLDER = PALETTE_ROOT + "/FooCategory";
     private static final String ITEM_FILE = "FooItem.xml";
@@ -66,6 +60,7 @@ public class PaletteItemTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        MockServices.setServices(new Class[] {RepositoryImpl.class});
         itemsFolder = createItemsFolder();
         assertNotNull(itemsFolder);
     }
@@ -145,22 +140,6 @@ public class PaletteItemTest extends NbTestCase {
 
     
     //----------------------------------   helpers  ------------------------------------------------------------------
-
-    public static final class Lkp extends ProxyLookup {
-        private static Lkp DEFAULT;
-        public Lkp() {
-            Assert.assertNull(DEFAULT);
-            DEFAULT = this;
-        }
-        public static void setLookup(Object[] instances) {
-            ClassLoader cl = Lkp.class.getClassLoader();
-            DEFAULT.setLookups(new Lookup[] {
-                Lookups.fixed(instances),
-                Lookups.metaInfServices(cl),
-                Lookups.singleton(cl),
-            });
-        }
-    } 
 
     private class PaletteListener implements PropertyChangeListener {
         PaletteController pc;

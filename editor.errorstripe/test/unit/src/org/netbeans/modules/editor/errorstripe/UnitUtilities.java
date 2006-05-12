@@ -49,6 +49,7 @@ public class UnitUtilities extends ProxyLookup {
      * Set the global default lookup with some fixed instances including META-INF/services/*.
      */
     public static void setLookup(Object[] instances, ClassLoader cl) {
+        // XXX consider using MockServices
         DEFAULT_LOOKUP.setLookups(new Lookup[] {
             Lookups.fixed(instances),
             Lookups.metaInfServices(cl),

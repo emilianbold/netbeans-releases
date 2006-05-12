@@ -7,14 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.html;
 
-import org.openide.loaders.DataLoader;
-import org.openide.loaders.DataLoaderPool;
+import org.netbeans.junit.MockServices;
+import org.netbeans.modules.editor.html.HTMLIndentEngine;
 
 /** Shared utils used in HTML tests.
  *
@@ -22,40 +22,11 @@ import org.openide.loaders.DataLoaderPool;
  */
 public class Utils {
     
-    /** Creates a new instance of Utils */
     private Utils() {
     }
     
     /*package*/ static void setUp() throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.netbeans.modules.html.Utils$Lkp");
+        MockServices.setServices(new Class[] {HtmlLoader.class, HTMLIndentEngine.class});
     }
     
-    /** 
-     * Fake lookup for testings purposes.
-     */
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () throws Exception {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) throws Exception {
-            super (ic);
-            
-            ic.add (new Pool ());
-            ic.add (new org.netbeans.modules.editor.html.HTMLIndentEngine());
-//            ic.add (new EM ());
-        }
-    }
-    
-    
-    private static final class Pool extends DataLoaderPool {
-        
-        protected java.util.Enumeration loaders () {
-            return org.openide.util.Enumerations.singleton (
-                DataLoader.getLoader(HtmlLoader.class)
-            );
-        }
-        
-    } // end of Pool
-
 }

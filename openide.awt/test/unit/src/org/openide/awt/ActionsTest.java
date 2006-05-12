@@ -29,12 +29,11 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Tests for the Actions class.
@@ -85,7 +84,7 @@ public class ActionsTest extends NbTestCase {
     }
     
     protected void setUp() {
-        System.setProperty("org.openide.util.Lookup", "org.openide.awt.ActionsTest$Lkp");
+        MockServices.setServices(new Class[] {TestKeymap.class});
         assertNotNull("Keymap has to be in lookup", Lookup.getDefault().lookup(Keymap.class));
     }
     
@@ -410,18 +409,7 @@ public class ActionsTest extends NbTestCase {
         
     }
     
-    public static final class Lkp extends ProxyLookup {
-        public Lkp() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {
-                    new TestKeymap(),
-                    Lkp.class.getClassLoader(),
-                })
-            });
-        }
-    }
-    
-    private static final class TestKeymap extends Observable implements Keymap {
+    public static final class TestKeymap extends Observable implements Keymap {
         
         private Map map = new HashMap();
         private Action defAct;

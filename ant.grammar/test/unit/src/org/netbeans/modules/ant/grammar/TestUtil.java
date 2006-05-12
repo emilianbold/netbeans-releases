@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,11 +23,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -46,41 +44,30 @@ final class TestUtil {
     
     private TestUtil() {}
     
-    private static final InstalledFileLocator FILE_LOCATOR;
     static {
-        String antHomeS = System.getProperty("test.ant.home");
-        if (antHomeS == null) {
-            throw new Error("Tests will not run unless test.ant.home and test.ant.bridge system properties are defined");
-        }
-        final File antHome = new File(antHomeS);
-        final File antBridge = new File(System.getProperty("test.ant.bridge"));
-        final File antJar = new File(new File(antHome, "lib"), "ant.jar");
-        FILE_LOCATOR = new InstalledFileLocator() {
-            public File locate(String name, String module, boolean loc) {
-                if (name.equals("ant")) {
-                    return antHome;
-                } else if (name.equals("ant/nblib/bridge.jar")) {
-                    return antBridge;
-                } else if (name.equals("ant/nblib")) {
-                    return antBridge.getParentFile();
-                } else if (name.equals("ant/lib/ant.jar")) {
-                    return antJar;
-                } else {
-                    return null;
-                }
-            }
-        };
-        System.setProperty("org.openide.util.Lookup", TestUtil.Lkp.class.getName());
+        MockServices.setServices(new Class[] {IFL.class});
     }
-    public static final class Lkp extends ProxyLookup {
-        public Lkp() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {
-                    FILE_LOCATOR,
-                    Lkp.class.getClassLoader(),
-                }),
-                Lookups.metaInfServices(Lkp.class.getClassLoader()),
-            });
+    
+    public static final class IFL extends InstalledFileLocator {
+        public File locate(String name, String module, boolean loc) {
+            String antHomeS = System.getProperty("test.ant.home");
+            if (antHomeS == null) {
+                throw new Error("Tests will not run unless test.ant.home and test.ant.bridge system properties are defined");
+            }
+            final File antHome = new File(antHomeS);
+            final File antBridge = new File(System.getProperty("test.ant.bridge"));
+            final File antJar = new File(new File(antHome, "lib"), "ant.jar");
+            if (name.equals("ant")) {
+                return antHome;
+            } else if (name.equals("ant/nblib/bridge.jar")) {
+                return antBridge;
+            } else if (name.equals("ant/nblib")) {
+                return antBridge.getParentFile();
+            } else if (name.equals("ant/lib/ant.jar")) {
+                return antJar;
+            } else {
+                return null;
+            }
         }
     }
     

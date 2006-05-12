@@ -7,33 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.html;
 
-import junit.framework.*;
-import junit.textui.TestRunner;
-import org.openide.filesystems.*;
-import org.openide.loaders.DataLoader;
-import org.openide.loaders.DataLoaderPool;
-import org.openide.nodes.Node;
-import org.openide.loaders.DataObject;
-import java.util.Enumeration;
-import org.openide.loaders.DataFolder;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.InstanceDataObject;
-
-import org.netbeans.junit.*;
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
 import javax.swing.text.Document;
+import junit.textui.TestRunner;
+import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
 
 public class EncodingTest extends NbTestCase {
     /** the fs to work on */
@@ -46,7 +42,6 @@ public class EncodingTest extends NbTestCase {
     /**/
     protected void setUp() throws Exception {
         Utils.setUp();
-        assertEquals ("Our lookup is installed", Lookup.getDefault ().getClass (), Utils.Lkp.class);
 
         File f = File.createTempFile (this.getName (), "");
         f.delete ();

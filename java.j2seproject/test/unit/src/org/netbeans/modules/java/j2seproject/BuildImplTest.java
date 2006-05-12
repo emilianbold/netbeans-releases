@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -39,9 +40,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
@@ -53,11 +51,6 @@ import org.openide.windows.OutputWriter;
  * @author Jesse Glick, David Konecny
  */
 public final class BuildImplTest extends NbTestCase {
-    
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Lookup.getDefault();
-    }
     
     public BuildImplTest(String name) {
         super(name);
@@ -73,6 +66,7 @@ public final class BuildImplTest extends NbTestCase {
         assertNotNull("must set test.junit.jar", junitJarProp);
         junitJar = new File(junitJarProp);
         assertTrue("file " + junitJar + " exists", junitJar.isFile());
+        MockServices.setServices(new Class[] {IOP.class, IFL.class});
     }
     
     private AntProjectHelper setupProject(String subFolder, int numberOfSourceFiles, boolean generateTests) throws Exception {
@@ -487,22 +481,7 @@ public final class BuildImplTest extends NbTestCase {
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
     
-    /** Lookup for this test. */
-    public static final class Lkp extends ProxyLookup {
-        
-        public Lkp() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {
-                    new IOP(),
-                    new IFL(),
-                }),
-                Lookups.metaInfServices(Lkp.class.getClassLoader()),
-            });
-        }
-        
-    }
-    
-    private static final class IOP extends IOProvider implements InputOutput {
+    public static final class IOP extends IOProvider implements InputOutput {
         
         public IOP() {}
 
@@ -592,7 +571,7 @@ public final class BuildImplTest extends NbTestCase {
     }
 
     /** Copied from AntLoggerTest. */
-    private static final class IFL extends InstalledFileLocator {
+    public static final class IFL extends InstalledFileLocator {
         public IFL() {}
         public File locate(String relativePath, String codeNameBase, boolean localized) {
             if (relativePath.equals("ant/nblib/bridge.jar")) {

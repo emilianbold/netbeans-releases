@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,26 +25,16 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
 import org.netbeans.junit.AssertionFailedErrorException;
-import org.netbeans.junit.AssertionFileFailedError;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.InstanceDataObject;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.TransferListener;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
 
 /** Test NbClipboard, in "native" mode (e.g. Windows).
  * @author Jesse Glick
@@ -61,8 +51,7 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
     protected void setUp() throws Exception {
         ErrManager.log = getLog();
         
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        assertEquals("Lookup registered", Lkp.class, Lookup.getDefault().getClass());
+        MockServices.setServices(ErrManager.class);
         
         class EmptyTrans  implements Transferable, ClipboardOwner {
             public DataFlavor[] getTransferDataFlavors() {
@@ -180,27 +169,21 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
     }
     
     public void testClipboard() throws Exception {
-        Lkp lkp = (Lkp)Lookup.getDefault();
-        Object ins = new Cnv();
-        lkp.ic.add(ins);
-
-        try {
-            Clipboard c = (Clipboard)Lookup.getDefault().lookup(Clipboard.class);
-            ExClipboard ec = (ExClipboard)Lookup.getDefault().lookup(ExClipboard.class);
-            assertEquals("Clipboard == ExClipboard", c, ec);
-            c.setContents(new ExTransferable.Single(DataFlavor.stringFlavor) {
-                protected Object getData() throws IOException, UnsupportedFlavorException {
-                    return "17";
-                }
-            }, null);
-            Transferable t = c.getContents(null);
-            assertTrue("still supports stringFlavor", t.isDataFlavorSupported(DataFlavor.stringFlavor));
-            assertEquals("correct string in clipboard", "17", t.getTransferData(DataFlavor.stringFlavor));
-            assertTrue("support Integer too", t.isDataFlavorSupported(MYFLAV));
-            assertEquals("correct Integer", new Integer(17), t.getTransferData(MYFLAV));
-        } finally {
-            lkp.ic.remove(ins);
-        }
+        MockServices.setServices(ErrManager.class, Cnv.class);
+        Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
+        ExClipboard ec = Lookup.getDefault().lookup(ExClipboard.class);
+        assertEquals("Clipboard == ExClipboard", c, ec);
+        assertEquals(Cnv.class, Lookup.getDefault().lookup(ExClipboard.Convertor.class).getClass());
+        c.setContents(new ExTransferable.Single(DataFlavor.stringFlavor) {
+            protected Object getData() throws IOException, UnsupportedFlavorException {
+                return "17";
+            }
+        }, null);
+        Transferable t = c.getContents(null);
+        assertTrue("still supports stringFlavor", t.isDataFlavorSupported(DataFlavor.stringFlavor));
+        assertEquals("correct string in clipboard", "17", t.getTransferData(DataFlavor.stringFlavor));
+        assertTrue("support Integer too", t.isDataFlavorSupported(MYFLAV));
+        assertEquals("correct Integer", new Integer(17), t.getTransferData(MYFLAV));
     }
     
     private static final DataFlavor MYFLAV = new DataFlavor("text/x-integer", "Integer"); // data: java.lang.Integer
@@ -275,24 +258,6 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
         }
     }
     
-    //
-    // Fake Lookup
-    //
-    
-    public static final class Lkp extends ProxyLookup {
-        public InstanceContent ic;
-        
-        public Lkp() {
-            super(new Lookup[0]);
-            ic = new InstanceContent();
-            AbstractLookup al = new AbstractLookup(ic);
-            ic.add(new ErrManager());
-            Lookup ml = org.openide.util.lookup.Lookups.metaInfServices(getClass().getClassLoader());
-            
-            setLookups(new Lookup[] { al, ml });
-        }
-        
-    }
     //
     // Logging support
     //

@@ -7,31 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.Set;
+import org.netbeans.junit.MockServices;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.ContextGlobalProvider;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
-import org.openide.nodes.Node;
-import java.util.Set;
-import org.openide.util.actions.SystemAction;
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import org.openide.windows.WindowManager;
-import javax.swing.JFrame;
-import java.awt.Frame;
-import org.openide.windows.Workspace;
-import org.openide.util.NotImplementedException;
-import java.awt.Image;
-import java.beans.PropertyChangeSupport;
-import org.openide.util.Lookup;
-import java.util.ArrayList;
 
 /** Utilities for actions tests.
  * @author Jesse Glick
@@ -42,40 +37,13 @@ public abstract class ActionsInfraHid {
     
     public static final UsefulThings UT;
     static {
-        String tm = System.getProperty("org.openide.TopManager");
-        if (tm != null) throw new IllegalStateException("TopManager was initialized already: " + tm);
-        String lookup = System.getProperty("org.openide.util.Lookup");
-        if (lookup != null && !lookup.equals(UsefulLookup.class.getName())) throw new IllegalStateException("Already had a Lookup installed: " + lookup);
-        System.setProperty("org.openide.util.Lookup", UsefulLookup.class.getName());
-        UT = new UsefulThings();
-        Lookup l = Lookup.getDefault();
-        if (!(l instanceof UsefulLookup)) throw new IllegalStateException(Lookup.getDefault().toString());
-        if (l.lookup(TopComponent.Registry.class) == null) throw new IllegalStateException("no TC.R");
-        //if (l.lookup(WindowManager.class) == null) throw new IllegalStateException("no WindowManager");
-        //if (CallbackSystemAction.getRegistry() == null) throw new IllegalStateException("no TC.R again!");
-    }
-    public static void main(String[] args) {
-        System.err.println("ActionsInfraHid OK.");
-    }
-    
-    /** Lookup which provides a TC.Registry and ActionManager.
-     */
-    public static final class UsefulLookup extends AbstractLookup {
-        public UsefulLookup() {
-            super(getContent());
-        }
-        private static AbstractLookup.Content getContent() {
-            InstanceContent c = new InstanceContent();
-            c.add(UT);
-            c.add(ActionsInfraHid.class.getClassLoader());
-            
-            return c;
-        }
+        MockServices.setServices(new Class[] {UsefulThings.class});
+        UT = (UsefulThings) Lookup.getDefault().lookup(UsefulThings.class);
     }
     
     /** An action manager and top component registry.
      */
-    public static final class UsefulThings implements TopComponent.Registry, org.openide.util.ContextGlobalProvider {
+    public static final class UsefulThings implements TopComponent.Registry, ContextGlobalProvider {
         // Registry:
         private TopComponent activated;
         /** instances to keep */
@@ -215,9 +183,7 @@ public abstract class ActionsInfraHid {
     private static final class IPair extends AbstractLookup.Pair {
         private Object obj;
         
-        public static final IPair NULL_NODES = new IPair (
-            new org.openide.nodes.AbstractNode (org.openide.nodes.Children.LEAF)
-        );
+        public static final IPair NULL_NODES = new IPair(new AbstractNode(Children.LEAF));
         
         public IPair (Object obj) {
             this.obj = obj;
