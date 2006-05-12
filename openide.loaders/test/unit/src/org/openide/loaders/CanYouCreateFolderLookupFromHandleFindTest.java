@@ -7,27 +7,24 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Enumeration;
-import java.util.List;
 import javax.swing.JButton;
-import javax.swing.SwingUtilities;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-
+import org.openide.util.SharedClassObject;
 
 /** It must be possible to create lookup anytime, if there is no deadlock...
  *
@@ -35,17 +32,15 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class CanYouCreateFolderLookupFromHandleFindTest extends NbTestCase {
     
-    /** Creates a new instance of CanYouQueryFolderLookupFromHandleFindTest */
     public CanYouCreateFolderLookupFromHandleFindTest(String s) {
         super(s);
     }
     
     protected void setUp() {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        assertEquals("Lookup registered", Lkp.class, Lookup.getDefault().getClass());
+        MockServices.setServices(new Class[] {Pool.class});
     }
     
-    public void testCreateAndImmediatellyQueryTheLookup() throws Exception {
+    public void testCreateAndImmediatelyQueryTheLookup() throws Exception {
         MyLoader m = (MyLoader)MyLoader.getLoader(MyLoader.class);
         m.button = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "FolderLookup");
         DataObject instance = InstanceDataObject.create(DataFolder.findFolder(m.button), "SomeName", JButton.class);
@@ -64,15 +59,13 @@ public class CanYouCreateFolderLookupFromHandleFindTest extends NbTestCase {
         assertNotNull("Lookup created", m.lookup);
     }
     
-    
-    public static final class Lkp extends AbstractLookup {
-        public Lkp() {
-            this(new InstanceContent());
-        }
-        
-        private Lkp(InstanceContent ic) {
-            super(ic);
-            ic.add(new Pool());
+    /**
+     * Registering directly MyLoader does not work since core's DLP is found
+     * and that one does not check META-INF/services.
+     */
+    public static final class Pool extends DataLoaderPool {
+        protected Enumeration loaders() {
+            return Enumerations.singleton(SharedClassObject.findObject(MyLoader.class, true));
         }
     }
     
@@ -108,17 +101,6 @@ public class CanYouCreateFolderLookupFromHandleFindTest extends NbTestCase {
         
         protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
             return new MultiDataObject(primaryFile, this);
-        }
-    }
-    
-    private static final class Pool extends DataLoaderPool {
-        static List loaders;
-        
-        public Pool() {
-        }
-        
-        public Enumeration loaders() {
-            return Enumerations.singleton(DataLoader.getLoader(MyLoader.class));
         }
     }
     

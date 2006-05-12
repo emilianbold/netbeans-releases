@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,15 +21,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import junit.framework.AssertionFailedError;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Enumerations;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /** Does a change in order on folder fire the right properties?
  *
@@ -64,8 +62,7 @@ implements PropertyChangeListener {
     }
     
     protected void setUp () throws Exception {
-        System.setProperty("org.openide.util.Lookup", "org.openide.loaders.DataFolderSetOrderTest$Lkp");
-        assertNotNull ("ErrManager has to be in lookup", Lookup.getDefault().lookup(ErrManager.class));
+        MockServices.setServices(new Class[] {ErrManager.class, Pool.class});
         
         if (previous != null) {
             previous.waitFinished ();
@@ -150,20 +147,6 @@ implements PropertyChangeListener {
     }
 
     //
-    // Our fake lookup
-    //
-    public static final class Lkp extends AbstractLookup {
-        public Lkp () {
-            this (new InstanceContent());
-        }
-        
-        private Lkp(InstanceContent ic) {
-            super (ic);
-            ic.add (new ErrManager ());
-            ic.add (new Pool ());
-        }
-    }
-    //
     // Logging support
     //
     public static final class ErrManager extends ErrorManager {
@@ -224,7 +207,7 @@ implements PropertyChangeListener {
         
     } // end of ErrManager
     
-    private static final class Pool extends DataLoaderPool {
+    public static final class Pool extends DataLoaderPool {
         
         protected Enumeration loaders() {
             return Enumerations.singleton(DataLoader.getLoader(DataObjectInvalidationTest.SlowDataLoader.class));

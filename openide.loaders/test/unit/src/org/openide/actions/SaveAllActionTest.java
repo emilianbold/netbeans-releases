@@ -14,17 +14,9 @@
 package org.openide.actions;
 
 import java.awt.event.ActionEvent;
-import junit.framework.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.LifecycleManager;
-import org.openide.loaders.DataObject;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.lookup.AbstractLookup;
 
 /**
  *
@@ -42,9 +34,7 @@ public class SaveAllActionTest extends NbTestCase {
     
     
     protected void setUp () {
-        System.setProperty("org.openide.util.Lookup", "org.openide.actions.SaveAllActionTest$Lkp");
-        assertNotNull ("Lifecycle M. has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (LifecycleManager.class));
-        
+        MockServices.setServices(new Class[] {Life.class});
         Life.max = 0;
         Life.cnt = 0;
         Life.executed = 0;
@@ -70,28 +60,12 @@ public class SaveAllActionTest extends NbTestCase {
         assertEquals ("Maximum is one invocation of saveAll at one time", 1, Life.max);
     }
 
-
-    public static final class Lkp extends AbstractLookup {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new Life ());
-        }
-    }
-    
-    
-    private static final class Life extends LifecycleManager {
+    public static final class Life extends LifecycleManager {
         static int max;
         static int cnt;
         static int executed;
         
-        
-        
         public synchronized void saveAll () {
-            
             cnt++;
             if (cnt > max) {
                 max = cnt;
@@ -106,7 +80,6 @@ public class SaveAllActionTest extends NbTestCase {
             
             cnt--;
             assertFalse ("No AWT thread: ", javax.swing.SwingUtilities.isEventDispatchThread ());
-
         }
 
         public void exit () {

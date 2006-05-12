@@ -15,22 +15,20 @@ package org.openide.actions;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.Enumeration;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
-import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+
 /**
  * Tests SaveAction.
  * @author Jaroslav Tulach
@@ -42,7 +40,7 @@ public class SaveActionTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        System.setProperty("org.openide.util.Lookup", "org.openide.actions.SaveActionTest$Lkp");
+        MockServices.setServices(new Class[] {MyStatusDisplayer.class});
         assertNotNull("MyDisplayer is used", Lookup.getDefault().lookup(MyStatusDisplayer.class));
     }
     
@@ -113,22 +111,6 @@ public class SaveActionTest extends NbTestCase {
         }
     }
     
-    public static class Lkp extends AbstractLookup {
-        public Lkp() {
-            this(new InstanceContent());
-        }
-        
-        private Lkp(InstanceContent ic) {
-            super(ic);
-            ic.add(new MyStatusDisplayer());
-            ic.add(new DataLoaderPool() {
-                public Enumeration loaders() {
-                    return Enumerations.empty();
-                }
-            });
-        }
-    }
-
     public static class MyStatusDisplayer extends StatusDisplayer {
         public static int cnt;
         public static String text;

@@ -7,11 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -23,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -30,8 +32,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /** To simulate and fix 65543.
  * <pre>
@@ -105,14 +105,12 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
         l.setLevel(Level.ALL);
     }
     
-    /** Creates a new instance of CanYouQueryFolderLookupFromHandleFindTest */
     public CanYouQueryFolderLookupFromHandleFindTest(String s) {
         super(s);
     }
     
     protected void setUp() {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        assertEquals("Lookup registered", Lkp.class, Lookup.getDefault().getClass());
+        MockServices.setServices(new Class[] {Pool.class, ErrManager.class});
     }
     
     public void testTheDeadlock() throws Exception {
@@ -147,19 +145,6 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
         }
         if (ErrManager.messages.indexOf("65543") == -1) {
             fail("There should be a warning in the log: " + ErrManager.messages);
-        }
-    }
-    
-    
-    public static final class Lkp extends AbstractLookup {
-        public Lkp() {
-            this(new InstanceContent());
-        }
-        
-        private Lkp(InstanceContent ic) {
-            super(ic);
-            ic.add(new Pool());
-            ic.add(new ErrManager ());
         }
     }
     
@@ -243,7 +228,7 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
         }
     }
     
-    private static final class Pool extends DataLoaderPool {
+    public static final class Pool extends DataLoaderPool {
         static List loaders;
         
         public Pool() {
@@ -253,7 +238,7 @@ public class CanYouQueryFolderLookupFromHandleFindTest extends NbTestCase {
             return Enumerations.singleton(DataLoader.getLoader(MyLoader.class));
         }
     }
-    static final class ErrManager extends Handler {
+    public static final class ErrManager extends Handler {
         static final StringBuffer messages = new StringBuffer();
         static int nOfMessages;
         static final String DELIMITER = ": ";

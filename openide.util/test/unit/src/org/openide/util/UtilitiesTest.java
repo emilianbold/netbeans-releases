@@ -29,20 +29,16 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import junit.framework.TestCase;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.openide.util.AWTBridge;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * @author Jiri Rechtacek et al.
  */
 public class UtilitiesTest extends TestCase {
 
-    static {
-        System.setProperty(Lookup.class.getName(), Lkp.class.getName());
-    }
-    
     public UtilitiesTest (String testName) {
         super (testName);
     }
@@ -133,6 +129,7 @@ public class UtilitiesTest extends TestCase {
     }
     
     public void testActionsToPopupWithLookup() throws Exception {
+        MockServices.setServices(AwtBridgeImpl.class);
         final List<String> commands = new ArrayList<String>();
         class BasicAction extends AbstractAction {
             public BasicAction(String name) {
@@ -412,16 +409,7 @@ public class UtilitiesTest extends TestCase {
     }
      */
 
-    public static final class Lkp extends ProxyLookup {
-        public Lkp() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {new AwtBridgeImpl()}),
-                Lookups.metaInfServices(Lkp.class.getClassLoader()),
-            });
-        }
-    }
-
-    private static final class AwtBridgeImpl extends AWTBridge {
+    public static final class AwtBridgeImpl extends AWTBridge {
         public JPopupMenu createEmptyPopup() {
             return new JPopupMenu();
         }

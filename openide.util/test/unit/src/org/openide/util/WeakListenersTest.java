@@ -22,15 +22,12 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 
 public class WeakListenersTest extends NbTestCase {
-    static {
-        System.setProperty("org.openide.util.Lookup", "org.openide.util.WeakListenersTest$Lkp");
-    }
+    
     private static Thread activeQueueThread;
 
     private ErrorManager log;
@@ -48,10 +45,11 @@ public class WeakListenersTest extends NbTestCase {
     }
     
     protected void setUp () throws Exception {
+        MockServices.setServices(ErrManager.class);
         log = ErrorManager.getDefault().getInstance("TEST-" + getName());
         
         if (activeQueueThread == null) {
-            class WR extends WeakReference implements Runnable {
+            class WR extends WeakReference<Object> implements Runnable {
                 public WR (Object o) {
                     super (o, Utilities.activeReferenceQueue ());
                 }
@@ -182,7 +180,7 @@ public class WeakListenersTest extends NbTestCase {
         log.log("setText changed to ahoj");
         assertEquals ("Listener called once", 1, l.cnt);
         
-        WeakReference ref = new WeakReference (l);
+        Reference<?> ref = new WeakReference<Object>(l);
         log.log("Clearing listener");
         l = null;
         
@@ -225,7 +223,7 @@ public class WeakListenersTest extends NbTestCase {
         assertEquals ("Unregister called just once", 1, button.cnt);
         
         // and because it is not here, it can be GCed
-        WeakReference weakRef = new WeakReference (weakL);
+        Reference<?> weakRef = new WeakReference<Object>(weakL);
         weakL = null;
         log.log("Doing assertGC at the end");
         assertGC ("Weak listener can go away as well", weakRef);
@@ -238,7 +236,7 @@ public class WeakListenersTest extends NbTestCase {
         
         b.addPropertyChangeListener (WeakListeners.propertyChange (l, b));
         
-        WeakReference ref = new WeakReference (b);
+        Reference<?> ref = new WeakReference<Object>(b);
         b = null;
         
         assertGC ("Source can be GC", ref);
@@ -257,7 +255,7 @@ public class WeakListenersTest extends NbTestCase {
         c.addNamingListener("", javax.naming.event.EventContext.OBJECT_SCOPE, weakL);
         assertEquals ("Weak listener is there", weakL, c.listener);
         
-        WeakReference ref = new WeakReference (l);
+        Reference<?> ref = new WeakReference<Object>(l);
         l = null;
 
         synchronized (c) {
@@ -326,7 +324,7 @@ public class WeakListenersTest extends NbTestCase {
         PropChBean bean = new PropChBean();
         Listener listener = new Listener();
         PCL weakL = (PCL) WeakListeners.create(PCL.class, listener, bean);
-        WeakReference ref = new WeakReference(listener);
+        Reference<?> ref = new WeakReference<Object>(listener);
         
         bean.addPCL(weakL);
         
@@ -337,7 +335,7 @@ public class WeakListenersTest extends NbTestCase {
         listener = null;
         assertGC("Listener wasn't GCed", ref);
         
-        ref = new WeakReference(weakL);
+        ref = new WeakReference<Object>(weakL);
         weakL = null;
         assertGC("WeakListener wasn't GCed", ref);
         
@@ -351,13 +349,13 @@ public class WeakListenersTest extends NbTestCase {
         ChangeListener l = new ChangeListener() {public void stateChanged(ChangeEvent e) {}};
         Singleton.addChangeListener(WeakListeners.change(l, Singleton.class));
         assertEquals(1, Singleton.listeners.size());
-        Reference r = new WeakReference(l);
+        Reference<?> r = new WeakReference<Object>(l);
         l = null;
         assertGC("could collect listener", r);
         assertEquals("called remove method", 0, Singleton.listeners.size());
     }
     public static class Singleton {
-        public static List listeners = new ArrayList();
+        public static List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         public static void addChangeListener(ChangeListener l) {
             listeners.add(l);
         }
@@ -434,41 +432,6 @@ public class WeakListenersTest extends NbTestCase {
     // just a marker, its name will be used to construct the name of add/remove methods, e.g. addPCL, removePCL
     private static interface PCL extends PropertyChangeListener {
     } // End of PrivatePropL class
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        private ErrManager err = new ErrManager ();
-        private org.openide.util.lookup.InstanceContent ic;
-        
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (err);
-            this.ic = ic;
-        }
-        
-        public static void turn (boolean on) {
-            Lkp lkp = (Lkp)org.openide.util.Lookup.getDefault ();
-            if (on) {
-                lkp.ic.add (lkp.err);
-            } else {
-                lkp.ic.remove (lkp.err);
-            }
-        }
-    }
     
     //
     // Manager to delegate to
