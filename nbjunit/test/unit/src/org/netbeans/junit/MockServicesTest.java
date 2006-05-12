@@ -124,6 +124,14 @@ public abstract class MockServicesTest extends TestCase {
             MockServices.setServices(MockChoice5.class);
             fail("Should not permit class w/o no-arg constructor to be registered");
         } catch (IllegalArgumentException x) {/* right */}
+        try {
+            MockServices.setServices(MockChoice6.class);
+            fail("Should not permit abstract class to be registered");
+        } catch (IllegalArgumentException x) {/* right */}
+        try {
+            MockServices.setServices(Choice.class);
+            fail("Should not permit interface to be registered");
+        } catch (IllegalArgumentException x) {/* right */}
     }
 
     private static final class MockChoice3 implements Choice {
@@ -146,6 +154,8 @@ public abstract class MockServicesTest extends TestCase {
             return "mock5";
         }
     }
+    
+    public static abstract class MockChoice6 implements Choice {}
 
     /**
      * Check that service registrations are available from all threads,

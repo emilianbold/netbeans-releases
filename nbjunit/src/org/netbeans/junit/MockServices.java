@@ -53,7 +53,7 @@ public class MockServices {
      * "see" the newly registered classes.
      * (Other classes really registered in <code>META-INF/services/</code> will
      * also be available, but after the ones you have registered.)
-     * Each class must be public with a public no-arg constructor.
+     * Each class must be public and concrete with a public no-arg constructor.
      * @param services a set of service classes to register
      * @throws IllegalArgumentException if some classes are not instantiable as beans
      */
@@ -105,7 +105,8 @@ public class MockServices {
             for (Class c : services) {
                 try {
                     assertEquals(c, getParent().loadClass(c.getName()));
-                    if (!Modifier.isPublic(c.getModifiers())) {
+                    int mods = c.getModifiers();
+                    if (!Modifier.isPublic(mods) || Modifier.isAbstract(mods)) {
                         throw new IllegalArgumentException("Class " + c.getName() + " must be public");
                     }
                     c.getConstructor();
