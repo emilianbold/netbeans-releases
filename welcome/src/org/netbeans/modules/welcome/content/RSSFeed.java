@@ -269,6 +269,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                 GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(5,10,10,5),0,0 ) );
         JButton button = new JButton();
         Mnemonics.setLocalizedText( button, BundleSupport.getLabel( "ProxyConfig" ) );  // NOI18N
+        button.setOpaque( false );
         button.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 HttpProxySettings.getDefault().showConfigurationDialog();
