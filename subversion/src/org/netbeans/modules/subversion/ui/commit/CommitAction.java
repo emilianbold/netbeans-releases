@@ -154,6 +154,7 @@ public class CommitAction extends ContextAction {
             Set<File> binnaryCandidates = new HashSet<File>();
             
             Iterator<SvnFileNode> it = commitFiles.keySet().iterator();
+            // XXX refactor the olowing loop. there seem to be redundant blocks
             while (it.hasNext()) {
                 if(support.isCanceled()) {
                     return;
@@ -175,8 +176,6 @@ public class CommitAction extends ContextAction {
                     if(support.isCanceled()) {
                         return;
                     }
-                    
-                    // set MIME property application/octet-stream
                     binnaryCandidates.add(node.getFile());                                     
 
                     addCandidates.add(node);
