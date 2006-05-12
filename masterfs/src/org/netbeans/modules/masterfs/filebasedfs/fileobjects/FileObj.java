@@ -38,11 +38,12 @@ import org.openide.util.Enumerations;
 final class FileObj extends BaseFileObj {
     static final long serialVersionUID = -1133540210876356809L;
     private long lastModified = -1;
+    private boolean realLastModifiedCached;
 
 
     FileObj(final File file, final FileNaming name) {
         super(file, name);
-        setLastModified(System.currentTimeMillis());
+        setLastModified(System.currentTimeMillis());        
     }
     
     public final OutputStream getOutputStream(final FileLock lock) throws IOException {
@@ -127,9 +128,11 @@ final class FileObj extends BaseFileObj {
         return new Date(f.lastModified());
     }
 
-
     private final void setLastModified(long lastModified) {
-            this.lastModified = lastModified;
+        if (this.lastModified != -1 && !realLastModifiedCached) {
+            realLastModifiedCached = true;
+        }
+        this.lastModified = lastModified;
     }
     
     
@@ -174,9 +177,11 @@ final class FileObj extends BaseFileObj {
         stopWatch.start();                
         if (isValid()) {
             final long oldLastModified = lastModified;
+            boolean isReal = realLastModifiedCached;
             setLastModified(getFileName().getFile().lastModified());
-
-            if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && oldLastModified < lastModified) {
+            boolean isModified = (isReal) ? 
+                (oldLastModified != lastModified) : (oldLastModified < lastModified);
+            if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
                 fireFileChangedEvent(expected);
             }
             
@@ -190,8 +195,7 @@ final class FileObj extends BaseFileObj {
         }                 
         }                 
         stopWatch.stop();
-    }
-    
+    }        
 
     public final void refresh(final boolean expected) {
         refresh(expected, true);

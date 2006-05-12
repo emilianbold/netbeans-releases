@@ -965,6 +965,36 @@ public class FolderObjTest extends NbTestCase {
         assertTrue(!l.isEmpty());
     }*/
 
+    //see issue: #43231 and #56285
+    public void testRefresh43231() throws Exception {
+        File thisTest = new File(getWorkDir(),getName());
+        thisTest.createNewFile();
+        FileObject testf = FileBasedFileSystem.getFileObject(thisTest);
+        final List l = new ArrayList(); 
+        testf.addFileChangeListener(new FileChangeAdapter(){
+            public void fileChanged(FileEvent fe) {
+                if (l.isEmpty()) {                    
+                    fail();
+                }
+                l.clear();
+            }            
+        });
+        //first refresh after initialization compares
+        //lastModified with oldLastModified this way:
+        //if (lastModified > oldLastModified) the fileChange
+        thisTest.setLastModified(1000000);        
+        testf.refresh();
+        assertTrue(l.isEmpty());        
+
+        //every next refresh compares
+        //lastModified with oldLastModified this way:
+        //if (lastModified != oldLastModified) the fileChange                
+        l.add("not empty");        
+        thisTest.setLastModified(10000);
+        testf.refresh();
+        assertTrue(l.isEmpty());
+    }
+    
     public void testRefresh69744() throws Exception {
         File thisTest = new File(getWorkDir(),"thisTest");
         thisTest.createNewFile();
