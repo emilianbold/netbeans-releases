@@ -62,6 +62,20 @@ public class KVFile {
     protected byte[] getValue(Key key) {
         return (byte[]) getMap().get(key);
     }
+
+    /**
+     * Returns the value for the given Key as a String
+     *
+     * @param key 
+     * @return the value stored under the given Key as a String
+     */
+    protected String getStringValue(Key key) {
+        byte[] value = getValue(key);
+        if(value==null) {
+            return null;
+        }
+        return new String(value);
+    }
     
     /**
      * Stores the given value under the given Key

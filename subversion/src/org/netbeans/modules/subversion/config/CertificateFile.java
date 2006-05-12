@@ -51,7 +51,7 @@ public class CertificateFile extends SVNCredentialFile {
     }
 
     protected String getRealmString() {
-        return new String(getValue(REALMSTRING));
+        return getStringValue(REALMSTRING);
     }        
 
     private void setFailures(int failures) {

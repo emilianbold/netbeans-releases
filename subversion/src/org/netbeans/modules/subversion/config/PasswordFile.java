@@ -89,11 +89,11 @@ public class PasswordFile extends SVNCredentialFile {
     }
 
     public String getPassword() {
-        return new String(getValue(PASSWORD));
+        return getStringValue(PASSWORD);
     }
 
     public String getUsername() {
-        return new String(getValue(USERNAME));
+        return getStringValue(USERNAME);
     }
 
     public void setPassword(String password) {
@@ -104,8 +104,8 @@ public class PasswordFile extends SVNCredentialFile {
         setValue(USERNAME, username);
     }
     
-    protected String getRealmString() {
-        return new String(getValue(REALMSTRING));
+    protected String getRealmString() {       
+        return getStringValue(REALMSTRING);
     }
 
     protected void setRealmString(String realm) {
@@ -117,7 +117,7 @@ public class PasswordFile extends SVNCredentialFile {
     }
 
     private String getPasstype() {
-        return new String(getValue(PASSTYPE));
+        return getStringValue(PASSTYPE);
     }
 
     private boolean acceptSvnUrl(SVNUrl svnUrl) {
