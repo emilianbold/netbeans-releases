@@ -140,18 +140,18 @@ public class LineDiff implements Diff {
         }
         testLines = tmp.toArray(new String[tmp.size()]);
         
-        //make indicies
-        List<List<IndexValue>> passindices = new ArrayList<List<IndexValue>>(passLines.length-lastPassIndex);
+        //make indices
+        List<List<IndexValue>> passindices = new ArrayList<List<IndexValue>>(Collections.<List<IndexValue>>nCopies(passLines.length - lastPassIndex, null));
         
         for (int i=lastPassIndex;i < passLines.length;i++) {
-            passindices.set(i-lastPassIndex, new ArrayList<IndexValue>(testLines.length-lastPassIndex));
+            passindices.set(i - lastPassIndex, new ArrayList<IndexValue>(testLines.length - lastPassIndex));
             for (int j=lastPassIndex;j < testLines.length;j++) {
-                if (compareLines(passLines[i], testLines[j])) { //if equals add to indicies
+                if (compareLines(passLines[i], testLines[j])) { //if equals add to indices
                     IndexValue iv=new IndexValue(j, i);
                     passindices.get(i-lastPassIndex).add(iv);
                 }
             }
-            //init indicies values - better is to have low difference between indicies (index-passIndex)
+            // init index values - better is to have low difference between indices (index-passIndex)
             for (int j=0;j < passindices.get(i-lastPassIndex).size();j++) {
                 IndexValue iv = passindices.get(i-lastPassIndex).get(j);
                 iv.value=10.0/(1.0+Math.abs(iv.index-iv.passIndex));
@@ -159,7 +159,7 @@ public class LineDiff implements Diff {
         }
         
         List<IndexValue> tmp2 = new ArrayList<IndexValue>();
-        //update values (weights) - add value to indicies which has same deltas
+        //update values (weights) - add value to indices which has same deltas
         for (int i=0; i < passindices.size(); i++) {
             for (int j=0; j < passindices.get(i).size(); j++) {
                 IndexValue iv = passindices.get(i).get(j);
