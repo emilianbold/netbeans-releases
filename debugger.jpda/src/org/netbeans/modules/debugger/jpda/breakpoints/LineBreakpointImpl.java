@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,7 +56,6 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
 
     
     private LineBreakpoint      breakpoint;
-    private SourcePath          sourcePath;
     private int                 lineNumber;
     private BreakpointsReader   reader;
     
@@ -71,8 +70,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         super (breakpoint, reader, debugger, session);
         this.reader = reader;
         this.breakpoint = breakpoint;
-        this.sourcePath = sourcePath;
         lineNumber = breakpoint.getLineNumber ();
+        setSourceRoot(sourcePath.getSourceRoot(breakpoint.getURL()));
         set ();
     }
     

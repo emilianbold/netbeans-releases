@@ -93,9 +93,13 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
              (getDebugger ().getState () == JPDADebugger.STATE_DISCONNECTED)
         ) return;
         removeAllEventRequests ();
-        if (breakpoint.isEnabled ()) {
+        if (breakpoint.isEnabled () && isEnabled()) {
             setRequests ();
         }
+    }
+    
+    protected boolean isEnabled() {
+        return true;
     }
 
     public void propertyChange (PropertyChangeEvent evt) {

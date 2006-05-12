@@ -83,6 +83,17 @@ public class SourcePath {
         return getContext ().getRelativePath 
             (url, directorySeparator, includeExtension);
     }
+    
+    /**
+     * Returns the source root (if any) for given url.
+     *
+     * @param url a url of resource file
+     *
+     * @return the source root or <code>null</code> when no source root was found.
+     */
+    public String getSourceRoot(String url) {
+        return getContext().getSourceRoot(url);
+    }
 
     /**
      * Translates a relative path ("java/lang/Thread.java") to url 
@@ -359,7 +370,15 @@ public class SourcePath {
                 includeExtension
             );
         }
-    
+
+        public String getSourceRoot(String url) {
+            String sourceRoot = cp1.getSourceRoot(url);
+            if (sourceRoot == null) {
+                sourceRoot = cp2.getSourceRoot(url);
+            }
+            return sourceRoot;
+        }
+        
         public String[] getSourceRoots () {
             String[] fs1 = cp1.getSourceRoots ();
             String[] fs2 = cp2.getSourceRoots ();

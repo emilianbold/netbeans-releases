@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,6 +34,7 @@ import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 public class BreakpointsReader implements Properties.Reader {
     
     private Map cachedClassNames = new WeakHashMap();
+    private Map cachedSourceRoots = new WeakHashMap();
     
     
     public String [] getSupportedClassNames () {
@@ -46,9 +47,20 @@ public class BreakpointsReader implements Properties.Reader {
         return (String) cachedClassNames.get(b);
     }
     
+    synchronized String findCachedSourceRoot(JPDABreakpoint b) {
+        return (String) cachedSourceRoots.get(b);
+    }
+    
     void storeCachedClassName(JPDABreakpoint b, String className) {
         synchronized (this) {
             cachedClassNames.put(b, className);
+        }
+        PersistenceManager.storeBreakpoints();
+    }
+    
+    void storeCachedSourceRoot(JPDABreakpoint b, String sourceRoot) {
+        synchronized (this) {
+            cachedSourceRoots.put(b, sourceRoot);
         }
         PersistenceManager.storeBreakpoints();
     }
@@ -67,6 +79,7 @@ public class BreakpointsReader implements Properties.Reader {
             );
             synchronized (this) {
                 cachedClassNames.put(lb, properties.getString("className", null));
+                cachedSourceRoots.put(lb, properties.getString("sourceRoot", null));
             }
             b = lb;
         }
@@ -96,6 +109,9 @@ public class BreakpointsReader implements Properties.Reader {
                     MethodBreakpoint.TYPE_METHOD_ENTRY
                 )
             );
+            synchronized (this) {
+                cachedSourceRoots.put(mb, properties.getString("sourceRoot", null));
+            }
             b = mb;
         }
         if (typeID.equals (ClassLoadUnloadBreakpoint.class.getName ())) {
@@ -117,6 +133,9 @@ public class BreakpointsReader implements Properties.Reader {
                     new String [0]
                 )
             );
+            synchronized (this) {
+                cachedSourceRoots.put(cb, properties.getString("sourceRoot", null));
+            }
             b = cb;
         }
         if (typeID.equals (ExceptionBreakpoint.class.getName ())) {
@@ -133,6 +152,9 @@ public class BreakpointsReader implements Properties.Reader {
             eb.setCondition (
                 properties.getString (ExceptionBreakpoint.PROP_CONDITION, "")
             );
+            synchronized (this) {
+                cachedSourceRoots.put(eb, properties.getString("sourceRoot", null));
+            }
             b = eb;
         }
         if (typeID.equals (FieldBreakpoint.class.getName ())) {
@@ -147,6 +169,9 @@ public class BreakpointsReader implements Properties.Reader {
             fb.setCondition (
                 properties.getString (FieldBreakpoint.PROP_CONDITION, "")
             );
+            synchronized (this) {
+                cachedSourceRoots.put(fb, properties.getString("sourceRoot", null));
+            }
             b = fb;
         }
         if (typeID.equals (ThreadBreakpoint.class.getName ())) {
@@ -204,8 +229,8 @@ public class BreakpointsReader implements Properties.Reader {
                 LineBreakpoint.PROP_CONDITION, 
                 lb.getCondition ()
             );
-            String className = findCachedClassName(lb);
-            properties.setString("className", className);
+            properties.setString("className", findCachedClassName(lb));
+            properties.setString("sourceRoot", findCachedSourceRoot(lb));
             return;
         } else 
         if (object instanceof MethodBreakpoint) {
@@ -230,6 +255,7 @@ public class BreakpointsReader implements Properties.Reader {
                 MethodBreakpoint.PROP_BREAKPOINT_TYPE, 
                 mb.getBreakpointType ()
             );
+            properties.setString("sourceRoot", findCachedSourceRoot(mb));
             return;
         } else 
         if (object instanceof ClassLoadUnloadBreakpoint) {
@@ -246,6 +272,7 @@ public class BreakpointsReader implements Properties.Reader {
                 ClassLoadUnloadBreakpoint.PROP_BREAKPOINT_TYPE, 
                 cb.getBreakpointType ()
             );
+            properties.setString("sourceRoot", findCachedSourceRoot(cb));
             return;
         } else 
         if (object instanceof ExceptionBreakpoint) {
@@ -262,6 +289,7 @@ public class BreakpointsReader implements Properties.Reader {
                 ExceptionBreakpoint.PROP_CONDITION, 
                 eb.getCondition ()
             );
+            properties.setString("sourceRoot", findCachedSourceRoot(eb));
             return;
         } else 
         if (object instanceof FieldBreakpoint) {
@@ -282,6 +310,7 @@ public class BreakpointsReader implements Properties.Reader {
                 FieldBreakpoint.PROP_BREAKPOINT_TYPE, 
                 fb.getBreakpointType ()
             );
+            properties.setString("sourceRoot", findCachedSourceRoot(fb));
             return;
         } else 
         if (object instanceof ThreadBreakpoint) {

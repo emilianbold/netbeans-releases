@@ -365,6 +365,23 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.api.debugger.jpda" name="JPDADebugger" />
         <issue number="67046"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Added getSourceRoot() method to SourcePathProvider class</summary>
+        <version major="2" minor="6"/>
+        <date day="3" month="5" year="2006"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+                Retrieves a source root for a given URL. This is necessary to
+                match breakpoint locations with the sources selected fopr debugging.
+                It returns <code>null</code> by default.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.jpda" name="SourcePathProvider" />
+        <issue number="52180"/>
+    </change>
 
 </changes>
 

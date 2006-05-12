@@ -230,6 +230,119 @@ public class LineBreakpointTest extends NbTestCase {
     }
 
     
+    /**
+     * Tests debugger's ability to make difference between different projects
+     * with the same classes while getting the locations during class-loaded event.
+     *
+     * 1. The user creates 2 classes: ${test.dir.src}/.../LineBreakpointApp.java
+     *    and ${test.dir.src_2}/.../LineBreakpointApp.java
+     * 2. Then set a breakpoint in ${test.dir.src_2}/.../LineBreakpointApp.java.
+     * 
+     * Debugger should stop _only_ in the second project. If debugger stopped in
+     * the first one, then assertion violation would arise because of source path
+     * equality test.
+     */
+    public void testBreakpointUnambiguity1 () throws Exception {
+        try {
+            LineBreakpoint lb1 = LineBreakpoint.create (TEST_APP, 33);
+//            lb1.setSourceRoot(System.getProperty ("test.dir.src"));
+            DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+            dm.addBreakpoint (lb1);
+            
+            TestBreakpointListener tb1 = new TestBreakpointListener (lb1);
+            lb1.addJPDABreakpointListener (tb1);
+            
+            support = JPDASupport.attach (
+                "org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp"
+            );
+            JPDADebugger debugger = support.getDebugger();
+
+            support.waitState (JPDADebugger.STATE_STOPPED);  // breakpoint hit, the source root is correct
+            assertEquals (
+                "Debugger stopped at wrong line", 
+                lb1.getLineNumber (), 
+                debugger.getCurrentCallStackFrame ().getLineNumber (null)
+            );
+
+            tb1.checkResult ();
+            support.doContinue();
+            support.waitState (JPDADebugger.STATE_DISCONNECTED);
+            dm.removeBreakpoint (lb1);
+            support.doFinish ();
+            /*
+            // Second run - BP should not be hit with a different source root - viz testBreakpointUnambiguity2()
+            support = null;
+            lb1 = LineBreakpoint.create (TEST_APP, 33);
+            lb1.setSourceRoot(System.getProperty ("test.dir.src")+"_2");
+            dm = DebuggerManager.getDebuggerManager ();
+            dm.addBreakpoint (lb1);
+            
+            tb1 = new TestBreakpointListener (lb1);
+            lb1.addJPDABreakpointListener (tb1);
+            
+            support = JPDASupport.attach (
+                "org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp"
+            );
+            debugger = support.getDebugger();
+            
+            support.waitState (JPDADebugger.STATE_STOPPED); // Stopped or disconnected
+            assertEquals(
+                    "Debugger should not stop on BP with faked source root",
+                    debugger.getState(),
+                    JPDADebugger.STATE_DISCONNECTED
+            );
+            tb1.checkNotNotified();
+            dm.removeBreakpoint (lb1);
+             */
+        } finally {
+            if (support != null) support.doFinish ();
+        }
+    }
+
+    /**
+     * Tests debugger's ability to make difference between different projects
+     * with the same classes while getting the locations during class-loaded event.
+     *
+     * 1. The user creates 2 classes: ${test.dir.src}/.../LineBreakpointApp.java
+     *    and ${test.dir.src_2}/.../LineBreakpointApp.java
+     * 2. Then set a breakpoint in ${test.dir.src_2}/.../LineBreakpointApp.java.
+     * 
+     * Debugger should stop _only_ in the second project. If debugger stopped in
+     * the first one, then assertion violation would arise because of source path
+     * equality test.
+     */
+    public void testBreakpointUnambiguity2 () throws Exception {
+        try {
+            LineBreakpoint lb1 = LineBreakpoint.create(
+                    System.getProperty("user.home") + java.io.File.separator +
+                    //System.getProperty ("test.dir.src") +
+                    "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java", 33);
+            //lb1.setSourceRoot(System.getProperty ("test.dir.src") + "_2");
+            DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+            dm.addBreakpoint (lb1);
+            
+            TestBreakpointListener tb1 = new TestBreakpointListener (lb1);
+            lb1.addJPDABreakpointListener (tb1);
+            
+            support = JPDASupport.attach (
+                "org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp"
+            );
+            JPDADebugger debugger = support.getDebugger();
+
+            support.waitState (JPDADebugger.STATE_STOPPED); // Stopped or disconnected
+            assertEquals(
+                    "Debugger should not stop on BP with faked source root",
+                    debugger.getState(),
+                    JPDADebugger.STATE_DISCONNECTED
+            );
+            
+            tb1.checkNotNotified();
+            dm.removeBreakpoint (lb1);
+        } finally {
+            if (support != null) support.doFinish ();
+        }
+    }
+
     // innerclasses ............................................................
     
     private class TestBreakpointListener implements JPDABreakpointListener {
@@ -296,6 +409,16 @@ public class LineBreakpointTest extends NbTestCase {
                 }
                 throw new AssertionError (
                     "Breakpoint was not hit (listener was not notified) " + ln
+                );
+            }
+            if (failure != null) throw failure;
+        }
+        
+        public void checkNotNotified() {
+            if (event != null) {
+                JPDAThread t = event.getThread();
+                throw new AssertionError (
+                    "Breakpoint was hit (listener was notified) in thread " + t
                 );
             }
             if (failure != null) throw failure;

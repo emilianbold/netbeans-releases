@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2006 Sun
  * Micro//S ystems, Inc. All Rights Reserved.
  */
 package org.netbeans.spi.debugger.jpda;
@@ -60,6 +60,18 @@ public abstract class SourcePathProvider {
      */
     public abstract String getURL (String relativePath, boolean global);
     
+    /**
+     * Returns the source root (if any) for given url.
+     *
+     * @param url a url of resource file
+     *
+     * @return the source root or <code>null</code> when no source root was found.
+     * @since 2.6
+     */
+    public String getSourceRoot(String url) {
+        return null;
+    }
+        
     /**
      * Returns array of source roots.
      */
