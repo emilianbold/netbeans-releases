@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.welcome.ui;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -54,7 +55,7 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
                 url +=  "?unique=" + ideId; // NOI18N
             }
         }
-        feed = new CombinationRSSFeed( url, BundleSupport.getURL("News") ); // NOI18N
+        feed = new ArticlesAndNewsRSSFeed( url, BundleSupport.getURL("News") ); // NOI18N
         feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
         return feed;
     }
@@ -84,38 +85,42 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
     }
 
     private boolean firstTimeLoad = true;
-    private boolean ignoreReload = false;
     protected void feedContentLoaded() {
-        if( firstTimeStart && !ignoreReload ) {
-            JPanel panel = new NoHorizontalScrollPanel();
-
-            JLabel lblHeader = new JLabel( BundleSupport.getLabel( "FirstTimeHeader" ) ); // NOI18N
-            lblHeader.setFont( WELCOME_HEADER_FONT );
-
-            JLabel lblDescription = new JLabel( BundleSupport.getLabel( "FirstTimeDescription" ) ); // NOI18N
-            lblDescription.setFont( WELCOME_DESCRIPTION_FONT );
-
-            panel.add( lblHeader, new GridBagConstraints(0,0,1,1,0.0,0.0,
-                    GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
-                    new Insets(15,TEXT_INSETS_LEFT,5,TEXT_INSETS_RIGHT),0,0 ) );
-            panel.add( lblDescription, new GridBagConstraints(0,1,1,1,0.0,0.0,
-                    GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
-                    new Insets(0,TEXT_INSETS_LEFT,25,TEXT_INSETS_RIGHT),0,0 ) );
-
-            panel.add( feed.getContent(), new GridBagConstraints(0,2,1,1,1.0,1.0,
-                    GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
-
-            panel.setOpaque( false );
-
-            ignoreReload = true;
-            feed.setContent( panel );
-            ignoreReload = false;
-        }
-
         if( firstTimeLoad ) {
             firstTimeLoad = false;
 
             requestAttention();
+        }
+    }
+
+    private class ArticlesAndNewsRSSFeed extends CombinationRSSFeed {
+        private JPanel contentHeader;
+        public ArticlesAndNewsRSSFeed( String url1, String url2 ) {
+            super( url1, url2 );
+        }
+
+        protected Component getContentHeader() {
+            if( firstTimeStart ) {
+                if( null == contentHeader ) {
+                    contentHeader = new JPanel( new GridBagLayout() );
+                    contentHeader.setOpaque( false );
+
+                    JLabel lblHeader = new JLabel( BundleSupport.getLabel( "FirstTimeHeader" ) ); // NOI18N
+                    lblHeader.setFont( WELCOME_HEADER_FONT );
+
+                    JLabel lblDescription = new JLabel( BundleSupport.getLabel( "FirstTimeDescription" ) ); // NOI18N
+                    lblDescription.setFont( WELCOME_DESCRIPTION_FONT );
+
+                    contentHeader.add( lblHeader, new GridBagConstraints(0,0,1,1,1.0,1.0,
+                            GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
+                            new Insets(15,TEXT_INSETS_LEFT,5,TEXT_INSETS_RIGHT),0,0 ) );
+                    contentHeader.add( lblDescription, new GridBagConstraints(0,1,1,1,1.0,1.0,
+                            GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
+                            new Insets(0,TEXT_INSETS_LEFT,25,TEXT_INSETS_RIGHT),0,0 ) );
+                }
+                return contentHeader;
+            }
+            return null;
         }
     }
 }

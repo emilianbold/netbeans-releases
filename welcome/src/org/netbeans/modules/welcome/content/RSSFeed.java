@@ -139,6 +139,13 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                 contentPanel.setOpaque( false );
                 int contentRow = 0;
 
+                Component header = getContentHeader();
+                if( null != header ) {
+                    contentPanel.add( header, new GridBagConstraints(0,contentRow++,1,1,0.0,0.0,
+                                GridBagConstraints.CENTER,GridBagConstraints.BOTH,
+                                new Insets(0,0,0,0),0,0 ) );
+                }
+
                 for( int i=0; i<Math.min(itemList.size(), NEWS_COUNT); i++ ) {
                     FeedItem item = (FeedItem)itemList.get(i);
 
@@ -261,11 +268,23 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         return res;
     }
 
+    protected Component getContentHeader() {
+        return null;
+    }
+
     private JComponent buildProxyPanel() {
-        JPanel panel = new JPanel( new GridBagLayout() );
+        Component header = getContentHeader();
+        JPanel panel = null == header ? new JPanel(new GridBagLayout()) : new NoHorizontalScrollPanel();
         panel.setOpaque( false );
+
+        int row = 0;
+        if( null != header ) {
+            panel.add( header,  new GridBagConstraints(0,row++,1,1,1.0,0.0,
+                    GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
+        }
+
         panel.add( new JLabel(BundleSupport.getLabel("ErrCannotConnect")),  // NOI18N
-                new GridBagConstraints(0,0,1,1,0.0,0.0,
+                new GridBagConstraints(0,row++,1,1,0.0,0.0,
                 GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(5,10,10,5),0,0 ) );
         JButton button = new JButton();
         Mnemonics.setLocalizedText( button, BundleSupport.getLabel( "ProxyConfig" ) );  // NOI18N
@@ -275,7 +294,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                 HttpProxySettings.getDefault().showConfigurationDialog();
             }
         });
-        panel.add( button, new GridBagConstraints(0,1,1,1,0.0,0.0,
+        panel.add( button, new GridBagConstraints(0,row++,1,1,0.0,0.0,
                 GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(5,10,10,5),0,0 ) );
         return panel;
     }
@@ -287,6 +306,16 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         label.setForeground( DEFAULT_TEXT_COLOR );
         label.setBackground( DEFAULT_BACKGROUND_COLOR );
         label.setOpaque( false );
+        Component header = getContentHeader();
+        if( null != header ) {
+            JPanel panel = new NoHorizontalScrollPanel();
+            panel.setOpaque( false );
+            panel.add( header, new GridBagConstraints(0,0,1,1,1.0,1.0,
+                GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
+            panel.add( label, new GridBagConstraints(0,1,1,1,1.0,1.0,
+                GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
+            return panel;
+        }
         return label;
     }
 
@@ -297,6 +326,14 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         label.setForeground( DEFAULT_TEXT_COLOR );
         label.setBackground( DEFAULT_BACKGROUND_COLOR );
         label.setOpaque( false );
+        Component header = getContentHeader();
+        if( null != header ) {
+            JPanel panel = new NoHorizontalScrollPanel();
+            panel.add( header, new GridBagConstraints(0,0,1,1,0.0,0.0,
+                GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
+            panel.add( label, new GridBagConstraints(0,1,1,1,1.0,1.0,
+                GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
+        }
         return label;
     }
 
