@@ -53,7 +53,7 @@ public class SvnConfigFiles {
     private static final String UNIX_CONFIG_DIR = ".subversion/";    
     private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   
     private static final String GROUPS = "groups";
-    private static final String WINDOWS_CONFIG_DIR = getAPPDATA();
+    private static final String WINDOWS_CONFIG_DIR = getAPPDATA() + "\\Subversion";
     
     /**
      * Creates a new instance
@@ -63,10 +63,6 @@ public class SvnConfigFiles {
         copyConfigFileToIDEConfigDir();        
         // get the nb servers file merged with the systems servers files
         servers = loadNetbeansIniFile("servers"); 
-    }
-
-    private void init() {
-        
     }
     
     /**
@@ -167,12 +163,12 @@ public class SvnConfigFiles {
      * @return the path
      *
      */ 
-    public static String getUserConfigPath() {
-        String path = System.getProperty("user.home") ;
+    public static String getUserConfigPath() {        
         if(Utilities.isUnix()) {
+            String path = System.getProperty("user.home") ;
             return path + "/" + UNIX_CONFIG_DIR;
         } else if (Utilities.isWindows()){
-            return path + "/" + WINDOWS_CONFIG_DIR;
+            return WINDOWS_CONFIG_DIR;
         } else {
             // XXX Mac (e.g. mkleint)
         }
@@ -683,6 +679,10 @@ public class SvnConfigFiles {
         
     }
 
+    /**
+     * Returns the value for the %APPDATA% env variable on windows
+     *
+     */
     private static String getAPPDATA() {
         if(Utilities.isWindows()) {
             String appdata = System.getProperty("Env-APPDATA"); // should work on XP
@@ -694,6 +694,9 @@ public class SvnConfigFiles {
         return "";
     }
     
+    /**
+     * Returns a the value for thegvien specified windows env variable
+     */
     private static String getWindowsProperty(String propertyKey) {
         Process p = null;
         Properties propVals = new Properties();
