@@ -898,6 +898,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /** Converts NetBeans filesystem URL to absolute path.
      * @param url URL to convert
      * @return absolute path
+     * @deprecate No longer applicable as of NB 4.0 at the latest.
+     *            <code>FileObject.getURL()</code> should be returning a <code>file</code>-protocol
+     *            URL, which can be converted to a disk path using <code>new File(URI)</code>; or
+     *            use <code>FileUtil.toFile</code>.
      */
     public static String convertNBFSURL(URL url) {
         if(url == null) {
@@ -1022,7 +1026,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      *  assertGC("WeakMap does not hold the key", ref, Collections.singleton(map));
      * </pre>
      */
-    public static void assertGC(String text, Reference<?> ref, Set<Object> rootsHint) {
+    public static void assertGC(String text, Reference<?> ref, Set<?> rootsHint) {
         List<byte[]> alloc = new ArrayList<byte[]>();
         int size = 100000;
         for (int i = 0; i < 50; i++) {
@@ -1065,7 +1069,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @param roots the collection of root objects from which to traverse
      * @param limit maximal allowed heap size of the structure
      */
-    public static void assertSize(String message, Collection roots, int limit) {
+    public static void assertSize(String message, Collection<?> roots, int limit) {
         assertSize(message, roots, limit, new Object[0]);
     }
     
@@ -1079,7 +1083,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      *        neither these objects nor references from these objects
      *        are counted.
      */
-    public static void assertSize(String message, Collection roots, int limit, Object[] skip) {
+    public static void assertSize(String message, Collection<?> roots, int limit, Object[] skip) {
         org.netbeans.insane.scanner.Filter f = ScannerUtils.skipObjectsFilter(Arrays.asList(skip), false);
         assertSize(message, roots, limit, f);
     }
@@ -1094,7 +1098,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @param skip custom filter for counted objects
      * @return actual size or <code>-1</code> on internal error.
      */
-    public static int assertSize(String message, Collection roots, int limit, final MemoryFilter skip) {
+    public static int assertSize(String message, Collection<?> roots, int limit, final MemoryFilter skip) {
         org.netbeans.insane.scanner.Filter f = new org.netbeans.insane.scanner.Filter() {
             public boolean accept(Object o, Object refFrom, Field ref) {
                 return !skip.reject(o);
@@ -1103,7 +1107,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         return assertSize(message, roots, limit, f);
     }
     
-    private static int assertSize(String message, Collection roots, int limit,
+    private static int assertSize(String message, Collection<?> roots, int limit,
             org.netbeans.insane.scanner.Filter f) {
         try {
             CountingVisitor counter = new CountingVisitor();
@@ -1133,7 +1137,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         return -1; // fail throws for sure
     }
     
-    private static String findRefsFromRoot(final Object target, final Set<Object> rootsHint) {
+    private static String findRefsFromRoot(final Object target, final Set<?> rootsHint) {
         final Map<Object,Entry> objects = new IdentityHashMap<Object,Entry>();
         boolean found = false;
         
