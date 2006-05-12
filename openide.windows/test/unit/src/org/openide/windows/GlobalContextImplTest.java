@@ -7,29 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.windows;
 
-import java.awt.KeyboardFocusManager;
 import java.util.ArrayList;
 import javax.swing.ActionMap;
-
-import junit.framework.*;
-
-import org.netbeans.junit.*;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.FilterNode;
+import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.windows.*;
-
-
 
 /** Tests behaviour of GlobalContextProviderImpl
  * and its cooperation with activated and current nodes.
@@ -38,9 +26,6 @@ import org.openide.windows.*;
  */
 public class GlobalContextImplTest extends NbTestCase 
 implements org.openide.util.LookupListener {
-    static {
-        System.setProperty("org.openide.util.Lookup", "org.openide.windows.GlobalContextImplTest$Lkp"); 
-    }
     
     private javax.swing.Action sampleAction = new javax.swing.AbstractAction () {
         public void actionPerformed (java.awt.event.ActionEvent ev) {
@@ -63,7 +48,6 @@ implements org.openide.util.LookupListener {
         
         
         Lookup global = Lookup.getDefault();
-        assertEquals ("It is our class", Lkp.class, global.getClass ());
         
         Object p = global.lookup (org.openide.util.ContextGlobalProvider.class);
         assertNotNull ("There is one", p);
@@ -163,25 +147,4 @@ implements org.openide.util.LookupListener {
         cnt++;
     }
 
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public org.openide.util.lookup.InstanceContent ic;
-        
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            this.ic = ic;
-        }
-        
-        private boolean done;
-        protected void beforeLookup (Template t) {
-            if (!done) {
-                done = true;
-                ic.add (new org.netbeans.modules.openide.windows.GlobalActionContextImpl ());
-            }
-        }
-
-    } // end of Lkp
 }
