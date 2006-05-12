@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.ui.repository;
 
+import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -297,17 +298,42 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 urlString = urlString.substring(0, idx);
             } else {
                 throw new MalformedURLException("The only revision allowed here is HEAD!"); 
-            }            
-            return new SelectedRepository(new SVNUrl (urlString), revision);
+            }
+            SVNUrl url = removeEmptyPathSegments(new SVNUrl (urlString));
+            return new SelectedRepository(url, revision);
 
         } catch (MalformedURLException ex) {
             setValid(false, ex.getLocalizedMessage());
             return null;
         }        
     }
-    
+
+    private SVNUrl removeEmptyPathSegments(SVNUrl url) {
+        String[] pathSegments = url.getPathSegments();
+        StringBuffer urlString = new StringBuffer();
+        urlString.append(url.getProtocol());
+        urlString.append("://");
+        urlString.append(url.getHost());
+        if(url.getPort() > 0) {
+            urlString.append(":");
+            urlString.append(url.getPort());
+        }        
+        for (int i = 0; i < pathSegments.length; i++) {
+            if(!pathSegments[i].trim().equals("")) {
+                urlString.append("/");
+                urlString.append(pathSegments[i]);                
+            }
+        }
+        try {            
+            return new SVNUrl(urlString.toString());
+        } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex); // should not happen
+            return null;
+        }
+    }
+
     /**
-     * Fast url syntax check. It can invalidate the whole step     
+     * Fast url syntax check. It can invalidate the whole step
      */
     private void validateSvnUrl() {
         boolean valid;
