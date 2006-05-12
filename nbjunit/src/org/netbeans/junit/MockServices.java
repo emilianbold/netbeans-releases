@@ -25,6 +25,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -57,7 +58,27 @@ public class MockServices {
      * @throws IllegalArgumentException if some classes are not instantiable as beans
      */
     public static void setServices(Class<?>... services) throws IllegalArgumentException {
-        Thread.currentThread().setContextClassLoader(new ServiceClassLoader(services));
+        ClassLoader l = new ServiceClassLoader(services);
+        // Adapted from org.netbeans.ModuleManager.updateContextClassLoaders. See that class for comments.
+        ThreadGroup g = Thread.currentThread().getThreadGroup();
+        while (g.getParent() != null) {
+            g = g.getParent();
+        }
+        while (true) {
+            int s = g.activeCount() + 1;
+            Thread[] ts = new Thread[s];
+            int x = g.enumerate(ts, true);
+            if (x < s) {
+                for (int i = 0; i < x; i++) {
+                    ts[i].setContextClassLoader(l);
+                }
+                logger().log(Level.FINE, "Set context class loader on {0} threads", x);
+                break;
+            } else {
+                logger().fine("Race condition getting all threads, restarting...");
+                continue;
+            }
+        }
         // Need to also reset global lookup since it caches the singleton and we need to change it.
         try {
             Class lookup = Class.forName("org.openide.util.Lookup");
@@ -67,8 +88,12 @@ public class MockServices {
         } catch (ClassNotFoundException x) {
             // Fine, not using org-openide-lookup.jar.
         } catch (Exception x) {
-            Logger.getLogger(MockServices.class.getName()).log(Level.WARNING, "Could not reset Lookup.getDefault()", x);
+            logger().log(Level.WARNING, "Could not reset Lookup.getDefault()", x);
         }
+    }
+    
+    private static Logger logger() {
+        return Logger.getLogger(MockServices.class.getName());
     }
     
     private static final class ServiceClassLoader extends ClassLoader {
@@ -106,6 +131,10 @@ public class MockServices {
         }
         
         public Enumeration<URL> getResources(String name) throws IOException {
+            if (name.equals("META-INF/services/org.openide.util.Lookup") || name.equals("META-INF/services/org.openide.util.Lookup$Provider")) {
+                // Lookup.getDefault checks for these, and we need to really mask it.
+                return Collections.enumeration(Collections.<URL>emptySet());
+            }
             final Enumeration<URL> supe = super.getResources(name);
             String prefix = "META-INF/services/";
             if (name.startsWith(prefix)) {

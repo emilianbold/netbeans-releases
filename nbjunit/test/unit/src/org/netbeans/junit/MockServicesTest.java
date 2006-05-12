@@ -13,31 +13,34 @@
 
 package org.netbeans.junit;
 
+import java.awt.EventQueue;
 import java.lang.reflect.Method;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.openide.util.Lookup;
 
 public abstract class MockServicesTest extends TestCase {
-    
+
     protected MockServicesTest(String name) {
         super(name);
     }
-    
+
     public static Test suite() {
         NbTestSuite s = new NbTestSuite();
         s.addTestSuite(JreTest.class);
         s.addTestSuite(LookupTest.class);
         return s;
     }
-    
+
     public interface Choice {
         String value();
     }
-    
+
     protected abstract <T> Iterator<? extends T> lookup(Class<T> clazz);
-    
+
     private String getChoice() {
         Iterator<? extends Choice> it = lookup(Choice.class);
         if (it.hasNext()) {
@@ -50,7 +53,10 @@ public abstract class MockServicesTest extends TestCase {
             return "default";
         }
     }
-    
+
+    /**
+     * Basic test that services are set.
+     */
     public void testGetChoice() {
         MockServices.setServices();
         assertEquals("initial value", "default", getChoice());
@@ -64,21 +70,26 @@ public abstract class MockServicesTest extends TestCase {
             fail("Should not work on >1 choice");
         } catch (IllegalStateException x) {}
     }
-    
+
     public static final class MockChoice1 implements Choice {
         public MockChoice1() {}
         public String value() {
             return "mock1";
         }
     }
-    
+
     public static final class MockChoice2 implements Choice {
         public MockChoice2() {}
         public String value() {
             return "mock2";
         }
     }
-    
+
+    /**
+     * Check that static registrations in META-INF/services/* continue to be
+     * available as services - but with lower priority than the explicitly
+     * registered ones.
+     */
     public void testBackgroundServicesStillAvailable() {
         MockServices.setServices();
         Iterator<? extends DummyService> i = lookup(DummyService.class);
@@ -93,9 +104,13 @@ public abstract class MockServicesTest extends TestCase {
         assertEquals("of static type", DummyServiceImpl.class, i.next().getClass());
         assertFalse("and that is all", i.hasNext());
     }
-    
+
     public static final class DummyServiceImpl2 implements DummyService {}
-    
+
+    /**
+     * Ensure that attempts to register classes which are not publicly
+     * instantiable fail immediately.
+     */
     public void testModifierRestrictions() {
         try {
             MockServices.setServices(MockChoice3.class);
@@ -110,40 +125,76 @@ public abstract class MockServicesTest extends TestCase {
             fail("Should not permit class w/o no-arg constructor to be registered");
         } catch (IllegalArgumentException x) {/* right */}
     }
-    
+
     private static final class MockChoice3 implements Choice {
         public MockChoice3() {}
         public String value() {
             return "mock3";
         }
     }
-    
+
     public static final class MockChoice4 implements Choice {
         MockChoice4() {}
         public String value() {
             return "mock4";
         }
     }
-    
+
     public static final class MockChoice5 implements Choice {
         public MockChoice5(String v) {}
         public String value() {
             return "mock5";
         }
     }
-    
-    public void testInstancesFromDerivativeClassLoaders() {
-        // XXX try passing class objects not loadable by MockServices's class loader
-        // currently will throw assertion errors
-        // but should try to load them
+
+    /**
+     * Check that service registrations are available from all threads,
+     * not just the thread calling setServices.
+     */
+    public void testOtherThreads() throws Exception {
+        // Ensure EQ thread exists. This will not be a child of current thread group.
+        EventQueue.invokeAndWait(new Runnable() {public void run() {}});
+        MockServices.setServices(MockChoice1.class);
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                assertEquals("registered value in EQ", "mock1", getChoice());
+            }
+        });
+        // This will be a child of current thread group.
+        ExecutorService svc = Executors.newSingleThreadExecutor();
+        svc.submit(new Runnable() {
+            public void run() {
+                assertEquals("registered value in thread pool", "mock1", getChoice());
+            }
+        }).get();
+        MockServices.setServices(MockChoice2.class);
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                assertEquals("new registered value in EQ", "mock2", getChoice());
+            }
+        });
+        svc.submit(new Runnable() {
+            public void run() {
+                assertEquals("new registered value in thread pool", "mock2", getChoice());
+            }
+        }).get();
     }
-    
+
+    /**
+     * Check that services classes can be registered even if they are not
+     * loadable by the class loader which loaded MockServices.class.
+     * /
+    public void testInstancesFromDerivativeClassLoaders() {
+        // XXX currently will throw assertion errors
+    }
+     */
+
     public static class JreTest extends MockServicesTest {
-        
+
         public JreTest(String s) {
             super(s);
         }
-        
+
         @SuppressWarnings("unchecked") // using reflection
         protected <T> Iterator<? extends T> lookup(Class<T> clazz) {
             try {
@@ -161,19 +212,19 @@ public abstract class MockServicesTest extends TestCase {
                 }
             }
         }
-        
+
     }
-    
+
     public static class LookupTest extends MockServicesTest {
-        
+
         public LookupTest(String s) {
             super(s);
         }
-        
+
         protected <T> Iterator<? extends T> lookup(Class<T> clazz) {
             return Lookup.getDefault().lookupAll(clazz).iterator();
         }
-        
+
     }
-    
+
 }
