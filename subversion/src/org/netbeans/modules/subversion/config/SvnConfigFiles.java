@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Properties;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.ErrorManager;
@@ -49,21 +50,25 @@ public class SvnConfigFiles {
      * file used by the Subversion module */
     private Ini servers = null;
 
-    private static final String UNIX_CONFIG_DIR = ".subversion/";
-    private static final String WINDOWS_CONFIG_DIR = "Application Data/Subversion/";
+    private static final String UNIX_CONFIG_DIR = ".subversion/";    
     private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   
     private static final String GROUPS = "groups";
-
+    private static final String WINDOWS_CONFIG_DIR = getAPPDATA();
+    
     /**
      * Creates a new instance
      */
-    private SvnConfigFiles() {
+    private SvnConfigFiles() {      
         // copy config file        
         copyConfigFileToIDEConfigDir();        
         // get the nb servers file merged with the systems servers files
         servers = loadNetbeansIniFile("servers"); 
     }
 
+    private void init() {
+        
+    }
+    
     /**
      * Returns a singleton instance.
      *
@@ -678,6 +683,38 @@ public class SvnConfigFiles {
         
     }
 
+    private static String getAPPDATA() {
+        if(Utilities.isWindows()) {
+            String appdata = System.getProperty("Env-APPDATA"); // should work on XP
+            if(appdata == null || appdata.trim().equals("")) {            
+                appdata = getWindowsProperty("APPDATA");
+            }
+            return appdata;
+        }
+        return "";
+    }
+    
+    private static String getWindowsProperty(String propertyKey) {
+        Process p = null;
+        Properties propVals = new Properties();
+        Runtime r = Runtime.getRuntime();
+        try {
+            p = r.exec("cmd /C set");
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line;
+            while((line = br.readLine()) != null) {
+                int index = line.indexOf('=');
+                String key = line.substring(0, index);
+                String value = line.substring(index + 1);
+                propVals.setProperty(key, value);
+            }    
+            return propVals.getProperty(propertyKey);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e); 
+        } 
+        return "";
+    }
+    
     private class StreamHandler extends Thread {
         private InputStream is;
         private byte[] inputBuffer = new byte[1024];
