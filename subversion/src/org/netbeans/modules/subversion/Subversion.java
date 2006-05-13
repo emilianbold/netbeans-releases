@@ -14,6 +14,7 @@
 package org.netbeans.modules.subversion;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
@@ -272,7 +273,6 @@ public class Subversion {
      * or IDE thinks it should be.
      */
     public boolean isIgnored(File file) {
-
         String name = file.getName();
 
         // ask SVN
@@ -287,11 +287,11 @@ public class Subversion {
                     client.removeNotifyListener(Subversion.getInstance().getLogger());
 
                     // XXX property can contain shell patterns (almost identical to RegExp)
-                    List patterns = client.getIgnoredPatterns(parent);
-
-                    for (Iterator i = patterns.iterator(); i.hasNext();) {
+                    List<String> patterns = client.getIgnoredPatterns(parent);
+                    for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
                         try {
-                            Pattern pattern =  Pattern.compile((String) i.next());
+                            String patternString = regExpToFilePatters(i.next());                            
+                            Pattern pattern =  Pattern.compile(patternString);
                             if (pattern.matcher(name).matches()) {
                                 return true;
                             }
@@ -339,6 +339,13 @@ public class Subversion {
         }
 
     }    
+
+    private String regExpToFilePatters(String exp) {
+        exp = exp.replaceAll("\\.", "\\\\.");  
+        exp = exp.replaceAll("\\*", ".*");  
+        exp = exp.replaceAll("\\?", ".");   
+        return exp;
+    }
 
     /**
      * Serializes all SVN requests (moves them out of AWT).
