@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.core.execution</friend>
                 <friend>org.netbeans.core.startup</friend>
                 <friend>org.netbeans.modules.autoupdate</friend>
+                <friend>org.netbeans.modules.utilities</friend>
                 <package>org.netbeans</package>
             </friend-packages>
         </data>

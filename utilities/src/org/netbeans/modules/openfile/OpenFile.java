@@ -14,7 +14,6 @@
 package org.netbeans.modules.openfile;
 
 import java.io.File;
-import org.netbeans.modules.openfile.cli.Callback;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -34,17 +33,7 @@ public final class OpenFile {
     private OpenFile() {}
     
     private static OpenFileImpl getImpl() {
-        return (OpenFileImpl)Lookup.getDefault().lookup(OpenFileImpl.class);
-    }
-    
-    /**
-     * Opens the specified file.
-     *
-     * @param  fileName  name of file to open
-     * @usecase  API
-     */
-    public static void open(String fileName) {
-        openFile(new File(fileName), -1, null);
+        return new DefaultOpenFileImpl();
     }
     
     /**
@@ -53,7 +42,7 @@ public final class OpenFile {
      * @usecase  API
      */
     public static void open(FileObject fileObject) {
-        getImpl().open(fileObject, -1, null);
+        getImpl().open(fileObject, -1);
     }
     
     /**
@@ -62,19 +51,19 @@ public final class OpenFile {
      * @param  file  file to open (must exist)
      * @param  line  line number to try to open to (starting at zero),
      *               or <code>-1</code> to ignore
-     * @param waiter double-callback or null
      * @return true on success, false on failure
      * @usecase CallbackImpl, OpenFileAction
      */
-    static boolean openFile(File file, int line, Callback.Waiter waiter) {
+    static boolean openFile(File file, int line) {
         if (!checkFileExists(file)) {
             return false;
         }
                               
         FileObject fileObject;
         OpenFileImpl impl = getImpl();
-        if ((fileObject = impl.findFileObject(file)) != null) {
-            impl.open(fileObject, line, waiter);
+	fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        if (fileObject != null) {
+            impl.open(fileObject, line);
             return true;
         } else {
             return false;
@@ -105,7 +94,7 @@ public final class OpenFile {
         }
         
         final String fileName = file.toString();
-        final String msg = NbBundle.getMessage(OpenFileImpl.class,
+        final String msg = NbBundle.getMessage(OpenFile.class,
                                                errMsgKey,
                                                fileName);
         new Thread(new Runnable() {

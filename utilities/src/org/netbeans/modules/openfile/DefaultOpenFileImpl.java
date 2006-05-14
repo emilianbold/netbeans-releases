@@ -26,7 +26,6 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.openfile.cli.Callback;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -91,11 +90,6 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      *   to ignore
      */
     private final int line;
-    /**
-     * parameter of this <code>Runnable</code>
-     * - callback
-     */
-    private final Callback.Waiter waiter;
     
     /**
      * Creates an instance of this class.
@@ -111,11 +105,9 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      * @param  waiter  double-callback or <code>null</code>
      */
     private DefaultOpenFileImpl(FileObject fileObject,
-                                int line,
-                                Callback.Waiter waiter) {
+                                int line) {
         this.fileObject = fileObject;
         this.line = line;
-        this.waiter = waiter;
     }
 
     /** Creates a new instance of OpenFileImpl */
@@ -124,7 +116,6 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         /* These fields are not used in the default instance. */
         this.fileObject = null;
         this.line = -1;
-        this.waiter = null;
     }
     
     /**
@@ -150,12 +141,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      * @param  waiting  <code>true</code> if the server will wait for the file,
      *                  <code>false</code> if not
      */
-    protected void setStatusLineOpening(String fileName, boolean waiting) {
-        setStatusLine(NbBundle.getMessage(
-                OpenFileImpl.class,
-                waiting ? "MSG_openingAndWaiting"                       //NOI18N
-                        : "MSG_opening",                                //NOI18N
-                fileName));
+    protected void setStatusLineOpening(String fileName) {
+        setStatusLine(NbBundle.getMessage(DefaultOpenFileImpl.class, "MSG_opening", fileName));
     }
     
     /**
@@ -171,7 +158,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         assert EventQueue.isDispatchThread();
         
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                NbBundle.getMessage(OpenFileImpl.class,
+                NbBundle.getMessage(DefaultOpenFileImpl.class,
                                     "MSG_cannotOpenWillClose",          //NOI18N
                                     fileName)));
     }
@@ -219,7 +206,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             doc = editorCookie.openDocument();
         } catch (IOException ex) {
             String msg = NbBundle.getMessage(
-                    OpenFileImpl.class,
+                    DefaultOpenFileImpl.class,
                     "MSG_cannotOpenWillClose");                     //NOI18N
             ErrorManager.getDefault().notify(
                     ErrorManager.EXCEPTION,
@@ -341,7 +328,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             }
             if (!setCursorTask.completed) {
                 setStatusLine(NbBundle.getMessage(
-                        OpenFileImpl.class,
+                        DefaultOpenFileImpl.class,
                         "MSG_couldNotOpenAt"));                         //NOI18N
             }
         }
@@ -451,7 +438,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
     public void run() {
         assert EventQueue.isDispatchThread();
         
-        open(fileObject, line, waiter);
+        open(fileObject, line);
     }
     
     /**
@@ -459,10 +446,10 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      * (or {@link OpenCookie} or {@link ViewCookie}),
      * or by showing it in the Explorer.
      */
-    public boolean open(final FileObject fileObject, int line, Callback.Waiter waiter) {
+    public boolean open(final FileObject fileObject, int line) {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(
-                    new DefaultOpenFileImpl(fileObject, line, waiter));
+                    new DefaultOpenFileImpl(fileObject, line));
             return true;
         }
         
@@ -504,7 +491,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         }             
         
         /* Try to grab an editor/open/edit/view cookie and open the object: */
-        setStatusLineOpening(fileName, waiter != null);
+        setStatusLineOpening(fileName);
         boolean success = openDataObjectByCookie(dataObject, line);
         clearStatusLine();
         if (success) {
@@ -525,8 +512,4 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         return false;
     }
     
-    public synchronized FileObject findFileObject(File f) {
-        return FileUtil.toFileObject(FileUtil.normalizeFile(f));
-    }
-   
 }

@@ -105,7 +105,7 @@ public class OpenFileAction extends CallableSystemAction {
                 return;
             }
             for (int i = 0; i < files.length; i++) {
-                OpenFile.openFile(files[i], -1, null);
+                OpenFile.openFile(files[i], -1);
             }
         } finally {
             Manager.actionFinished(this);

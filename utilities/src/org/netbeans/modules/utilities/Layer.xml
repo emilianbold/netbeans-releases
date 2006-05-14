@@ -404,16 +404,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-search-types-ObjectTypeType.instance/org-netbeans-modules-search-types-ModificationDateType.instance" boolvalue="true"/>
             <attr name="org-netbeans-modules-search-types-ModificationDateType.instance/org-netbeans-modules-vcscore-search-VcsSearchType.instance" boolvalue="true"/>
 
-            <!-- Open File implementations -->
-            <folder name="org-netbeans-modules-openfile">
-                <folder name="OpenFileImpl">
-                    <file name="org-netbeans-modules-openfile-DefaultOpenFileImpl.instance">
-                        <attr name="instanceClass"  stringvalue="org.netbeans.modules.openfile.DefaultOpenFileImpl"/>
-                        <attr name="instanceOf"     stringvalue="org.netbeans.modules.openfile.DefaultOpenFileImpl,org.netbeans.modules.openfile.OpenFileImpl"/>
-                        <attr name="instanceCreate" newvalue="org.netbeans.modules.openfile.DefaultOpenFileImpl"/>
-                    </file>
-                </folder>
-            </folder>
         </folder> <!-- Hidden -->
     </folder> <!-- Services -->
 
