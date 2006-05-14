@@ -445,22 +445,6 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
     }
     
     /**
-     * Gets the default system <code>DataLoader</code>.
-     *
-     * @return  default <code>DataLoader</code>
-     */
-    private final DataLoader getDefaultLoader() {
-        DataLoader defaultLoader = null;
-        DataLoaderPool loaderPool = DataLoaderPool.getDefault ();
-        
-        /* default loader is the last loader in the enumeration of loaders: */
-        for (Enumeration loaders = loaderPool.allLoaders();
-             loaders.hasMoreElements();
-             defaultLoader = (DataLoader) loaders.nextElement());
-        return defaultLoader;
-    }
-    
-    /**
      * This method is called when it is rescheduled to the AWT thread.
      * (from a different thread). It is always run in the AWT thread.
      */
