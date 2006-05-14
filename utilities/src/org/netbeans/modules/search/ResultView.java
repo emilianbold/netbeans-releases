@@ -210,7 +210,7 @@ final class ResultView extends TopComponent
     private final RootNode createTreeViewRoot() {
         RootNode root = new RootNode();
         root.setName(getInitialRootNodeText());
-        root.setIconBase("org/netbeans/modules/search/res/find");       //NOI18N
+        root.setIconBaseWithExtension("org/netbeans/modules/search/res/find.gif");       //NOI18N
         return root;
     }
     
