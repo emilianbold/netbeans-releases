@@ -106,13 +106,12 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
             .add(layout.createSequentialGroup()
                 .add(lProfile)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbProfile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(cbProfile, 0, 195, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(bDuplicate)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(bDelete)
-                .addContainerGap(166, Short.MAX_VALUE))
-            .add(tpCustomizers, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+                .add(bDelete))
+            .add(tpCustomizers, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
         );
 
         layout.linkSize(new java.awt.Component[] {bDelete, bDuplicate}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -122,8 +121,8 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lProfile)
-                    .add(bDuplicate)
                     .add(bDelete)
+                    .add(bDuplicate)
                     .add(cbProfile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tpCustomizers, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
