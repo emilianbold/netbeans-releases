@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -96,7 +96,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                     ProductService.DEFAULT_PRODUCT_SOURCE,
                     null,
                     "installLocation",
-                    resolveString("$L(org.netbeans.installer.Bundle, Product.installLocationForNonRoot)"));
+                    resolveString(BUNDLE + "Product.installLocationForNonRoot)"));
                 }
             }
         } catch (ServiceException e) {
@@ -422,20 +422,20 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
      */ 
     private boolean checkInstallDir (String dir, int installDirType, String msgPrefix) {
         String[] okString  = {resolveString("$L(com.installshield.wizard.i18n.WizardResources, ok)")};
-	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
+	String dialogTitle = resolveString(BUNDLE + "InstallLocationPanel.directoryDialogTitle)");
         StringTokenizer st = new StringTokenizer(dir);
         String dialogMsg = "";
         
         if (dir.length() == 0) {
             //Directory must be specified
             dialogMsg = msgPrefix + " "
-            + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNotSpecifiedMessage)");
+            + resolveString(BUNDLE + "InstallLocationPanel.directoryNotSpecifiedMessage)");
             showErrorMsg(dialogTitle,dialogMsg);
             return false;
 	} else if (Util.isWindowsOS() && (installDirType == AS_INSTALL_DIR) && (dir.length() > AS_INSTALL_PATH_MAX_LENGTH)) {
             //Path is too long
             dialogMsg = msgPrefix + " "
-            + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryTooLong," + AS_INSTALL_PATH_MAX_LENGTH 
+            + resolveString(BUNDLE + "InstallLocationPanel.directoryTooLong," + AS_INSTALL_PATH_MAX_LENGTH 
 	    + "," + dir.length() + ")");
             showErrorMsg(dialogTitle,dialogMsg);
             return false;
@@ -443,7 +443,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             //Check for spaces in path - it is not supported by AS installer on Linux/Solaris
 	    if (!Util.isWindowsOS() && (installDirType == AS_INSTALL_DIR)) {
 		dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryHasSpaceMessage)");
+		+ resolveString(BUNDLE + "InstallLocationPanel.directoryHasSpaceMessage)");
 		showErrorMsg(dialogTitle,dialogMsg);
 		return false;
 	    }
@@ -451,7 +451,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 					 dir.indexOf("%") != -1 || dir.indexOf("#") != -1)) ||
 	    dir.indexOf("+") != -1 || dir.indexOf("\"") != -1) {
             //Check for illegal characters in a windows path name
-	    dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryIllegalCharsMessage)");
+	    dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.directoryIllegalCharsMessage)");
             showErrorMsg(dialogTitle,dialogMsg);
 	    return false;
 	}
@@ -461,14 +461,14 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    // This File object should be a directory
             if (!dirFile.isDirectory()) {
                 dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryInvalidMessage)");
+		+ resolveString(BUNDLE + "InstallLocationPanel.directoryInvalidMessage)");
                 showErrorMsg(dialogTitle,dialogMsg);
                 return false;
             }
 	    // This File object must have write permissions
             if (!(dirFile.canWrite())) {
                 dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
+		+ resolveString(BUNDLE + "InstallLocationPanel.directoryNoWritePermissionMessage)");
                 showErrorMsg(dialogTitle,dialogMsg);
                 return false;
             }
@@ -486,7 +486,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 			}
 		    } catch (Exception e) {
 			dialogMsg = msgPrefix + " "
-		        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
+		        + resolveString(BUNDLE + "InstallLocationPanel.directoryNoWritePermissionMessage)");
                         showErrorMsg(dialogTitle,dialogMsg);
 			return false;
 		    }
@@ -499,7 +499,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 			}		    
 		    } catch (Exception e) {
 			dialogMsg = msgPrefix + " "
-		        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
+		        + resolveString(BUNDLE + "InstallLocationPanel.directoryNoWritePermissionMessage)");
                         showErrorMsg(dialogTitle,dialogMsg);
 			return false;
 		    }
@@ -509,14 +509,13 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    boolean isEmpty = checkNonEmptyDir(dir);
 	    if (installDirType == NB_INSTALL_DIR) {
 		emptyExistingDirNB = isEmpty;
-	    }
-	    else {
+	    } else {
 		emptyExistingDirAS = isEmpty;
 	    }
             if(!isEmpty) {
                 // Another version installed. prompt to uninstall
                 dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directorySpecifyEmptyMessage)")
+		+ resolveString(BUNDLE + "InstallLocationPanel.directorySpecifyEmptyMessage)")
                 + "\n\n" + installedVersion;
                 showErrorMsg(dialogTitle,dialogMsg);
                 return false;
@@ -541,14 +540,14 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     
     /** Create directory. Do not ask user. Report only error when it fails. */
     private boolean createDirectory(String path, String msgPrefix) {
-	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
+	String dialogTitle = resolveString(BUNDLE + "InstallLocationPanel.directoryDialogTitle)");
 	File dirFile  = new File(path);
 	String dialogMsg;
 	try {
 	    logEvent(this, Log.DBG, "CheckInstallDir() dirFile:" + dirFile.getAbsolutePath());
 	    if (!dirFile.mkdirs()) {
 		dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryCouldNotCreateMessage)");
+		+ resolveString(BUNDLE + "InstallLocationPanel.directoryCouldNotCreateMessage)");
                 showErrorMsg(dialogTitle,dialogMsg);
 		return false;
 	    }
@@ -611,7 +610,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             String sysLib = resolveString("$D(lib)"); // Resolve system library directory 
             logEvent(this, Log.DBG, "System Library directory is "+sysLib); 
             sysDrive = sysLib.charAt(0); // Resolve system drive letter
-            logEvent(this, Log.DBG, " Found system drive is: " + String.valueOf(sysDrive));
+            logEvent(this, Log.DBG, "Found system drive is: " + String.valueOf(sysDrive));
         } catch(Exception ex) {
             Util.logStackTrace(this,ex);
             return 'C';
