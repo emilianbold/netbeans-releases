@@ -22,6 +22,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
@@ -56,6 +57,16 @@ public class FolderObjTest extends NbTestCase {
         testFile = getWorkDir();        
     }
 
+    public void testSize() throws Exception {
+        final FolderObj testRoot = (FolderObj)FileBasedFileSystem.getFileObject(getWorkDir());
+        assertNotNull(testRoot);
+        FileObj bfo = (FileObj)testRoot.createData(getName());
+
+        assertSize("",Collections.singleton(bfo),32 ,new Object[] {bfo.getFileName()});        
+        assertSize("",Collections.singleton(testRoot),32 ,new Object[] {testRoot.getFileName(), 
+        testRoot.getChildrenCache()});                        
+    }
+    
     public void testCreateNbAttrs() throws IOException  {
         final FileObject testRoot = FileBasedFileSystem.getFileObject(getWorkDir());
         assertNotNull(testRoot);        

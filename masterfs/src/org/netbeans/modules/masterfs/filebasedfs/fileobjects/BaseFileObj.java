@@ -30,6 +30,7 @@ import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.util.Enumerations;
 
 /**
  * Implements FileObject methods as simple as possible.
@@ -55,7 +56,7 @@ public abstract class BaseFileObj extends FileObject {
 
 
     //private fields
-    private final EventListenerList eventSupport = new EventListenerList();
+    private EventListenerList eventSupport;
     private final FileNaming fileName;
 
 
@@ -180,15 +181,18 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     public final void addFileChangeListener(final org.openide.filesystems.FileChangeListener fcl) {
-        eventSupport.add(FileChangeListener.class, fcl);
+        getEventSupport().add(FileChangeListener.class, fcl);
     }
 
     public final void removeFileChangeListener(final org.openide.filesystems.FileChangeListener fcl) {
-        eventSupport.remove(FileChangeListener.class, fcl);
+        getEventSupport().remove(FileChangeListener.class, fcl);
     }
 
     private Enumeration getListeners() {
-        return org.openide.util.Enumerations.array(eventSupport.getListeners(FileChangeListener.class));
+        if (eventSupport == null) {
+            return Enumerations.empty();
+        }
+        return org.openide.util.Enumerations.array(getEventSupport().getListeners(FileChangeListener.class));
     }
 
 
@@ -503,5 +507,12 @@ public abstract class BaseFileObj extends FileObject {
             return file.delete();
         }
 
+    }
+
+    private synchronized EventListenerList getEventSupport() {
+        if (eventSupport == null) {
+            eventSupport = new EventListenerList();
+        }
+        return eventSupport;
     }
 }

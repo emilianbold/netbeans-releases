@@ -37,7 +37,7 @@ public final class FolderObj extends BaseFileObj {
     private static final Mutex.Privileged mp = new Mutex.Privileged();
     private static final Mutex mutex = new Mutex(FolderObj.mp);
 
-    private final FolderChildrenCache folderChildren = new FolderChildrenCache();
+    private FolderChildrenCache folderChildren;
     boolean valid = true;    
     private int bitmask = 0;
     //#43278 section
@@ -415,8 +415,11 @@ public final class FolderObj extends BaseFileObj {
         return true;
     }
 
-    public final ChildrenCache getChildrenCache() {
+    public final synchronized ChildrenCache getChildrenCache() {
         //assert getFileName().getFile().isDirectory() || !getFileName().getFile().exists();
+        if (folderChildren == null) {
+            folderChildren = new FolderChildrenCache();
+        }
         return folderChildren;
     }
 
