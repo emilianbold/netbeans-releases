@@ -84,14 +84,16 @@ public class JDKSearchAction extends CancelableWizardAction  {
                 currentJDKHome = jdkInfo.getHome();
             }
         }
-        
-        String searchMsg = resolveString("$L(org.netbeans.installer.Bundle, JDKSearchAction.searchMessage)");
-        evt.getUserInterface().setBusy(searchMsg);
+
+        //Handle silent mode where getUserInterface returns null
+        if (evt.getUserInterface() != null) {
+            String searchMsg = resolveString("$L(org.netbeans.installer.Bundle, JDKSearchAction.searchMessage)");
+            evt.getUserInterface().setBusy(searchMsg);
+        }
         
         if (Util.isWindowsOS()) {
             findWindowsJDK();
-        }
-        else {
+        } else {
             findUnixJDK();
         }
         
@@ -131,8 +133,7 @@ public class JDKSearchAction extends CancelableWizardAction  {
                                     addToList(jdkHome);
                                 }
                             }
-                        }
-                        catch (Exception ex) {
+                        } catch (Exception ex) {
                             Util.logStackTrace(this, ex);
                         }
                     }
@@ -154,8 +155,7 @@ public class JDKSearchAction extends CancelableWizardAction  {
                                     addToList(jdkHome);
                                 }
                             }
-                        } 
-                        catch (Exception ex) {
+                        } catch (Exception ex) {
                             Util.logStackTrace(this, ex);
                         }
                     }

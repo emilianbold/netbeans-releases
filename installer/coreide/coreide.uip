@@ -694,6 +694,7 @@
             <property name="destinationsMessage"/>
             <property name="description">$L(com.installshield.product.i18n.ProductResources,DestinationPanel.description,$P(displayName))</property>
             <property name="navigationOptions">0</property>
+            <property name="jdkHome"></property>
         </wizardBean>
         <wizardBean class="com.installshield.product.wizardbeans.InstallCheckPanel" id="check">
             <property name="displayName">Install Check</property>

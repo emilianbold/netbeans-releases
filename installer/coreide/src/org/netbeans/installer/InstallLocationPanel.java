@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,22 +21,25 @@ import com.installshield.wizard.service.ServiceException;
 
 import java.io.File;
 
-public class InstallLocationPanel extends DestinationPanel
-{
+public class InstallLocationPanel extends DestinationPanel {
+    
+    private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
+    
     public boolean queryEnter (WizardBeanEvent event) {
+        logEvent(this, Log.DBG, "queryEnter ENTER");
         try {
             ProductService service = (ProductService) getService(ProductService.NAME);
             String destination = (String) service.getProductBeanProperty(
             ProductService.DEFAULT_PRODUCT_SOURCE, null, "installLocation");
             
-            if (! System.getProperty("os.name").startsWith("Windows")) {
+            if (!Util.isWindowsOS()) {
                 File root = new File("/");
-                if (! root.canWrite()) {
+                if (!root.canWrite()) {
                     service.setProductBeanProperty(
                     ProductService.DEFAULT_PRODUCT_SOURCE,
                     null,
                     "installLocation",
-                    resolveString("$L(org.netbeans.installer.Bundle, Product.installLocationForNonRoot)"));
+                    resolveString(BUNDLE + "Product.installLocationForNonRoot)"));
                 }
             }
         } catch (ServiceException e) {
@@ -45,9 +48,9 @@ public class InstallLocationPanel extends DestinationPanel
         
         return super.queryEnter(event);
     }
-    
+
     public void exited (WizardBeanEvent event) {
-        //Call to update product tree
+        logEvent(this, Log.DBG, "exited ENTER");
         super.exited(event);
         try {
             //Set install location for storage builder
@@ -63,4 +66,23 @@ public class InstallLocationPanel extends DestinationPanel
             logEvent(this, Log.ERROR, e);
         }
     }
+    
+    public void execute (WizardBeanEvent event) {
+        logEvent(this, Log.DBG, "execute ENTER");
+        super.execute(event);
+        try {
+            //Set install location for storage builder
+            ProductService service = (ProductService)getService(ProductService.NAME);
+            String productDestination = (String) service.getProductBeanProperty(
+            ProductService.DEFAULT_PRODUCT_SOURCE, null, "installLocation");
+            String sbDestination = productDestination + File.separator + "_uninst" + File.separator + "storagebuilder"; 
+            logEvent(this, Log.DBG, "execute productDestination: " + productDestination);
+            logEvent(this, Log.DBG, "execute sbDestination: " + sbDestination);
+            service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
+            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
+        } catch (ServiceException e) {
+            logEvent(this, Log.ERROR, e);
+        }
+    }
+    
 }

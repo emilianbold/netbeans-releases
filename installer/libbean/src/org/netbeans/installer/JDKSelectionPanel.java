@@ -13,18 +13,21 @@
 
 package org.netbeans.installer;
 
+import com.installshield.wizard.WizardBean;
 import java.io.File;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import com.installshield.util.Log;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.util.LocalizedStringResolver;
+import com.installshield.wizard.OptionsTemplateEntry;
 import com.installshield.wizard.service.WizardServicesUI;
 
 public class JDKSelectionPanel extends DirectoryChooserPanel {
 
     private String jdkHome;
-
+    
+    private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
+    
     public boolean queryEnter(WizardBeanEvent event) {
         
         // Get the object of JDKSearchAction set in the system property (set by JDKSearchAction)
@@ -35,26 +38,26 @@ public class JDKSelectionPanel extends DirectoryChooserPanel {
         if (jdkHomeList.size() != 0) {
             if (Util.isMacOSX() && Util.isASBundle()) {
                 description = resolveString
-                ("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.description_MacOSX_ASBundle)");
+                (BUNDLE + "JDKSelectionPanel.description_MacOSX_ASBundle)");
             } else {
                 description = resolveString
-                ("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.description)");
+                (BUNDLE + "JDKSelectionPanel.description)");
             }
         } else {
             if (Util.isMacOSX() && Util.isASBundle()) {
                 description = resolveString
-                ("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.descriptionJdkNotFound_MacOSX_ASBundle)");
+                (BUNDLE + "JDKSelectionPanel.descriptionJdkNotFound_MacOSX_ASBundle)");
             } else {
                 description = resolveString
-                ("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.descriptionJdkNotFound)");
+                (BUNDLE + "JDKSelectionPanel.descriptionJdkNotFound)");
             }
         }
         
         setDescription(description);
         
-        setDestinationCaption("$L(org.netbeans.installer.Bundle, JDKSelectionPanel.jdkHomeLabel)");
+        setDestinationCaption(BUNDLE + "JDKSelectionPanel.jdkHomeLabel)");
         
-        String listLabelText = resolveString("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.jdkListLabel)"); //NOI18N
+        String listLabelText = resolveString(BUNDLE + "JDKSelectionPanel.jdkListLabel)");
         setDestinationsCaption(listLabelText);
         
         destinations = new Vector(jdkHomeList.size());
@@ -82,20 +85,46 @@ public class JDKSelectionPanel extends DirectoryChooserPanel {
         
         boolean belowRecommendedJDK = isBelowRecommendedJDK(jdkHome);
         logEvent(this, Log.DBG, "belowRecommendedJDK: " + belowRecommendedJDK);
-        Util.setJdkHome(jdkHome);
         // set flag so that we can send user a message in install summary panel.
         if (belowRecommendedJDK) {
-            logEvent(this, Log.DBG, "User Selected Java Home is below recommended JDK: " + jdkHome); //NOI18N
+            logEvent(this, Log.DBG, "User Selected Java Home is below recommended JDK: " + jdkHome);
         }
-        logEvent(this, Log.DBG, "User Selected Java Home: " + jdkHome); //NOI18N
+        logEvent(this, Log.DBG, "User Selected Java Home: " + jdkHome);
         Util.setBelowRecommendedJDK(belowRecommendedJDK);
         
         return true;
     }
     
+    public void exited (WizardBeanEvent event) {
+        logEvent(this, Log.DBG, "exited ENTER");
+        super.exited(event);
+        logEvent(this, Log.DBG, "exited call of Util.setJdkHome(" + jdkHome + ")");
+        Util.setJdkHome(jdkHome);
+    }
+    
+    public void execute (WizardBeanEvent event) {
+        logEvent(this, Log.DBG, "execute ENTER");
+        super.execute(event);
+        logEvent(this, Log.DBG, "execute call of Util.setJdkHome(" + jdkHome + ")");
+        Util.setJdkHome(jdkHome);
+    }
+    
+    /** We do not localize following text. */
+    public OptionsTemplateEntry[] getOptionsTemplateEntries (int i) {
+        String s = "JDKSelectionPanel";
+        String s1 = "Path to selected JDK.";
+        String s2 = "-W " + getBeanId() + ".jdkHome=";
+        if (i == WizardBean.TEMPLATE_VALUE) {
+            s2 = s2 + getOptionsFileTemplateValueStr();
+        } else {
+            s2 = s2 + getJdkHome();
+        }
+        return (new OptionsTemplateEntry[] {new OptionsTemplateEntry(s, s1, s2)});
+    }
+  
     private boolean isBelowRecommendedJDK(String jdkHome) {
         if (JDKVersion.isBelowRecommendedJDK(jdkHome)) {
-            logEvent(this, Log.DBG, "User Selected Java Home is below recommended JDK: " + jdkHome); //NOI18N
+            logEvent(this, Log.DBG, "User Selected Java Home is below recommended JDK: " + jdkHome);
             return true;
         }
         return false;
@@ -146,15 +175,23 @@ public class JDKSelectionPanel extends DirectoryChooserPanel {
 
             String osArch = runCommand.getOutputLine().trim();
             if (osArch.equals("amd64")) {
-                String msg = resolveString("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.64bitJDKNotSupported,"
-                + "$L(org.netbeans.installer.Bundle,AS.name))");
-                String title = resolveString("$L(org.netbeans.installer.Bundle,JDKSelectionPanel.checkJdkDialogTitle)");
+                String msg = resolveString(BUNDLE + "JDKSelectionPanel.64bitJDKNotSupported,"
+                + BUNDLE + "AS.name))");
+                String title = resolveString(BUNDLE + "JDKSelectionPanel.checkJdkDialogTitle)");
                 showErrorMsg(title,msg);
                 return false;
             }
         }
 
         return true;
+    }
+
+    public String getJdkHome () {
+        return jdkHome;
+    }
+    
+    public void setJdkHome (String jdkHome) {
+        this.jdkHome = jdkHome;
     }
     
     protected void showErrorMsg(String title, String msg) {
