@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -114,11 +115,15 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             public boolean isEnabled (Object node) {
                 return true;
             }
-            public void perform (Object[] nodes) {
-                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-                int i, k = nodes.length;
-                for (i = 0; i < k; i++)
-                    dm.removeBreakpoint ((Breakpoint) nodes [i]);
+            public void perform (final Object[] nodes) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                        int i, k = nodes.length;
+                        for (i = 0; i < k; i++)
+                            dm.removeBreakpoint ((Breakpoint) nodes [i]);
+                    }
+                });
             }
         },
         Models.MULTISELECTION_TYPE_ANY
