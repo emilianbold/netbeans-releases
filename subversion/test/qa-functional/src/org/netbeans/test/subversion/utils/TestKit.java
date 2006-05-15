@@ -11,6 +11,8 @@ package org.netbeans.test.subversion.utils;
 
 import java.io.File;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -107,4 +109,27 @@ public final class TestKit {
         }
         return result; 
     }
+    
+    public static void createNewElements(String projectName, String packageName, String name) {
+        //String pack = "xx";
+        
+        NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Package");
+        nfwo.next();
+        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText(packageName);
+        nfnlso.finish();
+        
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText(name);
+        nfnlso.selectPackage(packageName);
+        nfnlso.finish();
+    }    
 }
