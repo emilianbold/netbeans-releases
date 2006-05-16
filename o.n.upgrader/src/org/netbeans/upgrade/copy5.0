@@ -44,6 +44,7 @@ include Services/J2EEServers/.*
 
 include Databases/.*
 include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
+include Services/org-netbeans-modules-derby-DerbyOptions\.settings
 
 include Services/org-netbeans-modules-java-settings-JavaSettings\.settings
 #include Services/org-openide-src-nodes-SourceOptions\.settings
