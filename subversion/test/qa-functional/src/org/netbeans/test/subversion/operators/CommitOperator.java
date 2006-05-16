@@ -69,7 +69,8 @@ public class CommitOperator extends NbDialogOperator {
     private JLabelOperator _lblFilesToCommit;
     private JTableOperator _tabFiles;
     private JButtonOperator _btCommit;
-
+    private JButtonOperator _btCancel;
+    private JButtonOperator _btHelp;
 
     //******************************
     // Subcomponents definition part
@@ -100,7 +101,7 @@ public class CommitOperator extends NbDialogOperator {
      */
     public JLabelOperator lblFilesToCommit() {
         if (_lblFilesToCommit==null) {
-            _lblFilesToCommit = new JLabelOperator(this, "Files to Commit");
+            _lblFilesToCommit = new JLabelOperator(this, "Commit Files");
         }
         return _lblFilesToCommit;
     }
@@ -125,6 +126,25 @@ public class CommitOperator extends NbDialogOperator {
         return _btCommit;
     }
 
+    /** Tries to find "Cancel" JButton in this dialog.
+     * @return JButtonOperator
+     */
+    public JButtonOperator btCancel() {
+        if (_btCancel==null) {
+            _btCancel = new JButtonOperator(this, "Cancel");
+        }
+        return _btCancel;
+    }
+    
+    /** Tries to find "Help" JButton in this dialog.
+     * @return JButtonOperator
+     */
+    public JButtonOperator btHelp() {
+        if (_btHelp==null) {
+            _btHelp = new JButtonOperator(this, "Help");
+        }
+        return _btHelp;
+    }
 
     //****************************************
     // Low-level functionality definition part
@@ -181,5 +201,7 @@ public class CommitOperator extends NbDialogOperator {
         lblFilesToCommit();
         tabFiles();
         btCommit();
+        btCancel();
+        btHelp();
     }
 }

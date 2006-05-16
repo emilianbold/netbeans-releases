@@ -10,12 +10,14 @@
 package org.netbeans.test.subversion.main.commit;
 
 import java.io.File;
+import javax.swing.table.TableModel;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CommitOperator;
 import org.netbeans.test.subversion.operators.CommitStepOperator;
@@ -97,8 +99,28 @@ public class CommitUiTest extends JellyTestCase{
         cso.finish();
         
         TestKit.createNewElements(PROJECT_NAME, "xx", "NewClass");
+        TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass2");
+        TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass3");
         Node packNode = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
         CommitOperator co = CommitOperator.invoke(packNode);
+        
+        co.selectCommitAction("NewClass.java", "Add As Text");
+        co.selectCommitAction("NewClass.java", "Add As Binary");
+        co.selectCommitAction("NewClass.java", "Exclude from Commit");
+        co.selectCommitAction(2, "Add As Text");
+        co.selectCommitAction(2, "Add As Binary");
+        co.selectCommitAction(2, "Exclude from Commit");
+        
+        JTableOperator table = co.tabFiles();
+        TableModel model = table.getModel();
+        String[] expected = {"xx", "NewClass.java", "NewClass2.java",  "NewClass3.java"};
+        String[] actual = new String[model.getRowCount()];
+        for (int i = 0; i < model.getRowCount(); i++) {
+            actual[i] = model.getValueAt(i, 0).toString();
+        }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Commit table doesn't contain all files!!!", expected.length, result);
+        
         co.verify();
         co.cancel();
         TestKit.removeAllData(PROJECT_NAME);        

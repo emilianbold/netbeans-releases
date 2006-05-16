@@ -132,4 +132,18 @@ public final class TestKit {
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
     }    
+    
+    public static void createNewElement(String projectName, String packageName, String name) {
+        //String pack = "xx";
+        
+        NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText(name);
+        nfnlso.selectPackage(packageName);
+        nfnlso.finish();
+    }    
 }
