@@ -70,7 +70,6 @@ public class PostInstallFixupAppServerAction extends ProductAction {
             }
         } catch (Exception e) {
             logEvent(this, Log.ERROR, e);
-            nbInstallDir = Util.getNbInstallDir();
         }
         
         logEvent(this, Log.DBG,"nbInstallDir is " + nbInstallDir);

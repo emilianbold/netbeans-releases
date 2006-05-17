@@ -32,7 +32,6 @@ public class PostInstallWizardAction extends WizardAction {
             (ProductService.DEFAULT_PRODUCT_SOURCE,null,"absoluteInstallLocation");
         } catch (Exception e) {
             logEvent(this, Log.ERROR, e);
-            nbInstallDir = Util.getNbInstallDir();
         }
 
  	if (Util.isWindowsOS()) {
