@@ -112,7 +112,7 @@ public class CopyUiTest extends JellyTestCase{
         //Creation of new folder was canceled - no new folder can't be created
         TimeoutExpiredException tee = null;
         try {
-            rbio.selectFolder("branches/release01-" + PROJECT_NAME);
+            rbio.selectFolder("branches|release01-" + PROJECT_NAME);
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
@@ -122,7 +122,7 @@ public class CopyUiTest extends JellyTestCase{
         cnfo = rbio.createNewFolder();
         cnfo.setFolderName("release01-" + PROJECT_NAME);
         cnfo.ok();
-        rbio.selectFolder("release01-" + PROJECT_NAME);
+        rbio.selectFolder("branches|release01-" + PROJECT_NAME);
         rbio.ok();
         assertEquals("New folder for copy purpose wasn't created", "branches/release01-" + PROJECT_NAME, cto.getSelectedRepositoryFolder());
        
