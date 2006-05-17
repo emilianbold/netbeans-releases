@@ -99,7 +99,7 @@ public final class Log extends Handler {
         }
 
         Logger l = Logger.getLogger(loggerName);
-        if (l.getLevel().intValue() > level.intValue()) {
+        if (l.getLevel() == null || l.getLevel().intValue() > level.intValue()) {
             l.setLevel(level);
         }
         MyPs ps = new MyPs();
