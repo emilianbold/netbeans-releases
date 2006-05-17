@@ -565,14 +565,15 @@ public class MutexTest extends NbTestCase {
         A.start();
         tickX1.waitOn();
         // A reached point X
-        
+       
         B.start();
         tickX3.waitOn();
         // B reached point X, unlocked A so in would block on lock(L)
         
         C.start();
-        // C is blocking in leave/privilegedEnter
-        
+	Thread.sleep(100); // wait for C to perform exitReadAccess (can't
+                           // tick as it will block in case of failure...)
+	
         tickX1.tick();
         // push B, everything should finish after this
         
@@ -868,6 +869,48 @@ public class MutexTest extends NbTestCase {
         });
         
         new ReadWriteChecking ("None at the end", Boolean.FALSE, Boolean.FALSE).run ();
+    }
+
+    // [pnejedly:] There was an attempt to fix Starvation68106 by allowing read
+    // enter while Mutex is currently in CHAIN mode, but that's wrong, as it can
+    // be CHAIN/W (write granted, readers waiting). Let's cover this with a test.
+    public void testReaderCannotEnterWriteChainedMutex() throws Exception {
+        final Mutex.Privileged PR = new Mutex.Privileged();
+        final Mutex M = new Mutex(PR);
+        final boolean[] done = new boolean[2];
+        
+        final Ticker tickX1 = new Ticker();     
+        final Ticker tickX2 = new Ticker();     
+        final Ticker tickX3 = new Ticker();     
+        
+        PR.enterWriteAccess();
+        
+        Thread A = new Thread("A") { public void run() {
+            PR.enterReadAccess();
+            done[0] = true;
+            PR.exitReadAccess();
+        }};
+               
+        Thread B = new Thread("B") { public void run() {
+            PR.enterReadAccess();
+            done[1] = true;
+            PR.exitReadAccess();
+        }};
+
+        A.start();
+        Thread.sleep(100); // wait for A to chain in M
+        
+        B.start();
+        Thread.sleep(100);; // B should chain as well
+        
+        assertFalse ("B should chain-wait", done[1]);
+        
+        // final cleanup and consistency check:
+        PR.exitWriteAccess();
+        A.join(1000);
+        B.join(1000);
+        assertTrue("A finished after unblocking M", done[0]);
+        assertTrue("B finished after unblocking M", done[1]);
     }
     
     public void testIsReadOrWriteForEventMutex () throws Exception {
