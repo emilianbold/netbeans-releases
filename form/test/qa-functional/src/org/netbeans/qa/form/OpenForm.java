@@ -154,7 +154,7 @@ public class OpenForm extends JellyTestCase {
                 
                 
                 formDesignerOperator.btPreviewForm().push();
-                frameOperator = new FrameOperator("Form Preview [" + filenamenoext +"]");
+                frameOperator = new FrameOperator("Design Preview [" + filenamenoext +"]");
                 
 //                org.netbeans.jemmy.util.PNGEncoder.captureScreen(formDesignerOperator.fakePane().getSource(), workdirpath + fileSeparator + filenamenoext + ".png");
                 
@@ -165,7 +165,7 @@ public class OpenForm extends JellyTestCase {
                 org.netbeans.jemmy.util.PNGEncoder.captureScreen(frameOperator.getSource(), workdirpath + fileSeparator + filenamenoext + ".png");
                 
                 frameOperator.close();
-                formDesignerOperator.editor().closeDiscardAll(); // strange, but have to do it !!!
+                formDesignerOperator.close();
                 
                 bufferedWriter.write("<TABLE width=\"98%\" cellspacing=\"2\" cellpadding=\"5\" border=\"0\">");
                 bufferedWriter.write("<TR bgcolor=\"#A6CAF0\" align=\"center\">");

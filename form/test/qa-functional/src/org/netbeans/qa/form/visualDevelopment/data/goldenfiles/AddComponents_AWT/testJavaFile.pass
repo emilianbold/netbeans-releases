@@ -89,8 +89,7 @@ public class clear_Frame extends java.awt.Frame {
         setMenuBar(menuBar1);
 
         pack();
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     /** Exit the Application */
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm

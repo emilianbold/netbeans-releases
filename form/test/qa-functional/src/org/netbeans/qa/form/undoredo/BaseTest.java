@@ -117,9 +117,9 @@ public class BaseTest extends JellyTestCase {
         
         //init property sheet and select the proper "tab"
         PropertySheetOperator pso = cio.properties();
-        selectPropertiesTab(pso);
+//        selectPropertiesTab(pso);
         new Action(null,"Add From Palette|Swing|JPanel").performPopup(new Node(inspector.treeComponents(),"[JFrame]"));
-        selectPropertiesTab(pso);
+//        selectPropertiesTab(pso);
         new Action(null,"Add From Palette|Swing|JPanel").performPopup(new Node(inspector.treeComponents(),"[JFrame]"));
         
         
@@ -129,10 +129,11 @@ public class BaseTest extends JellyTestCase {
         inspector.selectComponent("[JFrame]|JPanel1 [JPanel]");
         selectPropertiesTab(pso);
         
-        new ColorProperty(pso, "background").setRGBValue(202,234,223);
+//        new ColorProperty(pso, "background").setRGBValue(202,234,223);
+        new ColorProperty(new PropertySheetOperator("jPanel1 [JPanel] - Properties"), "background").invokeCustomizer().setColorValue(new Color(202,234,223));
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]");
         selectPropertiesTab(pso);
-        new ColorProperty(pso, "background").setRGBValue(252,34,3);
+        new ColorProperty(new PropertySheetOperator("jPanel2 [JPanel] - Properties"), "background").setRGBValue(252,34,3);
         
         // add JButton1 to JPanel1
         new Action(null,"Add From Palette|Swing|JButton").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel1 [JPanel]"));
@@ -175,6 +176,7 @@ public class BaseTest extends JellyTestCase {
         
         // event
         selectEventsTab(pso);
+        
         Property prop = new Property(pso, "actionPerformed");
         prop.setValue("myAction");
 
