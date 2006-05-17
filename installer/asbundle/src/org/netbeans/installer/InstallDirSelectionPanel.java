@@ -16,6 +16,8 @@ package org.netbeans.installer;
 import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
 import com.installshield.util.MnemonicString;
+import com.installshield.wizard.OptionsTemplateEntry;
+import com.installshield.wizard.WizardBean;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.console.ConsoleWizardPanelImpl;
@@ -72,6 +74,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     
     private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
     
+    private String nbDestination;
+    
+    private String asDestination;
+    
     public void build(WizardBuilderSupport support) {
         super.build(support);
         try {
@@ -109,6 +115,47 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     public boolean entered(WizardBeanEvent event) {
         nbInstallDirTF.requestFocus();
         return true;
+    }
+    
+    public String getNbDestination () {
+        return nbDestination;
+    }
+    
+    public void setNbDestination (String nbDestination) {
+        this.nbDestination = nbDestination;
+    }
+    
+    public String getAsDestination () {
+        return asDestination;
+    }
+    
+    public void setAsDestination (String asDestination) {
+        this.asDestination = asDestination;
+    }
+    
+    /** We do not localize following text. */
+    public OptionsTemplateEntry[] getOptionsTemplateEntries (int i) {
+        String s = "InstallDirSelectionPanel";
+        String s1 = "Destination directory for NetBeans IDE.";
+        String s2 = "-W " + getBeanId() + ".nbDestination=";
+        if (i == WizardBean.TEMPLATE_VALUE) {
+            s2 = s2 + getOptionsFileTemplateValueStr();
+        } else {
+            s2 = s2 + getNbDestination();
+        }
+        OptionsTemplateEntry op1 = new OptionsTemplateEntry(s, s1, s2);
+        
+        s = "InstallDirSelectionPanel";
+        s1 = "Destination directory for SJS AS.";
+        s2 = "-W " + getBeanId() + ".asDestination=";
+        if (i == WizardBean.TEMPLATE_VALUE) {
+            s2 = s2 + getOptionsFileTemplateValueStr();
+        } else {
+            s2 = s2 + getAsDestination();
+        }
+        OptionsTemplateEntry op2 = new OptionsTemplateEntry(s, s1, s2);
+        
+        return (new OptionsTemplateEntry[] {op1, op2});
     }
     
     protected void initialize() {
@@ -316,8 +363,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     public boolean queryExit(WizardBeanEvent event) {
         String nbInstallDir = nbInstallDirTF.getText().trim();
         File instDirFile = new File(nbInstallDir);
-	String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
-	logEvent(this, Log.DBG, "queryExit productURL: " + productURL);
 	// Only get the canonical path if the install dir is not an empty string.
 	// getCanonicalPath returns the directory the installer is run from if the
 	// install dir is an empty string.
@@ -346,26 +391,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         if (!checkInstallDir(nbInstallDir, NB_INSTALL_DIR, nbMsgStart)) {
             return false;
 	}
-	try {
-	    ProductService service = (ProductService)getService(ProductService.NAME);
-	    service.setRetainedProductBeanProperty(productURL,
-            Names.CORE_IDE_ID, "installLocation", nbInstallDir);
-            service.setRetainedProductBeanProperty(productURL, Names.APP_SERVER_ID, "installLocation",
-            nbInstallDir + File.separator + InstallApplicationServerAction.UNINST_DIRECTORY_NAME);
-            service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbInstallDir);
-            service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbInstallDir);
-            //Set install location for Storage Builder
-            String sbDestination = nbInstallDir + File.separator + "_uninst" + File.separator + "storagebuilder";
-            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
-            service.setRetainedProductBeanProperty(productURL,
-            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
-	} catch (ServiceException e) {
-	    logEvent(this, Log.ERROR, e);
-	}
 	
-	System.getProperties().put("nbInstallDir", nbInstallDir);
-	logEvent(this, Log.DBG, "User specified nbInstallDir: " + nbInstallDir);
-        
         String asInstallDir = asInstallDirTF.getText().trim();
         instDirFile = new File(asInstallDir);
 	// Only get the canonical path if the install dir is not an empty string.
@@ -382,7 +408,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	}
         asInstallDirTF.setText(asInstallDir);
         
-        Util.setASInstallDir(asInstallDir);
         
  	// Check the as directory
         String asMsgStart = null;
@@ -414,7 +439,56 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             }
 	}
         
+        nbDestination = nbInstallDir;
+        asDestination = asInstallDir;
+        
 	return true;
+    }
+    
+    public void exited (WizardBeanEvent event) {
+        logEvent(this, Log.DBG, "exited ENTER");
+        super.exited(event);
+	try {
+            String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
+	    ProductService service = (ProductService)getService(ProductService.NAME);
+	    service.setRetainedProductBeanProperty(productURL,
+            Names.CORE_IDE_ID, "installLocation", nbDestination);
+            service.setRetainedProductBeanProperty(productURL, Names.APP_SERVER_ID, "installLocation",
+            nbDestination + File.separator + InstallApplicationServerAction.UNINST_DIRECTORY_NAME);
+            service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbDestination);
+            service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbDestination);
+            //Set install location for Storage Builder
+            String sbDestination = nbDestination + File.separator + "_uninst" + File.separator + "storagebuilder";
+            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
+            service.setRetainedProductBeanProperty(productURL,
+            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
+	} catch (ServiceException e) {
+	    logEvent(this, Log.ERROR, e);
+	}
+        Util.setASInstallDir(asDestination);
+    }
+    
+    public void execute (WizardBeanEvent event) {
+        logEvent(this, Log.DBG, "execute ENTER");
+        super.execute(event);
+	try {
+            String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
+	    ProductService service = (ProductService)getService(ProductService.NAME);
+	    service.setRetainedProductBeanProperty(productURL,
+            Names.CORE_IDE_ID, "installLocation", nbDestination);
+            service.setRetainedProductBeanProperty(productURL, Names.APP_SERVER_ID, "installLocation",
+            nbDestination + File.separator + InstallApplicationServerAction.UNINST_DIRECTORY_NAME);
+            service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbDestination);
+            service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbDestination);
+            //Set install location for Storage Builder
+            String sbDestination = nbDestination + File.separator + "_uninst" + File.separator + "storagebuilder";
+            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
+            service.setRetainedProductBeanProperty(productURL,
+            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
+	} catch (ServiceException e) {
+	    logEvent(this, Log.ERROR, e);
+	}
+        Util.setASInstallDir(asDestination);
     }
     
     /* Check the installation directory to see if it has illegal chars,

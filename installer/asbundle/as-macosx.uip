@@ -502,7 +502,7 @@
             <property name="onDisapprove">1</property>
             <property name="warningMessage">$L(com.installshield.wizardx.i18n.WizardXResources, ApprovalPanel.cantContinueMsg)</property>
         </wizardBean>
-        <wizardBean class="org.netbeans.installer.InstallDirSelectionPanel" id="bean4">
+        <wizardBean class="org.netbeans.installer.InstallDirSelectionPanel" id="beanInstallDirPanel">
             <property name="displayName">Install Dir Selection Panel</property>
             <property name="active">True</property>
             <property name="buildCategories"/>
