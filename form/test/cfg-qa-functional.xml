@@ -15,6 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Form config">
     
 
+<!-- Marek G. -->
    <testbag testattribs="validation, full" executor="ide" name="testbag_OpenForms">
         <testset dir="qa-functional/src">
             <patternset>
@@ -22,9 +23,9 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+<!--  Marek G.  -->
 
-
-<!-- Marek G. 
+<!-- Marek G. -->  
    <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development">
         <testset dir="qa-functional/src">
             <patternset>
@@ -32,16 +33,19 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
- -->    
+<!-- Marek G. -->    
 
-<!--   <testbag testattribs="validation, full" executor="ide" name="testbag_compatibility">
+<!-- no tests
+    <testbag testattribs="validation, full" executor="ide" name="testbag_compatibility">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/compatibility/*.*"/>		
             </patternset>
         </testset>
     </testbag>
+-->    
 
+<!-- no tests
     <testbag testattribs="validation, full" executor="ide" name="testbag_palette">
         <testset dir="qa-functional/src">
             <patternset>
@@ -49,10 +53,9 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-
 -->
-    
-<!-- Marek G. 
+
+<!-- dont work 
     <testbag testattribs="validation, full" executor="ide" name="testbag_undo_redo">
         <testset dir="qa-functional/src">
             <patternset>
