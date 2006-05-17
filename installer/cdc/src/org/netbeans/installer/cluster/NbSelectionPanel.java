@@ -21,6 +21,8 @@ import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.util.LocalizedStringResolver;
 import com.installshield.util.Log;
 import com.installshield.util.StringUtils;
+import com.installshield.wizard.OptionsTemplateEntry;
+import com.installshield.wizard.WizardBean;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.WizardServicesUI;
@@ -129,11 +131,48 @@ public class NbSelectionPanel extends DirectoryChooserPanel
         return validateDestination();
     }
     
-    public void exited(WizardBeanEvent event) {
+    public String getNbHome () {
+        return nbHome;
+    }
+    
+    public void setNbHome (String nbHome) {
+        this.nbHome = nbHome;
+    }
+    
+    /** We do not localize following text. */
+    public OptionsTemplateEntry[] getOptionsTemplateEntries (int i) {
+        String s = "NbSelectionPanel";
+        String s1 = "Home directory of NetBeans IDE where addon will be installed.";
+        String s2 = "-W " + getBeanId() + ".nbHome=";
+        if (i == WizardBean.TEMPLATE_VALUE) {
+            s2 = s2 + getOptionsFileTemplateValueStr();
+        } else {
+            s2 = s2 + getNbHome();
+        }
+        OptionsTemplateEntry op1 = new OptionsTemplateEntry(s, s1, s2);
+        
+        return (new OptionsTemplateEntry[] {op1});
+    }
+    
+    public void exited (WizardBeanEvent event) {
         super.exited(event);
         try {
             String installDir = getInstallDir();
-            
+            ProductService service = (ProductService)getService(ProductService.NAME);
+            service.setProductBeanProperty(
+            ProductService.DEFAULT_PRODUCT_SOURCE,
+            null,
+            "installLocation",
+            resolveString(getInstallDir()));
+        } catch (ServiceException e) {
+            logEvent(this, Log.ERROR, e);
+        }
+    }
+    
+    public void execute (WizardBeanEvent event) {
+        super.execute(event);
+        try {
+            String installDir = getInstallDir();
             ProductService service = (ProductService)getService(ProductService.NAME);
             service.setProductBeanProperty(
             ProductService.DEFAULT_PRODUCT_SOURCE,
