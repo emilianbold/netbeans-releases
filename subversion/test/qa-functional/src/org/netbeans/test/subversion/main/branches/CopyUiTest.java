@@ -124,7 +124,7 @@ public class CopyUiTest extends JellyTestCase{
         cnfo.ok();
         rbio.selectFolder("branches|release01-" + PROJECT_NAME);
         rbio.ok();
-        assertEquals("New folder for copy purpose wasn't created", "branches/release01-" + PROJECT_NAME, cto.getSelectedRepositoryFolder());
+        assertEquals("New folder for copy purpose wasn't created", "branches/release01-" + PROJECT_NAME, cto.getRepositoryFolder());
        
         cto.cancel();
         TestKit.removeAllData(PROJECT_NAME); 

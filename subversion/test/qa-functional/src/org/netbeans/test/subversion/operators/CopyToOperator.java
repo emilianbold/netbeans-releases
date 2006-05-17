@@ -184,6 +184,10 @@ public class CopyToOperator extends NbDialogOperator {
     public String getSelectedRepositoryFolder() {
         return cboJComboBox().getSelectedItem().toString();
     }
+    
+    public String getRepositoryFolder() {
+        return cboJComboBox().getEditor().getItem().toString();
+    }
 
     /** selects item for cboJComboBox
      * @param item String item
