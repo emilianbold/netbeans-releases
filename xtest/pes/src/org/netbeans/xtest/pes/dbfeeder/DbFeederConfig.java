@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,6 +41,7 @@ public class DbFeederConfig implements XMLSerializable {
             GlobalMappingRegistry.registerClassForElementName("PESdbFeederConfig", DbFeederConfig.class);
             // register this class
             classMappingRegistry.registerSimpleField("loggingLevel",ClassMappingRegistry.ATTRIBUTE,"loggingLevel");
+            classMappingRegistry.registerSimpleField("deleteAge",ClassMappingRegistry.ATTRIBUTE,"deleteAge");
             classMappingRegistry.registerSimpleField("workDirs",ClassMappingRegistry.ELEMENT,"workdirs");
             classMappingRegistry.registerSimpleField("mail",ClassMappingRegistry.ELEMENT,"mail");
             classMappingRegistry.registerSimpleField("databaseConnection",ClassMappingRegistry.ELEMENT,"database");
@@ -64,6 +65,19 @@ public class DbFeederConfig implements XMLSerializable {
         return Level.parse(loggingLevel);
     }  
     
+    private int deleteAge;
+    
+    /** Returns deleteAge attribute from db-feeder config. It says how many
+     * builds should be kept in database. Builds beyond deleteAge threshold
+     * will be deleted.
+     */
+    public int getDeleteAge() {
+        if(deleteAge == 0) {
+            // if deleteAge not defined set it to max to not delete anything
+            deleteAge = Integer.MAX_VALUE;
+        }
+        return deleteAge;
+    }
     
     private WorkingDirectories workDirs;
     

@@ -193,6 +193,8 @@ public class DbFeeder {
                        // we should probably check the results of the delete operation                       
                        irFiles[i].delete();
                        xtrFile.delete();
+                       // delete results for builds beyond deleteAge threshold
+                       deleteOldResults(xtr, config.getDeleteAge(), metadata);
                    } else {
                        // XTestResultsReport is invalid
                        PESLogger.logger.warning("XTestResultsReport from file "+
@@ -320,6 +322,29 @@ public class DbFeeder {
        }
    }
    
+    /** Deletes results for builds beyond deleteAge threshold. It deletes only
+     * builds which have the same attributes like given XTestResultsReport. It 
+     * also ignores milestone builds.
+     */
+   private void deleteOldResults(XTestResultsReport xtr, int deleteAge, UploadMetadata metadata) throws SQLException {
+       Connection connection = null;
+       try {
+           connection = config.getDatabaseConnection();
+           DbStorage dbs = new DbStorage(connection);
+           dbs.deleteOldResults(xtr, deleteAge);
+           connection.commit();
+       } catch (SQLException sqle) {
+           // just report the exception and perform rollback
+           String message = "Caught SQLException when deleting old results: deleteAge="+deleteAge+
+                            ", project_id="+xtr.getProject_id()+", team="+xtr.getTeam()+
+                            ", testinggroup="+xtr.getTestingGroup()+", testedtype="+xtr.getTestedType();
+           PESLogger.logger.log(Level.SEVERE, message, sqle);
+           notifyUser(metadata.getMailContact(), "PES: DbFeeder notification", message+"\n"+sqle.getMessage());
+           if (connection != null) {
+                connection.rollback();
+           }
+       }
+   }
    
    private void updateLocalTeamBuild(UploadMetadata metadata)  {
        WebStatus[] webs = metadata.getWebs();

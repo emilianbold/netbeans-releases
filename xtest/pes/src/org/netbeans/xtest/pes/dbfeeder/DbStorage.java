@@ -1,13 +1,13 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ package org.netbeans.xtest.pes.dbfeeder;
 
 
 import java.sql.*;
+import java.util.ArrayList;
 import org.netbeans.xtest.pe.ResultsUtils;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import org.netbeans.xtest.pes.xmlbeans.*;
@@ -38,28 +39,28 @@ import org.netbeans.xtest.util.OSNameMappingTable;
  * @version 0.2
  */
 public class DbStorage {
-
+    
     DbUtils utils;
     Connection connection;
     
     /** creates new DbStorageTask
-     */    
+     */
     public DbStorage(Connection connection) {
         this.connection = connection;
         utils = new DbUtils(connection);
     }
     
-
     
-
+    
+    
     /** performs storage of results using prepared connection
      * @param xtr - report to be stored
      * @param webLink - optional link to the report on the local pes
      * @throws Exception Exception
-     */    
+     */
     public synchronized void storeXTestResultsReport(XTestResultsReport xtr, boolean replace) throws SQLException {
         
-        try {            
+        try {
             PESLogger.logger.fine("Storing XTestResultsReport: "+xtr.getHost()+" "+xtr.getProject()+" "+xtr.getBuild());
             
             long systemInfo_id = storeSystemInfo(xtr.xmlel_SystemInfo[0]);
@@ -70,7 +71,7 @@ public class DbStorage {
             if (obj != null) {
                 if (replace) {
                     long storedReportID = ((Number)obj).longValue();
-                    PESLogger.logger.fine("Replacing XTestResultsReport with id: "+storedReportID);                    
+                    PESLogger.logger.fine("Replacing XTestResultsReport with id: "+storedReportID);
                     utils.deleteFromTable("XTestResultsReport","ID = "+storedReportID);
                 } else {
                     throw new SQLException("XTest Result Report already in database");
@@ -87,7 +88,7 @@ public class DbStorage {
                 // if testrun is empty - skip it and write out warning
                 if (run.xmlel_TestBag==null) {
                     PESLogger.logger.log(Level.WARNING,"Detected empty test run in report: from host"+xtr.getHost()
-                    +", project_id: "+xtr.getProject_id()+", build: "+xtr.getBuild()+", not storing this testrun to database");
+                            +", project_id: "+xtr.getProject_id()+", build: "+xtr.getBuild()+", not storing this testrun to database");
                 } else {
                     for (int j=0;j<run.xmlel_TestBag.length;j++) {
                         // although this is highly unprobable, better check for nulls
@@ -103,7 +104,7 @@ public class DbStorage {
                     storeReportAttribute(xtr.xmlel_Attribute[i], xtestResultsReport_id);
                 }
             }
-
+            
         } catch (IntrospectionException ie) {
             PESLogger.logger.log(Level.SEVERE,"Caught IntrospectionException when storing XTestResultsReport in database",ie);
             throw new SQLException("Caught IntrospectionException when storing XTestResultsReport in database: "+ie.getMessage());
@@ -130,7 +131,7 @@ public class DbStorage {
         }
         return id.longValue();
     }
-
+    
     void storeSystemInfoExtra(SystemInfoExtra extra, long systemInfo_id) throws SQLException, IntrospectionException {
         extra.setSystemInfo_id(systemInfo_id);
         PESLogger.logger.finest("System Info Extra: "+extra.getName()+"="+extra.getValue());
@@ -154,10 +155,10 @@ public class DbStorage {
                 PESLogger.logger.severe("Unknown OS detected when inserting new full os name to OSnames table. host="+info.getHost()+", osName="
                         +osName+", osVersion="+osVersion+", osArch="+osArch
                         +". You should manually fix the row with name="+fullOSName);
-                        
+                
             }
             String insert = "INSERT INTO OSnames VALUES ('"+fullOSName+"','"+osName+"','"
-                                    +osArch+"','"+osVersion+"')";
+                    +osArch+"','"+osVersion+"')";
             PESLogger.logger.fine("OS not found in OSnames table, inserting a new row. Statement:"+insert);
             Statement stmt = connection.createStatement();
             stmt.executeUpdate(insert);
@@ -165,14 +166,14 @@ public class DbStorage {
         } else {
             // nothing - so return
             return;
-        }        
+        }
     }
     
     
     // update the localteambuild table
     void updateLocalTeamBuild(String team, String project, String lastBuild) throws SQLException {
         PESLogger.logger.fine("Updating LocalTeamBuild table for project="+project+", team="+team+" with lastBuild = "+lastBuild);
-        // 
+        //
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
@@ -205,9 +206,9 @@ public class DbStorage {
             throw sqle;
         } finally {
             utils.closeStatement(stmt);
-        }        
+        }
     }
-
+    
     
     void storeTestBag(TestBag bag, long xtestResultsReport_id, String runID) throws SQLException, IntrospectionException {
         bag.setXTestResultsReport_id(xtestResultsReport_id);
@@ -257,7 +258,7 @@ public class DbStorage {
         PESLogger.logger.finest("Unit Test Case: "+test.getName());
         utils.insertBean(test);
     }
-
+    
     // is this correct -> shoudn't we agreed in term just plain 'data'
     void storePerformanceData(PerformanceData data, long testSuite_id) throws SQLException, IntrospectionException {
         data.setUnitTestSuite_id(testSuite_id);
@@ -266,7 +267,7 @@ public class DbStorage {
     }
     
     // store attributes - this is going to be a little tricky ....
-    void storeReportAttribute(Attribute attribute, long xtestResultsReport_id) throws SQLException {        
+    void storeReportAttribute(Attribute attribute, long xtestResultsReport_id) throws SQLException {
         String name = attribute.getName();
         String value = attribute.getValue();
         PESLogger.logger.finest("Attribute: "+name+" : "+value);
@@ -295,8 +296,8 @@ public class DbStorage {
     // helper method for obtaining the id of attribute name/value
     // it uses Long wrapper, because it returns null when the attribute does not exist
     private Long getAttributeID(String name, String value, Statement stmt) throws SQLException {
-        String attributeQuery = "SELECT id FROM Attribute WHERE name = '"+name+"' AND value = '"+value+"'";                
-        PESLogger.logger.finest("Detecting whether attribute is already in the table. Query:"+attributeQuery);        
+        String attributeQuery = "SELECT id FROM Attribute WHERE name = '"+name+"' AND value = '"+value+"'";
+        PESLogger.logger.finest("Detecting whether attribute is already in the table. Query:"+attributeQuery);
         ResultSet rs = stmt.executeQuery(attributeQuery);
         if (rs.next()) {
             // yes, it is in the table
@@ -306,7 +307,50 @@ public class DbStorage {
             // nothing is in the table
             return null;
         }
-
+        
     }
     
+    /** Deletes results for builds beyond deleteAge threshold. It deletes only
+     * builds which have the same attributes like given XTestResultsReport. It
+     * also ignores milestone builds.
+     */
+    public void deleteOldResults(XTestResultsReport xtr, int deleteAge) throws SQLException {
+        String[] builds = getBuilds(xtr);
+        if(builds.length > deleteAge) {
+            // remove older than deleteAge
+            for(int i=deleteAge;i<builds.length;i++) {
+                String whereClause = "build = '"+builds[i]+"' AND "+
+                        "project_id = '"+xtr.getProject_id()+"' AND "+
+                        "team = '"+xtr.getTeam()+"' AND "+
+                        "testinggroup = '"+xtr.getTestingGroup()+"' AND "+
+                        "testedtype = '"+xtr.getTestedType()+"'";
+                PESLogger.logger.finest("Going to delete out-dated results where:\n"+whereClause);
+                utils.deleteFromTable("XTestResultsReport", whereClause);
+            }
+        }
+    }
+    
+    /** Returns array of build numbers available in database for given report
+     * (i.e. same project, team, testinggroup and testedtype). It ignores
+     * milestone builds.
+     */
+    private String[] getBuilds(XTestResultsReport xtr) throws SQLException {
+        String sqlQuery = "SELECT DISTINCT build FROM XTestResultsReport WHERE "+
+                "project_id = '"+xtr.getProject_id()+"' AND "+
+                "team = '"+xtr.getTeam()+"' AND "+
+                "testinggroup = '"+xtr.getTestingGroup()+"' AND "+
+                "testedtype = '"+xtr.getTestedType()+"' AND "+
+                "build NOT IN (SELECT build FROM MilestoneBuild WHERE project_id = '"+xtr.getProject_id()+"')"+
+                "order by build desc";
+        Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        ResultSet resultSet = stmt.executeQuery(sqlQuery);
+        ArrayList list = new ArrayList();
+        resultSet.beforeFirst();
+        while (resultSet.next()) {
+            list.add(resultSet.getObject(1));
+        }
+        resultSet.close();
+        stmt.close();
+        return (String[])list.toArray(new String[list.size()]);
+    }
 }
