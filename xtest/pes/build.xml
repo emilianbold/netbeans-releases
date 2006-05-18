@@ -22,7 +22,8 @@ Microsystems, Inc. All Rights Reserved.
       <!-- compile xtest first -> pes depends on several of its classes -->
       <javac srcdir="../src" destdir="build/classes"
            deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}"> 
+           debug="${build.compiler.debug}"
+           source="1.4"> 
         <include name="org/netbeans/xtest/pe/**"/>
         <include name="org/netbeans/xtest/util/**"/>
         <include name="org/netbeans/xtest/xmlserializer/**"/>
@@ -33,7 +34,8 @@ Microsystems, Inc. All Rights Reserved.
 
       <javac srcdir="src" destdir="build/classes"
            deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}"> 
+           debug="${build.compiler.debug}"
+	   source="1.4"> 
         <classpath>		
             <pathelement location="${ant.home}/lib/ant.jar"/>
         </classpath>
