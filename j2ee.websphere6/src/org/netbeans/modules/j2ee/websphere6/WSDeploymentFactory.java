@@ -44,6 +44,7 @@ public class WSDeploymentFactory implements DeploymentFactory {
     
     public static final String USERNAME_ATTR = "username";
     public static final String PASSWORD_ATTR = "password";
+    public static final String DEFAULT_HOST_PORT_ATTR="defaultHostPort";
     
     /**
      * The singleton instance of the factory
@@ -111,7 +112,7 @@ public class WSDeploymentFactory implements DeploymentFactory {
             WSDebug.notify("handlesURI(" + uri + ")");                 // NOI18N
         
         //return uri == null ? false : uri.startsWith(
-        return uri == null ? false : (uri.indexOf("deployer:WebSphere:")>-1);                                // NOI18N
+        return uri == null ? false : (uri.indexOf(WSURIManager.WSURI)>-1);                                // NOI18N
     }
     
     /**

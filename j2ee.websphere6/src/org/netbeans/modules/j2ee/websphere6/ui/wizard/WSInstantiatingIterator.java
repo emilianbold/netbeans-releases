@@ -93,7 +93,7 @@ public class WSInstantiatingIterator
         Set result = new HashSet();
         
         // build the URL
-        String url = /*"["+domainRoot+"]"+*/"deployer:WebSphere:" + this.host + ":" +         // NOI18N
+        String url = /*"["+domainRoot+"]"+*/WSURIManager.WSURI + this.host + ":" +         // NOI18N
                 this.port; 
         
         // build the display name
@@ -114,6 +114,7 @@ public class WSInstantiatingIterator
                     DEFAULT_DEBUGGER_PORT);
             ip.setProperty(WSDeploymentFactory.CONFIG_XML_PATH, configXmlPath);
             ip.setProperty(WSDeploymentFactory.ADMIN_PORT_ATTR, adminPort);
+	    ip.setProperty(WSDeploymentFactory.DEFAULT_HOST_PORT_ATTR, defaultHostPort);
             
             // add the created instance properties to the result set
             result.add(ip);
@@ -173,7 +174,7 @@ public class WSInstantiatingIterator
     private String serverName;
     private String configXmlPath;
     private String adminPort;
-    
+    private String defaultHostPort;
     /**
      * Setter for the server installation directory
      *
@@ -346,6 +347,14 @@ public class WSInstantiatingIterator
     
     public void setAdminPort(String adminPort) {
         this.adminPort = adminPort;
+    }
+
+    public String getDefaultHostPort() {
+        return defaultHostPort;
+    }
+    
+    public void setDefaultHostPort(String defaultHostPort) {
+        this.defaultHostPort = defaultHostPort;
     }
     
     ////////////////////////////////////////////////////////////////////////////

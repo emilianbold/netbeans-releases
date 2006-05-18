@@ -203,6 +203,8 @@ public class ServerPropertiesPanel extends JPanel
                 getSelectedItem()).getConfigXmlPath());
         instantiatingIterator.setAdminPort(((Instance) localInstancesCombo.
                 getSelectedItem()).getAdminPort());
+	instantiatingIterator.setDefaultHostPort(((Instance) localInstancesCombo.
+                getSelectedItem()).getDefaultHostPort());
         
         // everything seems ok
         return true;

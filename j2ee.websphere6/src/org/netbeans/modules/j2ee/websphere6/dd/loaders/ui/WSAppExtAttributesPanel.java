@@ -78,15 +78,18 @@ public class WSAppExtAttributesPanel extends SectionInnerPanel
         dObj.modelUpdatedFromUI();
     }
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
-        appext.setReload(reloadIntervalCheckBox.isSelected());
-        if(reloadIntervalCheckBox.isSelected()) {
-            appext.setReloadInterval(reloadIntervalSpinner.getValue().toString());            
-            reloadIntervalSpinner.setEnabled(true);
-        } else {
-            appext.setReloadInterval(null);
-            reloadIntervalSpinner.setEnabled(false);
+        if(evt.getSource()==reloadIntervalCheckBox) {
+            appext.setReload(reloadIntervalCheckBox.isSelected());
+            if(reloadIntervalCheckBox.isSelected()) {
+                appext.setReloadInterval(reloadIntervalSpinner.getValue().toString());
+                reloadIntervalSpinner.setEnabled(true);
+            } else {
+                appext.setReloadInterval(null);
+                reloadIntervalSpinner.setEnabled(false);
+            }
+        } else if(evt.getSource()==shareSessionCheckBox) {
+            appext.setSharedSession(shareSessionCheckBox.isSelected());
         }
-        appext.setSharedSession(shareSessionCheckBox.isSelected());
         dObj.modelUpdatedFromUI();
     }
     

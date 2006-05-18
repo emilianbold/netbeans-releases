@@ -29,6 +29,9 @@ import org.openide.util.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /**
  * Main class of the deployment process. This serves a a wrapper for the
  * server's DeploymentManager implementation, all calls are delegated to the
@@ -163,7 +166,14 @@ public class WSDeploymentManager implements DeploymentManager {
         return getInstanceProperties().getProperty(
                 WSDeploymentFactory.PORT_ATTR);
     }
-    
+    public String getAdminPort() {
+        return getInstanceProperties().getProperty(
+                WSDeploymentFactory.ADMIN_PORT_ATTR);
+    }
+    public String getDefaultHostPort() {
+        return getInstanceProperties().getProperty(
+                WSDeploymentFactory.DEFAULT_HOST_PORT_ATTR);
+    }
     /**
      * Returns the server installation directory
      */
@@ -222,6 +232,24 @@ public class WSDeploymentManager implements DeploymentManager {
         }
     }
     
+    
+    /**
+     * Set admin port property
+     */
+    public void setAdminPort(String adminPort) {
+        if(getInstanceProperties()!=null){
+            getInstanceProperties().setProperty(WSDeploymentFactory.ADMIN_PORT_ATTR,adminPort);
+        }
+    }
+    
+    /**
+     * Set admin port property
+     */
+    public void setDefaultHostPort(String defaultHostPort) {
+        if(getInstanceProperties()!=null){
+            getInstanceProperties().setProperty(WSDeploymentFactory.DEFAULT_HOST_PORT_ATTR,defaultHostPort);
+        }
+    }
     /**
      * Set password property
      */
@@ -402,6 +430,13 @@ public class WSDeploymentManager implements DeploymentManager {
         
         // update the context classloader
         loader.updateLoader();
+        //try {
+            if(target.length==1) {
+            int i=0;
+            i++;
+            }
+            
+        //}
         
         try {
             // delegate the call and return the result
@@ -428,7 +463,7 @@ public class WSDeploymentManager implements DeploymentManager {
         // update the deployment manager
         updateDeploymentManager();
         
-       
+        
         
         // update the context classloader
         loader.updateLoader();
@@ -601,6 +636,54 @@ public class WSDeploymentManager implements DeploymentManager {
         
         // update the context classloader
         loader.updateLoader();
+        
+        String webUrl=null;
+        try {
+            // if WebSphere return null for getWebURL, then set it to the right value 
+            Method method = targetModuleID[0].getClass().
+                    getMethod("getWebURL", new Class[0]);            // NOI18N
+            webUrl = (String) method.
+                    invoke(targetModuleID[0], new Object[0]);
+            if(webUrl==null) {
+                String port=getDefaultHostPort();
+                String host=getHost();
+                if(uri.indexOf(WSURIManager.WSURI)!=-1) { 
+                    host=uri.split(":")[2];
+                }
+                webUrl="http://" + host + ":" + port; // NOI18N
+                method = targetModuleID[0].getClass().
+                        getMethod("setWebURL", new Class[] {String.class});  // NOI18N
+                method.invoke(targetModuleID[0], new Object[] {webUrl});
+            }
+            try { // stop running web modules
+                TargetModuleID [] modules = getRunningModules(
+                        ModuleType.WAR,
+                        new Target[] {targetModuleID[0].getTarget()});
+                TargetModuleID [] amodules = getAvailableModules(
+                        ModuleType.WAR,
+                        new Target[] {targetModuleID[0].getTarget()});
+                
+                
+                for(int i=0;i<modules.length;i++) {
+                    if(/*modules[i].getWebURL()==null || */webUrl.equals(modules[i].getWebURL())) {
+                        
+                        stop(new TargetModuleID[] {modules[i]} );
+                    }
+                }
+            } catch(TargetException ex) {
+                ;//do nothing..
+            }
+            
+            
+        }  catch (IllegalAccessException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        } catch (NoSuchMethodException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        } catch (InvocationTargetException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        }
         
         try {
             // delegate the call and return the result

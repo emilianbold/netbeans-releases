@@ -48,6 +48,9 @@ public class Instance {
     
     private String adminPort;
     
+    private String httpPort;
+    
+    private String defaultHostPort;
     /**
      * Creates a new instance of Instance
      *
@@ -58,7 +61,7 @@ public class Instance {
      * @param configXmlPath path to the server.xml file
      */
     public Instance(String name, String host, String port,
-            String domainPath, String configXmlPath, String adminPort) {
+            String domainPath, String configXmlPath, String adminPort,String httpPort,String defaultHostPort) {
         // save the properties
         this.name = name;
         this.host = host;
@@ -66,6 +69,8 @@ public class Instance {
         this.domainPath = domainPath;
         this.configXmlPath = configXmlPath;
         this.adminPort = adminPort;
+        this.httpPort=httpPort;
+        this.defaultHostPort=defaultHostPort;
     }
     
     /**
@@ -157,15 +162,49 @@ public class Instance {
     public void setConfigXmlPath(String configXmlPath) {
         this.configXmlPath = configXmlPath;
     }
-    
+    /**
+     * Getter for the server's admin port
+     *
+     * @return the server's admin port
+     */
     public String getAdminPort() {
         return adminPort;
     }
-    
+    /**
+     * Setter for the server's admin port
+     *
+     * @param the server's admin port
+     */
     public void setAdminPort(String adminPort) {
         this.adminPort = adminPort;
     }
     
+    /**
+     * Getter for the server's default host port
+     *
+     * @return the server's default host port
+     */
+    public String getDefaultHostPort() {
+        return defaultHostPort;
+    }
+    /**
+     * Setter for the server's deafult host port
+     *
+     * @param the server's default host port
+     */
+    public void setDefaultHostPort(String defaultHostPort) {
+        this.defaultHostPort = defaultHostPort;
+    }
+    
+    
+    
+     public String getHttpPort() {
+        return httpPort;
+    }
+    
+    public void setHttpPort(String adminPort) {
+        this.httpPort = httpPort;
+    }
     /**
      * An overriden version of the Object's toString() so that the
      * instance is displayed properly in the combobox
