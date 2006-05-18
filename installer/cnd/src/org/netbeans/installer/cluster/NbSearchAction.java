@@ -43,8 +43,7 @@ public class NbSearchAction extends CancelableWizardAction {
         try {
             support.putClass(Util.class.getName());
             support.putClass(NbSearchAction.SoftwareObjectComparator.class.getName());
-        } 
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -57,8 +56,11 @@ public class NbSearchAction extends CancelableWizardAction {
             return;
         }
         
-        String searchMsg = resolveString(BUNDLE + "NbSearchAction.searchMessage)");
-        evt.getUserInterface().setBusy(searchMsg);
+        //Handle silent mode where getUserInterface returns null
+        if (evt.getUserInterface() != null) {
+            String searchMsg = resolveString(BUNDLE + "NbSearchAction.searchMessage)");
+            evt.getUserInterface().setBusy(searchMsg);
+        }
         
         initNbUIDArray();
         findNb();
