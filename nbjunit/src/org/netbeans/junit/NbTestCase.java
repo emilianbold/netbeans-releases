@@ -169,11 +169,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
 
             public void run() {
                 try {
-                    long now = System.currentTimeMillis();
+                    long now = System.nanoTime();
                     try {
                         NbTestCase.super.runTest();
                     } finally {
-                        long last = System.currentTimeMillis() - now;
+                        long last = System.nanoTime() - now;
                         if (last < 1) {
                             last = 1;
                         }
@@ -247,7 +247,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     
-    
+    /** in nanoseconds */
     final long getExecutionTime() {
         return time;
     }
@@ -898,7 +898,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /** Converts NetBeans filesystem URL to absolute path.
      * @param url URL to convert
      * @return absolute path
-     * @deprecate No longer applicable as of NB 4.0 at the latest.
+     * @deprecated No longer applicable as of NB 4.0 at the latest.
      *            <code>FileObject.getURL()</code> should be returning a <code>file</code>-protocol
      *            URL, which can be converted to a disk path using <code>new File(URI)</code>; or
      *            use <code>FileUtil.toFile</code>.

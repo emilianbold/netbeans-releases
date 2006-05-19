@@ -172,7 +172,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
                         if (t instanceof NbTestCase) {
                             NbTestCase test = (NbTestCase)t;
                             error.append ("Test "); error.append (test.getName ());
-                            error.append (" took "); error.append (test.getExecutionTime ());
+                            error.append(" took "); error.append(test.getExecutionTime() / 1000000);
                             error.append (" ms\n");
                         } else {
                             error.append ("Test "); error.append (t); 
@@ -211,8 +211,8 @@ public class NbTestSuite extends TestSuite implements NbTest {
             }
             
             result.addFailure (this, new junit.framework.AssertionFailedError (
-                "Too big differences in execution times of tests:\n" +
-                "the results are supposed to be " + typeName () + "\n"
+                "Execution times of tests differ too much;\n" +
+                "the results are supposed to be " + typeName () + ":\n"
                 + error.toString ()
             ));
         }
