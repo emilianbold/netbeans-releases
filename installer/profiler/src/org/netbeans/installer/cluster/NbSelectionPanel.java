@@ -21,6 +21,8 @@ import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.util.LocalizedStringResolver;
 import com.installshield.util.Log;
 import com.installshield.util.StringUtils;
+import com.installshield.wizard.OptionsTemplateEntry;
+import com.installshield.wizard.WizardBean;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.WizardServicesUI;
