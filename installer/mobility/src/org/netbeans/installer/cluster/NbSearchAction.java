@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,8 +41,7 @@ public class NbSearchAction extends CancelableWizardAction {
         try {
             support.putClass(Util.class.getName());
             support.putClass(NbSearchAction.SoftwareObjectComparator.class.getName());
-        } 
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -54,8 +53,12 @@ public class NbSearchAction extends CancelableWizardAction {
         if (!nbHomeList.isEmpty()) {
             return;
         }
-        String searchMsg = resolveString(BUNDLE + "NbSearchAction.searchMessage)");
-        evt.getUserInterface().setBusy(searchMsg);
+        
+        //Handle silent mode where getUserInterface returns null
+        if (evt.getUserInterface() != null) {
+            String searchMsg = resolveString(BUNDLE + "NbSearchAction.searchMessage)");
+            evt.getUserInterface().setBusy(searchMsg);
+        }
         
         findNb();
     }
