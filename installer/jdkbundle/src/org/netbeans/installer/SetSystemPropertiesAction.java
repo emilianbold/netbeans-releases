@@ -348,6 +348,23 @@ public class SetSystemPropertiesAction extends WizardAction {
             service.setRetainedProductBeanProperty
             (ProductService.DEFAULT_PRODUCT_SOURCE, Names.J2SE_ID, "key", keyObject);
             
+            // ----------------- Unpack Jars ------------------------
+            keyObject = (SoftwareObjectKey) service.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.UNPACK_JARS_ID, "key");
+            key = resolveString("$L(org.netbeans.installer.Bundle,UnpackJars.UID)");
+            logEvent(this, Log.DBG,"Unpack Jars UID: " + key);
+            keyObject.setUID(key);
+            
+            version = new SoftwareVersion();
+            version.setMajor(major);
+            version.setMinor(minor);
+            version.setMaintenance(maintenance);
+            logEvent(this, Log.DBG,"Unpack Jars version: " + getStringForm(version));
+            keyObject.setVersion(version);
+            
+            service.setRetainedProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE, Names.UNPACK_JARS_ID, "key", keyObject);
+            
             // ----------------- Storage Builder ------------------------
             keyObject = (SoftwareObjectKey) service.getProductBeanProperty
             (ProductService.DEFAULT_PRODUCT_SOURCE, Names.STORAGE_BUILDER_ID, "key");
