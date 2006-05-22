@@ -85,17 +85,57 @@ public class ProxySettingsUITest extends JellyTestCase {
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator co1so = new RepositoryStepOperator();
         co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
-        Exception exc = null;
-        ProxyConfigurationOperator pco;
+        TimeoutExpiredException tee = null;
         try {
             co1so.invokeProxy();
         } catch (Exception e) {
-            exc = e;
-            System.out.println("Exception is thrown. Proxy dialog was not opened!!!");
-            System.out.println("http://www.netbeans.org/issues/show_bug.cgi?id=76111");
+            tee = (TimeoutExpiredException) e;
             //e.printStackTrace();
         }
-        assertNotNull(exc);        
+        assertNotNull(tee);     
+        
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
+        tee = null;
+        try {
+            co1so.invokeProxy();
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+            //e.printStackTrace();
+        }
+        assertNotNull(tee);     
+        
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVN);
+        tee = null;
+        try {
+            co1so.invokeProxy();
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+            //e.printStackTrace();
+        }
+        assertNotNull(tee);     
+        
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
+        tee = null;
+        try {
+            co1so.invokeProxy();
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+            //e.printStackTrace();
+        }
+        assertNotNull(tee);     
+        
+        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH + "localhost");
+        ProxyConfigurationOperator pco;
+        tee = null;
+        try {
+            pco = co1so.invokeProxy();
+            pco.verify();
+            pco.cancel();
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+            //e.printStackTrace();
+        }
+        assertNull(tee);     
         co.btCancel().pushNoBlock();
     }
 }
