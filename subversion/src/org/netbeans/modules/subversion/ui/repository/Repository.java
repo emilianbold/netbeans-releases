@@ -308,11 +308,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }        
     }
 
-    private SVNUrl removeEmptyPathSegments(SVNUrl url) {
+    private SVNUrl removeEmptyPathSegments(SVNUrl url) throws MalformedURLException {
         String[] pathSegments = url.getPathSegments();
-        if(pathSegments.length == 0) {
-            return url;
-        }
         StringBuffer urlString = new StringBuffer();
         urlString.append(url.getProtocol());
         urlString.append("://");
@@ -320,18 +317,23 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if(url.getPort() > 0) {
             urlString.append(":");
             urlString.append(url.getPort());
-        }        
+        }
+        boolean gotSegments = false;
         for (int i = 0; i < pathSegments.length; i++) {
             if(!pathSegments[i].trim().equals("")) {
+                gotSegments = true;
                 urlString.append("/");
                 urlString.append(pathSegments[i]);                
             }
         }
-        try {            
-            return new SVNUrl(urlString.toString());
+        try {
+            if(gotSegments) {
+                return new SVNUrl(urlString.toString());
+            } else {
+                return url;
+            }
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ex); // should not happen
-            return null;
+            throw ex;
         }
     }
 
