@@ -310,6 +310,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     private SVNUrl removeEmptyPathSegments(SVNUrl url) {
         String[] pathSegments = url.getPathSegments();
+        if(pathSegments.length == 0) {
+            return url;
+        }
         StringBuffer urlString = new StringBuffer();
         urlString.append(url.getProtocol());
         urlString.append("://");
