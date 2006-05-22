@@ -98,7 +98,7 @@ public class SvnConfigFiles {
             // no host specified -> direct
             return ProxyDescriptor.DIRECT;
         }
-        String proxyPortString = (String) group.get("http-proxy-port");
+        String proxyPortString = group.get("http-proxy-port");
         int proxyPort;
         if(proxyPortString == null || proxyPortString.length() == 0) {
             proxyPort = 0; // XXX

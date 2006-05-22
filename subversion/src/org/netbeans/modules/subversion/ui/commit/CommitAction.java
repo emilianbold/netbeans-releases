@@ -215,7 +215,7 @@ public class CommitAction extends ContextAction {
                 if(support.isCanceled()) {
                     return;
                 }
-                SvnFileNode svnFileNode = (SvnFileNode) it.next();
+                SvnFileNode svnFileNode = it.next();
                 File file = svnFileNode.getFile();
                 if (file.isDirectory()) {
                     addDirs.add(file);
@@ -249,7 +249,7 @@ public class CommitAction extends ContextAction {
                 if(support.isCanceled()) {
                     return;
                 }
-                File file = (File) itFiles.next();
+                File file = itFiles.next();
                 client.addFile(file);
             }
 

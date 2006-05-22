@@ -140,13 +140,13 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             return false;                    
         }
 
-        SSLSocketFactory factory = (SSLSocketFactory) context.getSocketFactory();                                         
+        SSLSocketFactory factory = context.getSocketFactory();                                         
         SSLSocket socket = null;
         try {
             if(proxy == null) {
-                socket = (SSLSocket) ((SSLSocketFactory) factory).createSocket(url.getHost(), url.getPort());
+                socket = (SSLSocket) (factory).createSocket(url.getHost(), url.getPort());
             } else {
-                socket = (SSLSocket) ((SSLSocketFactory) factory).createSocket(proxy, url.getHost(), url.getPort(), true);
+                socket = (SSLSocket) (factory).createSocket(proxy, url.getHost(), url.getPort(), true);
             }
             socket.startHandshake();
         } catch (IOException ex) {
