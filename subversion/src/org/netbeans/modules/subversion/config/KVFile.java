@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -33,7 +34,9 @@ import org.openide.ErrorManager;
 public class KVFile {
     
     /** a Map holding the entries*/
-    private Map map;
+    private Map<Key, byte[]> map;
+    /** a Map holding the keys*/
+    private Map<String, Key> keyMap;
     /** the credential or property file */
     private final File file;            
 
@@ -90,13 +93,42 @@ public class KVFile {
      *
      * @return map
      */
-    public Map getMap() {
+    public Map<Key, byte[]> getMap() {
         if(map==null) {
             map = new TreeMap();
         }
         return map;
     }
-   
+
+    /**
+     * Returns the Map holding the Keys
+     *
+     * @return map
+     */
+    private Map<String, Key> getKeyMap() {
+        if(keyMap == null) {
+            keyMap = new HashMap();
+        }
+        return keyMap;
+    }
+
+    protected Key getKey(Key key) {
+        Key storedKey = getKey(key.getName());
+        if(storedKey == null) {
+            setKey(key);
+            return key;
+        }
+        return storedKey;
+    }
+    
+    private Key getKey(String name) {
+        return getKeyMap().get(name);
+    }
+    
+    protected void setKey(Key key) {
+        getKeyMap().put(key.getName(), key);
+    }
+
     /**
      * Parses the instances file.
      *
@@ -114,8 +146,10 @@ public class KVFile {
                is.read(); // skip '\n'
                int valueLength = readEntryLength(is);   // value length
                byte[] value = new byte[valueLength];
-               is.read(value);               
-               getMap().put(new Key(keyIdx, new String(keyName)), value);
+               is.read(value);
+               Key key = new Key(keyIdx, new String(keyName));
+               setKey(key);
+               getMap().put(key, value);
                is.read(); // skip '\n'
                keyIdx++;
             }
@@ -217,14 +251,11 @@ public class KVFile {
      * Represents a key
      */
     protected static class Key implements Comparable {
-        /** the key index*/
+        /** the key index */
         private final int idx;
-        /** the keys name*/
-        private final String name;
-        
-        /** 
-         * creates a new instance 
-         */
+        /** the keys name */
+        private final String name;        
+        /** creates a new instance */
         protected Key(int idx, String name) {
             this.name = name;
             this.idx = idx;
@@ -235,7 +266,7 @@ public class KVFile {
         public String getName() {
             return name;
         }                
-        public boolean  equals(Object obj) {
+        public boolean equals(Object obj) {
             if( !(obj instanceof Key) ) {
                 return false;
             }

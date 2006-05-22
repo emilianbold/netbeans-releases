@@ -24,13 +24,11 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class PasswordFile extends SVNCredentialFile {
 
-    private static final long serialVersionUID = 1L;
-
-    private final static Key PASSTYPE = new Key(0, "passtype");
-    private final static Key PASSWORD = new Key(1, "password");
-    private final static Key REALMSTRING = new Key(2, "svn:realmstring");
-    private final static Key USERNAME = new Key(3, "username");
-
+    private static final Key PASSTYPE_KEY = new Key(0, "passtype");
+    private static final Key PASSWORD_KEY = new Key(1, "password");
+    private static final Key REALMSTRING_KEY = new Key(2, "svn:realmstring");
+    private static final Key USERNAME_KEY = new Key(3, "username");
+    
     private final static String PASSTYPE_SIMPLE = "simple";
         
     public PasswordFile (String realmString) {
@@ -89,35 +87,35 @@ public class PasswordFile extends SVNCredentialFile {
     }
 
     public String getPassword() {
-        return getStringValue(PASSWORD);
+        return getStringValue(getPasswordKey());
     }
 
     public String getUsername() {
-        return getStringValue(USERNAME);
+        return getStringValue(getUsernameKey());
     }
 
     public void setPassword(String password) {
-        setValue(PASSWORD, password);
+        setValue(getPasswordKey(), password);
     }
 
     public void setUsername(String username) {
-        setValue(USERNAME, username);
+        setValue(getUsernameKey(), username);
     }
     
     protected String getRealmString() {       
-        return getStringValue(REALMSTRING);
+        return getStringValue(getRealmstringKey());
     }
 
     protected void setRealmString(String realm) {
-        setValue(REALMSTRING, realm.getBytes());
+        setValue(getRealmstringKey(), realm.getBytes());
     }
 
     private void setPasstype(String passtype) {
-        setValue(PASSTYPE, passtype);
+        setValue(getPasstypeKey(), passtype);
     }
 
     private String getPasstype() {
-        return getStringValue(PASSTYPE);
+        return getStringValue(getPasstypeKey());
     }
 
     private boolean acceptSvnUrl(SVNUrl svnUrl) {
@@ -136,4 +134,20 @@ public class PasswordFile extends SVNCredentialFile {
         return new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.simple/" + getFileName(realmString));
     }
     
+    private Key getPasstypeKey() {
+        return getKey(PASSTYPE_KEY);
+    }
+
+    private Key getPasswordKey() {
+        return getKey(PASSWORD_KEY);
+    }
+
+    private Key getRealmstringKey() {
+        return getKey(REALMSTRING_KEY);
+    }
+
+    private Key getUsernameKey() {
+        return getKey(USERNAME_KEY);
+    }
+
 }

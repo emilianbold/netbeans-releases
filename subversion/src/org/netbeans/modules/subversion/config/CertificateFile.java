@@ -29,6 +29,7 @@ public class CertificateFile extends SVNCredentialFile {
     private final static Key CERT = new Key(0, "ascii_cert");
     private final static Key FAILURES = new Key(1, "failures");        
     private final static Key REALMSTRING = new Key(2, "svn:realmstring");
+
     private static final String NEWLINE = System.getProperty("line.separator"); 
     
     public CertificateFile(X509Certificate cert, String realmString, int failures, boolean temporarily) throws CertificateEncodingException {
@@ -43,19 +44,19 @@ public class CertificateFile extends SVNCredentialFile {
     private void setCert(X509Certificate cert) throws CertificateEncodingException {
         String encodedCert = new sun.misc.BASE64Encoder().encode(cert.getEncoded());        
         encodedCert = encodedCert.replace(NEWLINE, ""); // XXX where does this come from ????!!!        
-        setValue(CERT, encodedCert.getBytes());
+        setValue(getCertKey(), encodedCert.getBytes());
     }
         
     protected void setRealmString(String realm) {
-        setValue(REALMSTRING, realm);
+        setValue(getRealmstringKey(), realm);
     }
 
     protected String getRealmString() {
-        return getStringValue(REALMSTRING);
+        return getStringValue(getRealmstringKey());
     }        
 
     private void setFailures(int failures) {
-        setValue(FAILURES, String.valueOf(failures));
+        setValue(getFailuresKey(), String.valueOf(failures));
     }        
 
     public static File getSystemCertFile(String realmString) {
@@ -66,6 +67,18 @@ public class CertificateFile extends SVNCredentialFile {
     public static File getNBCertFile(String realmString) {
         File file = new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString));
         return FileUtil.normalizeFile(file);
+    }
+
+    private Key getCertKey() {
+        return getKey(CERT);
+    }
+
+    private Key getFailuresKey() {
+        return getKey(FAILURES);
+    }
+
+    private Key getRealmstringKey() {
+        return getKey(REALMSTRING);
     }
 
 }
