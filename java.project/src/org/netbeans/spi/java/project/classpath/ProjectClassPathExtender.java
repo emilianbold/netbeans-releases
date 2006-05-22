@@ -24,9 +24,10 @@ import org.openide.filesystems.FileObject;
  * A project can provide this interface in its {@link org.netbeans.api.project.Project#getLookup lookup} to
  * allow clients to extend its compilation classpath
  * by a new classpath element (JAR, folder, dependent project, or library).
- * @since org.netbeans.modules.java.project/1 1.3 
+ * @since org.netbeans.modules.java.project/1 1.3
+ * @deprecated Please use the {@link ProjectClassPathModifier} instead.
  */
-public interface ProjectClassPathExtender {
+public @Deprecated interface ProjectClassPathExtender {
 
     /**
      * Adds a library into the project's compile classpath if the
@@ -34,6 +35,7 @@ public interface ProjectClassPathExtender {
      * @param library to be added
      * @return true in case the classpath was changed
      * @exception IOException in case the project metadata cannot be changed
+     * @deprecated Please use {@link ProjectClassPathModifier#addLibrary} instead.
      */
     boolean addLibrary(Library library) throws IOException;
 
@@ -43,6 +45,7 @@ public interface ProjectClassPathExtender {
      * @param archiveFile ZIP/JAR file to be added
      * @return true in case the classpath was changed
      * @exception IOException in case the project metadata cannot be changed
+     * @deprecated Please use {@link ProjectClassPathModifier#addArchive} instead.
      */
     boolean addArchiveFile(FileObject archiveFile) throws IOException;
 
@@ -54,6 +57,7 @@ public interface ProjectClassPathExtender {
      *                        (must be owned by the artifact and be relative to it)
      * @return true in case the classpath was changed
      * @exception IOException in case the project metadata cannot be changed
+     * @deprecated Please use {@link ProjectClassPathModifier#addAntArtifact} instead.
      */
     boolean addAntArtifact(AntArtifact artifact, URI artifactElement) throws IOException;
 

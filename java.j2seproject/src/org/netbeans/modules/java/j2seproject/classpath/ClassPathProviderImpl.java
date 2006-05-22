@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
@@ -37,6 +38,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
     private static final String DIST_JAR = "dist.jar"; // NOI18N
     private static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
+    
+    private static final String JAVAC_CLASSPATH = "javac.classpath";    //NOI18N
+    private static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath";  //NOI18N
+    private static final String RUN_CLASSPATH = "run.classpath";    //NOI18N
+    private static final String RUN_TEST_CLASSPATH = "run.test.classpath";  //NOI18N
+    
     
     private final AntProjectHelper helper;
     private final File projectDirectory;
@@ -149,12 +156,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"javac.classpath"})); // NOI18N
+                    projectDirectory, evaluator, new String[] {JAVAC_CLASSPATH})); // NOI18N
             }
             else {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"javac.test.classpath"})); // NOI18N
+                    projectDirectory, evaluator, new String[] {JAVAC_TEST_CLASSPATH})); // NOI18N
             }
             cache[2+type] = cp;
         }
@@ -177,12 +184,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"run.classpath"})); // NOI18N
+                    projectDirectory, evaluator, new String[] {RUN_CLASSPATH})); // NOI18N
             }
             else if (type == 1) {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"run.test.classpath"})); // NOI18N
+                    projectDirectory, evaluator, new String[] {RUN_TEST_CLASSPATH})); // NOI18N
             }
             else if (type == 2) {
                 //Only to make the CompiledDataNode hapy
@@ -269,6 +276,39 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
         dirCache.remove(evt.getPropertyName());
+    }
+    
+    public String getPropertyName (SourceGroup sg, String type) {
+        FileObject root = sg.getRootFolder();
+        FileObject[] path = getPrimarySrcPath();
+        for (int i=0; i<path.length; i++) {
+            if (root.equals(path[i])) {
+                if (ClassPath.COMPILE.equals(type)) {
+                    return JAVAC_CLASSPATH;
+                }
+                else if (ClassPath.EXECUTE.equals(type)) {
+                    return RUN_CLASSPATH;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        path = getTestSrcDir();
+        for (int i=0; i<path.length; i++) {
+            if (root.equals(path[i])) {
+                if (ClassPath.COMPILE.equals(type)) {
+                    return JAVAC_TEST_CLASSPATH;
+                }
+                else if (ClassPath.EXECUTE.equals(type)) {
+                    return RUN_TEST_CLASSPATH;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
     
 }

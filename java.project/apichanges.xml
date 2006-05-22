@@ -77,6 +77,29 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+    <change id="ProjectClassPathModifier">
+        <api name="classpath"/>
+        <summary>New ProjectClassPathModifier API/SPI for modification of project's classpath</summary>
+        <version major="1" minor="10"/>
+        <date day="15" month="5" year="2006"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes"/>
+        <description>
+        The new SPI interface ProjectClassPathModifierImplementation was created to allow extension modules to
+        add or remove classpath elements (archive files, folders, libraries, subprojects) from the
+        project's classpath. The ProjectClassPathModifierImplementation is provided by the project types in the
+        project's Lookup. The API client uses the static methods of ProjectClassPathModifier which delegate to
+        the SPI.
+        </description>
+        <class package="org.netbeans.api.java.project.classpath" name="ProjectClassPathModifier"/>
+        <class package="org.netbeans.spi.java.project.classpath" name="ProjectClassPathModifierImplementation"/>
+         <issue number="74356"/>
+         <issue number="75469"/>
+         <issue number="60852"/>
+         <issue number="73197"/>
+         <issue number="73198"/>
+    </change>
+                                                                                                                                
     <change id="BrokenReferencesModel.updateReference">
         <api name="general"/>
         <summary>Semantic changes in the BrokenReferencesModel.updateReference behavior</summary>

@@ -25,9 +25,12 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender;
+import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathModifier;
 import org.netbeans.modules.java.j2seproject.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.java.j2seproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.SourceLevelQueryImpl;
@@ -144,6 +147,7 @@ public final class J2SEProject implements Project, AntProjectListener {
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
+        final J2SEProjectClassPathModifier cpMod = new J2SEProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -165,7 +169,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SESharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new J2SEFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
-            new J2SEProjectClassPathExtender(this, this.updateHelper, eval,refHelper),
+            new J2SEProjectClassPathExtender(cpMod),
+            cpMod,
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
             new J2SEProjectOperations(this),
             new J2SEProjectWebServicesSupportProvider()
