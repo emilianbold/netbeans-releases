@@ -32,8 +32,8 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  */
 public class SvnClientInvocationHandler implements InvocationHandler {
 
-    private static Set remoteMethods = new HashSet();
-    private static Set locallyHandledMethod = new HashSet();
+    private static Set<String> remoteMethods = new HashSet<String>();
+    private static Set<String> locallyHandledMethod = new HashSet<String>();
 
     static {
         remoteMethods.add("checkout");  // NOI19N
