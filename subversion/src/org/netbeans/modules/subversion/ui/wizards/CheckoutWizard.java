@@ -151,5 +151,9 @@ public final class CheckoutWizard implements ChangeListener {
     public SVNUrl getRepositoryRoot() {
         return repositoryStep.getRepositoryFile().getRepositoryUrl();
     }
+
+    public boolean isAtWorkingDirLevel() {
+        return checkoutStep.isAtWorkingDirLevel();
+    }
 }
 

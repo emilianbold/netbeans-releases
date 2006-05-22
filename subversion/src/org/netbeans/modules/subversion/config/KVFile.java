@@ -95,7 +95,7 @@ public class KVFile {
      */
     public Map<Key, byte[]> getMap() {
         if(map==null) {
-            map = new TreeMap();
+            map = new TreeMap<Key, byte[]>();
         }
         return map;
     }
@@ -107,7 +107,7 @@ public class KVFile {
      */
     private Map<String, Key> getKeyMap() {
         if(keyMap == null) {
-            keyMap = new HashMap();
+            keyMap = new HashMap<String, Key>();
         }
         return keyMap;
     }

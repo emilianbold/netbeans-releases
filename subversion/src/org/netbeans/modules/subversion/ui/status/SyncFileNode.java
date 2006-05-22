@@ -48,7 +48,6 @@ public class SyncFileNode extends AbstractNode {
     static final String COLUMN_NAME_STICKY      = "sticky"; // NOI18N
     
     private String htmlDisplayName;
-    private String sticky;
 
     private RequestProcessor.Task repoload;
 

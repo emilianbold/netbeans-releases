@@ -499,7 +499,6 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */    
     public static SVNUrl getRepositoryRootUrl(File file) {        
-        String repositoryPath = null;
         SvnClient client = Subversion.getInstance().getClient();
         client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
 
@@ -558,7 +557,6 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */    
     public static SVNUrl getRepositoryUrl(File file) {
-        String repositoryPath = null;
         SvnClient client = Subversion.getInstance().getClient();
         client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
 

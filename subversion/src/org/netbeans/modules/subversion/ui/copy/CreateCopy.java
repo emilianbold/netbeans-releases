@@ -30,9 +30,7 @@ import org.openide.ErrorManager;
  * @author Tomas Stupka
  */
 public class CreateCopy extends CopyDialog implements DocumentListener, FocusListener {
-
-    private String context;
-    private Object value;    
+   
     private RepositoryPaths repositoryPaths;
     
     /** Creates a new instance of CreateCopy */

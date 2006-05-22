@@ -41,9 +41,7 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
  */
 public class Browser implements VetoableChangeListener, BrowserClient {
         
-    private final BrowserPanel panel;
-    
-    private String defaultFolderName;
+    private final BrowserPanel panel;    
     
     private static final RepositoryFile[] EMPTY_ROOT = new RepositoryFile[0];
     private static final Action[] EMPTY_ACTIONS = new Action[0];

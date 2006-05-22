@@ -270,5 +270,9 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         }
         return null;
     }
+
+    public boolean isAtWorkingDirLevel() {
+        return workdirPanel.atWorkingDirLevelCheckBox.isSelected();
+    }
 }
 

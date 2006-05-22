@@ -77,9 +77,7 @@ public final class DeleteLocalAction extends ContextAction {
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ex); 
             return;
-        }
-
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        }        
 
         if(support.isCanceled()) {
             return;
