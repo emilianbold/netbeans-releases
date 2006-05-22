@@ -1647,7 +1647,6 @@ public class WizardDescriptor extends DialogDescriptor {
                         err.log (Level.FINE, "onValidPerformer on finish button entry."); // NOI18N
                         
                         // disable all buttons to indicate that instantiate runs
-                        cancelButton.setEnabled (false);
                         previousButton.setEnabled (false);
                         nextButton.setEnabled (false);
                         finishButton.setEnabled (false);
