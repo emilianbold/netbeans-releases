@@ -69,7 +69,7 @@ public class DiffAction extends ContextAction {
      */
     public static File [] getModifiedFiles(Context context, int includeStatus) {
         File[] all = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
-        List files = new ArrayList();
+        List<File> files = new ArrayList<File>();
         for (int i = 0; i < all.length; i++) {
             File file = all[i];
             String path = file.getAbsolutePath();
@@ -87,7 +87,7 @@ public class DiffAction extends ContextAction {
                 files.add(file);
             }
         }
-        return (File[]) files.toArray(new File[files.size()]);
+        return files.toArray(new File[files.size()]);
     }
     
 }

@@ -121,7 +121,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             return null;
         }
         Node segmentParentNode = null;        
-        List nodesToSelect = new ArrayList(select.length);                                                           
+        List<Node> nodesToSelect = new ArrayList<Node>(select.length);
 
         for (int i = 0; i < select.length; i++) {                
             String[] segments = select[i].getPathSegments();                
@@ -135,7 +135,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             }   
             nodesToSelect.add(segmentParentNode);                    
         }                
-        return (Node[])nodesToSelect.toArray(new Node[nodesToSelect.size()]);                        
+        return nodesToSelect.toArray(new Node[nodesToSelect.size()]);                        
     }
 
     /**
@@ -157,7 +157,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     }
     
     public List listRepositoryPath(final RepositoryPathNode.RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException {
-        List ret;
+        List<RepositoryPathNode.RepositoryPathEntry> ret;
         try {
 
             this.support = support;
@@ -171,12 +171,13 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 return null;
             }
 
-            ret = new ArrayList();
+            ret = new ArrayList<RepositoryPathNode.RepositoryPathEntry>();
 
             ISVNDirEntry[] dirEntries = client.getList(
-                                        entry.getRepositoryFile().getFileUrl(), 
-                                        entry.getRepositoryFile().getRevision(), 
-                                        false);             
+                                            entry.getRepositoryFile().getFileUrl(),
+                                            entry.getRepositoryFile().getRevision(),
+                                            false
+                                        );             
 
             if(dirEntries == null || dirEntries.length == 0) {
                 return Collections.EMPTY_LIST; // nothing to do...

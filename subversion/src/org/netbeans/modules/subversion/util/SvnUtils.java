@@ -64,9 +64,9 @@ public class SvnUtils {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
         if (Arrays.equals(contextNodesCached, nodes)) return contextCached;
-        List files = new ArrayList(nodes.length);
-        List rootFiles = new ArrayList(nodes.length);
-        List rootFileExclusions = new ArrayList(5);
+        List<File> files = new ArrayList<File>(nodes.length);
+        List<File> rootFiles = new ArrayList<File>(nodes.length);
+        List<File> rootFileExclusions = new ArrayList<File>(5);
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
 /*
@@ -161,16 +161,16 @@ public class SvnUtils {
         return false;
     }
 
-    private static void addFileObjects(Node node, List files, List rootFiles) {
-        Collection folders = node.getLookup().lookup(new Lookup.Template(NonRecursiveFolder.class)).allInstances();
-        List nodeFiles = new ArrayList();
+    private static void addFileObjects(Node node, List<File> files, List<File> rootFiles) {
+        Collection<NonRecursiveFolder> folders = node.getLookup().lookup(new Lookup.Template(NonRecursiveFolder.class)).allInstances();
+        List<File> nodeFiles = new ArrayList<File>();
         if (folders.size() > 0) {
-            for (Iterator j = folders.iterator(); j.hasNext();) {
-                NonRecursiveFolder nonRecursiveFolder = (NonRecursiveFolder) j.next();
+            for (Iterator<NonRecursiveFolder> j = folders.iterator(); j.hasNext();) {
+                NonRecursiveFolder nonRecursiveFolder = j.next();
                 nodeFiles.add(new FlatFolder(FileUtil.toFile(nonRecursiveFolder.getFolder()).getAbsolutePath()));
             }
         } else {
-            Collection fileObjects = node.getLookup().lookup(new Lookup.Template(FileObject.class)).allInstances();
+            Collection<FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template(FileObject.class)).allInstances();
             if (fileObjects.size() > 0) {
                 nodeFiles.addAll(toFileCollection(fileObjects));
             } else {
@@ -179,7 +179,7 @@ public class SvnUtils {
                     dataObject = ((DataShadow) dataObject).getOriginal();
                 }
                 if (dataObject != null) {
-                    Collection doFiles = toFileCollection(dataObject.files());
+                    Collection<File> doFiles = toFileCollection(dataObject.files());
                     nodeFiles.addAll(doFiles);
                 }
             }
@@ -194,7 +194,7 @@ public class SvnUtils {
      * @param filteredFiles destination collection of Files
      * @param project project to examine
      */
-    public static void addProjectFiles(Collection filteredFiles, Collection rootFiles, Collection rootFilesExclusions, Project project) {
+    public static void addProjectFiles(Collection<File> filteredFiles, Collection<File> rootFiles, Collection<File> rootFilesExclusions, Project project) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -206,7 +206,7 @@ public class SvnUtils {
             rootFiles.add(rootFile);
             boolean containsSubprojects = false;
             FileObject [] rootChildren = srcRootFo.getChildren();
-            Set projectFiles = new HashSet(rootChildren.length);
+            Set<File> projectFiles = new HashSet<File>(rootChildren.length);
             for (int i = 0; i < rootChildren.length; i++) {
                 FileObject rootChildFo = rootChildren[i];
                 if (Subversion.getInstance().isAdministrative(rootChildFo.getNameExt())) continue;
@@ -237,31 +237,31 @@ public class SvnUtils {
      * @return Context context that defines list of supplied projects
      */ 
     public static Context getProjectsContext(Project [] projects) {
-        List filtered = new ArrayList(); 
-        List roots = new ArrayList();
-        List exclusions = new ArrayList(); 
+        List<File> filtered = new ArrayList<File>(); 
+        List<File> roots = new ArrayList<File>();
+        List<File> exclusions = new ArrayList<File>(); 
         for (int i = 0; i < projects.length; i++) {
             addProjectFiles(filtered, roots, exclusions, projects[i]);
         }
         return new Context(filtered, roots, exclusions);
     }
 
-    private static Collection toFileCollection(Collection fileObjects) {
-        Set files = new HashSet(fileObjects.size()*4/3+1);
-        for (Iterator i = fileObjects.iterator(); i.hasNext();) {
-            files.add(FileUtil.toFile((FileObject) i.next()));
+    private static Collection<File> toFileCollection(Collection<FileObject> fileObjects) {
+        Set<File> files = new HashSet<File>(fileObjects.size()*4/3+1);
+        for (Iterator<FileObject> i = fileObjects.iterator(); i.hasNext();) {
+            files.add(FileUtil.toFile(i.next()));
         }
         files.remove(null);
         return files;
     }
 
-    public static File [] toFileArray(Collection fileObjects) {
-        Set files = new HashSet(fileObjects.size()*4/3+1);
-        for (Iterator i = fileObjects.iterator(); i.hasNext();) {
-            files.add(FileUtil.toFile((FileObject) i.next()));
+    public static File [] toFileArray(Collection<FileObject> fileObjects) {
+        Set<File> files = new HashSet<File>(fileObjects.size()*4/3+1);
+        for (Iterator<FileObject> i = fileObjects.iterator(); i.hasNext();) {
+            files.add(FileUtil.toFile(i.next()));
         }
         files.remove(null);
-        return (File[]) files.toArray(new File[files.size()]);
+        return files.toArray(new File[files.size()]);
     }
 
     public static Window getCurrentWindow() {
@@ -378,7 +378,7 @@ public class SvnUtils {
         SvnClient client = Subversion.getInstance().getClient();
         client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
 
-        List path = new ArrayList();
+        List<String> path = new ArrayList<String>();
         SVNUrl repositoryURL = null;
         while (Subversion.getInstance().isManaged(file)) {
 
@@ -450,7 +450,7 @@ public class SvnUtils {
         SvnClient client = Subversion.getInstance().getClient();
         client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
 
-        List path = new ArrayList();
+        List<String> path = new ArrayList<String>();
         while (Subversion.getInstance().isManaged(file)) {
 
             ISVNStatus status = null;
@@ -502,7 +502,6 @@ public class SvnUtils {
         SvnClient client = Subversion.getInstance().getClient();
         client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
 
-      //  List path = new ArrayList();
         SVNUrl repositoryURL = null;
         while (Subversion.getInstance().isManaged(file)) {
             ISVNInfo info = null;
@@ -560,7 +559,7 @@ public class SvnUtils {
         SvnClient client = Subversion.getInstance().getClient();
         client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
 
-        List path = new ArrayList();
+        List<String> path = new ArrayList<String>();
         SVNUrl fileURL = null;
         while (Subversion.getInstance().isManaged(file)) {
 
@@ -631,7 +630,7 @@ public class SvnUtils {
      * File[1] contains all other files
      */ 
     public static File[][] splitFlatOthers(File [] files) {
-        Set flat = new HashSet(1);
+        Set<File> flat = new HashSet<File>(1);
         for (int i = 0; i < files.length; i++) {
             if (files[i] instanceof FlatFolder) {
                 flat.add(files[i]);
@@ -640,11 +639,11 @@ public class SvnUtils {
         if (flat.size() == 0) {
             return new File[][] { new File[0], files };
         } else {
-            Set allFiles = new HashSet(Arrays.asList(files));
+            Set<File> allFiles = new HashSet<File>(Arrays.asList(files));
             allFiles.removeAll(flat);
             return new File[][] {
-                (File[]) flat.toArray(new File[flat.size()]),
-                (File[]) allFiles.toArray(new File[allFiles.size()])
+                flat.toArray(new File[flat.size()]),
+                allFiles.toArray(new File[allFiles.size()])
             };
         }
     }
@@ -664,7 +663,7 @@ public class SvnUtils {
      * @return files with given status and direct descendants with given status.
      */
     public static File[] flatten(File[] files, int status) {
-        LinkedList ret = new LinkedList();
+        LinkedList<File> ret = new LinkedList<File>();
 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (int i = 0; i<files.length; i++) {
@@ -683,7 +682,7 @@ public class SvnUtils {
             }
         }
                 
-        return (File[]) ret.toArray(new File[ret.size()]);
+        return ret.toArray(new File[ret.size()]);
     }
 
     /**

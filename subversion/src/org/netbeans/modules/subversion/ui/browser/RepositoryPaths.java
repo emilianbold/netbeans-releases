@@ -286,7 +286,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
         if(listeners==null) {
-            listeners = new ArrayList();
+            listeners = new ArrayList<PropertyChangeListener>();
         }
         listeners.add(l);
     }

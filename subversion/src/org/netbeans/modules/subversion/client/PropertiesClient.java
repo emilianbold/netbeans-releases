@@ -55,7 +55,7 @@ public final class PropertiesClient {
      * Loads BASE properties for given file.
      * @return property map&lt;String, byte[]> never null
      */
-    public Map getBaseProperties() throws IOException {
+    public Map<String, byte[]> getBaseProperties() throws IOException {
         File store;
         if (file.isDirectory()) {
             store = new File(file, ".svn/dir-props-base");  // NOI18N
@@ -66,7 +66,7 @@ public final class PropertiesClient {
             KVFile kv = new KVFile(store);
             return normalize(kv.getMap());
         } else {
-            return new HashMap();
+            return new HashMap<String, byte[]>();
         }
     }
 
@@ -74,7 +74,7 @@ public final class PropertiesClient {
      * Loads (locally modified) properties for given file.
      * @return property map&lt;String, byte[]> never null
      */
-    public Map getProperties() throws IOException {
+    public Map<String, byte[]> getProperties() throws IOException {
         File store;
         if (file.isDirectory()) {
             store = new File(file, ".svn/dir-props");  // NOI18N
@@ -85,15 +85,15 @@ public final class PropertiesClient {
             KVFile kv = new KVFile(store);
             return normalize(kv.getMap());
         } else {
-            return new HashMap();
+            return new HashMap<String, byte[]>();
         }
     }
 
-    private Map normalize(Map map) {
-        Map ret = new HashMap(map.size());
-        Iterator it = map.entrySet().iterator();
+    private Map<String, byte[]> normalize(Map map) {
+        Map<String, byte[]> ret = new HashMap(map.size());
+        Iterator<Map.Entry> it = map.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry next = (Map.Entry) it.next();
+            Map.Entry<String, byte[]> next = it.next();
             // getKey().toString() == the normalization
             ret.put(next.getKey().toString(), next.getValue());
         }

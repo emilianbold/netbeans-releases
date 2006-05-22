@@ -41,7 +41,7 @@ public abstract class CopyDialog implements PropertyChangeListener {
     private JButton okButton;
     private JPanel panel;
 
-    private Map urlComboBoxes;
+    private Map<String, JComboBox> urlComboBoxes;
     
     public CopyDialog(JPanel panel, String title, String okLabel) {                
         this.panel = panel;
@@ -64,16 +64,16 @@ public abstract class CopyDialog implements PropertyChangeListener {
         if(cbo==null) {
             return;
         }
-        List recentFolders = HistorySettings.getRecent(key);
-        ComboBoxModel rootsModel = new DefaultComboBoxModel(new Vector(recentFolders));
+        List<String> recentFolders = HistorySettings.getRecent(key);
+        ComboBoxModel rootsModel = new DefaultComboBoxModel(new Vector<String>(recentFolders));
         cbo.setModel(rootsModel);        
                 
         getUrlComboBoxes().put(key, cbo);
     }    
     
-    private Map getUrlComboBoxes() {
+    private Map<String, JComboBox> getUrlComboBoxes() {
         if(urlComboBoxes == null) {
-            urlComboBoxes  = new HashMap();
+            urlComboBoxes = new HashMap<String, JComboBox>();
         }
         return urlComboBoxes;
     }

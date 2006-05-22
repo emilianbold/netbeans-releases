@@ -83,7 +83,7 @@ public final class ImportAction extends NodeAction {
             final File importDirectory = lookupImportDirectory(nodes[0]);
             if (importDirectory != null) {
 
-                List list = new ArrayList(1);
+                List<File> list = new ArrayList<File>(1);
                 list.add(importDirectory);
                 Context context = new Context(Collections.EMPTY_LIST, list, Collections.EMPTY_LIST);
                 ImportWizard wizard = new ImportWizard(context);

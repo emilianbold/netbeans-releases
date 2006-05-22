@@ -60,7 +60,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private boolean passwordExpected;        
     private boolean valid = true;
     private boolean userVisitedProxySettings;    
-    private List listeners;
+    private List<PropertyChangeListener> listeners;
 
 
     public static final String PROP_VALID = "valid";
@@ -154,7 +154,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             });        
         }
         
-        Set recentRoots = new LinkedHashSet();
+        Set<String> recentRoots = new LinkedHashSet<String>();
         recentRoots.addAll(HistorySettings.getRecent(HistorySettings.PROP_SVN_URLS));        
         // templates for supported connection methods        
         recentRoots.add("file:");       // NOI18N
@@ -163,7 +163,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         recentRoots.add("svn:");        // NOI18N
         recentRoots.add("svn+ssh:");    // NOI18N
 
-        ComboBoxModel rootsModel = new DefaultComboBoxModel(new Vector(recentRoots));
+        ComboBoxModel rootsModel = new DefaultComboBoxModel(new Vector<String>(recentRoots));
         repositoryPanel.urlComboBox.setModel(rootsModel);
         repositoryPanel.urlComboBox.addActionListener(this);
         Component editor = repositoryPanel.urlComboBox.getEditor().getEditorComponent();
@@ -481,7 +481,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
         if(listeners==null) {
-            listeners = new ArrayList();
+            listeners = new ArrayList<PropertyChangeListener>();
         }
         listeners.add(l);
     }
