@@ -42,6 +42,10 @@ public class FolderListTest extends NbTestCase {
     public FolderListTest(String testName) {
         super(testName);
     }
+    
+    protected Level logLevel() {
+        return Level.FINE;
+    }
 
     protected void setUp() throws Exception {
         clearWorkDir();
@@ -56,10 +60,6 @@ public class FolderListTest extends NbTestCase {
         FileUtil.createData(folder, "C.txt");
         
         list = FolderList.find(folder, true);
-    }
-
-    protected Level logLevel() {
-        return Level.FINE;
     }
 
     protected void tearDown() throws Exception {
@@ -111,7 +111,7 @@ public class FolderListTest extends NbTestCase {
         L listener = null;
 
 
-        for(int j = 0; j < 10; j++) {
+        for(int j = 0; j < 100; j++) {
             DataObject[] objArr = list.getChildren();
             FileObject[] arr = new FileObject[objArr.length];
             for (int i = 0; i < arr.length; i++) {
@@ -177,7 +177,7 @@ public class FolderListTest extends NbTestCase {
         
         L listener = null;
 
-        for(int i = 0; i < 10; i++) {
+        for(int i = 0; i < 100; i++) {
             listener = new L();
             RequestProcessor.Task t = list.computeChildrenList(listener);
             t.waitFinished();
