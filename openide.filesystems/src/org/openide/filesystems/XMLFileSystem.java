@@ -845,7 +845,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
          * @param name the file
          * @return enumeration of keys (as strings)
          */
-        public Enumeration attributes(String name) {
+        public Enumeration<String> attributes(String name) {
             FileObjRef ref = (FileObjRef) fs.findReference(name);
 
             if ((ref == null) && (name.length() == 0) && (fs.rootRef != null)) {

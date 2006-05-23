@@ -416,7 +416,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
     * @param name the file
     * @return enumeration of keys (as strings)
     */
-    public synchronized Enumeration attributes(String name) {
+    public synchronized Enumeration<String> attributes(String name) {
         String[] arr = new String[2];
         split(name, arr);
 

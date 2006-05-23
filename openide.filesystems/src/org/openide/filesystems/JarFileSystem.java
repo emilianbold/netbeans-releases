@@ -1035,7 +1035,7 @@ public class JarFileSystem extends AbstractFileSystem {
         * @param name the file
         * @return enumeration of keys (as strings)
         */
-        public Enumeration attributes(String name) {
+        public Enumeration<String> attributes(String name) {
             return fs.attributes(name);
         }
 

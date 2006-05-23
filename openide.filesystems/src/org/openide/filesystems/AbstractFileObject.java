@@ -323,11 +323,11 @@ final class AbstractFileObject extends AbstractFolder {
     /* Get all file attribute names for this file.
     * @return enumeration of keys (as strings)
     */
-    public Enumeration getAttributes() {
+    public Enumeration<String> getAttributes() {
         return getAttributes(getPath());
     }
 
-    final Enumeration getAttributes(String path) {
+    final Enumeration<String> getAttributes(String path) {
         return getAbstractFileSystem().attr.attributes(path);
     }
 
@@ -1090,7 +1090,7 @@ final class AbstractFileObject extends AbstractFolder {
         /** Get all file attribute names for this file.
         * @return enumeration of keys (as strings)
         */
-        public Enumeration getAttributes() {
+        public Enumeration<String> getAttributes() {
             return Enumerations.empty();
         }
 

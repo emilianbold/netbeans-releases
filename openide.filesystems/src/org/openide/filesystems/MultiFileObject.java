@@ -867,11 +867,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     /* Get all file attribute names for this file.
     * @return enumeration of keys (as strings)
     */
-    public Enumeration getAttributes() {
+    public Enumeration<String> getAttributes() {
         return getAttributes(getPath());
     }
 
-    private final Enumeration getAttributes(String path) {
+    private final Enumeration<String> getAttributes(String path) {
         Set<String> s = new HashSet<String>();
         FileSystem[] systems = getMultiFileSystem().getDelegates();
 

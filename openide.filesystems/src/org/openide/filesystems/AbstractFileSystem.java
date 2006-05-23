@@ -731,7 +731,7 @@ public abstract class AbstractFileSystem extends FileSystem {
         * @param name the file
         * @return enumeration of keys (as strings)
         */
-        public Enumeration attributes(String name);
+        public Enumeration<String> attributes(String name);
 
         /** Called when a file is renamed, to appropriately update its attributes.
         * @param oldName old name of the file

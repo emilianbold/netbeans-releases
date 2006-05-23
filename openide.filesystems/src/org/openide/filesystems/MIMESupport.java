@@ -374,7 +374,7 @@ final class MIMESupport extends Object {
             return fileObj.getSize();
         }
 
-        public Enumeration getAttributes() {
+        public Enumeration<String> getAttributes() {
             return fileObj.getAttributes();
         }
 

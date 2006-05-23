@@ -342,7 +342,7 @@ public abstract class FileObject extends Object implements Serializable {
     /** Get all file attribute names for this file.
     * @return enumeration of keys (as strings)
     */
-    abstract public Enumeration getAttributes();
+    abstract public Enumeration<String> getAttributes();
 
     /** Test whether this file has the specified extension.
     * @param ext the extension the file should have
