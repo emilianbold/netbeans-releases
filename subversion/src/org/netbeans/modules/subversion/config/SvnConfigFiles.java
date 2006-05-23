@@ -22,9 +22,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.ErrorManager;
@@ -42,13 +46,17 @@ import org.openide.util.Utilities;
  * 
  * @author Tomas Stupka
  */
-public class SvnConfigFiles {
-    
+public class SvnConfigFiles {    
+
     /** the only SvnConfigFiles instance */
     private static SvnConfigFiles instance;
-    /** the Ini instance holding the configuration values stored in the <b>servers</b> 
+
+    /** the Ini instance holding the configuration values stored in the <b>servers</b>
      * file used by the Subversion module */
     private Ini servers = null;
+    /** the Ini instance holding the configuration values stored in the <b>config</b>
+     * file used by the Subversion module */
+    private Ini config = null;
 
     private static final String UNIX_CONFIG_DIR = ".subversion/";    
     private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   
@@ -62,7 +70,8 @@ public class SvnConfigFiles {
         // copy config file        
         copyConfigFileToIDEConfigDir();        
         // get the nb servers file merged with the systems servers files
-        servers = loadNetbeansIniFile("servers"); 
+        servers = loadNetbeansIniFile("servers");
+        config = loadNetbeansIniFile("config");
     }
     
     /**
@@ -88,7 +97,7 @@ public class SvnConfigFiles {
      *
      */
     public ProxyDescriptor getProxyDescriptor(String host) {
-        Ini.Section group = getGroup(host);
+        Ini.Section group = getServerGroup(host);
         if(group==null) {
             // no proxy specified -> direct
             return ProxyDescriptor.DIRECT;
@@ -122,11 +131,11 @@ public class SvnConfigFiles {
 
         if(pd != null && pd.getHost() != null) {
 
-            Ini.Section group = getGroup(host);
+            Ini.Section group = getServerGroup(host);
             if(group==null) {
-                group = getGroup(pd);
+                group = getServerGroup(pd);
                 if(group==null) {
-                    group = addGroup(host);
+                    group = addServerGroup(host);
 
                     group.put("http-proxy-host", pd.getHost());
                     group.put("http-proxy-port", String.valueOf(pd.getPort()));
@@ -138,13 +147,13 @@ public class SvnConfigFiles {
                     }
                 } else {
                     String groupName = group.getName();
-                    String groupsHosts = getGroups().get(groupName);
-                    getGroups().put(groupName, groupsHosts + "," + host);
+                    String groupsHosts = getServerGroups().get(groupName);
+                    getServerGroups().put(groupName, groupsHosts + "," + host);
                 }
             }            
         } else {
             // no proxy host means no proxy at all
-            removeFromGroup(host);
+            removeFromServerGroup(host);
         }
 
         try {
@@ -155,6 +164,31 @@ public class SvnConfigFiles {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
+
+    /**
+     * Returns the miscellany/global-ignores setting from the config file.
+     *
+     * @return a list with the inore patterns
+     *
+     */
+    public List<String> getGlobalIgnores() {
+        List<String> ret = new ArrayList<String>();
+        Ini.Section miscellany = config.get("miscellany");
+        if(miscellany == null) {
+            return Collections.EMPTY_LIST;
+        }
+        String ignores = miscellany.get("global-ignores");
+        if(ignores == null || ignores.trim().equals("")) {
+            return Collections.EMPTY_LIST;
+        }
+        StringTokenizer st = new StringTokenizer(ignores, " "); // XXX what if the space is a part of a pattern?
+        while (st.hasMoreTokens()) {
+            String entry = st.nextToken();
+            if (!entry.equals(""))
+                ret.add(entry);
+        }
+        return ret;
+    }        
 
     /**
      * Returns the path for the Sunbversion configuration dicectory used 
@@ -195,8 +229,8 @@ public class SvnConfigFiles {
      * @param host the host name 
      * @return the Ini.Section newly created
      */
-    private Ini.Section addGroup(String host) {
-        Ini.Section groups = getGroups();
+    private Ini.Section addServerGroup(String host) {
+        Ini.Section groups = getServerGroups();
         int idx = 0;
         String name = "group0";
         while(groups.get(name)!=null) {
@@ -216,13 +250,13 @@ public class SvnConfigFiles {
      * 
      * @param host the host which has to removed from the groups section
      */
-    private void removeFromGroup(String host) {
-        Ini.Section group = getGroup(host);
+    private void removeFromServerGroup(String host) {
+        Ini.Section group = getServerGroup(host);
         if(group != null) {
             String groupName = group.getName();
-            String[] hosts = getGroups().get(groupName).split(",");
+            String[] hosts = getServerGroups().get(groupName).split(",");
             if(hosts.length == 1) {
-                getGroups().remove(groupName);
+                getServerGroups().remove(groupName);
                 servers.remove(group);
             } else {
                 StringBuffer newHosts = new StringBuffer();
@@ -234,7 +268,7 @@ public class SvnConfigFiles {
                         }
                     }
                 }
-                getGroups().put(groupName, newHosts.toString());
+                getServerGroups().put(groupName, newHosts.toString());
             }            
         }
     }
@@ -244,7 +278,7 @@ public class SvnConfigFiles {
      *
      * @return the groups section
      */ 
-    private Ini.Section getGroups() {
+    private Ini.Section getServerGroups() {
         Ini.Section groups = servers.get(GROUPS);
         if(groups==null) {
             groups = servers.add("groups");
@@ -259,8 +293,8 @@ public class SvnConfigFiles {
      * @param host the host
      * @return the section holding the proxy settings for the given host
      */ 
-    private Ini.Section getGroup(String host) {
-        Ini.Section groups = getGroups();
+    private Ini.Section getServerGroup(String host) {
+        Ini.Section groups = getServerGroups();
         for (Iterator<String> it = groups.keySet().iterator(); it.hasNext();) {
             String key = it.next();
             String value = groups.get(key).trim();
@@ -290,7 +324,7 @@ public class SvnConfigFiles {
      * @param pd the {@link org.netbeans.modules.subversion.config.ProxyDescriptor}
      * @return the section holding the proxy settings for the given {@link org.netbeans.modules.subversion.config.ProxyDescriptor}
      */ 
-    private Ini.Section getGroup(ProxyDescriptor pd) {
+    private Ini.Section getServerGroup(ProxyDescriptor pd) {
         for (Iterator<Ini.Section> it = servers.values().iterator(); it.hasNext();) {
             Ini.Section group = it.next();
             if (group.getName().equals(GROUPS)) {
@@ -429,7 +463,7 @@ public class SvnConfigFiles {
      */       
     private Ini loadSystemIniFile(String fileName) {
         // config files from userdir
-        File file = FileUtil.normalizeFile(new File(getUserConfigPath() + "/config"));
+        File file = FileUtil.normalizeFile(new File(getUserConfigPath() + "/" + fileName));
         Ini system = null;
         try {            
             system = new Ini(new FileReader(file));

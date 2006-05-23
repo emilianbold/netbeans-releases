@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.UnsupportedSvnClientAdapter;
@@ -288,6 +289,11 @@ public class Subversion {
 
                     // XXX property can contain shell patterns (almost identical to RegExp)
                     List<String> patterns = client.getIgnoredPatterns(parent);
+                    List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
+                    for (Iterator<String> it = gignores.iterator();
+                         it.hasNext();
+                         patterns.add(it.next()));
+
                     for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
                         try {
                             String patternString = regExpToFilePatters(i.next());                            
