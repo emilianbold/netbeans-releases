@@ -97,6 +97,9 @@ public class SvnConfigFiles {
      *
      */
     public ProxyDescriptor getProxyDescriptor(String host) {
+        if(host == null || host.equals("")) {
+            return ProxyDescriptor.DIRECT;
+        }
         Ini.Section group = getServerGroup(host);
         if(group==null) {
             // no proxy specified -> direct
@@ -294,6 +297,9 @@ public class SvnConfigFiles {
      * @return the section holding the proxy settings for the given host
      */ 
     private Ini.Section getServerGroup(String host) {
+        if(host == null || host.equals("")) {
+            return null;
+        }
         Ini.Section groups = getServerGroups();
         for (Iterator<String> it = groups.keySet().iterator(); it.hasNext();) {
             String key = it.next();

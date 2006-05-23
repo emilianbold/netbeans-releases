@@ -170,20 +170,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         JTextComponent textEditor = (JTextComponent) editor;
         if (recentRoots.size() == 0) {
             textEditor.setText("file:");    // NOI18N
-        } else {
-            SelectedRepository repository = null;
-            try {
-                repository = getSelectedRepository();
-            } catch (Exception ex) {}
-            SVNUrl url = null;
-            if(repository!=null) {
-                url = repository.getUrl();
-            }    
-            if (url != null) {
-                proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
-                schedulePasswordUpdate();
-            }
-        }
+        } 
         textEditor.selectAll();
         textEditor.getDocument().addDocumentListener(this);
         
@@ -365,18 +352,20 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             // ignore
         }
 
-        if(repository != null) {            
-            if (repository.getUrl()!=null) {                   
+        SVNUrl url = null;
+        if(repository != null) {
+            url = repository.getUrl();
+            if (url != null && !url.getProtocol().equals("file")) {
                 if (userVisitedProxySettings == false) {
-                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(repository.getUrl().getHost());
+                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
                 }
                 schedulePasswordUpdate();
             }
         }
         message = "";
         updateVisibility();
-    }
-    
+    }            
+
     /** Shows proper fields depending on Svn connection method. */
     private void updateVisibility() {
         String selectedUrlString = selectedUrlString();
