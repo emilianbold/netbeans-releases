@@ -17,30 +17,41 @@ Microsystems, Inc. All Rights Reserved.
     <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
     <property file="build.properties"/>
 
-    <condition property="do.not.need.to.prepare.nbjunit">
-        <and>
-            <available file="lib/nbjunit.jar"/>
-            <available file="lib/insanelib.jar"/>
-            <available file="lib/nbjunit-ide.jar"/>
-        </and>
-    </condition>
+    <target name="check-prepare-nbjunit">
+        <condition property="do.not.need.to.prepare.nbjunit">
+            <and>
+                <available file="lib/nbjunit.jar"/>
+                <or>
+                    <not>
+                        <available file="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar"/>
+                    </not>
+                    <uptodate srcfile="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar" targetfile="lib/nbjunit.jar"/>
+                </or>
+                <available file="lib/nbjunit-ide.jar"/>
+                <or>
+                    <not>
+                        <available file="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar"/>
+                    </not>
+                    <uptodate srcfile="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar" targetfile="lib/nbjunit-ide.jar"/>
+                </or>
+                <uptodate srcfile="external/insanelib.jar" targetfile="lib/insanelib.jar"/>
+            </and>
+        </condition>
+    </target>
     
-    
-    <target name="prepare-nbjunit" unless="do.not.need.to.prepare.nbjunit"> 
+    <target name="prepare-nbjunit" depends="check-prepare-nbjunit" unless="do.not.need.to.prepare.nbjunit"> 
         <ant dir="nbjunit" target="jar" inheritAll="false"/>
         <ant dir="nbjunit/ide" target="jar" inheritAll="false"/>
-        <!-- Need to initialize ${xtest/nbjunit.dir} property -->
-        <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
 
         <!-- to keep compatibility, just copy the content of the JARs but not its manifest -->
         <jar jarfile="lib/nbjunit.jar">
-            <zipfileset src="${xtest/nbjunit.dir}/modules/org-netbeans-modules-nbjunit.jar">
+            <zipfileset src="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar">
                 <include name="**/*"/>
                 <exclude name="META-INF/MANIFEST.MF"/>
             </zipfileset>
         </jar>
         <jar jarfile="lib/nbjunit-ide.jar">
-            <zipfileset src="${xtest/nbjunit/ide.dir}/modules/org-netbeans-modules-nbjunit-ide.jar">
+            <zipfileset src="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar">
                 <include name="**/*"/>
                 <exclude name="META-INF/MANIFEST.MF"/>
             </zipfileset>
