@@ -342,36 +342,29 @@ NodeActionsProviderFilter, TableModel, Constants {
     
     public Object getValueAt (Object node, String columnID) throws 
     UnknownTypeException {
-        if (node instanceof ThreadWithBordel) {
+        if (node instanceof OwnedMonitors ||
+            node instanceof ContendedMonitor ||
+            node instanceof ObjectVariable) {
+            
             if (columnID == THREAD_STATE_COLUMN_ID)
                 return "";
             if (columnID == THREAD_SUSPENDED_COLUMN_ID)
                 return null;
         }
-        if (node instanceof OwnedMonitors)
-            if (columnID == THREAD_STATE_COLUMN_ID)
-                return "";
-            if (columnID == THREAD_SUSPENDED_COLUMN_ID)
-                return null;
-        if (node instanceof ContendedMonitor)
-            if (columnID == THREAD_STATE_COLUMN_ID)
-                return "";
-            if (columnID == THREAD_SUSPENDED_COLUMN_ID)
-                return null;
         throw new UnknownTypeException (node);
     }
     
     public boolean isReadOnly (Object node, String columnID) throws 
     UnknownTypeException {
-        if ( columnID == THREAD_STATE_COLUMN_ID || 
-             columnID == THREAD_SUSPENDED_COLUMN_ID
-        ) {
-            if (node instanceof ThreadWithBordel)
+        if (node instanceof OwnedMonitors ||
+            node instanceof ContendedMonitor ||
+            node instanceof ObjectVariable) {
+            
+            if (columnID == THREAD_STATE_COLUMN_ID || 
+                columnID == THREAD_SUSPENDED_COLUMN_ID) {
+                
                 return true;
-            if (node instanceof OwnedMonitors)
-                return true;
-            if (node instanceof ContendedMonitor)
-                return true;
+            }
         }
         throw new UnknownTypeException (node);
     }

@@ -21,6 +21,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 
@@ -36,6 +37,9 @@ public class ThreadsTableModel implements TableModel, Constants {
 
     public Object getValueAt (Object row, String columnID) throws 
     UnknownTypeException {
+        //if (row instanceof javax.swing.JToolTip) {
+        //    will throw UnknownTypeException - the value is used for tooltips
+        //}
         if (row instanceof MonitorModel.ThreadWithBordel) 
             row = ((MonitorModel.ThreadWithBordel) row).originalThread;
         if (row instanceof JPDAThreadGroup) {
@@ -49,49 +53,58 @@ public class ThreadsTableModel implements TableModel, Constants {
             }
         }
         if (row instanceof JPDAThread) {
-            if (columnID.equals (THREAD_STATE_COLUMN_ID)) 
-                switch (((JPDAThread) row).getState ()) {
-                    case JPDAThread.STATE_MONITOR:
-                        return NbBundle.getMessage (
-                            ThreadsTableModel.class, 
-                            "CTL_Thread_State_OnMonitor"
-                        );
-                    case JPDAThread.STATE_NOT_STARTED:
-                        return NbBundle.getMessage (
-                            ThreadsTableModel.class, 
-                            "CTL_Thread_State_NotStarted"
-                        );
-                    case JPDAThread.STATE_RUNNING:
-                        return NbBundle.getMessage (
-                            ThreadsTableModel.class, 
-                            "CTL_Thread_State_Running"
-                        );
-                    case JPDAThread.STATE_SLEEPING:
-                        return NbBundle.getMessage (
-                            ThreadsTableModel.class, 
-                            "CTL_Thread_State_Sleeping"
-                        );
-                    case JPDAThread.STATE_UNKNOWN:
-                        return NbBundle.getMessage (
-                            ThreadsTableModel.class, 
-                            "CTL_Thread_State_Unknown"
-                        );
-                    case JPDAThread.STATE_WAIT:
-                        return NbBundle.getMessage (
-                            ThreadsTableModel.class, 
-                            "CTL_Thread_State_Waiting"
-                        );
-                    case JPDAThread.STATE_ZOMBIE:
-                        return NbBundle.getMessage (
-                            ThreadsTableModel.class, 
-                            "CTL_Thread_State_Zombie"
-                        );
+            if (columnID.equals (THREAD_STATE_COLUMN_ID)) {
+                String description = getThreadStateDescription(((JPDAThread) row).getState ());
+                if (description != null) {
+                    return description;
                 }
-            else
+            } else
             if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID))
                 return Boolean.valueOf (((JPDAThread) row).isSuspended ());
         }
         throw new UnknownTypeException (row);
+    }
+    
+    private static String getThreadStateDescription(int state) {
+        switch (state) {
+            case JPDAThread.STATE_MONITOR:
+                return NbBundle.getMessage (
+                    ThreadsTableModel.class, 
+                    "CTL_Thread_State_OnMonitor"
+                );
+            case JPDAThread.STATE_NOT_STARTED:
+                return NbBundle.getMessage (
+                    ThreadsTableModel.class, 
+                    "CTL_Thread_State_NotStarted"
+                );
+            case JPDAThread.STATE_RUNNING:
+                return NbBundle.getMessage (
+                    ThreadsTableModel.class, 
+                    "CTL_Thread_State_Running"
+                );
+            case JPDAThread.STATE_SLEEPING:
+                return NbBundle.getMessage (
+                    ThreadsTableModel.class, 
+                    "CTL_Thread_State_Sleeping"
+                );
+            case JPDAThread.STATE_UNKNOWN:
+                return NbBundle.getMessage (
+                    ThreadsTableModel.class, 
+                    "CTL_Thread_State_Unknown"
+                );
+            case JPDAThread.STATE_WAIT:
+                return NbBundle.getMessage (
+                    ThreadsTableModel.class, 
+                    "CTL_Thread_State_Waiting"
+                );
+            case JPDAThread.STATE_ZOMBIE:
+                return NbBundle.getMessage (
+                    ThreadsTableModel.class, 
+                    "CTL_Thread_State_Zombie"
+                );
+            default: ErrorManager.getDefault().log(ErrorManager.WARNING, "Unknown thread state: "+state);
+                    return null;
+        }
     }
     
     public boolean isReadOnly (Object row, String columnID) throws 
