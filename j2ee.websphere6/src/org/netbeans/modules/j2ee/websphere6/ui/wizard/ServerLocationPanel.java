@@ -155,6 +155,9 @@ public class ServerLocationPanel extends JPanel
         // add server installation directory field label
         locationLabel.setText(NbBundle.getMessage(ServerLocationPanel.class, 
                 "LBL_SERVER_LOCATION"));                               // NOI18N
+        locationLabel.setDisplayedMnemonic(NbBundle.getMessage(ServerLocationPanel.class, 
+                "MNE_SERVER_LOCATION").charAt(0));
+        locationLabel.setLabelFor(locationField);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
