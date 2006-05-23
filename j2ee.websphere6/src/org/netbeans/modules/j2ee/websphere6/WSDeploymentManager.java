@@ -354,10 +354,10 @@ public class WSDeploymentManager implements DeploymentManager {
             if (dm != null) {
                 dm.release();
             }
-            
+           
             // try to get a connected deployment manager
             dm = factory.getDeploymentManager(uri, username, password);
-            
+                       
             // set the connected marker
             isConnected = true;
         } catch (DeploymentManagerCreationException e) {

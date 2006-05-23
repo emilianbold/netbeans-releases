@@ -306,7 +306,7 @@ public class WSStartServer extends StartServer {
      * @return false
      */
     public boolean needsStartForConfigure() {
-        return true;
+        return false;// modified. was true
     }
     
     /**
