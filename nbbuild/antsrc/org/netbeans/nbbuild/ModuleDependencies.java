@@ -273,6 +273,12 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
 		w.println (out.replace ('/', '.'));
 	    }
 	} else {
+            int maxFriends = Integer.MAX_VALUE;
+            String maxFriendsString = this.getProject().getProperty("deps.max.friends");
+            if (maxFriendsString != null) {
+                maxFriends = Integer.parseInt(maxFriendsString);
+            }
+            
 	    it = friendExports.entrySet().iterator();
 	    while (it.hasNext()) {
 		Map.Entry entry = (Map.Entry)it.next();
@@ -295,6 +301,10 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
 			w.println(n);
 		    }
 		}
+                if (info.friends.size() > maxFriends) {
+                    throw new BuildException("Too many friends (" + info.friends.size() + ") for module " + info.getName());
+                }
+                
 		Set/*<String>*/ pkgs = (Set/*<String>*/)entry.getValue();
 		Iterator iterPkgs = pkgs.iterator();
 		while (iterPkgs.hasNext()) {

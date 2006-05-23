@@ -203,6 +203,66 @@ public class ModuleDependenciesTest extends NbTestCase {
 	assertTrue("FriendPkg2\n" + res, res.indexOf("friend.there") >= fst);
 	
     }
+    public void testThereCanBeLimitOnNumberOfFriends() throws Exception {
+        File notAModule = generateJar (new String[] { "not/X.class", "not/resource/X.html" }, createManifest ());
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Friends", "my.very.public.module");
+        File withoutPkgs = generateJar (new String[] { "DefaultPkg.class", "just/friend/X.class", "just/friend/MyClass.class", "not/as/it/is/resource/X.xml" }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "friend.there.*, friend.recursive.**");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Friends", "my.very.public.module, my.module");
+        File withPkgs = generateJar (new String[] { "friend/there/A.class", "not/there/B.class", "friend/recursive/Root.class", "friend/recursive/sub/Under.class", "not/res/X.jpg"}, m);
+
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.very.public.module/10");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "-");
+        File allPkgs = generateJar (new String[] { "not/very/A.class", "not/very/B.class", "not/very/sub/Root.class", "not/res/X.jpg"}, m);
+        
+        File parent = notAModule.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
+        assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
+        assertEquals ("All parents are the same 3", parent, allPkgs.getParentFile ());
+        
+        
+        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        output.delete ();
+        File friendPkg = PublicPackagesInProjectizedXMLTest.extractString ("");
+        friendPkg.delete ();
+	assertFalse ("Is gone", output.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <property name='deps.max.friends' value='1'/>" +
+            "  <deps>" +
+            "    <input name=\"ahoj\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + notAModule.getName () + "\" />" +
+            "        <include name=\"" + withoutPkgs.getName () + "\" />" +
+            "        <include name=\"" + withPkgs.getName () + "\" />" +
+            "        <include name=\"" + allPkgs.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"public-packages\" file=\"" + output + "\" />" +
+            "    <output type=\"friend-packages\" file=\"" + friendPkg + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+        try {
+            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+            fail("This should fail");
+        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+            if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("Too many friends") == -1) {
+                fail("There should be a message about too many friends:\n" + PublicPackagesInProjectizedXMLTest.getStdErr());
+            }
+        }
+    }
     
     public void testMd5CheckSumForExternalBinaries() throws Exception {
         File notAModule = generateJar (new String[] { "not/X.class", "not/resource/X.html" }, createManifest ());
