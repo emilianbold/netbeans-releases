@@ -76,9 +76,9 @@ public final class MenuWarmUpTask implements Runnable {
             if (! (items[i] instanceof JMenu)) continue;
             try {
                 Class cls = items[i].getClass();
-                Method m = cls.getDeclaredMethod("doInitialize", null);
+                Method m = cls.getDeclaredMethod("doInitialize");
                 m.setAccessible(true);
-                m.invoke(items[i], null);
+                m.invoke(items[i]);
                 walkMenu(((JMenu)items[i]).getMenuComponents()); // recursive?
             } catch (Exception e) {// do nothing, it may happen for user-provided menus
             }
@@ -139,7 +139,7 @@ public final class MenuWarmUpTask implements Runnable {
                 return fileSystems;
             }
             File[] roots = File.listRoots();
-            Set allRoots = new LinkedHashSet(); 
+            Set<FileSystem> allRoots = new LinkedHashSet<FileSystem>();
             assert roots != null && roots.length > 0 : "Could not list file roots"; // NOI18N
             
             for (int i = 0; i < roots.length; i++) {
