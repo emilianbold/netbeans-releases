@@ -81,7 +81,8 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             Method method = (Method) methods.next ();
             if ( (match (method.name (), breakpoint.getMethodName ()) ||
                   breakpoint.getMethodName().equals("")) &&
-                  method.location () != null
+                  method.location () != null &&
+                  !method.isNative()
             )
                 locations.add (method.location ());
         }
