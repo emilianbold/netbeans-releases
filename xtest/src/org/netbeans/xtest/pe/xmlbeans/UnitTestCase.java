@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -76,20 +76,6 @@ public class UnitTestCase extends XMLBean {
      */
     public void setClassName(String className) {
         xmlat_class = className;
-    }
-    
-    /** Getter for property test.
-     * @return Value of property test.
-     */
-    public String getTest() {
-        return xmlat_test;
-    }
-    
-    /** Setter for property test.
-     * @param test New value of property test.
-     */
-    public void setTest(String test) {
-        xmlat_test = test;
     }
     
     /** Getter for property result.
@@ -193,7 +179,6 @@ public class UnitTestCase extends XMLBean {
     // attributes
     public String   xmlat_class;
     public String   xmlat_name;
-    public String   xmlat_test;
     public String   xmlat_result;
     public String   xmlat_workdir;
     public String   xmlat_message;
