@@ -16,24 +16,22 @@ package org.netbeans.core.startup;
 // May use core, GUI, ad nauseum.
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 import org.netbeans.Events;
 import org.netbeans.Module;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.Util;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -304,10 +302,18 @@ final class NbEvents extends Events {
             Splash.SplashOutput out = org.netbeans.core.startup.Main.getSplash();
             Component c = out == null ? null : out.getComponent();
             
+            JTextArea area = new JTextArea();
+            area.setText(text);
+            area.setEditable(false);
+            area.setEnabled(true);
+            area.setOpaque(false);
+            javax.swing.JScrollPane pane = new javax.swing.JScrollPane(area);
+            pane.setPreferredSize(new Dimension(pane.getPreferredSize().width + 50, area.getFont().getSize() * 15));
+            
             if (options == null) {
-                JOptionPane.showMessageDialog(null, text, msg, type);
+                JOptionPane.showMessageDialog(null, pane, msg, type);
             } else {
-                int ret = JOptionPane.showOptionDialog(c, text, msg, 0, type, null, options, options[1]);
+                int ret = JOptionPane.showOptionDialog(c, pane, msg, 0, type, null, options, options[1]);
                 if (ret == 1 || ret == -1) { // exit or close
                     TopSecurityManager.exit(1);
                 }
