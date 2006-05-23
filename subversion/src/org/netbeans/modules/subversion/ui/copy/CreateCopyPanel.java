@@ -51,7 +51,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         urlComboBox.setEditable(true);
 
         warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/ui/resources/warning.png")));
-        warningLabel.setText("Warning - there are localy modified files!");
+        warningLabel.setText("Warning - there are locally modified files!");
 
         switchToCheckBox.setText("Switch to Copy");
         switchToCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
