@@ -66,7 +66,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JLabelOperator lblStartWithRevision() {
         if (_lblStartWithRevision==null) {
-            _lblStartWithRevision = new JLabelOperator(this, "Start with Revision:");
+            _lblStartWithRevision = new JLabelOperator(this, "Starting");
         }
         return _lblStartWithRevision;
     }
@@ -76,7 +76,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JLabelOperator lblEndWithRevision() {
         if (_lblEndWithRevision==null) {
-            _lblEndWithRevision = new JLabelOperator(this, "End with Revision:");
+            _lblEndWithRevision = new JLabelOperator(this, "Ending");
         }
         return _lblEndWithRevision;
     }

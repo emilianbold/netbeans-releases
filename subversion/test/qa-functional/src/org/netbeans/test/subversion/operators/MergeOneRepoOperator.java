@@ -54,7 +54,7 @@ public class MergeOneRepoOperator extends JDialogOperator {
      */
     public JLabelOperator lblEndingWithRevision() {
         if (_lblEndingWithRevision==null) {
-            _lblEndingWithRevision = new JLabelOperator(this, "Ending with Revision:");
+            _lblEndingWithRevision = new JLabelOperator(this, "Ending");
         }
         return _lblEndingWithRevision;
     }
@@ -64,7 +64,7 @@ public class MergeOneRepoOperator extends JDialogOperator {
      */
     public JLabelOperator lblStartingWithRevision() {
         if (_lblStartingWithRevision==null) {
-            _lblStartingWithRevision = new JLabelOperator(this, "Starting with Revision:");
+            _lblStartingWithRevision = new JLabelOperator(this, "Starting");
         }
         return _lblStartingWithRevision;
     }
@@ -74,7 +74,7 @@ public class MergeOneRepoOperator extends JDialogOperator {
      */
     public JLabelOperator lblFirstRepositoryFolder() {
         if (_lblFirstRepositoryFolder==null) {
-            _lblFirstRepositoryFolder = new JLabelOperator(this, "First Repository Folder:");
+            _lblFirstRepositoryFolder = new JLabelOperator(this, "Repository Folder");
         }
         return _lblFirstRepositoryFolder;
     }

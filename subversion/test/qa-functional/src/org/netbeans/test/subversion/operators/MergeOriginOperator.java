@@ -49,7 +49,7 @@ public class MergeOriginOperator extends JDialogOperator {
      */
     public JLabelOperator lblRepositoryFolder() {
         if (_lblRepositoryFolder==null) {
-            _lblRepositoryFolder = new JLabelOperator(this, "Repository Folder:");
+            _lblRepositoryFolder = new JLabelOperator(this, "Repository Folder");
         }
         return _lblRepositoryFolder;
     }
@@ -59,7 +59,7 @@ public class MergeOriginOperator extends JDialogOperator {
      */
     public JLabelOperator lblEndingWithRevision() {
         if (_lblEndingWithRevision==null) {
-            _lblEndingWithRevision = new JLabelOperator(this, "Ending with Revision:");
+            _lblEndingWithRevision = new JLabelOperator(this, "Ending");
         }
         return _lblEndingWithRevision;
     }
