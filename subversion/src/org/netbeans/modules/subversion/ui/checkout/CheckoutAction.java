@@ -68,17 +68,23 @@ public final class CheckoutAction extends CallableSystemAction {
 
                 setDisplayName("scaning folders ...");
                 if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0) {
-                    String[] folders = new String[repositoryFiles.length];
-                    for (int i = 0; i < repositoryFiles.length; i++) {
-                        if(isCanceled()) {
-                            return;
+                    String[] folders;
+                    if(atWorkingDirLevel) {
+                        folders = new String[1];
+                        folders[0] = ".";
+                    } else {
+                        folders = new String[repositoryFiles.length];
+                        for (int i = 0; i < repositoryFiles.length; i++) {
+                            if(isCanceled()) {
+                                return;
+                            }
+                            if(repositoryFiles[i].isRepositoryRoot()) {
+                                folders[i] = ".";
+                            } else {
+                                folders[i] = repositoryFiles[i].getFileUrl().getLastPathSegment();
+                            }
                         }
-                        if(repositoryFiles[i].isRepositoryRoot()) {
-                            folders[i] = ".";
-                        } else {
-                            folders[i] = repositoryFiles[i].getFileUrl().getLastPathSegment();
-                        }
-                    }             
+                    }                    
                     CheckoutCompleted cc = new CheckoutCompleted(file, folders, true);
                     if(isCanceled()) {
                         return;
