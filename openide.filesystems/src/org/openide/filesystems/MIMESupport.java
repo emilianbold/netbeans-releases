@@ -133,6 +133,7 @@ final class MIMESupport extends Object {
                     return (MIMEResolver[])resolvers;
                 }
                 if (resolvers instanceof Set) {
+                    // XXX should use Union2 for better type safety
                     creators = (Set)resolvers;
                     if (creators.contains (Thread.currentThread())) {
                         // prevent stack overflow
