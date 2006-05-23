@@ -37,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="basic-init,files-init,build-init"/>
 
     <target name="nbm-license-init" unless="license.file">
+        <mkdir dir="build"/>
         <property name="license.file" location="build/no-license.txt"/>
         <echo file="${license.file}">[NO LICENSE SPECIFIED]</echo>
     </target>
