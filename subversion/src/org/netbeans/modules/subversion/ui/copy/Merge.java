@@ -45,7 +45,7 @@ public class Merge extends CopyDialog implements ItemListener {
     private String MERGE_END_URL_HISTORY_KEY = Merge.class.getName() + "_merge_after";
     
     public Merge(RepositoryFile repositoryRoot, File root) {
-        super(new MergePanel(), "Merge " + root.getName() + " to...", "Merge");
+        super(new MergePanel(), "Merge into " + root.getName(), "Merge");
 
         MergePanel panel = getMergePanel();
 

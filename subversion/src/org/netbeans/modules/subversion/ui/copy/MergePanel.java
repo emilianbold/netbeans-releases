@@ -47,7 +47,7 @@ public class MergePanel extends javax.swing.JPanel {
         mergeFieldsPanel.setLayout(mergeFieldsPanelLayout);
         mergeFieldsPanelLayout.setHorizontalGroup(
             mergeFieldsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 747, Short.MAX_VALUE)
+            .add(0, 769, Short.MAX_VALUE)
         );
         mergeFieldsPanelLayout.setVerticalGroup(
             mergeFieldsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -59,7 +59,7 @@ public class MergePanel extends javax.swing.JPanel {
         previewPanel.setLayout(previewPanelLayout);
         previewPanelLayout.setHorizontalGroup(
             previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 743, Short.MAX_VALUE)
+            .add(0, 765, Short.MAX_VALUE)
         );
         previewPanelLayout.setVerticalGroup(
             previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -76,7 +76,7 @@ public class MergePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(mergeFieldsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(typeDescriptionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 747, Short.MAX_VALUE)
+                    .add(typeDescriptionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 769, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -96,7 +96,7 @@ public class MergePanel extends javax.swing.JPanel {
                 .add(typeDescriptionLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mergeFieldsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 226, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 53, Short.MAX_VALUE)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)

@@ -37,7 +37,8 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
         setName("Message");
         mergeEndRepositoryFolderLabel.setText("Repository Folder:");
 
-        mergeAfterRevisionLabel.setText("Ending with Revision:");
+        mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png")));
+        mergeAfterRevisionLabel.setText("Ending Revision:");
 
         mergeAfterEmptyLabel.setText("(empty means repository HEAD)");
 
@@ -52,21 +53,18 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(mergeEndRepositoryFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(mergeAfterRevisionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(mergeAfterRevisionLabel)
+                    .add(mergeEndRepositoryFolderLabel))
+                .add(6, 6, 6)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(mergeAfterEmptyLabel)
                     .add(layout.createSequentialGroup()
-                        .add(mergeAfterEmptyLabel)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(mergeEndSearchButton))
-                            .add(mergeEndUrlComboBox, 0, 423, Short.MAX_VALUE))
+                        .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(mergeEndSearchButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(mergeEndUrlComboBox, 0, 443, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(mergeEndBrowseButton))))
         );
@@ -75,14 +73,14 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(mergeEndRepositoryFolderLabel)
                     .add(mergeEndBrowseButton)
-                    .add(mergeEndUrlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(mergeEndRepositoryFolderLabel))
+                    .add(mergeEndUrlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(mergeAfterRevisionLabel)
                     .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(mergeEndSearchButton)
-                    .add(mergeAfterRevisionLabel))
+                    .add(mergeEndSearchButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mergeAfterEmptyLabel)
                 .addContainerGap())

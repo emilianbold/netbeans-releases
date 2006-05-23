@@ -37,9 +37,10 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
         jLabel9 = new javax.swing.JLabel();
 
         setName("Message");
-        mergeStartRepositoryFolderLabel.setText("First Repository Folder:");
+        mergeStartRepositoryFolderLabel.setText("Repository Folder:");
 
-        mergeAfterRevisionLabel.setText("Ending with Revision:");
+        mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png")));
+        mergeAfterRevisionLabel.setText("Ending Revision:");
 
         mergeStartSearchButton.setText("Search...");
 
@@ -51,7 +52,8 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
 
         mergeEndSearchButton.setText("Search...");
 
-        jLabel8.setText("Starting with Revision:");
+        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/starting_revision.png")));
+        jLabel8.setText("Starting Revision:");
 
         jLabel9.setText("(empty means repository HEAD)");
 
@@ -76,7 +78,7 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
                         .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(mergeEndSearchButton))
-                    .add(mergeStartUrlComboBox, 0, 413, Short.MAX_VALUE))
+                    .add(mergeStartUrlComboBox, 0, 422, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mergeStartBrowseButton))
         );

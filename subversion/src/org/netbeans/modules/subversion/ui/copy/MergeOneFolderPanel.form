@@ -34,7 +34,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="mergeEndSearchButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="mergeStartUrlComboBox" alignment="0" pref="413" max="32767" attributes="2"/>
+                  <Component id="mergeStartUrlComboBox" alignment="0" pref="422" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="mergeStartBrowseButton" min="-2" max="-2" attributes="0"/>
@@ -74,7 +74,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="mergeStartRepositoryFolderLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="First Repository Folder:"/>
+        <Property name="text" type="java.lang.String" value="Repository Folder:"/>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -82,7 +82,10 @@
     </Component>
     <Component class="javax.swing.JLabel" name="mergeAfterRevisionLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Ending with Revision:"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/org/netbeans/modules/subversion/resources/icons/ending_revision.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Ending Revision:"/>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -143,7 +146,10 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel8">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Starting with Revision:"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/org/netbeans/modules/subversion/resources/icons/starting_revision.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Starting Revision:"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel9">

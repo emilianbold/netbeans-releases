@@ -43,7 +43,8 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
 
         mergeEndUrlComboBox.setEditable(true);
 
-        mergeAfterRevisionLabel.setText("Ending with Revision:");
+        mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png")));
+        mergeAfterRevisionLabel.setText("Ending Revision:");
 
         mergeStartSearchButton.setText("Search...");
 
@@ -57,7 +58,8 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
 
         mergeEndSearchButton.setText("Search...");
 
-        jLabel8.setText("Starting with Revision:");
+        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/starting_revision.png")));
+        jLabel8.setText("Starting Revision:");
 
         jLabel9.setText("(empty means repository HEAD)");
 
