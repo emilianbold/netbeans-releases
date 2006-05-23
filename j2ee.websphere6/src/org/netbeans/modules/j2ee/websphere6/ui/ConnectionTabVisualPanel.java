@@ -156,8 +156,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         serverTypeCombo.addItem(NbBundle.getMessage(ConnectionTabVisualPanel.class,"TXT_serverTypeRemote"));
          */
         Vector types=new Vector();
-        types.add(NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_serverTypeLocal"));
-        types.add(NbBundle.getMessage(ConnectionTabVisualPanel.class,"TXT_serverTypeRemote"));
+        types.add(NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_ServerTypeLocal"));
+        types.add(NbBundle.getMessage(ConnectionTabVisualPanel.class,"TXT_ServerTypeRemote"));
         serverTypeCombo.setModel(new InstancesModel(types));
         
         //serverTypeCombo.addActionListener(tabServerProperties.getServerTypeActionListener());
@@ -181,10 +181,22 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         String getLocal=targetData.getIsLocal();
         if(getLocal!=null)
             serverTypeCombo.setSelectedItem(getLocal.equals("true")?
-                NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_serverTypeLocal"):
-                NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_serverTypeRemote"));
+                NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_ServerTypeLocal"):
+                NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_ServerTypeRemote"));
         
         //setName(NbBundle.getMessage(ConnectionTabVisualPanel.class, "TITLE_AddUserDefinedLocalServerPanel"));
+        
+        
+        // set mnemonics
+        jLabel1.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_ProfilePath").charAt(0));
+        jLabel2.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_LocalRemote").charAt(0));
+        jLabel3.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_LocalInstances").charAt(0));
+        jLabel4.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_Host").charAt(0));
+        jLabel5.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_Port").charAt(0));
+        jLabel6.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_Username").charAt(0));
+        jLabel7.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_Password").charAt(0));
+        
+        
     }
     /**
      * Checks whether the specified path is the valid domain root directory.
@@ -197,7 +209,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         // directory for validity
         if (serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(
                 ConnectionTabVisualPanel.class,
-                "TXT_serverTypeLocal"))) {                             // NOI18N
+                "TXT_ServerTypeLocal"))) {                             // NOI18N
             if (!tabServerProperties.isValidDomainRoot(profilePathField.getText())) {
                 JOptionPane.showMessageDialog(null,
                         NbBundle.getMessage(ConnectionTabVisualPanel.class,
@@ -238,7 +250,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         
         targetData.setIsLocal(serverTypeCombo.getSelectedItem().
                 equals(NbBundle.getMessage(ConnectionTabVisualPanel.class,
-                "TXT_serverTypeLocal")) ? "true" : "false");           // NOI18N
+                "TXT_ServerTypeLocal")) ? "true" : "false");           // NOI18N
         
         targetData.setServerName(((Instance) localInstancesCombo.
                 getSelectedItem()).getName());
@@ -274,37 +286,44 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
 
-        jLabel2.setText("Local/Remote:");
+        jLabel2.setLabelFor(serverTypeCombo);
+        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_LocalRemote"));
 
         serverTypeCombo.setEnabled(false);
         serverTypeCombo.getAccessibleContext().setAccessibleName("Access Method");
 
-        jLabel3.setText("Local Instances:");
+        jLabel3.setLabelFor(localInstancesCombo);
+        jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_LocalInstances"));
         jLabel3.getAccessibleContext().setAccessibleName("Local Instances Label");
 
         localInstancesCombo.setEnabled(false);
         localInstancesCombo.getAccessibleContext().setAccessibleName("Local Instances");
 
-        jLabel4.setText("Host:");
+        jLabel4.setLabelFor(hostField);
+        jLabel4.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_Host"));
         jLabel4.getAccessibleContext().setAccessibleName("Host Label");
 
-        jLabel5.setText("Port:");
+        jLabel5.setLabelFor(portField);
+        jLabel5.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_Port"));
         jLabel5.getAccessibleContext().setAccessibleName("Port Label");
 
         hostField.setEditable(false);
         hostField.getAccessibleContext().setAccessibleName("Host");
 
-        jLabel6.setText("Username:");
+        jLabel6.setLabelFor(userNameField);
+        jLabel6.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_Username"));
         jLabel6.getAccessibleContext().setAccessibleName("Username Label");
 
-        jLabel7.setText("Password:");
+        jLabel7.setLabelFor(passwordField);
+        jLabel7.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_Password"));
         jLabel7.getAccessibleContext().setAccessibleName("Password Label");
 
         userNameField.getAccessibleContext().setAccessibleName("Username");
 
         profilePathField.setEditable(false);
 
-        jLabel1.setText("Profile Path:");
+        jLabel1.setLabelFor(profilePathField);
+        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_ProfilePath"));
 
         portField.setEditable(false);
         portField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -346,7 +365,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                         .add(62, 62, 62)
                         .add(jLabel4)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(hostField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)))
+                        .add(hostField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -438,7 +457,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
             // if the selected type is local
             if (serverTypeCombo.getSelectedItem().equals(NbBundle.
                     getMessage(ServerProperties.class,
-                    "TXT_serverTypeLocal"))) {                         // NOI18N
+                    "TXT_ServerTypeLocal"))) {                         // NOI18N
                 Instance instance = (Instance) localInstancesCombo.
                         getSelectedItem();
                 

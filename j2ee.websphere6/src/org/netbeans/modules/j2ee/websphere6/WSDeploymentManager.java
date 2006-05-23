@@ -354,12 +354,16 @@ public class WSDeploymentManager implements DeploymentManager {
             if (dm != null) {
                 dm.release();
             }
-           
-            // try to get a connected deployment manager
-            dm = factory.getDeploymentManager(uri, username, password);
-                       
-            // set the connected marker
-            isConnected = true;
+            if(factory!=null) {
+                loadDeploymentFactory();
+            }
+            if(factory!=null) {
+                // try to get a connected deployment manager
+                dm = factory.getDeploymentManager(uri, username, password);
+                
+                // set the connected marker
+                isConnected = true;
+            }
         } catch (DeploymentManagerCreationException e) {
             try {
                 // if the connected deployment manager cannot be obtained - get
@@ -431,11 +435,11 @@ public class WSDeploymentManager implements DeploymentManager {
         // update the context classloader
         loader.updateLoader();
         //try {
-            if(target.length==1) {
+        if(target.length==1) {
             int i=0;
             i++;
-            }
-            
+        }
+        
         //}
         
         try {
@@ -639,7 +643,7 @@ public class WSDeploymentManager implements DeploymentManager {
         
         String webUrl=null;
         try {
-            // if WebSphere return null for getWebURL, then set it to the right value 
+            // if WebSphere return null for getWebURL, then set it to the right value
             Method method = targetModuleID[0].getClass().
                     getMethod("getWebURL", new Class[0]);            // NOI18N
             webUrl = (String) method.
@@ -647,7 +651,7 @@ public class WSDeploymentManager implements DeploymentManager {
             if(webUrl==null) {
                 String port=getDefaultHostPort();
                 String host=getHost();
-                if(uri.indexOf(WSURIManager.WSURI)!=-1) { 
+                if(uri.indexOf(WSURIManager.WSURI)!=-1) {
                     host=uri.split(":")[2];
                 }
                 webUrl="http://" + host + ":" + port; // NOI18N

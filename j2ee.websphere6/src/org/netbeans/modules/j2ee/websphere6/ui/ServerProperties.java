@@ -756,7 +756,7 @@ public class ServerProperties {
             // if the selected type is local
             if (serverTypeCombo.getSelectedItem().equals(NbBundle.
                     getMessage(ServerProperties.class,
-                    "TXT_serverTypeLocal"))) {                         // NOI18N
+                    "TXT_ServerTypeLocal"))) {                         // NOI18N
                 Instance instance = (Instance) localInstancesCombo.
                         getSelectedItem();
                 

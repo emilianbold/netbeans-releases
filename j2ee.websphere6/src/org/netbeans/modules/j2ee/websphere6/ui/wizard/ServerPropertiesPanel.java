@@ -28,6 +28,7 @@ import org.openide.util.*;
 
 import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
 import org.netbeans.modules.j2ee.websphere6.ui.Instance;
+import org.netbeans.modules.j2ee.websphere6.ui.Customizer;
 import org.netbeans.modules.j2ee.websphere6.ui.InstancesModel;
 import org.netbeans.modules.j2ee.websphere6.ui.ServerProperties;
 /**
@@ -64,7 +65,7 @@ public class ServerPropertiesPanel extends JPanel
                 JTextField hostField,
                 JTextField portField) {
             super(serverCombobox,localInstancesCombobox,domainPathField,hostField,portField);
-        } 
+        }
         public WizardServerProperties() {
             super();
         }
@@ -82,10 +83,10 @@ public class ServerPropertiesPanel extends JPanel
     /**
      * Returns wizardServerProperties;
      */
-    public WizardServerProperties getWizardServerProperties (){
+    public WizardServerProperties getWizardServerProperties(){
         return wizardServerProperties;
     }
-
+    
     
     /**
      * Creates a new instance of the ServerPropertiesPanel. It initializes all
@@ -153,8 +154,8 @@ public class ServerPropertiesPanel extends JPanel
         // if the server instance is local, then check the profile root
         // directory for validity
         if (serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(
-                ServerPropertiesPanel.class,
-                "TXT_serverTypeLocal"))) {                             // NOI18N
+                Customizer.class,
+                "TXT_ServerTypeLocal"))) {                             // NOI18N
             if (!wizardServerProperties.isValidDomainRoot(domainPathField.getText())) {
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(ServerPropertiesPanel.class,
@@ -177,7 +178,7 @@ public class ServerPropertiesPanel extends JPanel
                     NbBundle.getMessage(ServerPropertiesPanel.class,
                     "ERR_INVALID_PORT"));                              // NOI18N
         }
-        if (portField.getText().trim().matches("[0-9]+") && 
+        if (portField.getText().trim().matches("[0-9]+") &&
                 new java.lang.Integer(portField.getText().trim()).intValue()>65535) {
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ServerPropertiesPanel.class,
@@ -195,15 +196,15 @@ public class ServerPropertiesPanel extends JPanel
         instantiatingIterator.setPassword(new String(
                 passwordField.getPassword()));
         instantiatingIterator.setIsLocal(serverTypeCombo.getSelectedItem().
-                equals(NbBundle.getMessage(ServerPropertiesPanel.class,
-                "TXT_serverTypeLocal")) ? "true" : "false");           // NOI18N
+                equals(NbBundle.getMessage(Customizer.class,
+                "TXT_ServerTypeLocal")) ? "true" : "false");           // NOI18N
         instantiatingIterator.setServerName(((Instance) localInstancesCombo.
                 getSelectedItem()).getName());
         instantiatingIterator.setConfigXmlPath(((Instance) localInstancesCombo.
                 getSelectedItem()).getConfigXmlPath());
         instantiatingIterator.setAdminPort(((Instance) localInstancesCombo.
                 getSelectedItem()).getAdminPort());
-	instantiatingIterator.setDefaultHostPort(((Instance) localInstancesCombo.
+        instantiatingIterator.setDefaultHostPort(((Instance) localInstancesCombo.
                 getSelectedItem()).getDefaultHostPort());
         
         // everything seems ok
@@ -254,9 +255,9 @@ public class ServerPropertiesPanel extends JPanel
         formattingPanel = new JPanel();
         serverTypeLabel = new JLabel();
         serverTypeCombo = new JComboBox(new Object[] {NbBundle.getMessage(
-                ServerPropertiesPanel.class, "TXT_serverTypeLocal"),
-        NbBundle.getMessage(ServerPropertiesPanel.class,
-                "TXT_serverTypeRemote")});                             // NOI18N
+                Customizer.class, "TXT_ServerTypeLocal"),
+        NbBundle.getMessage(Customizer.class,
+                "TXT_ServerTypeRemote")});                             // NOI18N
         localInstanceLabel = new JLabel();
         localInstancesCombo = new JComboBox(new InstancesModel(
                 wizardServerProperties.getServerInstances(
@@ -269,7 +270,7 @@ public class ServerPropertiesPanel extends JPanel
         
         // add server type field label
         serverTypeLabel.setText(NbBundle.getMessage(
-                ServerPropertiesPanel.class, "LBL_serverType"));       // NOI18N
+                Customizer.class, "LBL_LocalRemote"));       // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -288,7 +289,7 @@ public class ServerPropertiesPanel extends JPanel
         
         // add local instances field label
         localInstanceLabel.setText(NbBundle.getMessage(
-                ServerPropertiesPanel.class, "LBL_localInstances"));   // NOI18N
+                Customizer.class, "LBL_LocalInstances"));   // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -309,7 +310,7 @@ public class ServerPropertiesPanel extends JPanel
         
         // add domain path field label
         domainPathLabel.setText(NbBundle.getMessage(
-                ServerPropertiesPanel.class, "LBL_domainPath"));       // NOI18N
+                Customizer.class, "LBL_ProfilePath"));       // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -329,8 +330,8 @@ public class ServerPropertiesPanel extends JPanel
         add(domainPathField, gridBagConstraints);
         
         // add host field label
-        hostLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class,
-                "LBL_host"));                                          // NOI18N
+        hostLabel.setText(NbBundle.getMessage(Customizer.class,
+                "LBL_Host"));                                          // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -350,8 +351,8 @@ public class ServerPropertiesPanel extends JPanel
         hostField.setEditable(false);
         
         // add port field label
-        portLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class,
-                "LBL_port"));                                          // NOI18N
+        portLabel.setText(NbBundle.getMessage(Customizer.class,
+                "LBL_Port"));                                          // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -376,8 +377,8 @@ public class ServerPropertiesPanel extends JPanel
         portField.setEditable(false);
         
         // add username field label
-        userNameLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class,
-                "LBL_username"));                                      // NOI18N
+        userNameLabel.setText(NbBundle.getMessage(Customizer.class,
+                "LBL_Username"));                                      // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -397,8 +398,8 @@ public class ServerPropertiesPanel extends JPanel
         add(usernameField, gridBagConstraints);
         
         // add password field label
-        passwordLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class,
-                "LBL_password"));                                      // NOI18N
+        passwordLabel.setText(NbBundle.getMessage(Customizer.class,
+                "LBL_Password"));                                      // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -423,6 +424,22 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.weighty = 1.0;
         add(formattingPanel, gridBagConstraints);
+        
+        
+        domainPathLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_ProfilePath").charAt(0));
+        domainPathLabel.setLabelFor(domainPathField);
+        serverTypeLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_LocalRemote").charAt(0));
+        serverTypeLabel.setLabelFor(serverTypeCombo);
+        localInstanceLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_LocalInstances").charAt(0));
+        localInstanceLabel.setLabelFor(localInstancesCombo);
+        hostLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_Host").charAt(0));
+        hostLabel.setLabelFor(hostField);
+        portLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_Port").charAt(0));
+        portLabel.setLabelFor(portField);
+        userNameLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_Username").charAt(0));
+        userNameLabel.setLabelFor(usernameField);
+        passwordLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_Password").charAt(0));
+        passwordLabel.setLabelFor(passwordField);
     }
     
     ////////////////////////////////////////////////////////////////////////////
