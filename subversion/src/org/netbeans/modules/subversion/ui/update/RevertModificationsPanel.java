@@ -58,7 +58,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel2.setText("Start with Revision:");
+        jLabel2.setText("Starting Revision:");
 
         startRevisionTextField.setEnabled(false);
 
@@ -77,7 +77,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         inclusiveCheckBox.setEnabled(false);
         inclusiveCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jLabel3.setText("End with Revision:");
+        jLabel3.setText("Ending Revision:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
