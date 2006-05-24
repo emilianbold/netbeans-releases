@@ -16,10 +16,12 @@ package org.openide.filesystems;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -390,9 +392,10 @@ public abstract class URLMapper {
                 }
 
                 try {
-                    // XXX fo.getPath() needs to be escaped
+                    // XXX fo.getPath() needs to be escaped                                        
+                    String toReplace = "__EXCLAMATION_REPLACEMENT__";//NOI18N
                     retURL = new URL(
-                            "jar:" + f.toURI() + "!/" + fo.getPath() + // NOI18N
+                            "jar:" + new File(f,toReplace + fo.getPath()).toURI().toString().replaceFirst("/"+toReplace,"!/") + // NOI18N
                             ((fo.isFolder() && !fo.isRoot()) ? "/" : "")
                         ); // NOI18N
                 } catch (MalformedURLException mfx) {
@@ -535,7 +538,11 @@ public abstract class URLMapper {
 
                     /* if ! is the last letter of the innerURL, entryName is null */
                     if (++separator != spec.length()) {
-                        entryName = spec.substring(separator, spec.length());
+                        try {
+                            entryName = URLDecoder.decode(spec.substring(separator, spec.length()),"UTF-8");                        
+                        } catch (UnsupportedEncodingException ex) {
+                            return;
+                        }                        
                     }
                 }
             }
