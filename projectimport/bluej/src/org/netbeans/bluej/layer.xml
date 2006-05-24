@@ -48,6 +48,23 @@
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="bluej"/>
             </file>
+            <attr name="UnitTest.java/Package.shadow" boolvalue="true"/>
+            <file name="Package.shadow">
+                <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
+            </file>
+            
+        </folder>
+        <!-- override the default definition with our wrapper that adds a bluej.pkg file into the newly created directory. -->
+        <folder name="Classes">
+            <file name="Package" url="resources/Package.template">
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.bluej.packagewizard.PackageWizardIterator.createWizard"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/spi/java/project/support/ui/package.gif"/>
+                <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.packagewizard.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/bluej/packagewizard/Package.html" />
+            </file>        
+            
         </folder>
         <folder name="Project">
             <folder name="BlueJ">
