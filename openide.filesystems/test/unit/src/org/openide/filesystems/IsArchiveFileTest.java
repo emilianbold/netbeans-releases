@@ -52,6 +52,7 @@ public class IsArchiveFileTest extends NbTestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();                        
         lfs = new LocalFileSystem ();
         lfs.setRootDirectory(this.getWorkDir());
         Repository.getDefault().addFileSystem(lfs);
