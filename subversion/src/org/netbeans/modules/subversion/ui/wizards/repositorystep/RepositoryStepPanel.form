@@ -16,12 +16,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-              <Component id="progressPanel" pref="592" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
           <Component id="repositoryPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="progressPanel" alignment="0" pref="616" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

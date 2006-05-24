@@ -78,13 +78,41 @@ public class RepositoryPathNode extends AbstractNode {
         this.client = client;
         this.repositoryFolder = repositoryFolder;
 
-        if(entry.getSvnNodeKind()==SVNNodeKind.DIR){
-            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFolder.gif");       // NOI18N
+        if(entry.getSvnNodeKind() == SVNNodeKind.DIR) {
+           setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFolder.gif");       // NOI18N
         } else {
             setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFile.gif");         // NOI18N    
         }
     }
 
+    public Image getIcon(int type) {
+        if(entry.getSvnNodeKind() != SVNNodeKind.DIR) {
+            return null;
+        }
+        Image img = null;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            img = (Image)UIManager.get("Nb.Explorer.Folder.icon");  // NOI18N
+        }
+        if (img == null) {
+            img = super.getIcon(type);
+        }
+        return img;
+    }
+
+    public Image getOpenedIcon(int type) {
+        if(entry.getSvnNodeKind() != SVNNodeKind.DIR) {
+            return null;
+        }
+        Image img = null;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            img = (Image)UIManager.get("Nb.Explorer.Folder.openedIcon");  // NOI18N
+        }
+        if (img == null) {
+            img = super.getOpenedIcon(type);
+        }
+        return img;
+    }
+    
     public String getDisplayName() {
         return getName();
     }

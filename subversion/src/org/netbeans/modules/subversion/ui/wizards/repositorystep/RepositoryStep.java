@@ -77,7 +77,7 @@ public class RepositoryStep
 
     protected JComponent createComponent() {
         if (repository == null) {
-            repository = new Repository(true, acceptRevision, "Specify Subversion repository location:");
+            repository = new Repository(true, acceptRevision, "Specify the location of Subversion repository.");
             repository.addPropertyChangeListener(this);
             panel = new RepositoryStepPanel();            
             panel.repositoryPanel.setLayout(new BorderLayout());

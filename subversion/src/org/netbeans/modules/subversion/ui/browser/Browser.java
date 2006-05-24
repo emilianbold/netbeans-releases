@@ -84,7 +84,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     }       
 
     /**
-     * Configures the browser instabnce with the given parameters
+     * Configures the browser instance with the given parameters
      *
      * @param repositoryRoot the RepositoryFile representing the repository root
      * @param select an array of RepositoryFile-s representing the items which has to be selected

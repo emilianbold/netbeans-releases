@@ -158,13 +158,13 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         
         final Browser browser = 
             new Browser(
-                org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "LBL_CheckoutBrowser"), 
+                "Repository Folders:",
                 showFiles, 
                 singleSelection,
                 fileSelectionOnly);        
         
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(browser.getBrowserPanel(), "Repository browser - " + getRepositoryUrl().toString()); 
+                new DialogDescriptor(browser.getBrowserPanel(), "Browse Repository folders"); 
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
         dialogDescriptor.setValid(false);

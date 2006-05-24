@@ -38,6 +38,8 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
 
     public WizardStepProgressSupport(JPanel panel) {
         this.panel = panel;
+
+
     }
 
     public void performInCurrentThread(String displayName) {
@@ -61,6 +63,7 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
                 progressComponent = new JPanel();
                 progressComponent.setLayout(new BorderLayout(6, 0));
                 progressLabel = new JLabel();
+                progressLabel.setText(getDisplayName());
                 progressComponent.add(progressLabel, BorderLayout.NORTH);
                 progressComponent.add(bar, BorderLayout.CENTER);
                 progressComponent.add(stopButton, BorderLayout.LINE_END);
@@ -83,6 +86,13 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
                 setEditable(true);
             }
         });                
+    }
+
+    public void setDisplayName(String displayName) {
+        if(progressLabel != null) {
+            progressLabel.setText(displayName);
+        }
+        super.setDisplayName(displayName);
     }
     
 }

@@ -54,7 +54,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
         
                 try {
-                    setDisplayName("checking out ...");
+                    setDisplayName("Checking out ...");
                     checkout(client, repository, repositoryFiles, file, atWorkingDirLevel, this);
                 } catch (SVNClientException ex) {
                     ExceptionHandler eh = new ExceptionHandler(ex);
@@ -66,7 +66,7 @@ public final class CheckoutAction extends CallableSystemAction {
                     return;
                 }
 
-                setDisplayName("scaning folders ...");
+                setDisplayName("Scaning folders ...");
                 if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0) {
                     String[] folders;
                     if(atWorkingDirLevel) {
@@ -93,7 +93,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
             }
         };
-        support.start(Subversion.getInstance().getRequestProcessor(repository), "checkout");
+        support.start(Subversion.getInstance().getRequestProcessor(repository), "Checking out...");
 
     }
     

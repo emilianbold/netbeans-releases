@@ -87,7 +87,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     protected void validateBeforeNext() {
         try {
             if(support != null) {
-                support.performInCurrentThread("Importing"); 
+                support.performInCurrentThread("Importing..."); 
             }
         } finally {
             support = null;
@@ -95,7 +95,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     }   
 
     public void prepareValidation() {
-        support = new ImportProgressSupport(importPanel.progressPanel);
+        support = new ImportProgressSupport(importPanel.progressPanel, importPanel.progressLabel);
         support.startProgress();
     }
 
@@ -189,7 +189,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     */
     
     private class ImportProgressSupport extends WizardStepProgressSupport {
-        public ImportProgressSupport(JPanel panel) {
+        public ImportProgressSupport(JPanel panel, JLabel label) {
             super(panel);
         }
         public void perform() {

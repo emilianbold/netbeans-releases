@@ -43,7 +43,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider{
     
     /** Creates new form BrowserPanel */
     public BrowserPanel(String labelText, String browserAcsn, String browserAcsd, boolean singelSelectionOnly) {      
-        setName("Browse Subversion Repository");
+        setName("Browse Repository Folders");
         
         manager = new ExplorerManager();
         
