@@ -321,7 +321,10 @@ public class WSDeploymentManager implements DeploymentManager {
                         "deploy.spi.factories.DeploymentFactoryImpl"). // NOI18N
                         newInstance();
             } catch (ClassNotFoundException e) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+                //ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+                e=null;
+                // do nothing. Fix for issue with Exception on IDE restarting
+                // after removing server from Runtime with opened projects
             } catch (InstantiationException e) {
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
             } catch (IllegalAccessException e) {
@@ -354,9 +357,7 @@ public class WSDeploymentManager implements DeploymentManager {
             if (dm != null) {
                 dm.release();
             }
-            if(factory!=null) {
-                loadDeploymentFactory();
-            }
+            
             if(factory!=null) {
                 // try to get a connected deployment manager
                 dm = factory.getDeploymentManager(uri, username, password);
@@ -473,23 +474,26 @@ public class WSDeploymentManager implements DeploymentManager {
         loader.updateLoader();
         ModuleType type = deployableObject.getType();
         try {
-            InstanceProperties ip=getInstanceProperties();
-            if (type == ModuleType.WAR) {
-                return new WarDeploymentConfiguration(dm, deployableObject,ip);
-            } else if (type == ModuleType.EAR) {
-                if(deployableObject instanceof J2eeApplicationObject) {
-                    return new EarDeploymentConfiguration(dm, (J2eeApplicationObject)deployableObject,ip);
+            if(dm!=null) {
+                InstanceProperties ip=getInstanceProperties();
+                if (type == ModuleType.WAR) {
+                    return new WarDeploymentConfiguration(dm, deployableObject,ip);
+                } else if (type == ModuleType.EAR) {
+                    if(deployableObject instanceof J2eeApplicationObject) {
+                        return new EarDeploymentConfiguration(dm, (J2eeApplicationObject)deployableObject,ip);
+                    }
+                    return new EarDeploymentConfiguration(dm, deployableObject,ip);
+                } else if (type == ModuleType.EJB) {
+                    return new EjbDeploymentConfiguration(dm, deployableObject,ip);
+                } else {
+                    throw new InvalidModuleException("Unsupported module type: " + type.toString()); // NOI18N
                 }
-                return new EarDeploymentConfiguration(dm, deployableObject,ip);
-            } else if (type == ModuleType.EJB) {
-                return new EjbDeploymentConfiguration(dm, deployableObject,ip);
-            } else {
-                throw new InvalidModuleException("Unsupported module type: " + type.toString()); // NOI18N
             }
         } finally {
             // restore the context classloader
             loader.restoreLoader();
         }
+        return null;
     }
     
     /**
