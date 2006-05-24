@@ -36,42 +36,54 @@ public class NbWelcomePanel extends TextDisplayPanel {
         boolean okay = super.queryEnter(evt);
         //#48249: Check if user is admin on Windows. JDK installer does not run
         //when user does not have admin rights.
-        if (Util.isWindowsOS()) {
-            if (Util.isAdmin()) {
-                setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
-                + BUNDLE + "JDK.name),"
-                + BUNDLE + "Product.displayName),"
-                + BUNDLE + "JDK.name),"
-                + BUNDLE + "Product.displayName))"));
-            } else {
-                if (Util.isJDKAlreadyInstalled()) {
+        if (isJDKVersionSupported()) {
+            if (Util.isWindowsOS()) {
+                if (Util.isAdmin()) {
                     setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
                     + BUNDLE + "JDK.name),"
                     + BUNDLE + "Product.displayName),"
                     + BUNDLE + "JDK.name),"
                     + BUNDLE + "Product.displayName))"));
                 } else {
-                    setText(resolveString(BUNDLE + "InstallWelcomePanel.errorText,"
-                    + BUNDLE + "JDK.name),"
-                    + BUNDLE + "Product.displayName),"
-                    + BUNDLE + "JDK.name))"));
+                    if (Util.isJDKAlreadyInstalled()) {
+                        setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
+                        + BUNDLE + "JDK.name),"
+                        + BUNDLE + "Product.displayName),"
+                        + BUNDLE + "JDK.name),"
+                        + BUNDLE + "Product.displayName))"));
+                    } else {
+                        setText(resolveString(BUNDLE + "InstallWelcomePanel.errorText,"
+                        + BUNDLE + "JDK.name),"
+                        + BUNDLE + "Product.displayName),"
+                        + BUNDLE + "JDK.name))"));
+                    }
                 }
+            } else {
+                setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
+                + BUNDLE + "JDK.name),"
+                + BUNDLE + "Product.displayName),"
+                + BUNDLE + "JDK.name),"
+                + BUNDLE + "Product.displayName))"));
             }
         } else {
-            setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
-            + BUNDLE + "JDK.name),"
-            + BUNDLE + "Product.displayName),"
-            + BUNDLE + "JDK.name),"
-            + BUNDLE + "Product.displayName))"));
+            setText(resolveString(BUNDLE + "InstallWelcomePanel.error,"
+            + System.getProperty("java.version") + ","
+            + BUNDLE + "InstallWelcomePanel.jdkURL))"));
         }
         return okay;
     }
     
-    public boolean entered(WizardBeanEvent event)
-    {
+    public boolean entered (WizardBeanEvent event) {
+        if (!isJDKVersionSupported()) {
+            if (event.getUserInterface() instanceof SwingWizardUI) {
+                SwingWizardUI ui = (SwingWizardUI) event.getUserInterface();
+                Component nextButton = ui.getNavigationController().next();
+                nextButton.setEnabled(false);
+                ui.getNavigationController().setCancelType(SwingWizardUI.NavigationController.CLOSE);
+            }
+        } else if (Util.isWindowsOS() && !Util.isAdmin() && !Util.isJDKAlreadyInstalled()) {
         //#48249: Check if user is admin on Windows. JDK installer does not run
         //when user does not have admin rights.
-        if (Util.isWindowsOS() && !Util.isAdmin() && !Util.isJDKAlreadyInstalled()) {
             if (event.getUserInterface() instanceof SwingWizardUI) {
                 SwingWizardUI ui = (SwingWizardUI) event.getUserInterface();
                 //logEvent(this, Log.DBG, "entered ui: " + ui.getClass().getName());
@@ -86,6 +98,16 @@ public class NbWelcomePanel extends TextDisplayPanel {
             }
         }
         return true;
+    }
+    
+    private boolean isJDKVersionSupported () {
+        String javaSpecVer = System.getProperty("java.specification.version");
+        logEvent(this,Log.DBG,"java.specification.version: " + javaSpecVer);
+        if ("1.4".compareTo(javaSpecVer) >= 0) {
+            return false;
+        } else {
+            return true;
+        }
     }
     
     protected void showErrorMsg(String title, String msg) {
