@@ -47,6 +47,7 @@ import javax.swing.event.MenuKeyEvent;
 import javax.swing.event.MenuKeyListener;
 
 import javax.swing.plaf.MenuItemUI;
+import org.netbeans.jemmy.util.EmptyVisualizer;
 
 /**
  *
@@ -293,6 +294,18 @@ implements Timeoutable, Outputable{
 	Hashtable result = super.getDump();
 	result.remove(AbstractButtonOperator.IS_SELECTED_DPROP);
 	return(result);
+    }
+    
+    /** Push this menu item. */
+    public void push() {
+        setVisualizer(new EmptyVisualizer());
+        super.push();
+    }
+
+    /** Push this menu item and no block further execution. */
+    public void pushNoBlock() {
+        setVisualizer(new EmptyVisualizer());
+        super.pushNoBlock();
     }
 
     ////////////////////////////////////////////////////////
