@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,8 +21,10 @@ import com.installshield.wizard.service.WizardServicesUI;
 
 import java.awt.Component;
 
-public class NbWelcomePanel extends TextDisplayPanel
-{
+public class NbWelcomePanel extends TextDisplayPanel {
+    
+    private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
+    
     public NbWelcomePanel() {
         setTextSource(TEXT_PROPERTY);
         setContentType(HTML_CONTENT_TYPE);
@@ -36,31 +38,31 @@ public class NbWelcomePanel extends TextDisplayPanel
         //when user does not have admin rights.
         if (Util.isWindowsOS()) {
             if (Util.isAdmin()) {
-                setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.text,"
-                + "$L(org.netbeans.installer.Bundle,JDK.name),"
-                + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-                + "$L(org.netbeans.installer.Bundle,JDK.name),"
-                + "$L(org.netbeans.installer.Bundle,Product.displayName))"));
+                setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
+                + BUNDLE + "JDK.name),"
+                + BUNDLE + "Product.displayName),"
+                + BUNDLE + "JDK.name),"
+                + BUNDLE + "Product.displayName))"));
             } else {
                 if (Util.isJDKAlreadyInstalled()) {
-                    setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.text,"
-                    + "$L(org.netbeans.installer.Bundle,JDK.name),"
-                    + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-                    + "$L(org.netbeans.installer.Bundle,JDK.name),"
-                    + "$L(org.netbeans.installer.Bundle,Product.displayName))"));
+                    setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
+                    + BUNDLE + "JDK.name),"
+                    + BUNDLE + "Product.displayName),"
+                    + BUNDLE + "JDK.name),"
+                    + BUNDLE + "Product.displayName))"));
                 } else {
-                    setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.errorText,"
-                    + "$L(org.netbeans.installer.Bundle,JDK.name),"
-                    + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-                    + "$L(org.netbeans.installer.Bundle,JDK.name))"));
+                    setText(resolveString(BUNDLE + "InstallWelcomePanel.errorText,"
+                    + BUNDLE + "JDK.name),"
+                    + BUNDLE + "Product.displayName),"
+                    + BUNDLE + "JDK.name))"));
                 }
             }
         } else {
-            setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.text,"
-            + "$L(org.netbeans.installer.Bundle,JDK.name),"
-            + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-            + "$L(org.netbeans.installer.Bundle,JDK.name),"
-            + "$L(org.netbeans.installer.Bundle,Product.displayName))"));
+            setText(resolveString(BUNDLE + "InstallWelcomePanel.text,"
+            + BUNDLE + "JDK.name),"
+            + BUNDLE + "Product.displayName),"
+            + BUNDLE + "JDK.name),"
+            + BUNDLE + "Product.displayName))"));
         }
         return okay;
     }
@@ -78,8 +80,8 @@ public class NbWelcomePanel extends TextDisplayPanel
                 nextButton.setEnabled(false);
                 ui.getNavigationController().setCancelType(SwingWizardUI.NavigationController.CLOSE);
                 
-                String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallWelcomePanel.dialogTitle)");
-                String dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,NbWelcomePanel.notAdminMessage)");
+                String dialogTitle = resolveString(BUNDLE + "InstallWelcomePanel.dialogTitle)");
+                String dialogMsg = resolveString(BUNDLE + "NbWelcomePanel.notAdminMessage)");
                 showErrorMsg(dialogTitle,dialogMsg);
             }
         }
