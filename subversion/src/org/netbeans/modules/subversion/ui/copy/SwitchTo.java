@@ -46,9 +46,9 @@ public class SwitchTo extends CopyDialog {
         
         if(root.isFile()) {
             getSwitchToPanel().urlLabel.setText("Repository File");
-            repositoryPaths.setupBrowserBehavior(true, true, true, null );
+            repositoryPaths.setupBrowserBehavior(true, true, true, null);
         } else {
-            repositoryPaths.setupBrowserBehavior(true, false, false, new BrowserAction[] { new CreateFolderAction(root.getName())});
+            repositoryPaths.setupBrowserBehavior(true, false, false, null);
         }
                 
         setupUrlComboBox(panel.urlComboBox, SwitchTo.class.getName());                
