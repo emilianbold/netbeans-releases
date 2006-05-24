@@ -37,6 +37,7 @@ import javax.swing.plaf.PopupMenuUI;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.netbeans.jemmy.JemmyProperties;
 
 /**
  * A JUnit test for JPopupMenuOperator.
@@ -95,8 +96,33 @@ public class JPopupMenuOperatorTest extends TestCase {
      */
     public static Test suite() {
         TestSuite suite = new TestSuite(JPopupMenuOperatorTest.class);
-        
         return suite;
+    }
+    
+    /** Test issue 56091. Pushing menu failed in Robot mode. It was caused 
+     * by wrong condition in DefaultJMenuDriver and it appeared when some 
+     * menu item was not visible.
+     */
+    public void testRobot56091() {
+        frame.setVisible(true);
+        // add submenu with not visible item
+        JMenu subMenu = new JMenu("SubMenu");
+        subMenu.add("SubMenu item 1");
+        JMenuItem item = new JMenuItem("SubMenu item 1.1");
+        item.setVisible(false);
+        subMenu.add(item);
+        subMenu.add("SubMenu item 2");
+        popupMenu.add(subMenu);
+        popupMenu.show(frame, 0, 0);
+        
+        int oldModel = JemmyProperties.getCurrentDispatchingModel();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        try {
+            JPopupMenuOperator jpmOper = new JPopupMenuOperator();
+            jpmOper.pushMenu("SubMenu|SubMenu item 2");
+        } finally {
+            JemmyProperties.setCurrentDispatchingModel(oldModel);
+        }
     }
     
     /**
