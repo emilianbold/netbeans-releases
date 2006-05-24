@@ -264,7 +264,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
         urlsToXml = new URL[urls.length];
 
         try {
-            setSystemName("XML_" + urls[0].toExternalForm()); // NOI18N
+            setSystemName("XML_" + urls[0].toExternalForm().replace('/','-')); // NOI18N
         } catch (PropertyVetoException pvx) {
             urlsToXml = origUrls;
             rootElem = null;

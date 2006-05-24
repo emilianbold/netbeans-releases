@@ -22,8 +22,6 @@ Microsystems, Inc. All Rights Reserved.
         <include name="org/openide/filesystems/*Test.class"/>
           <!-- Under development: -->
           <exclude  name="org/openide/filesystems/MultiFileSystemMaskTest.class"/>                                         
-          <!-- #39613, nbfilesystems protocol is internally inconsistent: -->
-          <exclude name="org/openide/filesystems/XMLFileSystemTest.class/testGetURL"/>
       </patternset>
     </testset>
   </testbag>
