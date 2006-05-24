@@ -82,7 +82,17 @@ public class WSTailer extends Thread {
             // check the source for the tailing, if it is a file we create a 
             // new FileInputStream
             if (file != null) {
-                inputStream = new FileInputStream(file);
+                while (inputStream == null) {
+                    try {
+                        inputStream = new FileInputStream(file);
+                    } catch (IOException e) {
+                        try {
+                            Thread.sleep(delay);
+                        } catch (InterruptedException ex) {
+                            continue;
+                        }
+                    }
+                }
             }
             
             // create a reader from the input stream

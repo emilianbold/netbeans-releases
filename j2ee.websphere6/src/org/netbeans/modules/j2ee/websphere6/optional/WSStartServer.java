@@ -26,6 +26,7 @@ import org.openide.util.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 import org.netbeans.modules.j2ee.websphere6.*;
+import org.netbeans.modules.j2ee.websphere6.ui.nodes.actions.ShowServerLogAction;
 import org.netbeans.modules.j2ee.websphere6.util.*;
 
 /**
@@ -469,6 +470,13 @@ public class WSStartServer extends StartServer {
                         getMessage(WSStartServer.class, 
                         "TXT_ioWindowTitle")).start();                 // NOI18N
                 
+                // show the server's log
+                new WSTailer(new File(dm.getLogFilePath()), 
+                        NbBundle.getMessage(ShowServerLogAction.class, 
+                        "LBL_LogWindowTitle", dm.getInstanceProperties(). // NOI18N
+                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR))).
+                        start(); 
+                
                 // wait till the timeout happens, or if the server starts before 
                 // send the completed event to j2eeserver
                 while (System.currentTimeMillis() - start < TIMEOUT) {
@@ -605,6 +613,13 @@ public class WSStartServer extends StartServer {
                         NbBundle.getMessage(WSStartServer.class, 
                         "TXT_ioWindowTitle")).start();                 // NOI18N
                 
+                // show the server's log
+                new WSTailer(new File(dm.getLogFilePath()), 
+                        NbBundle.getMessage(ShowServerLogAction.class, 
+                        "LBL_LogWindowTitle", dm.getInstanceProperties(). // NOI18N
+                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR))).
+                        start(); 
+                
                 // wait till the timeout happens, or if the server starts before 
                 // send the completed event to j2eeserver
                 while (System.currentTimeMillis() - start < TIMEOUT) {
@@ -728,6 +743,13 @@ public class WSStartServer extends StartServer {
                 new WSTailer(serverProcess.getInputStream(), 
                         NbBundle.getMessage(WSStartServer.class, 
                         "TXT_ioWindowTitle")).start();                 // NOI18N
+                
+                // show the server's log
+                new WSTailer(new File(dm.getLogFilePath()), 
+                        NbBundle.getMessage(ShowServerLogAction.class, 
+                        "LBL_LogWindowTitle", dm.getInstanceProperties(). // NOI18N
+                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR))).
+                        start(); 
                 
                 // wait till the timeout happens, or if the server starts before 
                 // send the completed event to j2eeserver

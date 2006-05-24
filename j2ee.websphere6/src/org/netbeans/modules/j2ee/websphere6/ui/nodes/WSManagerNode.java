@@ -338,13 +338,6 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public String getLogFilePath() {
-        return deploymentManager.getDomainRoot() + 
-                File.separator + 
-                "logs" +  // NOI18N
-                File.separator + 
-                deploymentManager.getInstanceProperties().
-                getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + 
-                File.separator + 
-                "trace.log"; // NOI18N
+        return deploymentManager.getLogFilePath();
     }
 }

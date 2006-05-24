@@ -190,6 +190,14 @@ public class WSDeploymentManager implements DeploymentManager {
                 WSDeploymentFactory.DOMAIN_ROOT_ATTR):"";
     }
     
+    public String getLogFilePath() {
+        return getDomainRoot() + File.separator + "logs" +  // NOI18N
+                File.separator + 
+                getInstanceProperties().getProperty(
+                WSDeploymentFactory.SERVER_NAME_ATTR) + File.separator + 
+                "trace.log"; // NOI18N
+    }
+    
     /**
      * Returns true if the type of server is local. Otherwise return false
      */
