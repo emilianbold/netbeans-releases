@@ -203,7 +203,7 @@ public final class BluejProject implements Project, AntProjectListener {
             new BluejFileBuiltQuery(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl(),
 ////            new J2SEProjectClassPathExtender(this, this.updateHelper, eval,refHelper),
-            this // never cast an externally obtained Project to J2SEProject - use lookup instead
+            this // never cast an externally obtained Project to BluejProject - use lookup instead
 ////            new J2SEProjectOperations(this),
 ////            new J2SEProjectWebServicesSupportProvider()
         });
