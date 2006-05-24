@@ -75,10 +75,10 @@ public class CheckoutUITest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CheckoutUITest("testInvokeClose"));
-        suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
-        suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
-        suite.addTest(new CheckoutUITest("testAvailableFields"));
+        //suite.addTest(new CheckoutUITest("testInvokeClose"));
+        //suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
+        //suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
+        //suite.addTest(new CheckoutUITest("testAvailableFields"));
         suite.addTest(new CheckoutUITest("testRepositoryFolder"));        
         
         return suite;
@@ -317,6 +317,8 @@ public class CheckoutUITest extends JellyTestCase{
         JFileChooserOperator jfc = wdso.browseLocalFolder();
         assertEquals("Directory set in wizard not propagated to file chooser:", true, jfc.getCurrentDirectory().getAbsolutePath().endsWith("tmp"));
         jfc.cancel();
+        wdso.setRepositoryRevision("10");
+        wdso.checkCheckoutContentOnly(true);
         co.btCancel().pushNoBlock();
     }
 }

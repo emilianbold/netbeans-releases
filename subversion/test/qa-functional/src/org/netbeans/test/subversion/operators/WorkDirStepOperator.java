@@ -59,6 +59,7 @@ public class WorkDirStepOperator extends WizardOperator {
     private JButtonOperator _btFinish;
     private JButtonOperator _btCancel;
     private JButtonOperator _btHelp;
+    private JCheckBoxOperator _cbCheckoutContentOnly;
 
 
     //******************************
@@ -75,6 +76,16 @@ public class WorkDirStepOperator extends WizardOperator {
         return _lblSteps;
     }
 
+    /** Tries to find "Revert Local Changes" JCheckBox in this dialog.
+     * @return JCheckBoxOperator
+     */
+    public JCheckBoxOperator cbCheckoutContentOnly() {
+        if (_cbCheckoutContentOnly==null) {
+            _cbCheckoutContentOnly = new JCheckBoxOperator(this, "Checkout only");
+        }
+        return _cbCheckoutContentOnly;
+    }
+    
     /** Tries to find null JList in this dialog.
      * @return JListOperator
      */
@@ -130,7 +141,7 @@ public class WorkDirStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtRepositoryFolder() {
         if (repositoryFolder==null) {
-            repositoryFolder = new JTextFieldOperator(this, 2);
+            repositoryFolder = new JTextFieldOperator(this, 1);
         }
         return repositoryFolder;
     }
@@ -190,7 +201,7 @@ public class WorkDirStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtLocalFolder() {
         if (localFolder==null) {
-            localFolder = new JTextFieldOperator(this, 1);
+            localFolder = new JTextFieldOperator(this, 2);
         }
         return localFolder;
     }
@@ -205,7 +216,7 @@ public class WorkDirStepOperator extends WizardOperator {
      */
     public JButtonOperator btBrowseRepository() {
         if (_btBrowseRepository==null) {
-            _btBrowseRepository = new JButtonOperator(this, "Browse", 1);
+            _btBrowseRepository = new JButtonOperator(this, "Browse");
         }
         return _btBrowseRepository;
     }
@@ -215,7 +226,7 @@ public class WorkDirStepOperator extends WizardOperator {
      */
     public JButtonOperator btBrowseLocalFolder() {
         if (_btBrowseLocalFolder==null) {
-            _btBrowseLocalFolder = new JButtonOperator(this, "Browse", 0);
+            _btBrowseLocalFolder = new JButtonOperator(this, "Browse", 1);
         }
         return _btBrowseLocalFolder;
     }
@@ -338,6 +349,15 @@ public class WorkDirStepOperator extends WizardOperator {
         return txtLocalFolder().getText();
     }
 
+    /** checks or unchecks given JCheckBox
+     * @param state boolean requested state
+     */
+    public void checkCheckoutContentOnly(boolean state) {
+        if (cbCheckoutContentOnly().isSelected()!=state) {
+            cbCheckoutContentOnly().push();
+        }
+    }
+    
     /** clicks on "< Back" JButton
      */
     public void back() {
@@ -405,6 +425,7 @@ public class WorkDirStepOperator extends WizardOperator {
         btBrowseRepository();
         btBrowseLocalFolder();
         lblLocalFolder();
+        cbCheckoutContentOnly();
         lblSpecifyTheLocalFolderToCheckoutFoldersInto();
         lblWizardDescriptor$FixedHeightLabel();
         btBack();
