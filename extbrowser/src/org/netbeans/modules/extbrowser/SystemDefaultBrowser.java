@@ -44,12 +44,14 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
             Class desktop = Class.forName("java.awt.Desktop"); // NOI18N
             Method isDesktopSupported = desktop.getMethod("isDesktopSupported", null); // NOI18N
             Boolean b = (Boolean) isDesktopSupported.invoke(null, null);
+            Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop found, isDesktopSupported returned "+b);
             if (b.booleanValue()) {
                 final Object desktopInstance = desktop.getMethod("getDesktop", null).invoke(null, null); // NOI18N
                 Class desktopAction = Class.forName("java.awt.Desktop$Action"); // NOI18N
                 Method isSupported = desktop.getMethod("isSupported", new Class[] {desktopAction}); // NOI18N
                 Object browseConst = desktopAction.getField("BROWSE").get(null); // NOI18N
                 b = (Boolean) isSupported.invoke(desktopInstance, new Object[] {browseConst});
+                Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop found, isSupported(Action.BROWSE) returned "+b);
                 if (b.booleanValue()) {
                     final Method browse = desktop.getMethod("browse", new Class[] {URI.class}); // NOI18N
                     MUSTANG_DESKTOP_BROWSE = new BrowseInvoker() {
@@ -63,10 +65,12 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
                             }
                         }
                     };
+                    Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop.browse support");
                 }
             }
         } catch (ClassNotFoundException e) {
             // JDK 5, ignore
+            Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop class not found, disabling Mustang browse functionality");
         } catch (Exception e) {
             Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.WARNING, null, e);
         }

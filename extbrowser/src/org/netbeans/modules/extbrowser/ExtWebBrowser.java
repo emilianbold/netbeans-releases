@@ -99,7 +99,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     /** initialize object */
     private void init () {
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err.log(ErrorManager.INFORMATIONAL, "" + System.currentTimeMillis() + "> init");
+            err.log(ErrorManager.INFORMATIONAL, getClass().getName() + " " + System.currentTimeMillis() + "> init");
         }
         pcs = new PropertyChangeSupport(this);
         if (Utilities.isWindows()) {
