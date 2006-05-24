@@ -14,10 +14,8 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        
-    <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.java.project</code-name-base>
-            
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.apache.tools.ant.module</code-name-base>
@@ -188,11 +186,12 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.api.java.project</package>
-                <package>org.netbeans.spi.java.project.support.ui</package>
-                <package>org.netbeans.spi.java.project.support.ui.templates</package>
+                <package>org.netbeans.api.java.project.classpath</package>
                 <package>org.netbeans.spi.java.project.classpath</package>
                 <package>org.netbeans.spi.java.project.classpath.support</package>
+                <package>org.netbeans.spi.java.project.support.ui</package>
+                <package>org.netbeans.spi.java.project.support.ui.templates</package>
             </public-packages>
         </data>
     </configuration>
- </project>
+</project>

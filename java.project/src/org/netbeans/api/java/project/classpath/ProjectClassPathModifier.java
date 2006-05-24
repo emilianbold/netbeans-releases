@@ -26,7 +26,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.project.classpath.ProjectClassPathModifierAccessor;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -60,8 +59,8 @@ public class ProjectClassPathModifier {
      * adding of a library to the classpath of the given type.
      */
     @SuppressWarnings("deprecation")    //NOI18N
-    public static  boolean addLibraries (final Library[] libraries, final FileObject projectArtfact, final String classPathType) throws IOException, UnsupportedOperationException {
-        final Extensible extensible = findExtensible (projectArtfact, classPathType);
+    public static  boolean addLibraries (final Library[] libraries, final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        final Extensible extensible = findExtensible (projectArtifact, classPathType);
         if (extensible != null) {            
             if (extensible.pcmi != null) {
                 assert extensible.sg != null;
@@ -84,7 +83,7 @@ public class ProjectClassPathModifier {
      * Removes libraries from the project's classpath if the
      * libraries are included on it.
      * @param libraries to be removed
-     * @param projectArtfact a file from whose classpath the libraries should be removed
+     * @param projectArtifact a file from whose classpath the libraries should be removed
      * @param classPathType the type of classpath, @see ClassPath
      * @return true in case the classpath was changed, (at least one library was removed from the classpath),
      * the value false is returned when none of the libraries was included on the classpath.
@@ -92,8 +91,8 @@ public class ProjectClassPathModifier {
      * @exception UnsupportedOperationException is thrown when the project does not support
      * removing of a library from the classpath of the given type.
      */
-    public static boolean removeLibraries (final Library[] libraries, final FileObject projectArtfact, final String classPathType) throws IOException, UnsupportedOperationException {
-        final Extensible extensible = findExtensible (projectArtfact, classPathType);
+    public static boolean removeLibraries (final Library[] libraries, final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        final Extensible extensible = findExtensible (projectArtifact, classPathType);
         if (extensible != null && extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
@@ -106,7 +105,7 @@ public class ProjectClassPathModifier {
      * Adds archive files or folders into the project's classpath if the
      * entries are not already there.
      * @param classPathRoots roots to be added, each root has to be either a root of an archive or a folder
-     * @param projectArtfact a file whose classpath should be extended
+     * @param projectArtifact a file whose classpath should be extended
      * @param classPathType the type of classpath to be extended, @see ClassPath
      * @return true in case the classpath was changed, (at least one classpath root was added to the classpath),
      * the value false is returned when all the classpath roots are already included on the classpath.
@@ -115,8 +114,8 @@ public class ProjectClassPathModifier {
      * adding of a root to the classpath of the given type.
      */
     @SuppressWarnings("deprecation")        //NOI18N
-    public static boolean addRoots (final URL[] classPathRoots, final FileObject projectArtfact, final String classPathType) throws IOException, UnsupportedOperationException {
-        final Extensible extensible = findExtensible(projectArtfact, classPathType);
+    public static boolean addRoots (final URL[] classPathRoots, final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        final Extensible extensible = findExtensible(projectArtifact, classPathType);
         if (extensible != null) {
             if (extensible.pcmi != null) {
                 assert extensible.sg != null;
@@ -146,7 +145,7 @@ public class ProjectClassPathModifier {
      * Removes archive files or folders from the project's classpath if the
      * entries are included on it.
      * @param classPathRoots roots to be removed, each root has to be either a root of an archive or a folder
-     * @param projectArtfact a file from whose classpath the roots should be removed
+     * @param projectArtifact a file from whose classpath the roots should be removed
      * @param classPathType the type of classpath, @see ClassPath
      * @return true in case the classpath was changed, (at least one classpath root was removed from the classpath),
      * the value false is returned when none of the classpath roots was included on the classpath.
@@ -154,8 +153,8 @@ public class ProjectClassPathModifier {
      * @exception UnsupportedOperationException is thrown when the project does not support
      * removing of a root from the classpath of the given type.
      */
-    public static boolean removeRoots (final URL[] classPathRoots, final FileObject projectArtfact, final String classPathType) throws IOException, UnsupportedOperationException {
-        final Extensible extensible = findExtensible (projectArtfact, classPathType);
+    public static boolean removeRoots (final URL[] classPathRoots, final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        final Extensible extensible = findExtensible (projectArtifact, classPathType);
         if (extensible != null && extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
@@ -171,7 +170,7 @@ public class ProjectClassPathModifier {
      * @param artifactElements the URIs of the build output, the artifactElements has to have the same length
      * as artifacts. 
      * (must be owned by the artifact and be relative to it)
-     * @param projectArtfact a file whose classpath should be extended
+     * @param projectArtifact a file whose classpath should be extended
      * @param classPathType the type of classpath to be extended, @see ClassPath
      * @return true in case the classpath was changed, (at least one artifact was added to the classpath),
      * the value false is returned when all the artifacts are already included on the classpath.
@@ -181,8 +180,8 @@ public class ProjectClassPathModifier {
      */
     @SuppressWarnings("deprecation")        //NOI18N
     public static boolean addAntArtifacts (final AntArtifact[] artifacts, final URI[] artifactElements,
-            final FileObject projectArtfact, final String classPathType) throws IOException, UnsupportedOperationException {
-        final Extensible extensible = findExtensible (projectArtfact, classPathType);
+            final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        final Extensible extensible = findExtensible (projectArtifact, classPathType);
         if (extensible != null) {
             assert artifacts.length == artifactElements.length;
             if (extensible.pcmi != null) {
@@ -208,7 +207,7 @@ public class ProjectClassPathModifier {
      * @param artifactElements the URIs of the build output, the artifactElements has to have the same length
      * as artifacts.
      * (must be owned by the artifact and be relative to it)
-     * @param projectArtfact a file from whose classpath the dependent projects should be removed
+     * @param projectArtifact a file from whose classpath the dependent projects should be removed
      * @param classPathType the type of classpath, @see ClassPath
      * @return true in case the classpath was changed, (at least one artifact was removed from the classpath),
      * the value false is returned when none of the artifacts was included on the classpath.
@@ -266,7 +265,8 @@ public class ProjectClassPathModifier {
             }
         }
         else if (classPathType.equals(ClassPath.COMPILE)) {
-            final ProjectClassPathExtender pe = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
+            final org.netbeans.spi.java.project.classpath.ProjectClassPathExtender pe = 
+                    project.getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class);
             if (pe != null) {
                 return new Extensible (pe);
             }
@@ -286,7 +286,7 @@ public class ProjectClassPathModifier {
         private final SourceGroup sg;
         private final ProjectClassPathModifierImplementation pcmi;
         @SuppressWarnings("deprecation")        //NOI18N
-        private final ProjectClassPathExtender pcpe;
+        private final org.netbeans.spi.java.project.classpath.ProjectClassPathExtender pcpe;
         
         
         private Extensible (final ProjectClassPathModifierImplementation pcmi , final SourceGroup sg, final String classPathType) {
@@ -300,7 +300,7 @@ public class ProjectClassPathModifier {
         }
         
         @SuppressWarnings("deprecation")        //NOI18N
-        private Extensible (final ProjectClassPathExtender pcpe) {
+        private Extensible (final org.netbeans.spi.java.project.classpath.ProjectClassPathExtender pcpe) {
             assert pcpe != null;
             this.pcpe = pcpe;
             this.pcmi = null;
