@@ -84,9 +84,6 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(localChangesRadioButton))
-                    .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
@@ -110,7 +107,10 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                             .add(oneCommitRadioButton)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(moreCommitsRadioButton)))
+                        .add(moreCommitsRadioButton))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(localChangesRadioButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
