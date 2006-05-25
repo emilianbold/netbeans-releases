@@ -52,6 +52,20 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class Repository implements ActionListener, DocumentListener, FocusListener {
+
+    private final static String LOCAL_URL_HELP      = "file:///repository_path[@REV]";
+    private final static String HTTP_URL_HELP       = "http://hostname/repository_path[@REV]";
+    private final static String HTTPS_URL_HELP      = "https://hostname/repository_path[@REV]";
+    private final static String SVN_URL_HELP        = "svn://hostname/repository_path[@REV]";
+    private final static String SVN_SSH_URL_HELP    = "svn+ssh://hostname/repository_path[@REV]";
+    private final static String ALL_URLS_HELP       =
+            "<html><body>IDE directly supports the following Subversion URL types:" +
+                "<dl><dt><tt>" + LOCAL_URL_HELP + "</tt></dt><dd>for direct SVN repositories access</dd>" +
+                    "<dt><tt>" + HTTP_URL_HELP  + "</tt></dt><dd>for connecting SVN repository via WebDAV protocol</dd>" +
+                    "<dt><tt>" + HTTPS_URL_HELP + "</tt></dt><dd>for connecting SVN repository via WebDAV protocol with SSL encryption</dd>" +
+                    "<dt><tt>" + SVN_URL_HELP + "</tt></dt><dd>for connecting SVN repository via custom protocol to a <tt>svnserver</tt> server</dd>" +
+                    "<dt><tt>" + SVN_SSH_URL_HELP + "</tt></dt><dd>for connecting SVN repository via custom protocol to a <tt>svnserver</tt> server</dd>" +
+                "</dl></body></html>";
     
     private RepositoryPanel repositoryPanel;
     private ProxyDescriptor proxyDescriptor;
@@ -131,7 +145,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if (repositoryPanel == null) {
             repositoryPanel = new RepositoryPanel();
             repositoryPanel.proxySettingsButton.addActionListener(this);
-                                    
+
             RequestProcessor requestProcessor = new RequestProcessor();
             updatePasswordTask = requestProcessor.create(new Runnable() {
                 public void run() {
@@ -381,8 +395,22 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         
         repositoryPanel.userLabel.setVisible(remoteServerFields);             
         repositoryPanel.proxySettingsButton.setVisible(remoteServerFields);        
+
+        if(selectedUrlString.startsWith("http:")) {
+            repositoryPanel.tipLabel.setText(HTTP_URL_HELP);
+        } else if(selectedUrlString.startsWith("https:")) {
+            repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
+        } else if(selectedUrlString.startsWith("svn:")) {
+            repositoryPanel.tipLabel.setText(SVN_URL_HELP);
+        } else if(selectedUrlString.startsWith("svn+ssh:")) {
+            repositoryPanel.tipLabel.setText(SVN_SSH_URL_HELP);
+        } else if(selectedUrlString.startsWith("file:")) {
+            repositoryPanel.tipLabel.setText(LOCAL_URL_HELP);
+        } else {
+            repositoryPanel.tipLabel.setText(ALL_URLS_HELP);
+        }
     }
-    
+
     /**
      * Load selected root from Swing structures (from arbitrary thread).
      * @return null on failure
@@ -498,6 +526,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     }
 
     public void focusLost(FocusEvent focusEvent) {
+        // do nothing
     }
     
 }
