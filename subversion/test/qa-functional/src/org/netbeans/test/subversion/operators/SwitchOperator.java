@@ -44,7 +44,6 @@ public class SwitchOperator extends NbDialogOperator {
     private JLabelOperator _lblRepositoryFolder;
     private JComboBoxOperator _cboRepositoryFolder;
     private JButtonOperator _btBrowseRepositoryFolder;
-    private JCheckBoxOperator _cbRevertLocalChanges;
     private JLabelOperator _lblRepositoryRevision;
     private JLabelOperator _lblEmptyMeansRepositoryHEAD;
     private JTextFieldOperator _txtRepositoryRevision;
@@ -86,16 +85,6 @@ public class SwitchOperator extends NbDialogOperator {
             _btBrowseRepositoryFolder = new JButtonOperator(this, "Browse");
         }
         return _btBrowseRepositoryFolder;
-    }
-
-    /** Tries to find "Revert Local Changes" JCheckBox in this dialog.
-     * @return JCheckBoxOperator
-     */
-    public JCheckBoxOperator cbRevertLocalChanges() {
-        if (_cbRevertLocalChanges==null) {
-            _cbRevertLocalChanges = new JCheckBoxOperator(this, "Revert Local Changes");
-        }
-        return _cbRevertLocalChanges;
     }
 
     /** Tries to find "Repository Revision:" JLabel in this dialog.
@@ -213,15 +202,6 @@ public class SwitchOperator extends NbDialogOperator {
         return new RepositoryBrowserOperator();
     }
 
-    /** checks or unchecks given JCheckBox
-     * @param state boolean requested state
-     */
-    public void checkRevertLocalChanges(boolean state) {
-        if (cbRevertLocalChanges().isSelected()!=state) {
-            cbRevertLocalChanges().push();
-        }
-    }
-
     /**
      * gets text for txtRepositoryRevision
      * 
@@ -276,7 +256,6 @@ public class SwitchOperator extends NbDialogOperator {
         lblRepositoryFolder();
         cboRepositoryFolder();
         btBrowseRepositoryFolder();
-        cbRevertLocalChanges();
         lblRepositoryRevision();
         lblEmptyMeansRepositoryHEAD();
         txtRepositoryRevision();

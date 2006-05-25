@@ -20,7 +20,7 @@ public class RepositoryBrowserImpOperator extends NbDialogOperator {
      * Creates new RepositoryBrowserImpOperator that can handle it.
      */
     public RepositoryBrowserImpOperator() {
-        super("Repository browser");
+        super("Browse Repository");
     }
 
     private JTreeOperator _tree;
@@ -51,7 +51,7 @@ public class RepositoryBrowserImpOperator extends NbDialogOperator {
      */
     public JLabelOperator lblSpecifyFolderToCheckout() {
         if (_lblSpecifyFolderToCheckout==null) {
-            _lblSpecifyFolderToCheckout = new JLabelOperator(this, "Specify Folder to checkout:");
+            _lblSpecifyFolderToCheckout = new JLabelOperator(this, "Repository Folders:");
         }
         return _lblSpecifyFolderToCheckout;
     }

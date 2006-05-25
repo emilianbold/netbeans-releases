@@ -72,7 +72,7 @@ public class CopyToOperator extends NbDialogOperator {
      */
     public JLabelOperator lblDescribeTheCopyPurpose() {
         if (_lblDescribeTheCopyPurpose==null) {
-            _lblDescribeTheCopyPurpose = new JLabelOperator(this, "Describe the copy purpose:");
+            _lblDescribeTheCopyPurpose = new JLabelOperator(this, "Copy Description");
         }
         return _lblDescribeTheCopyPurpose;
     }

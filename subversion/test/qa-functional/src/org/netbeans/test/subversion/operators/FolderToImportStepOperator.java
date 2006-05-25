@@ -155,7 +155,7 @@ public class FolderToImportStepOperator extends ImportWizardOperator {
      */
     public JLabelOperator lblImportMessageRequired() {
         if (_lblImportMessageRequired==null) {
-            _lblImportMessageRequired = new JLabelOperator(this, 5);    
+            _lblImportMessageRequired = new JLabelOperator(this, 6);    
         }
         return _lblImportMessageRequired;
     }

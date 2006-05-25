@@ -34,7 +34,7 @@ public class WorkDirStepOperator extends WizardOperator {
      */
     public WorkDirStepOperator() {
         super("");
-        stepsWaitSelectedValue("Workdir");
+        stepsWaitSelectedValue("Folders to Checkout");
     }
 
     private JLabelOperator _lblSteps;
@@ -94,16 +94,6 @@ public class WorkDirStepOperator extends WizardOperator {
             _lstSteps = new JListOperator(this);
         }
         return _lstSteps;
-    }
-
-    /** Tries to find "Workdir" JLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblWorkdir() {
-        if (_lblWorkdir==null) {
-            _lblWorkdir = new JLabelOperator(this, "Workdir");
-        }
-        return _lblWorkdir;
     }
 
     /** Tries to find "Specify the folder(s) to checkout from Subversion repository." JLabel in this dialog.
@@ -412,7 +402,6 @@ public class WorkDirStepOperator extends WizardOperator {
     public void verify() {
         lblSteps();
         lstSteps();
-        lblWorkdir();
         lblSpecifyTheFoldersToCheckoutFromSubversionRepository();
         lblRepositoryRevision();
         lblRepositoryFolders();

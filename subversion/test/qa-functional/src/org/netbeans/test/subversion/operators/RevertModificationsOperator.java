@@ -45,13 +45,15 @@ public class RevertModificationsOperator extends NbDialogOperator {
     private JLabelOperator _lblEndWithRevision;
     private JTextFieldOperator _txtStartRevision;
     private JTextFieldOperator _txtEndRevision;
+    private JTextFieldOperator _txtRevision;
     private JLabelOperator _lblEmptyMeansRepositoryHEAD;
     private JButtonOperator _btSearch;
     private JButtonOperator _btSearch2;
-    private JCheckBoxOperator _cbInclusive;
+    private JButtonOperator _btSearch3;
     private JLabelOperator _lblRevertModificationsFrom;
     private JRadioButtonOperator _rbPreviousCommits;
     private JRadioButtonOperator _rbLocalChanges;
+    private JRadioButtonOperator _rbSingleCommit;
     private JButtonOperator _btRevert;
     private JButtonOperator _btCancel;
     private JButtonOperator _btHelp;
@@ -86,7 +88,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtStartRevision() {
         if (_txtStartRevision==null) {
-            _txtStartRevision = new JTextFieldOperator(this);
+            _txtStartRevision = new JTextFieldOperator(this, 2);
         }
         return _txtStartRevision;
     }
@@ -96,11 +98,21 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtEndRevision() {
         if (_txtEndRevision==null) {
-            _txtEndRevision = new JTextFieldOperator(this, 1);
+            _txtEndRevision = new JTextFieldOperator(this);
         }
         return _txtEndRevision;
     }
 
+    /** Tries to find null JTextField in this dialog.
+     * @return JTextFieldOperator
+     */
+    public JTextFieldOperator txtRevision() {
+        if (_txtRevision==null) {
+            _txtRevision = new JTextFieldOperator(this, 1);
+        }
+        return _txtRevision;
+    }
+    
     /** Tries to find "(empty means repository HEAD)" JLabel in this dialog.
      * @return JLabelOperator
      */
@@ -131,34 +143,34 @@ public class RevertModificationsOperator extends NbDialogOperator {
         return _btSearch2;
     }
 
-    /** Tries to find "inclusive" JCheckBox in this dialog.
-     * @return JCheckBoxOperator
+    /** Tries to find "Search..." JButton in this dialog.
+     * @return JButtonOperator
      */
-    public JCheckBoxOperator cbInclusive() {
-        if (_cbInclusive==null) {
-            _cbInclusive = new JCheckBoxOperator(this, "inclusive");
+    public JButtonOperator btSearch3() {
+        if (_btSearch3==null) {
+            _btSearch3 = new JButtonOperator(this, "Search...", 2);
         }
-        return _cbInclusive;
+        return _btSearch3;
     }
-
-    /** Tries to find "Revert Modifications from:" JLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblRevertModificationsFrom() {
-        if (_lblRevertModificationsFrom==null) {
-            _lblRevertModificationsFrom = new JLabelOperator(this, "Revert Modifications from:");
-        }
-        return _lblRevertModificationsFrom;
-    }
-
+    
     /** Tries to find "Previous Commit(s)" JRadioButton in this dialog.
      * @return JRadioButtonOperator
      */
     public JRadioButtonOperator rbPreviousCommits() {
         if (_rbPreviousCommits==null) {
-            _rbPreviousCommits = new JRadioButtonOperator(this, "Previous Commit(s)");
+            _rbPreviousCommits = new JRadioButtonOperator(this, "Revert Modifications from Previous Commits");
         }
         return _rbPreviousCommits;
+    }
+    
+    /** Tries to find "Single Commit" JRadioButton in this dialog.
+     * @return JRadioButtonOperator
+     */
+    public JRadioButtonOperator rbSingleCommit() {
+        if (_rbSingleCommit==null) {
+            _rbSingleCommit = new JRadioButtonOperator(this, "Revert Modifications from Single Commit");
+        }
+        return _rbSingleCommit;
     }
 
     /** Tries to find "Local Changes" JRadioButton in this dialog.
@@ -166,7 +178,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbLocalChanges() {
         if (_rbLocalChanges==null) {
-            _rbLocalChanges = new JRadioButtonOperator(this, "Local Changes");
+            _rbLocalChanges = new JRadioButtonOperator(this, "Revert Local Changes");
         }
         return _rbLocalChanges;
     }
@@ -235,6 +247,25 @@ public class RevertModificationsOperator extends NbDialogOperator {
     }
 
     /**
+     * gets text for txtRevision
+     * 
+     * @return String text
+     */
+    public String getRevision() {
+        return txtRevision().getText();
+    }
+    
+    /**
+     * sets text for txtRevision
+     * 
+     * @param text String text
+     */
+    public void setRevision(String text) {
+        txtRevision().clearText();
+        txtRevision().typeText(text);
+    }
+    
+    /**
      * sets text for txtEndRevision
      * 
      * @param text String text
@@ -254,15 +285,6 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public void search2() {
         btSearch2().push();
-    }
-
-    /** checks or unchecks given JCheckBox
-     * @param state boolean requested state
-     */
-    public void checkInclusive(boolean state) {
-        if (cbInclusive().isSelected()!=state) {
-            cbInclusive().push();
-        }
     }
 
     /** clicks on "Previous Commit(s)" JRadioButton
@@ -311,8 +333,6 @@ public class RevertModificationsOperator extends NbDialogOperator {
         lblEmptyMeansRepositoryHEAD();
         btSearch();
         btSearch2();
-        cbInclusive();
-        lblRevertModificationsFrom();
         rbPreviousCommits();
         rbLocalChanges();
         btRevert();

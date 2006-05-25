@@ -15,6 +15,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CommitStepOperator;
 import org.netbeans.test.subversion.operators.FolderToImportStepOperator;
@@ -99,11 +100,60 @@ public class RevertUiTest extends JellyTestCase{
         //Node projNode = new Node(new ProjectsTabOperator().tree(), "AnagramGame");
         RevertModificationsOperator rmo = RevertModificationsOperator.invoke(projNode);
         rmo.verify();
+        TimeoutExpiredException tee = null;
+        try {
+            rmo.setStartRevision("1");
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull("Components shouldn't be accessed", tee);
+        tee = null;
+        try {
+            rmo.setEndRevision("1");
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull("Components shouldn't be accessed", tee);
+        tee = null;
+        try {
+            rmo.setEndRevision("1");
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull("Components shouldn't be accessed", tee);
+        
         rmo.rbPreviousCommits().push();
         rmo.setStartRevision("1");
         rmo.setEndRevision("2");
-        rmo.cancel();
         
+        tee = null;
+        try {
+            rmo.setRevision("3");
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull("Components shouldn't be accessed", tee);
+        
+        rmo.rbSingleCommit().push();
+        rmo.setRevision("3");
+        
+        tee = null;
+        try {
+            rmo.setStartRevision("1");
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull("Components shouldn't be accessed", tee);
+        
+        tee = null;
+        try {
+            rmo.setEndRevision("2");
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull("Components shouldn't be accessed", tee);
+        
+        rmo.cancel();
         TestKit.removeAllData(PROJECT_NAME);
     }
     
