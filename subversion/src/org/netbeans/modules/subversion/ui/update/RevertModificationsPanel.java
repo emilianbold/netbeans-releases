@@ -30,33 +30,22 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
 
-        jLabel1.setText("Revert Modifications from:");
+        buttonGroup.add(localChangesRadioButton);
+        localChangesRadioButton.setSelected(true);
+        localChangesRadioButton.setText("Revert Local Changes");
+        localChangesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        localChangesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        buttonGroup.add(lcoalChangesRadioButton);
-        lcoalChangesRadioButton.setSelected(true);
-        lcoalChangesRadioButton.setText("Local Changes");
-        lcoalChangesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        lcoalChangesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        lcoalChangesRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                lcoalChangesRadioButtonActionPerformed(evt);
-            }
-        });
-
-        buttonGroup.add(commitsRadioButton);
-        commitsRadioButton.setText("Previous Commit(s)");
-        commitsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        commitsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        commitsRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                commitsRadioButtonActionPerformed(evt);
-            }
-        });
+        buttonGroup.add(moreCommitsRadioButton);
+        moreCommitsRadioButton.setText("Revert Modifications from Previous Commits");
+        moreCommitsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        moreCommitsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         jLabel2.setText("Starting Revision:");
 
@@ -72,94 +61,104 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         endSearchButton.setText("Search...");
         endSearchButton.setEnabled(false);
 
-        inclusiveCheckBox.setText("inclusive");
-        inclusiveCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        inclusiveCheckBox.setEnabled(false);
-        inclusiveCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
         jLabel3.setText("Ending Revision:");
+
+        buttonGroup.add(oneCommitRadioButton);
+        oneCommitRadioButton.setText("Revert Modifications from Single Commit");
+        oneCommitRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        oneCommitRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        jLabel4.setText("Revision:");
+
+        oneRevisionTextField.setEnabled(false);
+
+        oneRevisionSearchButton.setText("Search...");
+        oneRevisionSearchButton.setEnabled(false);
+
+        jLabel10.setText("(empty means repository HEAD)");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(17, 17, 17)
+                        .add(12, 12, 12)
+                        .add(localChangesRadioButton))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel2)
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(startRevisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                            .add(endRevisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                            .add(jLabel9))
-                        .add(6, 6, 6)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(endSearchButton)
-                            .add(startSearchButton))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(inclusiveCheckBox))
-                    .add(jLabel1)
-                    .add(commitsRadioButton)
-                    .add(lcoalChangesRadioButton))
+                            .add(layout.createSequentialGroup()
+                                .add(17, 17, 17)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jLabel2)
+                                    .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 112, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(jLabel4))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, endRevisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, oneRevisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, startRevisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                                    .add(jLabel10)
+                                    .add(jLabel9))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(endSearchButton)
+                                    .add(startSearchButton)
+                                    .add(oneRevisionSearchButton)))
+                            .add(oneCommitRadioButton)))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(moreCommitsRadioButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .add(14, 14, 14)
-                .add(lcoalChangesRadioButton)
-                .add(27, 27, 27)
-                .add(commitsRadioButton)
+                .add(localChangesRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(oneCommitRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(startRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(startSearchButton)
-                    .add(inclusiveCheckBox)
-                    .add(jLabel2))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(endRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(endSearchButton)
-                    .add(jLabel3))
+                    .add(jLabel4)
+                    .add(oneRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(oneRevisionSearchButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel9)
-                .addContainerGap(26, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(moreCommitsRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(startRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(startSearchButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(endRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(endSearchButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel10)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void commitsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commitsRadioButtonActionPerformed
-        enableCommitsFields(true);
-    }//GEN-LAST:event_commitsRadioButtonActionPerformed
-
-    private void lcoalChangesRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lcoalChangesRadioButtonActionPerformed
-        enableCommitsFields(false);
-    }//GEN-LAST:event_lcoalChangesRadioButtonActionPerformed
-
-    private void enableCommitsFields(boolean b) {
-        startRevisionTextField.setEnabled(b);
-        endRevisionTextField.setEnabled(b);
-        startSearchButton.setEnabled(b);
-        endSearchButton.setEnabled(b);
-        inclusiveCheckBox.setEnabled(b);
-    }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.ButtonGroup buttonGroup = new javax.swing.ButtonGroup();
-    final javax.swing.JRadioButton commitsRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JTextField endRevisionTextField = new javax.swing.JTextField();
     final javax.swing.JButton endSearchButton = new javax.swing.JButton();
-    final javax.swing.JCheckBox inclusiveCheckBox = new javax.swing.JCheckBox();
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel9;
-    final javax.swing.JRadioButton lcoalChangesRadioButton = new javax.swing.JRadioButton();
+    final javax.swing.JRadioButton localChangesRadioButton = new javax.swing.JRadioButton();
+    final javax.swing.JRadioButton moreCommitsRadioButton = new javax.swing.JRadioButton();
+    final javax.swing.JRadioButton oneCommitRadioButton = new javax.swing.JRadioButton();
+    final javax.swing.JButton oneRevisionSearchButton = new javax.swing.JButton();
+    final javax.swing.JTextField oneRevisionTextField = new javax.swing.JTextField();
     final javax.swing.JTextField startRevisionTextField = new javax.swing.JTextField();
     final javax.swing.JButton startSearchButton = new javax.swing.JButton();
     // End of variables declaration//GEN-END:variables

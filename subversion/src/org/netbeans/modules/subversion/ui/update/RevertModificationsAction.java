@@ -88,26 +88,14 @@ public class RevertModificationsAction extends ContextAction {
             }
 
             try {
-                if(revertModifications.isCommits()) {                    
-                    SVNRevision startRevision = revertModifications.getStartRevision();
-                    if(revertModifications.isInclusive()) {
-                        try {
-                            Long start = Long.parseLong(startRevision.toString());
-                            if(start > 0) {
-                                start = start - 1;
-                            }
-                            startRevision = new SVNRevision.Number(start);
-                        } catch (NumberFormatException ex) {
-                            // olala!
-                        }                        
-                    }
-                    SVNRevision endRevision = revertModifications.getEndRevision();
+                RevertModifications.RevisionInterval revisions = revertModifications.getRevisionInterval();
+                if(revisions != null) {
                     for (int i= 0; i<files.length; i++) {
                         if(support.isCanceled()) {
                             return;
                         }
                         SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
-                        client.merge(url, endRevision, url, startRevision, files[i], false, recursive);
+                        client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);
                     }
                 } else {
                     for (int i= 0; i<files.length; i++) {
