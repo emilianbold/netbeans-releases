@@ -62,16 +62,36 @@ public class SvnConfigFiles {
     private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   
     private static final String GROUPS = "groups";
     private static final String WINDOWS_CONFIG_DIR = getAPPDATA() + "\\Subversion";
-    
+
+    private interface IniFilePatcher {
+        void patch(Ini file);
+    }
+
+    /**
+     * The value for the 'store-auth-creds' key in the config cofiguration file is alway set to 'no'
+     * so the commandline client wan't create a file holding the authentication credentials when
+     * a svn command is called. The reason for this is that the Subverion module holds the credentials
+     * in files with the same format as the commandline client but with a different name.
+     */
+    private class ConfigIniFilePatcher implements IniFilePatcher {
+        public void patch(Ini file) {
+            // patch store-auth-creds to "no"
+            Ini.Section auth = (Ini.Section) file.get("auth");
+            if(auth == null) {
+                auth = file.add("auth");
+            }
+            auth.put("store-auth-creds", "no");
+        }
+    }
+
     /**
      * Creates a new instance
      */
     private SvnConfigFiles() {      
         // copy config file        
-        copyConfigFileToIDEConfigDir();        
+        config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher());        
         // get the nb servers file merged with the systems servers files
-        servers = loadNetbeansIniFile("servers");
-        config = loadNetbeansIniFile("config");
+        servers = loadNetbeansIniFile("servers");        
     }
     
     /**
@@ -399,30 +419,22 @@ public class SvnConfigFiles {
     }
 
     /**
-     * Copies the <b>config</b> configuration file from the Subversion commandline client 
+     * Copies the given configuration file from the Subversion commandline client
      * configuration directory into the configuration directory used by the Netbeans Subversion module. </br>
-     * The value for the 'store-auth-creds' key is alway set to 'no' so the commandline client wan't 
-     * create a file holding the authentication credentials when a svn command is called. 
-     * The reason for this is that the Subverion module holds the credentials in files with the 
-     * same format as the commandline client but with a different name. 
      */
-    private void copyConfigFileToIDEConfigDir () {      
-        Ini config = loadSystemIniFile("config");
+    private Ini copyConfigFileToIDEConfigDir(String fileName, IniFilePatcher patcher) {
+        Ini systemIniFile = loadSystemIniFile(fileName);
 
-        // patch store-auth-creds to "no"
-        Ini.Section auth = (Ini.Section)config.get("auth");
-        if(auth == null) {
-            auth = config.add("auth");
-        }
-        auth.put("store-auth-creds", "no");
+        patcher.patch(systemIniFile);
 
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/config"));
+        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + fileName));
         try {
             file.getParentFile().mkdirs();
-            config.store(FileUtils.createOutputStream(file));
+            systemIniFile.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }
+        return systemIniFile;
     }
 
     /**
@@ -454,7 +466,7 @@ public class SvnConfigFiles {
     }
 
     /**
-     * Loads the ini configuration file from the configurat settings used by 
+     * Loads the ini configuration file from the directory used by 
      * the Subversion commandline client. The settings are loaded and merged together in 
      * in the folowing order:
      * <ol>
@@ -469,12 +481,13 @@ public class SvnConfigFiles {
      */       
     private Ini loadSystemIniFile(String fileName) {
         // config files from userdir
-        File file = FileUtil.normalizeFile(new File(getUserConfigPath() + "/" + fileName));
+        String filePath = getUserConfigPath() + "/" + fileName;
+        File file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
         try {            
             system = new Ini(new FileReader(file));
         } catch (FileNotFoundException ex) {
-            // XXX create from registry?
+            system = new Ini();
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
@@ -483,7 +496,7 @@ public class SvnConfigFiles {
             mergeFromRegistry("HKEY_LOCAL_MACHINE", "Servers", system);
         }
 
-        Ini global = null;        
+        Ini global = null;      
         try {
             global = new Ini(new FileReader(getGlobalConfigPath() + "/" + fileName));
         } catch (FileNotFoundException ex) {
@@ -499,7 +512,11 @@ public class SvnConfigFiles {
         if(Utilities.isWindows()) {
             mergeFromRegistry("HKEY_CURRENT_USER", "Servers", system);
         }
-        
+
+
+        if(system.size() < 1) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not load the file " + filePath + ". Falling back on svn defaults.");
+        }
         return system;
     }
 
