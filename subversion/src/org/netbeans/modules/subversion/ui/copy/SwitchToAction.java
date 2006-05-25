@@ -69,21 +69,22 @@ public class SwitchToAction extends ContextAction {
         final File root = ctx.getRootFiles()[0];                        
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
-     
-        final SwitchTo switchTo = new SwitchTo(repositoryRoot, root);
+        File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
+        boolean hasChanges = files.length > 0;
+
+        final SwitchTo switchTo = new SwitchTo(repositoryRoot, root, hasChanges);
         if(switchTo.showDialog()) {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
                 public void perform() {
                     RepositoryFile repository = switchTo.getRepositoryFile();
-                    boolean replaceModifications = switchTo.replaceModifications();
-                    performSwitch(repository, replaceModifications, repositoryRoot, root, this);
+                    performSwitch(repository, repositoryRoot, root, this);
                 }
             };
             support.start(createRequestProcessor(nodes));
         }        
     }
 
-    static void performSwitch(RepositoryFile repository, boolean replaceModifications, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
+    static void performSwitch(RepositoryFile repository, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
         File[][] split = SvnUtils.splitFlatOthers(new File[] {root} );
         boolean recursive;
         // there can be only 1 root file
@@ -100,16 +101,7 @@ public class SwitchToAction extends ContextAction {
             } catch (SVNClientException ex) {
                 ErrorManager.getDefault().notify(ex);
                 return;
-            }
-            if(replaceModifications) {
-                // get rid of all changes ...
-                // doesn't work for added (new) files
-                client.revert(root, recursive);
-
-                if(support.isCanceled()) {
-                    return;
-                }
-            }
+            }            
             // ... and switch
             client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), recursive);
             // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...

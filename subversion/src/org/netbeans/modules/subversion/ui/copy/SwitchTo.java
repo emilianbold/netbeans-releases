@@ -29,11 +29,12 @@ public class SwitchTo extends CopyDialog {
     
     private RepositoryPaths repositoryPaths;
     
-    public SwitchTo(RepositoryFile repositoryRoot, File root) {
-        super(new SwitchToPanel(), "Switch " + root.getName() + " to...", "Switch");
+    public SwitchTo(RepositoryFile repositoryRoot, File root, boolean localChanges) {
+        super(new SwitchToPanel(), "Switch " + root.getName(), "Switch");
 
-        SwitchToPanel panel = getSwitchToPanel();        
-        
+        SwitchToPanel panel = getSwitchToPanel();
+        panel.warningLabel.setVisible(localChanges);
+
         repositoryPaths = 
             new RepositoryPaths(
                 repositoryRoot, 
@@ -64,10 +65,6 @@ public class SwitchTo extends CopyDialog {
         }
         return null;
     }    
-
-    boolean replaceModifications() {
-        return getSwitchToPanel().replaceModifiedCheckBox.isSelected();
-    }
     
     private SwitchToPanel getSwitchToPanel() {
         return (SwitchToPanel) getPanel();

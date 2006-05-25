@@ -43,39 +43,39 @@ public class SwitchToPanel extends javax.swing.JPanel {
 
         urlComboBox.setEditable(true);
 
-        replaceModifiedCheckBox.setText("Revert Local Changes");
-        replaceModifiedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        replaceModifiedCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
         jLabel5.setText("Repository Revision:");
 
         searchRevisionButton.setText("Search...");
 
         jLabel6.setText("(empty means repository HEAD)");
 
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/ui/resources/warning.png")));
+        warningLabel.setText("Warning - there are locally modified files!");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(urlLabel)
-                        .add(27, 27, 27)
-                        .add(urlComboBox, 0, 381, Short.MAX_VALUE)
-                        .add(10, 10, 10)
-                        .add(browseRepositoryButton))
-                    .add(replaceModifiedCheckBox)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(urlLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel6)
+                            .add(urlComboBox, 0, 374, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(revisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(searchRevisionButton)))))
+                                .add(searchRevisionButton))
+                            .add(jLabel6))
+                        .add(10, 10, 10)
+                        .add(browseRepositoryButton))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(warningLabel)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -83,19 +83,19 @@ public class SwitchToPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(urlLabel)
                     .add(browseRepositoryButton)
-                    .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(16, 16, 16)
-                .add(replaceModifiedCheckBox)
-                .add(16, 16, 16)
+                    .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(urlLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
                     .add(revisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel5)
                     .add(searchRevisionButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel6)
-                .addContainerGap(77, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(warningLabel)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -104,11 +104,11 @@ public class SwitchToPanel extends javax.swing.JPanel {
     final javax.swing.JButton browseRepositoryButton = new javax.swing.JButton();
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    final javax.swing.JCheckBox replaceModifiedCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JTextField revisionTextField = new javax.swing.JTextField();
     final javax.swing.JButton searchRevisionButton = new javax.swing.JButton();
     final javax.swing.JComboBox urlComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel urlLabel = new javax.swing.JLabel();
+    final javax.swing.JLabel warningLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
     
 }

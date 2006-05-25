@@ -28,20 +28,14 @@ public class TwoFoldersPreviewPanel extends javax.swing.JPanel {
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/twofolders.png")));
 
-        repositoryFolderTextField1.setBackground(new java.awt.Color(238, 238, 238));
         repositoryFolderTextField1.setEditable(false);
         repositoryFolderTextField1.setText("jTextField1");
-        repositoryFolderTextField1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        repositoryFolderTextField2.setBackground(new java.awt.Color(238, 238, 238));
         repositoryFolderTextField2.setEditable(false);
         repositoryFolderTextField2.setText("jTextField1");
-        repositoryFolderTextField2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        localFolderTextField.setBackground(new java.awt.Color(238, 238, 238));
         localFolderTextField.setEditable(false);
         localFolderTextField.setText("jTextField1");
-        localFolderTextField.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -57,7 +51,7 @@ public class TwoFoldersPreviewPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.BASELINE, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.BASELINE, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.BASELINE, repositoryFolderTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)

@@ -112,7 +112,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return new RepositoryFile[] {rf};
         }
 
-        if(repositoryPathTextField.getText().equals("")) {
+        if(repositoryPathTextField.getText().trim().equals("")) {
             return EMPTY_REPOSITORY_FILES;
         }
         if(revision == null) {
@@ -209,7 +209,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         if(revisionTextField == null) {
             return SVNRevision.HEAD;
         }
-        String revisionString = revisionTextField.getText();
+        String revisionString = revisionTextField.getText().trim();
         if(revisionString.equals("") || revisionString.equals(SVNRevision.HEAD.toString())) {
             return SVNRevision.HEAD;    
         }
@@ -263,7 +263,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             searchRevisionButton.setEnabled(valid);
         }
 
-        if(repositoryPathTextField != null && repositoryPathTextField.getText().equals("")) {
+        if(repositoryPathTextField != null && repositoryPathTextField.getText().trim().equals("")) {
             valid = false;
         }
         

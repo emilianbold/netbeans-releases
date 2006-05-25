@@ -28,15 +28,11 @@ public class SinceOriginPreviewPanel extends javax.swing.JPanel {
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/sinceorigin.png")));
 
-        repositoryFolderTextField.setBackground(new java.awt.Color(238, 238, 238));
         repositoryFolderTextField.setEditable(false);
         repositoryFolderTextField.setText("jTextField1");
-        repositoryFolderTextField.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        localFolderTextField.setBackground(new java.awt.Color(238, 238, 238));
         localFolderTextField.setEditable(false);
         localFolderTextField.setText("jTextField1");
-        localFolderTextField.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

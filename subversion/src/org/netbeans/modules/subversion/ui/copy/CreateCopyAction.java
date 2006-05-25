@@ -62,11 +62,11 @@ public class CreateCopyAction extends ContextAction {
 
         final File root = ctx.getRootFiles()[0];
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
-        boolean isChanged = files.length > 0;                
+        boolean hasChanges = files.length > 0;                
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
 
-        final CreateCopy createCopy = new CreateCopy(repositoryRoot, root.getName(), isChanged);
+        final CreateCopy createCopy = new CreateCopy(repositoryRoot, root.getName(), hasChanges);
         if(createCopy.showDialog()) {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this,  nodes) {
                 public void perform() {
@@ -124,7 +124,7 @@ public class CreateCopyAction extends ContextAction {
             }
 
             if(switchTo) {
-                SwitchToAction.performSwitch(repositoryFolder, false, repositoryRoot, root, support);
+                SwitchToAction.performSwitch(repositoryFolder, repositoryRoot, root, support);
             }
 
         } catch (SVNClientException ex) {

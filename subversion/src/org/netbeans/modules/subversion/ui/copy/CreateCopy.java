@@ -35,7 +35,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
     
     /** Creates a new instance of CreateCopy */
     public CreateCopy(RepositoryFile repositoryRoot, String context, boolean localChanges) {
-        super(new CreateCopyPanel(), "Copy " + context + "to...", "Copy");        
+        super(new CreateCopyPanel(), "Copy " + context, "Copy");        
         CreateCopyPanel panel = getCreateCopyPanel();
         panel.warningLabel.setVisible(localChanges);                              
                 
