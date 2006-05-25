@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<PESdbFeederConfig loggingLevel="FINEST" deleteAge="900">
+    <workdirs>
+        <incoming>dbfeeder-incoming</incoming>
+        <work>dbfeeder-work</work>
+        <invalid>dbfeeder-invalid</invalid>
+        <crash>dbfeeder-crash</crash>
+    </workdirs>
+    <mail loggingLevel="OFF">
+        <smtpHost>sunpraha.czech</smtpHost>
+      <from>ffj-xtest-admins@sun.com</from>
+      <to>ffj-xtest-admins@sun.com</to>
+    </mail>
+    <database>
+        <username>xtest</username>
+        <password>xtest</password>
+        <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+        <URL>jdbc:oracle:thin:@xtest-db.czech:1521:xtest</URL>
+    </database>
+</PESdbFeederConfig>
+
+
+<!-- xtest-db.czech:/oracle/xtest-dbfeeder
+
+<?xml version="1.0"?>
+<PESdbFeederConfig loggingLevel="WARNING" deleteAge="900">
+    <workdirs>
+      <incoming>/space/dbfeeder-incoming</incoming>
+      <work>/oracle/xtest-dbfeeder/work</work>
+      <invalid>/oracle/xtest-dbfeeder/invalid</invalid>
+      <crash>/oracle/xtest-dbfeeder/crash</crash>
+    </workdirs>
+    <mail loggingLevel="WARNING">
+      <smtpHost>sunpraha.czech</smtpHost>
+      <from>ffj-xtest-admins@sun.com</from>
+      <to>ffj-xtest-admins@sun.com</to>
+    </mail>
+    <database>
+       <username>xtest</username>
+       <password>xtest</password>
+       <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+       <URL>jdbc:oracle:thin:@xtest-db.czech:1521:xtest</URL>
+    </database>
+</PESdbFeederConfig>
+-->

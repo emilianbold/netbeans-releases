@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PESdbUpload mailContact=""
+    timestamp="2006-05-17 13:42:25.966">
+   <uploadedZips>
+      <zipFile>
+         pes-beetle-060517-134225.zip</zipFile>
+   </uploadedZips>
+   <PESStatus>
+      <web webURL="http://ffjqa.czech/automatedtests/xtest/">
+         <project name="Netbeans 5.0" team="CBTAT"
+             lastBuildAvailable="200601251500"
+             lastFullDetailsBuildAvailable="200601251500"/>
+         <project name="Netbeans 4.1" team="CBTAT"
+             lastBuildAvailable="200505031930"
+             lastFullDetailsBuildAvailable="200505031930"/>
+         <project name="Netbeans 4.0" team="CBTAT"
+             lastBuildAvailable="200412141800"
+             lastFullDetailsBuildAvailable="200412141800"/>
+         <project name="Netbeans Dev" team="CBTAT"
+             lastBuildAvailable="200604171800"
+             lastFullDetailsBuildAvailable="200605021800"/>
+         <project name="JFluid Dev" team="CBTAT"
+             lastBuildAvailable="200603280707"
+             lastFullDetailsBuildAvailable="200605020711"/>
+         <project name="Netbeans 5.5" team="CBTAT"
+             lastBuildAvailable="200604050200"
+             lastFullDetailsBuildAvailable="200605030200"/>
+         <project name="Tango Dev" team="CBTAT"
+             lastBuildAvailable="own-00000-custom-1146837609627"
+             lastFullDetailsBuildAvailable="own-00000-custom-1146837609627"/>
+      </web>
+   </PESStatus>
+</PESdbUpload>

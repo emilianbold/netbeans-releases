@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="XTest PES-IDE">
+    
+    <property name="build.classes.dir" location="build/classes"/>
+    
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#runsingle) -->
+    <target name="run-selected-file-in-src">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement path="${ant.home}/lib/ant.jar"/>
+                <pathelement location="${build.classes.dir}"/>
+            </classpath>
+        </java>
+    </target>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#compilesingle) -->
+    <target name="compile-selected-files-in-src">
+        <fail unless="files">Must set property 'files'</fail>
+        <!-- TODO decide on and define some value for ${build.classes.dir} -->
+        <mkdir dir="${build.classes.dir}"/>
+        <javac destdir="${build.classes.dir}" includes="${files}" source="1.4" srcdir="src" debug="true">
+            <classpath path="${ant.home}/lib/ant.jar"/>
+        </javac>
+    </target>
+</project>
