@@ -383,32 +383,31 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     /** Shows proper fields depending on Svn connection method. */
     private void updateVisibility() {
         String selectedUrlString = selectedUrlString();
-        boolean remoteServerFields = selectedUrlString.startsWith("http:")    ||  // NOI18N        
-                                     selectedUrlString.startsWith("https:")   ||  // NOI18N        
-                                     selectedUrlString.startsWith("svn:")     ||  // NOI18N        
-                                     selectedUrlString.startsWith("svn+ssh:");    // NOI18N        
-        repositoryPanel.userPasswordField.setVisible(remoteServerFields);
-        repositoryPanel.passwordLabel.setVisible(remoteServerFields);          
-        repositoryPanel.userTextField.setVisible(remoteServerFields);  
-        
-        repositoryPanel.leaveBlankLabel.setVisible(remoteServerFields);
-        
-        repositoryPanel.userLabel.setVisible(remoteServerFields);             
-        repositoryPanel.proxySettingsButton.setVisible(remoteServerFields);        
-
+        boolean remoteServerFields = false;
         if(selectedUrlString.startsWith("http:")) {
             repositoryPanel.tipLabel.setText(HTTP_URL_HELP);
+            remoteServerFields = true;
         } else if(selectedUrlString.startsWith("https:")) {
             repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
+            remoteServerFields = true;
         } else if(selectedUrlString.startsWith("svn:")) {
             repositoryPanel.tipLabel.setText(SVN_URL_HELP);
+            remoteServerFields = true;
         } else if(selectedUrlString.startsWith("svn+ssh:")) {
             repositoryPanel.tipLabel.setText(SVN_SSH_URL_HELP);
+            remoteServerFields = true;
         } else if(selectedUrlString.startsWith("file:")) {
             repositoryPanel.tipLabel.setText(LOCAL_URL_HELP);
         } else {
             repositoryPanel.tipLabel.setText(ALL_URLS_HELP);
         }
+
+        repositoryPanel.userPasswordField.setVisible(remoteServerFields);
+        repositoryPanel.passwordLabel.setVisible(remoteServerFields);          
+        repositoryPanel.userTextField.setVisible(remoteServerFields);          
+        repositoryPanel.leaveBlankLabel.setVisible(remoteServerFields);        
+        repositoryPanel.userLabel.setVisible(remoteServerFields);             
+        repositoryPanel.proxySettingsButton.setVisible(remoteServerFields);        
     }
 
     /**
