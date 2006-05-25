@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest/pes" basedir="." default="makedist">
@@ -44,6 +44,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="jar" depends="compile">
     <mkdir dir="lib"/>
+    <copy file="${ant.home}/lib/ant.jar" todir="lib"/>
     <jar jarfile="lib/xtest-pes.jar"
             basedir="build/classes"
             manifest="manifest.mf"
@@ -63,7 +64,6 @@ Microsystems, Inc. All Rights Reserved.
     <zip zipfile="xtest-pes-distribution.zip">
      	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
      	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
-        <zipfileset dir="${ant.home}" includes="lib/ant.jar"/>
      </zip>
   </target>
   
