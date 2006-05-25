@@ -256,7 +256,42 @@ public class DbStorage {
     void storeUnitTestCase(UnitTestCase test, long testSuite_id) throws SQLException, IntrospectionException {
         test.setUnitTestSuite_id(testSuite_id);
         PESLogger.logger.finest("Unit Test Case: "+test.getName());
-        utils.insertBean(test);
+        // This was used when there was only single UnitTestCase table.
+        //utils.insertBean(test);
+        
+        // Now we have UnitTestCase_def and UnitTestCase_tbl tables
+        
+        // try to find classname and name pair in UnitTestCase_def table
+        Object unitTestCase_def_id = utils.queryFirst("UnitTestCase_def", "id",
+                        new String[] {"classname", "name"},
+                        new String[] {test.getClassName(), test.getName()});
+        if(unitTestCase_def_id == null) {
+            // not found in UnitTestCase_def => insert a new record into UnitTestCase_def
+            PESLogger.logger.finest("Inserting "+test.getClassName()+", "+test.getName()+" into UnitTestCase_def");
+            unitTestCase_def_id = utils.insertAutoIncrement("UnitTestCase_def", "id", 
+                        new String[] {"classname", "name"},
+                        new String[] {test.getClassName(), test.getName()});
+        }
+        PESLogger.logger.finest("Inserting into UnitTestCase_tbl. unitTestCase_def_id="+unitTestCase_def_id);
+        // insert into UnitTestCase_tbl with reference to UnitTestCase_def
+        utils.insert("UnitTestCase_tbl", 
+                        new String[] {
+                            "UnitTestCase_def_id",
+                            "result", 
+                            "message",
+                            "failreason",
+                            "time",
+                            "UnitTestSuite_id"
+                        },
+                        new Object[] {
+                            unitTestCase_def_id, 
+                            test.getResult(), 
+                            test.getMessage(), 
+                            test.getFailReason(),
+                            new Long(test.getTime()), 
+                            new Long(test.getUnitTestSuite_id())
+                        }
+        );
     }
     
     // is this correct -> shoudn't we agreed in term just plain 'data'
