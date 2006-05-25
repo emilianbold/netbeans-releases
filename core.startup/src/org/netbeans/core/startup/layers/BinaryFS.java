@@ -13,7 +13,9 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,6 +82,11 @@ public class BinaryFS extends FileSystem {
     
     /** Creates a new instance of BinaryFS */
     public BinaryFS(String binaryFile) throws IOException {
+        try {
+            setSystemName("BinaryFS" + binaryFile.replace('/', '-').replace(File.separatorChar, '-')); // NOI18N
+        } catch (PropertyVetoException ex) {
+            throw (IOException)new IOException().initCause(ex);
+        }
         this.binaryFile = binaryFile;
         RandomAccessFile file = new RandomAccessFile(binaryFile, "r"); // NOI18N
         long len = file.length();

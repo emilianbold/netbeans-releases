@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.Arrays;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.AttributesTestHidden;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystemFactoryHid;
@@ -39,6 +40,7 @@ public class BinaryFSTest extends FileSystemFactoryHid {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid.class);
+        suite.addTestSuite(AttributesTestHidden.class);
          
         return new BinaryFSTest(suite);
     }

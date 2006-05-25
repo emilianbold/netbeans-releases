@@ -163,7 +163,7 @@ public class NbProblemDisplayerTest extends NbTestCase {
 
         Locale.setDefault(Locale.US);
 
-        if (msg.toUpperCase().indexOf(" 3 ") == -1) {
+        if (msg.toUpperCase().indexOf("3 FURTHER") == -1) {
             fail("There should be note about 3 missing modules: " + msg);
         }
         if (msg.toUpperCase().indexOf("DEP3") >= 0) {
