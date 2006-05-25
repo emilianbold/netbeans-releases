@@ -392,7 +392,6 @@ public abstract class URLMapper {
                 }
 
                 try {
-                    // XXX fo.getPath() needs to be escaped                                        
                     String toReplace = "__EXCLAMATION_REPLACEMENT__";//NOI18N
                     retURL = new URL(
                             "jar:" + new File(f,toReplace + fo.getPath()).toURI().toString().replaceFirst("/"+toReplace,"!/") + // NOI18N
