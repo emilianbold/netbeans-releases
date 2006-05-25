@@ -451,7 +451,7 @@ class OutWriter extends PrintWriter {
                     }
                 }
                 data = sb.toString().toCharArray();
-                len = len + (cnt * 4);
+                len = len + (cnt * 7);
             }
             
             int count = off;
