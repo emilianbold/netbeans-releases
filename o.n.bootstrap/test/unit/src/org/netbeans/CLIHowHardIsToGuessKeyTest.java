@@ -137,10 +137,11 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
     }
     static InetAddress localHostAddress () throws Exception {
         java.net.NetworkInterface net = java.net.NetworkInterface.getByName ("lo");
-        if (net == null || !net.getInetAddresses ().hasMoreElements ()) {
-            return InetAddress.getLocalHost (); 
-        } else {
-            return (InetAddress)net.getInetAddresses ().nextElement ();
+        if (net == null || !net.getInetAddresses().hasMoreElements()) {
+            return InetAddress.getLocalHost();
+        }
+        else {
+            return net.getInetAddresses().nextElement();
         }
     }
 }

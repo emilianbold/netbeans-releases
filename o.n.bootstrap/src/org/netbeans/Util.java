@@ -366,17 +366,21 @@ public abstract class Util {
             Dependency[] dependencies = m1.getDependenciesArray();
             for (int i = 0; i < dependencies.length; i++) {
                 Dependency dep = dependencies[i];
+
                 if (dep.getType() == Dependency.TYPE_REQUIRES) {
                     List<Module> providers = providersOf.get(dep.getName());
+
                     if (providers != null) {
                         if (l == null) {
                             l = new LinkedList<Module>();
                         }
                         l.addAll(providers);
                     }
-                } else if (dep.getType() == Dependency.TYPE_MODULE) {
-                    String cnb = (String)parseCodeName(dep.getName())[0];
-                    Module m2 = (Module)modulesByName.get(cnb);
+                }
+                else if (dep.getType() == Dependency.TYPE_MODULE) {
+                    String cnb = (String) parseCodeName(dep.getName())[0];
+                    Module m2 = modulesByName.get(cnb);
+
                     if (m2 != null && modulesSet.contains(m2)) {
                         if (l == null) {
                             l = new LinkedList<Module>();
@@ -576,9 +580,11 @@ public abstract class Util {
 	@SuppressWarnings("unchecked")
         public <T> Lookup.Result<T> lookup(Lookup.Template<T> t) {
             Class<T> clazz = t.getType();
-            if (clazz == Module.class || clazz == ModuleInfo.class || clazz == Object.class || clazz == null) {
-                return (Lookup.Result<T>)(Object)new ModuleResult((Lookup.Template<Module>)t);
-            } else {
+            if (clazz == Module.class || clazz == ModuleInfo.class ||
+                clazz == Object.class || clazz == null) {
+                return (Lookup.Result<T>)(Object) new ModuleResult((Lookup.Template<Module>) t);
+            }
+            else {
                 return Lookup.EMPTY.lookup(t);
             }
         }

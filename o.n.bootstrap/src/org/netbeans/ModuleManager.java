@@ -113,7 +113,7 @@ public final class ModuleManager {
         classLoader = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {installer.getClass ().getClassLoader()}, Collections.<Module>emptySet());
         updateContextClassLoaders(classLoader, true);
         
-        moduleFactory = (ModuleFactory)Lookup.getDefault().lookup(ModuleFactory.class);
+        moduleFactory = Lookup.getDefault().lookup(ModuleFactory.class);
         if (moduleFactory == null) {
             moduleFactory = new ModuleFactory();
         }
@@ -271,7 +271,7 @@ public final class ModuleManager {
      * Returns null if there is no such managed module.
      */
     public final Module get(String codeNameBase) {
-        return (Module)modulesByName.get(codeNameBase);
+        return modulesByName.get(codeNameBase);
     }
     
     /**
@@ -394,7 +394,7 @@ public final class ModuleManager {
             debugme.append("SystemClassLoader["); // NOI18N
             Iterator it = files.iterator();
             while (it.hasNext()) {
-                Object o = (Object)it.next();
+                Object o = it.next();
                 String s;
                 if (o instanceof File) {
                     s = ((File)o).getAbsolutePath();

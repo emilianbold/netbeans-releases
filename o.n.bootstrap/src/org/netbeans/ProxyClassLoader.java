@@ -104,7 +104,7 @@ public class ProxyClassLoader extends ClassLoader {
             if (nueparents[i] == null) throw new IllegalArgumentException("null parent"); // NOI18N
         }
         ClassLoader[] resParents = null;
-        ModuleFactory moduleFactory = (ModuleFactory)Lookup.getDefault().lookup(ModuleFactory.class);
+        ModuleFactory moduleFactory = Lookup.getDefault().lookup(ModuleFactory.class);
         if (moduleFactory != null && moduleFactory.removeBaseClassLoader()) {
             // this hack is here to prevent having the application classloader
             // as parent to all module classloaders.
@@ -228,7 +228,7 @@ public class ProxyClassLoader extends ClassLoader {
             return findResource(name);
         }
         
-        ClassLoader owner = (ClassLoader)domainsByPackage.get(pkg);
+        ClassLoader owner = domainsByPackage.get(pkg);
 
         if (owner != null) { // known package
             // Note that shouldDelegateResource should already be true for this!
@@ -351,7 +351,7 @@ public class ProxyClassLoader extends ClassLoader {
      */
     protected Package getPackageFast(String name, String sname, boolean recurse) {
         synchronized (packages) {
-            Package pkg = (Package)packages.get(name);
+            Package pkg = packages.get(name);
             if (pkg != null) {
                 return pkg;
             }
@@ -519,7 +519,7 @@ public class ProxyClassLoader extends ClassLoader {
 	Class c = findLoadedClass(name);
 	if(c != null) return c;
         
-        final ClassLoader owner = isSpecialResource(pkg) ? null : (ClassLoader)domainsByPackage.get(pkg);
+        final ClassLoader owner = isSpecialResource(pkg) ? null : domainsByPackage.get(pkg);
         if (owner == this) {
             return simpleFindClass(name, fileName, pkg);
         }

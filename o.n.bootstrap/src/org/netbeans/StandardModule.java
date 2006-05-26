@@ -589,16 +589,20 @@ final class StandardModule extends Module {
         }
         }
         if (localeExtensions != null) {
-        for (it = localeExtensions.iterator(); it.hasNext(); ) {
-            File act = (File)it.next();
-            classp.add(act.isDirectory() ? (Object)act : new JarFile(act, false));
-        }
+            for (it = localeExtensions.iterator(); it.hasNext();) {
+                File act = (File) it.next();
+
+                classp.add(act.isDirectory() ? act
+                                             : new JarFile(act, false));
+            }
         }
         if (plainExtensions != null) {
-        for( it = plainExtensions.iterator(); it.hasNext(); ) {
-            File act = (File)it.next();
-            classp.add(act.isDirectory() ? (Object)act : new JarFile(act, false));
-        }
+            for (it = plainExtensions.iterator(); it.hasNext();) {
+                File act = (File) it.next();
+
+                classp.add(act.isDirectory() ? act
+                                             : new JarFile(act, false));
+            }
         }
         
         // #27853:
