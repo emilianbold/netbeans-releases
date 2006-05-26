@@ -31,33 +31,33 @@ import org.openide.util.WeakListeners;
 public class ProxyClassPathImplementation implements ClassPathImplementation {
 
     private ClassPathImplementation[] classPaths;
-    private List resourcesCache;
-    private ArrayList listeners;
+    private List<PathResourceImplementation> resourcesCache;
+    private ArrayList<PropertyChangeListener> listeners;
     private PropertyChangeListener classPathsListener;
 
     public ProxyClassPathImplementation (ClassPathImplementation[] classPaths) {
         if (classPaths == null)
             throw new IllegalArgumentException ();
-        List impls = new ArrayList ();
+        List<ClassPathImplementation> impls = new ArrayList<ClassPathImplementation> ();
         classPathsListener = new DelegatesListener ();
-        for (int i=0; i< classPaths.length; i++) {
-            if (classPaths[i] == null)
+        for (ClassPathImplementation cpImpl : classPaths) {
+            if (cpImpl == null)
                 continue;
-            classPaths[i].addPropertyChangeListener (WeakListeners.propertyChange(classPathsListener,classPaths[i]));
-            impls.add (classPaths[i]);
+            cpImpl.addPropertyChangeListener (WeakListeners.propertyChange(classPathsListener,cpImpl));
+            impls.add (cpImpl);
         }
-        this.classPaths = (ClassPathImplementation[]) impls.toArray(new ClassPathImplementation[impls.size()]);
+        this.classPaths = impls.toArray(new ClassPathImplementation[impls.size()]);
     }
 
 
 
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
+    public synchronized List <? extends PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
-            ArrayList result = new ArrayList (classPaths.length*10);
-            for (int i = 0; i < classPaths.length; i++) {
-                List/*<? extends PathResourceImplementation>*/ subPath = classPaths[i].getResources();
+            ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> (classPaths.length*10);
+            for (ClassPathImplementation cpImpl : classPaths) {
+                List<? extends PathResourceImplementation> subPath = cpImpl.getResources();
                 assert subPath != null : "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: " 
-                       + classPaths[i].getClass().toString() + " ClassPathImplementation: " + classPaths[i].toString();
+                       + cpImpl.getClass().toString() + " ClassPathImplementation: " + cpImpl.toString();
                 result.addAll (subPath);
             }
             resourcesCache = Collections.unmodifiableList (result);
@@ -67,7 +67,7 @@ public class ProxyClassPathImplementation implements ClassPathImplementation {
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         if (this.listeners == null)
-            this.listeners = new ArrayList ();
+            this.listeners = new ArrayList<PropertyChangeListener> ();
         this.listeners.add (listener);
     }
 
@@ -78,9 +78,9 @@ public class ProxyClassPathImplementation implements ClassPathImplementation {
     }
     
     public String toString () {
-        StringBuffer builder = new StringBuffer("[");   //NOI18N
-        for (int i = 0; i< this.classPaths.length; i++) {
-            builder.append (classPaths[i].toString());
+        StringBuilder builder = new StringBuilder("[");   //NOI18N
+        for (ClassPathImplementation cpImpl : this.classPaths) {
+            builder.append (cpImpl.toString());
             builder.append(", ");   //NOI18N
         }
         builder.append ("]");   //NOI18N
@@ -91,16 +91,16 @@ public class ProxyClassPathImplementation implements ClassPathImplementation {
     private class DelegatesListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
-            Iterator it = null;
+            PropertyChangeListener[] _listeners;
             synchronized (ProxyClassPathImplementation.this) {
                 ProxyClassPathImplementation.this.resourcesCache = null;    //Clean the cache
                 if (ProxyClassPathImplementation.this.listeners == null)
                     return;
-                it = ((ArrayList)ProxyClassPathImplementation.this.listeners.clone()).iterator();
+                _listeners = ProxyClassPathImplementation.this.listeners.toArray(new PropertyChangeListener[ProxyClassPathImplementation.this.listeners.size()]);
             }
             PropertyChangeEvent event = new PropertyChangeEvent (ProxyClassPathImplementation.this, evt.getPropertyName(),null,null);
-            while (it.hasNext()) {
-                ((PropertyChangeListener)it.next()).propertyChange (event);
+            for (PropertyChangeListener l : _listeners) {
+                l.propertyChange (event);
             }
         }
     }

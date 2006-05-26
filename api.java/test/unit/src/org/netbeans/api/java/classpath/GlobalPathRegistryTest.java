@@ -13,9 +13,7 @@
 
 package org.netbeans.api.java.classpath;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.InterruptedIOException;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +27,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -73,26 +70,26 @@ public class GlobalPathRegistryTest extends NbTestCase {
     }
     
     public void testBasicOperation() throws Exception {
-        assertEquals("initially no paths of type a", Collections.EMPTY_SET, r.getPaths("a"));
+        assertEquals("initially no paths of type a", Collections.<ClassPath>emptySet(), r.getPaths("a"));
         r.register("a", new ClassPath[] {cp1, cp2});
-        assertEquals("added some paths of type a", new HashSet(Arrays.asList(new ClassPath[] {cp1, cp2})), r.getPaths("a"));
+        assertEquals("added some paths of type a", new HashSet<ClassPath>(Arrays.asList(new ClassPath[] {cp1, cp2})), r.getPaths("a"));
         r.register("a", new ClassPath[0]);
-        assertEquals("did not add any new paths to a", new HashSet(Arrays.asList(new ClassPath[] {cp1, cp2})), r.getPaths("a"));
-        assertEquals("initially no paths of type b", Collections.EMPTY_SET, r.getPaths("b"));
+        assertEquals("did not add any new paths to a", new HashSet<ClassPath>(Arrays.asList(new ClassPath[] {cp1, cp2})), r.getPaths("a"));
+        assertEquals("initially no paths of type b", Collections.<ClassPath>emptySet(), r.getPaths("b"));
         r.register("b", new ClassPath[] {cp3, cp4, cp5});
-        assertEquals("added some paths of type b", new HashSet(Arrays.asList(new ClassPath[] {cp3, cp4, cp5})), r.getPaths("b"));
+        assertEquals("added some paths of type b", new HashSet<ClassPath>(Arrays.asList(new ClassPath[] {cp3, cp4, cp5})), r.getPaths("b"));
         r.unregister("a", new ClassPath[] {cp1});
-        assertEquals("only one path left of type a", Collections.singleton(cp2), r.getPaths("a"));
+        assertEquals("only one path left of type a", Collections.<ClassPath>singleton(cp2), r.getPaths("a"));
         r.register("a", new ClassPath[] {cp2, cp3});
-        assertEquals("only one new path added of type a", new HashSet(Arrays.asList(new ClassPath[] {cp2, cp3})), r.getPaths("a"));
+        assertEquals("only one new path added of type a", new HashSet<ClassPath>(Arrays.asList(new ClassPath[] {cp2, cp3})), r.getPaths("a"));
         r.unregister("a", new ClassPath[] {cp2});
-        assertEquals("still have extra cp2 in a", new HashSet(Arrays.asList(new ClassPath[] {cp2, cp3})), r.getPaths("a"));
+        assertEquals("still have extra cp2 in a", new HashSet<ClassPath>(Arrays.asList(new ClassPath[] {cp2, cp3})), r.getPaths("a"));
         r.unregister("a", new ClassPath[] {cp2});
-        assertEquals("last cp2 removed from a", Collections.singleton(cp3), r.getPaths("a"));
+        assertEquals("last cp2 removed from a", Collections.<ClassPath>singleton(cp3), r.getPaths("a"));
         r.unregister("a", new ClassPath[] {cp3});
-        assertEquals("a now empty", Collections.EMPTY_SET, r.getPaths("a"));
+        assertEquals("a now empty", Collections.<ClassPath>emptySet(), r.getPaths("a"));
         r.unregister("a", new ClassPath[0]);
-        assertEquals("a still empty", Collections.EMPTY_SET, r.getPaths("a"));
+        assertEquals("a still empty", Collections.<ClassPath>emptySet(), r.getPaths("a"));
         try {
             r.unregister("a", new ClassPath[] {cp3});
             fail("should not have been permitted to unregister a nonexistent entry");
@@ -102,7 +99,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
     }
     
     public void testListening() throws Exception {
-        assertEquals("initially no paths of type b", Collections.EMPTY_SET, r.getPaths("b"));
+        assertEquals("initially no paths of type b", Collections.<ClassPath>emptySet(), r.getPaths("b"));
         L l = new L();
         r.addGlobalPathRegistryListener(l);
         r.register("b", new ClassPath[] {cp1, cp2});
@@ -111,12 +108,12 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertTrue("was an addition", l.added());
         assertEquals("right registry", r, e.getRegistry());
         assertEquals("right ID", "b", e.getId());
-        assertEquals("right changed paths", new HashSet(Arrays.asList(new ClassPath[] {cp1, cp2})), e.getChangedPaths());
+        assertEquals("right changed paths", new HashSet<ClassPath>(Arrays.asList(new ClassPath[] {cp1, cp2})), e.getChangedPaths());
         r.register("b", new ClassPath[] {cp2, cp3});
         e = l.event();
         assertNotNull("got an event", e);
         assertTrue("was an addition", l.added());
-        assertEquals("right changed paths", Collections.singleton(cp3), e.getChangedPaths());
+        assertEquals("right changed paths", Collections.<ClassPath>singleton(cp3), e.getChangedPaths());
         r.register("b", new ClassPath[] {cp3});
         e = l.event();
         assertNull("no event for adding a dupe", e);
@@ -124,7 +121,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         e = l.event();
         assertNotNull("got an event", e);
         assertFalse("was a removal", l.added());
-        assertEquals("right changed paths", new HashSet(Arrays.asList(new ClassPath[] {cp1, cp3})), e.getChangedPaths());
+        assertEquals("right changed paths", new HashSet<ClassPath>(Arrays.asList(new ClassPath[] {cp1, cp3})), e.getChangedPaths());
         r.unregister("b", new ClassPath[] {cp2});
         e = l.event();
         assertNull("no event for removing an extra", e);
@@ -132,7 +129,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         e = l.event();
         assertNotNull("now an event for removing the last copy", e);
         assertFalse("was a removal", l.added());
-        assertEquals("right changed paths", Collections.singleton(cp2), e.getChangedPaths());
+        assertEquals("right changed paths", Collections.<ClassPath>singleton(cp2), e.getChangedPaths());
     }
     
     
@@ -145,7 +142,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertEquals("cpChangingImpl is empty", 0, cpChanging.getRoots().length);
         r.register(ClassPath.SOURCE, new ClassPath[] {cp1, cp2, cpChanging});
         r.register (ClassPath.COMPILE, new ClassPath[] {cp3});
-        Set result = r.getSourceRoots();
+        Set<FileObject> result = r.getSourceRoots();
         assertEquals ("Wrong number of source roots",result.size(),cp1.getRoots().length + cp2.getRoots().length);
         assertTrue ("Missing roots from cp1",result.containsAll (Arrays.asList(cp1.getRoots())));
         assertTrue ("Missing roots from cp2",result.containsAll (Arrays.asList(cp2.getRoots())));                
@@ -222,7 +219,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
     
     private static class SFBQImpl implements SourceForBinaryQueryImplementation {
         
-        private Map pairs = new HashMap ();
+        private Map<URL,SourceForBinaryQuery.Result> pairs = new HashMap<URL,SourceForBinaryQuery.Result> ();
         
         void addPair (URL binaryRoot, FileObject[] sourceRoots) {
             assert binaryRoot != null && sourceRoots != null;
@@ -245,7 +242,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         private static class Result implements SourceForBinaryQuery.Result {
             
             private FileObject[] sources;                        
-            private ArrayList listeners = new ArrayList ();
+            private ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener> ();
             
             public Result (FileObject[] sources) {
                 this.sources = sources;

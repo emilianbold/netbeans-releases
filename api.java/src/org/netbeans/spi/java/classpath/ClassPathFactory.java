@@ -14,7 +14,6 @@
 package org.netbeans.spi.java.classpath;
 
 import java.net.URL;
-import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
 import org.openide.filesystems.FileUtil;
@@ -44,14 +43,13 @@ public final class ClassPathFactory {
     
     
     private static boolean checkEntries (ClassPathImplementation spiClasspath) {
-        for (Iterator it = spiClasspath.getResources().iterator(); it.hasNext (); ) {
-            PathResourceImplementation impl = (PathResourceImplementation) it.next ();
+        for (PathResourceImplementation impl : spiClasspath.getResources()) {
             URL[] roots = impl.getRoots();
-            for (int i=0; i< roots.length; i++) {
-                if (FileUtil.isArchiveFile(roots[i])) {
+            for (URL root : roots) {
+                if (FileUtil.isArchiveFile(root)) {
                     return false;
                 }
-                if (!roots[i].toExternalForm().endsWith("/")) {
+                if (root.toExternalForm().endsWith("/")) {  // NOI18N
                     return false;
                 }
             }

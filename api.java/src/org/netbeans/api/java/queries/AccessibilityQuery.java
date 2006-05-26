@@ -12,7 +12,6 @@
  */
 package org.netbeans.api.java.queries;
 
-import java.util.Iterator;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileObject;
@@ -39,8 +38,8 @@ import org.openide.filesystems.FileObject;
  */
 public class AccessibilityQuery {
     
-    private static final Lookup.Result/*<AccessibilityQueryImplementation>*/ implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(AccessibilityQueryImplementation.class));
+    private static final Lookup.Result<? extends AccessibilityQueryImplementation> implementations =
+        Lookup.getDefault().lookupResult(AccessibilityQueryImplementation.class);
 
     private AccessibilityQuery() {}
 
@@ -60,9 +59,7 @@ public class AccessibilityQuery {
         if (!pkg.isFolder()) {
             throw new IllegalArgumentException("Not a folder: " + pkg); // NOI18N
         }
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            AccessibilityQueryImplementation aqi = (AccessibilityQueryImplementation)it.next();
+        for ( AccessibilityQueryImplementation aqi : implementations.allInstances()) {
             Boolean b = aqi.isPubliclyAccessible(pkg);
             if (b != null) {
                 return b;

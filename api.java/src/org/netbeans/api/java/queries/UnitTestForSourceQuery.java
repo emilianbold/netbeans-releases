@@ -14,10 +14,6 @@
 package org.netbeans.api.java.queries;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -33,10 +29,11 @@ import org.openide.util.Lookup;
  */
 public class UnitTestForSourceQuery {
     
-    private static final Lookup.Result/*<UnitTestForSourceQueryImplementation>*/ implementations =
-        Lookup.getDefault().lookup (new Lookup.Template (UnitTestForSourceQueryImplementation.class));
-    private static final Lookup.Result/*<MultipleRootsUnitTestForSourceQueryImplementation>*/ mrImplementations = 
-        Lookup.getDefault().lookup (new Lookup.Template (MultipleRootsUnitTestForSourceQueryImplementation.class));
+    @SuppressWarnings ("deprecation")   // NOI18N
+    private static final Lookup.Result<? extends org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation> implementations =
+        Lookup.getDefault().lookupResult(org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation.class);
+    private static final Lookup.Result<? extends MultipleRootsUnitTestForSourceQueryImplementation> mrImplementations = 
+        Lookup.getDefault().lookupResult(MultipleRootsUnitTestForSourceQueryImplementation.class);
 
     private UnitTestForSourceQuery() {
     }
@@ -65,22 +62,18 @@ public class UnitTestForSourceQuery {
      *     array (but not null) when the mapping from source to unit tests is not known.
      * @since org.netbeans.api.java/1 1.7
      */
+    @SuppressWarnings ("deprecation")   // NOI18N
     public static URL[] findUnitTests(FileObject source) {
         if (source == null) {
             throw new IllegalArgumentException("Parameter source cannot be null"); // NOI18N
         }
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            MultipleRootsUnitTestForSourceQueryImplementation query =
-                    (MultipleRootsUnitTestForSourceQueryImplementation)it.next();
+        for (MultipleRootsUnitTestForSourceQueryImplementation query : mrImplementations.allInstances()) {            
             URL[] urls = query.findUnitTests(source);
             if (urls != null) {
                 return urls;
             }
         }
-        it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            UnitTestForSourceQueryImplementation query = (UnitTestForSourceQueryImplementation)it.next();
+        for (org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation query : implementations.allInstances()) {
             URL u = query.findUnitTest(source);
             if (u != null) {
                 return new URL[] {u};
@@ -110,23 +103,18 @@ public class UnitTestForSourceQuery {
      *     when the mapping from unit test to sources is not known.
      * @since org.netbeans.api.java/1 1.7
      */
+    @SuppressWarnings ("deprecation")   // NOI18N
     public static URL[] findSources (FileObject unitTest) {
         if (unitTest == null) {
             throw new IllegalArgumentException("Parameter unitTest cannot be null"); // NOI18N
         }
-        Iterator it = mrImplementations.allInstances().iterator();
-        while (it.hasNext()) {
-            MultipleRootsUnitTestForSourceQueryImplementation query =
-                    (MultipleRootsUnitTestForSourceQueryImplementation)it.next();
+        for (MultipleRootsUnitTestForSourceQueryImplementation query : mrImplementations.allInstances()) {
             URL[] urls = query.findSources(unitTest);
             if (urls != null) {
                 return urls;
             }
         }
-        it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            UnitTestForSourceQueryImplementation query =
-                    (UnitTestForSourceQueryImplementation)it.next();
+        for (org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation query : implementations.allInstances()) {            
             URL u = query.findSource(unitTest);
             if (u != null) {
                 return new URL[] {u};

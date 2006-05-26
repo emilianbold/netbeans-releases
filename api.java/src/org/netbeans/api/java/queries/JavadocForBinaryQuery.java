@@ -15,7 +15,6 @@ package org.netbeans.api.java.queries;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Iterator;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.ErrorManager;
@@ -31,8 +30,8 @@ public class JavadocForBinaryQuery {
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(JavadocForBinaryQuery.class.getName());
     
-    private static final Lookup.Result/*<JavadocForBinaryQueryImplementation>*/ implementations =
-        Lookup.getDefault().lookup (new Lookup.Template (JavadocForBinaryQueryImplementation.class));
+    private static final Lookup.Result<? extends JavadocForBinaryQueryImplementation> implementations =
+        Lookup.getDefault().lookupResult(JavadocForBinaryQueryImplementation.class);
 
     private JavadocForBinaryQuery () {
     }
@@ -54,9 +53,7 @@ public class JavadocForBinaryQuery {
         }
         boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
         if (log) ERR.log("JFBQ.findJavadoc: " + binary);
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            JavadocForBinaryQueryImplementation impl = (JavadocForBinaryQueryImplementation) it.next();
+        for  (JavadocForBinaryQueryImplementation impl : implementations.allInstances()) {
             Result r = impl.findJavadoc(binary);
             if (r != null) {
                 if (log) ERR.log("  got result " + Arrays.asList(r.getRoots()) + " from " + impl);

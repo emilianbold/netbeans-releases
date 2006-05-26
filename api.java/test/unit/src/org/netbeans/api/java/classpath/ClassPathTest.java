@@ -180,21 +180,21 @@ public class ClassPathTest extends NbTestCase {
 	ClassPath cp = ClassPathFactory.createClassPath (impl);
         impl.addResource(root_1.toURI().toURL());
         cp.addPropertyChangeListener (impl);
-        Set events = new HashSet ();
+        Set<String> events = new HashSet<String> ();
         events.add(ClassPath.PROP_ENTRIES);
         events.add(ClassPath.PROP_ROOTS);
         impl.expectEvents (events);
         impl.addResource (root_2.toURI().toURL());
         impl.assertEvents();
         assertTrue (cp.getRoots().length==2);
-        events = new HashSet ();
+        events = new HashSet<String> ();
         events.add (ClassPath.PROP_ENTRIES);
         events.add (ClassPath.PROP_ROOTS);
         impl.expectEvents (events);
         impl.removeResource (root_2.toURI().toURL());
         impl.assertEvents();
         assertTrue (cp.getRoots().length==1);
-        events = new HashSet ();
+        events = new HashSet<String> ();
         events.add (ClassPath.PROP_ROOTS);
         impl.expectEvents (events);
         FileObject fo = cp.getRoots()[0];
@@ -202,7 +202,7 @@ public class ClassPathTest extends NbTestCase {
         fo.delete();
         impl.assertEvents();
         assertTrue (cp.getRoots().length==0);
-        events = new HashSet ();
+        events = new HashSet<String> ();
         events.add (ClassPath.PROP_ROOTS);
         impl.expectEvents (events);
         parentFolder.createFolder("root_1");
@@ -211,7 +211,7 @@ public class ClassPathTest extends NbTestCase {
         FileObject archiveFile = FileUtil.toFileObject(root_3);
         impl.addResource(FileUtil.getArchiveRoot(archiveFile.getURL()));
         assertEquals (cp.getRoots().length,2);
-        events = new HashSet ();
+        events = new HashSet<String> ();
         events.add (ClassPath.PROP_ROOTS);
         impl.expectEvents (events);
         root_3.delete();
@@ -250,9 +250,9 @@ public class ClassPathTest extends NbTestCase {
     
     static final class TestClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
-        private PropertyChangeSupport support = new PropertyChangeSupport (this);
-        private List resources = new ArrayList ();
-        private Set unknownEvents = new HashSet ();
+        private final PropertyChangeSupport support = new PropertyChangeSupport (this);
+        private final List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation> ();
+        private final Set<String> unknownEvents = new HashSet<String> ();
         private Set events;
 
         public synchronized void addResource (URL resource) {
@@ -272,7 +272,7 @@ public class ClassPathTest extends NbTestCase {
             }
         }
 
-        public synchronized List /*<PathResourceImplementation>*/ getResources() {
+        public synchronized List<? extends PathResourceImplementation> getResources() {
             return this.resources;
         }
 
@@ -294,7 +294,7 @@ public class ClassPathTest extends NbTestCase {
             }
         }
 
-        void expectEvents (Set events) {
+        void expectEvents (Set<String> events) {
             this.unknownEvents.clear();
             this.events = events;
         }

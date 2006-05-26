@@ -15,7 +15,6 @@ package org.netbeans.api.java.queries;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Iterator;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.ErrorManager;
@@ -38,8 +37,8 @@ public class SourceForBinaryQuery {
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(SourceForBinaryQuery.class.getName());
     
-    private static final Lookup.Result/*<SourceForBinaryQueryImplementation>*/ implementations =
-        Lookup.getDefault().lookup (new Lookup.Template (SourceForBinaryQueryImplementation.class));
+    private static final Lookup.Result<? extends SourceForBinaryQueryImplementation> implementations =
+        Lookup.getDefault().lookupResult (SourceForBinaryQueryImplementation.class);
 
     private SourceForBinaryQuery () {
     }
@@ -59,8 +58,7 @@ public class SourceForBinaryQuery {
         }
         boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
         if (log) ERR.log("SFBQ.findSourceRoots: " + binaryRoot);
-        for (Iterator it = implementations.allInstances().iterator(); it.hasNext();) {
-            SourceForBinaryQueryImplementation impl = (SourceForBinaryQueryImplementation) it.next();
+        for (SourceForBinaryQueryImplementation impl : implementations.allInstances()) {
             Result result = impl.findSourceRoots(binaryRoot);
             if (result != null) {
                 if (log) ERR.log("  got result " + Arrays.asList(result.getRoots()) + " from " + impl);

@@ -168,14 +168,14 @@ public final class ClassPath {
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ClassPath.class.getName());
     
-    private static final Lookup.Result/*<ClassPathProvider>*/ implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(ClassPathProvider.class));
+    private static final Lookup.Result<? extends ClassPathProvider> implementations =
+        Lookup.getDefault().lookupResult(ClassPathProvider.class);
 
     private ClassPathImplementation impl;
     private FileObject[] rootsCache;
     private PropertyChangeListener pListener;
     private RootsListener rootsListener;
-    private List entriesCache;
+    private List<ClassPath.Entry> entriesCache;
 
     /**
      * Retrieves valid roots of ClassPath, in the proper order.
@@ -187,10 +187,9 @@ public final class ClassPath {
      */
     public synchronized FileObject[]  getRoots() {
         if (rootsCache == null || rootsListener == null) {
-            List entries = this.entries();
-            List l = new ArrayList ();
-            for (Iterator it = entries.iterator(); it.hasNext();) {
-                Entry entry = (Entry) it.next();
+            List<ClassPath.Entry> entries = this.entries();
+            List<FileObject> l = new ArrayList<FileObject> ();
+            for (Entry entry : entries) {
                 RootsListener rootsListener = this.getRootsListener();
                 if (rootsListener != null) {
                     rootsListener.addRoot (entry.getURL());
@@ -199,7 +198,7 @@ public final class ClassPath {
                 if (fo != null)
                     l.add (fo);
             }
-            this.rootsCache = (FileObject[]) l.toArray (new FileObject[l.size()]);
+            this.rootsCache = l.toArray (new FileObject[l.size()]);
         }
         return this.rootsCache;        
     }
@@ -211,27 +210,26 @@ public final class ClassPath {
      * instance. Clients must assume that the returned value is immutable.
      * @return list of definition entries (Entry instances)
      */
-    public  List entries() {
+    public  List<ClassPath.Entry> entries() {
         synchronized (this) {
             if (this.entriesCache != null) {
                 return this.entriesCache;
             }
         }
-        List resources = impl.getResources();
+        List<? extends PathResourceImplementation> resources = impl.getResources();
         synchronized (this) {
             if (this.entriesCache == null) {
                 //The ClassPathImplementation.getResources () should never return
                 // null but it was not explicitly stated in the javadoc
                 if (resources == null) {
-                    this.entriesCache = Collections.EMPTY_LIST;
+                    this.entriesCache = Collections.<ClassPath.Entry>emptyList();
                 }
                 else {
-                    List cache = new ArrayList ();
-                    for (Iterator it = resources.iterator(); it.hasNext();) {
-                        PathResourceImplementation pr = (PathResourceImplementation)it.next();
+                    List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
+                    for (PathResourceImplementation pr : resources) {
                         URL[] roots = pr.getRoots();
-                        for (int i=0; i <roots.length; i++) {
-                            Entry e = new Entry (roots[i]);
+                        for (URL root : roots) {
+                            Entry e = new Entry (root);
                             cache.add (e);
                         }
                     }
@@ -277,9 +275,9 @@ public final class ClassPath {
      * @param resourceName resource name
      * @return list of resources identified by the given name.
      */
-    public final List findAllResources(String resourceName) {
+    public final List<FileObject> findAllResources(String resourceName) {
 	FileObject[] roots = getRoots();
-        List l = new ArrayList(roots.length);
+        List<FileObject> l = new ArrayList<FileObject>(roots.length);
         int[] idx = new int[] { 0 };
         String[] namec = parseResourceName(resourceName);
         while (idx[0] < roots.length) {
@@ -347,7 +345,7 @@ public final class ClassPath {
      */
     public final FileObject findOwnerRoot(FileObject resource) {
 	FileObject[] roots = getRoots();
-        Set/*<FileObject>*/ rootsSet = new HashSet(Arrays.asList(roots));
+        Set<FileObject> rootsSet = new HashSet<FileObject>(Arrays.asList(roots));
         for (FileObject f = resource; f != null; f = f.getParent()) {
             if (rootsSet.contains(f)) {
                 return f;
@@ -439,9 +437,7 @@ public final class ClassPath {
         }
         boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
         if (log) ERR.log("CP.getClassPath: " + f + " of type " + id);
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            ClassPathProvider impl = (ClassPathProvider)it.next();
+        for (ClassPathProvider impl  : implementations.allInstances()) {
             ClassPath cp = impl.findClassPath(f, id);
             if (cp != null) {
                 if (log) ERR.log("  got result " + cp + " from " + impl);
@@ -566,7 +562,7 @@ public final class ClassPath {
      * name, the next one is either the extension or null.
      */
     private static String[] parseResourceName(String name) {
-        Collection parsed = new ArrayList(name.length() / 4);
+        Collection<String> parsed = new ArrayList<String>(name.length() / 4);
         char[] chars = name.toCharArray();
         char ch;
         int pos = 0;
@@ -609,7 +605,7 @@ public final class ClassPath {
             System.err.println("parsed size is not even!!");
             System.err.println("input = " + name);
         }
-        return (String[])parsed.toArray(new String[parsed.size()]);
+        return parsed.toArray(new String[parsed.size()]);
     }
 
     /**
@@ -641,9 +637,9 @@ public final class ClassPath {
         return f;
     }
 
-    private static final Reference EMPTY_REF = new SoftReference(null);
+    private static final Reference<ClassLoader> EMPTY_REF = new SoftReference<ClassLoader>(null);
 
-    private Reference refClassLoader = EMPTY_REF;
+    private Reference<ClassLoader> refClassLoader = EMPTY_REF;
 
     /* package private */synchronized void resetClassLoader(ClassLoader cl) {
         if (refClassLoader.get() == cl)
@@ -663,12 +659,12 @@ public final class ClassPath {
      */
     public final synchronized ClassLoader getClassLoader(boolean cache) {
         // XXX consider adding ClassLoader and/or InputOutput and/or PermissionCollection params
-        Object o = refClassLoader.get();
+        ClassLoader o = refClassLoader.get();
         if (!cache || o == null) {
             o = ClassLoaderSupport.create(this);
-            refClassLoader = new SoftReference(o);
+            refClassLoader = new SoftReference<ClassLoader>(o);
         }
-        return (ClassLoader)o;
+        return o;
     }
 
 
@@ -695,22 +691,21 @@ public final class ClassPath {
     }
 
 
-    private static class RootsListener extends WeakReference implements FileChangeListener, Runnable {
+    private static class RootsListener extends WeakReference<ClassPath> implements FileChangeListener, Runnable {
 
         private boolean initialized;
-        private Set roots;
+        private Set<String> roots;
 
         private RootsListener (ClassPath owner) {
             super (owner, Utilities.activeReferenceQueue());
-            roots = new HashSet ();
+            roots = new HashSet<String> ();
         }
 
         public void addRoot (URL url) {
             if (!isInitialized()) {                
                 FileSystem[] fss = getFileSystems ();
                 if (fss != null && fss.length > 0) {
-                    for (int i = 0; i < fss.length; i++) {
-                        FileSystem fs = fss[i];
+                    for (FileSystem fs : fss) {
                         if (fs != null) {
                             fs.addFileChangeListener (this);
                         }                                        
@@ -744,8 +739,7 @@ public final class ClassPath {
         public void removeAllRoots () {
             this.roots.clear();
             FileSystem[] fss = getFileSystems ();
-            for (int i = 0; i < fss.length; i++) {
-                FileSystem fs = fss[i];
+            for (FileSystem fs : fss) {
                 if (fs != null) {
                     fs.removeFileChangeListener (this);
                 }                
@@ -792,8 +786,7 @@ public final class ClassPath {
         public void run() {
             if (isInitialized()) {
                 FileSystem[] fss = getFileSystems ();
-                for (int i = 0; i < fss.length; i++) {
-                    FileSystem fs = fss[i];
+                for (FileSystem fs : fss) {
                     if (fs != null) {
                         fs.removeFileChangeListener (this);
                     }                    
@@ -867,11 +860,10 @@ public final class ClassPath {
                 return fileSystems;
             }
             File[] roots = File.listRoots();
-            Set allRoots = new LinkedHashSet();
+            Set<FileSystem> allRoots = new LinkedHashSet<FileSystem>();
             assert roots != null && roots.length > 0 : "Could not list file roots"; // NOI18N
             
-            for (int i = 0; i < roots.length; i++) {
-                File root = roots[i];
+            for (File root : roots) {
                 FileObject random = FileUtil.toFileObject(root);
                 if (random == null) continue;
                 

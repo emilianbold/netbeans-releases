@@ -26,17 +26,17 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
 public class SimpleClassPathImplementation implements ClassPathImplementation {
     
-    List entries;
+    List<? extends PathResourceImplementation> entries;
     
     public SimpleClassPathImplementation() {
-        this(new ArrayList());
+        this(new ArrayList<PathResourceImplementation>());
     }
 
-    public SimpleClassPathImplementation(List entries) {
+    public SimpleClassPathImplementation(List<? extends PathResourceImplementation> entries) {
         this.entries = entries;
     }
     
-    public List /*<PathResourceImplementation>*/ getResources() {
+    public List <? extends PathResourceImplementation> getResources() {
         return Collections.unmodifiableList(entries);
     }
 
@@ -49,12 +49,11 @@ public class SimpleClassPathImplementation implements ClassPathImplementation {
     }
     
     public String toString () {
-        StringBuffer builder = new StringBuffer ("SimpleClassPathImplementation["); //NOI18N
-        for (Iterator it = this.entries.iterator(); it.hasNext();) {
-            PathResourceImplementation impl = (PathResourceImplementation) it.next();
+        StringBuilder builder = new StringBuilder ("SimpleClassPathImplementation["); //NOI18N
+        for (PathResourceImplementation impl : this.entries) {
             URL[] roots = impl.getRoots();
-            for (int i=0; i< roots.length; i++) {
-                builder.append (roots[i].toExternalForm());
+            for (URL root : roots) {
+                builder.append (root.toExternalForm());
                 builder.append (", ");  //NOI18N
             }
         }

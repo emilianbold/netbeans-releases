@@ -17,10 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.EventListener;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -91,10 +88,10 @@ public final class GlobalPathRegistry {
     }
     
     private int resetCount;
-    private final Map/*<String,List<ClassPath>>*/ paths = new HashMap();
-    private final List/*<PathRegistryListener>*/ listeners = new ArrayList();
-    private Set/*<FileObject>*/ sourceRoots = null;
-    private Set/*ChangeListener*/ results = new HashSet ();
+    private final Map<String,List<ClassPath>> paths = new HashMap<String,List<ClassPath>>();
+    private final List<GlobalPathRegistryListener> listeners = new ArrayList<GlobalPathRegistryListener>();
+    private Set<FileObject> sourceRoots = null;
+    private Set<SourceForBinaryQuery.Result> results = new HashSet<SourceForBinaryQuery.Result>();
     
     
     private final ChangeListener resultListener = new SFBQListener ();
@@ -121,15 +118,15 @@ public final class GlobalPathRegistry {
      * @param id a classpath type, e.g. {@link ClassPath#SOURCE}
      * @return an immutable set of all registered {@link ClassPath}s of that type (may be empty but not null)
      */
-    public synchronized Set/*<ClassPath>*/ getPaths(String id) {
+    public synchronized Set<ClassPath> getPaths(String id) {
         if (id == null) {
             throw new NullPointerException();
         }
-        List l = (List)paths.get(id);
+        List<ClassPath> l = paths.get(id);
         if (l != null && !l.isEmpty()) {
-            return Collections.unmodifiableSet(new HashSet(l));
+            return Collections.unmodifiableSet(new HashSet<ClassPath>(l));
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.<ClassPath>emptySet();
         }
     }
     
@@ -145,26 +142,26 @@ public final class GlobalPathRegistry {
         GlobalPathRegistryEvent evt = null;
         GlobalPathRegistryListener[] _listeners = null;
         synchronized (this) {
-            List l = (List)this.paths.get(id);
+            List<ClassPath> l = this.paths.get(id);
             if (l == null) {
-                l = new ArrayList();
+                l = new ArrayList<ClassPath>();
                 this.paths.put(id, l);
             }
-            Set/*<ClassPath>*/ added = listeners.isEmpty() ? null : new HashSet();
-            for (int i = 0; i < paths.length; i++) {
-                if (paths[i] == null) {
+            Set<ClassPath> added = listeners.isEmpty() ? null : new HashSet<ClassPath>();
+            for (ClassPath path : paths) {
+                if (path == null) {
                     throw new NullPointerException("Null path encountered in " + Arrays.asList(paths) + " of type " + id); // NOI18N
                 }
-                if (added != null && !added.contains(paths[i]) && !l.contains(paths[i])) {
-                    added.add(paths[i]);
+                if (added != null && !added.contains(path) && !l.contains(path)) {
+                    added.add(path);
                 }
-                if (!l.contains(paths[i])) {
-                    paths[i].addPropertyChangeListener(classpathListener);
+                if (!l.contains(path)) {
+                    path.addPropertyChangeListener(classpathListener);
                 }
-                l.add(paths[i]);
+                l.add(path);
             }
             if (added != null && !added.isEmpty()) {
-                _listeners = (GlobalPathRegistryListener[])listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
+                _listeners = listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
                 evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(added));
             }
             // Invalidate cache for getSourceRoots and findResource:
@@ -172,8 +169,8 @@ public final class GlobalPathRegistry {
         }
         if (_listeners != null) {
             assert evt != null;
-            for (int i = 0; i < _listeners.length; i++) {
-                _listeners[i].pathsAdded(evt);
+            for (GlobalPathRegistryListener listener : _listeners) {
+                listener.pathsAdded(evt);
             }
         }
     }
@@ -191,37 +188,37 @@ public final class GlobalPathRegistry {
         GlobalPathRegistryEvent evt = null;
         GlobalPathRegistryListener[] _listeners = null;
         synchronized (this) {
-            List l = (List)this.paths.get(id);
+            List<ClassPath> l = this.paths.get(id);
             if (l == null) {
-                l = new ArrayList();
+                l = new ArrayList<ClassPath>();
             }
-            List l2 = new ArrayList(l); // in case IAE thrown below
-            Set/*<ClassPath>*/ removed = listeners.isEmpty() ? null : new HashSet();
-            for (int i = 0; i < paths.length; i++) {
-                if (paths[i] == null) {
+            List<ClassPath> l2 = new ArrayList<ClassPath>(l); // in case IAE thrown below
+            Set<ClassPath> removed = listeners.isEmpty() ? null : new HashSet<ClassPath>();
+            for (ClassPath path : paths) {
+                if (path == null) {
                     throw new NullPointerException();
                 }
-                if (!l2.remove(paths[i])) {
-                    throw new IllegalArgumentException("Attempt to remove nonexistent path " + paths[i]); // NOI18N
+                if (!l2.remove(path)) {
+                    throw new IllegalArgumentException("Attempt to remove nonexistent path " + path); // NOI18N
                 }
-                if (removed != null && !removed.contains(paths[i]) && !l2.contains(paths[i])) {
-                    removed.add(paths[i]);
+                if (removed != null && !removed.contains(path) && !l2.contains(path)) {
+                    removed.add(path);
                 }
-                if (!l2.contains(paths[i])) {
-                    paths[i].removePropertyChangeListener(classpathListener);
+                if (!l2.contains(path)) {
+                    path.removePropertyChangeListener(classpathListener);
                 }
             }
             this.paths.put(id, l2);
             if (removed != null && !removed.isEmpty()) {
-                _listeners = (GlobalPathRegistryListener[])listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
+                _listeners = listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
                 evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(removed));
             }
             resetSourceRootsCache ();
         }
         if (_listeners != null) {
             assert evt != null;
-            for (int i = 0; i < _listeners.length; i++) {
-                _listeners[i].pathsRemoved(evt);
+            for (GlobalPathRegistryListener listener : _listeners) {
+                listener.pathsRemoved(evt);
             }
         }
     }
@@ -267,34 +264,28 @@ public final class GlobalPathRegistry {
      * </p>
      * @return an immutable set of <code>FileObject</code> source roots
      */
-    public Set/*<FileObject>*/ getSourceRoots() {        
+    public Set<FileObject> getSourceRoots() {        
         int currentResetCount;
-        Set/*<ClassPath>*/ sourcePaths, compileAndBootPaths;
+        Set<ClassPath> sourcePaths, compileAndBootPaths;
         synchronized (this) {
             if (this.sourceRoots != null) {
                 return this.sourceRoots;
             }            
             currentResetCount = this.resetCount;
             sourcePaths = getPaths(ClassPath.SOURCE);
-            compileAndBootPaths = new LinkedHashSet(getPaths(ClassPath.COMPILE));
+            compileAndBootPaths = new LinkedHashSet<ClassPath>(getPaths(ClassPath.COMPILE));
             compileAndBootPaths.addAll(getPaths(ClassPath.BOOT));
         }
         
-        Set newSourceRoots = new LinkedHashSet();                    
-        Iterator it = sourcePaths.iterator();
-        while (it.hasNext()) {
-            ClassPath sp = (ClassPath)it.next();
+        Set<FileObject> newSourceRoots = new LinkedHashSet<FileObject>();
+        for (ClassPath sp : sourcePaths) {
             newSourceRoots.addAll(Arrays.asList(sp.getRoots()));
         }
         
-        final List newResults = new LinkedList ();
+        final List<SourceForBinaryQuery.Result> newResults = new LinkedList<SourceForBinaryQuery.Result> ();
         final ChangeListener tmpResultListener = new SFBQListener ();
-        it = compileAndBootPaths.iterator();
-        while (it.hasNext()) {
-            ClassPath cp = (ClassPath)it.next();
-            Iterator it2 = cp.entries().iterator();
-            while (it2.hasNext()) {
-                ClassPath.Entry entry = (ClassPath.Entry)it2.next();
+        for (ClassPath cp : compileAndBootPaths) {
+            for (ClassPath.Entry entry : cp.entries()) {
                 SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
                 result.addChangeListener(tmpResultListener);
                 newResults.add (result);
@@ -318,9 +309,8 @@ public final class GlobalPathRegistry {
     }
     
     
-    private void removeTmpSFBQListeners (List/*<SourceForBinaryQuery.Result>*/ results, ChangeListener listener, boolean addListener) {
-        for (Iterator/*<SourceForBinaryQuery.Result>*/ it = results.iterator(); it.hasNext(); ) {
-            SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) it.next();
+    private void removeTmpSFBQListeners (List<? extends SourceForBinaryQuery.Result> results, ChangeListener listener, boolean addListener) {
+        for (SourceForBinaryQuery.Result res : results) {
             if (addListener) {
                 res.addChangeListener (this.resultListener);
             }

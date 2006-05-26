@@ -21,9 +21,9 @@ import java.util.Set;
 public final class GlobalPathRegistryEvent extends EventObject {
 
     private final String id;
-    private final Set/*<ClassPath>*/ changed;
+    private final Set<ClassPath> changed;
 
-    GlobalPathRegistryEvent(GlobalPathRegistry r, String id, Set/*<ClassPath>*/ changed) {
+    GlobalPathRegistryEvent(GlobalPathRegistry r, String id, Set<ClassPath> changed) {
         super(r);
         assert id != null;
         assert changed != null && !changed.isEmpty();
@@ -51,7 +51,7 @@ public final class GlobalPathRegistryEvent extends EventObject {
      * Get a set of classpaths that were added or removed.
      * @return an immutable and nonempty set of {@link ClassPath}s of the given type
      */
-    public Set/*<ClassPath>*/ getChangedPaths() {
+    public Set<ClassPath> getChangedPaths() {
         return changed;
     }
 

@@ -30,8 +30,8 @@ import java.util.Arrays;
 public abstract class CompositePathResourceBase implements PathResourceImplementation {
 
     private URL[] roots;
-	private ClassPathImplementation model;
-    private ArrayList pListeners;
+    private ClassPathImplementation model;
+    private ArrayList<PropertyChangeListener> pListeners;
 
     /**
      * Returns the roots of the PathResource
@@ -42,11 +42,11 @@ public abstract class CompositePathResourceBase implements PathResourceImplement
             synchronized (this) {
                 if (this.roots == null) {
                     initContent ();
-                    List result = new ArrayList ();
-                    for (Iterator it = this.model.getResources().iterator(); it.hasNext();) {
-                        result.addAll (Arrays.asList(((PathResourceImplementation)it.next()).getRoots()));
+                    List<URL> result = new ArrayList<URL> ();
+                    for (PathResourceImplementation pri : this.model.getResources()) {
+                        result.addAll (Arrays.asList(pri.getRoots()));
                     }
-                    this.roots = (URL[])result.toArray (new URL [result.size()]);
+                    this.roots = result.toArray (new URL [result.size()]);
                 }
             }
         }
@@ -70,7 +70,7 @@ public abstract class CompositePathResourceBase implements PathResourceImplement
      */
     public synchronized final void addPropertyChangeListener(PropertyChangeListener listener) {
         if (this.pListeners == null)
-            this.pListeners = new ArrayList ();
+            this.pListeners = new ArrayList<PropertyChangeListener> ();
         this.pListeners.add (listener);
     }
 
@@ -91,15 +91,15 @@ public abstract class CompositePathResourceBase implements PathResourceImplement
      * @param newValue new property value or null
      */
     protected final void firePropertyChange (String propName, Object oldValue, Object newValue) {
-        Iterator it = null;
+        PropertyChangeListener[] _listeners;
         synchronized (this) {
             if (this.pListeners == null)
                 return;
-            it = ((ArrayList)this.pListeners.clone()).iterator();
+            _listeners = this.pListeners.toArray(new PropertyChangeListener[this.pListeners.size()]);
         }
         PropertyChangeEvent event = new PropertyChangeEvent (this, propName, oldValue, newValue);
-        while (it.hasNext()) {
-            ((PropertyChangeListener)it.next ()).propertyChange (event);
+        for (PropertyChangeListener l : _listeners) {
+            l.propertyChange (event);
         }
     }
 

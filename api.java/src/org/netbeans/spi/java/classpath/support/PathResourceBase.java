@@ -25,7 +25,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
  */
 public abstract class PathResourceBase implements PathResourceImplementation {
 
-    private ArrayList pListeners;
+    private ArrayList<PropertyChangeListener> pListeners;
 
 
     /**
@@ -35,7 +35,7 @@ public abstract class PathResourceBase implements PathResourceImplementation {
      */
     public synchronized final void addPropertyChangeListener(PropertyChangeListener listener) {
         if (this.pListeners == null)
-            this.pListeners = new ArrayList ();
+            this.pListeners = new ArrayList<PropertyChangeListener> ();
         this.pListeners.add (listener);
     }
 
@@ -56,15 +56,15 @@ public abstract class PathResourceBase implements PathResourceImplementation {
      * @param newValue new property value or null
      */
     protected final void firePropertyChange (String propName, Object oldValue, Object newValue) {
-        Iterator it = null;
+        PropertyChangeListener[] _listeners;
         synchronized (this) {
             if (this.pListeners == null)
                 return;
-            it = ((ArrayList)this.pListeners.clone()).iterator();
+            _listeners = this.pListeners.toArray(new PropertyChangeListener[this.pListeners.size()]);
         }
         PropertyChangeEvent event = new PropertyChangeEvent (this, propName, oldValue, newValue);
-        while (it.hasNext()) {
-            ((PropertyChangeListener)it.next ()).propertyChange (event);
+        for (PropertyChangeListener l : _listeners) {
+            l.propertyChange (event);
         }
     }
 }

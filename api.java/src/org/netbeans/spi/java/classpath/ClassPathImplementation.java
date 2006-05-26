@@ -29,7 +29,7 @@ public interface ClassPathImplementation {
      * @return List of PathResourceImplementation, never returns null
      * it may return an empty List
      */
-    public List /*<PathResourceImplementation>*/ getResources();
+    public List<? extends PathResourceImplementation> getResources();
 
     /**
      * Adds property change listener.

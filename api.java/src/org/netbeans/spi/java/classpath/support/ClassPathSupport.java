@@ -67,7 +67,7 @@ public class ClassPathSupport {
      *     cannot be null; can be empty
      * @return SPI classpath
      */
-    public static ClassPathImplementation createClassPathImplementation(List/*<PathResourceImplementation>*/ entries) {
+    public static ClassPathImplementation createClassPathImplementation(List< ? extends PathResourceImplementation> entries) {
         if (entries == null) {
             throw new NullPointerException("Cannot pass null entries"); // NOI18N
         }
@@ -82,7 +82,7 @@ public class ClassPathSupport {
      *     cannot be null; can be empty
      * @return API classpath
      */
-    public static ClassPath createClassPath(List/*<PathResourceImplementation>*/ entries) {
+    public static ClassPath createClassPath(List<? extends PathResourceImplementation> entries) {
         if (entries == null) {
             throw new NullPointerException("Cannot pass null entries"); // NOI18N
         }
@@ -99,13 +99,13 @@ public class ClassPathSupport {
      */
     public static ClassPath createClassPath (FileObject[] roots) {
         assert roots != null;
-        List l = new ArrayList ();
-        for (int i =0; i < roots.length; i++) {
-            if (roots[i] == null) {
+        List<PathResourceImplementation> l = new ArrayList<PathResourceImplementation> ();
+        for (FileObject root : roots) {
+            if (root == null) {
                 continue;
             }
             try {
-                URL u = roots[i].getURL();            
+                URL u = root.getURL();            
                 l.add(createResource(u));
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify (e);
@@ -124,11 +124,11 @@ public class ClassPathSupport {
      */
     public static ClassPath createClassPath (URL[] roots) {
         assert roots != null;
-        List l = new ArrayList ();
-        for (int i=0; i< roots.length; i++) {
-            if (roots[i] == null)
+        List<PathResourceImplementation> l = new ArrayList<PathResourceImplementation> ();
+        for (URL root : roots) {
+            if (root == null)
                 continue;
-            l.add (createResource(roots[i]));
+            l.add (createResource(root));
         }
         return createClassPath(l);
     }

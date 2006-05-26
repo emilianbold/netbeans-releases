@@ -12,7 +12,6 @@
  */
 package org.netbeans.api.java.queries;
 
-import java.util.Iterator;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -25,8 +24,8 @@ import org.openide.util.Lookup;
  */
 public class SourceLevelQuery {
     
-    private static final Lookup.Result/*<SourceLevelQueryImplementation>*/ implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(SourceLevelQueryImplementation.class));
+    private static final Lookup.Result<? extends SourceLevelQueryImplementation> implementations =
+        Lookup.getDefault().lookupResult (SourceLevelQueryImplementation.class);
 
     private SourceLevelQuery() {
     }
@@ -40,9 +39,7 @@ public class SourceLevelQuery {
      *     if it is not known
      */
     public static String getSourceLevel(FileObject javaFile) {
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            SourceLevelQueryImplementation sqi = (SourceLevelQueryImplementation)it.next();
+        for  (SourceLevelQueryImplementation sqi : implementations.allInstances()) {
             String s = sqi.getSourceLevel(javaFile);
             if (s != null) {
                 return s;
