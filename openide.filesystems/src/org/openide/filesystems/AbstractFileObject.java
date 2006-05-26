@@ -228,24 +228,25 @@ final class AbstractFileObject extends AbstractFolder {
 
     /** Unlocks the file. Notifies the underlaying impl.
     */
-    synchronized void unlock(FileLock fLock) {
+    void unlock(FileLock fLock) {
         FileLock currentLock = null;
-
-        if (lock != null) {
-            currentLock = (FileLock) lock.get();
-        }
-
-        if (currentLock == fLock) {
-            getAbstractFileSystem().info.unlock(getPath());
-            lastModified = null;
-
-            if (isValid()) {
-                lastModified();
+        
+        synchronized(this) {
+            if (lock != null) {
+                currentLock = (FileLock) lock.get();
             }
-
-            // clear my lock
-            lock = null;
+            
+            if (currentLock == fLock) {
+                lastModified = null;
+                // clear my lock
+                lock = null;
+            }
         }
+        getAbstractFileSystem().info.unlock(getPath());
+        
+        if (isValid()) {
+            lastModified();
+        }        
     }
 
     /** Tests the lock if it is valid, if not throws exception.
