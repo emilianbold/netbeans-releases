@@ -45,7 +45,8 @@ public class CheckoutUITest extends JellyTestCase{
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    
+    public static final String PROJECT_NAME = "SVNApplication";
+    public File projectPath;
     String os_name;
     
     /** Creates a new instance of CheckoutUITest */
@@ -75,12 +76,12 @@ public class CheckoutUITest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new CheckoutUITest("testInvokeClose"));
-        //suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
-        //suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
-        //suite.addTest(new CheckoutUITest("testAvailableFields"));
+        suite.addTest(new CheckoutUITest("testInvokeClose"));
+        suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
+        suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
+        suite.addTest(new CheckoutUITest("testAvailableFields"));
         suite.addTest(new CheckoutUITest("testRepositoryFolder"));        
-        
+        //suite.addTest(new CheckoutUITest("testStopProcess"));
         return suite;
     }
     
@@ -319,6 +320,27 @@ public class CheckoutUITest extends JellyTestCase{
         jfc.cancel();
         wdso.setRepositoryRevision("10");
         wdso.checkCheckoutContentOnly(true);
+        co.btCancel().pushNoBlock();
+    }
+    
+    public void testStopProcess() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        RepositoryStepOperator rso = new RepositoryStepOperator();
+    
+        //create repository... 
+        new File(TMP_PATH).mkdirs();
+        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+        
+        //next step
+        rso.next();
+        //Thread.sleep(2000);
+        rso.btStop().push();
+        assertEquals("Warning message - process was cancelled by user", "Action canceled by user", rso.lblWarning().getText());
         co.btCancel().pushNoBlock();
     }
 }

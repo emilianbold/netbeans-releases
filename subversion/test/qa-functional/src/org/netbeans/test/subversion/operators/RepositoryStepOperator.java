@@ -199,7 +199,7 @@ public class RepositoryStepOperator extends WizardOperator {
     
     public JLabelOperator lblWarning() {
         if (_lblWarning == null) {
-            _lblWarning = new JLabelOperator(this, 4);
+            _lblWarning = new JLabelOperator(this, 5);
         }
         return _lblWarning;
     }
