@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -72,6 +72,8 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private boolean emptyExistingDirNB   = false;
     private boolean emptyExistingDirJ2SE = false;
     
+    private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
+    
     public void build(WizardBuilderSupport support) {
         super.build(support);
         try {
@@ -96,7 +98,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                     ProductService.DEFAULT_PRODUCT_SOURCE,
                     null,
                     "installLocation",
-                    resolveString("$L(org.netbeans.installer.Bundle, Product.installLocationForNonRoot)"));
+                    resolveString(BUNDLE + "Product.installLocationForNonRoot)"));
                 }
             }
         } catch (ServiceException e) {
@@ -153,22 +155,22 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         String desc;
         if (Util.isJDKAlreadyInstalled()) {
             if (Util.isJREAlreadyInstalled()) {
-                desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.dirSelectionDescErr,"
-                + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
+                desc = resolveString(BUNDLE + "InstallLocationPanel.dirSelectionDescErr,"
+                + BUNDLE + "JDK.shortName),"
                 + installedJdk + ","
-                + "$L(org.netbeans.installer.Bundle,Product.displayName))");
+                + BUNDLE + "Product.displayName))");
             } else {
                 //Warning message when JDK is installed but public JRE is NOT installed
-                desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.dirSelectionDescErrJRE,"
-                + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
+                desc = resolveString(BUNDLE + "InstallLocationPanel.dirSelectionDescErrJRE,"
+                + BUNDLE + "JDK.shortName),"
                 + installedJdk + ","
-                + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-                + "$L(org.netbeans.installer.Bundle,JRE.shortName))");
+                + BUNDLE + "Product.displayName),"
+                + BUNDLE + "JRE.shortName))");
             }
         } else {
-            desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.description,"
-            + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
-            + "$L(org.netbeans.installer.Bundle,Product.displayName))");
+            desc = resolveString(BUNDLE + "InstallLocationPanel.description,"
+            + BUNDLE + "JDK.shortName),"
+            + BUNDLE + "Product.displayName))");
         }
         
         infoLabel.setText(desc);
@@ -180,7 +182,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	//----------------------------------------------------------------------
 	// netbeans install dir components
 	String nbInstallDir = resolveString("$P(absoluteInstallLocation)");
-	nbLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.nbInstallDirectoryLabel)");
+	nbLabel = resolveString(BUNDLE + "InstallLocationPanel.nbInstallDirectoryLabel)");
         MnemonicString nbInputLabelMn = new MnemonicString(nbLabel);
         nbLabel = nbInputLabelMn.toString();
         nbInputLabel = new JLabel(nbLabel);
@@ -212,7 +214,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         nbInputLabel.setLabelFor(nbInstallDirTF);
         inputPanel.add(nbInstallDirTF, gridBagConstraints);
 
-        String nbBrowseButtonText = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.nbBrowseButtonLabel)");
+        String nbBrowseButtonText = resolveString(BUNDLE + "InstallLocationPanel.nbBrowseButtonLabel)");
         MnemonicString nbBrowseMn = new MnemonicString(nbBrowseButtonText);
         nbBrowseButtonText = nbBrowseMn.toString();
         nbBrowseButton = new JButton(nbBrowseButtonText);
@@ -255,15 +257,15 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         //"C:\Program Files\Java\jdk1.5.0" whereas JDK 1.4.2_X uses "C:\j2sdk1.4.2_X"
         //ie. "Program Files" is missing.
 	String j2seInstallDir = tempPath + File.separator
-        + resolveString("$L(org.netbeans.installer.Bundle,JDK.defaultInstallDirectory)");
-	/*j2seDir = resolveString("$L(org.netbeans.installer.Bundle,JDK.defaultInstallDirectory)");
+        + resolveString(BUNDLE + "JDK.defaultInstallDirectory)");
+	/*j2seDir = resolveString(BUNDLE + "JDK.defaultInstallDirectory)");
 	String j2seInstallDir = null;
 	if (Util.isWindowsOS()) {
 	    j2seInstallDir = sysDrive + j2seDir;
 	} else {
 	    j2seInstallDir = tempPath + File.separator + j2seDir;
 	}*/
-	jdkLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.jdkInstallDirectoryLabel)");
+	jdkLabel = resolveString(BUNDLE + "InstallLocationPanel.jdkInstallDirectoryLabel)");
         MnemonicString jdkInputLabelMn = new MnemonicString(jdkLabel);
         jdkLabel = jdkInputLabelMn.toString();
 
@@ -297,7 +299,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             jdkInputLabel.setLabelFor(jdkInstallDirTF);
 	    inputPanel.add(jdkInstallDirTF, gridBagConstraints);
 	    
-            String jdkBrowseButtonText = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.jdkBrowseButtonLabel)");
+            String jdkBrowseButtonText = resolveString(BUNDLE + "InstallLocationPanel.jdkBrowseButtonLabel)");
             MnemonicString jdkBrowseMn = new MnemonicString(jdkBrowseButtonText);
             jdkBrowseButtonText = jdkBrowseMn.toString();
             jdkBrowseButton = new JButton(jdkBrowseButtonText);
@@ -490,12 +492,12 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     /* Check if J2SE and NB installation dirs are the same or not.
      */
     private boolean checkBothInstallDirs(String nbDir, String j2seDir) {
-	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
+	String dialogTitle = resolveString(BUNDLE + "InstallLocationPanel.directoryDialogTitle)");
         String dialogMsg = "";
         
         //#49348: Do not allow the same dir for JDK and NB.
         if (nbDir.equals(j2seDir)) {
-            dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNBJDKTheSame)");
+            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.directoryNBJDKTheSame)");
             showErrorMsg(dialogTitle,dialogMsg);
             return false;
         }
@@ -506,21 +508,21 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
      * or if it already exits or if it's empty then create it.
      */ 
     private boolean checkInstallDir(String dir, int installDirType, String msgPrefix) {
-	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
+	String dialogTitle = resolveString(BUNDLE + "InstallLocationPanel.directoryDialogTitle)");
         StringTokenizer st = new StringTokenizer(dir);
         String dialogMsg = "";
 
         if (dir.length() == 0) {
             //Directory must be specified
             dialogMsg = msgPrefix + " "
-            + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNotSpecifiedMessage)");
+            + resolveString(BUNDLE + "InstallLocationPanel.directoryNotSpecifiedMessage)");
             showErrorMsg(dialogTitle,dialogMsg);
             return false;
         } else if (st.countTokens() > 1) {
             //Check for spaces in path - it is not supported by JDK installer on Linux/Solaris
 	    if (!Util.isWindowsOS() && installDirType == J2SE_INSTALL_DIR) {
 		dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryHasSpaceMessage)");
+		+ resolveString(BUNDLE + "InstallLocationPanel.directoryHasSpaceMessage)");
                 showErrorMsg(dialogTitle,dialogMsg);
 		return false;
 	    }
@@ -528,7 +530,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 					 dir.indexOf("%") != -1 || dir.indexOf("#") != -1)) ||
 	    dir.indexOf("+") != -1 || dir.indexOf("\"") != -1) {
             //Check for illegal characters in a windows path name
-	    dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryIllegalCharsMessage)");
+	    dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.directoryIllegalCharsMessage)");
             showErrorMsg(dialogTitle,dialogMsg);
 	    return false;
 	}
@@ -538,14 +540,14 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    // This File object should be a directory
             if (!dirFile.isDirectory()) {
                 dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryInvalidMessage)");
+		+ resolveString(BUNDLE + "InstallLocationPanel.directoryInvalidMessage)");
                 showErrorMsg(dialogTitle,dialogMsg);
                 return false;
             }
 	    // This File object must have write permissions
             if (!(dirFile.canWrite())) {
                 dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
+		+ resolveString(BUNDLE + "InstallLocationPanel.directoryNoWritePermissionMessage)");
                 showErrorMsg(dialogTitle,dialogMsg);
                 return false;
             }
@@ -563,7 +565,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 			}
 		    } catch (Exception e) {
 			dialogMsg = msgPrefix + " "
-		        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
+		        + resolveString(BUNDLE + "InstallLocationPanel.directoryNoWritePermissionMessage)");
                         showErrorMsg(dialogTitle,dialogMsg);
 			return false;
 		    }
@@ -576,7 +578,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 			}		    
 		    } catch (Exception e) {
 			dialogMsg = msgPrefix + " "
-		        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
+		        + resolveString(BUNDLE + "InstallLocationPanel.directoryNoWritePermissionMessage)");
                         showErrorMsg(dialogTitle,dialogMsg);
 			return false;
 		    }
@@ -593,7 +595,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             if(!isEmpty) {
                 // Another version installed. prompt to uninstall
                 dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directorySpecifyEmptyMessage)")
+		+ resolveString(BUNDLE + "InstallLocationPanel.directorySpecifyEmptyMessage)")
                 + "\n\n" + installedVersion;
                 showErrorMsg(dialogTitle,dialogMsg);
                 return false;
@@ -604,14 +606,14 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 
     /** Create directory. Do not ask user. Report only error when it fails. */
     private boolean createDirectory(String path, String msgPrefix) {
-	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
+	String dialogTitle = resolveString(BUNDLE + "InstallLocationPanel.directoryDialogTitle)");
 	String dialogMsg;
 	File dirFile  = new File(path);
 	try {
 	    logEvent(this, Log.DBG, "CheckInstallDir() dirFile:" + dirFile.getAbsolutePath());
 	    if(!dirFile.mkdirs()) {
 		dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryCouldNotCreateMessage)");
+		+ resolveString(BUNDLE + "InstallLocationPanel.directoryCouldNotCreateMessage)");
                 showErrorMsg(dialogTitle,dialogMsg);
 		return false;
 	    }
