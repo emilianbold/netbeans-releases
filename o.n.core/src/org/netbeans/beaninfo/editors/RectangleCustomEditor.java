@@ -268,7 +268,7 @@ implements KeyListener, PropertyChangeListener {
     }
     
     private JLabel findLabelFor(JTextField c) {
-        return (JLabel) labelMap.get(c);
+        return labelMap.get(c);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

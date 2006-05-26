@@ -43,14 +43,14 @@ public class HttpSettingsTest extends NbTestCase {
     protected void setUp () throws Exception {
         super.setUp ();
         System.setProperty ("netbeans.system_http_proxy", SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
-        settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+        settings = IDESettings.findObject(IDESettings.class, true);
         settings.setUserProxyHost (USER_PROXY_HOST);
         settings.setUserProxyPort (USER_PROXY_PORT);
     }
     
     private void sillySetUp () throws Exception {
         System.setProperty ("netbeans.system_http_proxy", SILLY_SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
-        settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+        settings = IDESettings.findObject(IDESettings.class, true);
         settings.setUserProxyHost (SILLY_USER_PROXY_HOST);
         settings.setUserProxyPort (USER_PROXY_PORT);
     }

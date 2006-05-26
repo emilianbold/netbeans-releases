@@ -400,7 +400,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
     * @return the panel or null if no such panel exists
     */
     public final ExplorerTab getRootPanel (Node root) {
-        return (ExplorerTab)rootsToTCs().get(root);
+        return rootsToTCs().get(root);
     }
 
 
@@ -465,7 +465,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         public ExplorerTab () {
             super();
             // complete initialization of composited explorer actions
-            ideSettings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+            ideSettings = IDESettings.findObject(IDESettings.class, true);
             
             getActionMap().put("delete", ExplorerUtils.actionDelete(getExplorerManager(), ideSettings.getConfirmDelete ())); 
             

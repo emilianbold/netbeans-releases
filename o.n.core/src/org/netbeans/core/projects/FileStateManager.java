@@ -144,9 +144,9 @@ final class FileStateManager {
             throw new IllegalArgumentException ("FileObject has to be from DefaultFileSystem - " + mfo);
         
         synchronized (info) {
-            if (null == (finf = (FileInfo) info.get (mfo))) {
-                finf = new FileInfo (mfo);
-                info.put (mfo, finf);
+            if (null == (finf = info.get(mfo))) {
+                finf = new FileInfo(mfo);
+                info.put(mfo, finf);
             }
         }
 
@@ -240,9 +240,10 @@ final class FileStateManager {
                     
                     // invalidate all existing FileInfos
                     for (int i = 0; i < mfos.length; i++) {
-                        FileInfo finf = (FileInfo) info.get (mfos [i]);
+                        FileInfo finf = info.get(mfos[i]);
+
                         if (finf != null)
-                            finf.invalidate ();
+                            finf.invalidate();
                     }
 
                     // clear the cache

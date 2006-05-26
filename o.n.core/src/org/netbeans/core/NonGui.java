@@ -92,10 +92,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         SecurityManager secman = new TopSecurityManager();
 
         System.setSecurityManager(secman);
-        TopSecurityManager.makeSwingUseSpecialClipboard (
-            (org.openide.util.datatransfer.ExClipboard)
-            Lookup.getDefault ().lookup (org.openide.util.datatransfer.ExClipboard.class)
-        );
+        TopSecurityManager.makeSwingUseSpecialClipboard(Lookup.getDefault().lookup(org.openide.util.datatransfer.ExClipboard.class));
 
         // install java.net.Authenticator
         java.net.Authenticator.setDefault (new NbAuthenticator ());

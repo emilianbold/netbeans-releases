@@ -33,7 +33,7 @@ public class ModuleActionsTest extends NbTestCase {
     }    
     
     public void testActionIsListedAsRunning () throws Exception {
-        Act act = (Act)Act.get (Act.class);
+        Act act = Act.get(Act.class);
         
         synchronized (act) {
             act.actionPerformed (new java.awt.event.ActionEvent (this, 0, ""));

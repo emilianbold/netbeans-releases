@@ -144,7 +144,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            ((ComboBoxProperty) findProperty(propertyName,"ComboBoxProperty")).setValue(propertyValue);
+            (findProperty(propertyName, "ComboBoxProperty")).setValue(propertyValue);
             
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"}  - finished.");
             verifyPropertyValue(expectance);
@@ -164,7 +164,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            ((ComboBoxProperty) findProperty(propertyName, "ComboBoxProperty")).setValue(propertyValueIndex);
+            (findProperty(propertyName, "ComboBoxProperty")).setValue(propertyValueIndex);
             
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"}  - finished.");
             verifyPropertyValue(expectance);

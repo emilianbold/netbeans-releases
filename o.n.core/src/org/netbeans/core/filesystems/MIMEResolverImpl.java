@@ -61,7 +61,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
     protected InstanceContent createInstanceContent(DataObject obj) {
         FileObject fo = obj.getPrimaryFile();
         InstanceContent ic = new InstanceContent();
-        ic.add((InstanceCookie) new Impl(fo));
+        ic.add(new Impl(fo));
         return ic;
     }
     
@@ -337,7 +337,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             componentDelimiter = name;
 
             component.setDocumentLocator(getLocator());           
-            template[0].rule = (MIMEComponent) component;
+            template[0].rule = component;
             state = IN_COMPONENT;            
         }
         

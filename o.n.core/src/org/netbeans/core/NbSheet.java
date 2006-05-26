@@ -238,8 +238,8 @@ public final class NbSheet extends TopComponent {
 
         Node node = null;
 
-        if(!copyNodes.isEmpty()) {
-            node = (Node)copyNodes.get(0);
+        if (!copyNodes.isEmpty()) {
+            node = copyNodes.get(0);
         }
 
         if(node == null) {

@@ -29,12 +29,12 @@ public class ActionMapKeysTest extends TestCase {
     }
 
     public void testJumpNextAction () {
-        JumpNextAction a = (JumpNextAction)JumpNextAction.get (JumpNextAction.class);
+        JumpNextAction a = JumpNextAction.get(JumpNextAction.class);
         assertEquals ("jumpNext", a.getActionMapKey ());
     }
 
     public void testJumpPrevAction () {
-        JumpPrevAction a = (JumpPrevAction)JumpPrevAction.get (JumpPrevAction.class);
+        JumpPrevAction a = JumpPrevAction.get(JumpPrevAction.class);
         assertEquals ("jumpPrev", a.getActionMapKey ());
     }
     

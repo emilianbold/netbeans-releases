@@ -57,10 +57,10 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
             assertTrue("SomeAction<1> instance found after module installation",
                 existsSomeAction(c1));
             
-            ClassLoader g1 = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            ClassLoader g1 = Lookup.getDefault().lookup(ClassLoader.class);
             ERR.log("Before reload: " + g1);
             twiddle(m1, TWIDDLE_RELOAD);
-            ClassLoader g2 = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            ClassLoader g2 = Lookup.getDefault().lookup(ClassLoader.class);
             ERR.log("After reload: " + g2);
             // Sleeping for a few seconds here does *not* help.
             l2 = m1.getClassLoader();

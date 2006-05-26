@@ -63,7 +63,8 @@ public class LoggingTestCaseHid extends NbTestCase {
         super.run(result);
         
         for (Iterator it = unregister.iterator(); it.hasNext();) {
-            Object elem = (Object) it.next();
+            Object elem = it.next();
+
             org.netbeans.core.startup.MainLookup.unregister(elem);
         }
     }

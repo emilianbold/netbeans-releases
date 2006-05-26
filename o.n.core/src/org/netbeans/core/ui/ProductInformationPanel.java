@@ -531,11 +531,11 @@ public class ProductInformationPanel extends JPanel {
      
     private static Clipboard getExClipboard() {
        if (clipboard == null) {
-            clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
-            if (clipboard == null) {
-                clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            }
-        }
+           clipboard = Lookup.getDefault().lookup(ExClipboard.class);
+           if (clipboard == null) {
+               clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+           }
+       }
         return clipboard;
     }
 

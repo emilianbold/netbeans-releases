@@ -47,6 +47,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 /** Data system encapsulates logical structure of more file systems.
@@ -109,9 +110,9 @@ implements RepositoryListener {
     }
 
     void initialize () {
-        fileSystemPool.addRepositoryListener (
-            (RepositoryListener)org.openide.util.WeakListeners.create (RepositoryListener.class, this, fileSystemPool)
-        );
+        fileSystemPool.addRepositoryListener(WeakListeners.create(RepositoryListener.class,
+                                                                  this,
+                                                                  fileSystemPool));
         Enumeration en = fileSystemPool.getFileSystems ();
         while (en.hasMoreElements ()) {
             FileSystem fs = (FileSystem)en.nextElement ();

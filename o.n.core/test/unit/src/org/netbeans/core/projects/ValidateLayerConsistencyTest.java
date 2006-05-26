@@ -217,7 +217,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     
     public void testIfOneFileIsDefinedTwiceByDifferentModulesTheyNeedToHaveMutualDependency() throws Exception {
-        ClassLoader l = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
         
         // String -> List<Modules>

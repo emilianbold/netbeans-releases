@@ -254,29 +254,35 @@ public final class LoaderPoolNode extends AbstractNode {
     private static void add2Deps(Map<DataLoader,List<DataLoader>> deps, Map orderings, boolean before) {
         Iterator it = orderings.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry e = (Map.Entry)it.next();
-            String loaderClassName = (String)e.getKey();
-            DataLoader l = (DataLoader)names2Loaders.get(loaderClassName);
+            Map.Entry e = (Map.Entry) it.next();
+            String loaderClassName = (String) e.getKey();
+            DataLoader l = names2Loaders.get(loaderClassName);
+
             if (l == null) {
                 throw new IllegalStateException("No such loader: " + loaderClassName); // NOI18N
             }
-            String[] repClassNames = (String[])e.getValue();
+            String[] repClassNames = (String[]) e.getValue();
+
             if (repClassNames == null) {
                 throw new IllegalStateException("Null Install-" + (before ? "Before" : "After") + " for " + loaderClassName); // NOI18N
             }
             for (int i = 0; i < repClassNames.length; i++) {
                 String repClassName = repClassNames[i];
-                DataLoader l2 = (DataLoader)repNames2Loaders.get(repClassName);
+                DataLoader l2 = repNames2Loaders.get(repClassName);
+
                 if (l2 != null) {
                     if (before) {
                         addDep(deps, l, l2);
-                    } else {
+                    }
+                    else {
                         addDep(deps, l2, l);
                     }
-                } else {
-                    l2 = (DataLoader)names2Loaders.get(repClassName);
+                }
+                else {
+                    l2 = names2Loaders.get(repClassName);
                     if (l2 != null) {
-                        warn(loaderClassName, repClassName, l2.getRepresentationClassName());
+                        warn(loaderClassName, repClassName,
+                             l2.getRepresentationClassName());
                     }
                 }
             }
@@ -446,72 +452,96 @@ public final class LoaderPoolNode extends AbstractNode {
 
         for (;;) {
             Object o1 = ois.readObject();
+
             if (o1 == null) {
-                if (err.isLoggable(Level.FINE)) err.fine("reading null");
+                if (err.isLoggable(Level.FINE))
+                    err.fine("reading null");
                 break;
             }
             NbMarshalledObject obj;
+
             if (o1 instanceof String) {
                 String name = (String)o1;
                 if (name.length() > 0 && name.charAt(0) == '=') { // NOI18N
                     // #27190: unmodified loader, just here for the ordering.
                     String cname = name.substring(1);
-                    DataLoader dl = (DataLoader)names2Loaders.get(cname);
+                    DataLoader dl = names2Loaders.get(cname);
+
                     if (dl != null) {
-                        if (err.isLoggable(Level.FINE)) err.fine("reading unmodified " + cname);
+                        if (err.isLoggable(Level.FINE))
+                            err.fine("reading unmodified " + cname);
                         l.add(dl);
                         classes.add(dl.getClass());
-                    } else {
+                    }
+                    else {
                         // No such known loaded - presumably disabled module.
-                        if (err.isLoggable(Level.FINE)) err.fine("skipping unmodified nonexistent " + cname);
+                        if (err.isLoggable(Level.FINE))
+                            err.fine("skipping unmodified nonexistent " + cname);
                     }
                     continue;
                 }
                 // Module information.
                 int rel = ois.readInt();
-                String spec = (String)ois.readObject();
-                obj = (NbMarshalledObject)ois.readObject();
-                ModuleInfo m = (ModuleInfo)modules.get(name);
+                String spec = (String) ois.readObject();
+
+                obj = (NbMarshalledObject) ois.readObject();
+                ModuleInfo m = modules.get(name);
+
                 if (m == null) {
-                    if (err.isLoggable(Level.FINE)) err.fine("No known module " + name + ", skipping loader");
+                    if (err.isLoggable(Level.FINE))
+                        err.fine("No known module " + name + ", skipping loader");
                     continue;
                 }
                 if (!m.isEnabled()) {
-                    if (err.isLoggable(Level.FINE)) err.fine("Module " + name + " is disabled, skipping loader");
+                    if (err.isLoggable(Level.FINE))
+                        err.fine("Module " + name +
+                                 " is disabled, skipping loader");
                     continue;
                 }
                 if (m.getCodeNameRelease() < rel) {
-                    if (err.isLoggable(Level.FINE)) err.fine("Module " + name + " is too old (major vers.), skipping loader");
+                    if (err.isLoggable(Level.FINE))
+                        err.fine("Module " + name + " is too old (major vers.), skipping loader");
                     continue;
                 }
                 if (spec != null) {
                     SpecificationVersion v = m.getSpecificationVersion();
-                    if (v == null || v.compareTo(new SpecificationVersion(spec)) < 0) {
-                        if (err.isLoggable(Level.FINE)) err.fine("Module " + name + " is too old (spec. vers.), skipping loader");
+
+                    if (v == null ||
+                        v.compareTo(new SpecificationVersion(spec)) < 0) {
+                        if (err.isLoggable(Level.FINE))
+                            err.fine("Module " + name + " is too old (spec. vers.), skipping loader");
                         continue;
                     }
                 }
-                if (err.isLoggable(Level.FINE)) err.fine("Module " + name + " is OK, will try to restore loader");
-            } else {
-                // Loader with no known module, or backward compatibility.
-                obj = (NbMarshalledObject)o1;
+                if (err.isLoggable(Level.FINE))
+                    err.fine("Module " + name +
+                             " is OK, will try to restore loader");
             }
-
+            else {
+                // Loader with no known module, or backward compatibility.
+                obj = (NbMarshalledObject) o1;
+            }
             Exception t = null;
+
             try {
-                DataLoader loader = (DataLoader)obj.get ();
+                DataLoader loader = (DataLoader) obj.get();
+
                 if (loader == null) {
                     // loader that wishes to be skipped (right now WSLoader from
                     // issue 38658)
                     continue;
                 }
                 Class clazz = loader.getClass();
-                if (err.isLoggable(Level.FINE)) err.fine("reading modified " + clazz.getName());
-                l.add (loader);
-                classes.add (clazz);
-            } catch (IOException ex) {
+
+                if (err.isLoggable(Level.FINE))
+                    err.fine("reading modified " + clazz.getName());
+                l.add(loader);
+                classes.add(clazz);
+            }
+            catch (IOException ex) {
                 t = ex;
-            } catch (ClassNotFoundException ex) {
+            }
+            catch (ClassNotFoundException ex) {
                 t = ex;
             }
         }

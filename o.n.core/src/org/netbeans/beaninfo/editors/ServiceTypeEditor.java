@@ -131,8 +131,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
             throw new IllegalArgumentException();
         }
 
-        ServiceType.Registry registry = (ServiceType.Registry)Lookup.getDefault ()
-                .lookup (ServiceType.Registry.class);
+        ServiceType.Registry registry = Lookup.getDefault().lookup(ServiceType.Registry.class);
         Enumeration en = registry.services (clazz);
         while (en.hasMoreElements ()) {
             ServiceType t = (ServiceType)en.nextElement ();

@@ -165,7 +165,7 @@ public abstract class NbTopManager {
     public void showHelp(HelpCtx helpCtx) {
         // Awkward but should work.
         try {
-            Class<?> c = ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass("org.netbeans.api.javahelp.Help"); // NOI18N
+            Class<?> c = (Lookup.getDefault().lookup(ClassLoader.class)).loadClass("org.netbeans.api.javahelp.Help"); // NOI18N
             Object o = Lookup.getDefault().lookup(c);
             if (o != null) {
                 Method m = c.getMethod("showHelp", new Class[] {HelpCtx.class}); // NOI18N
@@ -350,7 +350,7 @@ public abstract class NbTopManager {
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
      
-                final WindowSystem windowSystem = (WindowSystem)Lookup.getDefault().lookup(WindowSystem.class);
+                final WindowSystem windowSystem = Lookup.getDefault().lookup(WindowSystem.class);
                 
                 // #29831: hide frames between closing() and close()
                 Runnable hideFrames = new Runnable() {
@@ -458,7 +458,7 @@ public abstract class NbTopManager {
         }
         
         public NbBrowser() {
-            IDESettings settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+            IDESettings settings = IDESettings.findObject(IDESettings.class, true);
             HtmlBrowser.Factory browser = settings.getWWWBrowser();
             if (browser == null) {
                 // Fallback.
@@ -514,22 +514,24 @@ public abstract class NbTopManager {
             }
             try {                
                 // listen on preffered browser change
-                idePCL = new PropertyChangeListener () {
-                    public void propertyChange (PropertyChangeEvent evt) {
-                        String name = evt.getPropertyName ();
-                        if (name == null) return;
-                        if (name.equals (IDESettings.PROP_WWWBROWSER)) {
-                            ((NbURLDisplayer)org.openide.awt.HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
+                idePCL = new PropertyChangeListener() {
+
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        String name = evt.getPropertyName();
+
+                        if (name == null)
+                            return;
+                        if (name.equals(IDESettings.PROP_WWWBROWSER)) {
+                            ((NbURLDisplayer) HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
                             if (idePCL != null) {
-                                ((IDESettings)IDESettings.findObject (IDESettings.class, true)).
-                                        removePropertyChangeListener (idePCL);
+                                (IDESettings.findObject(IDESettings.class, true)).removePropertyChangeListener(idePCL);
                                 idePCL = null;
                                 brComp = null;
                             }
                         }
                     }
                 };
-                ((IDESettings)IDESettings.findObject (IDESettings.class, true)).addPropertyChangeListener (idePCL);
+                (IDESettings.findObject(IDESettings.class, true)).addPropertyChangeListener(idePCL);
             }
             catch (Exception ex) {
                 ErrorManager.getDefault().notify(ex);

@@ -265,7 +265,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
         // Update reverse binding for old action too (#30455):
         Action old;
         synchronized (this) {
-            old = (Action)bindings.put(key, a);
+            old = bindings.put(key, a);
             actions = null;
         }
         
@@ -299,7 +299,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
     public void removeKeyStrokeBinding(KeyStroke key) {
         Action a;
         synchronized (this) {
-            a = (Action)bindings.remove(key);
+            a = bindings.remove(key);
             actions = null;
         }
         updateActionAccelerator(a);
@@ -375,7 +375,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
         }
 
         public Action getAction(KeyStroke key) {
-            return (Action)bindings.get(key);
+            return bindings.get(key);
         }
 
         public boolean isLocallyDefined(KeyStroke key) {

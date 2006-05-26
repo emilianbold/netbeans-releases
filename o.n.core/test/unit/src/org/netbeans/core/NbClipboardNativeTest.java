@@ -224,7 +224,7 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
             public void ownershipLost () { holder[0]++; }
         });
 
-        Clipboard c = (Clipboard)Lookup.getDefault().lookup(Clipboard.class);
+        Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
 
         c.setContents(transferable, null);
 

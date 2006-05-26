@@ -63,7 +63,7 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
     */
     public void setAsText(String text) throws java.lang.IllegalArgumentException {
         try {
-            ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
             setValue (loader.loadClass (text));
         } catch (ClassNotFoundException e) {
             IllegalArgumentException iae = new IllegalArgumentException (e.getMessage());

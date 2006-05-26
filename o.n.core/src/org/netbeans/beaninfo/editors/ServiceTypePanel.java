@@ -109,7 +109,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
         
         int i = -1;//services.indexOf (s);
         for (int n = 0; n < services.size(); n++) {
-            if ( ((ServiceType)services.get(n)).getName().equals(s.getName()) ) {
+            if ((services.get(n)).getName().equals(s.getName())) {
                 i = n;
             }
         }
@@ -180,15 +180,14 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
     private List<Node> nodes () {
         services = new ArrayList<ServiceType> (20);
         List<Node> l = new LinkedList<Node> ();
-        ServiceType.Registry registry = (ServiceType.Registry)Lookup.getDefault ()
-                .lookup (ServiceType.Registry.class);
+        ServiceType.Registry registry = Lookup.getDefault().lookup(ServiceType.Registry.class);
         Enumeration<? extends ServiceType> en = registry.services (clazz);
         while (en.hasMoreElements ()) {
             try {
                 ServiceType service = en.nextElement ();
                 if (createNew) {
                     // in this case create a new instance for all types
-                    ServiceType newObject = (ServiceType)service.getClass().newInstance();
+                    ServiceType newObject = service.getClass().newInstance();
                     l.add(new MN(newObject));
                     services.add(newObject);
                 } else {

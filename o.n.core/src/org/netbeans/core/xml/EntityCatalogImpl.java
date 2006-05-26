@@ -52,7 +52,7 @@ public final class EntityCatalogImpl extends EntityCatalog {
     public InputSource resolveEntity(String publicID, String systemID) {
         if (publicID == null) return null;
 
-        String res = (String) id2uri.get(publicID); // note this is synchronized Hashtable
+        String res = id2uri.get(publicID); // note this is synchronized Hashtable
 
         InputSource ret = null;
         if (res != null) {

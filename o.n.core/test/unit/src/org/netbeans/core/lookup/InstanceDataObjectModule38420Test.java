@@ -50,7 +50,7 @@ public class InstanceDataObjectModule38420Test extends InstanceDataObjectModuleT
                 twiddle (m2, TWIDDLE_DISABLE);
             }
 
-            Action again = (Action)Lookup.getDefault ().lookup (found.getClass ());
+            Action again = Lookup.getDefault().lookup(found.getClass());
             assertSame ("The instance remains the same", found, again);
             
             WeakReference ref = new WeakReference(found);

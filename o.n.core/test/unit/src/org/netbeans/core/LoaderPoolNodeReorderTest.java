@@ -62,7 +62,7 @@ public class LoaderPoolNodeReorderTest extends org.netbeans.junit.NbTestCase {
             assertEquals(arr[1].getDisplayName(), newL.getDisplayName());
         }
 
-        Index idx = (Index) LoaderPoolNode.getLoaderPoolNode().getLookup().lookup(Index.class);
+        Index idx = LoaderPoolNode.getLoaderPoolNode().getLookup().lookup(Index.class);
         assertNotNull("There is index in the node", idx);
 
         idx.reorder(new int[] { 1, 0 });

@@ -198,7 +198,7 @@ public class MenuChecker {
         menu.list();
         MenuElement [] elements = menu.getSubElements();
         TreeSet list = new TreeSet();
-        NbMenu last = NbMenu.getNbMenu((JMenuItem)menu);
+        NbMenu last = NbMenu.getNbMenu(menu);
         list.add(last);
         
         for(int k=0; k < elements.length; k++) {

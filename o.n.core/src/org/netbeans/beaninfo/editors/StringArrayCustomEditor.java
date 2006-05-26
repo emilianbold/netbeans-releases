@@ -292,7 +292,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
 
     private void changeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeButtonActionPerformed
         int sel = itemList.getSelectedIndex ();
-        String s = (String) itemsVector.elementAt (sel);
+        String s = itemsVector.elementAt(sel);
         itemsVector.removeElementAt (sel);
         itemsVector.insertElementAt (itemField.getText (), sel);
         itemList.setListData (itemsVector);
@@ -303,7 +303,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
 
     private void moveDownButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
         int sel = itemList.getSelectedIndex ();
-        String s = (String) itemsVector.elementAt (sel);
+        String s = itemsVector.elementAt(sel);
         itemsVector.removeElementAt (sel);
         itemsVector.insertElementAt (s, sel + 1);
         itemList.setListData (itemsVector);
@@ -314,7 +314,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
 
     private void moveUpButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
         int sel = itemList.getSelectedIndex ();
-        String s = (String) itemsVector.elementAt (sel);
+        String s = itemsVector.elementAt(sel);
         itemsVector.removeElementAt (sel);
         itemsVector.insertElementAt (s, sel - 1);
         itemList.setListData (itemsVector);
@@ -346,7 +346,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         updateButtons ();
         int sel = itemList.getSelectedIndex ();
         if (sel != -1) {
-            itemField.setText ((String) itemsVector.elementAt (sel));
+            itemField.setText(itemsVector.elementAt(sel));
         }
     }//GEN-LAST:event_itemListValueChanged
 

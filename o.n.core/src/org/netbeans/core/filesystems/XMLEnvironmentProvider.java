@@ -60,7 +60,7 @@ class XMLEnvironmentProvider extends SharedClassObject {
         // we want to create just one instance per FileObject
 
         FileObject file = obj.getPrimaryFile();
-        Lookup lookup = (Lookup) envs.get(file);
+        Lookup lookup = envs.get(file);
         if (lookup == null) {
             lookup = createLookup(obj);
             envs.put(file, lookup);

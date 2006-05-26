@@ -87,19 +87,23 @@ public class PropertiesTest {
             // props.put(new TestProperty("Boolean", java.lang.Boolean.class));            
             TestProperty booleanObjectProperty = new TestProperty("Boolean",     java.lang.Boolean.class);
             try {
-                booleanObjectProperty.setValue((Object)Boolean.TRUE);
-                props.put(booleanObjectProperty);            
-            }catch(Exception exc){
-                System.err.println("Exception during set value and add Boolean property :"+exc.getMessage());
+                booleanObjectProperty.setValue(Boolean.TRUE);
+                props.put(booleanObjectProperty);
+            }
+            catch (Exception exc) {
+                System.err.println("Exception during set value and add Boolean property :" +
+                                   exc.getMessage());
             }
             
             // props.put(new TestProperty("boolean", boolean.class));
             TestProperty booleanProperty = new TestProperty("boolean",     boolean.class);
             try {
-                booleanProperty.setValue((Object)Boolean.TRUE);
-                props.put(booleanProperty);            
-            }catch(Exception exc){
-                System.err.println("Exception during set value and add boolean property :"+exc.getMessage());
+                booleanProperty.setValue(Boolean.TRUE);
+                props.put(booleanProperty);
+            }
+            catch (Exception exc) {
+                System.err.println("Exception during set value and add boolean property :" +
+                                   exc.getMessage());
             }
             
             props.put(new TestProperty("Byte",                  java.lang.Byte.class));            
@@ -109,10 +113,12 @@ public class PropertiesTest {
             // props.put(new TestProperty("char", char.class));
             TestProperty charProperty = new TestProperty("char",     char.class);
             try {
-                charProperty.setValue((Object)"a");
-                props.put(charProperty);            
-            }catch(Exception exc){
-                System.err.println("Exception during set value and add char property :"+exc.getMessage());
+                charProperty.setValue("a");
+                props.put(charProperty);
+            }
+            catch (Exception exc) {
+                System.err.println("Exception during set value and add char property :" +
+                                   exc.getMessage());
             }
             
             props.put(new TestProperty("Class",                 java.lang.Class.class));            

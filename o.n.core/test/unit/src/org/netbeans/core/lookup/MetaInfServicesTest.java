@@ -111,7 +111,7 @@ public class MetaInfServicesTest extends NbTestCase {
      */
     public void testEverything() throws Exception {
         twiddle(m1, TWIDDLE_ENABLE);
-        ClassLoader systemClassLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader systemClassLoader = Lookup.getDefault().lookup(ClassLoader.class);
         Class xface = systemClassLoader.loadClass("org.foo.Interface");
         Lookup.Result r = Lookup.getDefault().lookupResult(xface);
         List instances = new ArrayList(r.allInstances());
@@ -148,14 +148,14 @@ public class MetaInfServicesTest extends NbTestCase {
         // not really important: assertFalse(l.gotSomething());
         instances = new ArrayList(r.allInstances());
         assertEquals(0, instances.size());
-        systemClassLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        systemClassLoader = Lookup.getDefault().lookup(ClassLoader.class);
         Class xface2 = systemClassLoader.loadClass("org.foo.Interface");
         assertTrue(xface != xface2);
         Lookup.Result r2 = Lookup.getDefault().lookupResult(xface2);
         instances = new ArrayList(r2.allInstances());
         assertEquals(1, instances.size());
         // Let's also check up on some standard JDK services.
-        PrintServiceLookup psl = (PrintServiceLookup)Lookup.getDefault().lookup(PrintServiceLookup.class);
+        PrintServiceLookup psl = Lookup.getDefault().lookup(PrintServiceLookup.class);
         assertNotNull("Some META-INF/services/javax.print.PrintServiceLookup was found in " + Lookup.getDefault(), psl);
     }
     

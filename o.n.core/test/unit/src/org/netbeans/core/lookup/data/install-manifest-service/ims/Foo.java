@@ -18,7 +18,7 @@ public class Foo extends ServiceType {
         init();
     }
     private void init() {
-        loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        loader = Lookup.getDefault().lookup(ClassLoader.class);
         if (loader == null) {
             Thread.dumpStack();
             System.err.println("Lookup=" + Lookup.getDefault());

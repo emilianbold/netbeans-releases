@@ -72,7 +72,7 @@ public class ShortcutsFolderTest extends LoggingTestCaseHid {
         registerIntoLookup(new ENV());
 
         Main.initializeURLFactory ();
-        keymap = (Keymap) Lookup.getDefault ().lookup (Keymap.class);
+        keymap = Lookup.getDefault().lookup(Keymap.class);
         
         assertNotNull("There is a keymap", keymap);
         ShortcutsFolder.initShortcuts ();

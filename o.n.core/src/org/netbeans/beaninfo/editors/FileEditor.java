@@ -347,7 +347,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     /** Property change listaner attached to the JFileChooser chooser. */
     public void propertyChange(PropertyChangeEvent e) {
         JFileChooser chooser = (JFileChooser)e.getSource();
-        File f = (File)chooser.getSelectedFile();
+        File f = chooser.getSelectedFile();
         if (f == null) {
             return;
         }
