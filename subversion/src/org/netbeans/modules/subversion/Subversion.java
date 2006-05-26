@@ -347,16 +347,28 @@ public class Subversion {
     }    
 
     private String regExpToFilePatters(String exp) {
-        exp = exp.replaceAll("\\.", "\\\\.");  
+        exp = exp.replaceAll("\\.", "\\\\.");
+        exp = exp.replaceAll("\\$", "\\\\\\$");
+        exp = exp.replaceAll("\\^", "\\\\^");
+        exp = exp.replaceAll("\\<", "\\\\<");
+        exp = exp.replaceAll("\\>", "\\\\>");
+        exp = exp.replaceAll("\\[", "\\\\[");
+        exp = exp.replaceAll("\\]", "\\\\]");
+        exp = exp.replaceAll("\\{", "\\\\{");
+        exp = exp.replaceAll("\\}", "\\\\}");
+        exp = exp.replaceAll("\\(", "\\\\(");
+        exp = exp.replaceAll("\\)", "\\\\)");
+        exp = exp.replaceAll("\\+", "\\\\+");
+        exp = exp.replaceAll("\\|", "\\\\|");
         exp = exp.replaceAll("\\*", ".*");  
-        exp = exp.replaceAll("\\?", ".");   
+        exp = exp.replaceAll("\\?", ".");
         return exp;
     }
 
     /**
      * Serializes all SVN requests (moves them out of AWT).
      */
-    public RequestProcessor getRequestProcessor() {
+    public RequestProcessor getRequestProcessor() { 
         return getRequestProcessor(null);
     }
 
