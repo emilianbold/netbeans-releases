@@ -1,13 +1,29 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
 package org.netbeans.bluej.export;
 
+import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
@@ -20,7 +36,7 @@ import org.netbeans.bluej.BluejProject;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -33,6 +49,7 @@ import org.openide.windows.WindowManager;
 public final class ConvertToJ2SEAction extends AbstractAction {
     
     private BluejProject project;
+    private WizardDescriptor.Panel[] panels;
     
     public ConvertToJ2SEAction(BluejProject project) {
         putValue(NAME, getName());
@@ -40,17 +57,22 @@ public final class ConvertToJ2SEAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
-        final ExportPanel panel = new ExportPanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, "Convert to J2SE Project type");
-        Object ret = DialogDisplayer.getDefault().notify(dd);
-        //TODO make sure the user selects en empty directory
-        if (NotifyDescriptor.OK_OPTION == ret) {
+        
+        final WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
+        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
+        wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
+        wizardDescriptor.setTitle("Convert to NetBeans J2SE Project");
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.setVisible(true);
+        dialog.toFront();
+        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+        if (!cancelled) {
                 final ProgressHandle handle = ProgressHandleFactory.createHandle("Converting to J2SE Project");
                 handle.start(10);
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
-                            doExport(panel.getNewProjectLocation(), handle);
+                            doExport((File)wizardDescriptor.getProperty("NewProjectLocation"), handle);
                         } catch (ClassNotFoundException ex) {
                             ex.printStackTrace();
                         } catch (InvocationTargetException ex) {
@@ -66,6 +88,41 @@ public final class ConvertToJ2SEAction extends AbstractAction {
                 });
         }
     }
+    
+    
+    /**
+     * Initialize panels representing individual wizard's steps and sets
+     * various properties for them influencing wizard appearance.
+     */
+    private WizardDescriptor.Panel[] getPanels() {
+        if (panels == null) {
+            panels = new WizardDescriptor.Panel[] {
+                new ExportWizardPanel1(project.getProjectDirectory())
+            };
+            String[] steps = new String[panels.length];
+            for (int i = 0; i < panels.length; i++) {
+                Component c = panels[i].getComponent();
+                // Default step name to component name of panel. Mainly useful
+                // for getting the name of the target chooser to appear in the
+                // list of steps.
+                steps[i] = c.getName();
+                if (c instanceof JComponent) { // assume Swing components
+                    JComponent jc = (JComponent) c;
+                    // Sets step number of a component
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    // Sets steps names for a panel
+                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    // Turn on subtitle creation on each step
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    // Show steps on the left side with the image on the background
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    // Turn on numbering of all steps
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                }
+            }
+        }
+        return panels;
+    }    
     
     public String getName() {
         return NbBundle.getMessage(ConvertToJ2SEAction.class, "CTL_ConvertToJ2SEAction");
