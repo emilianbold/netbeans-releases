@@ -17,6 +17,7 @@ import java.io.File;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.apache.tools.ant.module.spi.TaskStructure;
 
 /**
  * Ant logger interested in task &quot;junit&quot;,
@@ -37,10 +38,9 @@ public final class JUnitAntLogger extends AntLogger {
         AntEvent.LOG_VERBOSE
     };
     
-    /** */
-    private static final String[] JUNIT_STRARR = {"junit"};             //NOI18N
-    /** */
-    private static final String[] JAVA_STRARR = {"java"};               //NOI18N
+    private static final String TASK_JAVA = "java";                     //NOI18N
+    private static final String TASK_JUNIT = "junit";                   //NOI18N
+    private static final String[] INTERESTING_TASKS = {TASK_JAVA, TASK_JUNIT};
     
     /** default constructor for lookup */
     public JUnitAntLogger() { }
@@ -54,62 +54,69 @@ public final class JUnitAntLogger extends AntLogger {
     }
     
     public String[] interestedInTasks(AntSession session) {
-        final int sessionType = getSessionType(session);
-        return (sessionType == AntSessionInfo.SESSION_TYPE_TEST)
-               ? JUNIT_STRARR  //{"junit"}
-               : (sessionType == AntSessionInfo.SESSION_TYPE_DEBUG_TEST)
-                 ? JAVA_STRARR //{"java"}
-                 : AntLogger.NO_TASKS;
+        return INTERESTING_TASKS;
     }
     
     /**
-     * Detects type of the given Ant session.
-     * Recognized types are:
-     * <ul>
-     *     <li>test session</li>
-     *     <li>test debugging session</li>
-     * </ul>
-     * Session types are recognized by the sessions' originating targets.
+     * Detects type of the Ant task currently running.
      *
-     * @param  session  session whose type is to be recognized
-     * @return  <code>SESSION_TYPE_UNKNOWN</code> if the session type
-     *                                                            is unknown,
-     *          <code>SESSION_TYPE_OTHER</code> if the session is a test
-     *                                                            session,<br />
-     *          <code>SESSION_TYPE_DEBUG_TEST</code> if the session is a test
-     *                                                  debugging session,<br />
-     *          <code>SESSION_TYPE_OTHER</code> otherwise
-     * @see  AntSession#getOriginatingTargets()
+     * @param  event  event produced by the currently running Ant session
+     * @return  {@code TaskType.TEST_TASK} if the task is a JUnit test task,
+     *          {@code TaskType.DEBUGGING_TEST_TASK} if the task is a JUnit
+     *             test task running in debugging mode,
+     *          {@code TaskType.OTHER_TASK} if the task is not a JUnit test
+     *             task;
+     *          or {@code null} if no Ant task is currently running
      */
-    private static int detectSessionType(final AntSession session) {
-        final String[] originatingTargets = session.getOriginatingTargets();
-        if (originatingTargets.length == 0) {
-            return AntSessionInfo.SESSION_TYPE_UNKNOWN;
+    private static TaskType detectTaskType(AntEvent event) {
+        final String taskName = event.getTaskName();
+        
+        if (taskName == null) {
+            return null;
         }
-        if (originatingTargets.length == 1) {
-            final String origTarget = originatingTargets[0];
-            if (origTarget.startsWith("test")                           //NOI18N
-                && ((origTarget.length() == 4)
-                    || !Character.isLetter(origTarget.charAt(4)))
-                || origTarget.equals("run-tests")) {                    //NOI18N
-                /*
-                 * Target names:
-                 *    "test", "test-single"  (J2SE projects, NB module projects)
-                 *    "run-tests"            (many freeform projects)
-                 */
-                return AntSessionInfo.SESSION_TYPE_TEST;
-            } else if (origTarget.startsWith("debug-test")              //NOI18N
-                       && ((origTarget.length() == 10)
-                           || !Character.isLetter(origTarget.charAt(10)))) {
-                /*
-                 * Target names:
-                 *    "debug-test"           (J2SE projects)
-                 *    "debug-test-single-nb" (NB module projects)
-                 */
-                return AntSessionInfo.SESSION_TYPE_DEBUG_TEST;
+        
+        if (taskName.equals(TASK_JUNIT)) {
+            return TaskType.TEST_TASK;
+        }
+        
+        if (taskName.equals(TASK_JAVA)) {
+            TaskStructure taskStructure = event.getTaskStructure();
+
+            String className = taskStructure.getAttribute("classname"); //NOI18N
+            if ((className == null)
+                    || !event.evaluate(className)
+                        .equals("junit.textui.TestRunner")) {           //NOI18N
+                return TaskType.OTHER_TASK;
             }
+            
+            TaskStructure[] nestedElems = taskStructure.getChildren();
+            for (TaskStructure ts : nestedElems) {
+                if (ts.getName().equals("jvmarg")) {                    //NOI18N
+                    String value = ts.getAttribute("value");            //NOI18N
+                    if ((value != null)
+                            && event.evaluate(value)
+                               .equals("-Xdebug")) {                    //NOI18N
+                        return TaskType.DEBUGGING_TEST_TASK;
+                    }
+                }
+            }
+            
+            return TaskType.TEST_TASK;
         }
-        return AntSessionInfo.SESSION_TYPE_OTHER;
+        
+        assert false : "Unhandled task name";                           //NOI18N
+        return TaskType.OTHER_TASK;
+    }
+    
+    /**
+     * Tells whether the given task type is a test task type or not.
+     *
+     * @param  taskType  taskType to be checked; may be {@code null}
+     * @return  {@code true} if the given task type marks a test task;
+     *          {@code false} otherwise
+     */
+    private static boolean isTestTaskType(TaskType taskType) {
+        return (taskType != null) && (taskType != TaskType.OTHER_TASK);
     }
     
     public boolean interestedInScript(File script, AntSession session) {
@@ -123,70 +130,60 @@ public final class JUnitAntLogger extends AntLogger {
     /**
      */
     public void messageLogged(final AntEvent event) {
-        if (event.getLogLevel() != AntEvent.LOG_VERBOSE) {
-            getOutputReader(event.getSession()).messageLogged(event);
-        } else {
-            /* verbose messages are logged no matter which task produced them */
-            verboseMessageLogged(event);
+        if (isTestTaskRunning(event)) {
+            if (event.getLogLevel() != AntEvent.LOG_VERBOSE) {
+                getOutputReader(event).messageLogged(event);
+            } else {
+                /* verbose messages are logged no matter which task produced them */
+                getOutputReader(event).verboseMessageLogged(event);
+            }
         }
     }
     
     /**
      */
-    private void verboseMessageLogged(final AntEvent event) {
-        final String currTask = event.getTaskName();
-        if (currTask == null) {
-            return;
-        }
-
-        final AntSession session = event.getSession();
-        final String[] myTasks = interestedInTasks(session);
-        for (int i = 0; i < myTasks.length; i++) {
-            if (currTask.equals(myTasks[i])) {
-                getOutputReader(session).verboseMessageLogged(event);
-                break;
-            }
-        }
+    private boolean isTestTaskRunning(AntEvent event) {
+        return isTestTaskType(
+                getSessionInfo(event.getSession()).currentTaskType);
     }
     
     /**
      */
     public void taskStarted(final AntEvent event) {
-        getOutputReader(event.getSession()).testTaskStarted();
+        TaskType taskType = detectTaskType(event);
+        if (isTestTaskType(taskType)) {
+            AntSessionInfo sessionInfo = getSessionInfo(event.getSession());
+            assert !isTestTaskType(sessionInfo.currentTaskType);
+            sessionInfo.timeOfTestTaskStart = System.currentTimeMillis();
+            sessionInfo.currentTaskType = taskType;
+            if (sessionInfo.sessionType == null) {
+                sessionInfo.sessionType = taskType;
+            }
+            getOutputReader(event).testTaskStarted();
+        }
+    }
+    
+    /**
+     */
+    public void taskFinished(final AntEvent event) {
+        AntSessionInfo sessionInfo = getSessionInfo(event.getSession());
+        if (isTestTaskType(sessionInfo.currentTaskType)) {
+            sessionInfo.currentTaskType = null;
+        }
+        
     }
     
     /**
      */
     public void buildFinished(final AntEvent event) {
-        final AntSession session = event.getSession();
-        final AntSessionInfo sessionInfo = getSessionInfo(session);
-        final int sessionType = sessionInfo.sessionType;
+        AntSession session = event.getSession();
+        AntSessionInfo sessionInfo = getSessionInfo(session);
 
-        if ((sessionType != AntSessionInfo.SESSION_TYPE_UNKNOWN)
-                && (sessionType != AntSessionInfo.SESSION_TYPE_OTHER)) {
-            getOutputReader(event.getSession()).buildFinished(event);
+        if (isTestTaskType(sessionInfo.sessionType)) {
+            getOutputReader(event).buildFinished(event);
         }
         
         session.putCustomData(this, null);          //forget AntSessionInfo
-    }
-    
-    /**
-     */
-    private int getSessionType(final AntSession session) {
-        final AntSessionInfo sessionInfo = getSessionInfo(session);
-        assert sessionInfo != null;
-        
-        int sessionType = sessionInfo.sessionType;
-        if (sessionType == AntSessionInfo.SESSION_TYPE_UNKNOWN) {
-            sessionType = detectSessionType(session);
-            if (sessionType != AntSessionInfo.SESSION_TYPE_UNKNOWN) {
-                sessionInfo.sessionType = sessionType;
-                if (sessionType != AntSessionInfo.SESSION_TYPE_OTHER) {
-                    getOutputReader(session).testTargetStarted();
-                }
-            }
-        }
-        return sessionType;
     }
     
     /**
@@ -195,14 +192,17 @@ public final class JUnitAntLogger extends AntLogger {
      * @param  session  session to return a reader for
      * @return  output reader for the session
      */
-    private JUnitOutputReader getOutputReader(final AntSession session) {
+    private JUnitOutputReader getOutputReader(final AntEvent event) {
+        assert isTestTaskType(getSessionInfo(event.getSession()).sessionType);
+        
+        final AntSession session = event.getSession();
         final AntSessionInfo sessionInfo = getSessionInfo(session);
         JUnitOutputReader outputReader = sessionInfo.outputReader;
         if (outputReader == null) {
             outputReader = new JUnitOutputReader(
                                         session,
-                                        getSessionType(session),
-                                        sessionInfo.getTimeOfSessionStart());
+                                        sessionInfo.sessionType,
+                                        sessionInfo.getTimeOfTestTaskStart());
             sessionInfo.outputReader = outputReader;
         }
         return outputReader;

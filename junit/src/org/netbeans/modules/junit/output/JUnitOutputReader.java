@@ -59,8 +59,6 @@ final class JUnitOutputReader {
     private boolean testTargetStarted = false;
     /** */
     private boolean testTaskStarted = false;
-    /** */
-    private boolean reportStarted = false;
     /**
      * did we already get statistics of tests/failures/errors for the current
      * report?
@@ -70,7 +68,7 @@ final class JUnitOutputReader {
     /** */
     private final AntSession session;
     /** */
-    private final int sessionType;
+    private final TaskType sessionType;
     /** */
     private final File antScript;
     /** */
@@ -118,7 +116,7 @@ final class JUnitOutputReader {
     
     /** Creates a new instance of JUnitOutputReader */
     JUnitOutputReader(final AntSession session,
-                      final int sessionType,
+                      final TaskType sessionType,
                       final long timeOfSessionStart) {
         this.session = session;
         this.sessionType = sessionType;
@@ -522,7 +520,6 @@ final class JUnitOutputReader {
     private Report suiteStarted(final String suiteName) {
         closePreviousReport();
         report = createReport(suiteName);
-        checkReportStarted();
                 
         Manager.getInstance().displaySuiteRunning(session,
                                                   sessionType,
@@ -581,8 +578,6 @@ final class JUnitOutputReader {
     /**
      */
     private void displayOutput(final String text, final boolean error) {
-        checkReportStarted();
-        
         Manager.getInstance().displayOutput(session, sessionType, text, error);
     }
     
@@ -604,15 +599,6 @@ final class JUnitOutputReader {
             testTargetStarted = true;
             testTaskStarted = true;
             Manager.getInstance().testStarted(session, sessionType);
-        }
-    }
-    
-    /** */
-    private void checkReportStarted() {
-        checkTestTaskStarted();
-        if (!reportStarted) {
-            reportStarted = true;
-            Manager.getInstance().reportStarted(session);
         }
     }
     

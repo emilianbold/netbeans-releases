@@ -54,11 +54,8 @@ final class Manager {
      * constant), it means that method {@link #reportStarted} method
      * has not yet been called for the session.
      */
-    private final Map/*<AntSession, Integer>*/ junitSessions
-            = new WeakHashMap(5);
-
-    /** */
-    private ComponentListener listener;
+    private final Map<AntSession, TaskType> junitSessions
+            = new WeakHashMap<AntSession, TaskType>(5);
 
     
     /**
@@ -83,7 +80,7 @@ final class Manager {
      * Called when it is detected that the current session was initiated
      * by a test target. Displays a message in the JUnit results window.
      */
-    void targetStarted(final AntSession session, final int sessionType) {
+    void targetStarted(final AntSession session, final TaskType sessionType) {
         displayMessage(
                 session,
                 sessionType, 
@@ -94,7 +91,7 @@ final class Manager {
      * Called when an Ant task running JUnit tests is started.
      * Displays a message in the JUnit results window.
      */
-    void testStarted(final AntSession session, final int sessionType) {
+    void testStarted(final AntSession session, final TaskType sessionType) {
         displayMessage(
                 session,
                 sessionType, 
@@ -103,60 +100,10 @@ final class Manager {
     
     /**
      */
-    void reportStarted(final AntSession session) {
-        Object sessType = junitSessions.get(session);
-        assert (sessType == null) || (sessType.getClass() == Integer.class);
-        if (sessType == null) {
-            return;
-        }
-        
-        if (((Integer) sessType).intValue()
-                    != AntSessionInfo.SESSION_TYPE_TEST) {
-            /*
-             * For non-test sessions, the result window is displayed
-             * only after the session finishes.
-             */
-            return;
-        }
-        
-        //<editor-fold defaultstate="collapsed" desc="ComponentListener">
-        /**
-         * This class detects when the JUnit Results window is hidden
-         * by the text output window and makes it appear again.
-         */
-        class DishonourAvenger implements ComponentListener {
-            private boolean activated = false;
-            
-            public void componentMoved(ComponentEvent e) {}
-            public void componentResized(ComponentEvent e) {}
-            public void componentShown(ComponentEvent e) {}
-            public void componentHidden(ComponentEvent e) {
-                if (!activated) {
-                    activated = true;
-                    
-                    final ResultWindow window = ResultWindow.getInstance();
-                    window.removeComponentListener(this);
-                    window.requestVisible();
-                }
-            }
-        }
-        //</editor-fold>
-        
-        Mutex.EVENT.writeAccess(new Runnable() {
-            public void run() {
-                ResultWindow.getInstance().addComponentListener(
-                        listener = new DishonourAvenger());
-            }
-        });
-    }
-    
-    /**
-     */
     void sessionFinished(final AntSession session,
-                         final int sessionType,
+                         final TaskType sessionType,
                          final boolean initializationFailed) {
         Object o = junitSessions.get(session);
-        assert (o == null) || (o instanceof Integer);
         if (o == null) {
             /* This session did not run the "junit" task. */
             return;
@@ -171,15 +118,6 @@ final class Manager {
         junitSessions.remove(session);   //must be after displayMessage(...)
                                          //otherwise the window would get
                                          //activated
-        
-        if (listener != null) {
-            Mutex.EVENT.writeAccess(new Runnable() {
-                public void run() {
-                    ResultWindow.getInstance().removeComponentListener(listener);
-                }
-            });
-            listener = null;
-        }
         
         //<editor-fold defaultstate="collapsed" desc="disabled code">
         /*
@@ -270,7 +208,7 @@ final class Manager {
     /**
      */
     void displayOutput(final AntSession session,
-                       final int sessionType,
+                       final TaskType sessionType,
                        final String text,
                        final boolean error) {
 
@@ -284,7 +222,7 @@ final class Manager {
     /**
      */
     void displaySuiteRunning(final AntSession session,
-                             final int sessionType,
+                             final TaskType sessionType,
                              final String suiteName) {
 
         /* Called from the AntLogger's thread */
@@ -297,7 +235,7 @@ final class Manager {
     /**
      */
     void displayReport(final AntSession session,
-                       final int sessionType,
+                       final TaskType sessionType,
                        final Report report) {
 
         /* Called from the AntLogger's thread */
@@ -315,7 +253,7 @@ final class Manager {
      * @param  message  message to be displayed
      */
     private void displayMessage(final AntSession session,
-                                final int sessionType,
+                                final TaskType sessionType,
                                 final String message) {
 
         /* Called from the AntLogger's thread */
@@ -382,11 +320,11 @@ final class Manager {
     /**
      */
     private void displayInWindow(final AntSession session,
-                                 final int sessionType,
+                                 final TaskType sessionType,
                                  final ResultDisplayHandler displayHandler) {
         final boolean promote =
-                (junitSessions.put(session, new Integer(sessionType)) == null)
-                && (sessionType == AntSessionInfo.SESSION_TYPE_TEST);
+                (junitSessions.put(session, sessionType) == null)
+                && (sessionType == TaskType.TEST_TASK);
         
         int displayIndex = getDisplayIndex(session);
         if (displayIndex == -1) {
