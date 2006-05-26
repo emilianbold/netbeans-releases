@@ -138,6 +138,9 @@ public final class Mutex extends Object {
 
     /** granted mode */
     private int grantedMode = NONE;
+    
+    /** The mode the mutex was in before it started chaining */
+    private int origMode;
 
     /** protects internal data structures */
     private /*final*/ Object LOCK;
@@ -187,15 +190,6 @@ public final class Mutex extends Object {
             init(new InternalLock());
             privileged.setParent(this);
         }
-    }
-
-    /** Decides whether two locks are compatible.?
-     * @param granted?
-     * @param requested?
-     * @return <tt>true</tt> iff they are compatible?
-     */
-    private static boolean compatibleLocks(int granted, int requested) {
-        return cmatrix[requested][granted];
     }
 
     /** Initiates this Mutex */
@@ -605,7 +599,7 @@ public final class Mutex extends Object {
                         info.rsnapshot = info.counts[S];
 
                         if (grantedMode == S) {
-                            grantedMode = X;
+                            setGrantedMode(X);
                         } else if (grantedMode == X) {
                             // defensive
                             throw new IllegalStateException();
@@ -630,7 +624,7 @@ public final class Mutex extends Object {
                 } else { // first acquisition
 
                     if (isCompatible(requested)) { // NONE -> S,X or S -> S
-                        grantedMode = requested;
+                        setGrantedMode(requested);
                         registeredThreads.put(t, info = new ThreadInfo(t, requested));
 
                         if (requested == S) {
@@ -646,7 +640,7 @@ public final class Mutex extends Object {
                     return false;
                 }
 
-                grantedMode = CHAIN;
+                setGrantedMode(CHAIN);
                 cell = chain(requested, t, 0);
             }
              // sync
@@ -655,7 +649,7 @@ public final class Mutex extends Object {
         }
          // for
     }
-
+    
     /** privilegedEnter serves for processing posted requests */
     private boolean reenter(Thread t, int mode) {
         boolean log = LOG.isLoggable(Level.FINE);
@@ -707,7 +701,7 @@ public final class Mutex extends Object {
             readersNo += 2;
 
             // prevent from new readers
-            grantedMode = CHAIN;
+            setGrantedMode(CHAIN);
 
             return true;
         }
@@ -735,7 +729,7 @@ public final class Mutex extends Object {
                 // always chain this thread
                 // since there can be another one
                 // in the queue with higher priority
-                grantedMode = CHAIN;
+                setGrantedMode(CHAIN);
                 cell = chain(mode, t, Integer.MAX_VALUE);
 
                 if (readersNo == 0) { // seems I may enter
@@ -746,7 +740,7 @@ public final class Mutex extends Object {
 
                         return;
                     } else {
-                        grantedMode = NONE;
+                        setGrantedMode(NONE);
                         wakeUpOthers();
                     }
                 }
@@ -875,9 +869,11 @@ public final class Mutex extends Object {
 
                 // downgrade the lock
                 if (info.counts[S] > 0) {
-                    info.mode = grantedMode = S;
+                    info.mode = S;
+                    setGrantedMode(S);
                 } else {
-                    info.mode = grantedMode = NONE;
+                    info.mode = NONE;
+                    setGrantedMode(NONE);
                     registeredThreads.remove(info.t);
                 }
 
@@ -937,7 +933,7 @@ public final class Mutex extends Object {
                 // set grantedMode to NONE
                 // and then wakeUp others - either immediately 
                 // or in privelegedEnter()
-                grantedMode = NONE;
+                setGrantedMode(NONE);
 
                 if (info.getRunnableCount(X) > 0) {
                     return X;
@@ -968,7 +964,7 @@ public final class Mutex extends Object {
                                 }
 
                                 if (waiters.size() == 1) {
-                                    grantedMode = X;
+                                    setGrantedMode(X);
                                 }
                                  // else let CHAIN
 
@@ -1061,10 +1057,10 @@ public final class Mutex extends Object {
                     continue;
                 }
 
-                if (compatibleLocks(grantedMode, qc.mode)) { // woken S -> should I wake X? -> no
+                if (isCompatible(qc.mode)) { // woken S -> should I wake X? -> no
                     waiters.remove(i--);
                     qc.wakeMeUp();
-                    grantedMode = qc.mode;
+                    setGrantedMode(qc.mode);
 
                     if (getThreadInfo(qc.t) == null) {
                         // force to have a record since recorded threads
@@ -1079,7 +1075,7 @@ public final class Mutex extends Object {
                         registeredThreads.put(qc.t, ti);
                     }
                 } else {
-                    grantedMode = CHAIN;
+                    setGrantedMode(CHAIN);
 
                     break;
                 }
@@ -1109,7 +1105,7 @@ public final class Mutex extends Object {
                 if (qc.mode == S) { // readers only
                     waiters.remove(i--);
                     qc.wakeMeUp();
-                    grantedMode = S;
+                    setGrantedMode(S);
 
                     if (getThreadInfo(qc.t) == null) {
                         // force to have a record since recorded threads
@@ -1181,7 +1177,9 @@ public final class Mutex extends Object {
     * @return <tt>true</tt> if and only if current mode and requested mode are compatible
     */
     private boolean isCompatible(int requested) {
-        return compatibleLocks(grantedMode, requested);
+        // allow next reader in even in chained mode, if it was read access before
+        if (requested == S && grantedMode == CHAIN && origMode == S) return true;
+        return cmatrix[requested][grantedMode];
     }
 
     private ThreadInfo getThreadInfo(Thread t) {
@@ -1522,5 +1520,12 @@ public final class Mutex extends Object {
         public void exitWriteAccess() {
             parent.leave(Thread.currentThread());
         }
+    }
+
+    private void setGrantedMode(int mode) {
+        if (grantedMode != CHAIN && mode == CHAIN) {
+            origMode = grantedMode;
+        }
+        grantedMode = mode;
     }
 }
