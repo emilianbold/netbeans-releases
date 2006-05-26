@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +40,7 @@ import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -76,8 +78,11 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
     private boolean handleAuthenticationError() {
         SVNUrl url = client.getSvnUrl();
-        Repository repository = new Repository(url, false, false, "Correct the password, username and proxy settings for ths URL:");
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(repository.getPanel(), "Authentication failed"); 
+        Repository repository = new Repository(url, false, false, "Correct the password, username and proxy settings for the URL:");
+        CorrectAuthPanel corectPanel = new CorrectAuthPanel();
+        corectPanel.panel.setLayout(new BorderLayout());
+        corectPanel.panel.add(repository.getPanel(), BorderLayout.NORTH);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, "Authentication failed"); 
 
         JButton retryButton = new JButton("Retry"); 
         dialogDescriptor.setOptions(new Object[] {retryButton, "Cancel"}); 
@@ -99,7 +104,8 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
         // copy the certificate if it already exists
         SVNUrl url = client.getSvnUrl();
-        String realmString = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+        String hostString = SvnUtils.ripUserFromHost(url.getHost());
+        String realmString = url.getProtocol() + "://" + hostString + ":" + url.getPort();
         File certFile = CertificateFile.getSystemCertFile(realmString);
         if(certFile.exists()) {
             FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));
@@ -115,13 +121,13 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             }
         };
 
-        ProxyDescriptor proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost()); 
+        ProxyDescriptor proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(hostString); 
         Socket proxy = null;
         if (proxyDescriptor != null && proxyDescriptor.getHost() != null ) { 
             ConnectivitySettings connectivitySettings = proxyDescriptor.toConnectivitySettings();
             try {
                 proxy = new Socket(connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
-                connectProxy(proxy, url.getHost(), url.getPort(), connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
+                connectProxy(proxy, hostString, url.getPort(), connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
                 return false;
@@ -144,9 +150,9 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         SSLSocket socket = null;
         try {
             if(proxy == null) {
-                socket = (SSLSocket) (factory).createSocket(url.getHost(), url.getPort());
+                socket = (SSLSocket) (factory).createSocket(hostString, url.getPort());
             } else {
-                socket = (SSLSocket) (factory).createSocket(proxy, url.getHost(), url.getPort(), true);
+                socket = (SSLSocket) (factory).createSocket(proxy, hostString, url.getPort(), true);
             }
             socket.startHandshake();
         } catch (IOException ex) {
@@ -169,7 +175,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         }
 
         AcceptCertificatePanel acceptCertificatePanel = new AcceptCertificatePanel();
-        acceptCertificatePanel.certificatePane.setText(getCertMessage(cert, url.getHost()));
+        acceptCertificatePanel.certificatePane.setText(getCertMessage(cert, hostString));
         DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, "Server certificate verification failed"); 
 
         JButton permanentlyButton = new JButton("Accept permanently"); 
@@ -186,7 +192,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         CertificateFile cf = null;
         try {
             boolean temporarily = dialogDescriptor.getValue() == temporarilyButton;
-            cf = new CertificateFile(cert, url.getProtocol() + "://" + url.getHost() + ":" + url.getPort(), 10, temporarily); // XXX how to get the value for failures            
+            cf = new CertificateFile(cert, url.getProtocol() + "://" + hostString + ":" + url.getPort(), 10, temporarily); // XXX how to get the value for failures            
             cf.store();
         } catch (CertificateEncodingException ex) {
             ErrorManager.getDefault().notify(ex);

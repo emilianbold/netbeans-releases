@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.subversion.ui.repository;
 
-import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,6 +39,7 @@ import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -128,7 +128,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                     // ignore, should not happen
                 }
                 if(!userVisitedProxySettings) {
-                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());                    
+                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(SvnUtils.ripUserFromHost(url.getHost()));
                 }                
                 ProxySelector selector = new ProxySelector();
                 selector.setProxyDescriptor(proxyDescriptor);
@@ -230,7 +230,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             
             // XXX the way the usr, password and proxy settings are stored is not symetric and consistent...
             if(userVisitedProxySettings) {
-                SvnConfigFiles.getInstance().setProxy(proxyDescriptor, repository.getUrl().getHost());
+                SvnConfigFiles.getInstance().setProxy(proxyDescriptor, SvnUtils.ripUserFromHost(repository.getUrl().getHost()));
             }            
         }    
         
@@ -280,33 +280,38 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if(urlString == null ) {
             return null;
         }
-        try {
-            int idx = urlString.lastIndexOf('@');
-            SVNRevision revision = null;
-            if(idx < 0) {                
-                revision = SVNRevision.HEAD;                    
-            } else if (acceptRevision) {
-                if( idx + 1 < urlString.length()) {
-                    String number = "";
-                    try {
-                        number = urlString.substring(idx+1);
-                        revision = new SVNRevision.Number(Long.parseLong(number));
-                    } catch (NumberFormatException ex) {
-                        setValid(false, "Wrong revision number: " + number);
-                        return null;
-                    }                    
-                }
-                urlString = urlString.substring(0, idx);
-            } else {
-                throw new MalformedURLException("The only revision allowed here is HEAD!"); 
-            }
-            SVNUrl url = removeEmptyPathSegments(new SVNUrl (urlString));
-            return new SelectedRepository(url, revision);
-
+        try {            
+            return getSelectedRepository(urlString);
         } catch (MalformedURLException ex) {
             setValid(false, ex.getLocalizedMessage());
             return null;
         }        
+    }
+
+    private SelectedRepository getSelectedRepository(String urlString) throws MalformedURLException {
+        int idx = urlString.lastIndexOf('@');
+        int hostIdx = urlString.indexOf("://");
+        int firstSlashIdx = urlString.indexOf("/", hostIdx + 3);
+        SVNRevision revision = null;
+        if(idx < 0 || firstSlashIdx < 0 || idx < firstSlashIdx) {
+            revision = SVNRevision.HEAD;
+        } else if (acceptRevision) {
+            if( idx + 1 < urlString.length()) {
+                String number = "";
+                try {
+                    number = urlString.substring(idx+1);
+                    revision = new SVNRevision.Number(Long.parseLong(number));
+                } catch (NumberFormatException ex) {
+                    setValid(false, "Wrong revision number: " + number);
+                    return null;
+                }
+            }
+            urlString = urlString.substring(0, idx);
+        } else {
+            throw new MalformedURLException("The only revision allowed here is HEAD!");
+        }
+        SVNUrl url = removeEmptyPathSegments(new SVNUrl(urlString));
+        return new SelectedRepository(url, revision);
     }
 
     private SVNUrl removeEmptyPathSegments(SVNUrl url) throws MalformedURLException {
@@ -314,7 +319,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         StringBuffer urlString = new StringBuffer();
         urlString.append(url.getProtocol());
         urlString.append("://");
-        urlString.append(url.getHost());
+        urlString.append(SvnUtils.ripUserFromHost(url.getHost()));
         if(url.getPort() > 0) {
             urlString.append(":");
             urlString.append(url.getPort());
@@ -337,7 +342,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             throw ex;
         }
     }
-
+    
     /**
      * Fast url syntax check. It can invalidate the whole step
      */
@@ -371,7 +376,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             url = repository.getUrl();
             if (url != null && !url.getProtocol().equals("file")) {
                 if (userVisitedProxySettings == false) {
-                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
+                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(SvnUtils.ripUserFromHost(url.getHost()));
                 }
                 schedulePasswordUpdate();
             }

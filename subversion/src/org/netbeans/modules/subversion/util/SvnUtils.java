@@ -766,4 +766,14 @@ public class SvnUtils {
         refreshRecursively(folder.getParentFile());
         Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
+
+    public static String ripUserFromHost(String host) {
+        int idx = host.indexOf('@');
+        if(idx < 0) {
+            return host;
+        } else {
+            return host.substring(idx + 1);
+        }
+    }
+
 }

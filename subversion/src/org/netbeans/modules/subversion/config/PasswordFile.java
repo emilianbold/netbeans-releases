@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion.config;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.config.KVFile.Key;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -49,7 +50,8 @@ public class PasswordFile extends SVNCredentialFile {
      */
     public static PasswordFile findFileForUrl(SVNUrl svnUrl) {
         // create our own realmstring  -
-        String realmString = "<" + svnUrl.getProtocol() + "://" + svnUrl.getHost() + ">";
+        String urlString = SvnUtils.ripUserFromHost(svnUrl.getHost());
+        String realmString = "<" + svnUrl.getProtocol() + "://" + urlString + ">";
         PasswordFile nbPasswordFile = new PasswordFile(realmString);
         
         if(!nbPasswordFile.getFile().exists()) {
@@ -127,7 +129,8 @@ public class PasswordFile extends SVNCredentialFile {
             // at least 'svn://'
             return false;
         }
-        return realmStrig.substring(1).startsWith(svnUrl.getProtocol() + "://" + svnUrl.getHost());         
+        String urlString = SvnUtils.ripUserFromHost(svnUrl.getHost());
+        return realmStrig.substring(1).startsWith(svnUrl.getProtocol() + "://" + urlString);         
     }
     
     private static File getFile(String realmString) {

@@ -14,30 +14,21 @@
 package org.netbeans.modules.subversion.ui.wizards.repositorystep;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
-import java.text.DateFormat;
-import java.util.Date;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.subversion.OutputLogger;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientDescriptor;
 import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -157,7 +148,8 @@ public class RepositoryStep
 
                 SvnClient client;
                 try {
-                    ProxyDescriptor pd = SvnConfigFiles.getInstance().getProxyDescriptor(selectedRepository.getUrl().getHost());
+                    String hostString = SvnUtils.ripUserFromHost(selectedRepository.getUrl().getHost());
+                    ProxyDescriptor pd = SvnConfigFiles.getInstance().getProxyDescriptor(hostString);
                     client = Subversion.getInstance().getClient(selectedRepository.getUrl(),
                                                                 pd,
                                                                 repository.getUserName(),
