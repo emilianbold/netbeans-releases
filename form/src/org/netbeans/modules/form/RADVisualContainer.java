@@ -17,13 +17,14 @@ import java.awt.*;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.lang.reflect.Method;
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.openide.ErrorManager;
 
 
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
-    private ArrayList subComponents = new ArrayList(10);
+    private ArrayList<RADVisualComponent> subComponents = new ArrayList(10);
     private LayoutSupportManager layoutSupport; // = new LayoutSupportManager();
     private LayoutNode layoutNode; // [move to LayoutSupportManager?]
 
@@ -237,48 +238,59 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
 
         for (int i=0; i < initComponents.length; i++) {
-            RADComponent comp = initComponents[i];
+            RADComponent metacomp = initComponents[i];
 
-            if (comp instanceof RADVisualComponent)
-                subComponents.add(comp);
-            else if (comp instanceof RADMenuComponent)
-                containerMenu = (RADMenuComponent) comp; // [what with the current menu?]
+            if (metacomp instanceof RADVisualComponent) {
+                subComponents.add((RADVisualComponent)metacomp);
+                if (layoutSupport == null) {
+                    Component comp = (Component) metacomp.getBeanInstance();
+                    FakePeerSupport.attachFakePeer(comp);
+                    if (comp instanceof Container)
+                        FakePeerSupport.attachFakePeerRecursively((Container)comp);
+                    getContainerDelegate(getBeanInstance()).add(comp);
+                }
+            }
+            else if (metacomp instanceof RADMenuComponent)
+                containerMenu = (RADMenuComponent) metacomp; // [what with the current menu?]
             else
                 continue; // [just ignore?]
 
-            comp.setParentComponent(this);
+            metacomp.setParentComponent(this);
         }
     }
 
     public void reorderSubComponents(int[] perm) {
+        RADVisualComponent[] components = new RADVisualComponent[subComponents.size()];
+        LayoutConstraints[] constraints;
         if (layoutSupport != null) {
             layoutSupport.removeAll();
+            constraints = new LayoutConstraints[subComponents.size()];
+        }
+        else constraints = null;
 
-            RADVisualComponent[] components =
-                new RADVisualComponent[subComponents.size()];
-            LayoutConstraints[] constraints =
-                new LayoutConstraints[subComponents.size()];
+        for (int i=0; i < perm.length; i++) {
+            RADVisualComponent metacomp = subComponents.get(i);
+            components[perm[i]] = metacomp;
+            if (constraints != null)
+                constraints[perm[i]] = layoutSupport.getStoredConstraints(metacomp);
+        }
 
-            for (int i=0; i < perm.length; i++) {
-                RADVisualComponent comp = (RADVisualComponent) subComponents.get(i);
-                components[perm[i]] = comp;
-                constraints[perm[i]] = layoutSupport.getStoredConstraints(comp);
-            }
+        subComponents.clear();
+        subComponents.addAll(java.util.Arrays.asList(components));
 
-            subComponents.clear();
-            subComponents.addAll(java.util.Arrays.asList(components));
-
+        if (layoutSupport != null) {
             layoutSupport.addComponents(components, constraints, 0);
         }
         else {
-            RADVisualComponent[] components =
-                new RADVisualComponent[subComponents.size()];
-            for (int i=0; i < perm.length; i++) {
-                RADVisualComponent comp = (RADVisualComponent) subComponents.get(i);
-                components[perm[i]] = comp;
+            Container cont = getContainerDelegate(getBeanInstance());
+            cont.removeAll();
+            for (RADVisualComponent sub : components) {
+                Component comp = (Component) sub.getBeanInstance();
+                FakePeerSupport.attachFakePeer(comp);
+                if (comp instanceof Container)
+                    FakePeerSupport.attachFakePeerRecursively((Container)comp);
+                cont.add(comp);
             }
-            subComponents.clear();
-            subComponents.addAll(java.util.Arrays.asList(components));
         }
     }
 
@@ -286,22 +298,30 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         add(comp, -1);
     }
 
-    public void add(RADComponent comp, int index) {
-        RADVisualComponent visual = comp instanceof RADVisualComponent ?
-                                    (RADVisualComponent) comp : null;
+    public void add(RADComponent metacomp, int index) {
+        RADVisualComponent visual = metacomp instanceof RADVisualComponent ?
+                                    (RADVisualComponent) metacomp : null;
         if (visual != null) {
             if (index == -1) {
+                index = subComponents.size();
                 subComponents.add(visual);
             } else {
                 subComponents.add(index, visual);
             }
+            if (layoutSupport == null) {
+                Component comp = (Component) visual.getBeanInstance();
+                FakePeerSupport.attachFakePeer(comp);
+                if (comp instanceof Container)
+                    FakePeerSupport.attachFakePeerRecursively((Container)comp);
+                getContainerDelegate(getBeanInstance()).add(comp, index);
+            }
         }
-        else if (comp instanceof RADMenuComponent)
-            containerMenu = (RADMenuComponent) comp;  // [what with the current menu?]
+        else if (metacomp instanceof RADMenuComponent)
+            containerMenu = (RADMenuComponent) metacomp;  // [what with the current menu?]
         else
             return; // [just ignore?]
 
-        comp.setParentComponent(this);
+        metacomp.setParentComponent(this);
         if (visual != null) { // force constraints properties creation
             visual.getConstraintsProperties();
         }
@@ -309,9 +329,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     public void remove(RADComponent comp) {
         if (comp instanceof RADVisualComponent) {
+            int index = subComponents.indexOf(comp);
             if (layoutSupport != null) {
-                layoutSupport.removeComponent((RADVisualComponent) comp,
-                                              subComponents.indexOf(comp));
+                layoutSupport.removeComponent((RADVisualComponent) comp, index);
+            }
+            else {
+                getContainerDelegate(getBeanInstance()).remove(index);
             }
             if (subComponents.remove(comp))
                 comp.setParentComponent(null);
