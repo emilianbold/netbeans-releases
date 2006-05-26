@@ -16,6 +16,8 @@ package org.netbeans.installer;
 import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
 import com.installshield.util.MnemonicString;
+import com.installshield.wizard.OptionsTemplateEntry;
+import com.installshield.wizard.WizardBean;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.console.ConsoleWizardPanelImpl;
@@ -74,6 +76,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     
     private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
     
+    private String nbDestination;
+    
+    private String jdkDestination;
+    
     public void build(WizardBuilderSupport support) {
         super.build(support);
         try {
@@ -91,9 +97,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             String destination = (String) service.getProductBeanProperty(
             ProductService.DEFAULT_PRODUCT_SOURCE, null, "installLocation");
             
-            if (! System.getProperty("os.name").startsWith("Windows")) {
+            if (!Util.isWindowsOS()) {
                 File root = new File("/");
-                if (! root.canWrite()) {
+                if (!root.canWrite()) {
                     service.setProductBeanProperty(
                     ProductService.DEFAULT_PRODUCT_SOURCE,
                     null,
@@ -106,6 +112,47 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         }
         
         return super.queryEnter(event);
+    }
+    
+    public String getNbDestination () {
+        return nbDestination;
+    }
+    
+    public void setNbDestination (String nbDestination) {
+        this.nbDestination = nbDestination;
+    }
+    
+    public String getJdkDestination () {
+        return jdkDestination;
+    }
+    
+    public void setJdkDestination (String jdkDestination) {
+        this.jdkDestination = jdkDestination;
+    }
+    
+    /** We do not localize following text. */
+    public OptionsTemplateEntry[] getOptionsTemplateEntries (int i) {
+        String s = "InstallDirSelectionPanel";
+        String s1 = "Destination directory for NetBeans IDE.";
+        String s2 = "-W " + getBeanId() + ".nbDestination=";
+        if (i == WizardBean.TEMPLATE_VALUE) {
+            s2 = s2 + getOptionsFileTemplateValueStr();
+        } else {
+            s2 = s2 + getNbDestination();
+        }
+        OptionsTemplateEntry op1 = new OptionsTemplateEntry(s, s1, s2);
+        
+        s = "InstallDirSelectionPanel";
+        s1 = "Destination directory for JDK.";
+        s2 = "-W " + getBeanId() + ".jdkDestination=";
+        if (i == WizardBean.TEMPLATE_VALUE) {
+            s2 = s2 + getOptionsFileTemplateValueStr();
+        } else {
+            s2 = s2 + getJdkDestination();
+        }
+        OptionsTemplateEntry op2 = new OptionsTemplateEntry(s, s1, s2);
+        
+        return (new OptionsTemplateEntry[] {op1, op2});
     }
     
     public boolean entered(WizardBeanEvent event) {
@@ -389,23 +436,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         if (!checkInstallDir(nbInstallDir, NB_INSTALL_DIR, nbMsgStart)) {
 	    return false;
 	}
-	try {
-	    ProductService service = (ProductService)getService(ProductService.NAME);
-	    service.setRetainedProductBeanProperty(productURL,
-            Names.CORE_IDE_ID, "installLocation", nbInstallDir);
-            service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbInstallDir);
-            service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbInstallDir);
-            //Set install location for Storage Builder
-            String sbDestination = nbInstallDir + File.separator + "_uninst" + File.separator + "storagebuilder"; 
-            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
-            service.setRetainedProductBeanProperty(productURL,
-            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
-	} catch (ServiceException e) {
-	    logEvent(this, Log.ERROR, e);
-	}
-	
-	Util.setNbInstallDir(nbInstallDir);
-	logEvent(this, Log.DBG, "User specified nbInstallDir: " + nbInstallDir);
 	
  	// Check the j2se directory
         String j2seMsgStart = null;
@@ -417,14 +447,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         }
         String j2seInstallDir = null;
         if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
-            try {
-                ProductService service = (ProductService)getService(ProductService.NAME);
-                service.setRetainedProductBeanProperty(productURL,
-                Names.J2SE_ID, "active", Boolean.FALSE);
-            } catch(ServiceException ex) {
-                ex.printStackTrace();
-                Util.logStackTrace(this,ex);
-            }
+            //Code moved to execute() and exited()
         } else {
             // There is no jdk already installed so check the j2se directory.
             j2seInstallDir = jdkInstallDirTF.getText().trim();
@@ -447,21 +470,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             if (!checkInstallDir(j2seInstallDir, J2SE_INSTALL_DIR, j2seMsgStart)) {
                 return false;
             }
-            try {
-                ProductService service = (ProductService)getService(ProductService.NAME);
-                if (Util.isWindowsOS()) {
-                    service.setRetainedProductBeanProperty(productURL,
-                    Names.J2SE_ID, "installLocation", nbInstallDir);
-                } else {
-                    service.setRetainedProductBeanProperty(productURL,
-                    Names.J2SE_ID, "installLocation", j2seInstallDir);
-                }
-            } catch (ServiceException e) {
-                logEvent(this, Log.ERROR, e);
-            }
-            Util.setJdkHome(j2seInstallDir);
-            Util.setJ2SEInstallDir(j2seInstallDir);
-            logEvent(this, Log.DBG, "User specified j2seInstallDir: " + j2seInstallDir);
 
             // Last thing to do is create the J2SE directory unless the
             // directory exists and is empty.
@@ -486,6 +494,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                 return false;
             }
 	}
+        
+        nbDestination = nbInstallDir;
+        jdkDestination = j2seInstallDir;
+        
 	return true;
     }
     
@@ -502,6 +514,83 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             return false;
         }
         return true;
+    }
+    
+    public void exited (WizardBeanEvent event) {
+        logEvent(this, Log.DBG, "exited ENTER");
+        super.exited(event);
+	try {
+            String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
+	    ProductService service = (ProductService)getService(ProductService.NAME);
+	    service.setRetainedProductBeanProperty(productURL,
+            Names.CORE_IDE_ID, "installLocation", nbDestination);
+            service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbDestination);
+            service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbDestination);
+            //Set install location for Storage Builder
+            String sbDestination = nbDestination + File.separator + "_uninst" + File.separator + "storagebuilder"; 
+            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
+            service.setRetainedProductBeanProperty(productURL,
+            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
+            //JDK part
+            if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
+                //On Windows given JDK version can be installed only once so do not
+                //install it.
+                service.setRetainedProductBeanProperty(productURL,
+                Names.J2SE_ID, "active", Boolean.FALSE);
+            } else {
+                if (Util.isWindowsOS()) {
+                    service.setRetainedProductBeanProperty(productURL,
+                    Names.J2SE_ID, "installLocation", nbDestination);
+                } else {
+                    service.setRetainedProductBeanProperty(productURL,
+                    Names.J2SE_ID, "installLocation", jdkDestination);
+                }
+            }
+	} catch (ServiceException e) {
+	    logEvent(this, Log.ERROR, e);
+        }
+	logEvent(this, Log.DBG, "User specified nbInstallDir: " + nbDestination);
+        Util.setJdkHome(jdkDestination);
+        Util.setJ2SEInstallDir(jdkDestination);
+        logEvent(this, Log.DBG, "User specified j2seInstallDir: " + jdkDestination);
+    }
+    
+    public void execute (WizardBeanEvent event) {
+        logEvent(this, Log.DBG, "execute ENTER");
+        super.execute(event);
+	try {
+            String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
+	    ProductService service = (ProductService)getService(ProductService.NAME);
+	    service.setRetainedProductBeanProperty(productURL,
+            Names.CORE_IDE_ID, "installLocation", nbDestination);
+            service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbDestination);
+            service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbDestination);
+            //Set install location for Storage Builder
+            String sbDestination = nbDestination + File.separator + "_uninst" + File.separator + "storagebuilder"; 
+            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
+            service.setRetainedProductBeanProperty(productURL,
+            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
+            //JDK part
+            if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
+                //On Windows given JDK version can be installed only once so do not
+                //install it.
+                service.setRetainedProductBeanProperty(productURL,
+                Names.J2SE_ID, "active", Boolean.FALSE);
+            } else {
+                if (Util.isWindowsOS()) {
+                    service.setRetainedProductBeanProperty(productURL,
+                    Names.J2SE_ID, "installLocation", nbDestination);
+                } else {
+                    service.setRetainedProductBeanProperty(productURL,
+                    Names.J2SE_ID, "installLocation", jdkDestination);
+                }
+            }
+	} catch (ServiceException e) {
+	    logEvent(this, Log.ERROR, e);
+        }
+        Util.setJdkHome(jdkDestination);
+        Util.setJ2SEInstallDir(jdkDestination);
+        logEvent(this, Log.DBG, "User specified j2seInstallDir: " + jdkDestination);
     }
     
     /* Check the installation directory to see if it has illegal chars,
