@@ -714,7 +714,7 @@ public class NbBundle extends Object {
      * @return a read-only iterator of type <code>String</code>
      * @since 1.1.5
      */
-    public static Iterator getLocalizingSuffixes() {
+    public static Iterator<String> getLocalizingSuffixes() {
         return new LocaleIterator(Locale.getDefault());
     }
 

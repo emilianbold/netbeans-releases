@@ -147,9 +147,9 @@ public abstract class Util {
                 Locale.getDefault() != lastLocale ||
                 NbBundle.getBranding() != lastBranding) {
             List<String> _suffixes = new ArrayList<String>();
-            Iterator it = NbBundle.getLocalizingSuffixes();
+            Iterator<String> it = NbBundle.getLocalizingSuffixes();
             while (it.hasNext()) {
-                _suffixes.add((String)it.next());
+                _suffixes.add(it.next());
             }
             suffixes = _suffixes.toArray(new String[_suffixes.size()]);
             lastLocale = Locale.getDefault();

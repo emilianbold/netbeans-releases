@@ -491,7 +491,7 @@ final class NbInstaller extends ModuleInstaller {
                     ext = s.substring(idx);
                 }
                 ClassLoader cl = m.getClassLoader();
-                Iterator locit = NbBundle.getLocalizingSuffixes();
+                Iterator<String> locit = NbBundle.getLocalizingSuffixes();
                 ModuleLayeredFileSystem host;
                 // #19458: only put reloadables into the "session layer"
                 // (where they will not have their layers cached). All others
@@ -509,7 +509,7 @@ final class NbInstaller extends ModuleInstaller {
                 }
                 boolean foundSomething = false;
                 while (locit.hasNext()) {
-                    String suffix = (String)locit.next();
+                    String suffix = locit.next();
                     String resource = base + suffix + ext;
                     URL u = cl.getResource(resource);
                     if (u != null) {

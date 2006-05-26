@@ -379,7 +379,7 @@ public final class Util {
                         }
                         String base = name.substring(0, dot);
                         String suffix = name.substring(dot);
-                        Iterator it = NbBundle.getLocalizingSuffixes();
+                        Iterator/*<String>*/ it = NbBundle.getLocalizingSuffixes();
                         while (it.hasNext()) {
                             String infix = (String) it.next();
                             File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix); // NOI18N
@@ -662,7 +662,7 @@ public final class Util {
             locBundleResourceExt = "";
         }
         Collection/*<String>*/ resources = new LinkedHashSet();
-        for (Iterator it = NbBundle.getLocalizingSuffixes(); it.hasNext(); ) {
+        for (Iterator/*<String>*/ it = NbBundle.getLocalizingSuffixes(); it.hasNext(); ) {
             String suffix = (String) it.next();
             String resource = locBundleResourceBase + suffix + locBundleResourceExt;
             resources.add(resource);

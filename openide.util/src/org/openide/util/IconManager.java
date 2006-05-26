@@ -137,10 +137,10 @@ final class IconManager extends Object {
                 // #31008. [PENDING] remove in case package cache is precomputed
                 java.net.URL baseurl = (loader != null) ? loader.getResource(resource) // NOPMD
                         : IconManager.class.getClassLoader().getResource(resource);
-                Iterator it = NbBundle.getLocalizingSuffixes();
+                Iterator<String> it = NbBundle.getLocalizingSuffixes();
                 
                 while (it.hasNext()) {
-                    String suffix = (String) it.next();
+                    String suffix = it.next();
                     Image i;
 
                     if (suffix.length() == 0) {

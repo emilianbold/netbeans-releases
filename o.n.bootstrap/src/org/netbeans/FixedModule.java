@@ -139,9 +139,9 @@ final class FixedModule extends Module {
                     ext = locbundle.substring(idx);
                 }
                 List<String> suffixes = new ArrayList<String>(10);
-                Iterator it = NbBundle.getLocalizingSuffixes();
+                Iterator<String> it = NbBundle.getLocalizingSuffixes();
                 while (it.hasNext()) {
-                    suffixes.add((String)it.next());
+                    suffixes.add(it.next());
                 }
                 Collections.reverse(suffixes);
                 it = suffixes.iterator();

@@ -156,9 +156,9 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                             ext = "";
                         }
                         target = null;
-                        Iterator/*<String>*/ suffixes = NbBundle.getLocalizingSuffixes();
+                        Iterator<String> suffixes = NbBundle.getLocalizingSuffixes();
                         while (suffixes.hasNext()) {
-                            String suffix = (String) suffixes.next();
+                            String suffix = suffixes.next();
                             target = loader.getResource(base + suffix + ext);
                             if (target != null) {
                                 break;
