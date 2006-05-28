@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -63,6 +63,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                                null, "readOldProxyHost"), // NOI18N
                        new PropertyDescriptor ("proxyPort", IDESettings.class,
                                                null, "readOldProxyPort"), // NOI18N
+                       // need to store nonProxyHosts
+                       new PropertyDescriptor (IDESettings.PROP_NON_PROXY_HOSTS, IDESettings.class,
+                                               "getUserNonProxyHosts", "setUserNonProxyHosts"), // NOI18N
                    };
 
             desc[0].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_CONFIRM_DELETE"));
@@ -103,6 +106,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             
             desc[12].setHidden (true);
             desc[13].setHidden (true);
+            
+            desc[14].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_NON_PROXY_HOSTS"));
+            desc[14].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class,"HINT_NON_PROXY_HOSTS"));            
             
             return desc;
         } catch (IntrospectionException ex) {

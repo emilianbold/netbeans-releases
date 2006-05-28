@@ -62,6 +62,8 @@ public class IDESettings extends SystemOption {
     public static final String PROP_WWWBROWSER = "WWWBrowser"; // NOI18N
     /** UI Mode */
     public static final String PROP_UIMODE = "UIMode"; // NOI18N
+     /** Non Proxy Hosts */
+    public static final String PROP_NON_PROXY_HOSTS = "userNonProxy"; // NOI18N
 
     /** files that should be ignored 
      * 
@@ -111,6 +113,8 @@ public class IDESettings extends SystemOption {
     private static int proxyType = -1; // not initialized
     private static String userProxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String userProxyPort = System.getProperty(KEY_PROXY_PORT, "");
+    private static String userNonProxyHosts;
+    private static String defaultNonProxyHosts;
     
     private static int uiMode = 2; // MDI default
     
@@ -123,14 +127,16 @@ public class IDESettings extends SystemOption {
     protected void initialize () {
         // Set default values of properties        
         super.initialize ();
-        setProxy();
+        this.defaultNonProxyHosts = getDefaultNonProxyHosts ();
+        this.userNonProxyHosts = this.defaultNonProxyHosts;
+        setProxy ();
         putProperty(PROP_WWWBROWSER, "", false);
     }
 
     private void setProxy() {
         String host = getProxyHost ();
         String port = getProxyPort();
-        String nonProxyHosts = getDefaultNonProxyHosts();
+        String nonProxyHosts = getNonProxyHosts ();
         System.setProperty (KEY_PROXY_HOST, normalizeProxyHost (host));
         System.setProperty (KEY_PROXY_PORT, port);
         System.setProperty (KEY_NON_PROXY_HOSTS, nonProxyHosts);
@@ -350,6 +356,20 @@ public class IDESettings extends SystemOption {
         }
     }
     
+    public void setUserNonProxyHosts (String value) {
+        value = value == null ? "" : value;
+        if (!value.equals (this.userNonProxyHosts)) {
+            System.setProperty (KEY_NON_PROXY_HOSTS, value);
+            System.setProperty (KEY_HTTPS_NON_PROXY_HOSTS, value);
+            firePropertyChange (KEY_NON_PROXY_HOSTS, this.userNonProxyHosts, value);
+            this.userNonProxyHosts = value;
+        }
+    }
+    
+    public String getUserNonProxyHosts () {
+        return this.userNonProxyHosts;
+    }
+    
     public void readOldProxyHost (String value) {
         setUserProxyHost (value);
     }
@@ -537,8 +557,9 @@ public class IDESettings extends SystemOption {
      *  PENDING: should be a user settable property
      * @return sensible default for non-proxy hosts, including 'localhost'
      */
-    private String getDefaultNonProxyHosts() {
-        String nonProxy = "localhost|127.0.0.1"; // NOI18N
+    private static String getDefaultNonProxyHosts() {
+        String userPreset = System.getProperty (KEY_NON_PROXY_HOSTS);
+        String nonProxy = (userPreset == null ? "" : userPreset + "|") + "localhost|127.0.0.1"; // NOI18N
         String localhost = ""; // NOI18N
         try {
             localhost = InetAddress.getLocalHost().getHostName();
@@ -631,6 +652,20 @@ public class IDESettings extends SystemOption {
         }
 
         return systemProxy.substring (i+1);
+    }
+
+    public String getNonProxyHosts () {
+        switch (getProxyType ()) {
+            case AUTO_DETECT_PROXY :
+                return this.defaultNonProxyHosts;
+            case MANUAL_SET_PROXY :
+                return getUserNonProxyHosts ();
+            case DIRECT_CONNECTION :
+                return ""; // NOI18N
+        }
+        
+        assert false : "Unknown proxy type " + getProxyType ();
+        return null;
     }
     
 }
