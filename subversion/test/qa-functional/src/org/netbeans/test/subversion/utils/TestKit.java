@@ -26,10 +26,16 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author peter
  */
 public final class TestKit {
+    public final static String MODIFIED_COLOR = "#0000FF";
+    public final static String NEW_COLOR = "#008000";
+    public final static String CONFLICT_COLOR = "#FF0000";
+    public final static String IGNORED_COLOR = "#999999";
     
-    /** Creates a new instance of TestKit */
-    public TestKit() {
-    }
+    public final static String MODIFIED_STATUS = "[Modified]";
+    public final static String NEW_STATUS = "[New]";
+    public final static String CONFLICT_STATUS = "[Conflict]";
+    public final static String IGNORED_STATUS = "[Ignored]";
+    public final static String UPTODATE_STATUS = "";
     
     public static File prepareProject(String category, String project, String project_name) throws Exception {
         //create temporary folder for test
@@ -63,6 +69,19 @@ public final class TestKit {
         hashPos = nodeHtmlDisplayName.indexOf('"');
         nodeHtmlDisplayName = nodeHtmlDisplayName.substring(0, hashPos);
         return nodeHtmlDisplayName;
+    }
+    
+    public static String getStatus(String nodeHtmlDisplayName) {
+        if (nodeHtmlDisplayName == null || nodeHtmlDisplayName.length() < 1)
+            return "";
+        String status;
+        int pos1 = nodeHtmlDisplayName.indexOf('[');
+        int pos2 = nodeHtmlDisplayName.indexOf(']');
+        if ((pos1 != -1) && (pos2 != -1))
+            status = nodeHtmlDisplayName.substring(pos1, pos2 + 1);
+        else 
+            status = "";
+        return status;
     }
 
     public static void removeAllData(String projectName) {
@@ -111,8 +130,6 @@ public final class TestKit {
     }
     
     public static void createNewElements(String projectName, String packageName, String name) {
-        //String pack = "xx";
-        
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
         nfwo.selectCategory("Java Classes");
@@ -131,11 +148,20 @@ public final class TestKit {
         nfnlso.txtObjectName().typeText(name);
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
+    }  
+    
+    public static void createNewPackage(String projectName, String packageName) { 
+        NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Package");
+        nfwo.next();
+        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText(packageName);
+        nfnlso.finish();
     }    
     
     public static void createNewElement(String projectName, String packageName, String name) {
-        //String pack = "xx";
-        
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
         nfwo.selectCategory("Java Classes");
