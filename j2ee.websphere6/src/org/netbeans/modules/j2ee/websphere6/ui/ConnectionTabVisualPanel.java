@@ -21,7 +21,7 @@ import org.netbeans.modules.j2ee.websphere6.ui.InstancesModel;
 import org.netbeans.modules.j2ee.websphere6.WSURIManager;
 import org.netbeans.modules.j2ee.websphere6.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-
+import org.openide.awt.Mnemonics;
 /**
  *
  * @author  dlm198383
@@ -186,18 +186,27 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         
         //setName(NbBundle.getMessage(ConnectionTabVisualPanel.class, "TITLE_AddUserDefinedLocalServerPanel"));
         
-        
-        // set mnemonics
-        jLabel1.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_ProfilePath").charAt(0));
-        jLabel2.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_LocalRemote").charAt(0));
-        jLabel3.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_LocalInstances").charAt(0));
-        jLabel4.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_Host").charAt(0));
-        jLabel5.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_Port").charAt(0));
-        jLabel6.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_Username").charAt(0));
-        jLabel7.setDisplayedMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "MNE_Password").charAt(0));
-        
+        setMnemonics(jLabel1);
+        setMnemonics(jLabel2);
+        setMnemonics(jLabel3);
+        setMnemonics(jLabel4);
+        setMnemonics(jLabel5);
+        setMnemonics(jLabel6);
+        setMnemonics(jLabel7);
         
     }
+    private void setMnemonics(JLabel label) {
+        String name = label.getText();
+        int index = Mnemonics.findMnemonicAmpersand(name);
+        if(index < 0) {
+            Mnemonics.setLocalizedText(label,name);
+            label.setDisplayedMnemonic(name.charAt(0));
+        } else {
+            Mnemonics.setLocalizedText(label,name.substring(0,index) + name.substring(index+1));
+            label.setDisplayedMnemonic(name.charAt(index+1));
+        }
+    }
+    
     /**
      * Checks whether the specified path is the valid domain root directory.
      *

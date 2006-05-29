@@ -19,6 +19,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 import org.openide.*;
+import org.openide.awt.Mnemonics;
 import org.openide.util.*;
 import org.netbeans.modules.j2ee.websphere6.ui.Instance;
 import org.netbeans.modules.j2ee.websphere6.ui.Customizer;
@@ -428,22 +429,34 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.insets = new Insets(10, 0, 5, 0);
         add(remoteWarningLabel, gridBagConstraints);
         
-        domainPathLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_ProfilePath").charAt(0));
-        domainPathLabel.setLabelFor(domainPathField);
-        serverTypeLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_LocalRemote").charAt(0));
-        serverTypeLabel.setLabelFor(serverTypeCombo);
-        localInstanceLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_LocalInstances").charAt(0));
-        localInstanceLabel.setLabelFor(localInstancesCombo);
-        hostLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_Host").charAt(0));
-        hostLabel.setLabelFor(hostField);
-        portLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_Port").charAt(0));
-        portLabel.setLabelFor(portField);
-        userNameLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_Username").charAt(0));
-        userNameLabel.setLabelFor(usernameField);
-        passwordLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_Password").charAt(0));
+        setMnemonics(domainPathLabel);
+        domainPathLabel.setLabelFor(domainPathField);        
+        setMnemonics(serverTypeLabel);
+        serverTypeLabel.setLabelFor(serverTypeCombo);        
+        setMnemonics(localInstanceLabel);
+        localInstanceLabel.setLabelFor(localInstancesCombo);        
+        setMnemonics(hostLabel);
+        hostLabel.setLabelFor(hostField);        
+        setMnemonics(portLabel);
+        portLabel.setLabelFor(portField);        
+        setMnemonics(userNameLabel);
+        userNameLabel.setLabelFor(usernameField);        
+        setMnemonics(passwordLabel);
         passwordLabel.setLabelFor(passwordField);
     }
     
+    
+    private void setMnemonics(JLabel label) {
+        String name = label.getText();
+        int index = Mnemonics.findMnemonicAmpersand(name);
+        if(index < 0) {
+            Mnemonics.setLocalizedText(label,name);            
+            label.setDisplayedMnemonic(name.charAt(0));
+        } else {
+            Mnemonics.setLocalizedText(label,name.substring(0,index) +  name.substring(index+1));  
+            label.setDisplayedMnemonic(name.charAt(index+1));
+        }
+    }
     ////////////////////////////////////////////////////////////////////////////
     // Settings section
     ////////////////////////////////////////////////////////////////////////////
