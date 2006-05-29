@@ -11,22 +11,14 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.websphere6.ui.wizard;
-import java.lang.*;
-import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.event.*;
-import javax.xml.parsers.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
 
 import org.openide.*;
 import org.openide.util.*;
-
-import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
 import org.netbeans.modules.j2ee.websphere6.ui.Instance;
 import org.netbeans.modules.j2ee.websphere6.ui.Customizer;
 import org.netbeans.modules.j2ee.websphere6.ui.InstancesModel;
@@ -230,7 +222,7 @@ public class ServerPropertiesPanel extends JPanel
     private JComboBox localInstancesCombo;
     private JLabel localInstanceLabel;
     private JLabel serverTypeLabel;
-    
+    private JTextArea remoteWarningLabel;
     
     
     /**
@@ -262,6 +254,9 @@ public class ServerPropertiesPanel extends JPanel
         localInstancesCombo = new JComboBox(new InstancesModel(
                 wizardServerProperties.getServerInstances(
                 instantiatingIterator.getServerRoot())));
+        remoteWarningLabel = new JTextArea(NbBundle.getMessage(
+                ServerPropertiesPanel.class, 
+                "LBL_remoteIncompatibilityWarning"));                  // NOI18N
         
         // set the desired layout
         setLayout(new GridBagLayout());
@@ -417,14 +412,20 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
         add(passwordField, gridBagConstraints);
         
-        // add the empty panel, that will take up all the remaining space
+        // remote warning label
+        remoteWarningLabel.setEditable(false);
+        remoteWarningLabel.setWrapStyleWord(true);
+        remoteWarningLabel.setLineWrap(true);
+        remoteWarningLabel.setOpaque(false);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
-        add(formattingPanel, gridBagConstraints);
-        
+        gridBagConstraints.insets = new Insets(10, 0, 5, 0);
+        add(remoteWarningLabel, gridBagConstraints);
         
         domainPathLabel.setDisplayedMnemonic(NbBundle.getMessage(Customizer.class, "MNE_ProfilePath").charAt(0));
         domainPathLabel.setLabelFor(domainPathField);

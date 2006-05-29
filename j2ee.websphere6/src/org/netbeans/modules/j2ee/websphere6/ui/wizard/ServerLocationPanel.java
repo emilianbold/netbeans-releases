@@ -243,7 +243,7 @@ public class ServerLocationPanel extends JPanel
                     "bin",                                             // NOI18N
                     "cloudscape",                                      // NOI18N
                     "profiles",                                        // NOI18N
-                    "properties/soap.client.props",                    // NOI18N
+                    "properties/wsadmin.properties",                   // NOI18N
                     "lib/j2ee.jar",                                    // NOI18N
                     "lib/wjmxapp.jar"                                  // NOI18N
         };
