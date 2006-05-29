@@ -117,7 +117,7 @@ public class MakeJNLP extends Task {
         this.verifyExcludes = s;
     }
 
-    private String permissions;
+    private String permissions = "<all-permissions/>";
     /**
      * XML fragment pasted into the security part of the .jnlp file.
      * Should deafult to "&lt;all-permissions/&gt;"
