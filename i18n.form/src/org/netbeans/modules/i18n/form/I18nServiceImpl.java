@@ -83,6 +83,9 @@ public class I18nServiceImpl implements I18nService {
      * writing from now).
      */
     public I18nValue switchLocale(I18nValue value, String localeSuffix) {
+        if (value == null || value.getKey() == null)
+            return value;
+
         FormI18nString i18nString = new FormI18nString((FormI18nString)value);
         JavaResourceHolder rh = (JavaResourceHolder) i18nString.getSupport().getResourceHolder();
         rh.setLocalization(localeSuffix);
@@ -118,8 +121,9 @@ public class I18nServiceImpl implements I18nService {
                 }
             }
 
-            if (canRemove) {
+            if (canRemove && oldI18nString.getKey() != null) {
                 if (newI18nString == null
+                    || newI18nString.getKey() == null
                     || !newI18nString.getKey().equals(oldI18nString.getKey())
                     || newRes != oldRes)
                 {   // removing i18n value, changing key, or moving to another properties file
@@ -141,7 +145,7 @@ public class I18nServiceImpl implements I18nService {
             }
         }
 
-        if (newI18nString != null) {
+        if (newI18nString != null && newI18nString.getKey() != null) {
             JavaResourceHolder rh = (JavaResourceHolder) newI18nString.getSupport().getResourceHolder();
 
             if (rh.getResource() == null) { // find or create properties file

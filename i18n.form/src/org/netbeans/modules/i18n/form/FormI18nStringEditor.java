@@ -16,13 +16,16 @@ package org.netbeans.modules.i18n.form;
 
 
 import java.awt.Component;
+import java.awt.Container;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-import org.netbeans.api.java.classpath.ClassPath;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.jdesktop.layout.GroupLayout;
 
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
@@ -37,12 +40,13 @@ import org.netbeans.modules.i18n.java.JavaI18nSupport;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
+import org.openide.awt.Mnemonics;
+import org.netbeans.api.project.Project;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
@@ -50,7 +54,6 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.netbeans.api.project.Project;
 
 
 /**
@@ -78,12 +81,16 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
 
     /** Name of resource string XML element. */
     public static final String XML_RESOURCESTRING = "ResourceString"; // NOI18N
+    /** Name of plain string XML element (string not internationalized). */
+    private static final String XML_PLAINSTRING = "PlainString"; // NOI18N
     /** Name of argument XML element (child element of resource string element). */
     public static final String XML_ARGUMENT = "Argument"; // NOI18N
     /** Name of attribute bundle of resource string XML element. */
     public static final String ATTR_BUNDLE   = "bundle"; // NOI18N
     /** Name of attribute key of resource string XML element. */
     public static final String ATTR_KEY      = "key"; // NOI18N
+    /** Name of attribute storing value of non-internationalized string. */
+    private static final String ATTR_VALUE = "value"; // NOI18N
     /** Name of attribute identifier of resource string XML element. */
     public static final String ATTR_IDENTIFIER = "identifier"; // NOI18N
     /** Name of attribute replace format XML element. */
@@ -153,25 +160,34 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      * <b>java.text.MessageFormat.format(<identifier name>getString("<key name>"), new Object[] {<code set in Parameters and Comments panel>})</b>
      */
     public String getJavaInitializationString() {
-        return "*/\n\\1NOI18N*/\n\\0" + ((FormI18nString)getValue()).getReplaceString(); // NOI18N
+        FormI18nString i18nString = (FormI18nString) getValue();
+        return "*/\n\\1NOI18N*/\n\\0" // NOI18N
+            + (i18nString.getKey() != null ?
+                 i18nString.getReplaceString() : // NOI18N
+                 ("\"" + FormI18nSupport.toAscii(i18nString.getValue()) + "\"")); // plain string // NOI18N
         // */\n\\1 is a special code mark for line comment
         // */\n\\0 is a special code mark to indicate that a real code follows
     }
-    
+
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nString</code> value. */
     public Component getCustomEditor() {
         FormI18nString formI18nString;
         Object value = getValue();
+        boolean noI18n;
         if (value instanceof FormI18nString) {
             formI18nString = new FormI18nString((FormI18nString)value);
+            noI18n = formI18nString.getKey() == null;
         }
         else {
             formI18nString = createFormI18nString();
+            if (value instanceof String)
+                formI18nString.setValue((String)value);
             if(I18nUtil.getOptions().getLastResource2() != null)
                 formI18nString.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+            noI18n = false;
         }
-        return new CustomEditor(formI18nString, getProject(), sourceDataObject.getPrimaryFile());
+        return new CustomEditor(formI18nString, getProject(), sourceDataObject.getPrimaryFile(), noI18n);
 //        return new CustomEditor(new FormI18nString((FormI18nString)getValue()), getProject(), sourceDataObject.getPrimaryFile());
     }
     
@@ -255,15 +271,23 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      * @see org.w3c.dom.Node
      */
     public void readFromXML(Node domNode) throws IOException {
-        
+        FormI18nString formI18nString = createFormI18nString();
+        NamedNodeMap namedNodes = domNode.getAttributes ();
+
+        if (XML_PLAINSTRING.equals(domNode.getNodeName())) {
+            // plain string
+            Node node = namedNodes.getNamedItem(ATTR_VALUE);
+            if (node != null) {
+                formI18nString.setValue(node.getNodeValue());
+                setValue(formI18nString);
+            }
+            return;
+        }
+
         if(!XML_RESOURCESTRING.equals (domNode.getNodeName ())) {
             throw new IOException ();
         }
-        
-        FormI18nString formI18nString = createFormI18nString();
 
-        NamedNodeMap namedNodes = domNode.getAttributes ();
-        
         try {
             Node node;
             // Retrieve bundle name.
@@ -414,61 +438,92 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      */
     public Node storeToXML(Document doc) {
         FormI18nString formI18nString = (FormI18nString) getValue();
+        Element element;
+        if (formI18nString.getKey() != null) {
+            element = doc.createElement (XML_RESOURCESTRING);
 
-        Element element = doc.createElement (XML_RESOURCESTRING);
+            String bundleName;
+            if (formI18nString.getSupport().getResourceHolder().getResource() == null) {
+                bundleName = formI18nString.bundleName;
+            } else {
+                bundleName = org.netbeans.modules.i18n.Util.
+                    getResourceName(formI18nString.getSupport().getSourceDataObject().getPrimaryFile(),
+                                    formI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile(),'/', true);
+                if (bundleName == null) bundleName = ""; // NOI18N
+            }
 
-        String bundleName;
-        if (formI18nString.getSupport().getResourceHolder().getResource() == null) {
-            bundleName = formI18nString.bundleName;
-        } else {
-            bundleName = org.netbeans.modules.i18n.Util.
-                getResourceName(formI18nString.getSupport().getSourceDataObject().getPrimaryFile(),
-                                formI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile(),'/', true);
-            if (bundleName == null) bundleName = ""; // NOI18N
+            // Set bundle and key property.    
+            element.setAttribute(ATTR_BUNDLE, bundleName);
+            element.setAttribute(ATTR_KEY, (formI18nString.getKey() == null) ? "" : formI18nString.getKey()); // NOI18N
+            // Don't save identifier, replace the identifier argument with actual value in format.
+            JavaI18nSupport support = (JavaI18nSupport)formI18nString.getSupport();
+            if(support.getIdentifier() == null)
+                support.createIdentifier();
+            Map map = new HashMap(1);
+            map.put("identifier", support.getIdentifier()); // NOI18N
+            element.setAttribute(ATTR_REPLACE_FORMAT, formI18nString.getReplaceFormat() == null ? "" : MapFormat.format(formI18nString.getReplaceFormat(), map) ); // NOI18N
+
+            // Append subelements corresponding to parameters.
+            String[] arguments = formI18nString.getArguments();
+            for (int i = 0; i < arguments.length; i++) {
+                Element childElement = doc.createElement (XML_ARGUMENT);
+                childElement.setAttribute (ATTR_INDEX, "" + i); // NOI18N
+                childElement.setAttribute (ATTR_JAVACODE, arguments[i]);
+                try {
+                    element.appendChild(childElement);
+                } catch (DOMException de) {}
+            }
         }
-
-        // Set bundle and key property.    
-        element.setAttribute(ATTR_BUNDLE, bundleName);
-        element.setAttribute(ATTR_KEY, (formI18nString.getKey() == null) ? "" : formI18nString.getKey()); // NOI18N
-        // Don't save identifier, replace the identifier argument with actual value in format.
-        JavaI18nSupport support = (JavaI18nSupport)formI18nString.getSupport();
-        if(support.getIdentifier() == null)
-            support.createIdentifier();
-        Map map = new HashMap(1);
-        map.put("identifier", support.getIdentifier()); // NOI18N
-        element.setAttribute(ATTR_REPLACE_FORMAT, formI18nString.getReplaceFormat() == null ? "" : MapFormat.format(formI18nString.getReplaceFormat(), map) ); // NOI18N
-
-        // Append subelements corresponding to parameters.
-        String[] arguments = formI18nString.getArguments();
-        for (int i = 0; i < arguments.length; i++) {
-            Element childElement = doc.createElement (XML_ARGUMENT);
-            childElement.setAttribute (ATTR_INDEX, "" + i); // NOI18N
-            childElement.setAttribute (ATTR_JAVACODE, arguments[i]);
-            try {
-                element.appendChild(childElement);
-            } catch (DOMException de) {}
+        else { // this string is explicitly marked as not internationalized
+            element = doc.createElement (XML_PLAINSTRING);
+            element.setAttribute(ATTR_VALUE, formI18nString.getValue());
         }
 
         return element;
     }
 
     /** Custom editor for this property editor. */
-    private static class CustomEditor extends I18nPanel implements EnhancedCustomPropertyEditor {
-
-        private final ResourceBundle bundle;
+    private static class CustomEditor extends JPanel implements EnhancedCustomPropertyEditor, ChangeListener {
+        private I18nPanel i18nPanel;
+        private StringPanel stringPanel;
+        private JCheckBox noI18nCheckBox;
         
         /** Constructor. */
-        public CustomEditor(I18nString i18nString, Project project, FileObject file) {
-            super(i18nString.getSupport().getPropertyPanel(), false, project, file);
-            bundle = NbBundle.getBundle(FormI18nStringEditor.class);
-            setI18nString(i18nString);
-            
+        public CustomEditor(I18nString i18nString, Project project, FileObject file, boolean noI18n) {
+            i18nPanel = new I18nPanel(i18nString.getSupport().getPropertyPanel(), false, project, file);
+            noI18nCheckBox = new JCheckBox();
+            Mnemonics.setLocalizedText(noI18nCheckBox,
+                    NbBundle.getMessage(FormI18nStringEditor.class, "CTL_NOI18NCheckBox")); // NOI18N
+
+            GroupLayout layout = new GroupLayout(this);
+            setLayout(layout);
+            layout.setHorizontalGroup(layout.createParallelGroup()
+                .add(i18nPanel)
+                .add(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(noI18nCheckBox)
+                    .addContainerGap()));
+            layout.setVerticalGroup(layout.createSequentialGroup()
+                .add(i18nPanel)
+                .add(noI18nCheckBox));
+
+            i18nPanel.setI18nString(i18nString);
+            setNoI18n(noI18n);
+            noI18nCheckBox.setSelected(noI18n);
+            noI18nCheckBox.addChangeListener(this);
+
             HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_FORMED);
         }
 
         /** Implements <code>EnhancedCustomPropertyEditor</code> interface. */
         public Object getPropertyValue() throws IllegalStateException {
-            I18nString i18nString = getI18nString();
+            I18nString i18nString = i18nPanel.getI18nString();
+
+            if (isNoI18n() && i18nString != null) {
+                i18nString.setKey(null);
+                i18nString.setValue(stringPanel.getString());
+                return i18nString;
+            }
 
             if(i18nString == null 
                 || !(i18nString instanceof FormI18nString)
@@ -477,25 +532,72 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
 
                 // Notify user that invalid value set.
                 IllegalStateException ise = new IllegalStateException();
-                String message = bundle.getString("MSG_InvalidValue");
+                String message = NbBundle.getMessage(FormI18nStringEditor.class, "MSG_InvalidValue"); // NOI18N
                 ErrorManager.getDefault().annotate(
                      ise, ErrorManager.WARNING, message,
                      message, null, null);
                 throw ise;
             }
 
-            // Try to add new key into resource bundle first.
-//            i18nString.getSupport().getResourceHolder().addProperty(
-//                i18nString.getKey(),
-//                i18nString.getValue(),
-//                i18nString.getComment(),
-//                true  // propagate new value into primary file
-//            );
-
             return i18nString;
         }
 
+        public void stateChanged(ChangeEvent e) {
+            setNoI18n(noI18nCheckBox.isSelected());
+        }
+
+        private boolean isNoI18n() {
+            return noI18nCheckBox.isSelected();
+        }
+
+        private void setNoI18n(boolean noI18n) {
+            if (noI18n) {
+                if (getPlainStringPanel().getParent() == null) {
+                    ((GroupLayout)getLayout()).replace(i18nPanel, stringPanel);
+                    revalidate();
+                    repaint();
+                }
+            }
+            else if (i18nPanel.getParent() == null) {
+                ((GroupLayout)getLayout()).replace(stringPanel, i18nPanel);
+                revalidate();
+                repaint();
+            }
+        }
+
+        private JComponent getPlainStringPanel() {
+            if (stringPanel == null) {
+                stringPanel = new StringPanel();
+                stringPanel.setString(i18nPanel.getI18nString().getValue());
+            }
+            return stringPanel;
+        }
     }
 
-    
+    /**
+     * Panel containing a text area for editing plain text. Used for editing
+     * not internationalized strings - replacing the I18nPanel.
+     */
+    private static class StringPanel extends JPanel {
+        private JTextArea textArea;
+
+        private StringPanel() {
+            textArea = new JTextArea();
+            JScrollPane scroll = new JScrollPane(textArea);
+            GroupLayout layout = new GroupLayout(this);
+            layout.setAutocreateContainerGaps(true);
+            setLayout(layout);
+            layout.setHorizontalGroup(layout.createSequentialGroup().add(scroll));
+            layout.setVerticalGroup(layout.createSequentialGroup().add(scroll));
+        }
+
+        String getString() {
+            return textArea.getText();
+        }
+
+        void setString(String str) {
+            textArea.setText(str);
+        }
+    }
+
 }
