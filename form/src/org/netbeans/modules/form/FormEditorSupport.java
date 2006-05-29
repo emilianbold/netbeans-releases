@@ -205,6 +205,8 @@ public class FormEditorSupport extends JavaEditor
         return (formEditor != null) && formEditor.isFormLoaded();
     }
 
+    private boolean saving; // workaround for bug 75225
+
     /** Save the document in this thread and start reparsing it.
      * @exception IOException on I/O error
      */
@@ -217,6 +219,7 @@ public class FormEditorSupport extends JavaEditor
                 if (i18nSupport != null)
                     i18nSupport.autoSave();
             }
+            saving = true; // workaround for bug 75225
             super.saveDocument();
         }
         catch (PersistenceException ex) {
@@ -228,6 +231,9 @@ public class FormEditorSupport extends JavaEditor
                 ErrorManager.getDefault().annotate(ioEx, t != null ? t : ex);
             }
         }
+        finally {
+            saving = false; // workaround for bug 75225
+        }
         if (formEditor != null) {
             formEditor.reportErrors(FormEditor.SAVING);
         }
@@ -237,7 +243,12 @@ public class FormEditorSupport extends JavaEditor
     }
 
     void saveSourceOnly() throws IOException {
-        super.saveDocument();
+        try {
+            saving = true; // workaround for bug 75225
+            super.saveDocument();
+        } finally {
+            saving = false; // workaround for bug 75225
+        }
     }
 
     // ------------
@@ -308,6 +319,9 @@ public class FormEditorSupport extends JavaEditor
             return super.reloadDocument();
 
         org.openide.util.Task docLoadTask = super.reloadDocument();
+
+        if (saving) // workaround for bug 75225
+            return docLoadTask;
 
         // after reloading is done, open the form editor again
         java.awt.EventQueue.invokeLater(new Runnable() {
