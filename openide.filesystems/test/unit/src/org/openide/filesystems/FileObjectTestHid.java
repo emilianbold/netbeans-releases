@@ -2264,7 +2264,7 @@ public class FileObjectTestHid extends TestBaseHid {
             } finally {
                 Repository.getDefault().removeFileSystem(fs);
             }
-            assertTrue("computed child URI " + uri2 + " is correct", Arrays.asList(fos).contains(f2));
+            assertTrue("computed child URI " + uri2 + " is correct as is in: " + Arrays.asList(fos), Arrays.asList(fos).contains(f2));
         } else {
             // No path component in the URI; clearly cannot work with
             // it this way.
