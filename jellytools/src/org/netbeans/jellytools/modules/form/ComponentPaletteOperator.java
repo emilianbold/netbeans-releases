@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.form;
@@ -36,7 +36,10 @@ import org.netbeans.jemmy.operators.JListOperator.ListItemChooser;
  */
 public class ComponentPaletteOperator extends TopComponentOperator {
     
-    private JCheckBoxOperator _cbSwing;
+    private JCheckBoxOperator _cbSwingContainers;
+    private JCheckBoxOperator _cbSwingControls;
+    private JCheckBoxOperator _cbSwingMenus;
+    private JCheckBoxOperator _cbSwingWindows;
     private JCheckBoxOperator _cbAWT;
     private JCheckBoxOperator _cbBeans;
     // "Palette"
@@ -51,22 +54,67 @@ public class ComponentPaletteOperator extends TopComponentOperator {
 
     //subcomponents
     
-    /** Waits for "Swing" check box button.
+    /** Waits for "Swing Containers" check box button.
      * @return JCheckBoxOperator instance
      */
-    public JCheckBoxOperator cbSwing() {
-        if(_cbSwing == null) {
-            _cbSwing = new JCheckBoxOperator(this, "Swing");  // NOI18N
+    public JCheckBoxOperator cbSwingContainers() {
+        if(_cbSwingContainers == null) {
+            _cbSwingContainers = new JCheckBoxOperator(
+                                    this,
+                                    Bundle.getString("org.netbeans.modules.form.resources.Bundle",
+                                                     "FormDesignerPalette/SwingContainers"));  // NOI18N
         }
-        return _cbSwing;
+        return _cbSwingContainers;
     }
-    
+        
+    /** Waits for ""Swing Controls check box button.
+     * @return JCheckBoxOperator instance
+     */
+    public JCheckBoxOperator cbSwingControls() {
+        if(_cbSwingControls == null) {
+            _cbSwingControls = new JCheckBoxOperator(
+                                    this,
+                                    Bundle.getString("org.netbeans.modules.form.resources.Bundle",
+                                                     "FormDesignerPalette/SwingControls"));  // NOI18N
+        }
+        return _cbSwingControls;
+    }
+
+    /** Waits for "Swing Menus" check box button.
+     * @return JCheckBoxOperator instance
+     */
+    public JCheckBoxOperator cbSwingMenus() {
+        if(_cbSwingMenus == null) {
+            _cbSwingMenus = new JCheckBoxOperator(
+                                    this,
+                                    Bundle.getString("org.netbeans.modules.form.resources.Bundle",
+                                                     "FormDesignerPalette/SwingMenus"));  // NOI18N
+        }
+        return _cbSwingMenus;
+    }
+
+    /** Waits for "Swing Windows" check box button.
+     * @return JCheckBoxOperator instance
+     */
+    public JCheckBoxOperator cbSwingWindows() {
+        if(_cbSwingWindows == null) {
+            _cbSwingWindows = new JCheckBoxOperator(
+                                    this,
+                                    Bundle.getString("org.netbeans.modules.form.resources.Bundle",
+                                                     "FormDesignerPalette/SwingWindows"));  // NOI18N
+        }
+        return _cbSwingWindows;
+    }
+
     /** Waits for "AWT" check box button.
      * @return JCheckBoxOperator instance
      */
     public JCheckBoxOperator cbAWT() {
         if(_cbAWT == null) {
-            _cbAWT = new JCheckBoxOperator(this, "AWT");  // NOI18N
+            _cbAWT = new JCheckBoxOperator(
+                                    this, 
+                                    Bundle.getString("org.netbeans.modules.form.resources.Bundle",
+                                                     "FormDesignerPalette/AWT"));  // NOI18N
         }
         return _cbAWT;
     }
@@ -76,7 +124,10 @@ public class ComponentPaletteOperator extends TopComponentOperator {
      */
     public JCheckBoxOperator cbBeans() {
         if(_cbBeans == null) {
-            _cbBeans = new JCheckBoxOperator(this, "Beans");  // NOI18N
+            _cbBeans = new JCheckBoxOperator(
+                                    this, 
+                                    Bundle.getString("org.netbeans.modules.form.resources.Bundle",
+                                                     "FormDesignerPalette/Beans"));  // NOI18N
         }
         return _cbBeans;
     }
@@ -99,7 +150,7 @@ public class ComponentPaletteOperator extends TopComponentOperator {
     
     /** Select a component in expanded category of components. Use one of
      * expand methods before using this method.
-     * @param displayName display name of component to be selected (e.g. JButton)
+     * @param displayName display name of component to be selected (e.g. Button)
      * @see #expandBeans
      * @see #expandSwing
      * @see #expandAWT
@@ -127,32 +178,85 @@ public class ComponentPaletteOperator extends TopComponentOperator {
 
     //shortcuts
 
-    /** Expands Swing components palette and collapses all others. */
-    public void expandSwing() {
+    /** Expands Swing Containers and collapses all others. */
+    public void expandSwingContainers() {
+        collapseSwingControls();
+        collapseSwingMenus();
+        collapseSwingWindows();
         collapseAWT();
         collapseBeans();
-        expand(cbSwing(), true);
+        expand(cbSwingContainers(), true);
     }
     
+    /** Expands Swing Controls and collapses all others. */
+    public void expandSwingControls() {
+        collapseSwingContainers();
+        collapseSwingMenus();
+        collapseSwingWindows();
+        collapseAWT();
+        collapseBeans();
+        expand(cbSwingControls(), true);
+    }
+
+    /** Expands Swing Menus and collapses all others. */
+    public void expandSwingMenus() {
+        collapseSwingContainers();
+        collapseSwingControls();
+        collapseSwingWindows();
+        collapseAWT();
+        collapseBeans();
+        expand(cbSwingMenus(), true);
+    }
+    /** Expands Swing Windows and collapses all others. */
+    public void expandSwingWindows() {
+        collapseSwingContainers();
+        collapseSwingControls();
+        collapseSwingMenus();
+        collapseAWT();
+        collapseBeans();
+        expand(cbSwingWindows(), true);
+    }
+
     /** Expands AWT components palette and collapses all others. */
     public void expandAWT() {
-        collapseSwing();
+        collapseSwingContainers();
+        collapseSwingControls();
+        collapseSwingMenus();
+        collapseSwingWindows();
         collapseBeans();
         expand(cbAWT(), true);
     }
     
     /** Expands Beans components palette and collapses all others. */
     public void expandBeans() {
-        collapseSwing();
+        collapseSwingContainers();
+        collapseSwingControls();
+        collapseSwingMenus();
+        collapseSwingWindows();
         collapseAWT();
         expand(cbBeans(), true);
     }
 
-    /** Collapses Swing components palette. */
-    public void collapseSwing() {
-        expand(cbSwing(), false);
+    /** Collapses Swing Containers palette. */
+    public void collapseSwingContainers() {
+        expand(cbSwingContainers(), false);
     }
-    
+
+    /** Collapses Swing Controls palette. */
+    public void collapseSwingControls() {
+        expand(cbSwingControls(), false);
+    }
+ 
+    /** Collapses Swing Menus palette. */
+    public void collapseSwingMenus() {
+        expand(cbSwingMenus(), false);
+    }
+
+    /** Collapses Swing Windows palette. */
+    public void collapseSwingWindows() {
+        expand(cbSwingWindows(), false);
+    }
+
     /** Collapses AWT components palette. */
     public void collapseAWT() {
         expand(cbAWT(), false);
@@ -186,7 +290,10 @@ public class ComponentPaletteOperator extends TopComponentOperator {
     /** Performs verification by accessing all sub-components */    
     public void verify() {
         lstComponents();
-        cbSwing();
+        cbSwingContainers();
+        cbSwingControls();
+        cbSwingMenus();
+        cbSwingWindows();
         cbAWT();
         cbBeans();
     }
