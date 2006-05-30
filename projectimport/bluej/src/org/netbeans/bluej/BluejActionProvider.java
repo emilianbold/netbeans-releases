@@ -18,6 +18,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -30,6 +31,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -40,6 +42,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -134,7 +137,7 @@ class BluejActionProvider implements ActionProvider {
                                 "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
                         DialogDisplayer.getDefault().notify(nd);
                     } else {
-                        ActionUtils.runTarget(buildFo, targetNames, p);
+                        ExecutorTask task = ActionUtils.runTarget(buildFo, targetNames, p);
                     }
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(e);
@@ -193,14 +196,31 @@ class BluejActionProvider implements ActionProvider {
 ////        }
         else if (command.equals(COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
             EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-
+            EditableProperties eprivate = updateHelper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            if (eprivate == null) {
+                eprivate = new EditableProperties();
+                updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, eprivate);
+            }
             // check project's main class
             String mainClass = (String)ep.get ("main.class"); // NOI18N
+            
             int result = -1;
             do {
-                // show warning, if cancel then return
-                if (showMainClassWarning(mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep, result)) {
-                    return null;
+                boolean showDialog = true;
+//                if (!JMManager.getManager().isScanInProgress()) {
+//                    // in case the value gets back in some reasonable time,
+//                    // check if we have just one mainclass and use it then without a dialog.
+//                    List lst = MainClassChooser.getMainClasses(new FileObject[] { project.getProjectDirectory() }, false);
+//                    if (lst.size() == 1) {
+//                        showDialog = false;
+//                        ep.put ("main.class", lst.get(0) == null ? "" : (String)lst.get(0)); // NOI18N
+//                    }
+//                }
+                if (showDialog) {
+                    // show warning, if cancel then return
+                    if (showMainClassWarning(mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep, eprivate, result)) {
+                        return null;
+                    }
                 }
                 mainClass = (String)ep.get("main.class"); // NOI18N
                 result = 0;
@@ -208,7 +228,8 @@ class BluejActionProvider implements ActionProvider {
             } while (result != 0);
             try {
                 if (updateHelper.requestSave()) {
-                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, eprivate);
                     ProjectManager.getDefault().saveProject(project);
                 } else {
                     return null;
@@ -499,7 +520,7 @@ class BluejActionProvider implements ActionProvider {
      * @param messgeType type of dialog -1 when the main class is not set, -2 when the main class in not valid
      * @return true if user selected main class
      */
-    private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep, int messageType) {
+    private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep, EditableProperties eprivate, int messageType) {
         boolean canceled;
         final JButton okButton = new JButton ("OK"); // NOI18N
 //        okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (MainClassWarning.class, "AD_MainClassWarning_ChooseMainClass_OK"));
@@ -522,6 +543,8 @@ class BluejActionProvider implements ActionProvider {
                 throw new IllegalArgumentException ();
         }
         final MainClassWarning panel = new MainClassWarning (message, new FileObject[] { project.getProjectDirectory() } );
+        panel.setArguments(eprivate.getProperty("application.args"));
+        panel.setSelectedMainClass(ep.getProperty("main.class"));
         Object[] options = new Object[] {
             okButton,
             DialogDescriptor.CANCEL_OPTION
@@ -550,6 +573,7 @@ class BluejActionProvider implements ActionProvider {
             mainClass = panel.getSelectedMainClass ();
             canceled = false;
             ep.put ("main.class", mainClass == null ? "" : mainClass); // NOI18N
+            eprivate.put("application.args", panel.getArguments());
         }
         dlg.dispose();            
 

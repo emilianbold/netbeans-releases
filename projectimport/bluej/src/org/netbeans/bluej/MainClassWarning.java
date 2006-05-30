@@ -43,6 +43,18 @@ public class MainClassWarning extends JPanel {
     public String getSelectedMainClass () {
         return ((MainClassChooser)jPanel1).getSelectedMainClass ();
     }
+    
+    public void setSelectedMainClass(String clazz) {
+        ((MainClassChooser)jPanel1).setSelectedMainClass(clazz);
+    }
+    
+    public String getArguments() {
+        return ((MainClassChooser)jPanel1).getArguments();
+    }
+    
+    public void setArguments(String args) {
+        ((MainClassChooser)jPanel1).setArguments(args);
+    }
 
     public void addChangeListener (ChangeListener l) {
         ((MainClassChooser)jPanel1).addChangeListener (l);
