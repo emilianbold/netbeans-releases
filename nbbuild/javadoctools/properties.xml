@@ -105,3 +105,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-nbjunit-ide" value="${javadoc.web.root}/org-netbeans-modules-nbjunit-ide"/>
 <property name="javadoc.docs.org-netbeans-libs-javacapi" value="${javadoc.web.root}/org-netbeans-libs-javacapi"/>
 <property name="javadoc.docs.org-netbeans-jackpot" value="${javadoc.web.root}/org-netbeans-jackpot"/>
+<property name="javadoc.docs.org-netbeans-modules-indexedannotations" value="${javadoc.web.root}/org-netbeans-modules-indexedannotations"/>
