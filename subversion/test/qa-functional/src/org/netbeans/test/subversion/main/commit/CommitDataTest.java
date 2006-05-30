@@ -10,6 +10,8 @@
 package org.netbeans.test.subversion.main.commit;
 
 import java.io.File;
+import java.io.PrintStream;
+import javax.swing.table.TableModel;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -19,11 +21,13 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.CommitOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
+import org.netbeans.test.subversion.operators.VersioningOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
@@ -39,6 +43,7 @@ public class CommitDataTest extends JellyTestCase {
     public static final String WORK_PATH = "work";
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
+    public PrintStream stream;
     String os_name;
     
     /** Creates a new instance of CommitDataTest */
@@ -70,6 +75,7 @@ public class CommitDataTest extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CommitDataTest("testCommitFile"));      
         suite.addTest(new CommitDataTest("testCommitPackage"));      
+        suite.addTest(new CommitDataTest("testRecognizeMimeType"));   
         return suite;
     }
     
@@ -81,10 +87,16 @@ public class CommitDataTest extends JellyTestCase {
         long end;
         String color;
         String status;
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
+        JTableOperator table;
+        TableModel model;
+        VersioningOperator vo;
+        
         OutputTabOperator oto = new OutputTabOperator("SVN Output");
         oto.clear();
+        stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+        
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        RepositoryStepOperator rso = new RepositoryStepOperator();       
         
         //create repository... 
         new File(TMP_PATH).mkdirs();
@@ -102,32 +114,46 @@ public class CommitDataTest extends JellyTestCase {
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
         //open project
+        oto = new OutputTabOperator("SVN Output");
         oto.waitText("Checking out... finished.");
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
         ProjectSupport.waitScanFinished();
-        Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
+        //Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
         
         TestKit.createNewElement("JavaApp", "javaapp", "NewClass");
         Node nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
+        nodeFile.performPopupAction("Subversion|Show Changes");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+        vo = VersioningOperator.invoke();
+        table = vo.tabFiles();
+        assertEquals("Wrong row count of table.", 1, table.getRowCount());
         assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
         
         //invoke commit action but exlude the file from commit
         start = System.currentTimeMillis();
+        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
         CommitOperator cmo = CommitOperator.invoke(nodeFile);
         end = System.currentTimeMillis();
-        System.out.println("Duration of invoking Commit dialog: " + (end - start));
+        //System.out.println("Duration of invoking Commit dialog: " + (end - start));
+        //print message to log file.
+        TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
         cmo.selectCommitAction("NewClass.java", "Exclude from Commit");
         cmo.commit();
         nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+        table = vo.tabFiles();
+        Thread.sleep(1000);
+        assertEquals("Wrong row count of table.", 1, table.getRowCount());
+        assertEquals("Expected file is missing.", "NewClass.java", table.getModel().getValueAt(0, 0).toString());
         assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
         
+        oto = new OutputTabOperator("SVN Output");
         oto.clear();
+        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
         cmo = CommitOperator.invoke(nodeFile);
         cmo.selectCommitAction("NewClass.java", "Add As Text");
         start = System.currentTimeMillis();
@@ -137,25 +163,36 @@ public class CommitDataTest extends JellyTestCase {
         
         nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-        System.out.println("Duration of committing file: " + (end - start));
+        //System.out.println("Duration of invoking Commit dialog: " + (end - start));
+        TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
         //color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+        Thread.sleep(1000);
+        table = vo.tabFiles();
+        assertEquals("Wrong row count of table.", 0, table.getRowCount());
         assertNull("Wrong color of node!!!", nodeIDE.getHtmlDisplayName());
         
         TestKit.removeAllData("JavaApp");
+        stream.flush();
+        stream.close();
     }
  
     public void testCommitPackage() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
         org.openide.nodes.Node nodeIDE;
+        JTableOperator table;
         long start;
         long end;
         String color;
         String status;
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
         OutputTabOperator oto = new OutputTabOperator("SVN Output");
         oto.clear();
+        VersioningOperator vo = VersioningOperator.invoke();
+        
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        RepositoryStepOperator rso = new RepositoryStepOperator();       
+          
+        stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         
         //create repository... 
         new File(TMP_PATH).mkdirs();
@@ -182,16 +219,25 @@ public class CommitDataTest extends JellyTestCase {
         
         TestKit.createNewPackage("JavaApp", "xx");
         Node nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
+        nodePack.performPopupAction("Subversion|Show Changes");
         nodeIDE = (org.openide.nodes.Node) nodePack.getOpenideNode();
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         //System.out.println("status" + status);
+        Thread.sleep(1000);
+        vo = VersioningOperator.invoke();
+        table = vo.tabFiles();
         assertEquals("Wrong status of node!!!", TestKit.NEW_STATUS, status);
+        assertEquals("Wrong row count of table.", 1, table.getRowCount());
+        assertEquals("Expected folder is missing.", "xx", table.getModel().getValueAt(0, 0).toString());
         
         //invoke commit action but exlude the file from commit
         start = System.currentTimeMillis();
+        nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
         CommitOperator cmo = CommitOperator.invoke(nodePack);
         end = System.currentTimeMillis();
-        System.out.println("Duration of invoking Commit dialog: " + (end - start));
+        //System.out.println("Duration of invoking Commit dialog: " + (end - start));
+        //print log message
+        TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
         cmo.selectCommitAction("xx", "Exclude from Commit");
         cmo.commit();
         nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
@@ -199,7 +245,9 @@ public class CommitDataTest extends JellyTestCase {
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong status of node!!!", TestKit.NEW_STATUS, status);
         
+        oto = new OutputTabOperator("SVN Output");
         oto.clear();
+        nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
         cmo = CommitOperator.invoke(nodePack);
         cmo.selectCommitAction("xx", "Add Directory");
         start = System.currentTimeMillis();
@@ -209,10 +257,135 @@ public class CommitDataTest extends JellyTestCase {
         
         nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
         nodeIDE = (org.openide.nodes.Node) nodePack.getOpenideNode();
-        System.out.println("Duration of committing file: " + (end - start));
+        //System.out.println("Duration of committing file: " + (end - start));
+        TestKit.printLogStream(stream, "Duration of committing folder: " + (end - start));
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong status of node!!!", TestKit.UPTODATE_STATUS, status);
+        Thread.sleep(1000);
+        table = vo.tabFiles();
+        assertEquals("Wrong row count of table.", 0, table.getRowCount());
         
         TestKit.removeAllData("JavaApp");
+        stream.flush();
+        stream.close();
+    }
+    
+    public void testRecognizeMimeType() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
+        org.openide.nodes.Node nodeIDE;
+        JTableOperator table;
+        long start;
+        long end;
+        String color;
+        String status;
+        String[] expected = {"pp.bmp", "pp.dib", "pp.GIF", "pp.JFIF", "pp.JPE", "pp.JPEG", "pp.JPG", "pp.PNG", "pp.TIF", "pp.TIFF", "pp.zip", "text.txt", "test.jar"};
+        
+        OutputTabOperator oto = new OutputTabOperator("SVN Output");
+        oto.clear();
+        VersioningOperator vo = VersioningOperator.invoke();
+        
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        RepositoryStepOperator rso = new RepositoryStepOperator();       
+          
+        stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+        
+        //create repository... 
+        new File(TMP_PATH).mkdirs();
+        new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
+        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+        
+        rso.next();
+        WorkDirStepOperator wdso = new WorkDirStepOperator();
+        wdso.setRepositoryFolder("trunk/JavaApp");
+        wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
+        wdso.checkCheckoutContentOnly(false);
+        wdso.finish();
+        //open project
+        oto.waitText("Checking out... finished.");
+        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+        JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+        open.push();
+        ProjectSupport.waitScanFinished();
+        
+        //create various types of files
+        String src = getDataDir().getCanonicalPath() + File.separator + "files" + File.separator;
+        String dest = TMP_PATH + File.separator + WORK_PATH + File.separator + "JavaApp" + File.separator + "src" + File.separator + "javaapp" + File.separator;
+        
+        for (int i = 0; i < expected.length; i++) {
+            TestKit.copyTo(src + expected[i], dest + expected[i]);
+        }
+        
+        oto = new OutputTabOperator("SVN Output");
+        oto.clear();
+        Node nodeSrc = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
+        nodeSrc.performPopupAction("Subversion|Show Changes");
+        oto.waitText("Refreshing... finished.");
+        
+        Node nodeTest;
+        for (int i = 0; i < expected.length; i++) {
+            nodeTest = new Node(new SourcePackagesNode("JavaApp"), "javaapp|" + expected[i]);
+            nodeIDE = (org.openide.nodes.Node) nodeTest.getOpenideNode();
+            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            assertEquals("Wrong status of node!!!", TestKit.NEW_STATUS, status);
+            assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
+        }
+        
+        vo = VersioningOperator.invoke();
+        TableModel model = vo.tabFiles().getModel();
+        String[] actual = new String[model.getRowCount()];;
+        for (int i = 0; i < actual.length; i++) {
+            actual[i] = model.getValueAt(i, 0).toString();
+        }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Not All files listed in Commit dialog", expected.length, result);
+        
+        oto = new OutputTabOperator("SVN Output");
+        oto.clear();
+        nodeSrc = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
+        CommitOperator cmo = CommitOperator.invoke(nodeSrc);
+        table = cmo.tabFiles();
+        model = table.getModel();       
+        actual = new String[model.getRowCount()];
+        for (int i = 0; i < actual.length; i++) {
+            actual[i] = model.getValueAt(i, 0).toString();
+            if (actual[i].endsWith(".txt")) {
+                assertEquals("Expected text file.", "Add As Text ", model.getValueAt(i, 2).toString());
+                System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=77046!!!");
+            } else {
+                assertEquals("Expected text file.", "Add As Binary", model.getValueAt(i, 2).toString());
+            }
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Not All files listed in Commit dialog", expected.length, result);
+        cmo.commit();
+        for (int i = 0; i < expected.length; i++) {
+            oto.waitText("Adding");
+            oto.waitText(expected[i]);
+        }
+        oto.waitText("Comitting... finished.");
+        System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=77060!!!");
+        
+        //files have been committed, 
+        //verify explorer node
+        for (int i = 0; i < expected.length; i++) {
+            nodeTest = new Node(new SourcePackagesNode("JavaApp"), "javaapp|" + expected[i]);
+            nodeIDE = (org.openide.nodes.Node) nodeTest.getOpenideNode();
+            assertNull("Wrong status or color of node!!!", nodeIDE.getHtmlDisplayName());
+        }
+        //verify versioning view
+        table = vo.tabFiles();
+        model = table.getModel();       
+        
+        assertEquals("Not All files listed in Commit dialog", 0, model.getRowCount());
+               
+        TestKit.removeAllData("JavaApp");
+        stream.flush();
+        stream.close();
     }
 }

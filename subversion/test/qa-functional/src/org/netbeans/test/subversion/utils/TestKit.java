@@ -9,7 +9,12 @@
 
 package org.netbeans.test.subversion.utils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -172,4 +177,38 @@ public final class TestKit {
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
     }    
+    
+    public static void copyTo(String source, String destination) {
+        try {
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source)); 
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destination));
+            boolean available = true;
+            byte[] buffer = new byte[1024];
+            int size;
+            try {    
+                while (available) {
+                    size = bis.read(buffer);
+                    if (size != -1) {
+                        bos.write(buffer, 0, size);
+                    } else {
+                        available = false;
+                    }                      
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                bos.flush();
+                bos.close();
+                bis.close();
+            }   
+        } catch (Exception e) {
+            e.printStackTrace();
+        }    
+    }
+    
+    public static void printLogStream(PrintStream stream, String message) {
+        if (stream != null) {
+            stream.println(message);
+        }
+    }
 }
