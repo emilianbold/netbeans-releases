@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -59,7 +59,6 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     void refresh() {
         UIUtil.setText(jarFileValue, getProperties().getJarFile());
         needsRestart.setSelected(getBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART));
-        isGlobal.setSelected(getBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL));
         UIUtil.setText(homePageValue, getProperty(SingleModuleProperties.NBM_HOMEPAGE));
         UIUtil.setText(authorValue, getProperty(SingleModuleProperties.NBM_MODULE_AUTHOR));
         if (!getProperties().isNetBeansOrg()) {
@@ -69,7 +68,6 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     
     public void store() {
         setBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART, needsRestart.isSelected());
-        setBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL, isGlobal.isSelected());
         setProperty(SingleModuleProperties.NBM_HOMEPAGE, homePageValue.getText());
         setProperty(SingleModuleProperties.NBM_MODULE_AUTHOR, authorValue.getText());
         if (!getProperties().isNetBeansOrg()) {
@@ -110,14 +108,13 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         jarFileValue = new javax.swing.JTextField();
         sep1 = new javax.swing.JSeparator();
         needsRestart = new javax.swing.JCheckBox();
-        isGlobal = new javax.swing.JCheckBox();
         filler = new javax.swing.JLabel();
         browseLicense = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
         license.setLabelFor(licenseValue);
-        org.openide.awt.Mnemonics.setLocalizedText(license, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_License"));
+        org.openide.awt.Mnemonics.setLocalizedText(license, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_License")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -135,7 +132,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         add(licenseValue, gridBagConstraints);
 
         homePage.setLabelFor(homePageValue);
-        org.openide.awt.Mnemonics.setLocalizedText(homePage, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_HomePage"));
+        org.openide.awt.Mnemonics.setLocalizedText(homePage, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_HomePage")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -152,7 +149,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(homePageValue, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(nbmPkgMetadata, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_NBMPackageMetadata"));
+        org.openide.awt.Mnemonics.setLocalizedText(nbmPkgMetadata, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_NBMPackageMetadata")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -162,7 +159,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         add(nbmPkgMetadata, gridBagConstraints);
 
         author.setLabelFor(authorValue);
-        org.openide.awt.Mnemonics.setLocalizedText(author, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_Author"));
+        org.openide.awt.Mnemonics.setLocalizedText(author, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_Author")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -180,7 +177,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         add(authorValue, gridBagConstraints);
 
         jarFile.setLabelFor(jarFileValue);
-        org.openide.awt.Mnemonics.setLocalizedText(jarFile, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_JarFile"));
+        org.openide.awt.Mnemonics.setLocalizedText(jarFile, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_JarFile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -205,22 +202,13 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(sep1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(needsRestart, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "CTL_NeedsRestartOnInstall"));
+        org.openide.awt.Mnemonics.setLocalizedText(needsRestart, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "CTL_NeedsRestartOnInstall")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(needsRestart, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(isGlobal, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "CTL_MustBeInstalledGlobally"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(isGlobal, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -230,7 +218,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         gridBagConstraints.weighty = 1.0;
         add(filler, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseLicense, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "CTL_BrowseButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseLicense, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "CTL_BrowseButton")); // NOI18N
         browseLicense.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLicense(evt);
@@ -243,8 +231,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 0);
         add(browseLicense, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void browseLicense(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLicense
         String startDir;
@@ -271,7 +258,6 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     private javax.swing.JLabel filler;
     private javax.swing.JLabel homePage;
     private javax.swing.JTextField homePageValue;
-    private javax.swing.JCheckBox isGlobal;
     private javax.swing.JLabel jarFile;
     private javax.swing.JTextField jarFileValue;
     private javax.swing.JLabel license;
@@ -287,7 +273,6 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     
     private void initAccesibility() {
         browseLicense.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_BrowseLicense"));
-        isGlobal.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_IsGlobal"));
         needsRestart.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_NeedsRestart"));
         authorValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_AuthorValue"));
         homePageValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_HomePageValue"));

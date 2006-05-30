@@ -85,7 +85,6 @@ public final class SingleModuleProperties extends ModuleProperties {
     public static final String JAVADOC_TITLE = "javadoc.title"; // NOI18N
     public static final String LICENSE_FILE = "license.file"; // NOI18N
     public static final String NBM_HOMEPAGE = "nbm.homepage"; // NOI18N
-    public static final String NBM_IS_GLOBAL = "nbm.is.global"; // NOI18N
     public static final String NBM_MODULE_AUTHOR = "nbm.module.author"; // NOI18N
     public static final String NBM_NEEDS_RESTART = "nbm.needs.restart"; // NOI18N
     public static final String SPEC_VERSION_BASE = "spec.version.base"; // NOI18N
@@ -109,7 +108,6 @@ public final class SingleModuleProperties extends ModuleProperties {
         map.put(IS_AUTOLOAD, "false"); // NOI18N
         map.put(IS_EAGER, "false"); // NOI18N
         map.put(JAVAC_SOURCES, "1.4"); // NOI18N
-        map.put(NBM_IS_GLOBAL, "false"); // NOI18N
         map.put(NBM_NEEDS_RESTART, "false"); // NOI18N
         DEFAULTS = Collections.unmodifiableMap(map);
     }
