@@ -75,7 +75,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private static final Map columnLabels = new HashMap(4);
+    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
     {
         ResourceBundle loc = NbBundle.getBundle(SyncTable.class);
         columnLabels.put(SyncFileNode.COLUMN_NAME_STICKY, new String [] {
@@ -397,7 +397,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     }
 
     public void valueChanged(ListSelectionEvent e) {
-        List selectedNodes = new ArrayList();
+        List<SyncFileNode> selectedNodes = new ArrayList<SyncFileNode>();
         ListSelectionModel selectionModel = table.getSelectionModel();
         TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
         if (tc == null) return; // table is no longer in component hierarchy
@@ -413,7 +413,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 selectedNodes.add(nodes[idx]);
             }
         }
-        tc.setActivatedNodes((Node[]) selectedNodes.toArray(new Node[selectedNodes.size()]));
+        tc.setActivatedNodes(selectedNodes.toArray(new Node[selectedNodes.size()]));
     }
     
     private class SyncTableCellRenderer extends DefaultTableCellRenderer {

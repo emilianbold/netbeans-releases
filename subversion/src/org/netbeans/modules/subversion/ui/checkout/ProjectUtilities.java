@@ -115,13 +115,13 @@ final class ProjectUtilities {
      * Scans given folder (and subfolder into deep 5) for projects.
      * @return List of {@link Project}s never <code>null</code>.
      */
-    public static List scanForProjects(FileObject scanRoot) {
+    public static List<Project> scanForProjects(FileObject scanRoot) {
         return scanForProjectsRecursively(scanRoot, 5);
     }
 
-    private static List scanForProjectsRecursively(FileObject scanRoot, int deep) {
-        if (deep <= 0) return Collections.EMPTY_LIST;
-        List projects = new LinkedList();
+    private static List<Project> scanForProjectsRecursively(FileObject scanRoot, int deep) {
+        if (deep <= 0) return Collections.emptyList();
+        List<Project> projects = new LinkedList<Project>();
         ProjectManager projectManager = ProjectManager.getDefault();
         if (scanRoot.isFolder() && projectManager.isProject(scanRoot)) {
             try {
@@ -139,7 +139,7 @@ final class ProjectUtilities {
         while (en.hasMoreElements()) {
             FileObject fo = (FileObject) en.nextElement();
             if (fo.isFolder()) {
-                List nested = scanForProjectsRecursively(fo, deep -1);  // RECURSION
+                List<Project> nested = scanForProjectsRecursively(fo, deep -1);  // RECURSION
                 projects.addAll(nested);
             }
         }

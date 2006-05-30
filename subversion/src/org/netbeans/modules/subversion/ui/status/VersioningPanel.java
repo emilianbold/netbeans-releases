@@ -479,7 +479,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         /** Guard for above cache. */
         private Dimension parentSize;
 
-        private Set adjusted = new HashSet();
+        private Set<JComponent> adjusted = new HashSet<JComponent>();
 
         public void removeLayoutComponent(Component comp) {
         }

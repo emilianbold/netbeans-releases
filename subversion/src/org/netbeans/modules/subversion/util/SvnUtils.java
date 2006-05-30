@@ -614,10 +614,8 @@ public class SvnUtils {
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 
-    public static class ByImportanceComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            FileInformation i1 = (FileInformation) o1;
-            FileInformation i2 = (FileInformation) o2;
+    public static class ByImportanceComparator<T> implements Comparator<FileInformation> {
+        public int compare(FileInformation i1, FileInformation i2) {
             return getComparableStatus(i1.getStatus()) - getComparableStatus(i2.getStatus());
         }
     }

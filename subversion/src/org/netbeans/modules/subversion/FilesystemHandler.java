@@ -38,7 +38,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
 
     private final Subversion svn;
     private final FileStatusCache   cache;
-    private final Map savedMetadata = new HashMap();
+    private final Map<File, SvnMetadata> savedMetadata = new HashMap<File, SvnMetadata>();
     private static Thread ignoredThread;
 
     public FilesystemHandler(Subversion svn) {
@@ -341,8 +341,8 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         }
     }
 
-    private Set getRootFilesystems() {
-        Set filesystems = new HashSet();
+    private Set<FileSystem> getRootFilesystems() {
+        Set<FileSystem> filesystems = new HashSet<FileSystem>();
         File [] roots = File.listRoots();
         for (int i = 0; i < roots.length; i++) {
             File root = roots[i];

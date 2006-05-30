@@ -148,7 +148,7 @@ public class CommitTable implements AncestorListener, TableModelListener {
     /**
      * @return Map&lt;SvnFileNode, CommitOptions>
      */
-    public Map getCommitFiles() {
+    public Map<SvnFileNode, CommitOptions> getCommitFiles() {
         return tableModel.getCommitFiles();
     }
 

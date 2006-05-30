@@ -101,7 +101,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
      */ 
     public Image annotateIcon(Image icon, int iconType, Set files) {
         if (shutdown) return null;
-        Set roots = new HashSet();
+        Set<File> roots = new HashSet<File>();
         boolean folderAnnotation = false;
         if (files instanceof NonRecursiveFolder) {
             FileObject folder = ((NonRecursiveFolder) files).getFolder();
@@ -130,8 +130,8 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
             Diagnostics.println("Annotating icons " + fileNames(roots));
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             boolean isVersioned = false;
-            for (Iterator i = roots.iterator(); i.hasNext();) {
-                File file = (File) i.next();
+            for (Iterator<File> i = roots.iterator(); i.hasNext();) {
+                File file = i.next();
                 if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {
                     isVersioned = true;
                     break;
@@ -209,15 +209,15 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
      * for all parents.
      */
     public void fireFileStatusEvent(File file) {
-        Map folders = new HashMap();
+        Map<FileSystem, Set<FileObject>> folders = new HashMap<FileSystem, Set<FileObject>>();
         for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
             try {
                 FileObject fo = FileUtil.toFileObject(parent);
                 if (fo != null) {
                     FileSystem fs = fo.getFileSystem();
-                    Set fsFolders = (Set) folders.get(fs);
+                    Set<FileObject> fsFolders = folders.get(fs);
                     if (fsFolders == null) {
-                        fsFolders = new HashSet();
+                        fsFolders = new HashSet<FileObject>();
                         folders.put(fs, fsFolders);
                     }
                     fsFolders.add(fo);
@@ -258,15 +258,15 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
      * Called upon startup and shutdown of the module. This is required to show/remove CVS badges and other annotations.
      */ 
     private void refreshModifiedFiles() {
-        Map files = Subversion.getInstance().getStatusCache().getAllModifiedFiles();
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
+        Map<File, FileInformation> files = Subversion.getInstance().getStatusCache().getAllModifiedFiles();
+        for (Iterator<File> i = files.keySet().iterator(); i.hasNext();) {
+            File file = i.next();
             fireFileStatusEvent(file);
         }
     }
     
     public void refreshAllAnnotations(boolean icon, boolean text) {
-        Set filesystems = new HashSet(1);
+        Set<FileSystem> filesystems = new HashSet<FileSystem>(1);
         File[] allRoots = File.listRoots();
         for (int i = 0; i < allRoots.length; i++) {
             File root = allRoots[i];
@@ -279,8 +279,8 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
                 }
             }
         }
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
+        for (Iterator<FileSystem> i = filesystems.iterator(); i.hasNext();) {
+            FileSystem fileSystem = i.next();
             fireFileStatusChanged(new FileStatusEvent(fileSystem, icon, text));                
         }
     }

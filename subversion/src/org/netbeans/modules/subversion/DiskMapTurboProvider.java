@@ -34,19 +34,19 @@ class DiskMapTurboProvider implements TurboProvider {
     private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_VERSIONED_UPTODATE;
     private static final String CACHE_DIRECTORY = "svncache";
     
-    private File    cacheStore;
-    private int     storeSerial;
+    private File                            cacheStore;
+    private int                             storeSerial;
 
-    private int     cachedStoreSerial = -1;
-    private Map     cachedValues;
+    private int                             cachedStoreSerial = -1;
+    private Map<File, FileInformation>      cachedValues;
     
     DiskMapTurboProvider() {
         initCacheStore();
     }
 
-    synchronized Map getAllModifiedValues() {
+    synchronized Map<File, FileInformation>  getAllModifiedValues() {
         if (cachedStoreSerial != storeSerial || cachedValues == null) {
-            cachedValues = new HashMap();
+            cachedValues = new HashMap<File, FileInformation>();
             File [] files = cacheStore.listFiles();
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
@@ -259,8 +259,8 @@ class DiskMapTurboProvider implements TurboProvider {
         return sb.toString();
     }
 
-    private Map readValue(DataInputStream dis, String dirPath) throws IOException {
-        Map map = new HashMap();
+    private Map<File, FileInformation> readValue(DataInputStream dis, String dirPath) throws IOException {
+        Map<File, FileInformation> map = new HashMap<File, FileInformation>();
         int len = dis.readInt();
         while (len-- > 0) {
             int nameLen = dis.readInt();

@@ -389,8 +389,8 @@ public class Annotator {
         boolean allExcluded = true;
         boolean modified = false;
 
-        Map map = cache.getAllModifiedFiles();
-        Map modifiedFiles = new HashMap();
+        Map<File, FileInformation>  map = cache.getAllModifiedFiles();
+        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
         for (Iterator i = map.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) map.get(file);

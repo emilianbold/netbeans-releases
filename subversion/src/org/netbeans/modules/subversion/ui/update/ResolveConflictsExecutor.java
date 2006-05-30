@@ -148,9 +148,9 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         //System.out.println("copyParts("+generateDiffs+", "+source+", "+dest+", "+leftPart+")");
         BufferedReader r = new BufferedReader(new FileReader(source));
         BufferedWriter w = new BufferedWriter(new FileWriter(dest));
-        ArrayList diffList = null;
+        ArrayList<Difference> diffList = null;
         if (generateDiffs) {
-            diffList = new ArrayList();
+            diffList = new ArrayList<Difference>();
         }
         try {
             String line;
@@ -315,7 +315,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             }
         }
         if (generateDiffs) {
-            return (Difference[]) diffList.toArray(new Difference[diffList.size()]);
+            return diffList.toArray(new Difference[diffList.size()]);
         } else {
             return null;
         }

@@ -48,7 +48,7 @@ class CommitTableModel extends AbstractTableModel {
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private static final Map columnLabels = new HashMap(4);   
+    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);   
 
     {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
@@ -95,8 +95,8 @@ class CommitTableModel extends AbstractTableModel {
     /**
      * @return Map&lt;SvnFileNode, CommitOptions>
      */
-    public Map getCommitFiles() {
-        Map ret = new HashMap(nodes.length);
+    public Map<SvnFileNode, CommitOptions> getCommitFiles() {
+        Map<SvnFileNode, CommitOptions> ret = new HashMap<SvnFileNode, CommitOptions>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             ret.put(nodes[i], commitOptions[i]);
         }
@@ -238,9 +238,9 @@ class CommitTableModel extends AbstractTableModel {
         }
     }
 
-    private Set getRepositoryRoots() {
+    private Set<SVNUrl> getRepositoryRoots() {
         if(repositoryRoots == null) {
-            repositoryRoots = new HashSet();
+            repositoryRoots = new HashSet<SVNUrl>();
         }
         return repositoryRoots;
     }

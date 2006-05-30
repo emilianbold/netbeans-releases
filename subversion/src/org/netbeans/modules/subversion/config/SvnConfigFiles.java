@@ -61,7 +61,9 @@ public class SvnConfigFiles {
     private static final String UNIX_CONFIG_DIR = ".subversion/";    
     private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   
     private static final String GROUPS = "groups";
-    private static final String WINDOWS_CONFIG_DIR = getAPPDATA() + "\\Subversion";
+    private static final String WINDOWS_USER_APPDATA = getAPPDATA();
+    private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Subversion";
+    private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion";
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -198,11 +200,11 @@ public class SvnConfigFiles {
         List<String> ret = new ArrayList<String>();
         Ini.Section miscellany = config.get("miscellany");
         if(miscellany == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         String ignores = miscellany.get("global-ignores");
         if(ignores == null || ignores.trim().equals("")) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         StringTokenizer st = new StringTokenizer(ignores, " "); // XXX what if the space is a part of a pattern?
         while (st.hasMoreTokens()) {
@@ -491,9 +493,11 @@ public class SvnConfigFiles {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        
-        if(Utilities.isWindows()) {            
-            mergeFromRegistry("HKEY_LOCAL_MACHINE", "Servers", system);
+
+        String registryFileName = null;
+        if(Utilities.isWindows()) {
+            registryFileName = fileName.substring(0, 1).toUpperCase() + fileName.substring(1);
+            mergeFromRegistry("HKEY_LOCAL_MACHINE", registryFileName, system);
         }
 
         Ini global = null;      
@@ -510,9 +514,8 @@ public class SvnConfigFiles {
         }
         
         if(Utilities.isWindows()) {
-            mergeFromRegistry("HKEY_CURRENT_USER", "Servers", system);
+            mergeFromRegistry("HKEY_CURRENT_USER", registryFileName, system);
         }
-
 
         if(system.size() < 1) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not load the file " + filePath + ". Falling back on svn defaults.");
@@ -747,6 +750,38 @@ public class SvnConfigFiles {
                 appdata = getWindowsProperty("APPDATA");
             }
             return appdata;
+        }
+        return "";
+    }
+
+    /**
+     * Returns the value for the %ALLUSERSPROFILE% + the last foder segment from %APPDATA% env variables on windows
+     *
+     */
+    private static String getGlobalAPPDATA() {
+        if(Utilities.isWindows()) {
+            String globalProfile = System.getProperty("Env-ALLUSERSPROFILE"); // should work on XP
+            if(globalProfile == null || globalProfile.trim().equals("")) {            
+                globalProfile = getWindowsProperty("ALLUSERSPROFILE");
+            }
+            String appdataPath = WINDOWS_USER_APPDATA;
+            if(appdataPath == null || appdataPath.equals("")) {
+                return "";
+            }
+            String appdata = "";
+            int idx = appdataPath.lastIndexOf("\\");
+            if(idx > -1) {
+                appdata = appdataPath.substring(idx + 1);
+                if(appdata.trim().equals("")) {
+                    int previdx = appdataPath.lastIndexOf("\\", idx);
+                    if(idx > -1) {
+                        appdata = appdataPath.substring(previdx + 1, idx);
+                    }
+                }
+            } else {
+                return "";
+            }
+            return globalProfile + "/" + appdata;
         }
         return "";
     }

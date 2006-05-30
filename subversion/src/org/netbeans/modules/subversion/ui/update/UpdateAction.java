@@ -69,8 +69,8 @@ public class UpdateAction extends ContextAction {
 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[][] split = SvnUtils.splitFlatOthers(roots);
-        final List<File> recursiveFiles = new ArrayList();
-        final List<File> flatFiles = new ArrayList();
+        final List<File> recursiveFiles = new ArrayList<File>();
+        final List<File> flatFiles = new ArrayList<File>();
         
         // recursive files
         for (int i = 0; i<split[1].length; i++) {

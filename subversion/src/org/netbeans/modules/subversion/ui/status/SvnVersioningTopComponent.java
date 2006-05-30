@@ -209,12 +209,12 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         }
     }
 
-    private List removeDuplicates(File [] roots) {
-        List newFiles = new ArrayList();
+    private List<File> removeDuplicates(File [] roots) {
+        List<File> newFiles = new ArrayList<File>();
         outter: for (int i = 0; i < roots.length; i++) {
             File file = roots[i];
-            for (Iterator j = newFiles.iterator(); j.hasNext();) {
-                File includedFile = (File) j.next();
+            for (Iterator<File> j = newFiles.iterator(); j.hasNext();) {
+                File includedFile = j.next();
                 if (SvnUtils.isParentOrEqual(includedFile, file) && (file.isFile() || !(includedFile instanceof FlatFolder))) continue outter;
                 if (SvnUtils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !(file instanceof FlatFolder))) {
                     j.remove();
@@ -226,7 +226,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     }
 
     private Context removeDuplicates(Context ctx) {
-        return new Context(removeDuplicates(ctx.getFiles()), removeDuplicates((File[]) ctx.getRoots().toArray(new File[0])), ctx.getExclusions());
+        return new Context(removeDuplicates(ctx.getFiles()), removeDuplicates(ctx.getRoots().toArray(new File[0])), ctx.getExclusions());
     }
     
     /** Tests whether it shows some content. */

@@ -85,7 +85,7 @@ public final class ImportAction extends NodeAction {
 
                 List<File> list = new ArrayList<File>(1);
                 list.add(importDirectory);
-                Context context = new Context(Collections.EMPTY_LIST, list, Collections.EMPTY_LIST);
+                Context context = new Context(Context.getEmptyList(), list, Context.getEmptyList());
                 ImportWizard wizard = new ImportWizard(context);
                 if (!wizard.show()) return;
                 

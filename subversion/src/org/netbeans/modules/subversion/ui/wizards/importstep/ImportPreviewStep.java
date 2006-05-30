@@ -82,14 +82,14 @@ public class ImportPreviewStep extends AbstractStep {
         }
 
         SvnFileNode[] nodes;        
-        ArrayList nodesList = new ArrayList(files.length);
+        ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.length);
 
         for (int i = 0; i<files.length; i++) {
             File file = files[i];
             SvnFileNode node = new SvnFileNode(file);
             nodesList.add(node);
         }
-        nodes = (SvnFileNode[]) nodesList.toArray(new SvnFileNode[files.length]);
+        nodes = nodesList.toArray(new SvnFileNode[files.length]);
         table.setNodes(nodes);
 
         validateUserInput();

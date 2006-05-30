@@ -90,8 +90,8 @@ public final class PropertiesClient {
     }
 
     private Map<String, byte[]> normalize(Map map) {
-        Map<String, byte[]> ret = new HashMap(map.size());
-        Iterator<Map.Entry> it = map.entrySet().iterator();
+        Map<String, byte[]> ret = new HashMap<String, byte[]>(map.size());
+        Iterator<Map.Entry<String, byte[]>> it = map.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, byte[]> next = it.next();
             // getKey().toString() == the normalization

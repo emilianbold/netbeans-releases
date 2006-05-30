@@ -26,15 +26,15 @@ import java.util.*;
  */
 public class Context implements Serializable {
 
-    public static final Context Empty = new Context(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST); 
-    
+    public static final Context Empty = new Context( getEmptyList(), getEmptyList(), getEmptyList() );
+
     private static final long serialVersionUID = 1L;
     
-    private final List filteredFiles;
-    private final List rootFiles;
-    private final List exclusions;
+    private final List<File> filteredFiles;
+    private final List<File> rootFiles;
+    private final List<File> exclusions;
 
-    public Context(List filteredFiles, List rootFiles, List exclusions) {
+    public Context(List<File> filteredFiles, List<File> rootFiles, List<File> exclusions) {
         this.filteredFiles = filteredFiles;
         this.rootFiles = rootFiles;
         this.exclusions = exclusions;
@@ -42,10 +42,10 @@ public class Context implements Serializable {
     }
 
     private boolean normalize() {
-        for (Iterator i = rootFiles.iterator(); i.hasNext();) {
-            File root = (File) i.next();
-            for (Iterator j = exclusions.iterator(); j.hasNext();) {
-                File exclusion = (File) j.next();
+        for (Iterator<File> i = rootFiles.iterator(); i.hasNext();) {
+            File root = i.next();
+            for (Iterator<File> j = exclusions.iterator(); j.hasNext();) {
+                File exclusion = j.next();
                 if (SvnUtils.isParentOrEqual(exclusion, root)) {
                     j.remove();
                     exclusionRemoved(exclusion, root);
@@ -58,12 +58,12 @@ public class Context implements Serializable {
         return false;
     }
 
-    private void removeDuplicates(List files) {
-        List newFiles = new ArrayList();
-        outter: for (Iterator i = files.iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            for (Iterator j = newFiles.iterator(); j.hasNext();) {
-                File includedFile = (File) j.next();
+    private void removeDuplicates(List<File> files) {
+        List<File> newFiles = new ArrayList<File>();
+        outter: for (Iterator<File> i = files.iterator(); i.hasNext();) {
+            File file = i.next();
+            for (Iterator<File> j = newFiles.iterator(); j.hasNext();) {
+                File includedFile = j.next();
                 if (SvnUtils.isParentOrEqual(includedFile, file) && (file.isFile() || !(includedFile instanceof FlatFolder))) continue outter;
                 if (SvnUtils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !(file instanceof FlatFolder))) {
                     j.remove();
@@ -86,11 +86,11 @@ public class Context implements Serializable {
         }
     }
 
-    public List getRoots() {
+    public List<File> getRoots() {
         return rootFiles;
     }
 
-    public List getExclusions() {
+    public List<File> getExclusions() {
         return exclusions;
     }
 
@@ -123,5 +123,10 @@ public class Context implements Serializable {
             }
         }
         return false;
+    }
+
+    public static final List<File> getEmptyList() {
+        // XXX
+        return Collections.emptyList();
     }
 }

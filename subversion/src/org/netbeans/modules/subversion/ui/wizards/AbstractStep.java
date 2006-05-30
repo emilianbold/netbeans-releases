@@ -38,7 +38,7 @@ import java.awt.*;
  */
 public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
 
-    private List listeners = new LinkedList();
+    private List<ChangeListener> listeners = new LinkedList<ChangeListener>();
     private boolean valid;
     private JComponent panel;
     private volatile boolean underConstruction;
@@ -71,6 +71,9 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
             } catch (RuntimeException ex) {
                 ErrorManager.getDefault().notify(ex);
             } finally {
+                if(panel == null) {
+                    System.out.println("asd");
+                }
                 assert panel != null;
                 underConstruction = false;
                 fireChange();
@@ -160,14 +163,14 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
 
     private void fireChange() {
         if (underConstruction) return;
-        List clone;
+        List<ChangeListener> clone;
         synchronized(listeners) {
-            clone = new ArrayList(listeners);
+            clone = new ArrayList<ChangeListener>(listeners);
         }
-        Iterator it = clone.iterator();
+        Iterator<ChangeListener> it = clone.iterator();
         ChangeEvent event = new ChangeEvent(this);
         while (it.hasNext()) {
-            ChangeListener listener = (ChangeListener) it.next();
+            ChangeListener listener = it.next();
             listener.stateChanged(event);
         }
     }
