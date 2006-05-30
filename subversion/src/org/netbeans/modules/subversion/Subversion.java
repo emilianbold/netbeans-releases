@@ -50,10 +50,10 @@ public class Subversion {
     
     private static Subversion instance;
     
-    private FileStatusCache     fileStatusCache;
-    private FilesystemHandler   filesystemHandler;
-    private Annotator           annotator;
-    private HashMap             processorsToUrl;
+    private FileStatusCache                     fileStatusCache;
+    private FilesystemHandler                   filesystemHandler;
+    private Annotator                           annotator;
+    private HashMap<String, RequestProcessor>   processorsToUrl;
 
     private OutputLogger outputLogger;
 
@@ -296,7 +296,7 @@ public class Subversion {
 
                     for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
                         try {
-                            String patternString = regExpToFilePatters(i.next());                            
+                            String patternString = regExpToFilePatterns(i.next());                            
                             Pattern pattern =  Pattern.compile(patternString);
                             if (pattern.matcher(name).matches()) {
                                 return true;
@@ -322,9 +322,9 @@ public class Subversion {
                 if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
                     FileStatusCache cache = Subversion.getInstance().getStatusCache();
                     if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                        List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
+                        List<String> patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
                         if (patterns.contains(file.getName()) == false) {
-                            patterns.add(file.getName());
+                            patterns.add(escapeRegExp(file.getName()));
                             Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
                         } else {
                             assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName();
@@ -346,7 +346,14 @@ public class Subversion {
 
     }    
 
-    private String regExpToFilePatters(String exp) {
+    private String regExpToFilePatterns(String exp) {
+        exp = exp.replaceAll("\\.", "\\\\.");
+        exp = exp.replaceAll("\\*", ".*");  
+        exp = exp.replaceAll("\\?", ".");
+        return exp;
+    }
+
+    private String escapeRegExp(String exp) {
         exp = exp.replaceAll("\\.", "\\\\.");
         exp = exp.replaceAll("\\$", "\\\\\\$");
         exp = exp.replaceAll("\\^", "\\\\^");
@@ -360,10 +367,8 @@ public class Subversion {
         exp = exp.replaceAll("\\)", "\\\\)");
         exp = exp.replaceAll("\\+", "\\\\+");
         exp = exp.replaceAll("\\|", "\\\\|");
-        exp = exp.replaceAll("\\*", ".*");  
-        exp = exp.replaceAll("\\?", ".");
         return exp;
-    }
+    }   
 
     /**
      * Serializes all SVN requests (moves them out of AWT).
@@ -377,7 +382,7 @@ public class Subversion {
      */
     public RequestProcessor getRequestProcessor(SVNUrl url) {
         if(processorsToUrl == null) {
-            processorsToUrl = new HashMap();
+            processorsToUrl = new HashMap<String, RequestProcessor>();
         }
 
         String key;
@@ -387,7 +392,7 @@ public class Subversion {
             key = "ANY_URL";
         }
 
-        RequestProcessor rp = (RequestProcessor) processorsToUrl.get(key);
+        RequestProcessor rp = processorsToUrl.get(key);
         if(rp == null) {
             rp = new RequestProcessor("Subversion - " + key, 1, true); // NOI18N
             processorsToUrl.put(key, rp);
