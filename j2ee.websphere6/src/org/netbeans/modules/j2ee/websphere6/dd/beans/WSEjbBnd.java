@@ -82,6 +82,7 @@ public class WSEjbBnd extends DDXmi{
         setXmiId("EJBJarBinding");
         setEjbJar("");
         setEjbJarHref("ID_ejb_jar");
+        /*
         EjbBindingsType ejbbind=new EjbBindingsType();
         
         ejbbind.setEnterpriseBean("");
@@ -90,6 +91,7 @@ public class WSEjbBnd extends DDXmi{
         ejbbind.setXmiId("Session_EJB_Bnd");
         ejbbind.setJndiName("NewSessionBean");
         addEjbBindings(ejbbind);
+         */
     }
     
     protected void initOptions(int options) {

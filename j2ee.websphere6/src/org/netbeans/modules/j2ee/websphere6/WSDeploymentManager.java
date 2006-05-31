@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -191,9 +191,9 @@ public class WSDeploymentManager implements DeploymentManager {
     
     public String getLogFilePath() {
         return getDomainRoot() + File.separator + "logs" +  // NOI18N
-                File.separator + 
+                File.separator +
                 getInstanceProperties().getProperty(
-                WSDeploymentFactory.SERVER_NAME_ATTR) + File.separator + 
+                WSDeploymentFactory.SERVER_NAME_ATTR) + File.separator +
                 "trace.log"; // NOI18N
     }
     
@@ -659,36 +659,37 @@ public class WSDeploymentManager implements DeploymentManager {
                     getMethod("getWebURL", new Class[0]);            // NOI18N
             webUrl = (String) method.
                     invoke(targetModuleID[0], new Object[0]);
-            if(webUrl==null) {
-                String port=getDefaultHostPort();
-                String host=getHost();
-                if(uri.indexOf(WSURIManager.WSURI)!=-1) {
-                    host=uri.split(":")[2];
-                }
-                webUrl="http://" + host + ":" + port; // NOI18N
-                method = targetModuleID[0].getClass().
-                        getMethod("setWebURL", new Class[] {String.class});  // NOI18N
-                method.invoke(targetModuleID[0], new Object[] {webUrl});
-            }
-            try { // stop running web modules
-                TargetModuleID [] modules = getRunningModules(
-                        ModuleType.WAR,
-                        new Target[] {targetModuleID[0].getTarget()});
-                TargetModuleID [] amodules = getAvailableModules(
-                        ModuleType.WAR,
-                        new Target[] {targetModuleID[0].getTarget()});
-                
-                
-                for(int i=0;i<modules.length;i++) {
-                    if(/*modules[i].getWebURL()==null || */webUrl.equals(modules[i].getWebURL())) {
-                        
-                        stop(new TargetModuleID[] {modules[i]} );
+            if(targetModuleID[0].getModuleID().contains("type=WebModule")) {
+                if(webUrl==null) {
+                    String port=getDefaultHostPort();
+                    String host=getHost();
+                    if(uri.indexOf(WSURIManager.WSURI)!=-1) {
+                        host=uri.split(":")[2];
                     }
+                    webUrl="http://" + host + ":" + port; // NOI18N
+                    method = targetModuleID[0].getClass().
+                            getMethod("setWebURL", new Class[] {String.class});  // NOI18N
+                    method.invoke(targetModuleID[0], new Object[] {webUrl});
                 }
-            } catch(TargetException ex) {
-                ;//do nothing..
+                try { // stop running web modules
+                    TargetModuleID [] modules = getRunningModules(
+                            ModuleType.WAR,
+                            new Target[] {targetModuleID[0].getTarget()});
+                    TargetModuleID [] amodules = getAvailableModules(
+                            ModuleType.WAR,
+                            new Target[] {targetModuleID[0].getTarget()});
+                    
+                    
+                    for(int i=0;i<modules.length;i++) {
+                        if(/*modules[i].getWebURL()==null || */webUrl.equals(modules[i].getWebURL())) {
+                            
+                            stop(new TargetModuleID[] {modules[i]} );
+                        }
+                    }
+                } catch(TargetException ex) {
+                    ;//do nothing..
+                }
             }
-            
             
         }  catch (IllegalAccessException e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
