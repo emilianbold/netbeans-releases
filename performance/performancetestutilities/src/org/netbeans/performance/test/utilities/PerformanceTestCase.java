@@ -275,7 +275,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     // this is to optimize delays
                     long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
                     tr.add(tr.TRACK_APPLICATION_MESSAGE, "wait_after_open_heuristic "+wait_time);
-                    waitNoEvent(wait_time);
+                    Thread.currentThread().sleep(wait_time);
+                    waitNoEvent(wait_time/4);
                     
                     logMemoryUsage();
                     

@@ -227,7 +227,7 @@ public class ActionTracker {
         eventLists.add(currentEvents);
         currentEvents.start();
         startRecording();
-        add(TRACK_START, "START", currentEvents.startMillies/1000000);
+        add(TRACK_START, "START", currentEvents.startMillies);
     }
     
     long default_awt_event_mask = AWTEvent.COMPONENT_EVENT_MASK 
@@ -288,7 +288,7 @@ public class ActionTracker {
      */
     public void add(int code, String name, long millies) {
         EventList ce = getCurrentEvents();
-        add(new Tuple(code, name, millies, ce != null ? ce.getStartMillis() : (long)-1));
+        add(new Tuple(code, name, millies, ce != null ? ce.startMillies : (long)-1));
     }
     
     /**
@@ -298,7 +298,7 @@ public class ActionTracker {
      */
     public void add(int code, String name) {
         EventList ce = getCurrentEvents();
-        add(new Tuple(code, name, ce != null ? ce.getStartMillis() : (long)-1));
+        add(new Tuple(code, name, ce != null ? ce.startMillies : (long)-1));
     }
     
     /**
@@ -652,7 +652,7 @@ public class ActionTracker {
             this.name = name;
             this.millies = millies;
             this.diffies = millies - start;
-            //System.err.println("new ActionTracker.Tuple " + toString());
+            //System.err.println("new ActionTracker.Tuple " + toString()+" ,start="+start);
         }
         int code;
         String name;
