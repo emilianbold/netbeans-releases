@@ -1,18 +1,22 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.websphere6.ui.wizard;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -24,19 +28,19 @@ import org.openide.*;
 import org.openide.util.*;
 
 /**
- * The first panel of the custom wizard used to register new server instance. 
+ * The first panel of the custom wizard used to register new server instance.
  * User is required to enter the local server's installation directory at this
  * phase.
- * 
+ *
  * @author Kirill Sorokin
  */
-public class ServerLocationPanel extends JPanel 
+public class ServerLocationPanel extends JPanel
         implements WizardDescriptor.Panel {
     /**
-     * Since the WizardDescriptor does not expose the property name for the 
+     * Since the WizardDescriptor does not expose the property name for the
      * error message label, we have to keep it here also
      */
-    private final static String PROP_ERROR_MESSAGE = 
+    private final static String PROP_ERROR_MESSAGE =
             "WizardPanel_errorMessage";                                // NOI18N
     
     /**
@@ -50,26 +54,26 @@ public class ServerLocationPanel extends JPanel
     private transient WSInstantiatingIterator instantiatingIterator;
     
     /**
-     * Creates a new instance of the ServerLocationPanel. It initializes all the 
+     * Creates a new instance of the ServerLocationPanel. It initializes all the
      * GUI components that appear on the panel.
-     * 
+     *
      * @param steps the names of the steps in the wizard
      * @param index index of this panel in the wizard
-     * @param listener a listener that will propagate the chage event higher in 
+     * @param listener a listener that will propagate the chage event higher in
      *      the hierarchy
      * @param instantiatingIterator the parent instantiating iterator
      */
-    public ServerLocationPanel(String[] steps, int index, 
-            ChangeListener listener, 
+    public ServerLocationPanel(String[] steps, int index,
+            ChangeListener listener,
             WSInstantiatingIterator instantiatingIterator) {
         // save the instantiating iterator
         this.instantiatingIterator = instantiatingIterator;
         
-        // set the required properties, so that the panel appear correct in 
+        // set the required properties, so that the panel appear correct in
         // the steps
         putClientProperty("WizardPanel_contentData", steps);           // NOI18N
         putClientProperty("WizardPanel_contentSelectedIndex",          // NOI18N
-                new Integer(index)); 
+                new Integer(index));
         
         // register the supplied listener
         addChangeListener(listener);
@@ -83,7 +87,7 @@ public class ServerLocationPanel extends JPanel
     
     /**
      * Returns the named help article associated with this panel
-     * 
+     *
      * @return the associated help article
      */
     public HelpCtx getHelp() {
@@ -94,7 +98,7 @@ public class ServerLocationPanel extends JPanel
     /**
      * Gets the panel's AWT Component object, in our case it coincides with this
      * object
-     * 
+     *
      * @return this
      */
     public Component getComponent() {
@@ -103,7 +107,7 @@ public class ServerLocationPanel extends JPanel
     
     /**
      * Checks whether the data input is valid
-     * 
+     *
      * @return true if the entered installation directory is valid, false
      *      otherwise
      */
@@ -114,8 +118,8 @@ public class ServerLocationPanel extends JPanel
         // check for the validity of the entered installation directory
         // if it's invalid, return false
         if (!isValidServerRoot(locationField.getText())) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, 
-                    NbBundle.getMessage(ServerLocationPanel.class, 
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ServerLocationPanel.class,
                     "ERR_INVALID_SERVER_ROOT"));                       // NOI18N
             return false;
         }
@@ -139,7 +143,7 @@ public class ServerLocationPanel extends JPanel
      * Inits the GUI components
      */
     private void init() {
-        // we use the GridBagLayout so we need the GridBagConstraints to 
+        // we use the GridBagLayout so we need the GridBagConstraints to
         // properly place the components
         GridBagConstraints gridBagConstraints;
         
@@ -153,9 +157,9 @@ public class ServerLocationPanel extends JPanel
         setLayout(new GridBagLayout());
         
         // add server installation directory field label
-        locationLabel.setText(NbBundle.getMessage(ServerLocationPanel.class, 
+        locationLabel.setText(NbBundle.getMessage(ServerLocationPanel.class,
                 "LBL_SERVER_LOCATION"));                               // NOI18N
-        locationLabel.setDisplayedMnemonic(NbBundle.getMessage(ServerLocationPanel.class, 
+        locationLabel.setDisplayedMnemonic(NbBundle.getMessage(ServerLocationPanel.class,
                 "MNE_SERVER_LOCATION").charAt(0));
         locationLabel.setLabelFor(locationField);
         gridBagConstraints = new GridBagConstraints();
@@ -166,6 +170,27 @@ public class ServerLocationPanel extends JPanel
         
         // add server installation directory field
         locationField.addKeyListener(new LocationKeyListener());
+        if(System.getProperty("websphere.home")==null) {
+            String home = System.getProperty("user.home");
+            if(home!=null) {
+                try{
+                    File f = new File(home + File.separator + ".WASRegistry");
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(
+                            new FileInputStream(f)));
+                    String string;
+                    while((string=reader.readLine())!=null) {
+                        if(string.length()>1 && new File(string).exists()) {
+                            System.setProperty("websphere.home",string);
+                        }
+                    }
+                } catch (IOException e){
+                    e=null;
+                    //either the file does not exist or not available. Do nothing                    
+                }
+            }
+        }
+        
         if (System.getProperty("websphere.home") != null) {            // NOI18N
             locationField.setText(System.getProperty(
                     "websphere.home"));                                // NOI18N
@@ -200,7 +225,7 @@ public class ServerLocationPanel extends JPanel
     }
     
     /**
-     * An instance of the fileschooser that is used for locating the server 
+     * An instance of the fileschooser that is used for locating the server
      * installation directory
      */
     private JFileChooser fileChooser = new JFileChooser();
@@ -233,26 +258,26 @@ public class ServerLocationPanel extends JPanel
     /**
      * Checks whether the supplied directory is the valid server installation
      * directory.
-     * 
+     *
      * @return true if the supplied directory is valid, false otherwise
      */
     private static boolean isValidServerRoot(String path) {
         // set the child directories/files that should be present and validate
         // the directory as the server's installation one
         String[] children = {
-                    "bin",                                             // NOI18N
-                    "cloudscape",                                      // NOI18N
-                    "profiles",                                        // NOI18N
-                    "properties/wsadmin.properties",                   // NOI18N
-                    "lib/j2ee.jar",                                    // NOI18N
-                    "lib/wjmxapp.jar"                                  // NOI18N
+            "bin",                                             // NOI18N
+            "cloudscape",                                      // NOI18N
+            "profiles",                                        // NOI18N
+            "properties/wsadmin.properties",                   // NOI18N
+            "lib/j2ee.jar",                                    // NOI18N
+            "lib/wjmxapp.jar"                                  // NOI18N
         };
         return hasChildren(path, children);
     }
     
     /**
      * Checks whether the supplied directory has the required children
-     * 
+     *
      * @return true if the directory contains all the children, false otherwise
      */
     private static boolean hasChildren(String parent, String[] children) {
@@ -266,7 +291,7 @@ public class ServerLocationPanel extends JPanel
             return true;
         }
         
-        // for each child check whether it is contained and if it is not, 
+        // for each child check whether it is contained and if it is not,
         // return false
         for (int i = 0; i < children.length; i++) {
             if (!(new File(parent + File.separator + children[i]).exists())) {
@@ -284,7 +309,7 @@ public class ServerLocationPanel extends JPanel
     /**
      * Reads the supplied setting. The only one that can arrive this way is the
      * WizardDescriptor, thus we only convert the incoming object and save
-     * 
+     *
      * @param object the incoming setting (WizardDescriptor)
      */
     public void readSettings(Object object) {
@@ -292,7 +317,7 @@ public class ServerLocationPanel extends JPanel
     }
     
     /**
-     * Stores the supplied setting. I don't know the purpose of this method 
+     * Stores the supplied setting. I don't know the purpose of this method
      * thus we do not implement it
      */
     public void storeSettings(Object object) {
@@ -308,7 +333,7 @@ public class ServerLocationPanel extends JPanel
     
     /**
      * Removes a registered listener
-     * 
+     *
      * @param listener the listener to be removed
      */
     public void removeChangeListener(ChangeListener listener) {
@@ -321,7 +346,7 @@ public class ServerLocationPanel extends JPanel
     
     /**
      * Adds a listener
-     * 
+     *
      * @param listener the listener to be added
      */
     public void addChangeListener(ChangeListener listener) {
@@ -340,7 +365,7 @@ public class ServerLocationPanel extends JPanel
     
     /**
      * Fires a custom change event
-     * 
+     *
      * @param event the event
      */
     private void fireChangeEvent(ChangeEvent event) {
@@ -387,7 +412,7 @@ public class ServerLocationPanel extends JPanel
      */
     private class BrowseActionListener implements ActionListener {
         /**
-         * this methos is called when a user clicks Browse and show the file 
+         * this methos is called when a user clicks Browse and show the file
          * chooser dialog in response
          */
         public void actionPerformed(ActionEvent event) {
@@ -396,7 +421,7 @@ public class ServerLocationPanel extends JPanel
     }
     
     /**
-     * An extension of the FileFilter class that is setup to accept only 
+     * An extension of the FileFilter class that is setup to accept only
      * directories.
      *
      * @author Kirill Sorokin
@@ -418,13 +443,13 @@ public class ServerLocationPanel extends JPanel
             return false;
         }
         
-        /** 
+        /**
          * Returns the description of file group described by this filter
-         * 
+         *
          * @return group name
          */
         public String getDescription() {
-            return NbBundle.getMessage(ServerLocationPanel.class, 
+            return NbBundle.getMessage(ServerLocationPanel.class,
                     "DIRECTORIES_FILTER_NAME");                        // NOI18N
         }
     }
