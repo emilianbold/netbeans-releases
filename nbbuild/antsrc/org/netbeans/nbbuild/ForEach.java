@@ -31,7 +31,7 @@ import org.apache.tools.ant.Task;
 public class ForEach extends Task {
     private static final boolean DEBUG = false;
     private static final boolean ECHO  = true;
-    
+
     private List   locations; // List<String>
     private String target;
     private String startdir;
@@ -41,8 +41,6 @@ public class ForEach extends Task {
     //
     
     public ForEach () {
-        locations = new Vector();
-        target    = null;
     }
 
     //
@@ -79,7 +77,7 @@ public class ForEach extends Task {
     
     /** Execute this task. */
     public void execute () throws BuildException {        
-        if (locations.isEmpty()) {
+        if (locations == null) {
             throw new BuildException("You must set at least one location!", getLocation());
         }
 
