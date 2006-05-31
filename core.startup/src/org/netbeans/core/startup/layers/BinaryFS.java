@@ -26,13 +26,17 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Enumeration;
+import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -491,6 +495,10 @@ public class BinaryFS extends FileSystem {
                             objArray[2] = new Object[] {fo,attr};
                             break;
                         }
+                        if (paramClss[0].isAssignableFrom(Map.class) && paramClss[1].isAssignableFrom(sParam)) {
+                            methArray[2] = allMethods[j];
+                            objArray[2] = new Object[]{wrapToMap(fo),attr};
+                        }
                     
                         if (paramClss[0].isAssignableFrom(sParam) && paramClss[1].isAssignableFrom(fParam)) {
                             methArray[2] = allMethods[j];
@@ -505,6 +513,10 @@ public class BinaryFS extends FileSystem {
                             methArray[1] = allMethods[j];
                             objArray[1] = new Object[] {fo};
                             continue;
+                        }
+                        if (paramClss[0].isAssignableFrom(Map.class)) {
+                            methArray[2] = allMethods[j];
+                            objArray[2] = new Object[]{wrapToMap(fo)};
                         }
                     
                         if (paramClss[0].isAssignableFrom(sParam)) {
@@ -798,4 +810,97 @@ public class BinaryFS extends FileSystem {
         }
         
     }
+    
+    static final Map wrapToMap(FileObject fo) {
+        return fo == null ? Collections.emptyMap() : new FileMap(fo);
+    }
+    
+    
+    private static final class FileMap extends AbstractMap<String,Object> {
+        private FileObject fo;
+        
+        private FileMap(FileObject fo) {
+            this.fo = fo;
+        }
+        
+        public Set<Map.Entry<String,Object>> entrySet() {
+            return new AttrFileSet(fo);
+        }
+        
+        public Object get(String key) {
+            return fo.getAttribute(key);
+        }
+        
+        public Object remove(Object key) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public Object put(String key, Object value) {
+            throw new UnsupportedOperationException();
+        }
+        
+    }
+    private static final class AttrFileSet extends AbstractSet<Map.Entry<String,Object>> {
+        private FileObject fo;
+        
+        private AttrFileSet(FileObject fo) {
+            this.fo = fo;
+        }
+        
+        public Iterator<Map.Entry<String, Object>> iterator() {
+            class Iter implements Iterator<Map.Entry<String, Object>> {
+                Enumeration<String> attrs = (Enumeration<String>)fo.getAttributes();
+                
+                public boolean hasNext() {
+                    return attrs.hasMoreElements();
+                }
+                
+                public Map.Entry<String, Object> next() {
+                    String s = attrs.nextElement();
+                    return new FOEntry(fo, s);
+                }
+                
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            }
+            return new Iter();
+        }
+        
+        public int size() {
+            Enumeration<?> all = fo.getAttributes();
+            int cnt = 0;
+            while (all.hasMoreElements()) {
+                cnt++;
+                all.nextElement();
+            }
+            return cnt;
+        }
+        
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+    } // end of AttrFileSet
+    
+    private static final class FOEntry implements Map.Entry<String, Object> {
+        private FileObject fo;
+        private String attr;
+        
+        private FOEntry(FileObject fo, String attr) {
+            this.fo = fo;
+            this.attr = attr;
+        }
+        
+        public String getKey() {
+            return attr;
+        }
+        
+        public Object getValue() {
+            return fo.getAttribute(attr);
+        }
+        
+        public Object setValue(Object value) {
+            throw new UnsupportedOperationException();
+        }
+    } // end of FOEntry
 }

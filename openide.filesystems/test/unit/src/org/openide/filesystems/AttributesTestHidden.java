@@ -254,6 +254,16 @@ public class AttributesTestHidden extends TestBaseHid {
       assertTrue ("methodValue failed", obj != null);          
       assertTrue ("methodValue doesn't keep order ", 
       obj.equals(getObjectViaMethodValue5 ()));                     
+
+      testName = "test6";
+      obj = fo.getAttribute(testName);
+      assertTrue ("methodValue failed", obj != null);          
+      assertEquals("even works for java.util.Map", "Ahoj1", obj);
+
+      testName = "test7";
+      obj = fo.getAttribute(testName);
+      assertTrue ("methodValue failed", obj != null);          
+      assertEquals("works for map and string", "Ahoj1test7", obj);  
     }
 
     public void testAttribute09 () throws IOException {
@@ -342,6 +352,42 @@ public class AttributesTestHidden extends TestBaseHid {
 ///
     private static String getObjectViaMethodValue5 () {
         return "";        
+    }
+            
+    private static Object getObjectViaMethodValue6 (Map attrs) {
+        try {
+            attrs.keySet().iterator().remove();
+            return "UnsupportedOperationException";
+        } catch (UnsupportedOperationException ex) {
+            // ok
+        }
+        try {
+            attrs.put("value1", "nothing");
+            return "UnsupportedOperationException";
+        } catch (UnsupportedOperationException ex) {
+            // ok
+        }
+        try {
+            attrs.remove("value1");
+            return "UnsupportedOperationException";
+        } catch (UnsupportedOperationException ex) {
+            // ok
+        }
+        
+        
+        return attrs.get("value1");
+    }
+    private static Object getObjectViaMethodValue7 (Map<String,Object> attrs, String attrName) {
+        assertEquals(8, attrs.keySet().size());
+        try {
+            attrs.entrySet().remove(null);
+            return "UnsupportedOperationException";
+        } catch (UnsupportedOperationException ex) {
+            // ok
+        }
+        
+        
+        return attrs.get("value1") + attrName;
     }
             
     private String basicAttributeTest (String attrName, String attrValue) throws IOException {

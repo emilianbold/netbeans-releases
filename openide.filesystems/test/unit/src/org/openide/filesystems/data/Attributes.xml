@@ -16,5 +16,9 @@
         <attr name="test3" methodvalue="org.openide.filesystems.AttributesTestHidden.getObjectViaMethodValue3"/>                
         <attr name="test4" methodvalue="org.openide.filesystems.AttributesTestHidden.getObjectViaMethodValue4"/>                
         <attr name="test5" methodvalue="org.openide.filesystems.AttributesTestHidden.getObjectViaMethodValue5"/>                
+        <attr name="test6" methodvalue="org.openide.filesystems.AttributesTestHidden.getObjectViaMethodValue6"/>                
+        <attr name="test7" methodvalue="org.openide.filesystems.AttributesTestHidden.getObjectViaMethodValue7"/>
+                
+        <attr name="value1" stringvalue="Ahoj1"/>
     </folder>
 </filesystem>

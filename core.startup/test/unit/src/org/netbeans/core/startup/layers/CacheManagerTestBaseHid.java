@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -35,6 +36,13 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase {
     public static Object method(FileObject fo, String attr) {
         //System.err.println("CMTBH.m: fo=" + fo.getClass().getName() + "<" + fo.getPath() + ">; attr=" + attr + "; x=" + fo.getAttribute("x"));
         return String.valueOf(fo.getAttribute("x")) + "/" + attr;
+    }
+    
+    public static Object map1(Map map) {
+        return String.valueOf(map.get("x"));
+    }
+    public static Object map2(Map map, String attr) {
+        return String.valueOf(map.get("x")) + "/" + attr;
     }
     
     protected CacheManagerTestBaseHid(String name) {
@@ -128,6 +136,8 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase {
         assertEquals("val", attr(ffs, "foo/29356", "x"));
         assertEquals("val", attr(mfs, "foo/29356", "x"));
         assertEquals("val/a", attr(mfs, "foo/29356", "a"));
+        assertEquals("val", attr(mfs, "foo/29356", "map1"));
+        assertEquals("val/map2", attr(mfs, "foo/29356", "map2"));
     }
     
     private static String slurp(FileSystem f, String path) throws IOException {

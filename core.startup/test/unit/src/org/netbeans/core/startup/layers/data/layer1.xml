@@ -10,6 +10,8 @@
         </file>
         <file name="29356">
             <attr name="a" methodvalue="org.netbeans.core.startup.layers.CacheManagerTestBaseHid.method"/>
+            <attr name="map1" methodvalue="org.netbeans.core.startup.layers.CacheManagerTestBaseHid.map1"/>
+            <attr name="map2" methodvalue="org.netbeans.core.startup.layers.CacheManagerTestBaseHid.map2"/>
         </file>
     </folder>
     <folder name="baz">

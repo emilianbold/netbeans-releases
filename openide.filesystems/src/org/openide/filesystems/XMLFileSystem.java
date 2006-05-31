@@ -100,6 +100,23 @@ import org.xml.sax.helpers.DefaultHandler;
  * &lt; !ATTLIST attr serialvalue CDATA #IMPLIED&gt;
  * &lt; !ATTLIST attr urlvalue CDATA #IMPLIED&gt;
  * </PRE>
+ *
+ * <p>
+ * The methodvalue attribute can be in form of <code>pgk1.pkg2.ClassName.methodName</code>
+ * which should point to existing class with static method usually having no, one
+ * or two arguments. This method does not need to be public or in public class, if 
+ * the filesystem has permissions to call the method. The method can take one
+ * of the following signatures:
+ * <pre>
+ * static Value methodName();
+ * static Value methodName(FileObject fo);
+ * static Value methodName(FileObject fo, String attrName);
+ * static Value methodName(Map<String,Object> attrs); // since 7.0
+ * static Value methodName(Map<String,Object> attrs, String attrName); // since 7.0
+ * </pre>
+ * where <code>Value</code> can be any java type.
+ *
+ *
  * @author Radek Matous
  */
 public final class XMLFileSystem extends AbstractFileSystem {

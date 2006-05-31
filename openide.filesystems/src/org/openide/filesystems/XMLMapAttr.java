@@ -872,16 +872,21 @@ final class XMLMapAttr implements Map {
 
                 Object[] paramArray = new Object[] {
                         new Class[] { FileObject.class, String.class }, new Class[] { String.class, FileObject.class },
-                        new Class[] { FileObject.class }, new Class[] { String.class }, new Class[] {  }
+                        new Class[] { FileObject.class }, new Class[] { String.class }, new Class[] {  },
+                        new Class[] { Map.class, String.class }, new Class[] { Map.class },
                     };
 
                 boolean both = ((fo != null) && (attrName != null));
-                Object[] objectsList = new Object[5];
+                Object[] objectsList = new Object[7];
                 objectsList[0] = (both) ? new Object[] { fo, attrName } : null;
                 objectsList[1] = (both) ? new Object[] { attrName, fo } : null;
                 objectsList[2] = (fo != null) ? new Object[] { fo } : null;
                 objectsList[3] = (attrName != null) ? new Object[] { attrName } : null;
                 objectsList[4] = new Object[] {  };
+
+                Map fileMap = wrapToMap(fo);
+                objectsList[5] = attrName != null ? new Object[] { fileMap, attrName } : null;
+                objectsList[6] = new Object[] { fileMap };
 
                 for (int i = 0; i < paramArray.length; i++) {
                     Object[] objArray = (Object[]) objectsList[i];
@@ -905,6 +910,10 @@ final class XMLMapAttr implements Map {
             }
 
             throw new InstantiationException(value);
+        }
+
+        static final Map wrapToMap(FileObject fo) {
+            return fo == null ? Collections.EMPTY_MAP : new FileMap(fo);
         }
 
         /**
@@ -1088,4 +1097,92 @@ final class XMLMapAttr implements Map {
             return false;
         }
     }
+    
+    private static final class FileMap extends AbstractMap<String,Object> {
+        private FileObject fo;
+        
+        private FileMap (FileObject fo) {
+            this.fo = fo;
+}
+        
+        public Set<Map.Entry<String,Object>> entrySet() {
+            return new AttrFileSet(fo);
+        }
+
+        public Object get(String key) {
+            return fo.getAttribute(key);
+        }
+
+        public Object remove(Object key) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Object put(String key, Object value) {
+            throw new UnsupportedOperationException();
+        }
+        
+    }
+    private static final class AttrFileSet extends AbstractSet<Map.Entry<String,Object>> {
+        private FileObject fo;
+        
+        private AttrFileSet(FileObject fo) {
+            this.fo = fo;
+        }
+        
+        public Iterator<Map.Entry<String, Object>> iterator() {
+            class Iter implements Iterator<Map.Entry<String, Object>> {
+                Enumeration<String> attrs = fo.getAttributes();
+                
+                public boolean hasNext() {
+                    return attrs.hasMoreElements();
+                }
+                
+                public Map.Entry<String, Object> next() {
+                    String s = attrs.nextElement();
+                    return new FOEntry(fo, s);
+                }
+
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            }
+            return new Iter();
+        }
+
+        public int size() {
+            Enumeration<?> all = fo.getAttributes();
+            int cnt = 0;
+            while (all.hasMoreElements()) {
+                cnt++;
+                all.nextElement();
+            }
+            return cnt;
+        }
+
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+    } // end of AttrFileSet
+    
+    private static final class FOEntry implements Map.Entry<String, Object> {
+        private FileObject fo;
+        private String attr;
+        
+        private FOEntry(FileObject fo, String attr) {
+            this.fo = fo;
+            this.attr = attr;
+        }
+
+        public String getKey() {
+            return attr;
+        }
+
+        public Object getValue() {
+            return fo.getAttribute(attr);
+        }
+
+        public Object setValue(Object value) {
+            throw new UnsupportedOperationException();
+        }
+    } // end of FOEntry
 }
