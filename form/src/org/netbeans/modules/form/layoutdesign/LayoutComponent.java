@@ -68,6 +68,8 @@ public final class LayoutComponent implements LayoutConstants {
     // setup
 
     public LayoutComponent(String id, boolean isContainer) {
+        if (id == null)
+            throw new NullPointerException();
         componentId = id;
         layoutIntervals = new LayoutInterval[DIM_COUNT];
         for (int i=0; i < DIM_COUNT; i++) {

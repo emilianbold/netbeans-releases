@@ -468,10 +468,10 @@ public class FormEditor {
                         setFormReadOnly();
                     } else if(ret == allowEditing) {    
                         destroyInvalidComponents();
-                    } else if(ret == NotifyDescriptor.CANCEL_OPTION) {    
-                        closeForm();                                                                        
-                        // switch to java editor
-                        getFormDataObject().getFormEditorSupport().selectJavaEditor();                        
+                    } else { // close form, switch to source editor
+                        getFormDesigner().reset(FormEditor.this); // might be reused
+                        closeForm();
+                        getFormDataObject().getFormEditorSupport().selectJavaEditor();
                     }                                                      
                 }
             });

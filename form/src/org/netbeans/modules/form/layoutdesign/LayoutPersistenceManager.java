@@ -283,7 +283,9 @@ public class LayoutPersistenceManager implements LayoutConstants {
      * @param dimLayoutList nodes holding the information about the layout.
      * @param nameToIdMap map from component names to component IDs.
      */
-    public void loadModel(String rootId, NodeList dimLayoutList, Map nameToIdMap) {
+    public void loadModel(String rootId, NodeList dimLayoutList, Map nameToIdMap)
+        throws java.io.IOException
+    {
         this.idNameMap = nameToIdMap;
         LayoutComponent root = layoutModel.getLayoutComponent(rootId);
         if (root == null) {
@@ -316,7 +318,9 @@ public class LayoutPersistenceManager implements LayoutConstants {
      * @param group group whose layout information should be loaded.
      * @param groupNode node holding the information about the layout of the group.
      */
-    private void loadGroup(LayoutInterval group, Node groupNode, int dimension) {
+    private void loadGroup(LayoutInterval group, Node groupNode, int dimension)
+        throws java.io.IOException
+    {
         NamedNodeMap attrMap = groupNode.getAttributes();
         Node alignmentNode = attrMap.getNamedItem(ATTR_ALIGNMENT);
         Node groupAlignmentNode = attrMap.getNamedItem(ATTR_GROUP_ALIGNMENT);
@@ -377,11 +381,16 @@ public class LayoutPersistenceManager implements LayoutConstants {
      * @param componentNode node with the information about the component.
      * @param dimension loaded dimension
      */
-    private void loadComponent(LayoutInterval parent, Node componentNode, int dimension) {
+    private void loadComponent(LayoutInterval parent, Node componentNode, int dimension)
+        throws java.io.IOException
+    {
         NamedNodeMap attrMap = componentNode.getAttributes();
         String name = attrMap.getNamedItem(ATTR_COMPONENT_ID).getNodeValue();
         Node linkSizeId = attrMap.getNamedItem(ATTR_LINK_SIZE);
         String id = (String)idNameMap.get(name);
+        if (id == null) {
+            throw new java.io.IOException("Undefined component referenced in layout: "+name); // NOI18N
+        }
         Node alignmentNode = attrMap.getNamedItem(ATTR_ALIGNMENT);
         int alignment = (alignmentNode == null) ? DEFAULT : integerFromNode(alignmentNode);
         LayoutComponent layoutComponent = layoutModel.getLayoutComponent(id);

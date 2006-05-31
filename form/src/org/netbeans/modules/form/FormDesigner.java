@@ -1915,11 +1915,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private Collection componentIds() {
         List componentIds = new LinkedList();
         List selectedComps = getSelectedLayoutComponents();
+        LayoutModel layoutModel = getFormModel().getLayoutModel();
         Iterator iter = selectedComps.iterator();
         while (iter.hasNext()) {
             RADVisualComponent visualComp = (RADVisualComponent)iter.next();
             if ((visualComp.getParentContainer() != null)
-            && (visualComp.getParentLayoutSupport() == null))
+                && (visualComp.getParentLayoutSupport() == null)
+                && layoutModel.getLayoutComponent(visualComp.getId()) != null)
                 componentIds.add(visualComp.getId());
         }
         return componentIds;

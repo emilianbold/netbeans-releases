@@ -132,7 +132,7 @@ public class RADVisualComponent extends RADComponent {
         if (constraintsProperties == null)
             createConstraintsProperties();
 
-        if (constraintsProperties.length > 0)
+        if (constraintsProperties != null && constraintsProperties.length > 0)
             propSets.add(propSets.size() - 1,
                          new Node.PropertySet("layout", // NOI18N
                     FormUtils.getBundleString("CTL_LayoutTab"), // NOI18N

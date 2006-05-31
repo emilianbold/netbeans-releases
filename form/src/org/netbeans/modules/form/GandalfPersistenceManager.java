@@ -741,28 +741,34 @@ public class GandalfPersistenceManager extends PersistenceManager {
             loadLayoutCode(layoutCodeNode);
         }
 
-        if ((visualContainer != null) && (convIndex == LAYOUT_NATURAL)) {
-            visualContainer.setOldLayoutSupport(false);
-            LayoutModel layoutModel = formModel.getLayoutModel();
-            Map nameToIdMap = new HashMap();
-            for (int i=0; i<childComponents.length; i++) {
-                RADComponent comp = childComponents[i];
-                nameToIdMap.put(comp.getName(), comp.getId());
-            }
-            layoutModel.loadModel(visualContainer.getId(), layoutNode.getChildNodes(), nameToIdMap);
-            newLayout = Boolean.TRUE;
-        }
-
-        // initialize layout support from restored code
         if (visualContainer != null) {
-            LayoutSupportManager layoutSupport =
-                                   visualContainer.getLayoutSupport();
-            boolean layoutInitialized = false;
             Throwable layoutEx = null;
+            boolean layoutInitialized = false;
+            LayoutSupportManager layoutSupport = visualContainer.getLayoutSupport();
 
             if (convIndex == LAYOUT_NATURAL) {
-                layoutInitialized = true;
-            } else if (convIndex >= 0 || layoutCodeNode != null) {
+                LayoutModel layoutModel = formModel.getLayoutModel();
+                Map<String, String> nameToIdMap = new HashMap();
+                for (int i=0; i<childComponents.length; i++) {
+                    RADComponent comp = childComponents[i];
+                    nameToIdMap.put(comp.getName(), comp.getId());
+                }
+                try {
+                    layoutModel.loadModel(visualContainer.getId(), layoutNode.getChildNodes(), nameToIdMap);
+                    visualContainer.setOldLayoutSupport(false);
+                    layoutSupport = null;
+                    layoutInitialized = true;
+                    newLayout = Boolean.TRUE;
+                }
+                catch (Exception ex) {
+                    for (Map.Entry<String, String> e : nameToIdMap.entrySet()) {
+                        layoutModel.removeComponent(e.getValue(), true);
+                    }
+                    layoutEx = ex;
+                }
+            }
+            else if (convIndex >= 0 || layoutCodeNode != null) {
+                // initialize layout support from restored code
                 try {
                     layoutInitialized =
                         layoutSupport.prepareLayoutDelegate(true, true);

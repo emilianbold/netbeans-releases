@@ -229,7 +229,9 @@ public class LayoutModel implements LayoutConstants {
         removeComponent(comp, fromModel);
         if (!wasRoot) {
             for (int i=0; i < DIM_COUNT; i++) {
-                removeInterval(comp.getLayoutInterval(i));
+                LayoutInterval interval = comp.getLayoutInterval(i);
+                if (interval.getParent() != null)
+                    removeInterval(interval);
             }
         }
     }
@@ -999,7 +1001,9 @@ public class LayoutModel implements LayoutConstants {
      * @param dimLayoutList nodes holding the information about the layout.
      * @param nameToIdMap map from component names to component IDs.
      */
-    public void loadModel(String rootId, org.w3c.dom.NodeList dimLayoutList, Map nameToIdMap) {
+    public void loadModel(String rootId, org.w3c.dom.NodeList dimLayoutList, Map nameToIdMap)
+        throws java.io.IOException
+    {
         new LayoutPersistenceManager(this).loadModel(rootId, dimLayoutList, nameToIdMap);
     }
     
