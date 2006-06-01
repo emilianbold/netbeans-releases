@@ -32,6 +32,8 @@ public class NbSearchAction extends CancelableWizardAction {
     
     private static Vector nbHomeList = new Vector();
     
+    private String [] nbUIDArray = new String[0];
+    
     private static final String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
     
     public NbSearchAction() {
@@ -60,7 +62,37 @@ public class NbSearchAction extends CancelableWizardAction {
             evt.getUserInterface().setBusy(searchMsg);
         }
         
+        initNbUIDArray();
         findNb();
+    }
+    
+    private void initNbUIDArray () {
+        int arrLength = 0;
+        String s = resolveString(BUNDLE + "NetBeans.UIDLength)");
+        try {
+            arrLength = Integer.parseInt(s);
+        } catch (NumberFormatException exc) {
+            logEvent(this, Log.ERROR,"Incorrect number for NetBeans.UIDLength: " + s);
+        }
+        
+        //No order is defined.
+        if (arrLength == 0) {
+            return;
+        }
+        nbUIDArray = new String[arrLength];
+        for (int i = 0; i < arrLength; i++) {
+            nbUIDArray[i] = resolveString(BUNDLE + "NetBeans.UID" + i + ")");
+            logEvent(this, Log.DBG,"nbUIDArray[" + i + "]: " + nbUIDArray[i]);
+        }
+    }
+    
+    private boolean acceptNbUID (String nbUID) {
+        for (int i = 0; i < nbUIDArray.length; i++) {
+            if (nbUID.equals(nbUIDArray[i])) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /** Look for all installation of NetBeans IDE using vpd.properties.
@@ -68,7 +100,6 @@ public class NbSearchAction extends CancelableWizardAction {
     void findNb () {
         try {
             // Get the instance of RegistryService
-            String nbUID = resolveString(BUNDLE + "NetBeans.productUID)");
             String jseUID = resolveString(BUNDLE + "JSE.productUID)");
             RegistryService regserv = (RegistryService) getService(RegistryService.NAME);  
             String [] arr = regserv.getAllSoftwareObjectUIDs();
@@ -80,7 +111,7 @@ public class NbSearchAction extends CancelableWizardAction {
             SoftwareObject [] soArr = null;
             //System.out.println("substring:" + nbUID.substring(26,32));
             for (int i = 0; i < arr.length; i++) {
-                if (arr[i].equals(nbUID)) {
+                if (acceptNbUID(arr[i])) {
                     soArr = regserv.getSoftwareObjects(arr[i]);
                     System.out.println("so.length:" + soArr.length);
                     for (int j = 0; j < soArr.length; j++) {
