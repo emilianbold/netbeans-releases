@@ -13,7 +13,6 @@
 
 package org.openide.filesystems;
 
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -68,8 +67,8 @@ public abstract class URLMapper {
 
     /** results with URLMapper instances*/
     private static Lookup.Result<URLMapper> result;
-    private static final List CACHE_JUST_COMPUTING = new ArrayList();
-    private static final ThreadLocal<List> threadCache = new ThreadLocal<List>();
+    private static final List<URLMapper> CACHE_JUST_COMPUTING = new ArrayList<URLMapper>();
+    private static final ThreadLocal<List<URLMapper>> threadCache = new ThreadLocal<List<URLMapper>>();
 
     static {
         DefaultURLMapperProxy.setDefault(new DefaultURLMapper());
@@ -89,7 +88,7 @@ public abstract class URLMapper {
     private static URLMapper defMapper;
 
     /** Cache of all available URLMapper instances. */
-    private static List /*<URLMapper>*/ cache;
+    private static List<URLMapper> cache;
 
     /** Find a good URL for this file object which works according to type:
      * <ul>
@@ -102,11 +101,7 @@ public abstract class URLMapper {
     public static URL findURL(FileObject fo, int type) {
 
         /** secondly registered URLMappers are asked to resolve URL */
-        Iterator instances = getInstances().iterator();
-
-        while (instances.hasNext()) {
-            URLMapper mapper = (URLMapper) instances.next();
-
+        for (URLMapper mapper : getInstances()) {
             URL retVal = mapper.getURL(fo, type);
 
             if (retVal != null) {
@@ -139,25 +134,21 @@ public abstract class URLMapper {
      */
     public abstract URL getURL(FileObject fo, int type);
 
-    /** Find an array of FileObjects for this url
+    /** Find an array of FileObjects for this URL.
      * Zero or more FOs may be returned.
      *
      * For each returned FO, it must be true that FO -> URL gives the
-     * exact URL which was passed in, but depends on appripriate type
+     * exact URL which was passed in, but depends on appropriate type
      * <code> findURL(FileObject fo, int type) </code>.
      * @param url to wanted FileObjects
-     * @return a suitable arry of FileObjects, or empty array if not successful
+     * @return a suitable array of FileObjects, or empty array if not successful
      * @since  2.22
      * @deprecated Use {@link #findFileObject} instead.
      */
     public static FileObject[] findFileObjects(URL url) {
         Set<FileObject> retSet = new LinkedHashSet<FileObject>();
 
-        Iterator instances = getInstances().iterator();
-
-        while (instances.hasNext()) {
-            URLMapper mapper = (URLMapper) instances.next();
-
+        for (URLMapper mapper: getInstances()) {
             FileObject[] retVal = mapper.getFileObjects(url);
 
             if (retVal != null) {
@@ -168,10 +159,10 @@ public abstract class URLMapper {
         return retSet.toArray(new FileObject[retSet.size()]);
     }
 
-    /** Find an appropiate instance of FileObject that addresses this url
+    /** Find an appropriate instance of FileObject that addresses this URL
      *
-     * @param url url to be converted to file object
-     * @return file object corresponding to url or null if no one was found
+     * @param url URL to be converted to file object
+     * @return file object corresponding to URL or null if no one was found
      * @since  4.29
      */
     public static FileObject findFileObject(URL url) {
@@ -182,10 +173,10 @@ public abstract class URLMapper {
         /** first basic implementation */
         FileObject[] results = null;
 
-        Iterator instances = getInstances().iterator();
+        Iterator<URLMapper> instances = getInstances().iterator();
 
         while (instances.hasNext() && ((results == null) || (results.length == 0))) {
-            URLMapper mapper = (URLMapper) instances.next();
+            URLMapper mapper = instances.next();
 
             results = mapper.getFileObjects(url);
         }
@@ -193,22 +184,25 @@ public abstract class URLMapper {
         return ((results != null) && (results.length > 0)) ? results[0] : null;
     }
 
-    /** Get an array of FileObjects for this url. There is no reason to return array
+    /**
+     * Get an array of FileObjects for this URL.
+     * There is no reason to return array
      * with size greater than one because method {@link #findFileObject findFileObject}
-     * uses just first element (next elements won't be accepted anyway).
-     * The implementation can't use neither {@link FileUtil#toFile} nor {@link FileUtil#toFileObject}
-     * otherwise StackOverflowError maybe thrown.
-     * <p class="nonnormative"> There isn't necessary to return array here.
-     * The only one reason is just backward compatibility.</p>
+     * uses just the first element (subsequent elements will not be accepted anyway).
+     * The implementation cannot use either {@link FileUtil#toFile} nor {@link FileUtil#toFileObject}
+     * or StackOverflowError may be thrown.
+     * <p class="nonnormative">The only reason to return an array here
+     * is for backward compatibility.</p>
      * @param url to wanted FileObjects
      * @return an array of FileObjects with size no greater than one, or null
-     * @since  2.22*/
+     * @since 2.22
+     */
     public abstract FileObject[] getFileObjects(URL url);
 
     /** Returns all available instances of URLMapper.
      * @return list of URLMapper instances
      */
-    private static List getInstances() {
+    private static List<URLMapper> getInstances() {
         synchronized (URLMapper.class) {
             if (cache != null) {
                 if ((cache != CACHE_JUST_COMPUTING) || (threadCache.get() == CACHE_JUST_COMPUTING)) {
@@ -217,7 +211,7 @@ public abstract class URLMapper {
             }
 
             // Set cache to empty array here to prevent infinite loop.
-            // See issue #41358, #43359                    
+            // See issue #41358, #43359
             cache = CACHE_JUST_COMPUTING;
             threadCache.set(CACHE_JUST_COMPUTING);
         }
@@ -230,9 +224,9 @@ public abstract class URLMapper {
                 // XXX hack to put default last, since we cannot easily adjust META-INF/services/o.o.f.URLM order to our tastes
                 // (would need to ask *all other* impls to be earlier somewhere)
                 URLMapper def = null;
-                Iterator it = res.iterator();
+                Iterator<URLMapper> it = res.iterator();
                 while (it.hasNext()) {
-                    URLMapper m = (URLMapper) it.next();
+                    URLMapper m = it.next();
                     if (m instanceof DefaultURLMapperProxy) {
                         def = m;
                         it.remove();
@@ -300,12 +294,13 @@ public abstract class URLMapper {
                 ); // NOI18N
             }
 
-            Enumeration en = Repository.getDefault().getFileSystems();
+            @SuppressWarnings("deprecation") // keep for backward compatibility w/ NB 3.x
+            Enumeration<? extends FileSystem> en = Repository.getDefault().getFileSystems();
             LinkedList<FileObject> list = new LinkedList<FileObject>();
             String fileName = f.getAbsolutePath();
 
             while (en.hasMoreElements()) {
-                FileSystem fs = (FileSystem) en.nextElement();
+                FileSystem fs = en.nextElement();
                 String rootName = null;
                 FileObject fsRoot = fs.getRoot();
                 File root = findFileInRepository(fsRoot);
@@ -476,10 +471,11 @@ public abstract class URLMapper {
 
         private static JarFileSystem findJarFileSystem(File jarFile) {
             JarFileSystem retVal = null;
-            Enumeration en = Repository.getDefault().getFileSystems();
+            @SuppressWarnings("deprecation") // keep for backward compatibility w/ NB 3.x
+            Enumeration<? extends FileSystem> en = Repository.getDefault().getFileSystems();
 
             while (en.hasMoreElements()) {
-                FileSystem fs = (FileSystem) en.nextElement();
+                FileSystem fs = en.nextElement();
 
                 if (fs instanceof JarFileSystem) {
                     File fsJarFile = ((JarFileSystem) fs).getJarFile();
@@ -538,10 +534,10 @@ public abstract class URLMapper {
                     /* if ! is the last letter of the innerURL, entryName is null */
                     if (++separator != spec.length()) {
                         try {
-                            entryName = URLDecoder.decode(spec.substring(separator, spec.length()),"UTF-8");                        
+                            entryName = URLDecoder.decode(spec.substring(separator, spec.length()),"UTF-8");
                         } catch (UnsupportedEncodingException ex) {
                             return;
-                        }                        
+                        }
                     }
                 }
             }
