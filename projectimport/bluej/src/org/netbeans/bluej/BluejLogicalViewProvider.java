@@ -151,23 +151,23 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
             super(original, children);
             DataObject dobj = (DataObject)original.getLookup().lookup(DataObject.class);
             if (dobj != null) {
-                if ("java".equalsIgnoreCase(dobj.getPrimaryFile().getExt())) {
+                if ("java".equalsIgnoreCase(dobj.getPrimaryFile().getExt())) { //NOI18N
                     String name = dobj.getPrimaryFile().getName();
                     if (name.endsWith("Test")) {
-                        name = name.substring(0, name.length() - "Test".length());
-                        if (dobj.getPrimaryFile().getParent().getFileObject(name, "java") != null) {
-                            iconPath = "org/netbeans/bluej/resources/bluej-testclass.png";
+                        name = name.substring(0, name.length() - "Test".length()); //NOI18N
+                        if (dobj.getPrimaryFile().getParent().getFileObject(name, "java") != null) { //NOI18N
+                            iconPath = "org/netbeans/bluej/resources/bluej-testclass.png"; //NOI18N
                             attached = true;
                         } else {
-                            iconPath = "org/netbeans/bluej/resources/bluej-testclass-unattached.png";
+                            iconPath = "org/netbeans/bluej/resources/bluej-testclass-unattached.png"; //NOI18N
                         }
                     } else {
-                        iconPath = "org/netbeans/bluej/resources/bluej-class.png";
+                        iconPath = "org/netbeans/bluej/resources/bluej-class.png"; //NOI18N
                     }
                     status = FileBuiltQuery.getStatus(dobj.getPrimaryFile());
                 }
-                if ("readme.txt".equalsIgnoreCase(dobj.getPrimaryFile().getNameExt())) {
-                    iconPath = "org/netbeans/bluej/resources/readme.png";
+                if ("readme.txt".equalsIgnoreCase(dobj.getPrimaryFile().getNameExt())) { //NOI18N
+                    iconPath = "org/netbeans/bluej/resources/readme.png"; //NOI18N
                 }
             }
             
@@ -178,11 +178,11 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
             if (iconPath != null) {
                 retValue = Utilities.loadImage(iconPath);
                 if (status != null && !status.isBuilt()) {
-                    retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/compiled.png"),
+                    retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/compiled.png"), //NOI18N
                                                      attached ? 8 : 3, attached ? 11 : 13);
                 }
                 if (hasMain()) {
-                    retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/executable-badge.gif"),
+                    retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/executable-badge.gif"),  //NOI18N
                                                      attached ? 44 : 41, attached ? 5 : 7);
                 }
             } else {
@@ -240,14 +240,14 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                 // we need to construct the children from the root package directly from DataObjects..
                 
                 FileObject fo = dobj.getPrimaryFile();
-                if ("bluej.pkg".equals(fo.getNameExt()) ||
-                        "build.xml".equals(fo.getNameExt()) ||
-                        "bluej.pkh".equals(fo.getNameExt()) ||
-                        ("+libs".equals(fo.getName()) && fo.isFolder()) ||
-                        ".DS_Store".equals(fo.getNameExt()) ||
-                        "ctxt".equals(fo.getExt()) ||
-                        "class".equals(fo.getExt()) ||
-                        (fo.isFolder() && fo.getFileObject("bluej.pkg") == null)) {
+                if ("bluej.pkg".equals(fo.getNameExt()) || //NOI18N
+                        "build.xml".equals(fo.getNameExt()) || //NOI18N
+                        "bluej.pkh".equals(fo.getNameExt()) || //NOI18N
+                        ("+libs".equals(fo.getName()) && fo.isFolder()) || //NOI18N
+                        ".DS_Store".equals(fo.getNameExt()) || //NOI18N
+                        "ctxt".equals(fo.getExt()) || //NOI18N
+                        "class".equals(fo.getExt()) || //NOI18N
+                        (fo.isFolder() && fo.getFileObject("bluej.pkg") == null)) { //NOI18N
                     return new Node[0];
                 }
                 if (rootDir != null && rootDir.equals(fo)) {

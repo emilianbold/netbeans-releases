@@ -95,7 +95,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
                 ClassPath antcp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     FileUtil.toFile(project.getProjectDirectory()), project.getAntProjectHelper().getStandardPropertyEvaluator(), 
-                new String[] {"javac.classpath"}));
+                new String[] {"javac.classpath"}));  // NOI18N
             cpimpl = new CPImpl(project);
             ClassPath bluejcp = ClassPathFactory.createClassPath(cpimpl);
             compile = ClassPathSupport.createProxyClassPath( new ClassPath[] {antcp, bluejcp} );

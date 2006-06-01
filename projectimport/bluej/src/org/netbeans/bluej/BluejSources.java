@@ -24,6 +24,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 
@@ -77,25 +78,25 @@ public class BluejSources implements Sources {
         }
 
         public String getName() {
-            return "Sources";
+            return "Sources";  // NOI18N
         }
 
         public String getDisplayName() {
-            return "Source Packages";
+            return NbBundle.getMessage(BluejSources.class, "Source_Group_Display_Name");
         }
 
         public Icon getIcon(boolean b) {
-            return new ImageIcon(Utilities.loadImage("/org/netbeans/bluej/resources/bluejproject.png"));
+            return new ImageIcon(Utilities.loadImage("/org/netbeans/bluej/resources/bluejproject.png"));   // NOI18N
         }
 
         public boolean contains(FileObject fileObject) throws IllegalArgumentException {
-            if ("bluej.pkg".equals(fileObject.getNameExt())) {
+            if ("bluej.pkg".equals(fileObject.getNameExt())) {  // NOI18N
                 return false;
             }
-            if ("build.xml".equals(fileObject.getNameExt())) {
+            if ("build.xml".equals(fileObject.getNameExt())) {  // NOI18N
                 return false;
             } 
-            if (fileObject.isFolder() && fileObject.getFileObject("bluej.pkg") == null) {
+            if (fileObject.isFolder() && fileObject.getFileObject("bluej.pkg") == null) {  // NOI18N
                 return false;
             }
             return true;

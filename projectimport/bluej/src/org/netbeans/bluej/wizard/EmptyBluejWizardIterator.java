@@ -61,7 +61,7 @@ public class EmptyBluejWizardIterator implements WizardDescriptor.InstantiatingI
     
     public Set/*<FileObject>*/ instantiate() throws IOException {
         Set resultSet = new LinkedHashSet();
-        File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
+        File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
         dirF.mkdirs();
         
         FileObject template = Templates.getTemplate(wiz);
@@ -104,22 +104,22 @@ public class EmptyBluejWizardIterator implements WizardDescriptor.InstantiatingI
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps);
+                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
         }
     }
     
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir",null);
-        this.wiz.putProperty("name",null);
+        this.wiz.putProperty("projdir",null); // NOI18N
+        this.wiz.putProperty("name",null); // NOI18N
         this.wiz = null;
         panels = null;
     }
     
     public String name() {
-        return MessageFormat.format("{0} of {1}",
+        return MessageFormat.format(NbBundle.getMessage(EmptyBluejWizardIterator.class, "TITLE_Wizard"),
                 new Object[] {new Integer(index + 1), new Integer(panels.length)});
     }
     

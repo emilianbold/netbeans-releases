@@ -23,6 +23,7 @@ import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -40,15 +41,15 @@ public class BluejAdvancedOption extends org.netbeans.spi.options.OptionsCategor
     }
 
     public String getCategoryName() {
-        return org.openide.util.NbBundle.getBundle(BluejAdvancedOption.class).getString("AdvanceOption_title");
+        return NbBundle.getBundle(BluejAdvancedOption.class).getString("AdvanceOption_title"); // NOI18N
     }
 
     public String getTitle() {
-        return org.openide.util.NbBundle.getBundle(BluejAdvancedOption.class).getString("AdvancedOption_tooltip");
+        return NbBundle.getBundle(BluejAdvancedOption.class).getString("AdvancedOption_tooltip"); // NOI18N
     }
 
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/bluej/options/Category.png"));
+        return new ImageIcon(Utilities.loadImage("org/netbeans/bluej/options/Category.png")); // NOI18N
     }
     
     
@@ -58,7 +59,7 @@ public class BluejAdvancedOption extends org.netbeans.spi.options.OptionsCategor
         
         public void update() {
             File fil = BlueJSettings.getDefault().getHome();
-            getPanel().setBlueJHome(fil != null ? fil.getAbsolutePath() : "");
+            getPanel().setBlueJHome(fil != null ? fil.getAbsolutePath() : "");  // NOI18N
         }
 
         public void applyChanges() {

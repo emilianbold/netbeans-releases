@@ -60,19 +60,19 @@ public final class ConvertToJ2SEAction extends AbstractAction {
         
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Convert to NetBeans J2SE Project");
+        wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));   // NOI18N
+        wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(ConvertToJ2SEAction.class, "TITLE_Convert"));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-                final ProgressHandle handle = ProgressHandleFactory.createHandle("Converting to J2SE Project");
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(ConvertToJ2SEAction.class, "Progress_Display"));
                 handle.start(10);
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
-                            doExport((File)wizardDescriptor.getProperty("NewProjectLocation"), handle);
+                            doExport((File)wizardDescriptor.getProperty("NewProjectLocation"), handle);   // NOI18N
                         } catch (ClassNotFoundException ex) {
                             ex.printStackTrace();
                         } catch (InvocationTargetException ex) {
@@ -109,15 +109,15 @@ public final class ConvertToJ2SEAction extends AbstractAction {
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));  // NOI18N
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    jc.putClientProperty("WizardPanel_contentData", steps);  // NOI18N
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);  // NOI18N
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);  // NOI18N
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);  // NOI18N
                 }
             }
         }
@@ -125,7 +125,7 @@ public final class ConvertToJ2SEAction extends AbstractAction {
     }    
     
     public String getName() {
-        return NbBundle.getMessage(ConvertToJ2SEAction.class, "CTL_ConvertToJ2SEAction");
+        return NbBundle.getMessage(ConvertToJ2SEAction.class, "CTL_ConvertToJ2SEAction");  // NOI18N
     }
     
     
@@ -139,8 +139,8 @@ public final class ConvertToJ2SEAction extends AbstractAction {
         handle.progress(1);
         ProjectInformation info = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
         ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-        Class j2seclazz = loader.loadClass("org.netbeans.modules.java.j2seproject.J2SEProjectGenerator");
-        Method createMethod = j2seclazz.getMethod("createProject", new Class[] {
+        Class j2seclazz = loader.loadClass("org.netbeans.modules.java.j2seproject.J2SEProjectGenerator");  // NOI18N
+        Method createMethod = j2seclazz.getMethod("createProject", new Class[] {  // NOI18N
             File.class, String.class, String.class, String.class
         });
         createMethod.invoke(null, new Object[] {
@@ -153,23 +153,23 @@ public final class ConvertToJ2SEAction extends AbstractAction {
         Project j2seproject = ProjectManager.getDefault().findProject(root);
 //        ProjectManager.getDefault().saveProject(j2seproject);
         FileObject originRoot = project.getProjectDirectory();
-        FileObject targetTestRoot = root.getFileObject("test");
-        FileObject targetSrcRoot = root.getFileObject("src");
+        FileObject targetTestRoot = root.getFileObject("test");  // NOI18N
+        FileObject targetSrcRoot = root.getFileObject("src");  // NOI18N
         splitSources(originRoot, targetSrcRoot, targetTestRoot);
         handle.progress(7);
         ClassPath path = ClassPath.getClassPath(project.getProjectDirectory(), ClassPath.COMPILE);
         ProjectClassPathExtender extender = (ProjectClassPathExtender)j2seproject.getLookup().lookup(ProjectClassPathExtender.class);
         Iterator it = path.entries().iterator();
-        FileObject libsFolder = root.getFileObject("libs");
+        FileObject libsFolder = root.getFileObject("libs");  // NOI18N
         if (it.hasNext() && libsFolder == null) {
-            libsFolder = root.createFolder("libs");
+            libsFolder = root.createFolder("libs");  // NOI18N
         }
         while (it.hasNext()) {
             ClassPath.Entry entry = (ClassPath.Entry) it.next();
             URL url = FileUtil.getArchiveFile(entry.getURL());
             FileObject fo = URLMapper.findFileObject(url);
             if (fo != null) {
-                if (fo.getName().indexOf("junit") == -1) {
+                if (fo.getName().indexOf("junit") == -1) {  // NOI18N
                     // we don't want to copy junit..
                     FileObject createdOne = FileUtil.copyFile(fo, libsFolder, fo.getName());
                     extender.addArchiveFile(createdOne);
@@ -180,7 +180,7 @@ public final class ConvertToJ2SEAction extends AbstractAction {
         OpenProjects.getDefault().open(new Project[] { j2seproject }, false);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                TopComponent tc = WindowManager.getDefault().findTopComponent("projectTabLogical_tc");
+                TopComponent tc = WindowManager.getDefault().findTopComponent("projectTabLogical_tc");  // NOI18N
                 if (tc != null) {
                     tc.open();
                     tc.requestActive();
@@ -195,11 +195,11 @@ public final class ConvertToJ2SEAction extends AbstractAction {
         FileObject[] sourceFOs = originRoot.getChildren();
         for (int i = 0; i < sourceFOs.length; i++) {
             if (sourceFOs[i].isData()) {
-                if ("java".equals(sourceFOs[i].getExt())) {
-                    boolean test = sourceFOs[i].getName().endsWith("Test");
+                if ("java".equals(sourceFOs[i].getExt())) {  // NOI18N
+                    boolean test = sourceFOs[i].getName().endsWith("Test");  // NOI18N
                     FileUtil.copyFile(sourceFOs[i], test ? targetTestRoot : targetSrcRoot, sourceFOs[i].getName());
                 }
-            } else if (sourceFOs[i].getFileObject("bluej.pkg") != null) {
+            } else if (sourceFOs[i].getFileObject("bluej.pkg") != null) {  // NOI18N
                 //only the bluej package items get copied.
                 FileObject childTargetSrc  = targetSrcRoot.createFolder(sourceFOs[i].getName());
                 FileObject childTargetTest  = targetTestRoot.createFolder(sourceFOs[i].getName());

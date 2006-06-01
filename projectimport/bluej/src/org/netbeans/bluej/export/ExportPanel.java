@@ -60,13 +60,13 @@ public class ExportPanel extends javax.swing.JPanel {
         txtSource = new javax.swing.JTextField();
         lblWarning2 = new javax.swing.JLabel();
 
-        lblWarning.setText("Specify the BlueJ project to convert.");
+        lblWarning.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Warning"));
         lblWarning.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         lblFolder.setLabelFor(lblFolder);
-        lblFolder.setText("Destination Folder :");
+        lblFolder.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Folder"));
 
-        btnFolder.setText("Browse...");
+        btnFolder.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "BTN_Folder"));
         btnFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnFolderActionPerformed(evt);
@@ -74,12 +74,12 @@ public class ExportPanel extends javax.swing.JPanel {
         });
 
         lblSource.setLabelFor(txtSource);
-        lblSource.setText("Project To Convert :");
+        lblSource.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Source"));
 
         txtSource.setEditable(false);
         txtSource.setEnabled(false);
 
-        lblWarning2.setText("Note: This will convert the specified BlueJ project to a NetBeans project with split classes and tests.");
+        lblWarning2.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Warning2"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -92,7 +92,7 @@ public class ExportPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(lblSource)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(txtSource, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE))
+                        .add(txtSource, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(lblFolder)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

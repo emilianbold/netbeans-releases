@@ -257,7 +257,7 @@ public final class BluejProject implements Project, AntProjectListener {
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                NodeList nl = data.getElementsByTagNameNS(BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");  // NOI18N
                 Element nameEl;
                 if (nl.getLength() == 1) {
                     nameEl = (Element) nl.item(0);
@@ -304,7 +304,7 @@ public final class BluejProject implements Project, AntProjectListener {
                     if (nl.getLength() == 1) {
                         nl = nl.item(0).getChildNodes();
                         if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                            return ((Text) nl.item(0)).getNodeValue() + " " + getProjectDirectory().getName();
+                            return ((Text) nl.item(0)).getNodeValue() + " " + getProjectDirectory().getName();  // NOI18N
                         }
                     }
                     return getProjectDirectory().getName(); // NOI18N
@@ -362,7 +362,7 @@ public final class BluejProject implements Project, AntProjectListener {
                 public Object run() {
                     EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    
+                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); // NOI18N                    
                     File bjHome = BlueJSettings.getDefault().getHome();
                     if (bjHome != null) {
                         ep.setProperty(PROP_BLUEJ_HOME, bjHome.getAbsolutePath());
@@ -374,8 +374,8 @@ public final class BluejProject implements Project, AntProjectListener {
                     } else {
                         ep.remove(PROP_BLUEJ_HOME);
                     }
-                    ep.setProperty("bluej.config.libraries", BlueJSettings.getDefault().getUserLibrariesAsClassPath());
-                    ep.setComment("bluej.config.libraries", new String[] {
+                    ep.setProperty("bluej.config.libraries", BlueJSettings.getDefault().getUserLibrariesAsClassPath());  // NOI18N
+                    ep.setComment("bluej.config.libraries", new String[] {  // NOI18N
                         "## classpath entry that is composed from content of bluej.userlib.*.location properties in the user home's bluej.properties file..",
                         "## rebuilt on every opening of the project in netbeans"
                     }, true);

@@ -51,8 +51,8 @@ public class PackageWizardIterator implements WizardDescriptor.InstantiatingIter
         Class clazz;
         Method method;
         try {
-            clazz = Class.forName("org.netbeans.modules.java.project.NewJavaFileWizardIterator", true, ldr);
-            method = clazz.getMethod("packageWizard", null);
+            clazz = Class.forName("org.netbeans.modules.java.project.NewJavaFileWizardIterator", true, ldr); // NOI18N
+            method = clazz.getMethod("packageWizard", null); // NOI18N
             delegate = (WizardDescriptor.InstantiatingIterator)method.invoke(null, null);
         } catch (SecurityException ex) {
             ex.printStackTrace();
@@ -80,7 +80,7 @@ public class PackageWizardIterator implements WizardDescriptor.InstantiatingIter
                 public void run() throws IOException {
                     set = delegate.instantiate();
                     FileObject fo = (FileObject)set.iterator().next();
-                    fo.createData("bluej.pkg");
+                    fo.createData("bluej.pkg"); // NOI18N
                 }
             }
             );

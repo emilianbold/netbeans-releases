@@ -45,9 +45,9 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
  */
 public class UpdateHelper {
 
-    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("j2seproject.transparentUpdate");
+    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("j2seproject.transparentUpdate");   // NOI18N
     private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
-    private static final String MINIMUM_ANT_VERSION_ELEMENT = "minimum-ant-version";
+    private static final String MINIMUM_ANT_VERSION_ELEMENT = "minimum-ant-version";  // NOI18N
 
     private final Project project;
     private final AntProjectHelper helper;
@@ -235,27 +235,27 @@ public class UpdateHelper {
 
     private synchronized Element getUpdatedSharedConfigurationData () {
         if (cachedElement == null) {
-            Element  oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true);    //NOI18N
+            Element  oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true);    // NOI18N
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
-                Element newRoot = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
+                Element newRoot = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); // NOI18N
                 copyDocument (doc, oldRoot, newRoot);
-                Element sourceRoots = doc.createElementNS(BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
-                Element root = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                root.setAttribute ("id","src.dir");   //NOI18N
+                Element sourceRoots = doc.createElementNS(BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  // NOI18N
+                Element root = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   // NOI18N
+                root.setAttribute ("id","src.dir");   // NOI18N
                 sourceRoots.appendChild(root);
                 newRoot.appendChild (sourceRoots);
-                Element testRoots = doc.createElementNS(BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                root = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                root.setAttribute ("id","test.src.dir");   //NOI18N
+                Element testRoots = doc.createElementNS(BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  // NOI18N
+                root = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   // NOI18N
+                root.setAttribute ("id","test.src.dir");   // NOI18N
                 testRoots.appendChild (root);
                 newRoot.appendChild (testRoots);                
                 cachedElement = updateMinAntVersion (newRoot, doc);
             } else {
-                oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true);    //NOI18N
+                oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true);    // NOI18N
                 if (oldRoot != null) {
                     Document doc = oldRoot.getOwnerDocument();
-                    Element newRoot = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
+                    Element newRoot = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); // NOI18N
                     copyDocument (doc, oldRoot, newRoot);
                     cachedElement = updateMinAntVersion (newRoot, doc);
                 }
@@ -268,13 +268,13 @@ public class UpdateHelper {
         EditableProperties cachedProperties = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         //The javadoc.additionalparam was not in NB 4.0
         if (cachedProperties.get (BluejProject.JAVADOC_ADDITIONALPARAM)==null) {
-            cachedProperties.put (BluejProject.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
+            cachedProperties.put (BluejProject.JAVADOC_ADDITIONALPARAM,"");    // NOI18N
         }
-        if (cachedProperties.get ("build.generated.dir")==null) { //NOI18N
-            cachedProperties.put ("build.generated.dir","${build.dir}/generated"); //NOI18N
+        if (cachedProperties.get ("build.generated.dir")==null) { // NOI18N
+            cachedProperties.put ("build.generated.dir","${build.dir}/generated"); // NOI18N
         }
-         if (cachedProperties.get ("meta.inf.dir")==null) { //NOI18N
-            cachedProperties.put ("meta.inf.dir","${src.dir}/META-INF"); //NOI18N
+         if (cachedProperties.get ("meta.inf.dir")==null) { // NOI18N
+            cachedProperties.put ("meta.inf.dir","${src.dir}/META-INF"); // NOI18N
         }
         return cachedProperties;
     }
@@ -312,7 +312,7 @@ public class UpdateHelper {
         }
     }
 
-    static final String MINIMUM_ANT_VERSION = "1.6.5";
+    static final String MINIMUM_ANT_VERSION = "1.6.5";  // NOI18N
     
     private static Element updateMinAntVersion (final Element root, final Document doc) {
         NodeList list = root.getElementsByTagNameNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,MINIMUM_ANT_VERSION_ELEMENT);
@@ -324,7 +324,7 @@ public class UpdateHelper {
                 return root;
             }
         }
-        assert false : "Invalid project file"; //NOI18N
+        assert false : "Invalid project file"; // NOI18N
         return root;
     }
 

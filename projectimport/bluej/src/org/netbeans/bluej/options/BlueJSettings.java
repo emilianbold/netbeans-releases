@@ -38,7 +38,7 @@ public class BlueJSettings extends SystemOption {
     }
     
     public String displayName() {
-        return NbBundle.getMessage(BlueJSettings.class, "LBL_Settings"); //NOI18N
+        return NbBundle.getMessage(BlueJSettings.class, "LBL_Settings"); // NOI18N
     }
     
     public HelpCtx getHelpCtx() {
@@ -66,16 +66,16 @@ public class BlueJSettings extends SystemOption {
      * @return as ant classpath entry.
      */
     public String getUserLibrariesAsClassPath() {
-        File userDir = new File(System.getProperty("user.home"));
+        File userDir = new File(System.getProperty("user.home")); // NOI18N
         File bluejHome = null;
         if (Utilities.isWindows()) {
-            bluejHome = new File(userDir, "bluej");
+            bluejHome = new File(userDir, "bluej"); // NOI18N
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            bluejHome = new File(userDir, "Library/Preferences/org.bluej");
+            bluejHome = new File(userDir, "Library/Preferences/org.bluej"); // NOI18N
         } else {
-            bluejHome = new File(userDir, ".bluej");
+            bluejHome = new File(userDir, ".bluej"); // NOI18N
         }
-        File prop = new File(bluejHome, "bluej.properties");
+        File prop = new File(bluejHome, "bluej.properties"); // NOI18N
         String path = "";
         if (prop.exists()) {
             FileInputStream str = null;
@@ -85,10 +85,10 @@ public class BlueJSettings extends SystemOption {
                 properties.load(str);
                 int index = 1;
                 while (true) {
-                    String propKey = "bluej.userlibrary." + index + ".location";
+                    String propKey = "bluej.userlibrary." + index + ".location"; // NOI18N
                     String value = properties.getProperty(propKey);
                     if (value != null) {
-                        path = path + (path.length() == 0 ? "" : ":") + value;
+                        path = path + (path.length() == 0 ? "" : ":") + value; // NOI18N
                     } else {
                         //we're done.
                         break;

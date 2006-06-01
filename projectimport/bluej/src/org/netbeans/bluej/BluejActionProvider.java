@@ -359,7 +359,7 @@ class BluejActionProvider implements ActionProvider {
             //Check if files are either packages of java files
             if (files != null) {
                 for (int i = 0; i < files.length; i++) {
-                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) {
+                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) { //NOI18N
                         return null;
                     }
                 }
@@ -543,8 +543,8 @@ class BluejActionProvider implements ActionProvider {
                 throw new IllegalArgumentException ();
         }
         final MainClassWarning panel = new MainClassWarning (message, new FileObject[] { project.getProjectDirectory() } );
-        panel.setArguments(eprivate.getProperty("application.args"));
-        panel.setSelectedMainClass(ep.getProperty("main.class"));
+        panel.setArguments(eprivate.getProperty("application.args")); //NOI18N
+        panel.setSelectedMainClass(ep.getProperty("main.class")); //NOI18N
         Object[] options = new Object[] {
             okButton,
             DialogDescriptor.CANCEL_OPTION
@@ -573,7 +573,7 @@ class BluejActionProvider implements ActionProvider {
             mainClass = panel.getSelectedMainClass ();
             canceled = false;
             ep.put ("main.class", mainClass == null ? "" : mainClass); // NOI18N
-            eprivate.put("application.args", panel.getArguments());
+            eprivate.put("application.args", panel.getArguments()); //NOI18N
         }
         dlg.dispose();            
 
@@ -598,7 +598,7 @@ class BluejActionProvider implements ActionProvider {
         try {
             JavaModel.setClassPath(fo);
             Resource res = JavaModel.getResource (fo);
-            assert res != null : "Resource found for FileObject " + fo;
+            assert res != null : "Resource found for FileObject " + fo; //NOI18N
             has = !res.getMain().isEmpty();
         } finally {
             JavaModel.getJavaRepository ().endTrans ();

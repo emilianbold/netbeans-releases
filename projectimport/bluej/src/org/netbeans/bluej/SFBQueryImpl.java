@@ -58,13 +58,13 @@ public class SFBQueryImpl implements SourceForBinaryQueryImplementation, Javadoc
             return res;
         }
         FileObject src = null;
-        if (matches(binaryRoot,"build.classes.dir")) {   //NOI18N
+        if (matches(binaryRoot,"build.classes.dir")) {   // NOI18N
             src = project.getProjectDirectory();
         }
-        else if (matches (binaryRoot,"dist.jar")) {      //NOI18N
+        else if (matches (binaryRoot,"dist.jar")) {      // NOI18N
             src = project.getProjectDirectory();
         }
-        else if (matches (binaryRoot,"build.test.classes.dir")) {    //NOI18N
+        else if (matches (binaryRoot,"build.test.classes.dir")) {    // NOI18N
             src = project.getProjectDirectory();
         }
         if (src == null) {
@@ -104,12 +104,12 @@ public class SFBQueryImpl implements SourceForBinaryQueryImplementation, Javadoc
             binaryRoot = FileUtil.getArchiveFile(binaryRoot);
             // XXX check whether this is really the root
         }
-        if (matches (binaryRoot, "build.classes.dir") || matches (binaryRoot, "dist.jar") ||
-                matches (binaryRoot, "build.test.classes.dir")) {   //NOI18N
+        if (matches (binaryRoot, "build.classes.dir") || matches (binaryRoot, "dist.jar") ||  // NOI18N
+                matches (binaryRoot, "build.test.classes.dir")) {   // NOI18N
             if (docResult == null) {
                 //TODO make this relative to property?? the location should not be changed anyway because then
                 // it stops working against bluej itself..
-                File fil = new File(FileUtil.toFile(project.getProjectDirectory()), "doc");
+                File fil = new File(FileUtil.toFile(project.getProjectDirectory()), "doc");  // NOI18N
                 try {
                     docResult = new DocResult(fil.toURI().toURL());
                 } catch (MalformedURLException ex) {
@@ -141,7 +141,7 @@ public class SFBQueryImpl implements SourceForBinaryQueryImplementation, Javadoc
 
         private URL[] urls;
         public DocResult(URL url) {
-            if (!url.toExternalForm().endsWith("/")) {
+            if (!url.toExternalForm().endsWith("/")) {  // NOI18N
                 try {
                     url = new URL(url.toExternalForm() + "/"); // NOI18N
                 } catch (MalformedURLException ex) {

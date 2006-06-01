@@ -46,7 +46,7 @@ public class CPImpl implements ClassPathImplementation {
     public synchronized List getResources() {
         if (resources == null) {
             resources = new ArrayList();
-            FileObject libs = project.getProjectDirectory().getFileObject("+libs");
+            FileObject libs = project.getProjectDirectory().getFileObject("+libs");  // NOI18N
             if (libs != null) {
                 FileObject[] fos = libs.getChildren();
                 for (int i = 0; i < fos.length; i++) {
@@ -57,7 +57,7 @@ public class CPImpl implements ClassPathImplementation {
             }
             File home = BlueJSettings.getDefault().getHome();
             if (home != null) {
-                File userLibs = new File(new File(home, "lib"), "userlib");
+                File userLibs = new File(new File(home, "lib"), "userlib");  // NOI18N
                 FileObject fo = FileUtil.toFileObject(userLibs);
                 if (fo != null) {
                     FileObject[] fos = fo.getChildren();
@@ -70,7 +70,7 @@ public class CPImpl implements ClassPathImplementation {
             }
             String userPath = BlueJSettings.getDefault().getUserLibrariesAsClassPath();
             if (userPath.length() > 0) {
-                StringTokenizer tokens = new StringTokenizer(userPath, ":", false);
+                StringTokenizer tokens = new StringTokenizer(userPath, ":", false);  // NOI18N
                 while (tokens.hasMoreTokens()) {
                     File fil = new File(tokens.nextToken());
                     FileObject fo = FileUtil.toFileObject(fil);

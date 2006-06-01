@@ -55,7 +55,7 @@ public class BluejLogicalViewRootNode extends AbstractNode {
     /** Creates a new instance of BluejLogicalViewRootNode */
     public BluejLogicalViewRootNode(Lookup look) {
         super(new FilterChildrenImpl(look), look);
-        setIconBaseWithExtension("org/netbeans/bluej/resources/bluejproject.png");
+        setIconBaseWithExtension("org/netbeans/bluej/resources/bluejproject.png"); // NOI18N
     }
     
     public String getName() {
@@ -156,14 +156,14 @@ public class BluejLogicalViewRootNode extends AbstractNode {
             DataObject dobj = (DataObject)orig.getLookup().lookup(DataObject.class);
             if (dobj != null) {
                 FileObject fo = dobj.getPrimaryFile();
-                if ("bluej.pkg".equals(fo.getNameExt()) ||
-                        "build.xml".equals(fo.getNameExt()) ||
-                        "bluej.pkh".equals(fo.getNameExt()) ||
-                        ("+libs".equals(fo.getName()) && fo.isFolder()) ||
-                        "ctxt".equals(fo.getExt()) ||
-                        "class".equals(fo.getExt()) ||
-                        ".DS_STORE".equals(fo.getNameExt()) ||
-                        (fo.isFolder() && fo.getFileObject("bluej.pkg") == null)) {
+                if ("bluej.pkg".equals(fo.getNameExt()) || // NOI18N
+                        "build.xml".equals(fo.getNameExt()) || // NOI18N
+                        "bluej.pkh".equals(fo.getNameExt()) || // NOI18N
+                        ("+libs".equals(fo.getName()) && fo.isFolder()) || // NOI18N
+                        "ctxt".equals(fo.getExt()) || // NOI18N
+                        "class".equals(fo.getExt()) || // NOI18N
+                        ".DS_STORE".equals(fo.getNameExt()) || // NOI18N
+                        (fo.isFolder() && fo.getFileObject("bluej.pkg") == null)) { // NOI18N
                     return new Node[0];
                 }
                   return new Node[] {new MyFilterWithHtml(orig, new FilterChildrenImpl(orig))};

@@ -38,11 +38,11 @@ public class BJClassPathExtender implements ProjectClassPathExtender{
     }
 
     public boolean addLibrary(org.netbeans.api.project.libraries.Library library) throws IOException {
-        FileObject libs = project.getProjectDirectory().getFileObject("+libs");
+        FileObject libs = project.getProjectDirectory().getFileObject("+libs"); //NOI18N
         if (libs == null) {
-            libs = project.getProjectDirectory().createFolder("+libs");
+            libs = project.getProjectDirectory().createFolder("+libs"); //NOI18N
         }
-        Iterator it = library.getContent("classpath").iterator();
+        Iterator it = library.getContent("classpath").iterator(); //NOI18N
         while (it.hasNext()) {
             URL url = (URL) it.next();
             if (FileUtil.getArchiveFile(url) != null) {
@@ -60,9 +60,9 @@ public class BJClassPathExtender implements ProjectClassPathExtender{
     }
 
     public boolean addArchiveFile(FileObject archiveFile) throws IOException {
-        FileObject libs = project.getProjectDirectory().getFileObject("+libs");
+        FileObject libs = project.getProjectDirectory().getFileObject("+libs"); //NOI18N
         if (libs == null) {
-            libs = project.getProjectDirectory().createFolder("+libs");
+            libs = project.getProjectDirectory().createFolder("+libs"); //NOI18N
         }
         FileObject newLib = libs.getFileObject(archiveFile.getNameExt());
         if (newLib == null) {

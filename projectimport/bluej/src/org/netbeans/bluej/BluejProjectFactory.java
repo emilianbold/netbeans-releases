@@ -31,23 +31,23 @@ public class BluejProjectFactory implements ProjectFactory {
         if (projectDir == null) {
             return false;
         }
-        if (fileObject.getFileObject("nbproject") != null && fileObject.getFileObject("build.xml") != null) {
+        if (fileObject.getFileObject("nbproject") != null && fileObject.getFileObject("build.xml") != null) {  // NOI18N
             return false;
         }
         File project = new File(projectDir, "bluej.pkg"); // NOI18N
-        File parentProject = new File(projectDir.getParentFile(), "bluej.pkg");
+        File parentProject = new File(projectDir.getParentFile(), "bluej.pkg");  // NOI18N
         return project.exists() && project.isFile() &&
-                (!parentProject.exists()) && !"nbproject".equalsIgnoreCase(projectDir.getName()); //NOI18N
+                (!parentProject.exists()) && !"nbproject".equalsIgnoreCase(projectDir.getName()); // NOI18N
     }
     
     public Project loadProject(FileObject fileObject, ProjectState projectState) throws IOException {
         if (FileUtil.toFile(fileObject) == null) {
             return null;
         }
-        if ("nbproject".equalsIgnoreCase(fileObject.getName())) {
+        if ("nbproject".equalsIgnoreCase(fileObject.getName())) {  //NOI18N
             return null;
         }
-        FileObject projectFile = fileObject.getFileObject("bluej.pkg"); //NOI18N
+        FileObject projectFile = fileObject.getFileObject("bluej.pkg"); // NOI18N
         if (projectFile == null || !projectFile.isData()) {
             return null;
         }
@@ -55,37 +55,37 @@ public class BluejProjectFactory implements ProjectFactory {
         if (projectDiskFile == null)  {
             return null;
         }
-        if (fileObject.getParent().getFileObject("bluej.pkg") != null) {
+        if (fileObject.getParent().getFileObject("bluej.pkg") != null) {  // NOI18N
             return null;
         }
         
         String projectName = removeSpaces(fileObject.getName());
         
-        if (fileObject.getFileObject("nbproject") == null) {
-            FileObject nbfolder = fileObject.createFolder("nbproject");
-            InputStream str = BluejProjectFactory.class.getResourceAsStream("resources/build.xml");
-            FileObject buildxml = fileObject.createData("build.xml");
+        if (fileObject.getFileObject("nbproject") == null) {  // NOI18N
+            FileObject nbfolder = fileObject.createFolder("nbproject");  // NOI18N
+            InputStream str = BluejProjectFactory.class.getResourceAsStream("resources/build.xml");  // NOI18N
+            FileObject buildxml = fileObject.createData("build.xml");  // NOI18N
             FileLock lock = buildxml.lock();
             OutputStream out = buildxml.getOutputStream(lock);
-            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);
+            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);  // NOI18N
             out.close();
             lock.releaseLock();
-            str = BluejProjectFactory.class.getResourceAsStream("resources/build-impl.xml");
-            FileObject buildimplxml = nbfolder.createData("build-impl.xml");
+            str = BluejProjectFactory.class.getResourceAsStream("resources/build-impl.xml");  // NOI18N
+            FileObject buildimplxml = nbfolder.createData("build-impl.xml");  // NOI18N
             lock = buildimplxml.lock();
             out = buildimplxml.getOutputStream(lock);
-            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);
+            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);  // NOI18N
             out.close();
             lock.releaseLock();
-            str = BluejProjectFactory.class.getResourceAsStream("resources/project.properties");
-            FileObject props = nbfolder.createData("project.properties");
+            str = BluejProjectFactory.class.getResourceAsStream("resources/project.properties");  // NOI18N
+            FileObject props = nbfolder.createData("project.properties");  // NOI18N
             lock = props.lock();
             out = props.getOutputStream(lock);
-            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);
+            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);  // NOI18N
             out.close();
             lock.releaseLock();
-            str = BluejProjectFactory.class.getResourceAsStream("resources/project.xml");
-            FileObject projxml = nbfolder.createData("project.xml");
+            str = BluejProjectFactory.class.getResourceAsStream("resources/project.xml");  // NOI18N
+            FileObject projxml = nbfolder.createData("project.xml");  // NOI18N
             lock = projxml.lock();
             out = projxml.getOutputStream(lock);
             FileUtil.copy(str, out);
@@ -100,7 +100,7 @@ public class BluejProjectFactory implements ProjectFactory {
             }
             while (it.hasNext()) {
                 ProjectFactory elem = (ProjectFactory) it.next();
-                if (elem.getClass().getName().indexOf("AntBasedProjectFactorySingleton") != -1) {
+                if (elem.getClass().getName().indexOf("AntBasedProjectFactorySingleton") != -1) {  // NOI18N
                     return elem.loadProject(fileObject, projectState);
                 }
             }
@@ -114,7 +114,7 @@ public class BluejProjectFactory implements ProjectFactory {
         Iterator it = res.allInstances().iterator();
         while (it.hasNext()) {
             ProjectFactory elem = (ProjectFactory) it.next();
-            if (elem.getClass().getName().indexOf("AntBasedProjectFactorySingleton") != -1) {
+            if (elem.getClass().getName().indexOf("AntBasedProjectFactorySingleton") != -1) {  // NOI18N
                 elem.saveProject(project);
             }
         }
@@ -122,7 +122,7 @@ public class BluejProjectFactory implements ProjectFactory {
     
     private void copyAndReplaceInStream(InputStream is, OutputStream os, 
             String ptrn, String rpl) throws IOException {
-        String sep = System.getProperty("line.separator");
+        String sep = System.getProperty("line.separator");  // NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         Writer writer = new OutputStreamWriter(os);
         String line = br.readLine();
@@ -137,7 +137,7 @@ public class BluejProjectFactory implements ProjectFactory {
     }
     
     public static String removeSpaces(String s) {
-        int si = s.indexOf(" ");
+        int si = s.indexOf(" ");  // NOI18N
         if (si != -1) {
             return s.substring(0, si) + removeSpaces(s.substring(si + 1));
         } else {

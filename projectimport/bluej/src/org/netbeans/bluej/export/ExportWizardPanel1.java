@@ -93,18 +93,18 @@ public class ExportWizardPanel1 implements WizardDescriptor.Panel {
     }
     public void storeSettings(Object set) {
         WizardDescriptor wiz = (WizardDescriptor)set;
-        wiz.putProperty("NewProjectLocation", new File(path.trim()));
+        wiz.putProperty("NewProjectLocation", new File(path.trim())); // NOI18N
     }
 
     void updateValue(String value) {
         path = value;
         if (path == null || path.trim().length() == 0) {
-            settings.putProperty("WizardPanel_errorMessage", "Please specify a folder to export to.");
+            settings.putProperty("WizardPanel_errorMessage", org.openide.util.NbBundle.getMessage(ExportWizardPanel1.class, "ERROR_noFolder"));
             valid = false;
         } else {
             File fil = new File(path.trim());
             if (fil.exists() && (fil.isFile() || (fil.isDirectory() && fil.listFiles().length > 0))) {
-                settings.putProperty("WizardPanel_errorMessage", "Please select empty or non-existing directory.");
+                settings.putProperty("WizardPanel_errorMessage", org.openide.util.NbBundle.getMessage(ExportWizardPanel1.class, "ERROR_WrongFolder"));
                 valid = false;
             } else {
                 settings.putProperty("WizardPanel_errorMessage", null);
