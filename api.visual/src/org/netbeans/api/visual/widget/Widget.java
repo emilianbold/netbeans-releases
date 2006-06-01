@@ -55,6 +55,8 @@ public class Widget {
     private Rectangle preferredBounds;
     private boolean checkClipping;
 
+    private WidgetState state = WidgetState.NORMAL;
+
     private Cursor cursor;
     private String toolTipText;
 
@@ -295,6 +297,14 @@ public class Widget {
         this.toolTipText = toolTipText;
     }
 
+    public WidgetState getState () {
+        return state;
+    }
+
+    public void setState (WidgetState state) {
+        this.state = state;
+    }
+
     public final Point convertLocalToScene (Point localLocation) {
         Point sceneLocation = new Point (localLocation);
         Widget widget = this;
@@ -401,10 +411,9 @@ public class Widget {
                 gr.fillRect (bounds.x, bounds.y, bounds.width, bounds.height);
             }
 
+            getBorder ().paint (gr, new Rectangle (bounds));
             paintWidget ();
             paintChildren ();
-
-            getBorder ().paint (gr, bounds);
         }
         gr.setTransform(previousTransform);
     }

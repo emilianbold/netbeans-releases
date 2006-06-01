@@ -19,6 +19,7 @@ import java.awt.*;
  */
 public interface Border {
 
+    // WARNING - must be immutable during whole lifecycle
     public Insets getInsets ();
 
     public void paint (Graphics2D gr, Rectangle bounds);

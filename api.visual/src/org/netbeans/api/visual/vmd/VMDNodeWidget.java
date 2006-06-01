@@ -89,7 +89,7 @@ public class VMDNodeWidget extends Widget {
 //        inner.addChild (separator1);
 
         pinsWidget = new Widget (scene);
-        pinsWidget.setBorder (new EmptyBorder (4, 8));
+        pinsWidget.setBorder (new EmptyBorder (8, 4));
         pinsWidget.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL, SerialLayout.Alignment.JUSTIFY, 0));
 //        inner.addChild (pinsWidget);
         mainLayer.addChild (pinsWidget);
