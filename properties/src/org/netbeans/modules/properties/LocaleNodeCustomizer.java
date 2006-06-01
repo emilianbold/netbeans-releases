@@ -324,7 +324,7 @@ public class LocaleNodeCustomizer extends JPanel {
             }
         );
         dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
-        dialog[0].show();
+        dialog[0].setVisible(true);
     }//GEN-LAST:event_changeNameButtonActionPerformed
 
     private void keyListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_keyListValueChanged

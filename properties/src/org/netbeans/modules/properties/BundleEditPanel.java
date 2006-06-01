@@ -544,7 +544,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         );
         
         dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
-        dialog[0].show();
+        dialog[0].setVisible(true);
     }//GEN-LAST:event_addButtonActionPerformed
     
     

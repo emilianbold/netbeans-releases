@@ -165,7 +165,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
 
                 /** Getter for name property. */
                 public String getName() {
-                    return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewPropertyAction");
+                    return NbBundle.getBundle(PropertiesLocaleNode.class).getString("LAB_NewPropertyAction");
                 }
                 
                 /** Gets help context. */ 
@@ -186,7 +186,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
 
                     DialogDescriptor dd = new DialogDescriptor(
                         panel,
-                        NbBundle.getBundle(BundleEditPanel.class).getString("CTL_NewPropertyTitle"),
+                        NbBundle.getBundle(PropertiesLocaleNode.class).getString("CTL_NewPropertyTitle"),
                         true,
                         DialogDescriptor.OK_CANCEL_OPTION,
                         DialogDescriptor.OK_OPTION,
@@ -232,7 +232,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
                     );
 
                     dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
-                    dialog[0].show();
+                    dialog[0].setVisible(true);
 
                 }
                 

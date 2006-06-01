@@ -247,7 +247,7 @@ public class PropertiesDataNode extends DataNode {
             );
             
             dialog[0] = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-            dialog[0].show();
+            dialog[0].setVisible(true);
         }
 
     } // End of NewLocaleType class.
