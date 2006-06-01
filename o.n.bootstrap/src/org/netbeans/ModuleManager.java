@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -49,36 +49,36 @@ import org.openide.util.Utilities;
  * @author Jesse Glick
  */
 public final class ModuleManager {
-    
+
     public static final String PROP_MODULES = "modules"; // NOI18N
     public static final String PROP_ENABLED_MODULES = "enabledModules"; // NOI18N
     public static final String PROP_CLASS_LOADER = "classLoader"; // NOI18N
-    
+
     // JST-PENDING: Document in arch. used in org.netbeans.core.startup tests
     // For unit testing only:
     static boolean PRINT_TOPOLOGICAL_EXCEPTION_STACK_TRACES = !Boolean.getBoolean ("suppress.topological.exception"); // NOI18N
-    
+
     // the modules being managed (not all need be installed)
     private final Set<Module> modules = new HashSet<Module>(100);
     // the same, indexed by code name base
     private final Map<String,Module> modulesByName = new HashMap<String,Module>(100);
-    
+
     // for any module, set of known failed dependencies or problems,
     // or null if this has not been computed yet
     private final Map<Module,Set<Object>> moduleProblems = new HashMap<Module,Set<Object>>(100); // Map<Module,Set<Dependency|InvalidException>>
-    
+
     // modules providing a given requires token; set may never be empty
     private final Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>(25);
-    
+
     private final ModuleInstaller installer;
     private ModuleFactory moduleFactory;
-    
+
     private SystemClassLoader classLoader;
     private List<Object> classLoaderPatches; // List<File|JarFile>
     private final Object classLoaderLock = new String("ModuleManager.classLoaderLock"); // NOI18N
-    
+
     private final Events ev;
-    
+
     /** Create a manager, initially with no managed modules.
      * The handler for installing modules is given.
      * Also the sink for event messages must be given.
@@ -112,20 +112,20 @@ public final class ModuleManager {
         }
         classLoader = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {installer.getClass ().getClassLoader()}, Collections.<Module>emptySet());
         updateContextClassLoaders(classLoader, true);
-        
+
         moduleFactory = Lookup.getDefault().lookup(ModuleFactory.class);
         if (moduleFactory == null) {
             moduleFactory = new ModuleFactory();
         }
     }
-    
-    /** Access for ManifestSection. 
+
+    /** Access for ManifestSection.
      * @since JST-PENDING needed by ManifestSection
      */
     public final Events getEvents() {
         return ev;
     }
-    
+
     private final Mutex.Privileged MUTEX_PRIVILEGED = new Mutex.Privileged();
     private final Mutex MUTEX = new Mutex(MUTEX_PRIVILEGED);
     /** Get a locking mutex for this module installer.
@@ -160,7 +160,7 @@ public final class ModuleManager {
     // [PENDING] with improved API for Mutex, could throw
     // IllegalStateException if any thread attempts to call
     // a controlled method without holding the proper mutex lock
-    
+
     /** Manages changes accumulating in this manager and fires them when ready.
      */
     private ChangeFirer firer = new ChangeFirer(this);
@@ -184,9 +184,9 @@ public final class ModuleManager {
             throw new IllegalThreadStateException("You are attempting to make changes to " + this + " in a property change callback. This is illegal. You may only make module system changes while holding a write mutex and not inside a change callback. See #16328."); // NOI18N
         }
     }
-    
+
     private PropertyChangeSupport changeSupport;
-    
+
     /** Add a change listener.
      * Only the declared properties will be fired, and they are
      * not guaranteed to be fired synchronously with the change
@@ -203,13 +203,13 @@ public final class ModuleManager {
         }
         changeSupport.addPropertyChangeListener(l);
     }
-    
+
     /** Remove a change listener. */
     public final void removePropertyChangeListener(PropertyChangeListener l) {
         if (changeSupport != null)
             changeSupport.removePropertyChangeListener(l);
     }
-    
+
     // Access from ChangeFirer:
     final void firePropertyChange(String prop, Object old, Object nue) {
         if (Util.err.isLoggable(Level.FINE)) {
@@ -218,13 +218,13 @@ public final class ModuleManager {
         if (changeSupport != null)
             changeSupport.firePropertyChange(prop, old, nue);
     }
-    
+
     /** For access from Module. */
     final void fireReloadable(Module m) {
         firer.change(new ChangeFirer.Change(m, Module.PROP_RELOADABLE, null, null));
         firer.fire();
     }
-    
+
     private final Util.ModuleLookup lookup = new Util.ModuleLookup();
     /** Retrieve set of modules in Lookup form.
      * The core top manager should install this into the set of
@@ -242,7 +242,7 @@ public final class ModuleManager {
         Util.err.fine("lookup created: " + created + " deleted: " + deleted);
         lookup.changed();
     }
-    
+
     /** Get a set of {@link Module}s being managed.
      * No two contained modules may at any time share the same code name base.
      * @see #PROP_MODULES
@@ -250,7 +250,7 @@ public final class ModuleManager {
     public Set<Module> getModules() {
         return new HashSet<Module>(modules);
     }
-    
+
     /** Get a set of modules managed which are currently enabled.
      * Convenience method only.
      * @see #PROP_ENABLED_MODULES
@@ -266,14 +266,14 @@ public final class ModuleManager {
         }
         return s;
     }
-    
+
     /** Convenience method to find a module by name.
      * Returns null if there is no such managed module.
      */
     public final Module get(String codeNameBase) {
         return modulesByName.get(codeNameBase);
     }
-    
+
     /**
      * Get a set of modules depended upon or depending on this module.
      * <p>Note that provide-require dependencies are listed alongside direct
@@ -305,7 +305,7 @@ public final class ModuleManager {
             return classLoader;
         }
     }
-    
+
     /** Mark the current class loader as invalid and make a new one. */
     private void invalidateClassLoader() {
         synchronized (classLoaderLock) {
@@ -377,14 +377,14 @@ public final class ModuleManager {
             }
         }
     }
-    
+
     /** A classloader giving access to all the module classloaders at once. */
     private final class SystemClassLoader extends JarClassLoader {
-        
+
         private final PermissionCollection allPermissions;
         private final StringBuffer debugme;
         private boolean empty = true;
-        
+
         public SystemClassLoader(List<Object> files, ClassLoader[] parents, Set<Module> modules) throws IllegalArgumentException {
             super(files, parents, false);
             allPermissions = new Permissions();
@@ -411,7 +411,7 @@ public final class ModuleManager {
             record(modules);
             debugme.append(']'); // NOI18N
         }
-        
+
         private void record(Collection<Module> modules) {
 	    for (Module m: modules) {
                 if (empty) {
@@ -422,33 +422,33 @@ public final class ModuleManager {
                 debugme.append(m.getCodeNameBase());
             }
         }
-        
+
         public void append(ClassLoader[] ls, List<Module> modules) throws IllegalArgumentException {
             super.append(ls);
             debugme.deleteCharAt(debugme.length() - 1);
             record(modules);
             debugme.append(']'); // NOI18N
         }
-        
+
         protected void finalize() throws Throwable {
             super.finalize();
             Util.err.fine("Collected system class loader");
         }
-        
+
         public String toString() {
             if (debugme == null) {
                 return "SystemClassLoader";
             }
             return debugme.toString();
         }
-        
+
         protected boolean isSpecialResource(String pkg) {
             if (installer.isSpecialResource(pkg)) {
                 return true;
             }
             return super.isSpecialResource(pkg);
         }
-        
+
         /** Provide all permissions for any code loaded from the files list
          * (i.e. with netbeans.systemclassloader.patches).
          */
@@ -464,7 +464,7 @@ public final class ModuleManager {
     public Module create(File jar, Object history, boolean reloadable, boolean autoload) throws IOException, DuplicateException {
         return create(jar, history, reloadable, autoload, false);
     }
-    
+
     /** Create a module from a JAR and add it to the managed set.
      * Will initially be disabled, unless it is eager and can
      * be enabled immediately.
@@ -481,7 +481,7 @@ public final class ModuleManager {
     public Module create(File jar, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException, DuplicateException {
         assertWritable();
         ev.log(Events.START_CREATE_REGULAR_MODULE, jar);
-        Module m = moduleFactory.create(jar.getAbsoluteFile(), 
+        Module m = moduleFactory.create(jar.getAbsoluteFile(),
                         history, reloadable, autoload, eager, this, ev);
         ev.log(Events.FINISH_CREATE_REGULAR_MODULE, jar);
         subCreate(m);
@@ -505,7 +505,7 @@ public final class ModuleManager {
         }
         return m;
     }
-    
+
     /** Create a fixed module (e.g. from classpath).
      * Will initially be disabled.
      */
@@ -518,7 +518,7 @@ public final class ModuleManager {
         subCreate(m);
         return m;
     }
-    
+
     /** Used by Module to communicate with the ModuleInstaller re. dependencies. */
     void refineDependencies(Module m, Set<Dependency> dependencies) {
         installer.refineDependencies(m, dependencies);
@@ -626,7 +626,7 @@ public final class ModuleManager {
             providing.add(m);
         }
     }
-    
+
     /** Remove a module from the managed set.
      * Must be disabled first.
      * Must not be a "fixed" module.
@@ -663,7 +663,7 @@ public final class ModuleManager {
             }
         }
     }
-    
+
     /** Reload a module.
      * This could make a fresh copy of its JAR file preparing
      * to enable it with different contents; at least it will
@@ -703,7 +703,7 @@ public final class ModuleManager {
         clearProblemCache();
         firer.fire();
     }
-    
+
     /** Enable a single module.
      * Must have satisfied its dependencies.
      * Must not be an autoload module, when supported.
@@ -711,7 +711,7 @@ public final class ModuleManager {
     public final void enable(Module m) throws IllegalArgumentException, InvalidException {
         enable(Collections.singleton(m));
     }
-    
+
     /** Disable a single module.
      * Must not be required by any enabled modules.
      * Must not be an autoload module, when supported.
@@ -719,7 +719,7 @@ public final class ModuleManager {
     public final void disable(Module m) throws IllegalArgumentException {
         disable(Collections.singleton(m));
     }
-    
+
     /** Enable a set of modules together.
      * Must have satisfied their dependencies
      * (possibly with one another).
@@ -743,7 +743,7 @@ public final class ModuleManager {
         // Basic problems will be caught here, and we also get the autoloads:
         List<Module> toEnable = simulateEnable(modules);
 	ev.log(Events.PERF_TICK, "checked the required ordering and autoloads"); // NOI18N
-	
+
         Util.err.fine("enable: toEnable=" + toEnable); // NOI18N
         {
             // Verify that we are cool as far as basic dependencies go.
@@ -919,7 +919,7 @@ public final class ModuleManager {
         ev.log(Events.FINISH_ENABLE_MODULES, toEnable);
         firer.fire();
     }
-    
+
     /** Disable a set of modules together.
      * Must not be required by any enabled
      * modules (except one another).
@@ -980,7 +980,7 @@ public final class ModuleManager {
         ev.log(Events.FINISH_DISABLE_MODULES, toDisable);
         firer.fire();
     }
-    
+
     /** Simulate what would happen if a set of modules were to be enabled.
      * None of the listed modules may be autoload modules, nor eager, nor currently enabled,
      * though they may be fixed (if they have not yet been enabled).
@@ -1183,7 +1183,7 @@ public final class ModuleManager {
         }
         return true;
     }
-    
+
     /** Simulate what would happen if a set of modules were to be disabled.
      * None of the listed modules may be autoload modules, nor eager, nor currently disabled, nor fixed.
      * The returned set will list all modules that would actually be disabled,
@@ -1314,9 +1314,9 @@ public final class ModuleManager {
         }
         return found;
     }
-    
+
     // dummy object to be placed in the problem set while recursive checking is in progress
-    private static final Object PROBING_IN_PROCESS = new Object();
+    private static final Object PROBING_IN_PROCESS = /* new String(String) intentional! */ new String("PROBING_IN_PROCESS");
     // Access from Module.getProblems, q.v.
     // The probed module must not be currently enabled or fixed.
     Set<Object> missingDependencies(Module probed) {
@@ -1329,14 +1329,12 @@ public final class ModuleManager {
         }
     }
     private Set<Object> _missingDependencies(Module probed) {
-            Set<Object> probs = moduleProblems.get(probed); // Set<Dependency|InvalidException>
+            Set<Object> probs = moduleProblems.get(probed); // Set<Dependency|InvalidException|PROBING_IN_PROCESS>
             if (probs == null) {
                 probs = new HashSet<Object>(8);
                 probs.add(PROBING_IN_PROCESS);
                 moduleProblems.put(probed, probs);
-                Dependency[] dependencies = probed.getDependenciesArray();
-                for (int i = 0; i < dependencies.length; i++) {
-                    Dependency dep = dependencies[i];
+                for (Dependency dep : probed.getDependenciesArray()) {
                     if (dep.getType() == Dependency.TYPE_PACKAGE) {
                         // Can't check it in advance. Assume it is OK; if not
                         // a problem will be indicated during an actual installation
@@ -1449,6 +1447,7 @@ public final class ModuleManager {
                             }
                         }
                     } else {
+                        assert dep.getType() == Dependency.TYPE_JAVA;
                         // Java dependency. Fixed for whole VM session, safe to check once and keep.
                         if (! Util.checkJavaDependency(dep)) {
                             // Bad.
@@ -1460,7 +1459,7 @@ public final class ModuleManager {
             }
             return probs;
     }
-    
+
     /** Forget about any possible "soft" problems there might have been.
      * Next time anyone asks, recompute them.
      * Currently enabled modules are left alone (no problems).
@@ -1472,45 +1471,41 @@ public final class ModuleManager {
      * return a different result).
      */
     private void clearProblemCache() {
-        Iterator it = moduleProblems.entrySet().iterator();
-    SCAN_CACHE:
+        Iterator<Map.Entry<Module,Set<Object>>> it = moduleProblems.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            Module m = (Module)entry.getKey();
+            Map.Entry<Module,Set<Object>> entry = it.next();
+            Module m = entry.getKey();
             if (! m.isEnabled()) {
-                Set s = (Set)entry.getValue();
+                Set<Object> s = entry.getValue();
                 if (s != null) {
-                    // If all the problems here are soft, clear the cache.
-                    // If there any hard problems, there should not be any
-                    // soft problems (how would the hard problem be discovered
-                    // if there was already a soft problem? if there was already
-                    // a hard problem, who would check further for soft problems?)
-                    // so leave this entry alone.
-                    Iterator probsIt = s.iterator();
-                    while (probsIt.hasNext()) {
-                        Object problem = probsIt.next();
+                    boolean clear = false;
+                    for (Object problem : s) {
                         if (problem instanceof InvalidException) {
                             // Hard problem, skip this one.
-                            continue SCAN_CACHE;
+                            continue;
                         }
                         Dependency dep = (Dependency)problem;
                         if (dep.getType() != Dependency.TYPE_MODULE &&
                                 dep.getType() != Dependency.TYPE_REQUIRES) {
                             // Also a hard problem.
-                            continue SCAN_CACHE;
+                            continue;
                         }
-                        // Soft problem, permit this problem set to be cleared...
+                        // Some soft problems found, i.e. module deps. Clear them all.
+                        // #76917: Even clear any hard problems.
+                        clear = true;
+                        break;
                     }
-                    // Only soft problems found (if any), i.e. module deps. Clear them all.
-                    it.remove();
-                    firer.change(new ChangeFirer.Change(m, Module.PROP_PROBLEMS, null, null));
+                    if (clear || s.isEmpty()) { // leave alone only if all hard problems
+                        it.remove();
+                        firer.change(new ChangeFirer.Change(m, Module.PROP_PROBLEMS, null, null));
+                    }
                 }
                 // if we never computed anything, make no change now
             }
             // enabled modules are definitely OK, no change there
         }
     }
-    
+
     /** Try to shut down the system.
      * First all modules are asked if they wish to close, in the proper order.
      * Assuming they say yes, then they are informed of the close.
@@ -1519,7 +1514,7 @@ public final class ModuleManager {
     public boolean shutDown() {
         return shutDown(null);
     }
-    
+
     /**
      * Try to shut down the system.
      * First all modules are asked if they wish to close, in the proper order.

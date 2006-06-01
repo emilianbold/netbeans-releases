@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,6 +41,9 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.Util;
+import org.netbeans.core.startup.SetupHid.FakeEvents;
+import org.netbeans.core.startup.SetupHid.FakeModuleInstaller;
+import org.netbeans.core.startup.SetupHid.LoggedPCListener;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -65,7 +68,7 @@ import org.openide.util.Utilities;
  * @author Jesse Glick
  */
 public class ModuleManagerTest extends SetupHid {
-    
+
     static {
         // To match org.netbeans.Main.execute (cf. #44828):
         new URLConnection(ModuleManagerTest.class.getResource("ModuleManagerTest.class")) {
@@ -74,11 +77,11 @@ public class ModuleManagerTest extends SetupHid {
         // Just annoying and misleading (tests pass despite exception):
         System.setProperty ("suppress.topological.exception", "true");
     }
-    
+
     public ModuleManagerTest(String name) {
         super(name);
     }
-    
+
     /*
     public static void main(String[] args) {
         // Turn on verbose logging while developing tests:
@@ -87,7 +90,7 @@ public class ModuleManagerTest extends SetupHid {
         TestRunner.run(new NbTestSuite(ModuleManagerTest.class));
     }
      */
-    
+
     /** Load simple-module and depends-on-simple-module.
      * Make sure they can be installed and in a sane order.
      * Make sure a class from one can depend on a class from another.
@@ -105,12 +108,12 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals("org.bar", m2.getCodeNameBase());
             assertEquals(Collections.EMPTY_SET, m1.getDependencies());
             assertEquals(Dependency.create(Dependency.TYPE_MODULE, "org.foo/1"), m2.getDependencies());
-            Map modulesByName = new HashMap();
+            Map<String,Module> modulesByName = new HashMap<String,Module>();
             modulesByName.put(m1.getCodeNameBase(), m1);
             modulesByName.put(m2.getCodeNameBase(), m2);
-            List m1m2 = Arrays.asList(new Module[] {m1, m2});
-            List m2m1 = Arrays.asList(new Module[] {m2, m1});
-            Map deps = Util.moduleDependencies(m1m2, modulesByName, Collections.EMPTY_MAP);
+            List<Module> m1m2 = Arrays.asList(new Module[] {m1, m2});
+            List<Module> m2m1 = Arrays.asList(new Module[] {m2, m1});
+            Map<Module,List<Module>> deps = Util.moduleDependencies(m1m2, modulesByName, Collections.<String,Set<Module>>emptyMap());
             assertNull(deps.get(m1));
             assertEquals(Collections.singletonList(m1), deps.get(m2));
             assertEquals(m2m1, Utilities.topologicalSort(m1m2, deps));
@@ -121,10 +124,10 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             assertEquals(Collections.EMPTY_SET, m2.getProblems());
              */
-            Set m1PlusM2 = new HashSet(); // Set<Module>
+            Set<Module> m1PlusM2 = new HashSet<Module>();
             m1PlusM2.add(m1);
             m1PlusM2.add(m2);
-            List toEnable = mgr.simulateEnable(m1PlusM2);
+            List<Module> toEnable = mgr.simulateEnable(m1PlusM2);
             assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m1, m2}), toEnable);
             mgr.enable(m1PlusM2);
             assertEquals(Arrays.asList(new String[] {
@@ -138,10 +141,10 @@ public class ModuleManagerTest extends SetupHid {
                 Arrays.asList(new Module[] {m1, m2})
             }), installer.args);
             Class somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
-            Method somemethod = somethingelse.getMethod("message", null);
-            assertEquals("hello", somemethod.invoke(somethingelse.newInstance(), null));
+            Method somemethod = somethingelse.getMethod("message");
+            assertEquals("hello", somemethod.invoke(somethingelse.newInstance()));
             installer.clear();
-            List toDisable = mgr.simulateDisable(Collections.singleton(m1));
+            List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m1));
             assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2, m1}), toDisable);
             toDisable = mgr.simulateDisable(m1PlusM2);
             assertEquals("correct result of simulateDisable #2", Arrays.asList(new Module[] {m2, m1}), toDisable);
@@ -179,7 +182,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testInstallAutoload() throws Exception {
         // Cf. #9779, I think.
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -191,7 +194,7 @@ public class ModuleManagerTest extends SetupHid {
             // m1 will be an autoload.
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, true, false);
             try {
-                mgr.simulateEnable(new HashSet(Arrays.asList(new Module[] {m1, m2})));
+                mgr.simulateEnable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2})));
                 assertTrue("Should not permit you to simulate enablement of an autoload", false);
             } catch (IllegalArgumentException iae) {
                 // Good. m1 should not have been passed to it.
@@ -212,8 +215,8 @@ public class ModuleManagerTest extends SetupHid {
                 Arrays.asList(new Module[] {m1, m2}),
             }), installer.args);
             Class somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
-            Method somemethod = somethingelse.getMethod("message", null);
-            assertEquals("hello", somemethod.invoke(somethingelse.newInstance(), null));
+            Method somemethod = somethingelse.getMethod("message");
+            assertEquals("hello", somemethod.invoke(somethingelse.newInstance()));
             // Now try turning off m2 and make sure m1 goes away as well.
             assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2, m1}), mgr.simulateDisable(Collections.singleton(m2)));
             installer.clear();
@@ -232,7 +235,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testInstallEager() throws Exception {
         // Cf. #17501.
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -244,7 +247,7 @@ public class ModuleManagerTest extends SetupHid {
             // m2 will be eager.
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, true);
             try {
-                mgr.simulateEnable(new HashSet(Arrays.asList(new Module[] {m1, m2})));
+                mgr.simulateEnable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2})));
                 fail("Should not permit you to simulate enablement of an eager module");
             } catch (IllegalArgumentException iae) {
                 // Good. m2 should not have been passed to it.
@@ -265,8 +268,8 @@ public class ModuleManagerTest extends SetupHid {
                 Arrays.asList(new Module[] {m1, m2}),
             }), installer.args);
             Class somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
-            Method somemethod = somethingelse.getMethod("message", null);
-            assertEquals("hello", somemethod.invoke(somethingelse.newInstance(), null));
+            Method somemethod = somethingelse.getMethod("message");
+            assertEquals("hello", somemethod.invoke(somethingelse.newInstance()));
             // Now try turning off m1 and make sure m2 goes away quietly.
             assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2, m1}), mgr.simulateDisable(Collections.singleton(m1)));
             installer.clear();
@@ -285,7 +288,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testEagerPlusAutoload() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -312,8 +315,8 @@ public class ModuleManagerTest extends SetupHid {
                 Arrays.asList(new Module[] {m1, m2, m3}),
             }), installer.args);
             Class somethingelseagain = Class.forName("org.baz.SomethingElseAgain", true, m3.getClassLoader());
-            Method somemethod = somethingelseagain.getMethod("doit", null);
-            assertEquals("hello", somemethod.invoke(somethingelseagain.newInstance(), null));
+            Method somemethod = somethingelseagain.getMethod("doit");
+            assertEquals("hello", somemethod.invoke(somethingelseagain.newInstance()));
             assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m3, m2, m1}), mgr.simulateDisable(Collections.singleton(m2)));
             installer.clear();
             mgr.disable(Collections.singleton(m2));
@@ -333,7 +336,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     /** Test scenario from #22536: when a normal module and an eager module
      * both depend on the autoload, the eager & autoload modules should
      * always be on, regardless of the normal module.
@@ -367,7 +370,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testEagerEnabledImmediately() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -403,7 +406,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testCyclic() throws Exception {
         // Cf. #12014.
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -414,7 +417,7 @@ public class ModuleManagerTest extends SetupHid {
             Module cyc1 = mgr.create(new File(jars, "cyclic-1.jar"), null, false, false, false);
             Module cyc2 = mgr.create(new File(jars, "cyclic-2.jar"), null, false, false, false);
             Module cycd = mgr.create(new File(jars, "depends-on-cyclic-1.jar"), null, false, false, false);
-            Set circular = new HashSet(Arrays.asList(new Module[] {cyc1, cyc2, cycd}));
+            Set<Module> circular = new HashSet<Module>(Arrays.asList(new Module[] {cyc1, cyc2, cycd}));
             assertEquals("correct result of simulateEnable", Collections.EMPTY_LIST, mgr.simulateEnable(circular));
             assertEquals("cyc1 problems include cyc2", cyc1.getDependencies(), cyc1.getProblems());
             assertEquals("cyc2 problems include cyc1", cyc2.getDependencies(), cyc2.getProblems());
@@ -433,23 +436,23 @@ public class ModuleManagerTest extends SetupHid {
         try {
             Module cyc1 = mgr.create(new File(jars, "cyclic-1.jar"), null, false, false, false);
             Module cyc2 = mgr.create(new File(jars, "cyclic-2.jar"), null, false, false, false);
-            
+
             String impl1 = cyc1.getImplementationVersion ();
             String impl2 = cyc2.getImplementationVersion ();
             String bld1 = cyc1.getBuildVersion ();
             String bld2 = cyc2.getBuildVersion ();
-            
+
             assertEquals (
                 "cyc1 does not define build version and thus it is same as impl",
                 impl1, bld1
             );
-            
+
             assertEquals (
                 "cyc2 does define build version",
                 "this_line_is_here_due_to_yarda",
                 bld2
             );
-            
+
             assertTrue ("Impl and build versions are not same",
                 !bld2.equals (impl2)
             );
@@ -457,7 +460,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testLookup() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -476,17 +479,17 @@ public class ModuleManagerTest extends SetupHid {
         assertTrue(random == m1 || random == m2);
         random = l.lookup(Module.class);
         assertTrue(random == m1 || random == m2);
-        Lookup.Result resultAll = l.lookupResult(ModuleInfo.class);
-        assertEquals("finding all instances works", new HashSet(Arrays.asList(new Module[] {m1, m2})), new HashSet(resultAll.allInstances()));
-        Lookup.Result resultInstance2 = l.lookup(new Lookup.Template(null, null, m2));
-        assertEquals("finding one specific instance works", Collections.singleton(m2), new HashSet(resultInstance2.allInstances()));
-        Collection items = resultInstance2.allItems();
+        Lookup.Result<ModuleInfo> resultAll = l.lookupResult(ModuleInfo.class);
+        assertEquals("finding all instances works", new HashSet<Module>(Arrays.asList(new Module[] {m1, m2})), new HashSet<ModuleInfo>(resultAll.allInstances()));
+        Lookup.Result<Module> resultInstance2 = l.lookup(new Lookup.Template<Module>(null, null, m2));
+        assertEquals("finding one specific instance works", Collections.singleton(m2), new HashSet<Module>(resultInstance2.allInstances()));
+        Collection<? extends Lookup.Item<Module>> items = resultInstance2.allItems();
         assertTrue(items.size() == 1);
-        Lookup.Item item = (Lookup.Item)items.iterator().next();
+        Lookup.Item<Module> item = items.iterator().next();
         assertEquals(m2, item.getInstance());
         Util.err.info("Item ID: " + item.getId());
         assertTrue("Item class is OK: " + item.getType(), item.getType().isAssignableFrom(Module.class));
-        assertEquals("finding by ID works", Collections.singleton(m2), new HashSet(l.lookup(new Lookup.Template(null, item.getId(), null)).allInstances()));
+        assertEquals("finding by ID works", Collections.singleton(m2), new HashSet<Module>(l.lookup(new Lookup.Template<Module>(null, item.getId(), null)).allInstances()));
         final boolean[] waiter = new boolean[] {false};
         resultAll.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent lev) {
@@ -505,7 +508,7 @@ public class ModuleManagerTest extends SetupHid {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        assertEquals("results changed", new HashSet(Arrays.asList(new Module[] {m1, m3})), new HashSet(resultAll.allInstances()));
+        assertEquals("results changed", new HashSet<ModuleInfo>(Arrays.asList(new Module[] {m1, m3})), new HashSet<ModuleInfo>(resultAll.allInstances()));
         synchronized (waiter) {
             if (! waiter[0]) {
                 waiter.wait(5000);
@@ -513,7 +516,7 @@ public class ModuleManagerTest extends SetupHid {
         }
         assertTrue("got lookup changes within 5 seconds", waiter[0]);
     }
-    
+
     /** Test that after deletion of a module, problems cache is cleared. */
     public void test14561() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -523,7 +526,7 @@ public class ModuleManagerTest extends SetupHid {
         try {
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, false);
-            Set m1AndM2 = new HashSet(Arrays.asList(new Module[] {m1, m2}));
+            Set<Module> m1AndM2 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
             mgr.enable(m1AndM2);
             mgr.disable(m1AndM2);
             assertEquals(Collections.EMPTY_SET, m2.getProblems());
@@ -534,7 +537,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     /** Test that PROP_PROBLEMS is fired reliably after unexpected problems. */
     public void test14560() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -550,7 +553,7 @@ public class ModuleManagerTest extends SetupHid {
             m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, false);
             m2.addPropertyChangeListener(listener);
             installer.delinquents.add(m1);
-            Set m1AndM2 = new HashSet(Arrays.asList(new Module[] {m1, m2}));
+            Set<Module> m1AndM2 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
             try {
                 mgr.enable(m1AndM2);
             } catch (InvalidException ie) {
@@ -562,7 +565,7 @@ public class ModuleManagerTest extends SetupHid {
         }
         assertTrue("Got PROP_PROBLEMS on m1", listener.waitForChange(m1, Module.PROP_PROBLEMS));
     }
-    
+
     // #14705: make sure package loading is tested
     public void testPackageLoading() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -594,7 +597,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     private void tryEnablingModule(ModuleManager mgr, String name) throws Exception {
         Module m = mgr.create(new File(jars, name), null, false, false, false);
         try {
@@ -604,7 +607,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.delete(m);
         }
     }
-    
+
     private void failToEnableModule(ModuleManager mgr, String name) throws Exception {
         try {
             tryEnablingModule(mgr, name);
@@ -613,7 +616,7 @@ public class ModuleManagerTest extends SetupHid {
             // Fine, expected.
         }
     }
-    
+
     public void testPackageDependencyMayfail() throws Exception {
         //see #63904:
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -628,24 +631,24 @@ public class ModuleManagerTest extends SetupHid {
             } finally {
                 jf.close();
             }
-            
+
             Module toFail = mgr.create(new File(jars, "fails-on-non-existing-package.jar"), null, false, false, false);
             Module fixed  = mgr.createFixed(mani, null, this.getClass().getClassLoader());
-            
+
             try {
-                mgr.enable(new HashSet(Arrays.asList(new Object[] {toFail, fixed})));
+                mgr.enable(new HashSet<Module>(Arrays.asList(new Module[] {toFail, fixed})));
                 fail("Was able to turn on fails-on-non-existing-package.jar without complaint");
             } catch (InvalidException e) {
                 assertTrue("fails-on-non-existing-package.jar was not enabled", e.getModule() == toFail);
             }
-            
+
             assertTrue("simple-module.jar was enabled", fixed.isEnabled());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
-    
+
+
     // #12549: check that loading of localized manifest attributes works.
     public void testLocalizedManifestAttributes() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -691,7 +694,7 @@ public class ModuleManagerTest extends SetupHid {
             Locale.setDefault(starting);
         }
     }
-    
+
     // #19698: check that it also works when the module is enabled (above, module was disabled).
     public void testLocalizedManifestAttributesWhileEnabled() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -739,7 +742,7 @@ public class ModuleManagerTest extends SetupHid {
             Locale.setDefault(starting);
         }
     }
-    
+
     // There was also a bug that loc mani attrs were not recognized for classpath modules.
     public void testLocalizedManifestAttributesClasspath() throws Exception {
         File jar = new File(jars, "localized-manifest.jar");
@@ -807,7 +810,7 @@ public class ModuleManagerTest extends SetupHid {
             Locale.setDefault(starting);
         }
     }
-    
+
     // #9273: test that modules/patches/<<code-name-dashes>>/*.jar function as patches
     public void testModulePatches() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -825,7 +828,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testSimpleProvReq() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -838,22 +841,22 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
             assertEquals(Collections.EMPTY_SET, m1.getDependencies());
             assertEquals(Dependency.create(Dependency.TYPE_REQUIRES, "foo"), m2.getDependencies());
-            Map modulesByName = new HashMap();
+            Map<String,Module> modulesByName = new HashMap<String,Module>();
             modulesByName.put(m1.getCodeNameBase(), m1);
             modulesByName.put(m2.getCodeNameBase(), m2);
-            Map providersOf = new HashMap();
+            Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
             providersOf.put("foo", Collections.singleton(m1));
-            List m1m2 = Arrays.asList(new Module[] {m1, m2});
-            List m2m1 = Arrays.asList(new Module[] {m2, m1});
-            Map deps = Util.moduleDependencies(m1m2, modulesByName, providersOf);
+            List<Module> m1m2 = Arrays.asList(new Module[] {m1, m2});
+            List<Module> m2m1 = Arrays.asList(new Module[] {m2, m1});
+            Map<Module,List<Module>> deps = Util.moduleDependencies(m1m2, modulesByName, providersOf);
             assertNull(deps.get(m1));
             assertEquals(Collections.singletonList(m1), deps.get(m2));
             assertEquals(m2m1, Utilities.topologicalSort(m1m2, deps));
             assertEquals(m2m1, Utilities.topologicalSort(m2m1, deps));
-            Set m1PlusM2 = new HashSet(); // Set<Module>
+            Set<Module> m1PlusM2 = new HashSet<Module>();
             m1PlusM2.add(m1);
             m1PlusM2.add(m2);
-            List toEnable = mgr.simulateEnable(m1PlusM2);
+            List<Module> toEnable = mgr.simulateEnable(m1PlusM2);
             assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m1, m2}), toEnable);
             toEnable = mgr.simulateEnable(Collections.singleton(m2));
             assertEquals("correct result of simulateEnable #2", Arrays.asList(new Module[] {m1, m2}), toEnable);
@@ -876,7 +879,7 @@ public class ModuleManagerTest extends SetupHid {
                 // OK, good.
             }
             installer.clear();
-            List toDisable = mgr.simulateDisable(Collections.singleton(m1));
+            List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m1));
             assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2, m1}), toDisable);
             toDisable = mgr.simulateDisable(m1PlusM2);
             assertEquals("correct result of simulateDisable #2", Arrays.asList(new Module[] {m2, m1}), toDisable);
@@ -897,7 +900,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testProvReqCycles() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -914,7 +917,7 @@ public class ModuleManagerTest extends SetupHid {
                 m2.getProblems());
             assertEquals("neither m1 nor m2 can be installed",
                 Collections.EMPTY_LIST,
-                    mgr.simulateEnable(new HashSet(Arrays.asList(new Module[] {m1, m2}))));
+                    mgr.simulateEnable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}))));
             mgr.delete(m2);
             Module m3 = mgr.create(new File(jars, "prov-bar-dep-cyclic.jar"), null, false, false, false);
             assertEquals("m1 cannot be installed because of m3",
@@ -925,7 +928,7 @@ public class ModuleManagerTest extends SetupHid {
                 m3.getProblems());
             assertEquals("neither m1 nor m3 can be installed",
                 Collections.EMPTY_LIST,
-                    mgr.simulateEnable(new HashSet(Arrays.asList(new Module[] {m1, m3}))));
+                    mgr.simulateEnable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m3}))));
             m2 = mgr.create(new File(jars, "prov-bar-req-foo.jar"), null, false, false, false);
             assertEquals("m2 cannot be installed because of m1",
                 Dependency.create(Dependency.TYPE_REQUIRES, "foo"),
@@ -941,7 +944,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testMultipleProvs() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -951,16 +954,16 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.create(new File(jars, "prov-foo.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "prov-foo-bar.jar"), null, false, false, false);
             Module m3 = mgr.create(new File(jars, "req-foo.jar"), null, false, false, false);
-            Set m123 = new HashSet(Arrays.asList(new Module[] {m1, m2, m3}));
-            List toEnable = mgr.simulateEnable(Collections.singleton(m3));
+            Set<Module> m123 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3}));
+            List<Module> toEnable = mgr.simulateEnable(Collections.singleton(m3));
             // Note order of first two items in toEnable is indeterminate.
-            assertEquals("From start, turn on all providers", m123, new HashSet(toEnable));
+            assertEquals("From start, turn on all providers", m123, new HashSet<Module>(toEnable));
             assertEquals("m3 last", m3, toEnable.get(2));
-            assertEquals("Could request them all together too", m123, new HashSet(mgr.simulateEnable(m123)));
-            List m13 = Arrays.asList(new Module[] {m1, m3});
-            assertEquals("Or just m1 + m3", m13, mgr.simulateEnable(new HashSet(m13)));
-            List m23 = Arrays.asList(new Module[] {m2, m3});
-            assertEquals("Or just m2 + m3", m23, mgr.simulateEnable(new HashSet(m23)));
+            assertEquals("Could request them all together too", m123, new HashSet<Module>(mgr.simulateEnable(m123)));
+            List<Module> m13 = Arrays.asList(new Module[] {m1, m3});
+            assertEquals("Or just m1 + m3", m13, mgr.simulateEnable(new HashSet<Module>(m13)));
+            List<Module> m23 = Arrays.asList(new Module[] {m2, m3});
+            assertEquals("Or just m2 + m3", m23, mgr.simulateEnable(new HashSet<Module>(m23)));
             mgr.enable(m123);
             assertTrue(m1.isEnabled());
             assertTrue(m2.isEnabled());
@@ -968,19 +971,19 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals("Can turn off one provider",
                 Collections.singletonList(m1),
                 mgr.simulateDisable(Collections.singleton(m1)));
-            Set m12 = new HashSet(Arrays.asList(new Module[] {m1, m2}));
+            Set<Module> m12 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
             assertEquals("Can't turn off both providers",
                 m123,
-                new HashSet(mgr.simulateDisable(m12)));
+                new HashSet<Module>(mgr.simulateDisable(m12)));
             mgr.disable(m1);
             assertFalse(m1.isEnabled());
             assertTrue(m2.isEnabled());
             assertTrue(m3.isEnabled());
-            List m32 = Arrays.asList(new Module[] {m3, m2});
+            List<Module> m32 = Arrays.asList(new Module[] {m3, m2});
             assertEquals("Can't turn off last provider",
                 m32,
                 mgr.simulateDisable(Collections.singleton(m2)));
-            mgr.disable(new HashSet(m32));
+            mgr.disable(new HashSet<Module>(m32));
             assertFalse(m1.isEnabled());
             assertFalse(m2.isEnabled());
             assertFalse(m3.isEnabled());
@@ -988,7 +991,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testProvReqUnsatisfiable() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1001,15 +1004,15 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             assertEquals(Collections.EMPTY_SET, m3.getProblems());
             assertEquals(Dependency.create(Dependency.TYPE_REQUIRES, "bar"), m2.getProblems());
-            List m13 = Arrays.asList(new Module[] {m1, m3});
+            List<Module> m13 = Arrays.asList(new Module[] {m1, m3});
             assertEquals(m13, mgr.simulateEnable(Collections.singleton(m3)));
-            mgr.enable(new HashSet(m13));
+            mgr.enable(new HashSet<Module>(m13));
             assertTrue(m1.isEnabled());
             assertFalse(m2.isEnabled());
             assertTrue(m3.isEnabled());
             Module m4 = mgr.create(new File(jars, "prov-foo-bar.jar"), null, false, false, false);
             assertEquals(Collections.EMPTY_SET, m2.getProblems());
-            mgr.disable(new HashSet(m13));
+            mgr.disable(new HashSet<Module>(m13));
             assertFalse(m3.isEnabled());
             List toEnable = mgr.simulateEnable(Collections.singleton(m3));
             assertEquals(4, toEnable.size());
@@ -1019,7 +1022,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testMultipleReqs() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1029,8 +1032,8 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.create(new File(jars, "prov-foo.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "prov-baz.jar"), null, false, false, false);
             Module m3 = mgr.create(new File(jars, "req-foo-baz.jar"), null, false, false, false);
-            Set m123 = new HashSet(Arrays.asList(new Module[] {m1, m2, m3}));
-            assertEquals(m123, new HashSet(mgr.simulateEnable(Collections.singleton(m3))));
+            Set<Module> m123 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3}));
+            assertEquals(m123, new HashSet<Module>(mgr.simulateEnable(Collections.singleton(m3))));
             mgr.enable(m123);
             assertEquals(Arrays.asList(new Module[] {m3, m1}), mgr.simulateDisable(Collections.singleton(m1)));
             assertEquals(Arrays.asList(new Module[] {m3, m2}), mgr.simulateDisable(Collections.singleton(m2)));
@@ -1038,7 +1041,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testEagerReq() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1052,9 +1055,9 @@ public class ModuleManagerTest extends SetupHid {
                 mgr.simulateEnable(Collections.singleton(m1)));
             assertEquals(Collections.singletonList(m2),
                 mgr.simulateEnable(Collections.singleton(m2)));
-            Set m12 = new HashSet(Arrays.asList(new Module[] {m1, m2}));
-            Set m123 = new HashSet(Arrays.asList(new Module[] {m1, m2, m3}));
-            assertEquals(m123, new HashSet(mgr.simulateEnable(m12)));
+            Set<Module> m12 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
+            Set<Module> m123 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3}));
+            assertEquals(m123, new HashSet<Module>(mgr.simulateEnable(m12)));
             mgr.enable(m12);
             assertTrue(m3.isEnabled());
             assertEquals(Arrays.asList(new Module[] {m3, m1}),
@@ -1062,14 +1065,14 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals(Arrays.asList(new Module[] {m3, m2}),
                 mgr.simulateDisable(Collections.singleton(m2)));
             assertEquals(m123,
-                new HashSet(mgr.simulateDisable(m12)));
+                new HashSet<Module>(mgr.simulateDisable(m12)));
             mgr.disable(m12);
             assertFalse(m3.isEnabled());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testAutoloadProv() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1090,7 +1093,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testWeirdRecursion() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1102,13 +1105,13 @@ public class ModuleManagerTest extends SetupHid {
             Module m3 = mgr.create(new File(jars, "prov-foo-bar.jar"), null, false, false, false);
             Module m4 = mgr.create(new File(jars, "prov-foo-req-bar.jar"), null, false, false, true);
             assertEquals("m2 should not be enabled - m4 might ask for it but m3 already has bar",
-                new HashSet(Arrays.asList(new Module[] {m3, m4})),
-                new HashSet(mgr.simulateEnable(Collections.singleton(m3))));
+                new HashSet<Module>(Arrays.asList(new Module[] {m3, m4})),
+                new HashSet<Module>(mgr.simulateEnable(Collections.singleton(m3))));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testLackOfOrderSensitivity() throws Exception {
         String[] moduleNames = new String[] {
             "simple-module.jar",
@@ -1123,13 +1126,13 @@ public class ModuleManagerTest extends SetupHid {
             "prov-foo-req-bar.jar",
         };
         // Never make any of the following eager:
-        Set noDepsNames = new HashSet(Arrays.asList(new String[] {
+        Set<String> noDepsNames = new HashSet<String>(Arrays.asList(new String[] {
             "simple-module.jar",
             "prov-foo.jar",
             "prov-baz.jar",
             "prov-foo-bar.jar",
         }));
-        List freeModules = new ArrayList(Arrays.asList(moduleNames));
+        List<String> freeModules = new ArrayList<String>(Arrays.asList(moduleNames));
         int count = 100; // # of things to do in order
         Random r = new Random(count * 17 + 113);
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -1172,16 +1175,14 @@ public class ModuleManagerTest extends SetupHid {
                 case 5:
                 case 6:
                     Util.err.info("Remove a disabled module");
-                    List disabled = new ArrayList(moduleNames.length);
-                    Iterator it = mgr.getModules().iterator();
-                    while (it.hasNext()) {
-                        Module m = (Module)it.next();
+                    List<Module> disabled = new ArrayList<Module>(moduleNames.length);
+                    for (Module m : mgr.getModules()) {
                         if (!m.isEnabled()) {
                             disabled.add(m);
                         }
                     }
                     if (!disabled.isEmpty()) {
-                        Module m = (Module)disabled.get(r.nextInt(disabled.size()));
+                        Module m = disabled.get(r.nextInt(disabled.size()));
                         mgr.delete(m);
                         freeModules.add(m.getJarFile().getName());
                         i++;
@@ -1190,30 +1191,28 @@ public class ModuleManagerTest extends SetupHid {
                 case 7:
                 case 8:
                     Util.err.info("Enable some set of modules");
-                    List candidates = new ArrayList(moduleNames.length);
-                    it = mgr.getModules().iterator();
-                    while (it.hasNext()) {
-                        Module m = (Module)it.next();
+                    List<Module> candidates = new ArrayList<Module>(moduleNames.length);
+                    for (Module m : mgr.getModules()) {
                         if (!m.isEnabled() && !m.isAutoload() && !m.isEager() && r.nextBoolean()) {
                             candidates.add(m);
                         }
                     }
                     if (!candidates.isEmpty()) {
                         Collections.shuffle(candidates, r);
-                        Set candidatesSet = new LinkedHashSet(candidates);
-                        assertEquals("OrderPreservingSet works", candidates, new ArrayList(candidatesSet));
+                        Set<Module> candidatesSet = new LinkedHashSet<Module>(candidates);
+                        assertEquals("OrderPreservingSet works", candidates, new ArrayList<Module>(candidatesSet));
                         //dumpState(mgr);
                         //System.err.println("will try to enable: " + candidates);
-                        List toEnable1 = mgr.simulateEnable(candidatesSet);
+                        List<Module> toEnable1 = mgr.simulateEnable(candidatesSet);
                         //System.err.println("Enabling  " + candidates + " ->\n          " + toEnable1);
                         Collections.shuffle(candidates, r);
-                        List toEnable2 = mgr.simulateEnable(new LinkedHashSet(candidates));
-                        Set s1 = new HashSet(toEnable1);
-                        Set s2 = new HashSet(toEnable2);
+                        List<Module> toEnable2 = mgr.simulateEnable(new LinkedHashSet<Module>(candidates));
+                        Set<Module> s1 = new HashSet<Module>(toEnable1);
+                        Set<Module> s2 = new HashSet<Module>(toEnable2);
                         assertEquals("Order preserved", s1, s2);
-                        it = s1.iterator();
+                        Iterator<Module> it = s1.iterator();
                         while (it.hasNext()) {
-                            Module m = (Module)it.next();
+                            Module m = it.next();
                             if (m.isAutoload() || m.isEager()) {
                                 it.remove();
                             }
@@ -1225,10 +1224,8 @@ public class ModuleManagerTest extends SetupHid {
                 case 9:
                 case 10:
                     Util.err.info("Disable some set of modules");
-                    candidates = new ArrayList(moduleNames.length);
-                    it = mgr.getModules().iterator();
-                    while (it.hasNext()) {
-                        Module m = (Module)it.next();
+                    candidates = new ArrayList<Module>(moduleNames.length);
+                    for (Module m : mgr.getModules()) {
                         if (m.isEnabled() && !m.isAutoload() && !m.isEager() && r.nextBoolean()) {
                             candidates.add(m);
                         }
@@ -1236,17 +1233,17 @@ public class ModuleManagerTest extends SetupHid {
                     if (!candidates.isEmpty()) {
                         Collections.shuffle(candidates, r);
                         //dumpState(mgr);
-                        List toDisable1 = mgr.simulateDisable(new LinkedHashSet(candidates));
+                        List<Module> toDisable1 = mgr.simulateDisable(new LinkedHashSet<Module>(candidates));
                         //System.err.println("Disabling " + candidates + " ->\n          " + toDisable1);
                         Collections.shuffle(candidates, r);
                         //System.err.println("candidates #2: " + candidates);
-                        List toDisable2 = mgr.simulateDisable(new LinkedHashSet(candidates));
-                        Set s1 = new HashSet(toDisable1);
-                        Set s2 = new HashSet(toDisable2);
+                        List<Module> toDisable2 = mgr.simulateDisable(new LinkedHashSet<Module>(candidates));
+                        Set<Module> s1 = new HashSet<Module>(toDisable1);
+                        Set<Module> s2 = new HashSet<Module>(toDisable2);
                         assertEquals("Order preserved", s1, s2);
-                        it = s1.iterator();
+                        Iterator<Module> it = s1.iterator();
                         while (it.hasNext()) {
-                            Module m = (Module)it.next();
+                            Module m = it.next();
                             if (m.isAutoload() || m.isEager()) {
                                 it.remove();
                             }
@@ -1288,7 +1285,7 @@ public class ModuleManagerTest extends SetupHid {
         System.err.println();
     }
      */
-    
+
     public void testRelVersRanges() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1312,10 +1309,10 @@ public class ModuleManagerTest extends SetupHid {
             for (int i = 0; i < deps.length; i++) {
                 deps[i] = mgr.create(new File(jars, depNames[i]), null, false, false, false);
             }
-            Set all = new HashSet();
+            Set<Module> all = new HashSet<Module>();
             all.add(base);
             all.addAll(Arrays.asList(deps));
-            Set ok = new HashSet();
+            Set<Module> ok = new HashSet<Module>();
             ok.add(base);
             // 0 - too early
             ok.add(deps[1]);
@@ -1327,12 +1324,12 @@ public class ModuleManagerTest extends SetupHid {
             // 7 - too late
             // 8 - too late
             // 9 - must give some rel vers, else ~ -1
-            assertEquals(ok, new HashSet(mgr.simulateEnable(all)));
+            assertEquals(ok, new HashSet<Module>(mgr.simulateEnable(all)));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testDisableAgainstRelVersRange() throws Exception {
         // #41449: org.openidex.util/3 disabled improperly when disable module w/ dep on org.openide.util/2-3
         FakeModuleInstaller installer = new FakeModuleInstaller();
@@ -1343,14 +1340,14 @@ public class ModuleManagerTest extends SetupHid {
             Module base = mgr.create(new File(jars, "rel-ver-2.jar"), null, false, true, false);
             Module dep1 = mgr.create(new File(jars, "dep-on-relvertest-2.jar"), null, false, false, false);
             Module dep2 = mgr.create(new File(jars, "dep-on-relvertest-1-2-nospec.jar"), null, false, false, false);
-            Set/*<Module>*/ all = new HashSet();
+            Set<Module> all = new HashSet<Module>();
             all.add(dep1);
             all.add(dep2);
             mgr.enable(all);
             all.add(base);
             assertEquals("turn on autoload w/ both deps OK", all, mgr.getEnabledModules());
-            Set/*<Module>*/ dep2only = Collections.singleton(dep2);
-            assertEquals("intend to disable only dep2", dep2only, new HashSet(mgr.simulateDisable(dep2only)));
+            Set<Module> dep2only = Collections.singleton(dep2);
+            assertEquals("intend to disable only dep2", dep2only, new HashSet<Module>(mgr.simulateDisable(dep2only)));
             mgr.disable(dep2only);
             all.remove(dep2);
             assertEquals("removed just dep2, not autoload used by dep1", all, mgr.getEnabledModules());
@@ -1360,7 +1357,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     /** Test #21114: after deleting a module, its JARs are released.
      * Would probably always pass on Unix, but on Windows it matters.
      */
@@ -1368,11 +1365,11 @@ public class ModuleManagerTest extends SetupHid {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
-        
+
         clearWorkDir();
         File jar = new File(getWorkDir(), "copy-of-simple-module.jar");
         copy(new File(jars, "simple-module.jar"), jar);
-        
+
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             Module m = mgr.create(jar, null, false, false, false);
@@ -1384,25 +1381,25 @@ public class ModuleManagerTest extends SetupHid {
             uc.connect();
             mgr.disable(m);
             mgr.delete(m);
-            
-            WeakReference refC = new WeakReference (c);
-            WeakReference refU = new WeakReference (u);
-            WeakReference refUC = new WeakReference (uc);
-            
+
+            WeakReference<Class> refC = new WeakReference<Class>(c);
+            WeakReference<URL> refU = new WeakReference<URL>(u);
+            WeakReference<URLConnection> refUC = new WeakReference<URLConnection>(uc);
+
             c = null;
             u = null;
             uc = null;
-            
+
             assertGC ("Module class can go away", refC);
             assertGC ("Module url", refU);
             assertGC ("Module connection ", refUC);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        
+
         assertTrue("could delete JAR file", jar.delete());
     }
-    
+
     /** Test #20663: the context classloader is set on all threads
      * according to the system classloader.
      */
@@ -1512,7 +1509,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     /** Make sure classloaders do not overlap.
      * @see "#24996"
      */
@@ -1542,12 +1539,12 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.createFixed(mani1, null, l);
             Module m2 = mgr.createFixed(mani2, null, l);
             Module m3 = mgr.create(j3, null, false, false, false);
-            mgr.enable(new HashSet(Arrays.asList(new Module[] {m1, m2, m3})));
+            mgr.enable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3})));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     /** Test exporting selected packages to clients.
      * @see "#19621"
      */
@@ -1655,7 +1652,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     /** Test that package exports, and package/classloader use generally, is not
      * transitively exported from modules - that you need to declare an explicit
      * module dependency on every module from which you expect to load classes
@@ -1675,7 +1672,7 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals("uses-and-exports-api.jar had no problems", Collections.EMPTY_SET, m2.getProblems());
             assertEquals("uses-api-transitively.jar had no problems", Collections.EMPTY_SET, m3.getProblems());
             assertEquals("uses-api-directly.jar had no problems", Collections.EMPTY_SET, m4.getProblems());
-            mgr.enable(new HashSet(Arrays.asList(new Module[] {m1, m2, m3, m4})));
+            mgr.enable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3, m4})));
             m4.getClassLoader().loadClass("usesapitrans.UsesDirectAPI").newInstance();
             m4.getClassLoader().loadClass("usesapitrans.UsesIndirectAPI").newInstance();
             m3.getClassLoader().loadClass("usesapitrans.UsesDirectAPI").newInstance();
@@ -1683,7 +1680,7 @@ public class ModuleManagerTest extends SetupHid {
                 m3.getClassLoader().loadClass("usesapitrans.UsesIndirectAPI").newInstance();
                 fail("Should not be able to use a transitive API class with no direct dependency");
             } catch (NoClassDefFoundError e) {}
-            mgr.disable(new HashSet(Arrays.asList(new Module[] {m1, m2, m3, m4})));
+            mgr.disable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3, m4})));
             mgr.delete(m4);
             mgr.delete(m3);
             mgr.delete(m2);
@@ -1707,7 +1704,7 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals("uses-and-exports-api.jar had no problems", Collections.EMPTY_SET, m3.getProblems());
             assertEquals("uses-api-directly.jar had no problems", Collections.EMPTY_SET, m4.getProblems());
             assertEquals("uses-api-impl-dep-for-friends.jar had no problems", Collections.EMPTY_SET, m5.getProblems());
-            mgr.enable(new HashSet(Arrays.asList(new Module[] {m1, m2, m3, m4, m5})));
+            mgr.enable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3, m4, m5})));
             m2.getClassLoader().loadClass("usesapi.UsesPublicClass").newInstance();
             try {
                 m2.getClassLoader().loadClass("usesapi.UsesImplClass").newInstance();
@@ -1715,7 +1712,7 @@ public class ModuleManagerTest extends SetupHid {
             } catch (NoClassDefFoundError ex) {
                 // ok
             }
-            
+
             try {
                 m4.getClassLoader().loadClass("usesapi.UsesPublicClass").newInstance();
                 fail ("m4 is not friend and should not be allowed to load the class");
@@ -1738,8 +1735,8 @@ public class ModuleManagerTest extends SetupHid {
             } catch (NoClassDefFoundError e) {
                 fail("m5 has an implementation dependency and has not been allowed to load the imlpementation class");
             }
-            
-            mgr.disable(new HashSet(Arrays.asList(new Module[] {m1, m2, m3, m4, m5})));
+
+            mgr.disable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3, m4, m5})));
             mgr.delete(m5);
             mgr.delete(m4);
             mgr.delete(m3);
@@ -1749,7 +1746,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     public void testModuleInterdependencies() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1759,8 +1756,8 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, false);
             Module m3 = mgr.create(new File(jars, "dep-on-dep-on-simple.jar"), null, false, false, false);
-            Set m1m2 = new HashSet(Arrays.asList(new Module[] {m1, m2}));
-            Set m2m3 = new HashSet(Arrays.asList(new Module[] {m2, m3}));
+            Set<Module> m1m2 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
+            Set<Module> m2m3 = new HashSet<Module>(Arrays.asList(new Module[] {m2, m3}));
             assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m1, false, false));
             assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m1, false, true));
             assertEquals(Collections.singleton(m2), mgr.getModuleInterdependencies(m1, true, false));
@@ -1778,11 +1775,11 @@ public class ModuleManagerTest extends SetupHid {
             m3 = mgr.create(new File(jars, "req-foo.jar"), null, false, false, false);
             Module m4 = mgr.create(new File(jars, "prov-baz.jar"), null, false, false, false);
             Module m5 = mgr.create(new File(jars, "req-foo-baz.jar"), null, false, false, false);
-            m1m2 = new HashSet(Arrays.asList(new Module[] {m1, m2}));
+            m1m2 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
             assertEquals(m1m2, mgr.getModuleInterdependencies(m3, false, true));
-            Set m1m2m4 = new HashSet(Arrays.asList(new Module[] {m1, m2, m4}));
+            Set<Module> m1m2m4 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m4}));
             assertEquals(m1m2m4, mgr.getModuleInterdependencies(m5, false, true));
-            Set m3m5 = new HashSet(Arrays.asList(new Module[] {m3, m5}));
+            Set<Module> m3m5 = new HashSet<Module>(Arrays.asList(new Module[] {m3, m5}));
             assertEquals(m3m5, mgr.getModuleInterdependencies(m1, true, true));
             // XXX could do more...
         } finally {
@@ -1799,7 +1796,7 @@ public class ModuleManagerTest extends SetupHid {
     public void testModuleManagerClassLoaderWasNotReadyWhenTheChangeWasFiredIssue() throws Exception {
         doModuleClassLoaderWasNotReadyWhenTheChangeWasFiredIssue (3);
     }
-    
+
     private void doModuleClassLoaderWasNotReadyWhenTheChangeWasFiredIssue (final int typeOfClassLoader) throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1807,11 +1804,11 @@ public class ModuleManagerTest extends SetupHid {
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             final Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, false, false);
-            
+
             class L implements java.beans.PropertyChangeListener {
                 ClassLoader l;
                 IllegalStateException ex;
-                
+
                 public void propertyChange (java.beans.PropertyChangeEvent event) {
                     if (m1.PROP_ENABLED.equals (event.getPropertyName ())) {
                         try {
@@ -1821,7 +1818,7 @@ public class ModuleManagerTest extends SetupHid {
                         }
                     }
                 }
-                
+
                 public ClassLoader get () {
                     switch (typeOfClassLoader) {
                         case 1: return m1.getClassLoader ();
@@ -1834,19 +1831,46 @@ public class ModuleManagerTest extends SetupHid {
             }
             L l = new L ();
             m1.addPropertyChangeListener (l);
-            
+
             mgr.enable (m1);
-            
+
             assertTrue ("Successfully enabled", m1.isEnabled ());
             assertEquals ("Classloader at the time of PROP_ENABLED is the same as now", l.get (), l.l);
             assertNull ("No exception thrown", l.ex);
             System.out.println("L: " + l.l);
             m1.removePropertyChangeListener (l);
-            
+
             mgr.disable (m1);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
+    /** @see "#76917" */
+    public void testProblemsStillCorrectWithHardAndSoftMixture() throws Exception {
+        File m1j = new File(getWorkDir(), "m1.jar");
+        createJar(m1j, Collections.<String,String>emptyMap(), Collections.singletonMap("OpenIDE-Module", "m1"));
+        File m2j = new File(getWorkDir(), "m2.jar");
+        Map<String,String> mani = new HashMap<String,String>();
+        mani.put("OpenIDE-Module", "m2");
+        mani.put("OpenIDE-Module-Module-Dependencies", "m1");
+        mani.put("OpenIDE-Module-Java-Dependencies", "Java > 2046");
+        createJar(m2j, Collections.<String,String>emptyMap(), mani);
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m2 = mgr.create(m2j, null, false, false, false);
+            assertEquals("initially m2 has two problems: Java and m1", 2, m2.getProblems().size());
+            Module m1 = mgr.create(m1j, null, false, false, false);
+            assertEquals("m1 has no problems", Collections.emptySet(), m1.getProblems());
+            assertEquals("now m2 should have just one problem: Java", 1, m2.getProblems().size());
+            Dependency d = (Dependency) m2.getProblems().iterator().next();
+            assertEquals(Dependency.TYPE_JAVA, d.getType());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
 }
