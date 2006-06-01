@@ -13,6 +13,7 @@
 package org.netbeans.api.visual.widget;
 
 import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.api.visual.animator.SceneAnimator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 public class Scene extends Widget {
 
     private double zoomFactor = 1.0;
+    private SceneAnimator sceneAnimator;
 
     private JComponent component;
     private Graphics2D graphics;
@@ -39,6 +41,7 @@ public class Scene extends Widget {
         defaultFont = Font.decode (null);
         resolveBounds (new Point (), new Rectangle ());
         setOpaque(true);
+        sceneAnimator = new SceneAnimator (this);
     }
 
     public JComponent createView () {
@@ -170,6 +173,10 @@ public class Scene extends Widget {
     public final void setZoomFactor (double zoomFactor) {
         this.zoomFactor = zoomFactor;
         revalidate ();
+    }
+
+    public SceneAnimator getSceneAnimator () {
+        return sceneAnimator;
     }
 
     public final Point convertSceneToView (Point sceneLocation) {
