@@ -507,7 +507,7 @@ public abstract class Module extends ModuleInfo {
      * resources, or failed ad-hoc dependencies. Again these are not guaranteed to be
      * reported unless an install has already been attempted and failed due to them.
      */
-    public Set getProblems() {
+    public Set getProblems() { // XXX should use Union2<Dependency,InvalidException>
         if (! isValid()) throw new IllegalStateException("Not valid: " + this); // NOI18N
         if (isEnabled()) return Collections.EMPTY_SET;
         return Collections.unmodifiableSet(mgr.missingDependencies(this));
