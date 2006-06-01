@@ -759,6 +759,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         final StyledDocument myDoc = getDocument();
+        if (myDoc == null) {
+            return;
+        }
 
         // save the document as a reader
         class SaveAsReader implements Runnable {

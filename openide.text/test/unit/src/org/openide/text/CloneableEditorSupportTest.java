@@ -165,6 +165,11 @@ implements CloneableEditorSupport.Env {
         javax.swing.JPanel panel = new javax.swing.JPanel();
         assertSame(support.wrapEditorComponent(panel), panel);
     }
+
+    public void testSaveWhenNoDocumentOpen() throws IOException {
+        modified = true;
+        support.saveDocument();
+    }
     
     private void compareStreamWithString(InputStream is, String s) throws Exception{
         int i;
