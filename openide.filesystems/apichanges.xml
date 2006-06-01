@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
                 </p>
             </description>
             <class package="org.openide.filesystems" name="XMLFileSystem"/>
-            <issue 
+            <issue number="76692"/>
         </change>        
         <change id="added-FileObject-getOutputStream-without-FileLock-parameter">
             <api name="filesystems"/>
