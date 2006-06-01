@@ -190,7 +190,15 @@ public final class NamingFactory {
 
         if (retVal == null /*&& new FileInfo(f).isUnixSpecialFile()*/) {
             // broken symlinks and other for me unknown files (sockets or whatever it is)
-            retVal = new FileName(parentName, f);
+            retVal = new FileName(parentName, f) {
+                public boolean isDirectory() {
+                    return false;
+                }
+
+                public boolean isFile() {
+                    return false;
+                }                
+            };
 
         }
 

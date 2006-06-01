@@ -204,7 +204,7 @@ public abstract class BaseFileObj extends FileObject {
     }
 
 
-    public final boolean isReadOnly() {
+    public boolean isReadOnly() {
         final File f = getFileName().getFile();
 
         return !f.canWrite() && f.exists();

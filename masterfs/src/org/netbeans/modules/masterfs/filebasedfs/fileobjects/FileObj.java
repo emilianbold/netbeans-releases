@@ -35,7 +35,7 @@ import org.openide.util.Enumerations;
 /**
  * @author rm111737
  */
-final class FileObj extends BaseFileObj {
+class FileObj extends BaseFileObj {
     static final long serialVersionUID = -1133540210876356809L;
     private long lastModified = -1;
     private boolean realLastModifiedCached;
@@ -46,7 +46,7 @@ final class FileObj extends BaseFileObj {
         setLastModified(System.currentTimeMillis());        
     }
     
-    public final OutputStream getOutputStream(final FileLock lock) throws IOException {
+    public OutputStream getOutputStream(final FileLock lock) throws IOException {
         final File f = getFileName().getFile();
 
         final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
@@ -82,7 +82,7 @@ final class FileObj extends BaseFileObj {
         return retVal;
     }
 
-    public final InputStream getInputStream() throws FileNotFoundException {
+    public InputStream getInputStream() throws FileNotFoundException {
         final File f = getFileName().getFile();
                         
         InputStream inputStream;

@@ -12,17 +12,21 @@
  */
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
+import java.io.ByteArrayInputStream;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import org.openide.filesystems.FileUtil;
-
+import org.openide.filesystems.FileLock;
 
 /**
  * 
@@ -81,22 +85,36 @@ public final class FileObjectFactory {
         
         if (name == null) return null;
 
-        
-        if (name.isFile()) {
+        if (name.isFile() && !name.isDirectory()) {
             assert name.getFile() != null &&  (name.getFile().isFile() || !name.getFile().isDirectory()) : name;
             final FileObj realRoot = new FileObj(file, name);
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
         
-        if (!name.isFile() || fInfo.isUNCFolder()) {            
+        if (!name.isFile() && name.isDirectory()) {            
             assert name.getFile() != null &&  (!name.getFile().isFile() || name.getFile().isDirectory()) : name;
             final FolderObj realRoot = new FolderObj(file, name);
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
 
-        if (fInfo.isUnixSpecialFile()) {
+        if (!name.isFile() && !name.isDirectory() || fInfo.isUnixSpecialFile()) {
             assert name.getFile() != null &&  (name.getFile().isFile() == name.getFile().isDirectory()) : name;            
-            final FileObj realRoot = new FileObj(file, name);
+            final FileObj realRoot = new FileObj(file, name) {
+                public InputStream getInputStream() throws FileNotFoundException {
+                    return new ByteArrayInputStream(new byte[] {});
+                }                
+                public boolean isReadOnly() {
+                    return true;
+                }               
+                
+                public OutputStream getOutputStream(final FileLock lock) throws IOException {
+                    throw new IOException(file.getAbsolutePath());
+                }                
+
+                public boolean canWrite() {
+                    return !isReadOnly();
+                }
+            };
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
 

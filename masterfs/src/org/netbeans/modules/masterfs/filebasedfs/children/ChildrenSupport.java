@@ -141,6 +141,10 @@ public final class ChildrenSupport {
             public boolean isFile() {
                 return this.getFile().isFile();
             }
+
+            public boolean isDirectory() {
+                return !isFile();
+            }            
         }
         FakeNaming fake = new FakeNaming();
         

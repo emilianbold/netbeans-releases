@@ -112,4 +112,8 @@ public class FileName implements FileNaming {
     public boolean isFile() {
         return true;
     }
+
+    public boolean isDirectory() {
+        return !isFile();
+    }
 }

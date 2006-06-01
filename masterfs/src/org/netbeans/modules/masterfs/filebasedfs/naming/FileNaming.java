@@ -28,8 +28,10 @@ public interface FileNaming {
     boolean isRoot();
     
     File getFile();
-    
+
+    //not to touch disk by getFile().isFile()...
     boolean isFile();
+    boolean isDirectory();
     
     Integer getId();
     
