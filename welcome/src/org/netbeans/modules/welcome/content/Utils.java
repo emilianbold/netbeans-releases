@@ -75,7 +75,8 @@ public class Utils {
     }
 
     static String getFontName() {
-        return Utilities.isWindows() ? "Verdana" : null; // NOI18N
+        //#75759 Verdana not supported on Japanese locale
+        return null;//Utilities.isWindows() ? "Verdana" : null; // NOI18N
     }
 
     public static Action findAction( String key ) {
