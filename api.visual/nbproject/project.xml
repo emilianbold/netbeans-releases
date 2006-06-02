@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.netbeans.api.visual.action</package>
                 <package>org.netbeans.api.visual.anchor</package>
+                <package>org.netbeans.api.visual.animator</package>
                 <package>org.netbeans.api.visual.border</package>
                 <package>org.netbeans.api.visual.graph</package>
                 <package>org.netbeans.api.visual.layout</package>
@@ -37,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.visual.util</package>
                 <package>org.netbeans.api.visual.vmd</package>
                 <package>org.netbeans.api.visual.widget</package>
+                <package>org.netbeans.api.visual.widget.general</package>
             </public-packages>
         </data>
     </configuration>
