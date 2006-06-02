@@ -195,12 +195,28 @@ public class FormModel
     }
 
     /**
-     * Returns list of all components in the model. A new List instance is created.
+     * Returns list of all components in the model. A new List instance is
+     * created. The order of the components is random.
      */
     public java.util.List<RADComponent> getComponentList() {
         return new ArrayList(idToComponents.values());
     }
 
+    /**
+     * Returns list of all components in the model. A new instance of list is
+     * created and the components are added to the list in the traversal order
+     * (used e.g. by code generator or persistence manager).
+     */
+    public java.util.List<RADComponent> getOrderedComponentList() {
+        java.util.List<RADComponent> list = new ArrayList(idToComponents.size());
+        collectMetaComponents(getModelContainer(), list);
+        return list;
+    }
+
+    /**
+     * Returns an unmodifiable collection of all components in the model
+     * in random order.
+     */
     public Collection<RADComponent> getAllComponents() {
         return Collections.unmodifiableCollection(idToComponents.values());
     }
