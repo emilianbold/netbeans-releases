@@ -138,7 +138,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                 if (! connected) {
                     String resource = url.getPath();
                     if (resource.length() > 0 && resource.charAt(0) == '/') resource = resource.substring(1); // NOI18N
-                    ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                    ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
                     URL target;
                     if (localized) {
                         // Find the suffix insertion point.

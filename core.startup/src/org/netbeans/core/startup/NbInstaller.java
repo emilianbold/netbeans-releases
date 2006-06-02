@@ -115,10 +115,8 @@ final class NbInstaller extends ModuleInstaller {
         Class<?> clazz = null;
         {
             // Find and load manifest sections.
-            Iterator<Map.Entry<String,Attributes>> it = m.getManifest().getEntries().entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String,Attributes> entry = it.next();
-                ManifestSection section = ManifestSection.create(entry.getKey(), (Attributes)entry.getValue(), m);
+            for (Map.Entry<String,Attributes> entry : m.getManifest().getEntries().entrySet()) {
+                ManifestSection section = ManifestSection.create(entry.getKey(), entry.getValue(), m);
                 if (section != null) {
                     if (mysections == null) {
                         mysections = new HashSet<ManifestSection>(25);
@@ -206,11 +204,9 @@ final class NbInstaller extends ModuleInstaller {
     public void dispose(Module m) {
         Util.err.fine("dispose: " + m);
         // Events probably not needed here.
-        Set s = (Set)sections.remove(m);
+        Set<ManifestSection> s = sections.remove(m);
         if (s != null) {
-            Iterator it = s.iterator();
-            while (it.hasNext()) {
-                ManifestSection sect = (ManifestSection)it.next();
+            for (ManifestSection sect : s) {
                 sect.dispose();
             }
         }
@@ -324,6 +320,7 @@ final class NbInstaller extends ModuleInstaller {
     }
     
     /** Load/unload installer code for a module. */
+    @SuppressWarnings("deprecation") // old ModuleInstall methods we have to call
     private void loadCode(Module m, boolean load) throws Exception {
         Class<? extends ModuleInstall> instClazz = installs.get(m);
         if (instClazz != null) {
@@ -375,8 +372,9 @@ final class NbInstaller extends ModuleInstaller {
     }
     
     /** Load/unload all manifest sections for a given module. */
+    @SuppressWarnings("deprecation") // old ManifestSection.* we have to interpret
     private void loadSections(Module m, boolean load) throws Exception {
-        Set s = (Set)sections.get(m);
+        Set<ManifestSection> s = sections.get(m);
         if (s == null) {
             return;
         }
@@ -384,9 +382,7 @@ final class NbInstaller extends ModuleInstaller {
         boolean attachedToMA = false;
         try {
             Main.incrementSplashProgressBar();
-            Iterator it = s.iterator();
-            while (it.hasNext()) {
-                ManifestSection sect = (ManifestSection)it.next();
+            for (ManifestSection sect : s) {
                 if (sect instanceof ManifestSection.ActionSection) {
                     if (! attachedToMA) {
                         // First categorize the actions we will add.
@@ -477,7 +473,7 @@ final class NbInstaller extends ModuleInstaller {
         Collections.reverse(modules);
         Map<ModuleLayeredFileSystem,List<URL>> urls = new HashMap<ModuleLayeredFileSystem,List<URL>>(5);
         for (Module m: modules) {
-            String s = (String)layers.get(m);
+            String s = layers.get(m);
             if (s != null) {
                 Util.err.fine("loadLayer: " + s + " load=" + load);
                 // Actually add a sequence of layers, in locale order.
@@ -526,7 +522,7 @@ final class NbInstaller extends ModuleInstaller {
         }
         // Now actually do it.
         for (Map.Entry<ModuleLayeredFileSystem,List<URL>> entry: urls.entrySet()) {
-            ModuleLayeredFileSystem host = (ModuleLayeredFileSystem)entry.getKey();
+            ModuleLayeredFileSystem host = entry.getKey();
             List<URL> theseurls = entry.getValue();
             Util.err.fine("Adding/removing layer URLs: host=" + host + " urls=" + theseurls);
             try {
@@ -709,36 +705,6 @@ final class NbInstaller extends ModuleInstaller {
             return arr.toArray (new String[0]);
         }
         return null;
-    }
-    
-    
-    private void addLoadersRecursively(List<ClassLoader> parents, Dependency[] deps, Set<Module> parentModules, Module master, Set<String> addedParentNames) {
-        for (int i = 0; i < deps.length; i++) {
-            if (deps[i].getType() != Dependency.TYPE_MODULE) {
-                continue;
-            }
-            String cnb = (String)Util.parseCodeName(deps[i].getName())[0];
-            Module parent = mgr.get(cnb);
-            if (parent == null) throw new IllegalStateException("No such parent module of " + master + ": " + cnb); // NOI18N
-            if (parentModules.add(parent)) {
-                if (!parents.contains(parent.getClassLoader())) {
-                    if (Util.err.isLoggable(Level.FINE)) {
-                        Util.err.fine("#27853: adding virtual dependency from " + master + ": " + parent);
-                    }
-                    // XXX is this really right? For example, A has some impl classes,
-                    // not exported, B has an impl dep on A, C has just a regular dep
-                    // on B. This code will transfer B's impl dep to C, so that it can
-                    // use A's private classes. Not very nice. But that is probably what
-                    // was happening before #27853 - not clear, and #27853 is intended
-                    // to make this sort of thing clearer and more intuitive by forcing
-                    // you to declare what you are going to use, rather than having it
-                    // be computed in this strange way.
-                    parents.add(parent.getClassLoader());
-                    addedParentNames.add(cnb);
-                }
-                addLoadersRecursively(parents, parent.getDependenciesArray(), parentModules, master, addedParentNames);
-            }
-        }
     }
     
     public boolean shouldDelegateResource(Module m, Module parent, String pkg) {
@@ -1219,7 +1185,7 @@ final class NbInstaller extends ModuleInstaller {
         if (manifestCache == null) {
             manifestCache = loadManifestCache(manifestCacheFile);
         }
-        Object[] entry = (Object[])manifestCache.get(jar);
+        Object[] entry = manifestCache.get(jar);
         if (entry != null) {
             if (((Date)entry[0]).getTime() == jar.lastModified()) {
                 // Cache hit.

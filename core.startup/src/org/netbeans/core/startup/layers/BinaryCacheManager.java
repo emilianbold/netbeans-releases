@@ -218,8 +218,8 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
     private HashMap<MemFileOrFolder,Integer> sizes;
     
     private int computeSize(MemFileOrFolder mf) {
-        Integer i = (Integer)sizes.get(mf);
-        if (i != null) return i.intValue();
+        Integer i = sizes.get(mf);
+        if (i != null) return i;
 
         int size = 4; // int attrCount
         if (mf.attrs != null) {
@@ -242,14 +242,13 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
             MemFolder folder = (MemFolder)mf;
             size += 4; // int fileCount
             if (folder.children != null) {
-                for (Iterator it = folder.children.iterator(); it.hasNext(); ) {
-                    MemFileOrFolder item = (MemFileOrFolder)it.next(); 
+                for (MemFileOrFolder item : folder.children) {
                     size += computeHeaderSize(item); // File[fileCount] references    
                     size += computeSize(item); // File/FolderContent[fileCount] contents
                 }
             }
         }
-        sizes.put(mf, new Integer(size));
+        sizes.put(mf, size);
         return size;
     }
     

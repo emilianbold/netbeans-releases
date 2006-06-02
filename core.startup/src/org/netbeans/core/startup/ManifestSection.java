@@ -318,7 +318,7 @@ public abstract class ManifestSection<T> {
                     if (! clazz.equals("")) // NOI18N
                         res.add(clazz);
                 }
-                installBefore = (String[])res.toArray(new String[res.size()]);
+                installBefore = res.toArray(new String[res.size()]);
             } else {
                 installBefore = null;
             }
@@ -341,6 +341,7 @@ public abstract class ManifestSection<T> {
     
     /** @deprecated use new debugger API
      */
+    @Deprecated
     public static final class DebuggerSection extends ManifestSection {
         DebuggerSection(String name, Module module) throws InvalidException {
             super(name, module, getClazz("org.openide.debugger.Debugger", module)); // NOI18N
@@ -349,6 +350,7 @@ public abstract class ManifestSection<T> {
     
     /** @deprecated use META-INF/services to register convertors.
      */
+    @Deprecated
     public static final class ClipboardConvertorSection extends ManifestSection {
         ClipboardConvertorSection(String name, Module module) throws InvalidException {
             super(name, module, ExClipboard.Convertor.class);
@@ -359,7 +361,7 @@ public abstract class ManifestSection<T> {
      */
     static Class<?> getClazz(String name, Module m) throws InvalidException {
         try {
-            return ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass(name);
+            return Lookup.getDefault().lookup(ClassLoader.class).loadClass(name);
         } catch (ClassNotFoundException cnfe) {
             InvalidException e = new InvalidException(m, "Unable to locate class: " + name + " maybe you do not have its module enabled!?"); // NOI18N
             e.initCause(cnfe);

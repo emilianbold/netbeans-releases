@@ -43,7 +43,6 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.Util;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -363,7 +362,7 @@ final class ModuleList {
             Util.transitiveClosureModuleDependencies(mgr, missing);
             it = missing.iterator();
             while (it.hasNext()) {
-                Module m = (Module)it.next();
+                Module m = it.next();
                 if (m.getProblems().isEmpty()) {
                     it.remove();
                 }
@@ -411,7 +410,7 @@ final class ModuleList {
         }
         ModuleHistory hist = (ModuleHistory)m.getHistory();
         // We might have loaded something from externalizedModules.ser before.
-        byte[] compatSer = (byte[])compatibilitySers.get(inst.getClass().getName());
+        byte[] compatSer = compatibilitySers.get(inst.getClass().getName());
         if (compatSer != null) {
             Util.err.fine("Had some old-style state for " + m);
             if (isReallyExternalizable(inst.getClass())) {
@@ -940,12 +939,9 @@ final class ModuleList {
         }
         FileSystem.AtomicAction aa = new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                boolean created;
                 if (nue.file == null) {
-                    created = true;
                     nue.file = folder.createData(((String)nue.diskProps.get("name")).replace('.', '-'), "xml"); // NOI18N
                 } else {
-                    created = false;
                     // Just verify that no one else touched it since we last did.
                     if (/*nue.lastApprovedChange != nue.file.lastModified().getTime()*/nue.dirty) {
                         // Oops, something is wrong.
@@ -1069,7 +1065,7 @@ final class ModuleList {
         Iterator it = mgr.getModules().iterator();
         while (it.hasNext()) {
             Module m = (Module)it.next();
-            DiskStatus status = (DiskStatus)statuses.get(m.getCodeNameBase());
+            DiskStatus status = statuses.get(m.getCodeNameBase());
             if (status != null) {
                 moduleChanged(m, status);
                 m.addPropertyChangeListener(listener);
@@ -1250,7 +1246,7 @@ final class ModuleList {
                     // Skip it. We will get PROP_MODULES sometime anyway.
                     return;
                 }
-                DiskStatus status = (DiskStatus)statuses.get(m.getCodeNameBase());
+                DiskStatus status = statuses.get(m.getCodeNameBase());
                 if (status == null) {
                     throw new IllegalStateException("Unknown module " + m + "; statuses=" + statuses); // NOI18N
                 }
@@ -1325,7 +1321,7 @@ final class ModuleList {
         private void fileCreated0(String name, String ext/*, long time*/) {
             if ("xml".equals(ext)) { // NOI18N
                 String codenamebase = name.replace('-', '.');
-                DiskStatus status = (DiskStatus)statuses.get(codenamebase);
+                DiskStatus status = statuses.get(codenamebase);
                 Util.err.fine("ModuleList: outside file creation event for " + codenamebase);
                 if (status != null) {
                     // XXX should this really happen??
@@ -1341,7 +1337,7 @@ final class ModuleList {
             if ("xml".equals(ext)) { // NOI18N
                 // Removed module.
                 String codenamebase = name.replace('-', '.');
-                DiskStatus status = (DiskStatus)statuses.get(codenamebase);
+                DiskStatus status = statuses.get(codenamebase);
                 Util.err.fine("ModuleList: outside file deletion event for " + codenamebase);
                 if (status != null) {
                     // XXX should this ever happen?
@@ -1366,7 +1362,7 @@ final class ModuleList {
             if ("xml".equals(ext)) { // NOI18N
                 // Changed module.
                 String codenamebase = name.replace('-', '.');
-                DiskStatus status = (DiskStatus)statuses.get(codenamebase);
+                DiskStatus status = statuses.get(codenamebase);
                 Util.err.fine("ModuleList: outside file modification event for " + codenamebase + ": " + ev);
                 if (status != null) {
                     status.dirty = true;
@@ -1661,7 +1657,7 @@ final class ModuleList {
                 Map.Entry entry = (Map.Entry)it.next();
                 String cnb = (String)entry.getKey();
                 Map props = (Map)entry.getValue();
-                DiskStatus status = (DiskStatus)statuses.get(cnb);
+                DiskStatus status = statuses.get(cnb);
                 Map diskProps = status.diskProps;
                 for (int i = 0; i < toCheck.length; i++) {
                     String prop = toCheck[i];

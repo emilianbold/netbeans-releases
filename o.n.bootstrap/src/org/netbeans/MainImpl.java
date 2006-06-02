@@ -29,11 +29,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarFile;
-import javax.swing.JOptionPane;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 

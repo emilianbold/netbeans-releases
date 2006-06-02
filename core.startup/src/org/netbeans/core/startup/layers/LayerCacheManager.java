@@ -18,10 +18,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Logger;
-
-// WARNING: this package should not contain any non-platform openide/core imports!
-
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.NotImplementedException;

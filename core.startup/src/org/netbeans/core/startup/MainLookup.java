@@ -13,11 +13,12 @@
 
 package org.netbeans.core.startup;
 
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.*;
-import org.openide.modules.*;
-
-import org.netbeans.*;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** The default lookup for the system.
  */
@@ -57,7 +58,7 @@ public final class MainLookup extends ProxyLookup {
             classLoader = nue;
             MainLookup l = (MainLookup)Lookup.getDefault();
             Lookup[] delegates = l.getLookups();
-            Lookup[] newDelegates = (Lookup[])delegates.clone();
+            Lookup[] newDelegates = delegates.clone();
             // Replace classloader.
             newDelegates[0] = Lookups.metaInfServices(classLoader);
             newDelegates[1] = Lookups.singleton(classLoader);
@@ -73,7 +74,7 @@ public final class MainLookup extends ProxyLookup {
         MainLookup l = (MainLookup)Lookup.getDefault();
         Lookup[] newDelegates = null;
         Lookup[] delegates = l.getLookups();
-        newDelegates = (Lookup[])delegates.clone();
+        newDelegates = delegates.clone();
         newDelegates[0] = Lookups.metaInfServices(classLoader);
         l.setLookups(newDelegates);
     }
@@ -83,7 +84,7 @@ public final class MainLookup extends ProxyLookup {
      */
     public static final void moduleLookupReady(Lookup moduleLookup) {
         MainLookup l = (MainLookup)Lookup.getDefault();
-        Lookup[] newDelegates = (Lookup[])l.getLookups().clone();
+        Lookup[] newDelegates = l.getLookups().clone();
         newDelegates[2] = moduleLookup;
         l.setLookups(newDelegates);
     }

@@ -15,7 +15,6 @@ package org.netbeans;
 
 import java.util.Arrays;
 import java.util.logging.Level;
-import org.openide.ErrorManager;
 
 /** Track events that occur in the module system abstractly.
  * A concrete implementation can provide localized messages

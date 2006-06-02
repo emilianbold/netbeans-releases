@@ -13,7 +13,6 @@
 
 package org.netbeans.core.startup;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -253,7 +252,6 @@ public final class TopLogging {
                 }
                 
                 FileOutputStream fout = new FileOutputStream(f, false);
-                BufferedOutputStream bout = new BufferedOutputStream(fout);
                 Handler h = new StreamHandler(fout, NbFormatter.FORMATTER);
                 h.setLevel(Level.ALL);
                 h.setFormatter(NbFormatter.FORMATTER);

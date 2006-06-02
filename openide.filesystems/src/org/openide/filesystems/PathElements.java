@@ -48,7 +48,7 @@ final class PathElements {
         return name;
     }
 
-    public Enumeration getEnumeration() {
+    public Enumeration<String> getEnumeration() {
         return new EnumerationImpl(this);
     }
 
@@ -69,7 +69,7 @@ final class PathElements {
             throw new NoSuchElementException();
         }
 
-        return (String) tokens.get(i);
+        return tokens.get(i);
     }
 
     private synchronized void scanUpTo(int i) {
@@ -91,7 +91,7 @@ final class PathElements {
     }
 
     /** Impl of enumeration */
-    static final class EnumerationImpl implements Enumeration {
+    static final class EnumerationImpl implements Enumeration<String> {
         private PathElements elements;
         private int pos;
 
@@ -106,7 +106,7 @@ final class PathElements {
         }
 
         /** From Enumeration */
-        public java.lang.Object nextElement() throws NoSuchElementException {
+        public String nextElement() throws NoSuchElementException {
             return elements.get(pos++);
         }
     }

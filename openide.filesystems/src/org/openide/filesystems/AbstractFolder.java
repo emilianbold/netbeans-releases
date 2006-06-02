@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -68,11 +69,11 @@ abstract class AbstractFolder extends FileObject {
     /** list of children */
     private String[] children;
 
-    /** map that assignes file object to names. (String, Reference (AbstractFileObject)) */
-    private Map<String, Reference<FileObject>> map;
+    /** map that assigns file object to names. */
+    private Map<String,Reference<AbstractFolder>> map;
 
     /** listeners */
-    private ListenerList listeners;
+    private ListenerList<FileChangeListener> listeners;
 
     /** Constructor. Takes reference to file system this file belongs to.
     *
@@ -119,12 +120,12 @@ abstract class AbstractFolder extends FileObject {
         return name;
     }
 
-    /** Overriden in AbstractFolder */
+    /** Overridden in AbstractFolder */
     final boolean isHasExtOverride() {
         return true;
     }
 
-    /** Overriden in AbstractFolder */
+    /** Overridden in AbstractFolder */
     boolean hasExtOverride(String ext) {
         if (ext == null) {
             return false;
@@ -227,7 +228,7 @@ abstract class AbstractFolder extends FileObject {
     * @param en enumeration of strings to scan
     * @return found object or null
     */
-    final FileObject find(Enumeration en) {
+    final FileObject find(Enumeration<String> en) {
         AbstractFolder fo = this;
 
         while ((fo != null) && en.hasMoreElements()) {
@@ -239,7 +240,7 @@ abstract class AbstractFolder extends FileObject {
                 // so often.
                 fo.check();
 
-                fo = fo.getChild((String) en.nextElement());
+                fo = fo.getChild(en.nextElement());
             }
         }
 
@@ -251,17 +252,17 @@ abstract class AbstractFolder extends FileObject {
     * @param en enumeration of strings to scan
     * @return found object or null
     */
-    final FileObject findIfExists(Enumeration en) {
-        Reference r = findRefIfExists(en);
+    final FileObject findIfExists(Enumeration<String> en) {
+        Reference<AbstractFolder> r = findRefIfExists(en);
 
-        return ((r == null) ? null : (FileObject) r.get());
+        return (r == null) ? null : r.get();
     }
 
     /** Tries to find a resource if it exists in memory.
     * @param en enumeration of strings to scan
     * @return found object or null
     */
-    final Reference findRefIfExists(Enumeration en) {
+    final Reference<AbstractFolder> findRefIfExists(Enumeration<String> en) {
         AbstractFolder fo = this;
 
         while ((fo != null) && en.hasMoreElements()) {
@@ -273,12 +274,12 @@ abstract class AbstractFolder extends FileObject {
             // try to go on
             // lock to provide safety for getChild
             synchronized (fo) {
-                String name = (String) en.nextElement();
+                String name = en.nextElement();
 
                 if (en.hasMoreElements()) {
                     fo = fo.getChild(name);
                 } else {
-                    return ((Reference) fo.map.get(name));
+                    return fo.map.get(name);
                 }
             }
         }
@@ -296,7 +297,7 @@ abstract class AbstractFolder extends FileObject {
     }
 
     private final AbstractFolder getChild(String name, boolean onlyValid) {
-        Reference r = (Reference) map.get(name);
+        Reference<AbstractFolder> r = map.get(name);
 
         if (r == null) {
             //On OpenVMS, see if the name is stored in a different case
@@ -304,9 +305,9 @@ abstract class AbstractFolder extends FileObject {
             //
             if (Utilities.getOperatingSystem() == Utilities.OS_VMS) {
                 if (Character.isLowerCase(name.charAt(0))) {
-                    r = (Reference) map.get(name.toUpperCase());
+                    r = map.get(name.toUpperCase());
                 } else {
-                    r = (Reference) map.get(name.toLowerCase());
+                    r = map.get(name.toLowerCase());
                 }
 
                 if (r == null) {
@@ -317,7 +318,7 @@ abstract class AbstractFolder extends FileObject {
             }
         }
 
-        AbstractFolder fo = (AbstractFolder) (r.get());
+        AbstractFolder fo = r.get();
 
         if (fo == null) {
             // object does not exist => have to recreate it
@@ -347,8 +348,8 @@ abstract class AbstractFolder extends FileObject {
     * @param fo FileObject
     * @return Reference to FileObject
     */
-    protected Reference<FileObject> createReference(FileObject fo) {
-        return (new WeakReference<FileObject>(fo));
+    protected Reference<AbstractFolder> createReference(AbstractFolder fo) {
+        return (new WeakReference<AbstractFolder>(fo));
     }
 
     /** Obtains enumeration of all existing subfiles.
@@ -457,7 +458,7 @@ abstract class AbstractFolder extends FileObject {
     public final void addFileChangeListener(FileChangeListener fcl) {
         synchronized (EMPTY_ARRAY) {
             if (listeners == null) {
-                listeners = new ListenerList(FileChangeListener.class);
+                listeners = new ListenerList<FileChangeListener>();
             }
         }
 
@@ -556,7 +557,7 @@ abstract class AbstractFolder extends FileObject {
             repHas = rep.getFCLSupport().hasListeners();
         }
 
-        return ((listeners != null) && (listeners.getAllListeners().length != 0)) || repHas || fsHas;
+        return (listeners != null && listeners.hasListeners()) || repHas || fsHas;
     }
 
     /** @return true if this folder or its parent have listeners
@@ -567,11 +568,11 @@ abstract class AbstractFolder extends FileObject {
 
     /** @return enumeration of all listeners.
     */
-    private final Enumeration listeners() {
+    private final Enumeration<FileChangeListener> listeners() {
         if (listeners == null) {
             return Enumerations.empty();
         } else {
-            return Enumerations.removeNulls(Enumerations.array(listeners.getAllListeners()));
+            return Collections.enumeration(listeners.getAllListeners());
         }
     }
 
@@ -660,7 +661,7 @@ abstract class AbstractFolder extends FileObject {
                 check();
             }
 
-            Reference<FileObject> o = map.put(name, new WeakReference<FileObject>(null));
+            Reference<AbstractFolder> o = map.put(name, new WeakReference<AbstractFolder>(null));
 
             if (o != null) {
                 map.put(name, o);
@@ -690,7 +691,7 @@ abstract class AbstractFolder extends FileObject {
             // refresh of folder checks children
             final String[] newChildren = getNewChildren(list);
             final Set<String> addedNames;
-            final Map<String, FileObject> removedPairs;
+            final Map<String, AbstractFolder> removedPairs;
 
             synchronized (this) {
                 if ((children == null) && (newChildren == null)) {
@@ -698,17 +699,17 @@ abstract class AbstractFolder extends FileObject {
                 }
 
                 final int initialCapacity = (newChildren != null) ? (((newChildren.length * 4) / 3) + 1) : 0;
-                final HashMap<String, Reference<FileObject>> newMap = new HashMap<String, Reference<FileObject>>(initialCapacity);
+                final HashMap<String, Reference<AbstractFolder>> newMap = new HashMap<String, Reference<AbstractFolder>>(initialCapacity);
 
                 /*Just for firing event*/
                 addedNames = new HashSet<String>(initialCapacity);
 
                 if (newChildren != null) {
-                    final Reference<FileObject> removedRef = ((map != null) ? map.get(removed) : null);
+                    final Reference<AbstractFolder> removedRef = ((map != null) ? map.get(removed) : null);
 
                     for (int i = 0; i < newChildren.length; i++) {
                         final String child = newChildren[i];
-                        Reference<FileObject> foRef = null;
+                        Reference<AbstractFolder> foRef = null;
 
                         if (map != null) {
                             foRef = map.remove(child);
@@ -734,14 +735,14 @@ abstract class AbstractFolder extends FileObject {
                             }
 
                             // create new empty reference
-                            foRef = new WeakReference<FileObject>(null);
+                            foRef = new WeakReference<AbstractFolder>(null);
                         }
 
                         newMap.put(child, foRef);
                     }
                 }
 
-                removedPairs = (map != null) ? dereferenceValues(map) : null; /*<String, AbstractFileObject>*/
+                removedPairs = (map != null) ? dereferenceValues(map) : null;
                 map = newMap;
                 children = newChildren;
             }
@@ -780,9 +781,9 @@ abstract class AbstractFolder extends FileObject {
         }
     }
 
-    private void refreshChildren(final Enumeration subfiles, final Collection nameFilter, boolean expected) {
+    private void refreshChildren(final Enumeration<? extends AbstractFolder> subfiles, final Collection nameFilter, boolean expected) {
         while (subfiles.hasMoreElements()) {
-            AbstractFolder child = (AbstractFolder) subfiles.nextElement();
+            AbstractFolder child = subfiles.nextElement();
 
             if (child.isData()) {
                 if (!nameFilter.contains(child.getNameExt())) {
@@ -792,9 +793,8 @@ abstract class AbstractFolder extends FileObject {
         }
     }
 
-    private void filesDeleted(final Map /*<String, AbstractFileObject>*/ removedToFire, final boolean expected) {
-        for (Iterator it = removedToFire.values().iterator(); it.hasNext();) {
-            AbstractFolder fo = (AbstractFolder) it.next();
+    private void filesDeleted(final Map<String,AbstractFolder> removedToFire, final boolean expected) {
+        for (AbstractFolder fo : removedToFire.values()) {
             fo.validFlag = false;
 
             if (hasAtLeastOneListeners() || fo.hasAtLeastOneListeners()) {
@@ -804,9 +804,9 @@ abstract class AbstractFolder extends FileObject {
         }
     }
 
-    private void filesCreated(final Set /*<String>*/ addedToFire, final boolean expected) {
-        for (Iterator it = addedToFire.iterator(); it.hasNext();) {
-            AbstractFolder fo = getChild((String) it.next());
+    private void filesCreated(final Set<String> addedToFire, final boolean expected) {
+        for (String s : addedToFire) {
+            AbstractFolder fo = getChild(s);
 
             if (fo != null) {
                 fileCreated0(this, fo, expected);
@@ -814,8 +814,8 @@ abstract class AbstractFolder extends FileObject {
         }
     }
 
-    private Map<String, FileObject> dereferenceValues(final Map<String, Reference<FileObject>>  map) {
-        Map<String, FileObject> retVal = new HashMap<String, FileObject>(map.size());
+    private Map<String, AbstractFolder> dereferenceValues(final Map<String, Reference<AbstractFolder>>  map) {
+        Map<String, AbstractFolder> retVal = new HashMap<String, AbstractFolder>(map.size());
         for (String name : map.keySet()) {
             AbstractFolder child = getChild(name, false);
 
@@ -854,7 +854,7 @@ abstract class AbstractFolder extends FileObject {
         }
 
         if (childrenList.size() != newChildren.length) {
-            newChildren = (String[]) childrenList.toArray(new String[childrenList.size()]);
+            newChildren = childrenList.toArray(new String[childrenList.size()]);
         }
 
         return newChildren;

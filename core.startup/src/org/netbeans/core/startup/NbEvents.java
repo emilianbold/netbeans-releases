@@ -113,7 +113,6 @@ final class NbEvents extends Events {
             setStatusText(
                 "Finished deploying test module."); // NOI18N
         } else if (message == FAILED_INSTALL_NEW) {
-            List<String> problemTexts = new ArrayList<String>();
             @SuppressWarnings("unchecked") Set<Module> modules = ((Set<Module>)args[0]);
             {
                 StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new"));
@@ -209,8 +208,8 @@ final class NbEvents extends Events {
             // Or should it just be sent quietly to the log file?
             Module m = (Module)args[0];
             String prop = (String)args[1];
-            Object onDisk = (Object)args[2];
-            Object inMem = (Object)args[3];
+            Object onDisk = args[2];
+            Object inMem = args[3];
             logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_misc_prop_mismatch", new Object[] {m.getDisplayName(), prop, onDisk, inMem}));
         } else if (message == PATCH) {
             File f = (File)args[0];

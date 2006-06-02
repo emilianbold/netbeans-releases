@@ -15,7 +15,6 @@ package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;

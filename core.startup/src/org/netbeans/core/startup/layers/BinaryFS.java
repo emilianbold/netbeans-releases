@@ -84,10 +84,15 @@ public class BinaryFS extends FileSystem {
     private java.util.List<Object> modifications;
     private final Date lastModified = new Date();
     
+    @SuppressWarnings("deprecation")
+    private void _setSystemName(String s) throws PropertyVetoException {
+        setSystemName(s);
+    }
+    
     /** Creates a new instance of BinaryFS */
     public BinaryFS(String binaryFile) throws IOException {
         try {
-            setSystemName("BinaryFS" + binaryFile.replace('/', '-').replace(File.separatorChar, '-')); // NOI18N
+            _setSystemName("BinaryFS" + binaryFile.replace('/', '-').replace(File.separatorChar, '-')); // NOI18N
         } catch (PropertyVetoException ex) {
             throw (IOException)new IOException().initCause(ex);
         }
@@ -250,7 +255,9 @@ public class BinaryFS extends FileSystem {
         /** no-op implementations of read-only, fixed, never firing FS */
         public void addFileChangeListener(FileChangeListener fcl) {}
         public void removeFileChangeListener(FileChangeListener fcl) {}
+        @Deprecated
         public boolean isReadOnly() { return true; }
+        @Deprecated
         public void setImportant(boolean b) {}        
 
         public FileObject createData(String name, String ext) throws IOException {
@@ -324,7 +331,7 @@ public class BinaryFS extends FileSystem {
         /** Get the file attribute with the specified name. */
         public Object getAttribute(String attrName) {
             initialize();
-            AttrImpl attr = (AttrImpl)attrs.get(attrName);
+            AttrImpl attr = attrs.get(attrName);
             if (attr != null) {
                 FileObject topFO = null;
                 // XXX big hack! See #29356 for explanation for this nonsense.
@@ -562,7 +569,7 @@ public class BinaryFS extends FileSystem {
          * @exception ClassNotFoundException if class was not found
          */
         private Class findClass (String name) throws ClassNotFoundException {
-            ClassLoader c = (ClassLoader)Lookup.getDefault ().lookup (ClassLoader.class);
+            ClassLoader c = Lookup.getDefault().lookup(ClassLoader.class);
             String tname = org.openide.util.Utilities.translate (name);
             try {
                 if (c == null) {
@@ -767,14 +774,14 @@ public class BinaryFS extends FileSystem {
         /** Get all children of this folder (files and subfolders). */
         public FileObject[] getChildren() {
             initialize();
-            return (FileObject[])childrenMap.values().toArray(NO_CHILDREN);
+            return childrenMap.values().toArray(NO_CHILDREN);
         }
 
         /** Retrieve file or folder contained in this folder by name. */
         public FileObject getFileObject(String name, String ext) {
             initialize();
             String fullName = ext == null ? name : name + "." + ext; // XXX - ??
-            return (FileObject)childrenMap.get(fullName);
+            return childrenMap.get(fullName);
         }
 
         /** A method called to finish the initialization in the subclasses.
@@ -849,7 +856,7 @@ public class BinaryFS extends FileSystem {
         
         public Iterator<Map.Entry<String, Object>> iterator() {
             class Iter implements Iterator<Map.Entry<String, Object>> {
-                Enumeration<String> attrs = (Enumeration<String>)fo.getAttributes();
+                Enumeration<String> attrs = fo.getAttributes();
                 
                 public boolean hasNext() {
                     return attrs.hasMoreElements();
@@ -868,7 +875,7 @@ public class BinaryFS extends FileSystem {
         }
         
         public int size() {
-            Enumeration<?> all = fo.getAttributes();
+            Enumeration<String> all = fo.getAttributes();
             int cnt = 0;
             while (all.hasMoreElements()) {
                 cnt++;

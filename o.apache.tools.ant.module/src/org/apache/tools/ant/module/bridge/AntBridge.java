@@ -646,7 +646,7 @@ public final class AntBridge {
         }
         
         @Override
-        protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
             if (masked(name)) {
                 Class c = findLoadedClass(name);
                 // Careful with that parent loader Eugene!

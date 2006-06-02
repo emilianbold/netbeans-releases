@@ -30,8 +30,8 @@ final class RefreshRequest extends Object implements Runnable {
     /** fs to work on */
     private Reference<AbstractFileSystem> system;
 
-    /** enumeration of folders Reference (FileObjects) to process */
-    private Enumeration en;
+    /** enumeration of folders to process */
+    private Enumeration<? extends FileObject> en;
 
     /** how often invoke itself */
     private int refreshTime;
@@ -124,7 +124,7 @@ final class RefreshRequest extends Object implements Runnable {
 
         if ((en == null) || !en.hasMoreElements()) {
             // start again from root
-            en = existingFolders(system);
+            en = existingFolders(system); // XXX use Generics to change en to Enumeration<AbstractFolder>
         }
 
         for (int i = 0; (i < REFRESH_COUNT) && en.hasMoreElements(); i++) {
@@ -149,7 +149,7 @@ final class RefreshRequest extends Object implements Runnable {
 
     /** Existing folders for abstract file objects.
     */
-    private static Enumeration existingFolders(AbstractFileSystem fs) {
+    private static Enumeration<? extends FileObject> existingFolders(AbstractFileSystem fs) {
         return fs.existingFileObjects(fs.getAbstractRoot());
     }
 

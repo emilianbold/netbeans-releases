@@ -35,7 +35,6 @@ import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import org.openide.ErrorManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
@@ -461,6 +460,7 @@ public final class ModuleManager {
     /** @see #create(File,Object,boolean,boolean,boolean)
      * @deprecated since org.netbeans.core/1 1.3
      */
+    @Deprecated
     public Module create(File jar, Object history, boolean reloadable, boolean autoload) throws IOException, DuplicateException {
         return create(jar, history, reloadable, autoload, false);
     }
@@ -649,13 +649,12 @@ public final class ModuleManager {
         firer.fire();
     }
     private void possibleProviderRemoved(Module m) {
-        String[] provides = m.getProvides();
-        for (int i = 0; i < provides.length; i++) {
-            Set providing = (Set)providersOf.get(provides[i]);
+        for (String token : m.getProvides()) {
+            Set<Module> providing = providersOf.get(token);
             if (providing != null) {
                 providing.remove(m);
                 if (providing.isEmpty()) {
-                    providersOf.remove(provides[i]);
+                    providersOf.remove(token);
                 }
             } else {
                 // Else we called reload and m.reload threw IOException, so
@@ -1064,9 +1063,7 @@ public final class ModuleManager {
         willEnable.add(m);
         // Also add anything it depends on, if not already there,
         // or already enabled.
-        Dependency[] dependencies = m.getDependenciesArray();
-        for (int i = 0; i < dependencies.length; i++) {
-            Dependency dep = dependencies[i];
+        for (Dependency dep : m.getDependenciesArray()) {
             if (dep.getType() == Dependency.TYPE_MODULE) {
                 String codeNameBase = (String)Util.parseCodeName(dep.getName())[0];
                 Module other = get(codeNameBase);
@@ -1077,13 +1074,11 @@ public final class ModuleManager {
                 }
             } else if (dep.getType() == Dependency.TYPE_REQUIRES) {
                 String token = dep.getName();
-                Set providers = (Set)providersOf.get(token); // Set<Module>
+                Set<Module> providers = providersOf.get(token);
                 if (providers == null) throw new IllegalStateException("Should have found a provider of: " + token); // NOI18N
                 // First check if >= 1 is already enabled or will be soon. If so, great.
-                Iterator provIt = providers.iterator();
                 boolean foundOne = false;
-                while (provIt.hasNext()) {
-                    Module other = (Module)provIt.next();
+                for (Module other : providers) {
                     if (other.isEnabled() ||
                             (other.getProblems().isEmpty() && mightEnable.contains(other))) {
                         foundOne = true;
@@ -1095,9 +1090,7 @@ public final class ModuleManager {
                     continue;
                 }
                 // All disabled. So add them all to the enable list.
-                provIt = providers.iterator();
-                while (provIt.hasNext()) {
-                    Module other = (Module)provIt.next();
+                for (Module other : providers) {
                     // It is OK if one of them fails.
                     maybeAddToEnableList(willEnable, mightEnable, other, true);
                     // But we still check to ensure that at least one did not!
@@ -1165,13 +1158,11 @@ public final class ModuleManager {
                 if (other == null) throw new IllegalStateException("Should have found module: " + codeNameBase); // NOI18N
                 if (!couldBeEnabledWithEagers(other, willEnable, recursion)) return false;
             } else if (dep.getType() == Dependency.TYPE_REQUIRES) {
-                Set providers = (Set)providersOf.get(dep.getName());
+                Set<Module> providers = providersOf.get(dep.getName());
                 if (providers == null) throw new IllegalStateException("Should have found a provider of: " + dep.getName()); // NOI18N
                 // Just need *one* to match.
-                Iterator provIt = providers.iterator();
                 boolean foundOne = false;
-                while (provIt.hasNext()) {
-                    Module other = (Module)provIt.next();
+                for (Module other : providers) {
                     if (couldBeEnabledWithEagers(other, willEnable, recursion)) {
                         foundOne = true;
                         break;
@@ -1421,16 +1412,14 @@ public final class ModuleManager {
                         // Works much like a regular module dependency. However it only
                         // fails if there are no satisfying modules with no problems.
                         String token = dep.getName();
-                        Set providers = (Set)providersOf.get(token); // Set<Module>
+                        Set<Module> providers = providersOf.get(token);
                         if (providers == null) {
                             // Nobody provides it. This dep failed.
                             probs.add(dep);
                         } else {
                             // We have some possible providers. Check that at least one is good.
-                            Iterator provIt = providers.iterator();
                             boolean foundOne = false;
-                            while (provIt.hasNext()) {
-                                Module other = (Module)provIt.next();
+                            for (Module other : providers) {
                                 if (other.isEnabled()) {
                                     foundOne = true;
                                 } else {

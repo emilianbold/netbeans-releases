@@ -134,7 +134,7 @@ public class StartLog {
         private int indent = 0;
         
         synchronized void start( String action, long time ) {
-            starts.push( new Long( time ) );
+            starts.push(time);
             prog=time;
             System.err.println( getIndentString(indent) + "@" + 
                     (time - zero) + " - " + action + " started" // NOI18N
@@ -151,7 +151,7 @@ public class StartLog {
         
         synchronized void end( String action, long time ) {
             indent -= 2;
-            long start = ((Long)starts.pop()).longValue();
+            long start = starts.pop();
             prog = time;
             System.err.println( getIndentString(indent) + "@" + 
                     (time - zero) + " - " + action + " finished, took " + // NOI18N
@@ -183,7 +183,7 @@ public class StartLog {
         PerformanceTestsImpl() {}
         
         synchronized void start( String action, long time ) {
-            starts.push( new Long( time ) );
+            starts.push(time);
             prog=time;
             log(getIndentString(indent) + "@" + 
                     (time - zero) + " - " + action + " started" // NOI18N
@@ -200,7 +200,7 @@ public class StartLog {
         
         synchronized void end( String action, long time ) {
             indent -= 2;
-            long start = ((Long)starts.pop()).longValue();
+            long start = starts.pop();
             prog = time;
             log(getIndentString(indent) + "@" + 
                     (time - zero) + " - " + action + " finished, took " + // NOI18N

@@ -44,7 +44,7 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
     }
     
     @Override
-    protected Class findClass(String name) throws ClassNotFoundException {
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
         if (!masked(name)) {
             try {
                 return nbLoader.loadClass(name);

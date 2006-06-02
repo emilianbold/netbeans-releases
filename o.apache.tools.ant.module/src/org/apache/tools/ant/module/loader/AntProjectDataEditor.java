@@ -16,7 +16,6 @@ package org.apache.tools.ant.module.loader;
 import java.io.IOException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;

@@ -302,7 +302,7 @@ public final class PatchByteCode {
             // alternate access rights
             int access = pc.readU2 (pc.memberClassAttr + 6);
             
-            int now = pc.readU2 (pc.cpEnd);
+            /*int now = */pc.readU2(pc.cpEnd);
             
             writeU2 (pc.getClassFile (), pc.cpEnd, access);
             
@@ -459,7 +459,7 @@ public final class PatchByteCode {
      * @return true if really changed, false if it already was public
      */
     private boolean markMemberPublic (String name) {
-        int constantPoolIndex = ((int[])nameIndexes.get (name))[0];
+        int constantPoolIndex = nameIndexes.get(name)[0];
         int patchCount = 0;
         boolean modified = false;
 
@@ -543,7 +543,7 @@ public final class PatchByteCode {
         int constantPoolIndex = nameIndexes.get (name)[0];
         int newPoolIndex;
         { 
-            int[] arr = (int[])nameIndexes.get (rename);
+            int[] arr = nameIndexes.get(rename);
             if (arr != null && arr[0] > 0) {
                 newPoolIndex = arr[0];
             } else {
@@ -930,7 +930,7 @@ public final class PatchByteCode {
                         throw new IllegalStateException ("utf-8 is always supported"); // NOI18N
                     }
                     
-                    int[] index = (int[])nameIndexes.get (s);
+                    int[] index = nameIndexes.get(s);
                     if (index != null) {
                         index[0] = cnt[0];
                     }
@@ -945,7 +945,7 @@ public final class PatchByteCode {
     
     private int memberSize (int pos, int[] containsPatchAttributeAndRename) {
         int s = 8;
-        int name = readU2 (pos + 2);
+        /*int name = */readU2(pos + 2);
         
         int cnt = readU2 (pos + 6);
         

@@ -104,7 +104,7 @@ final class StandardModule extends Module {
         findExtensionsAndVariants(manifest);
         // Check if some other module already listed this one in Class-Path.
         // For the chronologically reverse case, see findExtensionsAndVariants().
-        Set bogoOwners = (Set)extensionOwners.get(jar);
+        Set<File> bogoOwners = extensionOwners.get(jar);
         if (bogoOwners != null) {
             Util.err.warning("module " + jar + " was incorrectly placed in the Class-Path of other JARs " + bogoOwners + "; please use OpenIDE-Module-Module-Dependencies instead");
         }

@@ -53,7 +53,7 @@ public class ArchiveURLMapper extends URLMapper {
                     if (fs instanceof JarFileSystem) {
                         JarFileSystem jfs = (JarFileSystem) fs;
                         File archiveFile = jfs.getJarFile();
-                        if (this.isRoot(archiveFile)) {
+                        if (isRoot(archiveFile)) {
 // XXX: commented out to create same URLs as URLMapper.DefaultURLMapper.
 //                            StringTokenizer tk = new StringTokenizer (fo.getPath(),"/");            //NOI18N
 //                            StringBuffer offset = new StringBuffer ();
@@ -124,9 +124,9 @@ public class ArchiveURLMapper extends URLMapper {
     }
 
     private static synchronized JarFileSystem getFileSystem (File file) throws IOException {
-        Reference reference = (Reference) mountRoots.get (file);
+        Reference<JarFileSystem> reference = mountRoots.get(file);
         JarFileSystem jfs = null;
-        if (reference==null || (jfs=(JarFileSystem)reference.get())==null) {
+        if (reference == null || (jfs = reference.get()) == null) {
             jfs = findJarFileSystemInRepository(file);
             if (jfs == null) {
                 try {
@@ -144,9 +144,10 @@ public class ArchiveURLMapper extends URLMapper {
 
     // More or less copied from URLMapper:
     private static JarFileSystem findJarFileSystemInRepository(File jarFile) {
-        Enumeration en = Repository.getDefault().getFileSystems();
+        @SuppressWarnings("deprecation") // for compat only
+        Enumeration<? extends FileSystem> en = Repository.getDefault().getFileSystems();
         while (en.hasMoreElements()) {
-            FileSystem fs = (FileSystem)en.nextElement();
+            FileSystem fs = en.nextElement();
             if (fs instanceof JarFileSystem) {
                 JarFileSystem jfs = (JarFileSystem)fs;
                 if (jarFile.equals(jfs.getJarFile())) {
@@ -186,7 +187,7 @@ public class ArchiveURLMapper extends URLMapper {
         }
         
         void releaseMe (final File root) {
-            JarFileSystem jfs = (JarFileSystem)get ();
+            JarFileSystem jfs = get();
             if (jfs != null) {
                 synchronized (ArchiveURLMapper.class) {
                     File keyToRemove = (root != null) ? root : jfs.getJarFile();

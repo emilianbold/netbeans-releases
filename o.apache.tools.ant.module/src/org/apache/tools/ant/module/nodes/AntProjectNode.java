@@ -30,7 +30,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
-import org.apache.tools.ant.module.api.AntProjectCookie.ParseStatus;
 
 public final class AntProjectNode extends DataNode implements ChangeListener {
     

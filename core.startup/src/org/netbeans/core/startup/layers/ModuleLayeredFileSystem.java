@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +35,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.startup.StartLog;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
@@ -369,7 +370,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                     // something else... plain file: URL?
                     u2 = u;
                 }
-                File extracted = Utilities.toFile(u2);
+                File extracted = new File(URI.create(u2.toExternalForm()));
                 if (extracted != null) {
                     // the JAR file containing the layer entry:
                     x ^= (times[i++] = extracted.lastModified());

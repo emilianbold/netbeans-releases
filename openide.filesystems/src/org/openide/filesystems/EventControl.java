@@ -7,21 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
-import java.io.*;
-
-import java.util.Enumeration;
+import java.io.IOException;
 import java.util.LinkedList;
 
-
 /**
- *
  * @author  rmatous
- * @version
  */
 class EventControl {
     /** number of requests posted and not processed. to
@@ -61,7 +57,7 @@ class EventControl {
      * Begin of block, that should be performed without firing events.
      * Firing of events is postponed after end of block .
      * There is strong necessity to use always both methods: beginAtomicAction
-     * and finishAtomicAction. It is recomended use it in try - finally block.
+     * and finishAtomicAction. It is recommended use it in try - finally block.
      * @see FileSystemt#beginAtomicAction
      * @param run Events fired from this atomic action will be marked as events
      * that were fired from this run.
@@ -78,7 +74,7 @@ class EventControl {
      * End of block, that should be performed without firing events.
      * Firing of events is postponed after end of block .
      * There is strong necessity to use always both methods: beginAtomicAction
-     * and finishAtomicAction. It is recomended use it in try - finally block.
+     * and finishAtomicAction. It is recommended use it in try - finally block.
      * @see FileSystemt#finishAtomicAction
      */
     void finishAtomicAction() {
@@ -120,7 +116,7 @@ class EventControl {
     private void exitAtomicAction(boolean priority) {
         boolean fireAll = false;
         boolean firePriority = false;
-        LinkedList reqQueueCopy;
+        LinkedList<FileSystem.EventDispatcher> reqQueueCopy;
 
         synchronized (this) {
             currentAtomAction = currentAtomAction.getPreviousLink();
@@ -162,7 +158,7 @@ class EventControl {
 
             synchronized (this) {
                 while ((requestsQueue != null) && !requestsQueue.isEmpty()) {
-                    FileSystem.EventDispatcher r = (FileSystem.EventDispatcher) requestsQueue.removeFirst();
+                    FileSystem.EventDispatcher r = requestsQueue.removeFirst();
                     newReqQueue.add(r);
                 }
 
@@ -171,11 +167,11 @@ class EventControl {
         }
     }
 
-    private LinkedList<FileSystem.EventDispatcher> invokeDispatchers(boolean priority, LinkedList reqQueueCopy) {
+    private LinkedList<FileSystem.EventDispatcher> invokeDispatchers(boolean priority, LinkedList<FileSystem.EventDispatcher> reqQueueCopy) {
         LinkedList<FileSystem.EventDispatcher> newEnum = new LinkedList<FileSystem.EventDispatcher>();
 
         while ((reqQueueCopy != null) && !reqQueueCopy.isEmpty()) {
-            FileSystem.EventDispatcher r = (FileSystem.EventDispatcher) reqQueueCopy.removeFirst();
+            FileSystem.EventDispatcher r = reqQueueCopy.removeFirst();
             r.dispatch(priority);
 
             if (priority) {

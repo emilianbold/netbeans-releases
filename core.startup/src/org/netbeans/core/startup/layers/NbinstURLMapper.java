@@ -14,15 +14,14 @@
 package org.netbeans.core.startup.layers;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.*;
-
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
-
 
 /**
  * URLMapper for the nbinst URL protocol.

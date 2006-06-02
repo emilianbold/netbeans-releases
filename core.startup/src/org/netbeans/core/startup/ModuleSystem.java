@@ -86,8 +86,8 @@ public final class ModuleSystem {
                 modulesFolder = root.createFolder("Modules"); // NOI18N
             }
             list = new ModuleList(mgr, modulesFolder, ev);
-            ((NbInstaller)installer).registerList(list);
-            ((NbInstaller)installer).registerManager(mgr);
+            installer.registerList(list);
+            installer.registerManager(mgr);
         }
         ev.log(Events.CREATED_MODULE_SYSTEM);
     }

@@ -39,7 +39,6 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
         AntProjectCookie proj = new AntProjectSupport (prim);
         cookies.add (proj);
         if (proj.getFile () != null) {
-            MultiDataObject.Entry pe = getPrimaryEntry ();
             cookies.add (new AntActionInstance (proj));
         }
         cookies.add(new CheckXMLSupport(DataObjectAdapters.inputSource(this)));

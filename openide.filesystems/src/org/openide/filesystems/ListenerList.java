@@ -7,45 +7,38 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * A class that holds a list of EventListeners.
+ * A class that holds a list of listeners of some type.
  * Replacement of  EventListListener, that solves performance issue #20715
  * @author  rm111737
  */
-class ListenerList {
-    private Class evListenerClass;
-    private List<EventListener> listenerList;
-    private Object[] listenerArray = null;
+class ListenerList<T> {
+    private final List<T> listenerList;
+    private List<T> copy = null;
 
-    /**
-     * @param evListenerClass the type of the EventListener.
-     */
-    ListenerList(Class evListenerClass) {
-        this.evListenerClass = evListenerClass;
-        listenerList = Collections.synchronizedList(new ArrayList<EventListener>());
+    ListenerList() {
+        listenerList = new ArrayList<T>();
     }
 
     /**
      * Adds the listener .
      **/
-    boolean add(EventListener listener) {
+    public synchronized boolean add(T listener) {
         if (listener == null) {
             throw new NullPointerException();
         }
 
-        if (!evListenerClass.isInstance(listener)) {
-            return false;
-        }
-
-        listenerArray = null;
+        copy = null;
 
         return listenerList.add(listener);
     }
@@ -53,32 +46,24 @@ class ListenerList {
     /**
      * Removes the listener .
      **/
-    boolean remove(EventListener listener) {
-        if (!evListenerClass.isInstance(listener)) {
-            return false;
-        }
-
-        listenerArray = null;
+    public synchronized boolean remove(T listener) {
+        copy = null;
 
         return listenerList.remove(listener);
     }
 
     /**
-     * Passes back the event listener list as an array
+     * Passes back the event listener list
      */
-    Object[] getAllListeners() {
-        Object[] retVal = null;
-
-        synchronized (listenerList) {
-            retVal = listenerArray;
-
-            if (retVal == null) {
-                retVal = new Object[listenerList.size()];
-                listenerList.toArray(retVal);
-                listenerArray = retVal;
-            }
+    public synchronized List<T> getAllListeners() {
+        if (copy == null) {
+            copy = new ArrayList<T>(listenerList);
         }
-
-        return retVal;
+        return copy;
     }
+    
+    public synchronized boolean hasListeners() {
+        return !listenerList.isEmpty();
+    }
+    
 }

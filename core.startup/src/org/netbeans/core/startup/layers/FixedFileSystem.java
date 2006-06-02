@@ -19,7 +19,9 @@ import java.net.URL;
 import java.util.*;
 
 import org.openide.filesystems.*;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /** Read-only, fixed-structure filesystem.
  * Derived from the ManifestFileSystem of yore (sandwich branch).
@@ -61,7 +63,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
          */        
         final String beanName;
         
-        Map<String, Object> attributes; // Map<String,Object> name -> value attributes (null OK)
+        Map<String, Object> attributes; // name -> value attributes (null OK)
         /** Make a new wrapper for file data.
          * @param folder true if should be a folder rather than a file
          * @param contentType MIME type or null
@@ -132,6 +134,11 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      */    
     private transient long date = System.currentTimeMillis ();
 
+    @SuppressWarnings("deprecation")
+    private void _setSystemName(String s) throws PropertyVetoException {
+        setSystemName(s);
+    }
+    
     /** Creates the filesystem with no instances.
      * @param name system name of the filesystem
      * @param displayName display name of the filesystem
@@ -142,7 +149,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
         info = this;
         attr = this;
         try {
-            setSystemName (name);
+            _setSystemName (name);
         } catch (PropertyVetoException pve) {
             throw new InternalError (pve.toString ());
         }
@@ -229,7 +236,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      * @return file instance or <code>null</code>
      */
     public FixedFileSystem.Instance get (String path) {
-        return (FixedFileSystem.Instance) instances.get(path);
+        return instances.get(path);
     }
 
     /** Order the file behind others defaults in the folder.
@@ -237,7 +244,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      * @param file fullpath to file
      */
     public void addDefault (String folder, String file) {
-        Instance inst = (Instance) instances.get(folder);
+        Instance inst = instances.get(folder);
         if (inst == null) {
             inst = new Instance(true, null, null, null, (String) null);
             add(folder, inst);
@@ -259,7 +266,8 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
     
     /** For debugging only.
      * @return a string representation
-     */    
+     */
+    @SuppressWarnings("deprecation")
     public String toString () {
         return "FixedFileSystem[" + getSystemName () + "]" + instances.keySet (); // NOI18N
     }
@@ -271,7 +279,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      */    
     String annotateName (String resource) {
         synchronized (instances) {
-            Instance inst = (Instance) instances.get (resource);
+            Instance inst = instances.get(resource);
             return (inst == null) ? null : inst.displayName;
         }
     }
@@ -282,7 +290,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
     java.awt.Image annotateIcon (String resource) {
         Instance inst;
         synchronized (instances) {
-            inst = (Instance) instances.get (resource);
+            inst = instances.get(resource);
         }
         
         if (inst == null) return null;
@@ -293,10 +301,8 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
         if (inst.beanName == null) return null;
         
         try {
-            Class clazz = ((ClassLoader)Lookup.getDefault()
-                .lookup(ClassLoader.class)).loadClass(inst.beanName);
-            return org.openide.util.Utilities.getBeanInfo(clazz).getIcon(
-                BeanInfo.ICON_COLOR_16x16);
+            Class<?> clazz = Lookup.getDefault().lookup(ClassLoader.class).loadClass(inst.beanName);
+            return Utilities.getBeanInfo(clazz).getIcon(BeanInfo.ICON_COLOR_16x16);
         } catch (Exception ex) {
             return null;
         }
@@ -343,9 +349,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
     public String[] children (String f) {
         synchronized (instances) {
             ArrayList<String> l = new ArrayList<String> (10);
-            Iterator it = instances.keySet ().iterator ();
-            while (it.hasNext ()) {
-                String path = (String) it.next ();
+            for (String path : instances.keySet()) {
                 if (f.length () == 0) {
                     // Look for children of root folder.
                     if (path.lastIndexOf ('/') == -1)
@@ -357,7 +361,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
                 }
             }
             //System.err.println("FSS.children: " + f + " -> " + l);
-            return (String[]) l.toArray (new String[l.size ()]);
+            return l.toArray (new String[l.size ()]);
         }
     }
 
@@ -418,7 +422,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
         return s == null || !s.contains (attrName) ? null : Boolean.TRUE;
         */
         
-        Instance inst = (Instance) instances.get (name);
+        Instance inst = instances.get(name);
         if (inst == null) {
             return null;
         }
@@ -452,11 +456,10 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      * @return list of attribute names (none currently)
      */    
     public synchronized Enumeration<String> attributes (String name) {
-        
-        Instance inst = (Instance) instances.get (name);
-        if (inst == null) return org.openide.util.Enumerations.<String>empty();
+        Instance inst = instances.get(name);
+        if (inst == null) return Enumerations.<String>empty();
         Map<String, Object> m = inst.attributes;
-        if (m == null) return org.openide.util.Enumerations.<String>empty();
+        if (m == null) return Enumerations.<String>empty();
         return Collections.enumeration(m.keySet());
 
     }
@@ -493,7 +496,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      */    
     public boolean folder (String name) {
         synchronized (instances) {
-            Instance inst = (Instance) instances.get (name);
+            Instance inst = instances.get(name);
             if (inst == null) return false;
             return inst.folder;
         }
@@ -513,7 +516,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      */    
     public String mimeType (String name) {
         synchronized (instances) {
-            Instance inst = (Instance) instances.get (name);
+            Instance inst = instances.get(name);
             return (inst == null) ? null : inst.contentType;
         }
     }
@@ -524,7 +527,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      */    
     public long size (String name) {
         synchronized (instances) {
-            Instance inst = (Instance) instances.get (name);
+            Instance inst = instances.get(name);
             if (inst == null) return 0L;
             if (inst.folder) return 0L;
             if (inst.contents == null) return 0L;
@@ -540,7 +543,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
     public InputStream inputStream (String name) throws FileNotFoundException {
         Instance inst;
         synchronized (instances) {
-            inst = (Instance) instances.get (name);
+            inst = instances.get(name);
         }
         if (inst == null) throw new FileNotFoundException (name);
         if (inst.folder) throw new FileNotFoundException (name);

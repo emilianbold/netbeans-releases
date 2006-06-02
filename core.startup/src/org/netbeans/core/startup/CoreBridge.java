@@ -27,7 +27,7 @@ public abstract class CoreBridge {
     private static boolean lookupInitialized;
     
     public static CoreBridge getDefault () {
-        CoreBridge b = (CoreBridge)Lookup.getDefault().lookup (CoreBridge.class);
+        CoreBridge b = Lookup.getDefault().lookup(CoreBridge.class);
         if (b == null && lookupInitialized) {
             if (fake == null) {
                 fake = new FakeBridge();
@@ -43,13 +43,13 @@ public abstract class CoreBridge {
     }
     
     static void conditionallyLoaderPoolTransaction(boolean begin) {
-        CoreBridge b = (CoreBridge)Lookup.getDefault().lookup(CoreBridge.class);
+        CoreBridge b = Lookup.getDefault().lookup(CoreBridge.class);
         if (b != null) {
             b.loaderPoolTransaction(begin);
         }
     }
     static Lookup conditionallyLookupCacheLoad () {
-        CoreBridge b = (CoreBridge)Lookup.getDefault().lookup(CoreBridge.class);
+        CoreBridge b = Lookup.getDefault().lookup(CoreBridge.class);
         if (b != null) {
             return b.lookupCacheLoad (); 
         } else {
@@ -58,7 +58,7 @@ public abstract class CoreBridge {
     }
     
     static void conditionallyPrintStatus (String txt) {
-        CoreBridge b = (CoreBridge)Lookup.getDefault().lookup(CoreBridge.class);
+        CoreBridge b = Lookup.getDefault().lookup(CoreBridge.class);
         if (b != null) {
             b.setStatusText(txt);
         } else {

@@ -283,7 +283,7 @@ public final class Splash  implements SwingConstants {
 
                     SwingUtilities.layoutCompoundLabel(fm, text, null,
                                                        BOTTOM, LEFT, BOTTOM, LEFT,
-                                                       SplashComponent.this.view, new Rectangle(), rect, 0);
+                                                       SplashComponent.view, new Rectangle(), rect, 0);
                     dirty = dirty.union(rect);
                     // update screen (assume repaint manager optimizes unions;)
                     repaint(dirty);
@@ -418,7 +418,7 @@ public final class Splash  implements SwingConstants {
 
             SwingUtilities.layoutCompoundLabel(fm, text, null,
                                                BOTTOM, LEFT, BOTTOM, LEFT,
-                                               this.view, new Rectangle(), rect, 0);
+                                               SplashComponent.view, new Rectangle(), rect, 0);
             // turn anti-aliasing on for the splash text
             Graphics2D g2d = (Graphics2D)graphics;
             g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,

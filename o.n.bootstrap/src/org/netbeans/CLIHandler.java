@@ -804,9 +804,9 @@ public abstract class CLIHandler extends Object {
                 }
                 List<String> l = new ArrayList<String>(Arrays.asList(a));
                 l.removeAll(Collections.singleton(null));
-                args = (String[])l.toArray(new String[l.size()]);
+                args = l.toArray(new String[l.size()]);
             } else {
-                args = (String[])argsBackup.clone();
+                args = argsBackup.clone();
             }
         }
         

@@ -74,15 +74,15 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
 
     public static AntSettings getDefault () {
-        return (AntSettings) findObject (AntSettings.class, true);
+        return findObject(AntSettings.class, true);
     }
 
     public int getVerbosity () {
-        return ((Integer) getProperty (PROP_VERBOSITY)).intValue ();
+        return (Integer) getProperty(PROP_VERBOSITY);
     }
 
     public void setVerbosity (int v) {
-        putProperty (PROP_VERBOSITY, new Integer (v), true);
+        putProperty (PROP_VERBOSITY, v, true);
     }
 
     @SuppressWarnings("unchecked")
@@ -100,11 +100,11 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
     
     public boolean getSaveAll () {
-        return ((Boolean) getProperty (PROP_SAVE_ALL)).booleanValue ();
+        return (Boolean) getProperty(PROP_SAVE_ALL);
     }
     
     public void setSaveAll (boolean sa) {
-        putProperty (PROP_SAVE_ALL, sa ? Boolean.TRUE : Boolean.FALSE, true);
+        putProperty(PROP_SAVE_ALL, sa, true);
     }
     
     public IntrospectedInfo getCustomDefs () {
@@ -229,19 +229,19 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
     
     public boolean getAutoCloseTabs() {
-        return ((Boolean) getProperty(PROP_AUTO_CLOSE_TABS)).booleanValue();
+        return (Boolean) getProperty(PROP_AUTO_CLOSE_TABS);
     }
     
     public void setAutoCloseTabs(boolean b) {
-        putProperty(PROP_AUTO_CLOSE_TABS, Boolean.valueOf(b), true);
+        putProperty(PROP_AUTO_CLOSE_TABS, b, true);
     }
     
     public boolean getAlwaysShowOutput() {
-        return ((Boolean) getProperty(PROP_ALWAYS_SHOW_OUTPUT)).booleanValue();
+        return (Boolean) getProperty(PROP_ALWAYS_SHOW_OUTPUT);
     }
     
     public void setAlwaysShowOutput(boolean b) {
-        putProperty(PROP_ALWAYS_SHOW_OUTPUT, Boolean.valueOf(b), true);
+        putProperty(PROP_ALWAYS_SHOW_OUTPUT, b, true);
     }
     
 }

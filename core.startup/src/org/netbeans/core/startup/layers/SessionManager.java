@@ -173,7 +173,7 @@ public final class SessionManager {
      * @return layer, can be <code>null</null>
      */
     public FileSystem getLayer(String name) {
-        return (FileSystem) layers.get(name);
+        return layers.get(name);
     }
 
     /** Registers PropertyChangeListener to receive events.
@@ -219,7 +219,7 @@ public final class SessionManager {
         
         try {
             while (LocalFileSystemEx.hasLocks () && 0 < count) {
-                Thread.currentThread ().sleep (100);
+                Thread.sleep(100);
                 count--;
             }
         } catch (InterruptedException e) {

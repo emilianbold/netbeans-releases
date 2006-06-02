@@ -122,8 +122,8 @@ public abstract class FileSystem implements Serializable {
     private String systemName = "".intern(); // NOI18N
 
     /** Utility field used by event firing mechanism. */
-    private transient ListenerList fileStatusList;
-    private transient ListenerList vetoableChangeList;
+    private transient ListenerList<FileStatusListener> fileStatusList;
+    private transient ListenerList<VetoableChangeListener> vetoableChangeList;
     private transient PropertyChangeSupport changeSupport;
 
     /** Default constructor. */
@@ -531,7 +531,7 @@ public abstract class FileSystem implements Serializable {
     *
     * @param listener The listener to register.
     */
-    public final void addFileStatusListener(org.openide.filesystems.FileStatusListener listener) {
+    public final void addFileStatusListener(FileStatusListener listener) {
         synchronized (internLock) {
             // JST: Ok? Do not register listeners when the fs cannot change status?
             if (getStatus() == STATUS_NONE) {
@@ -539,7 +539,7 @@ public abstract class FileSystem implements Serializable {
             }
 
             if (fileStatusList == null) {
-                fileStatusList = new ListenerList(FileStatusListener.class);
+                fileStatusList = new ListenerList<FileStatusListener>();
             }
 
             fileStatusList.add(listener);
@@ -549,7 +549,7 @@ public abstract class FileSystem implements Serializable {
     /** Removes FileStatusListener from the list of listeners.
      *@param listener The listener to remove.
      */
-    public final void removeFileStatusListener(org.openide.filesystems.FileStatusListener listener) {
+    public final void removeFileStatusListener(FileStatusListener listener) {
         if (fileStatusList == null) {
             return;
         }
@@ -566,17 +566,17 @@ public abstract class FileSystem implements Serializable {
             return;
         }
 
-        List listeners = java.util.Arrays.asList(fileStatusList.getAllListeners());
+        List<FileStatusListener> listeners = fileStatusList.getAllListeners();
         dispatchEvent(new FileStatusDispatcher(listeners, event));
     }
 
     /** Adds listener for the veto of property change.
     * @param listener the listener
     */
-    public final void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
+    public final void addVetoableChangeListener(VetoableChangeListener listener) {
         synchronized (internLock) {
             if (vetoableChangeList == null) {
-                vetoableChangeList = new ListenerList(VetoableChangeListener.class);
+                vetoableChangeList = new ListenerList<VetoableChangeListener>();
             }
 
             vetoableChangeList.add(listener);
@@ -586,7 +586,7 @@ public abstract class FileSystem implements Serializable {
     /** Removes listener for the veto of property change.
     * @param listener the listener
     */
-    public final void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
+    public final void removeVetoableChangeListener(VetoableChangeListener listener) {
         if (vetoableChangeList == null) {
             return;
         }
@@ -600,21 +600,20 @@ public abstract class FileSystem implements Serializable {
     * @param n new value of the property
     * @exception PropertyVetoException if an listener vetoed the change
     */
-    protected final void fireVetoableChange(java.lang.String name, java.lang.Object o, java.lang.Object n)
+    protected final void fireVetoableChange(String name, Object o, Object n)
     throws PropertyVetoException {
         if (vetoableChangeList == null) {
             return;
         }
 
-        java.beans.PropertyChangeEvent e = null;
-        Object[] listeners = vetoableChangeList.getAllListeners();
+        PropertyChangeEvent e = null;
 
-        for (int i = 0; i < listeners.length; i++) {
+        for (VetoableChangeListener l : vetoableChangeList.getAllListeners()) {
             if (e == null) {
-                e = new java.beans.PropertyChangeEvent(this, name, o, n);
+                e = new PropertyChangeEvent(this, name, o, n);
             }
 
-            ((java.beans.VetoableChangeListener) listeners[i]).vetoableChange(e);
+            l.vetoableChange(e);
         }
     }
 
@@ -882,10 +881,10 @@ public abstract class FileSystem implements Serializable {
     }
 
     private static class FileStatusDispatcher extends EventDispatcher {
-        private java.util.List listeners;
+        private List<FileStatusListener> listeners;
         private FileStatusEvent fStatusEvent;
 
-        public FileStatusDispatcher(java.util.List listeners, FileStatusEvent fStatusEvent) {
+        public FileStatusDispatcher(List<FileStatusListener> listeners, FileStatusEvent fStatusEvent) {
             this.listeners = listeners;
             this.fStatusEvent = fStatusEvent;
         }
@@ -895,8 +894,7 @@ public abstract class FileSystem implements Serializable {
                 return;
             }
 
-            for (int i = 0; i < listeners.size(); i++) {
-                FileStatusListener fStatusListener = (FileStatusListener) listeners.get(i);
+            for (FileStatusListener fStatusListener : listeners) {
                 fStatusListener.annotationChanged(fStatusEvent);
             }
         }

@@ -25,6 +25,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
@@ -417,11 +418,11 @@ public class Repository implements Serializable {
             }
         }
 
-        Enumeration ee = getFileSystems();
+        Enumeration<? extends FileSystem> ee = getFileSystems();
         FileSystem fs;
 
         while (ee.hasMoreElements()) {
-            fs = (FileSystem) ee.nextElement();
+            fs = ee.nextElement();
 
             if (!fs.isPersistent()) {
                 removeFileSystem(fs);
@@ -456,10 +457,10 @@ public class Repository implements Serializable {
     public final FileObject find(String aPackage, String name, String ext) {
         assert FileUtil.assertDeprecatedMethod();
 
-        Enumeration en = getFileSystems();
+        Enumeration<? extends FileSystem> en = getFileSystems();
 
         while (en.hasMoreElements()) {
-            FileSystem fs = (FileSystem) en.nextElement();
+            FileSystem fs = en.nextElement();
             FileObject fo = fs.find(aPackage, name, ext);
 
             if (fo != null) {
@@ -481,10 +482,10 @@ public class Repository implements Serializable {
     public final FileObject findResource(String name) {
         assert FileUtil.assertDeprecatedMethod();
 
-        Enumeration en = getFileSystems();
+        Enumeration<? extends FileSystem> en = getFileSystems();
 
         while (en.hasMoreElements()) {
-            FileSystem fs = (FileSystem) en.nextElement();
+            FileSystem fs = en.nextElement();
             FileObject fo = fs.findResource(name);
 
             if (fo != null) {
@@ -557,12 +558,8 @@ public class Repository implements Serializable {
     *   <CODE>false</CODE> if it is removed
     */
     private void fireFileSystem(FileSystem fs, boolean add) {
-        Enumeration en = ((Hashtable) listeners.clone()).elements();
         RepositoryEvent ev = new RepositoryEvent(this, fs, add);
-
-        while (en.hasMoreElements()) {
-            RepositoryListener list = (RepositoryListener) en.nextElement();
-
+        for (RepositoryListener list : new HashSet<RepositoryListener>(listeners.values())) {
             if (add) {
                 list.fileSystemAdded(ev);
             } else {
@@ -571,15 +568,12 @@ public class Repository implements Serializable {
         }
     }
 
-    /** Fires info about reodering
+    /** Fires info about reordering
     * @param perm
     */
     private void fireFileSystemReordered(int[] perm) {
-        Enumeration en = ((Hashtable) listeners.clone()).elements();
         RepositoryReorderedEvent ev = new RepositoryReorderedEvent(this, perm);
-
-        while (en.hasMoreElements()) {
-            RepositoryListener list = (RepositoryListener) en.nextElement();
+        for (RepositoryListener list : new HashSet<RepositoryListener>(listeners.values())) {
             list.fileSystemPoolReordered(ev);
         }
     }

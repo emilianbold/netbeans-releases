@@ -297,11 +297,11 @@ final class MIMESupport extends Object {
             return fileObj.copy(target, name, ext);
         }
 
-        protected void fireFileDeletedEvent(Enumeration en, FileEvent fe) {
+        protected void fireFileDeletedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
             fileObj.fireFileDeletedEvent(en, fe);
         }
 
-        protected void fireFileFolderCreatedEvent(Enumeration en, FileEvent fe) {
+        protected void fireFileFolderCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
             fileObj.fireFileFolderCreatedEvent(en, fe);
         }
 
@@ -330,7 +330,7 @@ final class MIMESupport extends Object {
             return fileObj.isRoot();
         }
 
-        public Enumeration getData(boolean rec) {
+        public Enumeration<? extends FileObject> getData(boolean rec) {
             return fileObj.getData(rec);
         }
 
@@ -363,7 +363,7 @@ final class MIMESupport extends Object {
             fileObj.removeFileChangeListener(fcl);
         }
 
-        protected void fireFileRenamedEvent(Enumeration en, FileRenameEvent fe) {
+        protected void fireFileRenamedEvent(Enumeration<FileChangeListener> en, FileRenameEvent fe) {
             fileObj.fireFileRenamedEvent(en, fe);
         }
 
@@ -371,7 +371,7 @@ final class MIMESupport extends Object {
             fileObj.refresh(expected);
         }
 
-        protected void fireFileAttributeChangedEvent(Enumeration en, FileAttributeEvent fe) {
+        protected void fireFileAttributeChangedEvent(Enumeration<FileChangeListener> en, FileAttributeEvent fe) {
             fileObj.fireFileAttributeChangedEvent(en, fe);
         }
 
@@ -388,7 +388,7 @@ final class MIMESupport extends Object {
             fileObj.rename(lock, name, ext);
         }
 
-        protected void fireFileChangedEvent(Enumeration en, FileEvent fe) {
+        protected void fireFileChangedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
             fileObj.fireFileChangedEvent(en, fe);
         }
 
@@ -409,7 +409,7 @@ final class MIMESupport extends Object {
             fileObj.addFileChangeListener(fcl);
         }
 
-        protected void fireFileDataCreatedEvent(Enumeration en, FileEvent fe) {
+        protected void fireFileDataCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
             fileObj.fireFileDataCreatedEvent(en, fe);
         }
 
@@ -421,7 +421,7 @@ final class MIMESupport extends Object {
             return fileObj.createFolder(name);
         }
 
-        public Enumeration<? extends FileObject>  getChildren(boolean rec) {
+        public Enumeration<? extends FileObject> getChildren(boolean rec) {
             return fileObj.getChildren(rec);
         }
 

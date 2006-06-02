@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /** Object representing one module, possibly installed.

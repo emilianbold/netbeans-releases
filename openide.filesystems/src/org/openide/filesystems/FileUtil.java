@@ -491,17 +491,17 @@ public final class FileUtil extends Object {
     /** Copies attributes from one file to another.
     * Note: several special attributes will not be copied, as they should
     * semantically be transient. These include attributes used by the
-    * template wizard (but not the template atttribute itself).
+    * template wizard (but not the template attribute itself).
     * @param source source file object
     * @param dest destination file object
     * @exception IOException if the copying failed
     */
     public static void copyAttributes(FileObject source, FileObject dest)
     throws IOException {
-        Enumeration attrKeys = source.getAttributes();
+        Enumeration<String> attrKeys = source.getAttributes();
 
         while (attrKeys.hasMoreElements()) {
-            String key = (String) attrKeys.nextElement();
+            String key = attrKeys.nextElement();
 
             if (transientAttributes.contains(key)) {
                 continue;
@@ -629,11 +629,11 @@ public final class FileUtil extends Object {
                     continue;
                 }
 
-                Enumeration attrEnum = t.attrs(orig);
+                Enumeration<String> attrEnum = t.attrs(orig);
 
                 while (attrEnum.hasMoreElements()) {
                     // iterate thru all arguments
-                    String attrName = (String) attrEnum.nextElement();
+                    String attrName = attrEnum.nextElement();
 
                     // Note: even transient attributes set here!
                     Object value = t.getAttr(orig, attrName);
@@ -753,10 +753,10 @@ public final class FileUtil extends Object {
     private static boolean checkFreeName(FileObject fo, String name, String ext) {
         if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2)) || isMacOS()) {
             // case-insensitive, do some special check
-            Enumeration en = fo.getChildren(false);
+            Enumeration<? extends FileObject> en = fo.getChildren(false);
 
             while (en.hasMoreElements()) {
-                fo = (FileObject) en.nextElement();
+                fo = en.nextElement();
 
                 String n = fo.getName();
                 String e = fo.getExt();

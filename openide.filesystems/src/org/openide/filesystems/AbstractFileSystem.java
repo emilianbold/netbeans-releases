@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
+import org.openide.util.Enumerations;
+import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.SystemAction;
 
@@ -129,10 +131,10 @@ public abstract class AbstractFileSystem extends FileSystem {
      * Actually implements contract of FileSystem.refresh().
      */
     public void refresh(boolean expected) {
-        Enumeration en = getAbstractRoot().existingSubFiles(true);
+        Enumeration<AbstractFolder> en = getAbstractRoot().existingSubFiles(true);
 
         while (en.hasMoreElements()) {
-            FileObject fo = (FileObject) en.nextElement();
+            FileObject fo = en.nextElement();
             fo.refresh(expected);
         }
     }
@@ -167,7 +169,8 @@ public abstract class AbstractFileSystem extends FileSystem {
     @Deprecated
     public FileObject find(String aPackage, String name, String ext) {
         // create enumeration of name to look for
-        StringTokenizer st = new StringTokenizer(aPackage, "."); // NOI18N
+        @SuppressWarnings("unchecked") // XXX fix w/ Generics
+        Enumeration<String> st = (Enumeration<String>) new StringTokenizer(aPackage, "."); // NOI18N
 
         if ((name == null) || (ext == null)) {
             // search for folder, return the object only if it is folder
@@ -175,9 +178,7 @@ public abstract class AbstractFileSystem extends FileSystem {
 
             return ((fo != null) && fo.isFolder()) ? fo : null;
         } else {
-            Enumeration en = org.openide.util.Enumerations.concat(
-                    st, org.openide.util.Enumerations.singleton(name + '.' + ext)
-                );
+            Enumeration<String> en = Enumerations.concat(st, Enumerations.singleton(name + '.' + ext));
 
             // tries to find it (can return null)
             return getAbstractRoot().find(en);
@@ -216,19 +217,20 @@ public abstract class AbstractFileSystem extends FileSystem {
     * @param fo is FileObject. It`s reference yourequire to get.
     * @return Reference to FileObject
     */
-    protected Reference<FileObject> createReference(FileObject fo) {
-        return (new WeakReference<FileObject>(fo));
+    protected <T extends FileObject> Reference<T> createReference(T fo) {
+        return (new WeakReference<T>(fo));
     }
 
     /** This method allows to find Reference to resourceName
     * @param resourceName is name of resource
     * @return Reference to resourceName
     */
-    protected final Reference findReference(String resourceName) {
+    protected final Reference<? extends FileObject> findReference(String resourceName) {
         if (resourceName.length() == 0) {
             return null;
         } else {
-            StringTokenizer tok = new StringTokenizer(resourceName, "/"); // NOI18N
+            @SuppressWarnings("unchecked") // XXX use Generics when possible
+            Enumeration<String> tok = (Enumeration<String>) new StringTokenizer(resourceName, "/"); // NOI18N
 
             return getAbstractRoot().findRefIfExists(tok);
         }
@@ -251,7 +253,7 @@ public abstract class AbstractFileSystem extends FileSystem {
         } else {
             if (SYSTEM_ACTIONS == null) {
                 try {
-                    ClassLoader l = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+                    ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
 
                     if (l == null) {
                         l = getClass().getClassLoader();
@@ -405,7 +407,8 @@ public abstract class AbstractFileSystem extends FileSystem {
         if (name.length() == 0) {
             return getAbstractRoot();
         } else {
-            StringTokenizer tok = new StringTokenizer(name, "/"); // NOI18N
+            @SuppressWarnings("unchecked") // XXX use Generics when possible
+            Enumeration<String> tok = (Enumeration<String>) new StringTokenizer(name, "/"); // NOI18N
 
             return getAbstractRoot().findIfExists(tok);
         }

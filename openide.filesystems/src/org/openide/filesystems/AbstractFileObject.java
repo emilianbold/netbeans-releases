@@ -206,7 +206,7 @@ final class AbstractFileObject extends AbstractFolder {
     */
     public synchronized FileLock lock() throws IOException {
         if (lock != null) {
-            FileLock f = (FileLock) lock.get();
+            FileLock f = lock.get();
 
             if (f != null) {
                 //        System.out.println ("Already locked: " + this); // NOI18N
@@ -231,7 +231,7 @@ final class AbstractFileObject extends AbstractFolder {
         
         synchronized(this) {
             if (lock != null) {
-                currentLock = (FileLock) lock.get();
+                currentLock = lock.get();
             }
             
             if (currentLock == fLock) {
@@ -325,7 +325,7 @@ final class AbstractFileObject extends AbstractFolder {
     * @param fo FileObject
     * @return Reference to FileObject
     */
-    protected final Reference<FileObject> createReference(FileObject fo) {
+    protected final Reference<AbstractFolder> createReference(AbstractFolder fo) {
         return (getAbstractFileSystem().createReference(fo));
     }
 

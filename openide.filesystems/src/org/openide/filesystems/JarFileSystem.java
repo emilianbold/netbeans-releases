@@ -132,14 +132,14 @@ public class JarFileSystem extends AbstractFileSystem {
      * @param fo is FileObject. It`s reference yourequire to get.
      * @return Reference to FileObject
      */
-    protected Reference<FileObject> createReference(FileObject fo) {
+    protected <T extends FileObject> Reference<T> createReference(T fo) {
         aliveCount++;
 
         if ((checkTime > 0) && (watcherTask == null)) {
             watcherTask = req.post(watcherTask(), checkTime);
         }
 
-        return new Ref(fo);
+        return new Ref<T>(fo);
     }
 
     private void freeReference() {
@@ -288,7 +288,7 @@ public class JarFileSystem extends AbstractFileSystem {
                         }
 
                         public void fileDeleted(FileEvent fe) {
-                            Enumeration en = existingFileObjects(getRoot());
+                            Enumeration<? extends FileObject> en = existingFileObjects(getRoot());
 
                             while (en.hasMoreElements()) {
                                 AbstractFolder fo = (AbstractFolder) en.nextElement();
@@ -695,7 +695,7 @@ public class JarFileSystem extends AbstractFileSystem {
         Cache cache = getCache();
         String[] empty = new String[0];
 
-        Enumeration en = existingFileObjects(getRoot());
+        Enumeration<? extends FileObject> en = existingFileObjects(getRoot());
 
         while (en.hasMoreElements()) {
             AbstractFolder fo = (AbstractFolder) en.nextElement();
@@ -747,7 +747,7 @@ public class JarFileSystem extends AbstractFileSystem {
                 }
 
                 try {
-                    Enumeration en = j.entries();
+                    Enumeration<JarEntry> en = j.entries();
                     Cache newCache = new Cache(en);
                     lastModification = root.lastModified();
                     strongCache = newCache;
@@ -823,10 +823,10 @@ public class JarFileSystem extends AbstractFileSystem {
 
     /** Use soft-references to not throw away the data that quickly.
      * JarFS if often queried for its FOs e.g. by java parser, which
-     * leaves the references immediatelly.
+     * leaves the references immediately.
      */
-    private class Ref extends WeakReference<FileObject> implements Runnable {
-        public Ref(FileObject fo) {
+    private class Ref<T extends FileObject> extends WeakReference<T> implements Runnable {
+        public Ref(T fo) {
             super(fo, Utilities.activeReferenceQueue());
         }
 
@@ -1063,13 +1063,13 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     private static class Cache {
-        static Cache INVALID = new Cache(Enumerations.empty());
+        static Cache INVALID = new Cache(Enumerations.<JarEntry>empty());
         byte[] names = new byte[1000];
         private int nameOffset = 0;
         int[] EMPTY = new int[0];
         private Map<String, Folder> folders = new HashMap<String, Folder>();
 
-        public Cache(Enumeration en) {
+        public Cache(Enumeration<JarEntry> en) {
             parse(en);
             trunc();
         }
@@ -1088,11 +1088,11 @@ public class JarFileSystem extends AbstractFileSystem {
             return new String[] {  };
         }
 
-        private void parse(Enumeration en) {
+        private void parse(Enumeration<JarEntry> en) {
             folders.put("", new Folder()); // root folder
 
             while (en.hasMoreElements()) {
-                JarEntry je = (JarEntry) en.nextElement();
+                JarEntry je = en.nextElement();
                 String name = je.getName();
                 boolean isFolder = false;
 

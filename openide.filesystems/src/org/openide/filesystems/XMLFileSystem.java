@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -134,7 +135,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
     /**  Url location of XML document    */
     private URL[] urlsToXml = new URL[] {  };
-    private transient FileObjRef rootRef;
+    private transient FileObjRef<? extends FileObject> rootRef;
 
     /** Constructor. Creates new XMLFileSystem */
     public XMLFileSystem() {
@@ -461,8 +462,8 @@ public final class XMLFileSystem extends AbstractFileSystem {
     public void removeNotify() {
     }
 
-    protected Reference<FileObject> createReference(FileObject fo) {
-        return new FileObjRef(fo);
+    protected <T extends FileObject> Reference<T> createReference(T fo) {
+        return new FileObjRef<T>(fo);
     }
 
     private void refreshChildrenInAtomicAction(AbstractFolder fo, ResourceElem resElem) {
@@ -489,7 +490,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
     /** refreshes children recursively.*/
     private void refreshChildren(AbstractFolder fo, ResourceElem resElem) {
         if (fo.isRoot()) {
-            initializeReference(rootRef = new FileObjRef(fo), resElem);
+            initializeReference(rootRef = new FileObjRef<AbstractFolder>(fo), resElem);
         }
 
         java.util.List<String> nameList = resElem.getChildren();
@@ -505,6 +506,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
         for (int i = 0; i < children.length; i++) {
             AbstractFolder fo2 = (AbstractFolder) fo.getFileObject(names[i]);
+            @SuppressWarnings("unchecked")
             FileObjRef currentRef = (FileObjRef) findReference(fo2.getPath());
             int diff = initializeReference(currentRef, children[i]);
             fo2.lastModified();
@@ -841,6 +843,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
          * @return appropriate (serializable) value or <CODE>null</CODE> if the attribute is unset (or could not be properly restored for some reason)
          */
         public Object readAttribute(String name, String attrName) {
+            @SuppressWarnings("unchecked")
             FileObjRef ref = (FileObjRef) fs.findReference(name);
 
             if ((ref == null) && (name.length() == 0) && (fs.rootRef != null)) {
@@ -870,14 +873,15 @@ public final class XMLFileSystem extends AbstractFileSystem {
          * @return enumeration of keys (as strings)
          */
         public Enumeration<String> attributes(String name) {
-            FileObjRef ref = (FileObjRef) fs.findReference(name);
+            @SuppressWarnings("unchecked")
+            FileObjRef<? extends FileObject> ref = (FileObjRef) fs.findReference(name);
 
             if ((ref == null) && (name.length() == 0) && (fs.rootRef != null)) {
                 ref = fs.rootRef;
             }
 
             if (ref == null) {
-                return org.openide.util.Enumerations.empty();
+                return Enumerations.empty();
             }
 
             return ref.attributes();
@@ -901,14 +905,14 @@ public final class XMLFileSystem extends AbstractFileSystem {
     /** Strong reference to FileObject. To FileObject may be attached attributes (XMLMapAttr)
      *  and info about if it is folder or not.
      */
-    private static class FileObjRef extends WeakReference<FileObject> {
-        private FileObject fo;
+    private static class FileObjRef<T extends FileObject> extends WeakReference<T> {
+        private T fo;
         private Object content;
         private XMLMapAttr foAttrs;
         byte isFolder = -1;
         Object urlContext = null;
 
-        public FileObjRef(FileObject fo) {
+        public FileObjRef(T fo) {
             super(fo);
             this.fo = fo;
         }
@@ -973,7 +977,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
         public Enumeration<String> attributes() {
             if (foAttrs == null) {
-                return org.openide.util.Enumerations.empty();
+                return Enumerations.empty();
             } else {
                 Set<String> s = new HashSet<String>(foAttrs.keySet());
 

@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -37,7 +36,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** The system FileSystem - represents system files under $NETBEANS_HOME/system.
@@ -68,6 +66,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
 
     /** @param fss list of file systems to delegate to
     */
+    @SuppressWarnings("deprecation")
     private SystemFileSystem (FileSystem[] fss) throws PropertyVetoException {
         super (fss);
         user = (ModuleLayeredFileSystem) fss[0];
@@ -109,7 +108,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
                 s.add (arr[i]);
 
         // create own internal copy of passed filesystems
-        setDelegates ((FileSystem []) arr.clone ());
+        setDelegates(arr.clone());
         firePropertyChange ("layers", null, null); // NOI18N
     }
     
@@ -120,7 +119,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
     */
     public FileSystem[] getLayers() {
         // don't return reference to internal buffer
-        return (FileSystem []) getDelegates ().clone ();
+        return getDelegates().clone();
     }
 
     protected FileSystem createWritableOnForRename (String oldName, String newName) throws IOException {        
@@ -144,6 +143,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
     
     /** This filesystem cannot be removed from pool, it is persistent.
     */
+    @Deprecated
     public boolean isPersistent () {
         return true;
     }
@@ -168,8 +168,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
             if (bundleName != null) {
                 try {
                     bundleName = org.openide.util.Utilities.translate(bundleName);
-                    ResourceBundle b = NbBundle.getBundle (bundleName, Locale.getDefault (),
-                        (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)); // systemclassloader
+                    ResourceBundle b = NbBundle.getBundle(bundleName);
                     try {
                         return b.getString (fo.getPath());
                     } catch (MissingResourceException ex) {

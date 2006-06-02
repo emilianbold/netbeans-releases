@@ -56,8 +56,8 @@ public class SAXFactoryImpl extends SAXParserFactory {
         SAXFactoryImpl.install();
     }
     
-    public boolean getFeature(java.lang.String name) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
-        return ((Boolean)features.get(name)).booleanValue();
+    public boolean getFeature(String name) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
+        return features.get(name);
     }
 
     public javax.xml.parsers.SAXParser newSAXParser() throws ParserConfigurationException, SAXException {

@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.openide.windows.OutputWriter;
 
 /**

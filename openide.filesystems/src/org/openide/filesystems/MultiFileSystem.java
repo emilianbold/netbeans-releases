@@ -120,10 +120,10 @@ public class MultiFileSystem extends FileSystem {
      * Actually implements contract of FileSystem.refresh().
      */
     public void refresh(boolean expected) {
-        Enumeration en = getMultiRoot().existingSubFiles(true);
+        Enumeration<AbstractFolder> en = getMultiRoot().existingSubFiles(true);
 
         while (en.hasMoreElements()) {
-            FileObject fo = (FileObject) en.nextElement();
+            FileObject fo = en.nextElement();
             fo.refresh(expected);
         }
     }
@@ -271,13 +271,14 @@ public class MultiFileSystem extends FileSystem {
     @Deprecated // have to override for compat
     public FileObject find(String aPackage, String name, String ext) {
         // create enumeration of name to look for
-        StringTokenizer st = new StringTokenizer(aPackage, "."); // NOI18N
-        Enumeration en;
+        @SuppressWarnings("unchecked") // XXX use Generics
+        Enumeration<String> st = (Enumeration<String>) new StringTokenizer(aPackage, "."); // NOI18N
+        Enumeration<String> en;
 
         if ((name == null) || (ext == null)) {
             en = st;
         } else {
-            en = org.openide.util.Enumerations.concat(st, org.openide.util.Enumerations.singleton(name + '.' + ext));
+            en = Enumerations.concat(st, Enumerations.singleton(name + '.' + ext));
         }
 
         // tries to find it (can return null)
@@ -298,8 +299,8 @@ public class MultiFileSystem extends FileSystem {
         if (name.length() == 0) {
             return getMultiRoot();
         } else {
-            StringTokenizer tok = new StringTokenizer(name, "/"); // NOI18N
-
+            @SuppressWarnings("unchecked") // XXX use Generics
+            Enumeration<String> tok = (Enumeration<String>) new StringTokenizer(name, "/"); // NOI18N
             return getMultiRoot().find(tok);
         }
     }

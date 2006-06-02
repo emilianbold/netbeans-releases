@@ -178,7 +178,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             mfs.beginAtomicAction();
 
             // enumeration of all existing objects
-            Enumeration en = existingSubFiles(true);
+            Enumeration<AbstractFolder> en = existingSubFiles(true);
 
             while (en.hasMoreElements()) {
                 MultiFileObject mfo = (MultiFileObject) en.nextElement();
@@ -205,7 +205,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             getMultiFileSystem().beginAtomicAction();
 
             FileSystem[] fileSystems = getMultiFileSystem().getDelegates();
-            Enumeration en = existingSubFiles(true);
+            Enumeration<AbstractFolder> en = existingSubFiles(true);
 
             while (en.hasMoreElements()) {
                 MultiFileObject mfo = (MultiFileObject) en.nextElement();
@@ -615,10 +615,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
     @Deprecated // have to override for compat
     public void setImportant(boolean b) {
-        Enumeration en = delegates();
+        Enumeration<FileObject> en = delegates();
 
         while (en.hasMoreElements()) {
-            FileObject fo = (FileObject) en.nextElement();
+            FileObject fo = en.nextElement();
             fo.setImportant(b);
         }
 
@@ -875,10 +875,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             FileObject fo = getMultiFileSystem().findResourceOn(systems[i], path);
 
             if (fo != null) {
-                Enumeration e = fo.getAttributes();
+                Enumeration<String> e = fo.getAttributes();
 
                 while (e.hasMoreElements()) {
-                    String attr = (String) e.nextElement();
+                    String attr = e.nextElement();
                     s.add(attr);
                 }
             }
@@ -886,7 +886,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             if (prefix != null) {
                 fo = systems[i].getRoot();
 
-                Enumeration e;
+                Enumeration<String> e;
 
                 if (fo instanceof MultiFileObject) {
                     e = ((MultiFileObject) fo).getAttributes(""); // NOI18N
@@ -897,7 +897,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 }
 
                 while (e.hasMoreElements()) {
-                    String attr = (String) e.nextElement();
+                    String attr = e.nextElement();
 
                     if (attr.startsWith(prefix) && (attr.substring(prefix.length()).indexOf('\\') == -1)) {
                         s.add(attr.substring(prefix.length()));
@@ -1279,10 +1279,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             return;
         }
 
-        Enumeration en = delegates();
+        Enumeration<FileObject> en = delegates();
 
         while (en.hasMoreElements()) {
-            FileObject fo = (FileObject) en.nextElement();
+            FileObject fo = en.nextElement();
             fo.refresh(expected);
         }
 
@@ -1428,10 +1428,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     * @exception IOException if it fails
     */
     private static void copyAttrs(FileObject source, FileObject target) {
-        Enumeration en = source.getAttributes();
+        Enumeration<String> en = source.getAttributes();
 
         while (en.hasMoreElements()) {
-            String key = (String) en.nextElement();
+            String key = en.nextElement();
             Object value = source.getAttribute(key);
 
             try {
@@ -1451,11 +1451,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     private boolean needsMask(FileLock lock, boolean deleteDelegates)
     throws IOException {
         MfLock lck = testLock(lock);
-        Enumeration e = getMultiFileSystem().delegates(getPath());
+        Enumeration<FileObject> e = getMultiFileSystem().delegates(getPath());
         boolean needsMask = false;
 
         while (e.hasMoreElements()) {
-            FileObject fo = (FileObject) e.nextElement();
+            FileObject fo = e.nextElement();
             FileLock lockForFo = lck.findLock(fo);
 
             if (lockForFo == null) {
@@ -1526,10 +1526,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         * @param systems a set of filesystems we should create lock on
         * @exception IOException if the lock cannot be obtained
         */
-        public MfLock(FileObject leader, Enumeration delegates, Set systems)
+        public MfLock(FileObject leader, Enumeration<FileObject> delegates, Set systems)
         throws IOException {
             while (delegates.hasMoreElements()) {
-                FileObject fo = (FileObject) delegates.nextElement();
+                FileObject fo = delegates.nextElement();
 
                 if (systems.contains(fo.getFileSystem())) {
                     FileLock l = fo.lock();

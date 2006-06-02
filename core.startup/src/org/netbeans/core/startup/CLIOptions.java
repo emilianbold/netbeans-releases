@@ -14,11 +14,9 @@
 package org.netbeans.core.startup;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Locale;
 import org.netbeans.CLIHandler;
-import org.netbeans.CLIHandler.Args;
 import org.netbeans.TopSecurityManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;

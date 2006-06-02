@@ -12,6 +12,8 @@
  */
 package org.openide.filesystems;
 
+import java.util.List;
+
 
 /**
  * Support class for impl. of FileChangeListener
@@ -26,14 +28,14 @@ class FCLSupport {
     public static final int ATTR_CHANGED = 5;
 
     /** listeners */
-    private ListenerList listeners;
+    private ListenerList<FileChangeListener> listeners;
 
     /* Add new listener to this object.
     * @param l the listener
     */
     synchronized final void addFileChangeListener(FileChangeListener fcl) {
         if (listeners == null) {
-            listeners = new ListenerList(FileChangeListener.class);
+            listeners = new ListenerList<FileChangeListener>();
         }
 
         listeners.add(fcl);
@@ -49,7 +51,7 @@ class FCLSupport {
     }
 
     final void dispatchEvent(FileEvent fe, int operation) {
-        Object[] fcls;
+        List<FileChangeListener> fcls;
 
         synchronized (this) {
             if (listeners == null) {
@@ -59,10 +61,8 @@ class FCLSupport {
             fcls = listeners.getAllListeners();
         }
 
-        for (int i = 0; i < fcls.length; i++) {
-            if (fcls[i] instanceof FileChangeListener) {
-                dispatchEvent((FileChangeListener) fcls[i], fe, operation);
-            }
+        for (FileChangeListener l : fcls) {
+            dispatchEvent(l, fe, operation);
         }
     }
 
@@ -103,6 +103,6 @@ class FCLSupport {
     /** @return true if there is a listener
     */
     synchronized final boolean hasListeners() {
-        return (listeners != null) && (listeners.getAllListeners().length != 0);
+        return listeners != null && listeners.hasListeners();
     }
 }

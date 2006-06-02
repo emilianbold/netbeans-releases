@@ -111,10 +111,10 @@ public class FileSystemCapability extends Object {
     */
     @Deprecated
     public FileObject findResource(String resName) {
-        Enumeration en = fileSystems();
+        Enumeration<? extends FileSystem> en = fileSystems();
 
         while (en.hasMoreElements()) {
-            FileSystem fs = (FileSystem) en.nextElement();
+            FileSystem fs = en.nextElement();
             FileObject fo = fs.findResource(resName);
 
             if (fo != null) {
@@ -166,10 +166,10 @@ public class FileSystemCapability extends Object {
     */
     @Deprecated
     public final FileObject find(String aPackage, String name, String ext) {
-        Enumeration en = fileSystems();
+        Enumeration<? extends FileSystem> en = fileSystems();
 
         while (en.hasMoreElements()) {
-            FileSystem fs = (FileSystem) en.nextElement();
+            FileSystem fs = en.nextElement();
             FileObject fo = fs.find(aPackage, name, ext);
 
             if (fo != null) {

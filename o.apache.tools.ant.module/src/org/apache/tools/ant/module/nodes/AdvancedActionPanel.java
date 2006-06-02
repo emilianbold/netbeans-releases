@@ -18,7 +18,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;

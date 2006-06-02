@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
+import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
@@ -838,11 +839,11 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
 
         /** Enum of attributes for one file.
         */
-        public Enumeration attrs(String fileName) {
+        public Enumeration<String> attrs(String fileName) {
             Map m = (Map) get(fileName);
 
             if (m == null) {
-                return org.openide.util.Enumerations.empty();
+                return Enumerations.empty();
             } else {
                 HashSet s = new HashSet(m.keySet());
 

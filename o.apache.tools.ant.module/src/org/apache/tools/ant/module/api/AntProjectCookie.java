@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.apache.tools.ant.module.api;
 
 import javax.swing.event.ChangeListener;
 import java.io.File;
-import java.io.Serializable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.openide.nodes.Node;

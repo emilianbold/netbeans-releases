@@ -21,7 +21,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import org.netbeans.CLIHandler;
 import org.netbeans.Module;
 import org.openide.ErrorManager;
@@ -82,7 +81,7 @@ public class CLICoreBridge extends CLIHandler {
             }
         }
         
-        URLClassLoader loader = new URLClassLoader((URL[])urls.toArray(new URL[0]), getClass().getClassLoader());
+        URLClassLoader loader = new URLClassLoader(urls.toArray(new URL[0]), getClass().getClassLoader());
         MainLookup.systemClassLoaderChanged(loader);
         Lookup clis = Lookup.getDefault();
         Collection handlers = clis.lookupAll(CLIHandler.class);

@@ -1150,7 +1150,7 @@ final class XMLMapAttr implements Map {
         }
 
         public int size() {
-            Enumeration<?> all = fo.getAttributes();
+            Enumeration<String> all = fo.getAttributes();
             int cnt = 0;
             while (all.hasMoreElements()) {
                 cnt++;

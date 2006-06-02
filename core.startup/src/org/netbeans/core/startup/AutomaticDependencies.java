@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.openide.ErrorManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.xml.XMLUtil;
@@ -180,7 +179,6 @@ public final class AutomaticDependencies {
         Map<String,Dependency> modDeps = new HashMap<String,Dependency>();
         Map<String,Dependency> tokDeps = new HashMap<String,Dependency>();
         Map<String,Dependency> pkgDeps = new HashMap<String,Dependency>();
-        Iterator it = dependencies.iterator();
         for (Dependency d: dependencies) {
             switch (d.getType()) {
             case Dependency.TYPE_MODULE:
@@ -194,8 +192,6 @@ public final class AutomaticDependencies {
             case Dependency.TYPE_REQUIRES:
                 tokDeps.put(d.getName(), d);
                 break;
-            case Dependency.TYPE_IDE:
-                throw new IllegalArgumentException("No TYPE_IDE dependencies permitted for " + cnb);
             case Dependency.TYPE_JAVA:
                 // ignored
                 break;
@@ -205,7 +201,6 @@ public final class AutomaticDependencies {
         }
         Set<String> messages = new TreeSet<String>();
         // Now go through transformations and see if they apply.
-        it = groups.iterator();
         for (TransformationGroup g: groups) {
             if (g.isExcluded(cnb)) {
                 continue;
@@ -354,7 +349,7 @@ public final class AutomaticDependencies {
          * Make a real dependency from this pattern.
          */
         public final Dependency createDependency() {
-            return (Dependency)Dependency.create(type(), toManifestForm()).iterator().next();
+            return Dependency.create(type(), toManifestForm()).iterator().next();
         }
         
         /**
@@ -397,7 +392,7 @@ public final class AutomaticDependencies {
         public Dependency applies(Map<String, Dependency> modDeps,
 		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
 		Set<Dependency> dependencies, String type) {
-            Dependency d = (Dependency)modDeps.get(codenamebase);
+            Dependency d = modDeps.get(codenamebase);
             if (d == null) return null;
             if (type.equals("cancel")) {
                 // That's enough.
@@ -499,7 +494,7 @@ public final class AutomaticDependencies {
         public Dependency applies(Map<String, Dependency> modDeps,
 		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
 		Set<Dependency> dependencies, String type) {
-            Dependency d = (Dependency)pkgDeps.get(bname);
+            Dependency d = pkgDeps.get(bname);
             if (d == null) {
                 return null;
             }
@@ -518,7 +513,7 @@ public final class AutomaticDependencies {
         public void update(Map<String, Dependency> modDeps,
 		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
 		Set<Dependency> dependencies) {
-            Dependency d = (Dependency)pkgDeps.get(bname);
+            Dependency d = pkgDeps.get(bname);
             if (d != null && older(d)) {
                 dependencies.remove(d);
                 dependencies.add(createDependency());
@@ -548,7 +543,7 @@ public final class AutomaticDependencies {
         public Dependency applies(Map<String, Dependency> modDeps,
 		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
 		Set<Dependency> dependencies, String type) {
-            Dependency d = (Dependency)tokDeps.get(name);
+            Dependency d = tokDeps.get(name);
             if (d == null) {
                 return null;
             }
@@ -773,7 +768,7 @@ public final class AutomaticDependencies {
         private void dispatch(final boolean fireOnlyIfMixed) throws SAXException {
             if (fireOnlyIfMixed && buffer.length() == 0) return; //skip it
 
-            Object[] ctx = (Object[]) context.peek();
+            Object[] ctx = context.peek();
             String here = (String) ctx[0];
             Attributes attrs = (Attributes) ctx[1];
             if ("description".equals(here)) {

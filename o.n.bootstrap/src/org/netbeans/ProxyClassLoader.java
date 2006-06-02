@@ -153,7 +153,7 @@ public class ProxyClassLoader extends ClassLoader {
      * @return	  the resulting <code>Class</code> object
      * @exception ClassNotFoundException if the class could not be found
      */
-    protected synchronized final Class loadClass(String name, boolean resolve)
+    protected synchronized final Class<?> loadClass(String name, boolean resolve)
                                             throws ClassNotFoundException {
         zombieCheck(name);
         String filename = name.replace('.', '/').concat(".class"); // NOI18N
@@ -430,7 +430,7 @@ public class ProxyClassLoader extends ClassLoader {
             all.keySet().removeAll(packages.keySet());
             packages.putAll(all);
         }
-        return (Package[])packages.values().toArray(new Package[packages.size()]);
+        return packages.values().toArray(new Package[packages.size()]);
     }
     
     public Package getPackageAccessibly(String name) {

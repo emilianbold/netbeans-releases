@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
@@ -360,7 +361,7 @@ public abstract class FileObject extends Object implements Serializable {
         return false;
     }
 
-    /** Overriden in AbstractFolder */
+    /** Overridden in AbstractFolder */
     boolean hasExtOverride(String ext) {
         return false;
     }
@@ -376,56 +377,56 @@ public abstract class FileObject extends Object implements Serializable {
     public abstract void removeFileChangeListener(FileChangeListener fcl);
 
     /** Fire data creation event.
-    * @param en enumeration of {@link FileChangeListener}s that should receive the event
+    * @param en listeners that should receive the event
     * @param fe the event to fire in this object
     */
-    protected void fireFileDataCreatedEvent(Enumeration en, FileEvent fe) {
+    protected void fireFileDataCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
         dispatchEvent(FCLSupport.DATA_CREATED, en, fe);
     }
 
     /** Fire folder creation event.
-    * @param en enumeration of {@link FileChangeListener}s that should receive the event
+    * @param en listeners that should receive the event
     * @param fe the event to fire in this object
     */
-    protected void fireFileFolderCreatedEvent(Enumeration en, FileEvent fe) {
+    protected void fireFileFolderCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
         dispatchEvent(FCLSupport.FOLDER_CREATED, en, fe);
     }
 
     /** Fire file change event.
-    * @param en enumeration of {@link FileChangeListener}s that should receive the event
+    * @param en listeners that should receive the event
     * @param fe the event to fire in this object
     */
-    protected void fireFileChangedEvent(Enumeration en, FileEvent fe) {
+    protected void fireFileChangedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
         dispatchEvent(FCLSupport.FILE_CHANGED, en, fe);
     }
 
     /** Fire file deletion event.
-    * @param en enumeration of {@link FileChangeListener}s that should receive the event
+    * @param en listeners that should receive the event
     * @param fe the event to fire in this object
     */
-    protected void fireFileDeletedEvent(Enumeration en, FileEvent fe) {
+    protected void fireFileDeletedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
         dispatchEvent(FCLSupport.FILE_DELETED, en, fe);
     }
 
     /** Fire file attribute change event.
-    * @param en enumeration of {@link FileChangeListener}s that should receive the event
+    * @param en listeners that should receive the event
     * @param fe the event to fire in this object
     */
-    protected void fireFileAttributeChangedEvent(Enumeration en, FileAttributeEvent fe) {
+    protected void fireFileAttributeChangedEvent(Enumeration<FileChangeListener> en, FileAttributeEvent fe) {
         dispatchEvent(FCLSupport.ATTR_CHANGED, en, fe);
     }
 
     /** Fire file rename event.
-    * @param en enumeration of {@link FileChangeListener}s that should receive the event
+    * @param en listeners that should receive the event
     * @param fe the event to fire in this object
     */
-    protected void fireFileRenamedEvent(Enumeration en, FileRenameEvent fe) {
+    protected void fireFileRenamedEvent(Enumeration<FileChangeListener> en, FileRenameEvent fe) {
         dispatchEvent(FCLSupport.FILE_RENAMED, en, fe);
     }
 
     /** Puts the dispatch event into the filesystem.
     */
-    private final void dispatchEvent(int op, Enumeration en, FileEvent fe) {
+    private final void dispatchEvent(int op, Enumeration<FileChangeListener> en, FileEvent fe) {
         try {
             FileSystem fs = getFileSystem();
             fs.dispatchEvent(new ED(op, en, fe));
@@ -434,7 +435,7 @@ public abstract class FileObject extends Object implements Serializable {
         }
     }
 
-    final void dispatchEvent(Enumeration en, FileEvent fe) {
+    final void dispatchEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
         try {
             getFileSystem().dispatchEvent(new ED(en, fe));
         } catch (FileStateInvalidException ex) {
@@ -576,7 +577,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @param rec whether to recursively search subfolders
     * @return enumeration of type <code>FileObject</code> (satisfying {@link #isData})
     */
-    public Enumeration getData(boolean rec) {
+    public Enumeration<? extends FileObject> getData(boolean rec) {
         return Enumerations.filter(getChildren(rec), new OnlyFolders(false));
     }
 
@@ -792,16 +793,16 @@ public abstract class FileObject extends Object implements Serializable {
 
     private class ED extends FileSystem.EventDispatcher {
         private int op;
-        private Enumeration en;
+        private Enumeration<FileChangeListener> en;
         private FileEvent fe;
 
-        public ED(int op, Enumeration en, FileEvent fe) {
+        public ED(int op, Enumeration<FileChangeListener> en, FileEvent fe) {
             this.op = op;
             this.en = en;
             this.fe = fe;
         }
 
-        public ED(Enumeration en, FileEvent fe) {
+        public ED(Enumeration<FileChangeListener> en, FileEvent fe) {
             this.op = -1;
             this.en = en;
             this.fe = fe;
@@ -815,10 +816,10 @@ public abstract class FileObject extends Object implements Serializable {
                 this.op = fe.getFile().isFolder() ? FCLSupport.FOLDER_CREATED : FCLSupport.DATA_CREATED;
             }
 
-            java.util.LinkedList<FileChangeListener> newEnum = new java.util.LinkedList<FileChangeListener>(); // later lazy                
+            LinkedList<FileChangeListener> newEnum = new LinkedList<FileChangeListener>(); // later lazy                
 
             while (en.hasMoreElements()) {
-                FileChangeListener fcl = (FileChangeListener) en.nextElement();
+                FileChangeListener fcl = en.nextElement();
 
                 if (onlyPriority && !isPriorityListener(fcl)) {
                     newEnum.add(fcl);

@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.Util;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
@@ -173,7 +172,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 fileCache.put(prefix, fileCachePerPrefix);
             }
             for (int i = 0; i < dirs.length; i++) {
-                Set names = (Set)fileCachePerPrefix.get(dirs[i]);
+                Set<String> names = fileCachePerPrefix.get(dirs[i]);
                 if (names != null && names.contains(name)) {
                     return makeFile(dirs[i], prefix, name);
                 }
