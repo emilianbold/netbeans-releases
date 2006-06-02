@@ -32,6 +32,10 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  */
 public class SvnClientInvocationHandler implements InvocationHandler {
 
+    private static final String ISVNSTATUS_IMPL = System.getProperty("ISVNStatus.impl", "");
+    private static final String GET_SINGLE_STATUS = "getSingleStatus";     
+    private static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy";
+    
     private static Set<String> remoteMethods = new HashSet<String>();
     private static Set<String> locallyHandledMethod = new HashSet<String>();
 
@@ -59,7 +63,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         remoteMethods.add("lock"); // NOI19N
         remoteMethods.add("unlock"); // NOI19N
 
-        locallyHandledMethod.add("getSingleStatus");
+        locallyHandledMethod.add(GET_SINGLE_STATUS);
+        locallyHandledMethod.add(GET_INFO_FROM_WORKING_COPY);
     }
 
     private final ISVNClientAdapter adapter;
@@ -67,9 +72,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private Cancellable cancellable;
     private SvnProgressSupport support;
 
-    private static final String GET_SINGLE_STATUS = "getSingleStatus";     
     private SvnWcParser wcParser = new SvnWcParser();
-    private static final String ISVNSTATUS_IMPL = System.getProperty("ISVNStatus.impl", "");
 
    /**
      *
@@ -178,6 +181,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
 
         if (GET_SINGLE_STATUS.equals(method.getName())) {
             returnValue = wcParser.getSingleStatus((File) args[0]);
+        } else if (GET_INFO_FROM_WORKING_COPY.equals(method.getName())) {
+            returnValue= wcParser.getInfoFromWorkingCopy((File) args[0]);
         }
 
         return returnValue;
