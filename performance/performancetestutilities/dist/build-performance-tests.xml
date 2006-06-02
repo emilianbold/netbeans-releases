@@ -63,21 +63,10 @@ Microsystems, Inc. All Rights Reserved.
         <move file="${netbeans.dest.dir}/etc/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf.original" />
         <copy file="${performance.testutilities.dist.dir}/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
     </target>
-    
+
     <!-- Replace released netbeans.conf with original netbeans.conf -->
     <target name="copy_original_ide_cfg_file">
         <move file="${netbeans.dest.dir}/etc/netbeans.conf.original" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
-    </target>
-
-    <!-- add branding to welcome screen to avoid internet access during startup testing -->
-    <target name="setup_test_ide">
-        <copy file="${performance.testutilities.dist.dir}/org-netbeans-modules-welcome_nb.jar" 
-              tofile="${netbeans.dest.dir}/nb6.0/modules/locale/org-netbeans-modules-welcome_nb.jar" />
-    </target>
-
-    <!-- clean the stuff performed in setup_test_ide -->
-    <target name="teardown_test_ide">
-        <delete file="${netbeans.dest.dir}/nb6.0/modules/locale/org-netbeans-modules-welcome_nb.jar"/>
     </target>
 
     <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
