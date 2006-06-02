@@ -475,7 +475,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         try {
             if (getLayoutDesigner().updateCurrentState() && fireChange) {
-                formModel.fireFormChanged(false); // hack: to regenerate code once again
+                formModel.fireFormChanged(true); // hack: to regenerate code once again
             }
             autoUndo = false;
         } finally {
