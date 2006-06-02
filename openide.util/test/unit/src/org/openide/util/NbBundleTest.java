@@ -7,13 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.util;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.jar.Attributes;
 import junit.framework.TestCase;
 
 /**
@@ -61,6 +65,39 @@ public class NbBundleTest extends TestCase {
             fail("Cannot throw NumberFormatException when read secure value.");
         }
         
+    }
+    
+    public static void testGetLocalizedValue() throws Exception {
+        Map<String,String> m = new HashMap<String,String>();
+        m.put("k1", "v1");
+        m.put("k1_ja", "v1_ja");
+        m.put("k1_ja_JP", "v1_ja_JP");
+        m.put("k2", "v2");
+        m.put("k3_ja", "v3_ja");
+        assertEquals("v1", NbBundle.getLocalizedValue(m, "k1", Locale.ENGLISH));
+        assertEquals("v1_ja", NbBundle.getLocalizedValue(m, "k1", Locale.JAPANESE));
+        assertEquals("v1_ja_JP", NbBundle.getLocalizedValue(m, "k1", Locale.JAPAN));
+        assertEquals("v2", NbBundle.getLocalizedValue(m, "k2", Locale.ENGLISH));
+        assertEquals("v2", NbBundle.getLocalizedValue(m, "k2", Locale.JAPANESE));
+        assertEquals("v2", NbBundle.getLocalizedValue(m, "k2", Locale.JAPAN));
+        assertEquals(null, NbBundle.getLocalizedValue(m, "k3", Locale.ENGLISH));
+        assertEquals("v3_ja", NbBundle.getLocalizedValue(m, "k3", Locale.JAPANESE));
+        assertEquals("v3_ja", NbBundle.getLocalizedValue(m, "k3", Locale.JAPAN));
+        Attributes attr = new Attributes();
+        attr.putValue("k1", "v1");
+        attr.putValue("k1_ja", "v1_ja");
+        attr.putValue("k1_ja_JP", "v1_ja_JP");
+        attr.putValue("k2", "v2");
+        attr.putValue("k3_ja", "v3_ja");
+        assertEquals("v1", NbBundle.getLocalizedValue(attr, new Attributes.Name("k1"), Locale.ENGLISH));
+        assertEquals("v1_ja", NbBundle.getLocalizedValue(attr, new Attributes.Name("k1"), Locale.JAPANESE));
+        assertEquals("v1_ja_JP", NbBundle.getLocalizedValue(attr, new Attributes.Name("k1"), Locale.JAPAN));
+        assertEquals("v2", NbBundle.getLocalizedValue(attr, new Attributes.Name("k2"), Locale.ENGLISH));
+        assertEquals("v2", NbBundle.getLocalizedValue(attr, new Attributes.Name("k2"), Locale.JAPANESE));
+        assertEquals("v2", NbBundle.getLocalizedValue(attr, new Attributes.Name("k2"), Locale.JAPAN));
+        assertEquals(null, NbBundle.getLocalizedValue(attr, new Attributes.Name("k3"), Locale.ENGLISH));
+        assertEquals("v3_ja", NbBundle.getLocalizedValue(attr, new Attributes.Name("k3"), Locale.JAPANESE));
+        assertEquals("v3_ja", NbBundle.getLocalizedValue(attr, new Attributes.Name("k3"), Locale.JAPAN));
     }
     
 }

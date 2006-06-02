@@ -756,7 +756,12 @@ public class NbBundle extends Object {
             this.attrs = attrs;
         }
 
-        public String get(String k) {
+        public String get(Object _k) {
+            if (!(_k instanceof String)) {
+                return null;
+            }
+            String k = (String) _k;
+
             Attributes.Name an;
 
             try {
