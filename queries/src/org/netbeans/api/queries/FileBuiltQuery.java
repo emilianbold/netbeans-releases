@@ -7,13 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.queries;
 
-import java.util.Iterator;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -29,8 +28,8 @@ import org.openide.util.Lookup;
  */
 public final class FileBuiltQuery {
     
-    private static final Lookup.Result/*<FileBuiltQueryImplementation>*/ implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(FileBuiltQueryImplementation.class));
+    private static final Lookup.Result<FileBuiltQueryImplementation> implementations =
+        Lookup.getDefault().lookupResult(FileBuiltQueryImplementation.class);
     
     private FileBuiltQuery() {}
     
@@ -64,9 +63,7 @@ public final class FileBuiltQuery {
      * @return a status object that can be listened to, or null for no answer
      */
     public static Status getStatus(FileObject file) {
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            FileBuiltQueryImplementation fbqi = (FileBuiltQueryImplementation)it.next();
+        for (FileBuiltQueryImplementation fbqi : implementations.allInstances()) {
             Status s = fbqi.getStatus(file);
             if (s != null) {
                 return s;

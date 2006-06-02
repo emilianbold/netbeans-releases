@@ -164,6 +164,7 @@ public abstract class AbstractFileSystem extends FileSystem {
     * @return FileObject that represents file with given name or
     *   <CODE>null</CODE> if the file does not exist
     */
+    @Deprecated
     public FileObject find(String aPackage, String name, String ext) {
         // create enumeration of name to look for
         StringTokenizer st = new StringTokenizer(aPackage, "."); // NOI18N
@@ -538,7 +539,7 @@ public abstract class AbstractFileSystem extends FileSystem {
     */
     public interface List extends Serializable {
         /** @deprecated Only public by accident. */
-
+        @Deprecated
         /* public static final */ long serialVersionUID = -6242105832891012528L;
 
         /** Get a list of children files for a given folder.
@@ -554,7 +555,7 @@ public abstract class AbstractFileSystem extends FileSystem {
     */
     public interface Change extends Serializable {
         /** @deprecated Only public by accident. */
-
+        @Deprecated
         /* public static final */ long serialVersionUID = -5841597109944924596L;
 
         /** Create new folder.
@@ -594,7 +595,7 @@ public abstract class AbstractFileSystem extends FileSystem {
     */
     public interface Transfer extends Serializable {
         /** @deprecated Only public by accident. */
-
+        @Deprecated
         /* public static final */ long serialVersionUID = -8945397853892302838L;
 
         /** Move a file.
@@ -626,7 +627,7 @@ public abstract class AbstractFileSystem extends FileSystem {
     */
     public interface Info extends Serializable {
         /** @deprecated Only public by accident. */
-
+        @Deprecated
         /* public static final */ long serialVersionUID = -2438286177948307985L;
 
         /**
@@ -708,7 +709,7 @@ public abstract class AbstractFileSystem extends FileSystem {
     */
     public interface Attr extends Serializable {
         /** @deprecated Only public by accident. */
-
+        @Deprecated
         /* public static final */ long serialVersionUID = 5978845941846736946L;
 
         /** Get the file attribute with the specified name.

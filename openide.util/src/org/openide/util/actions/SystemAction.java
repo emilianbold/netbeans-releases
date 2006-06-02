@@ -343,7 +343,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
         List<SystemAction> l = new Vector<SystemAction>(Arrays.asList(actions1));
         l.addAll(Arrays.asList(actions2));
 
-        return (SystemAction[]) l.toArray(actions1);
+        return l.toArray(actions1);
     }
 
     /** Create the default popup menu representation of an array of actions.
@@ -352,6 +352,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     *
     * @deprecated Use {@link org.openide.util.Utilities#actionsToPopup}
     */
+    @Deprecated
     public static JPopupMenu createPopupMenu(SystemAction[] actions) {
         return Utilities.actionsToPopup(actions, Utilities.actionsGlobalContext());
     }

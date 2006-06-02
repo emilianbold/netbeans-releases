@@ -29,6 +29,7 @@ public class FoldingIOException extends IOException {
     * @deprecated Better to create a new <code>IOException</code> and use its {@link initCause} method.
     * @param t a foreign folded Throwable
     */
+    @Deprecated
     public FoldingIOException(Throwable t) {
         super(t.getMessage());
         this.t = t;

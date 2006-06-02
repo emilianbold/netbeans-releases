@@ -7,13 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.filesystems;
 
-import org.openide.util.Enumerations;
-import org.openide.util.NbBundle;
+package org.openide.filesystems;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,15 +20,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-
 import java.net.URL;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
-
+import org.openide.util.Enumerations;
+import org.openide.util.NbBundle;
 
 /** This is the base for all implementations of file objects on a filesystem.
 * Provides basic information about the object (its name, parent,
@@ -169,6 +166,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @return the fully-qualified filename
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public String getPackageNameExt(char separatorChar, char extSepChar) {
         assert FileUtil.assertDeprecatedMethod();
 
@@ -197,6 +195,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @return the fully-qualified filename
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public String getPackageName(char separatorChar) {
         assert FileUtil.assertDeprecatedMethod();
 
@@ -532,6 +531,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @deprecated No longer used. Instead use
     * <a href="@PROJECTS/QUERIES@/org/netbeans/api/queries/SharabilityQuery.html"><code>SharabilityQuery</code></a>.
     */
+    @Deprecated
     public abstract void setImportant(boolean b);
 
     /** Get all children of this folder (files and subfolders). If the file does not have children
@@ -697,6 +697,7 @@ public abstract class FileObject extends Object implements Serializable {
      * @return <CODE>true</CODE> if file is read-only
      * @deprecated Please use the {@link #canWrite}.
      */
+    @Deprecated
     public abstract boolean isReadOnly();
 
     /**

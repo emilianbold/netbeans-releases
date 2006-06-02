@@ -113,6 +113,7 @@ public final class Utilities {
     public static final int OS_TRU64 = OS_SUNOS << 1;
 
     /** @deprecated please use OS_TRU64 instead */
+    @Deprecated
     public static final int OS_DEC = OS_TRU64 << 1;
 
     /** Operating system is OS/2. */
@@ -433,6 +434,7 @@ public final class Utilities {
     * @return the lines after wrapping
     * @deprecated use {@link #wrapStringToArray(String, int, BreakIterator, boolean)} since it is better for I18N
     */
+    @Deprecated
     public static String[] wrapStringToArray(String original, int width, boolean wrapWords, boolean removeNewLines) {
         BreakIterator bi = (wrapWords ? BreakIterator.getWordInstance() : BreakIterator.getCharacterInstance());
 
@@ -594,6 +596,7 @@ widthcheck:  {
     * @return the whole string with embedded newlines
     * @deprecated Use {@link #wrapString (String, int, BreakIterator, boolean)} as it is friendlier to I18N.
     */
+    @Deprecated
     public static String wrapString(String original, int width, boolean wrapWords, boolean removeNewLines) {
         // substitute original newlines with spaces,
         // remove newlines from head and tail
@@ -1985,6 +1988,7 @@ widthcheck:  {
      * @see #getUsableScreenBounds()
      * @see #findCenterBounds(Dimension)
      */
+    @Deprecated
     public static final Dimension getScreenSize() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
@@ -2002,6 +2006,7 @@ widthcheck:  {
      * @param approveButtonText
      * @deprecated Not needed in JDK 1.4.
      */
+    @Deprecated
     public static final int showJFileChooser(
         javax.swing.JFileChooser chooser, java.awt.Component parent, java.lang.String approveButtonText
     ) {
@@ -2081,6 +2086,7 @@ widthcheck:  {
     * @deprecated Deprecated in favor of the potentially much faster (and possibly more correct) {@link #topologicalSort}.
     */
     @SuppressWarnings("unchecked") // do not bother, it is deprecated anyway
+    @Deprecated
     public static List partialSort(List l, Comparator c, boolean stable)
     throws UnorderableException {
         // map from objects in the list to null or sets of objects they are greater than
@@ -2827,6 +2833,7 @@ widthcheck:  {
      * @deprecated Use {@link File#toURI} and {@link URI#toURL} instead under JDK 1.4.
      *             ({@link File#toURL} is buggy in JDK 1.3 and the bugs are not fixed in JDK 1.4.)
      */
+    @Deprecated
     public static URL toURL(File f) throws MalformedURLException {
         if (f == null) {
             throw new NullPointerException();
@@ -2855,6 +2862,7 @@ widthcheck:  {
      * @deprecated Use {@link URI#URI(String)} and {@link File#File(URI)} instead under JDK 1.4.
      *             (There was no proper equivalent under JDK 1.3.)
      */
+    @Deprecated
     public static File toFile(URL u) {
         if (u == null) {
             throw new NullPointerException();
@@ -2895,6 +2903,7 @@ widthcheck:  {
     * @see #partialSort
     * @deprecated Used only by the deprecated partialSort
     */
+    @Deprecated
     public static class UnorderableException extends RuntimeException {
         static final long serialVersionUID = 6749951134051806661L;
         private Collection unorderable;

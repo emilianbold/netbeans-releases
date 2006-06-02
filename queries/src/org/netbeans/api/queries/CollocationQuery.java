@@ -7,14 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.queries;
 
 import java.io.File;
-import java.util.Iterator;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -27,8 +26,8 @@ import org.openide.util.Lookup;
  */
 public final class CollocationQuery {
     
-    private static final Lookup.Result/*<CollocationQueryImplementation>*/ implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(CollocationQueryImplementation.class));
+    private static final Lookup.Result<CollocationQueryImplementation> implementations =
+        Lookup.getDefault().lookupResult(CollocationQueryImplementation.class);
     
     private CollocationQuery() {}
     
@@ -50,9 +49,7 @@ public final class CollocationQuery {
             throw new IllegalArgumentException("Parameter file2 was not "+  // NOI18N
                 "normalized. Was "+file2+" instead of "+FileUtil.normalizeFile(file2));  // NOI18N
         }
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            CollocationQueryImplementation cqi = (CollocationQueryImplementation)it.next();
+        for (CollocationQueryImplementation cqi : implementations.allInstances()) {
             if (cqi.areCollocated(file1, file2)) {
                 return true;
             }
@@ -71,9 +68,7 @@ public final class CollocationQuery {
             throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
                 "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
         }
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            CollocationQueryImplementation cqi = (CollocationQueryImplementation)it.next();
+        for (CollocationQueryImplementation cqi : implementations.allInstances()) {
             File root = cqi.findRoot(file);
             if (root != null) {
                 return root;

@@ -186,6 +186,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
     * @param cap capabilities for this filesystem
      * @deprecated Useless.
     */
+    @Deprecated
     public XMLFileSystem(FileSystemCapability cap) {
         this();
         setCapability(cap);
@@ -234,6 +235,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
      * @deprecated experimental method. Nobody should rely on this method yet.
      * @since 1.14
      */
+    @Deprecated
     public URL[] getXmlUrls() {
         return urlsToXml;
     }
@@ -256,6 +258,11 @@ public final class XMLFileSystem extends AbstractFileSystem {
         } finally {
             finishAtomicAction();
         }
+    }
+
+    @SuppressWarnings("deprecation") // need to set it for compat
+    private void _setSystemName(String s) throws PropertyVetoException {
+        setSystemName(s);
     }
 
     private synchronized void setXmlUrls(URL[] urls, boolean validate)
@@ -281,7 +288,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
         urlsToXml = new URL[urls.length];
 
         try {
-            setSystemName("XML_" + urls[0].toExternalForm().replace('/','-')); // NOI18N
+            _setSystemName("XML_" + urls[0].toExternalForm().replace('/','-')); // NOI18N
         } catch (PropertyVetoException pvx) {
             urlsToXml = origUrls;
             rootElem = null;

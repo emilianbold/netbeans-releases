@@ -7,13 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
 import java.io.IOException;
-
 
 /** Exception thrown to signal that external
 * execution and compilation is not supported on a given filesystem.
@@ -21,6 +21,7 @@ import java.io.IOException;
 * @author Jaroslav Tulach
 * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
 */
+@Deprecated
 public class EnvironmentNotSupportedException extends IOException {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -1138390681913514558L;

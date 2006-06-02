@@ -86,16 +86,19 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
     /** File name of special file in each folder where attributes are saved.
      * @deprecated does not handle XML attributes
      */
+    @Deprecated
     public final static String ATTR_NAME = "filesystem"; // NOI18N
 
     /** Extension of special file in each folder where attributes are saved.
      * @deprecated does not handle XML attributes
      */
+    @Deprecated
     public final static String ATTR_EXT = "attributes"; // NOI18N
 
     /** Name with extension of special file in each folder where attributes are saved.
      * @deprecated does not handle XML attributes
      */
+    @Deprecated
     public final static String ATTR_NAME_EXT = ATTR_NAME + '.' + ATTR_EXT;
     private final static String ATTR_NAME_EXT_XML = System.getProperty(
             "org.openide.filesystems.DefaultAttributes.ATTR_NAME_EXT_XML", ".nbattrs"

@@ -13,6 +13,7 @@
 
 package org.openide.filesystems;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Set;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -50,12 +52,14 @@ public abstract class FileSystem implements Serializable {
      * Property name indicating whether filesystem is hidden.
      * @deprecated The property is now hidden.
      */
+    @Deprecated
     public static final String PROP_HIDDEN = "hidden"; // NOI18N
 
     /**
      * Property name giving internal system name of filesystem.
      * @deprecated This system name should now be avoided in favor of identifying files persistently by URL.
      */
+    @Deprecated
     public static final String PROP_SYSTEM_NAME = "systemName"; // NOI18N
 
     /** Property name giving display name of filesystem.
@@ -78,11 +82,11 @@ public abstract class FileSystem implements Serializable {
 
     /** Empty status */
     private static final Status STATUS_NONE = new Status() {
-            public String annotateName(String name, java.util.Set files) {
+            public String annotateName(String name, Set<? extends FileObject> files) {
                 return name;
             }
 
-            public java.awt.Image annotateIcon(java.awt.Image icon, int iconType, java.util.Set files) {
+            public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
                 return icon;
             }
         };
@@ -104,6 +108,8 @@ public abstract class FileSystem implements Serializable {
 
     /** Describes capabilities of the filesystem.
     */
+    @Deprecated // have to store it for compat
+    // XXX javac still reports it even though @Deprecated, and @SuppressWarnings("deprecation") does not help either
     private FileSystemCapability capability;
 
     /** property listener on FileSystemCapability. */
@@ -164,6 +170,7 @@ public abstract class FileSystem implements Serializable {
     * @param hide <code>true</code> if the filesystem should be hidden
      * @deprecated This property is now useless.
     */
+    @Deprecated
     public final void setHidden(boolean hide) {
         if (hide != hidden) {
             hidden = hide;
@@ -174,6 +181,7 @@ public abstract class FileSystem implements Serializable {
     /** Getter for the hidden property.
      * @deprecated This property is now useless.
     */
+    @Deprecated
     public final boolean isHidden() {
         return hidden;
     }
@@ -191,6 +199,7 @@ public abstract class FileSystem implements Serializable {
     * @return true if the filesystem should be persistent
      * @deprecated This property is long since useless.
     */
+    @Deprecated
     protected boolean isPersistent() {
         return false;
     }
@@ -228,6 +237,7 @@ public abstract class FileSystem implements Serializable {
     * @return string with system name
      * @deprecated The system name should now be avoided in favor of identifying files persistently by URL.
     */
+    @Deprecated
     public final String getSystemName() {
         return systemName;
     }
@@ -245,6 +255,7 @@ public abstract class FileSystem implements Serializable {
     * @exception PropertyVetoException if the change is not allowed by a listener
      * @deprecated The system name should now be avoided in favor of identifying files persistently by URL.
     */
+    @Deprecated
     protected final void setSystemName(String name) throws PropertyVetoException {
         synchronized (Repository.class) {
             if (systemName.equals(name)) {
@@ -303,6 +314,7 @@ public abstract class FileSystem implements Serializable {
     *   <CODE>null</CODE> if the file does not exist
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead, or use {@link #findResource} if you are not interested in classpaths.
     */
+    @Deprecated
     public FileObject find(String aPackage, String name, String ext) {
         assert FileUtil.assertDeprecatedMethod();
 
@@ -384,6 +396,7 @@ public abstract class FileSystem implements Serializable {
     *    and compilation cannot be supported
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public void prepareEnvironment(Environment env) throws EnvironmentNotSupportedException {
         throw new EnvironmentNotSupportedException(this);
     }
@@ -403,6 +416,7 @@ public abstract class FileSystem implements Serializable {
     * Subclasses cannot override it.
      * @deprecated Capabilities are no longer used.
     */
+    @Deprecated
     public final FileSystemCapability getCapability() {
         if (capability == null) {
             capability = new FileSystemCapability.Bean();
@@ -417,6 +431,7 @@ public abstract class FileSystem implements Serializable {
     * @param capability the capability to use
      * @deprecated Capabilities are no longer used.
     */
+    @Deprecated
     protected final void setCapability(FileSystemCapability capability) {
         if (this.capability != null) {
             this.capability.removePropertyChangeListener(getCapabilityChangeListener());
@@ -782,7 +797,7 @@ public abstract class FileSystem implements Serializable {
         * @return the annotated name (may be the same as the passed-in name)
         * @exception ClassCastException if the files in the set are not of valid types
         */
-        public String annotateName(String name, java.util.Set files);
+        public String annotateName(String name, Set<? extends FileObject> files);
 
         /** Annotate the icon of a file cluster.
          * <p>Please do <em>not</em> modify the original; create a derivative icon image,
@@ -793,7 +808,7 @@ public abstract class FileSystem implements Serializable {
         * @return the annotated icon (may be the same as the passed-in icon)
         * @exception ClassCastException if the files in the set are not of valid types
         */
-        public java.awt.Image annotateIcon(java.awt.Image icon, int iconType, java.util.Set files);
+        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files);
     }
 
     /** Extension interface for Status provides HTML-formatted annotations.
@@ -827,7 +842,7 @@ public abstract class FileSystem implements Serializable {
          * @see <a href="@OPENIDE/LOADERS@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
          * @see org.openide.nodes.Node#getHtmlDisplayName
          **/
-        public String annotateNameHtml(String name, java.util.Set files);
+        public String annotateNameHtml(String name, Set<? extends FileObject> files);
     }
 
     /** Interface that allows filesystems to set up the Java environment
@@ -835,6 +850,7 @@ public abstract class FileSystem implements Serializable {
     * Currently just used to append entries to the external class path.
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public static abstract class Environment extends Object {
         public Environment() {
             assert FileUtil.assertDeprecatedMethod();
@@ -844,6 +860,7 @@ public abstract class FileSystem implements Serializable {
         * @param classPathElement string representing the one element
         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
+        @Deprecated
         public void addClassPath(String classPathElement) {
         }
     }

@@ -121,6 +121,7 @@ public class JarFileSystem extends AbstractFileSystem {
     * @param cap the capability
      * @deprecated Useless.
     */
+    @Deprecated
     public JarFileSystem(FileSystemCapability cap) {
         this();
         setCapability(cap);
@@ -189,6 +190,11 @@ public class JarFileSystem extends AbstractFileSystem {
     public void setJarFile(final File aRoot) throws IOException, PropertyVetoException {
         setJarFile(aRoot, true);
     }
+    
+    @SuppressWarnings("deprecation") // need to set it for compat
+    private void _setSystemName(String s) throws PropertyVetoException {
+        setSystemName(s);
+    }
 
     private void setJarFile(final File aRoot, boolean refreshRoot)
     throws IOException, PropertyVetoException {
@@ -235,11 +241,7 @@ public class JarFileSystem extends AbstractFileSystem {
         }
 
         synchronized (closeSync) {
-            try {
-                setSystemName(s);
-            } catch (PropertyVetoException vex) {
-                throw vex;
-            }
+            _setSystemName(s);
 
             closeCurrentRoot(false);
             jar = tempJar;
@@ -342,6 +344,7 @@ public class JarFileSystem extends AbstractFileSystem {
     * Adds name of the ZIP/JAR file, if it has been set, to the class path.
      * @deprecated Useless.
     */
+    @Deprecated
     public void prepareEnvironment(Environment env) {
         if (root != null) {
             env.addClassPath(root.getAbsolutePath());

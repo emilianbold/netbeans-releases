@@ -7,30 +7,36 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import java.beans.PropertyVetoException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.Reference;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.filesystems.AbstractFileSystem.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.util.*;
-import org.openide.ErrorManager;
-
 
 /**
  * Simple implementation of memory file system.
  * @author Jaroslav Tulach
  */
-final class MemoryFileSystem extends AbstractFileSystem implements Info, Change, AbstractFileSystem.List, Attr {
+final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileSystem.Info, AbstractFileSystem.Change, AbstractFileSystem.List, AbstractFileSystem.Attr {
     private static final Logger ERR = Logger.getLogger(MemoryFileSystem.class.getName());
     
     /** time when the filesystem was created. It is supposed to be the default
@@ -41,6 +47,11 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     /** maps String to Entry */
     private Map<String, Entry> entries = initEntry();
     
+    @SuppressWarnings("deprecation") // need to set it for compat
+    private void _setSystemName(String s) throws PropertyVetoException {
+        setSystemName(s);
+    }
+
     /** Creates new MemoryFS */
     public MemoryFileSystem() {
         attr = this;
@@ -50,7 +61,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
 
         
         try {
-            setSystemName("MemoryFileSystem" + String.valueOf(System.identityHashCode(this)));
+            _setSystemName("MemoryFileSystem" + String.valueOf(System.identityHashCode(this)));
         } catch (PropertyVetoException ex) {
             ex.printStackTrace();
         }

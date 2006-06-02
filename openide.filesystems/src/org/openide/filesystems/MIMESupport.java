@@ -133,8 +133,9 @@ final class MIMESupport extends Object {
                     return (MIMEResolver[])resolvers;
                 }
                 if (resolvers instanceof Set) {
-                    // XXX should use Union2 for better type safety
-                    creators = (Set)resolvers;
+                    @SuppressWarnings("unchecked") // XXX should use Union2 for better type safety
+                    Set<Thread> _creators = (Set) resolvers;
+                    creators = _creators;
                     if (creators.contains (Thread.currentThread())) {
                         // prevent stack overflow
                         ERR.fine("Stack Overflow prevention. Returning previousResolvers: " + previousResolvers);
@@ -286,6 +287,7 @@ final class MIMESupport extends Object {
             return fileObj.getParent();
         }
 
+        @Deprecated // have to override for compat
         public String getPackageNameExt(char separatorChar, char extSepChar) {
             return fileObj.getPackageNameExt(separatorChar, extSepChar);
         }
@@ -303,6 +305,7 @@ final class MIMESupport extends Object {
             fileObj.fireFileFolderCreatedEvent(en, fe);
         }
 
+        @Deprecated // have to override for compat
         public void setImportant(boolean b) {
             fileObj.setImportant(b);
         }
@@ -343,6 +346,7 @@ final class MIMESupport extends Object {
             return fileObj.isValid();
         }
 
+        @Deprecated // have to override for compat
         public boolean isReadOnly() {
             return fileObj.isReadOnly();
         }
@@ -426,6 +430,7 @@ final class MIMESupport extends Object {
             fileObj.setAttribute(attrName, value);
         }
 
+        @Deprecated // have to override for compat
         public String getPackageName(char separatorChar) {
             return fileObj.getPackageName(separatorChar);
         }

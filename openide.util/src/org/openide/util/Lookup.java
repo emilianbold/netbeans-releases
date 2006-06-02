@@ -103,14 +103,14 @@ public abstract class Lookup {
         // Try MetaInfServicesLookup as a default, which may also
         // have a org.openide.util.Lookup line specifying the lookup.
         Lookup misl = Lookups.metaInfServices(l);
-        defaultLookup = (Lookup) misl.lookup(Lookup.class);
+        defaultLookup = misl.lookup(Lookup.class);
 
         if (defaultLookup != null) {
             return defaultLookup;
         }
 
         // You may also specify a Lookup.Provider.
-        Lookup.Provider prov = (Lookup.Provider) misl.lookup(Lookup.Provider.class);
+        Lookup.Provider prov = misl.lookup(Lookup.Provider.class);
 
         if (prov != null) {
             defaultLookup = Lookups.proxy(prov);
@@ -227,6 +227,7 @@ public abstract class Lookup {
          *   is going to be better typed with JDK1.5 templates and should produce
          *   the same result.
          */
+        @Deprecated
         public Template() {
             this(null);
         }

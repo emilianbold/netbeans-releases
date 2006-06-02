@@ -38,6 +38,7 @@ import org.openide.util.Lookup;
  *   is now {@link Lookup} as described in <a href="util/doc-files/api.html#lookup">
  *   services registration and lookup</a> page.
 */
+@Deprecated
 public abstract class ServiceType extends Object implements Serializable, HelpCtx.Provider {
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7573598174423654252L;
@@ -79,6 +80,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
      * @exception IllegalStateException if something goes wrong, but should not happen
      * @deprecated Service instance files should instead be copied in order to clone them.
      */
+    @Deprecated
     public final ServiceType createClone() {
         Exception anEx;
 
@@ -118,6 +120,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
      * @return a new cloned instance that does not have any listeners
      * @deprecated Service instance files should instead be copied in order to clone them.
      */
+    @Deprecated
     protected Object clone() throws CloneNotSupportedException {
         ServiceType t = (ServiceType) super.clone();
 
@@ -196,6 +199,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
     * services in the system.
     * @deprecated Use lookup instead.
     */
+    @Deprecated
     public static abstract class Registry implements Serializable {
         /** suid */
         final static long serialVersionUID = 8721000770371416481L;
@@ -232,6 +236,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
         * @param arr a list of {@link ServiceType}s
         * @deprecated Better to change service instance files instead.
         */
+        @Deprecated
         public abstract void setServiceTypes(List arr);
 
         /** Find the service type implemented as a given class.
@@ -245,6 +250,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
         * @return the desired type or <code>null</code> if it does not exist
          * @deprecated Just use lookup.
         */
+        @Deprecated
         public ServiceType find(Class clazz) {
             Enumeration en = services();
 
@@ -289,6 +295,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
     *   is now {@link Lookup} as described in <a href="util/doc-files/api.html#lookup">
     *   services registration and lookup</a> page.
     */
+    @Deprecated
     public static final class Handle extends Object implements java.io.Serializable {
         /** generated Serialized Version UID */
         static final long serialVersionUID = 7233109534462148872L;
@@ -324,7 +331,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
 
                 // try to find it by class
                 try {
-                    serviceTypeClass = Class.forName(className, true, (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class));
+                    serviceTypeClass = Class.forName(className, true, Lookup.getDefault().lookup(ClassLoader.class));
                     clazz = serviceTypeClass.asSubclass(ServiceType.class);
 
                     while (serviceTypeClass.getSuperclass() != ServiceType.class) {
@@ -342,7 +349,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
                 }
 
                 // try to find the executor by name
-                ServiceType.Registry r = (ServiceType.Registry) Lookup.getDefault().lookup(ServiceType.Registry.class);
+                ServiceType.Registry r = Lookup.getDefault().lookup(ServiceType.Registry.class);
                 Enumeration en = r.services(clazz);
                 ServiceType some = r.find(clazz);
 

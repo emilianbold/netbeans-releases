@@ -7,16 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
-import org.openide.util.Enumerations;
-import org.openide.util.actions.SystemAction;
-
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-
+import org.openide.util.Enumerations;
+import org.openide.util.actions.SystemAction;
 
 /**
  * General base class for filesystems which proxy to others.
@@ -270,20 +268,7 @@ public class MultiFileSystem extends FileSystem {
         return al.toArray(new SystemAction[al.size()]);
     }
 
-    /* Finds file when its name is provided.
-    *
-    * @param aPackage package name where each package is separated by a dot
-    * @param name name of the file (without dots) or <CODE>null</CODE> if
-    *    one want to obtain name of package and not file in it
-    * @param ext extension of the file or <CODE>null</CODE> if one needs
-    *    package and not file name
-    *
-    * @warning when one of name or ext is <CODE>null</CODE> then name and
-    *    ext should be ignored and scan should look only for a package
-    *
-    * @return FileObject that represents file with given name or
-    *   <CODE>null</CODE> if the file does not exist
-    */
+    @Deprecated // have to override for compat
     public FileObject find(String aPackage, String name, String ext) {
         // create enumeration of name to look for
         StringTokenizer st = new StringTokenizer(aPackage, "."); // NOI18N
@@ -477,6 +462,7 @@ public class MultiFileSystem extends FileSystem {
      * If they do not support it, it does not care.
      * @deprecated Useless.
      */
+    @Deprecated
     public void prepareEnvironment(FileSystem.Environment env)
     throws EnvironmentNotSupportedException {
         FileSystem[] layers = getDelegates();

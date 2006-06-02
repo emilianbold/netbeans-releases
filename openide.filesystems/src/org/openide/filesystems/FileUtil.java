@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -451,7 +451,7 @@ public final class FileUtil extends Object {
     /** Finds appropriate FileObjects to java.io.File if possible.
      * If not possible then empty array is returned. More FileObjects may
      * correspond to one java.io.File that`s why array is returned.
-     * @param file File whose coresponding FileObjects will be looked for.
+     * @param file File whose corresponding FileObjects will be looked for.
      * The file has to be "normalized" otherwise IllegalArgumentException is thrown.
      * See {@link #normalizeFile} for how to do that.
      * @return corresponding FileObjects or empty array  if no
@@ -459,6 +459,7 @@ public final class FileUtil extends Object {
      * @since 1.29
      * @deprecated Use {@link #toFileObject} instead.
      */
+    @Deprecated
     public static FileObject[] fromFile(File file) {
         FileObject[] retVal;
 
@@ -533,6 +534,7 @@ public final class FileUtil extends Object {
     * @exception IOException if the extraction fails
     * @deprecated Use of XML filesystem layers generally obsoletes this method.
     */
+    @Deprecated
     public static void extractJar(final FileObject fo, final InputStream is)
     throws IOException {
         FileSystem fs = fo.getFileSystem();
@@ -837,6 +839,7 @@ public final class FileUtil extends Object {
     * @deprecated in favour of {@link #getMIMEType(FileObject) getMIMEType(FileObject)} as MIME cannot
     * be generally detected by file object extension.
     */
+    @Deprecated
     public static String getMIMEType(String ext) {
         String s = (String) map.get(ext);
 
@@ -892,6 +895,7 @@ public final class FileUtil extends Object {
      * @see #getMIMEType
      * @deprecated You should instead use the more general {@link MIMEResolver} system.
      */
+    @Deprecated
     public static void setMIMEType(String ext, String mimeType) {
         synchronized (map) {
             String old = (String) map.get(ext);

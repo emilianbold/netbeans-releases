@@ -336,6 +336,7 @@ public final class RequestProcessor {
      * @deprecated Sharing of one singlethreaded <CODE>RequestProcessor</CODE>
      * among different users and posting even blocking requests is inherently
      * deadlock-prone. See <A href="#use_cases">use cases</A>. */
+    @Deprecated
     public static Task postRequest(Runnable run) {
         return DEFAULT.post(run);
     }
@@ -351,6 +352,7 @@ public final class RequestProcessor {
      * @deprecated Sharing of one singlethreaded <CODE>RequestProcessor</CODE>
      * among different users and posting even blocking requests is inherently
      * deadlock-prone. See <A href="#use_cases">use cases</A>. */
+    @Deprecated
     public static Task postRequest(final Runnable run, int timeToWait) {
         return DEFAULT.post(run, timeToWait);
     }
@@ -366,6 +368,7 @@ public final class RequestProcessor {
      * @deprecated Sharing of one singlethreaded <CODE>RequestProcessor</CODE>
      * among different users and posting even blocking requests is inherently
      * deadlock-prone. See <A href="#use_cases">use cases</A>. */
+    @Deprecated
     public static Task postRequest(final Runnable run, int timeToWait, int priority) {
         return DEFAULT.post(run, timeToWait, priority);
     }
@@ -379,6 +382,7 @@ public final class RequestProcessor {
      * @deprecated Sharing of one singlethreaded <CODE>RequestProcessor</CODE>
      * among different users and posting even blocking requests is inherently
      * deadlock-prone. See <A href="#use_cases">use cases</A>. */
+    @Deprecated
     public static Task createRequest(Runnable run) {
         return DEFAULT.create(run);
     }

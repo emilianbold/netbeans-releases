@@ -7,14 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.queries;
 
 import java.io.File;
-import java.util.Iterator;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -35,8 +34,8 @@ import org.openide.util.Lookup;
  */
 public final class SharabilityQuery {
     
-    private static final Lookup.Result/*<SharabilityQueryImplementation>*/ implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(SharabilityQueryImplementation.class));
+    private static final Lookup.Result<SharabilityQueryImplementation> implementations =
+        Lookup.getDefault().lookupResult(SharabilityQueryImplementation.class);
 
     /**
      * Constant indicating that nothing is known about whether a given
@@ -79,9 +78,7 @@ public final class SharabilityQuery {
     public static int getSharability(File file) {
         if (file == null) throw new IllegalArgumentException();
         File normFile = FileUtil.normalizeFile(file);
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            SharabilityQueryImplementation sqi = (SharabilityQueryImplementation)it.next();
+        for (SharabilityQueryImplementation sqi : implementations.allInstances()) {
             int x = sqi.getSharability(normFile);
             if (x != UNKNOWN) {
                 return x;

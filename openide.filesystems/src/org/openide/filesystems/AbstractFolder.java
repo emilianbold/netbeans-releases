@@ -821,7 +821,7 @@ abstract class AbstractFolder extends FileObject {
 
             if (child != null) {
                 retVal.put(name, child);
-            }            
+            }
         }
 
         return retVal;
@@ -910,11 +910,11 @@ abstract class AbstractFolder extends FileObject {
                 } catch (IOException iex) {
                     String message = NbBundle.getMessage(
                             getClass(), "EXC_CannotDelete", //NOI18N
-                            
+
                         // XXX use FileUtil.getFileDisplayName instead?
                         getPath(), fo.getFileSystem().getDisplayName()
                         );
-                    ExternalUtil.annotate(iex, message); //NOI18N                    
+                    ExternalUtil.annotate(iex, message); //NOI18N
                     throw iex;
                 } finally {
                     foLock.releaseLock();
@@ -927,6 +927,7 @@ abstract class AbstractFolder extends FileObject {
 
     abstract void handleDelete(FileLock lock) throws IOException;
 
+    @SuppressWarnings("deprecation") // have to delegate for compat
     public boolean canWrite() {
         return !isReadOnly();
     }
@@ -942,6 +943,7 @@ abstract class AbstractFolder extends FileObject {
             this.f = f;
         }
 
+        @SuppressWarnings("deprecation") // FileSystem.systemName historical part of serial form
         private void writeObject(ObjectOutputStream oos)
         throws IOException {
             fsname = f.getFileSystem().getSystemName();
@@ -956,6 +958,7 @@ abstract class AbstractFolder extends FileObject {
             ois.defaultReadObject();
             assert fsname != null : "Should always have a non-null fsname here";
 
+            @SuppressWarnings("deprecation") // historical part of serial form
             FileSystem fs = Repository.getDefault().findFileSystem(fsname);
 
             if (fs != null) {

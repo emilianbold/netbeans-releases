@@ -70,6 +70,7 @@ public class NbBundle extends Object {
      * @deprecated There is no reason to instantiate or subclass this class.
      *             All methods in it are static.
      */
+    @Deprecated
     public NbBundle() {
     }
 
@@ -112,6 +113,7 @@ public class NbBundle extends Object {
      *             job of handling resources such as <samp>/some.dir/res.txt</samp> or
      *             <samp>/some/res.txt.sample</samp>.
     */
+    @Deprecated
     public static synchronized URL getLocalizedFile(String baseName, String ext)
     throws MissingResourceException {
         return getLocalizedFile(baseName, ext, Locale.getDefault(), getLoader());
@@ -128,6 +130,7 @@ public class NbBundle extends Object {
      *             job of handling resources such as <samp>/some.dir/res.txt</samp> or
      *             <samp>/some/res.txt.sample</samp>.
     */
+    @Deprecated
     public static synchronized URL getLocalizedFile(String baseName, String ext, Locale locale)
     throws MissingResourceException {
         return getLocalizedFile(baseName, ext, locale, getLoader());
@@ -145,13 +148,13 @@ public class NbBundle extends Object {
      *             job of handling resources such as <samp>/some.dir/res.txt</samp> or
      *             <samp>/some/res.txt.sample</samp>.
     */
+    @Deprecated
     public static synchronized URL getLocalizedFile(String baseName, String ext, Locale locale, ClassLoader loader)
     throws MissingResourceException {
         // [PENDING] in the future, could maybe do something neat if
         // USE_DEBUG_LOADER and ext is "html" or "txt" etc...
         URL lookup = null;
         Iterator<String> it = new LocaleIterator(locale);
-        String cachePrefix = "[" + Integer.toString(loader.hashCode()) + "]"; // NOI18N
         List<String> cacheCandidates = new ArrayList<String>(10);
         String baseNameSlashes = baseName.replace('.', '/');
         Map<String,URL> perLoaderCache = localizedFileCache.get(loader);
@@ -171,7 +174,7 @@ public class NbBundle extends Object {
             path = baseNameSlashes;
         }
 
-        lookup = (URL) perLoaderCache.get(path);
+        lookup = perLoaderCache.get(path);
 
         if (lookup == null) {
             baseVariant = loader.getResource(path);
@@ -181,7 +184,7 @@ public class NbBundle extends Object {
         }
 
         while (it.hasNext()) {
-            String suffix = (String) it.next();
+            String suffix = it.next();
 
             if (ext != null) {
                 path = baseNameSlashes + suffix + '.' + ext;
@@ -189,7 +192,7 @@ public class NbBundle extends Object {
                 path = baseNameSlashes + suffix;
             }
 
-            lookup = (URL) perLoaderCache.get(path);
+            lookup = perLoaderCache.get(path);
 
             if (lookup != null) {
                 break;
@@ -254,7 +257,7 @@ public class NbBundle extends Object {
     * @param locale the locale to use
     * @return the localized object or <code>null</code> if no key matches
     */
-    public static Object getLocalizedValue(Map table, String key, Locale locale) {
+    public static <T> T getLocalizedValue(Map<String,T> table, String key, Locale locale) {
         if (table instanceof Attributes) {
             throw new IllegalArgumentException(
                 "Please do not use a java.util.jar.Attributes for NbBundle.getLocalizedValue " + // NOI18N
@@ -262,17 +265,19 @@ public class NbBundle extends Object {
             ); // NOI18N
         }
 
-        Iterator it = new LocaleIterator(locale);
+        Iterator<String> it = new LocaleIterator(locale);
 
         while (it.hasNext()) {
-            String physicalKey = key + (String) it.next();
-            Object v = table.get(physicalKey);
+            String physicalKey = key + it.next();
+            T v = table.get(physicalKey);
 
             if (v != null) {
                 // ok
                 if (USE_DEBUG_LOADER && (v instanceof String)) {
                     // Not read from a bundle, but still localized somehow:
-                    return ((String) v) + " (?:" + physicalKey + ")"; // NOI18N
+                    @SuppressWarnings("unchecked")
+                    T _v = (T) (((String) v) + " (?:" + physicalKey + ")"); // NOI18N;
+                    return _v;
                 } else {
                     return v;
                 }
@@ -290,7 +295,7 @@ public class NbBundle extends Object {
     * @return the localized object or <code>null</code> if no key matches
     * @see #getLocalizedValue(Map,String,Locale)
     */
-    public static Object getLocalizedValue(Map table, String key) {
+    public static <T> T getLocalizedValue(Map<String,T> table, String key) {
         return getLocalizedValue(table, key, Locale.getDefault());
     }
 
@@ -302,7 +307,7 @@ public class NbBundle extends Object {
     * @return the value if found, else <code>null</code>
     */
     public static String getLocalizedValue(Attributes attr, Attributes.Name key, Locale locale) {
-        return (String) getLocalizedValue(attr2Map(attr), key.toString().toLowerCase(Locale.US), locale);
+        return getLocalizedValue(attr2Map(attr), key.toString().toLowerCase(Locale.US), locale);
     }
 
     /**
@@ -314,7 +319,7 @@ public class NbBundle extends Object {
     public static String getLocalizedValue(Attributes attr, Attributes.Name key) {
         // Yes, US locale is intentional! The attribute name may only be ASCII anyway.
         // It is necessary to lowercase it *as ASCII* as in Turkish 'I' does not go to 'i'!
-        return (String) getLocalizedValue(attr2Map(attr), key.toString().toLowerCase(Locale.US));
+        return getLocalizedValue(attr2Map(attr), key.toString().toLowerCase(Locale.US));
     }
 
     /** Necessary because Attributes implements Map; however this is dangerous!
@@ -322,7 +327,7 @@ public class NbBundle extends Object {
     * Also manifest lookups should not be case-sensitive.
     * (Though the locale suffix still will be!)
     */
-    private static Map attr2Map(Attributes attr) {
+    private static Map<String,String> attr2Map(Attributes attr) {
         return new AttributesMap(attr);
     }
 
@@ -518,7 +523,7 @@ public class NbBundle extends Object {
         boolean first = true;
 
         while (it.hasNext()) {
-            String res = sname + (String) it.next() + ".properties";
+            String res = sname + it.next() + ".properties";
 
             // #49961: don't use getResourceAsStream; catch all errors opening it
             URL u = loader.getResource(res);
@@ -694,7 +699,7 @@ public class NbBundle extends Object {
     * and so on...
     */
     private static ClassLoader getLoader() {
-        ClassLoader c = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader c = Lookup.getDefault().lookup(ClassLoader.class);
 
         return (c != null) ? c : ClassLoader.getSystemClassLoader();
     }
@@ -723,6 +728,7 @@ public class NbBundle extends Object {
      * @param loaderFinder ignored
      * @deprecated Useless.
      */
+    @Deprecated
     public static void setClassLoaderFinder(ClassLoaderFinder loaderFinder) {
         throw new Error();
     }
@@ -731,16 +737,18 @@ public class NbBundle extends Object {
      * Do not use.
      * @deprecated Useless.
      */
+    @Deprecated
     public static interface ClassLoaderFinder {
         /**
          * Do not use.
          * @return nothing
          * @deprecated Useless.
          */
+        @Deprecated
         public ClassLoader find();
     }
 
-    private static class AttributesMap extends HashMap {
+    private static class AttributesMap extends HashMap<String,String> {
         private Attributes attrs;
 
         public AttributesMap(Attributes attrs) {
@@ -748,17 +756,17 @@ public class NbBundle extends Object {
             this.attrs = attrs;
         }
 
-        public Object get(Object obj) {
+        public String get(String k) {
             Attributes.Name an;
 
             try {
-                an = new Attributes.Name((String) obj);
+                an = new Attributes.Name(k);
             } catch (IllegalArgumentException iae) {
                 // Robustness, and workaround for reported MRJ locale bug:
                 ErrorManager em = ErrorManager.getDefault();
                 em.annotate(
-                    iae, ErrorManager.WARNING, (String) obj,
-                    getMessage(NbBundle.class, "EXC_bad_attributes_name", obj, Locale.getDefault().toString()), null,
+                    iae, ErrorManager.WARNING, k,
+                    getMessage(NbBundle.class, "EXC_bad_attributes_name", k, Locale.getDefault().toString()), null,
                     null
                 );
                 em.notify(iae);
@@ -862,7 +870,7 @@ public class NbBundle extends Object {
         /** this flag means, if default locale is in progress */
         private boolean defaultInProgress = false;
 
-        /** this flag means, if empty sufix was exported yet */
+        /** this flag means, if empty suffix was exported yet */
         private boolean empty = false;
 
         /** current locale, and initial locale */
@@ -871,7 +879,7 @@ public class NbBundle extends Object {
         /** current locale, and initial locale */
         private Locale initLocale;
 
-        /** current sufix which will be returned in next calling nextElement */
+        /** current suffix which will be returned in next calling nextElement */
         private String current;
 
         /** the branding string in use */
@@ -898,8 +906,8 @@ public class NbBundle extends Object {
             //System.err.println("Constructed: " + this);
         }
 
-        /** @return next sufix.
-        * @exception NoSuchElementException if there is no more locale sufix.
+        /** @return next suffix.
+        * @exception NoSuchElementException if there is no more locale suffix.
         */
         public String next() throws NoSuchElementException {
             if (current == null) {
@@ -999,25 +1007,25 @@ public class NbBundle extends Object {
 
         private static int getID(String name) {
             synchronized (knownIDs) {
-                Integer i = (Integer) knownIDs.get(name);
+                Integer i = knownIDs.get(name);
 
                 if (i == null) {
-                    i = new Integer(++count);
+                    i = ++count;
                     knownIDs.put(name, i);
                     System.err.println("NbBundle trace: #" + i + " = " + name); // NOI18N
                 }
 
-                return i.intValue();
+                return i;
             }
         }
 
         public static ClassLoader get(ClassLoader normal) {
             //System.err.println("Lookup: normal=" + normal);
             synchronized (existing) {
-                Reference r = (Reference) existing.get(normal);
+                Reference<ClassLoader> r = existing.get(normal);
 
                 if (r != null) {
-                    ClassLoader dl = (ClassLoader) r.get();
+                    ClassLoader dl = r.get();
 
                     if (dl != null) {
                         //System.err.println("\tcache hit");

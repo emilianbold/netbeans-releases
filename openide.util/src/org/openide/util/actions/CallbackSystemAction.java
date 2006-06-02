@@ -28,12 +28,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import org.openide.ErrorManager;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
 /** Action that can have a performer of the action attached to it at any time,
@@ -74,6 +74,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     * @return the current action performer, or <code>null</code> if there is currently no performer
     * @deprecated use TopComponent.getActionMap() as described in the javadoc
     */
+    @Deprecated
     public ActionPerformer getActionPerformer() {
         return (ActionPerformer) getProperty(PROP_ACTION_PERFORMER);
     }
@@ -109,6 +110,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     *
     * @deprecated use TopComponent.getActionMap() as described in the javadoc
     */
+    @Deprecated
     public void setActionPerformer(ActionPerformer performer) {
         putProperty(PROP_ACTION_PERFORMER, performer);
         updateEnabled();
@@ -202,6 +204,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     * exists, otherwise does nothing.
      * @deprecated This only uses {@link ActionPerformer}. Use {@link #actionPerformed} instead.
     */
+    @Deprecated
     public void performAction() {
         ActionPerformer ap = getActionPerformer();
 
@@ -391,7 +394,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         }
 
         public Action getDelegate() {
-            return (Action) super.get();
+            return get();
         }
 
         public Object getValue(String key) {
@@ -477,7 +480,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
                 }
             }
 
-            CallbackSystemAction c = (CallbackSystemAction) get();
+            CallbackSystemAction c = get();
 
             if (c != null) {
                 c.updateEnabled();
@@ -489,8 +492,8 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
      * extract the nodes it operates on from it. Otherwise it delegates to the
      * regular NodeAction.
      */
-    private static final class DelegateAction extends Object implements javax.swing.Action,
-        org.openide.util.LookupListener, Presenter.Menu, Presenter.Popup, Presenter.Toolbar, PropertyChangeListener {
+    private static final class DelegateAction extends Object implements Action,
+        LookupListener, Presenter.Menu, Presenter.Popup, Presenter.Toolbar, PropertyChangeListener {
         /** action to delegate too */
         private CallbackSystemAction delegate;
 
@@ -515,9 +518,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             this.enabled = a.getActionPerformer() != null;
 
             this.result = actionContext.lookup(new Lookup.Template<ActionMap>(ActionMap.class));
-            this.result.addLookupListener(
-                (LookupListener) org.openide.util.WeakListeners.create(LookupListener.class, this, this.result)
-            );
+            this.result.addLookupListener(WeakListeners.create(LookupListener.class, this, this.result));
             resultChanged(null);
         }
 

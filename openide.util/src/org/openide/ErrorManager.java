@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
@@ -448,6 +447,7 @@ public abstract class ErrorManager extends Object {
     *             reason you just want to keep annotations, please do so explicitly
     *             using {@link #findAnnotations} and {@link #attachAnnotations}.
     */
+    @Deprecated
     public final Throwable copyAnnotation(Throwable t, Throwable copyFrom) {
         // Cf. #17874 for the change in behavior.
 

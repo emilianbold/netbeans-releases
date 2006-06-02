@@ -7,13 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide;
 
 import org.openide.util.Lookup;
-
 
 /** Manages major aspects of the NetBeans lifecycle - currently saving all objects and exiting.
  * @author Jesse Glick
@@ -36,7 +36,7 @@ public abstract class LifecycleManager {
      * @return the default instance (never null)
      */
     public static LifecycleManager getDefault() {
-        LifecycleManager lm = (LifecycleManager) Lookup.getDefault().lookup(LifecycleManager.class);
+        LifecycleManager lm = Lookup.getDefault().lookup(LifecycleManager.class);
 
         if (lm == null) {
             lm = new Trivial();

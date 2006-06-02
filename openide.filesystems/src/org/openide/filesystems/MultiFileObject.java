@@ -472,9 +472,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         return leader.isVirtual();
     }
 
-    /* Test whether this file can be written to or not.
-    * @return <CODE>true</CODE> if file is read-only
-    */
+    @Deprecated // have to override for compat
     public boolean isReadOnly() {
         MultiFileSystem fs = getMultiFileSystem();
 
@@ -615,17 +613,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         return (MfLock) l;
     }
 
-    // [???] Implicit file state is important.
-
-    /* Indicate whether this file is important from a user perspective.
-    * This method allows a file system to distingush between important and
-    * unimportant files when this distinction is possible.
-    * <P>
-    * <em>For example:</em> Java sources have important <code>.java</code> files and
-    * unimportant <code>.class</code> files. If the file system provides
-    * an "archive" feature it should archive only <code>.java</code> files.
-    * @param b true if the file should be considered important
-    */
+    @Deprecated // have to override for compat
     public void setImportant(boolean b) {
         Enumeration en = delegates();
 

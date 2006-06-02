@@ -7,23 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Enumeration;
 import org.openide.util.RequestProcessor;
 
-import java.beans.*;
-
-import java.io.*;
-
-import java.lang.ref.*;
-
-import java.util.Enumeration;
-
-
-/** Request for parsing of an filesystem. Can be stoped.
+/** Request for parsing of an filesystem. Can be stopped.
 *
 * @author Jaroslav Tulach
 */
@@ -33,7 +28,7 @@ final class RefreshRequest extends Object implements Runnable {
     private static RequestProcessor REFRESHER = new RequestProcessor("FS refresher"); // NOI18N
 
     /** fs to work on */
-    private Reference<FileSystem> system;
+    private Reference<AbstractFileSystem> system;
 
     /** enumeration of folders Reference (FileObjects) to process */
     private Enumeration en;
@@ -49,7 +44,7 @@ final class RefreshRequest extends Object implements Runnable {
     * @param ms refresh time
     */
     public RefreshRequest(AbstractFileSystem fs, int ms) {
-        system = new WeakReference<FileSystem>(fs);
+        system = new WeakReference<AbstractFileSystem>(fs);
         refreshTime = ms;
         task = REFRESHER.post(this, ms, Thread.MIN_PRIORITY);
     }
@@ -120,7 +115,7 @@ final class RefreshRequest extends Object implements Runnable {
     }
 
     private void doLoop(int ms) {
-        AbstractFileSystem system = (AbstractFileSystem) this.system.get();
+        AbstractFileSystem system = this.system.get();
 
         if (system == null) {
             // end for ever the fs does not exist no more
@@ -159,12 +154,12 @@ final class RefreshRequest extends Object implements Runnable {
     }
 
     /**
-     * Overriden for debugging/logging purposes.
+     * Overridden for debugging/logging purposes.
      */
     public String toString() {
-        AbstractFileSystem fs = (AbstractFileSystem) system.get();
+        AbstractFileSystem fs = system.get();
 
         return "RefreshRequest for " + // NOI18N
-        ((fs == null) ? "gone FS" : fs.getSystemName()); // NOI18N
+        ((fs == null) ? "gone FS" : fs); // NOI18N
     }
 }

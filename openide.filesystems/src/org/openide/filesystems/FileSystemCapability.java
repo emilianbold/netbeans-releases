@@ -7,15 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
-import java.beans.*;
-
-import java.util.*;
-
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Vector;
 
 /** This class defines the capabilities of a filesystem to
 * take part in different operations. Some filesystems are
@@ -31,6 +33,7 @@ import java.util.*;
 * @author Jaroslav Tulach
  * @deprecated Now useless.
 */
+@Deprecated
 public class FileSystemCapability extends Object {
     /** Object that is capable of every thing.
     */
@@ -43,21 +46,25 @@ public class FileSystemCapability extends Object {
     /** Well known capability of being compiled.
      * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
+    @Deprecated
     public static final FileSystemCapability COMPILE = new FileSystemCapability();
 
     /** Well known ability to be executed.
      * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
+    @Deprecated
     public static final FileSystemCapability EXECUTE = new FileSystemCapability();
 
     /** Well known ability to be debugged.
      * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
+    @Deprecated
     public static final FileSystemCapability DEBUG = new FileSystemCapability();
 
     /** Well known ability to contain documentation files
      * @deprecated Please use <a href="@org-netbeans-api-java@/org/netbeans/api/queries/JavadocForBinaryQuery.html"><code>JavadocForBinaryQuery</code></a> instead.
      */
+    @Deprecated
     public static final FileSystemCapability DOC = new FileSystemCapability();
 
     public FileSystemCapability() {
@@ -86,8 +93,10 @@ public class FileSystemCapability extends Object {
     * @return enumeration of FileSystems that satifies this capability
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public Enumeration<? extends FileSystem> fileSystems() {
         class FFS implements org.openide.util.Enumerations.Processor<FileSystem, FileSystem> {
+            @Deprecated
             public FileSystem process(FileSystem fs, Collection<FileSystem> ignore) {
                 return fs.getCapability().capableOf(FileSystemCapability.this) ? fs : null;
             }
@@ -100,6 +109,7 @@ public class FileSystemCapability extends Object {
     * @param resName name of the resource
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public FileObject findResource(String resName) {
         Enumeration en = fileSystems();
 
@@ -122,6 +132,7 @@ public class FileSystemCapability extends Object {
     * @return enumeration of {@link FileObject}s
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public Enumeration<? extends FileObject> findAllResources(String name) {
         Vector<FileObject> v = new Vector<FileObject>(8);
         Enumeration<? extends FileSystem> en = fileSystems();
@@ -153,6 +164,7 @@ public class FileSystemCapability extends Object {
     *   <CODE>null</CODE> if the file does not exist
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final FileObject find(String aPackage, String name, String ext) {
         Enumeration en = fileSystems();
 
@@ -182,6 +194,7 @@ public class FileSystemCapability extends Object {
     * @return enumeration of {@link FileObject}s
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final Enumeration<? extends FileObject> findAll(String aPackage, String name, String ext) {
         Enumeration<? extends FileSystem> en = fileSystems();
         Vector<FileObject> ret = new Vector<FileObject>();
@@ -218,6 +231,7 @@ public class FileSystemCapability extends Object {
     * or not.
      * @deprecated For the same reason the whole class is.
     */
+    @Deprecated
     public static class Bean extends FileSystemCapability implements java.io.Serializable {
         static final long serialVersionUID = 627905674809532736L;
 
@@ -276,6 +290,7 @@ public class FileSystemCapability extends Object {
         /** Getter for value of compiling capability.
          * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
+        @Deprecated
         public boolean getCompile() {
             return compilation;
         }
@@ -283,6 +298,7 @@ public class FileSystemCapability extends Object {
         /** Setter for allowing compiling capability.
          * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
+        @Deprecated
         public void setCompile(boolean val) {
             if (val != compilation) {
                 compilation = val;
@@ -299,6 +315,7 @@ public class FileSystemCapability extends Object {
         /** Getter for value of executiong capability.
          * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
+        @Deprecated
         public boolean getExecute() {
             return execution;
         }
@@ -306,6 +323,7 @@ public class FileSystemCapability extends Object {
         /** Setter for allowing executing capability.
          * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
+        @Deprecated
         public void setExecute(boolean val) {
             if (val != execution) {
                 execution = val;
@@ -322,6 +340,7 @@ public class FileSystemCapability extends Object {
         /** Getter for value of debugging capability.
          * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
+        @Deprecated
         public boolean getDebug() {
             return debug;
         }
@@ -329,6 +348,7 @@ public class FileSystemCapability extends Object {
         /** Setter for allowing debugging capability.
          * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
+        @Deprecated
         public void setDebug(boolean val) {
             if (val != debug) {
                 debug = val;
@@ -345,6 +365,7 @@ public class FileSystemCapability extends Object {
         /** Getter for value of doc capability.
          * @deprecated Please use <a href="@org-netbeans-api-java@/org/netbeans/api/queries/JavadocForBinaryQuery.html"><code>JavadocForBinaryQuery</code></a> instead.
         */
+        @Deprecated
         public boolean getDoc() {
             return doc;
         }
@@ -352,6 +373,7 @@ public class FileSystemCapability extends Object {
         /** Setter for allowing debugging capability.
          * @deprecated Please use <a href="@org-netbeans-api-java@/org/netbeans/api/queries/JavadocForBinaryQuery.html"><code>JavadocForBinaryQuery</code></a> instead.
         */
+        @Deprecated
         public void setDoc(boolean val) {
             if (val != doc) {
                 doc = val;

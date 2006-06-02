@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
 import java.awt.EventQueue;
@@ -711,10 +712,9 @@ public final class Mutex extends Object {
     /** @param t holds S (one entry) and wants X, grantedMode != NONE && grantedMode != X */
     private void privilegedEnter(Thread t, int mode) {
         boolean decrease = true;
-        ThreadInfo info;
 
         synchronized (LOCK) {
-            info = getThreadInfo(t);
+            getThreadInfo(t);
         }
 
         for (;;) {
@@ -945,7 +945,7 @@ public final class Mutex extends Object {
             } else if ((grantedMode == CHAIN) && (readersNo == 1)) {
                 // can be the mode advanced from CHAIN? Examine first item of waiters!
                 for (int i = 0; i < waiters.size(); i++) {
-                    QueueCell qc = (QueueCell) waiters.get(i);
+                    QueueCell qc = waiters.get(i);
 
                     synchronized (qc) {
                         if (qc.isGotOut()) {
@@ -1016,7 +1016,7 @@ public final class Mutex extends Object {
             int i = 0;
 
             do {
-                cursor = (QueueCell) waiters.get(i);
+                cursor = waiters.get(i);
 
                 if (cursor.getPriority() < qc.getPriority()) {
                     waiters.add(i, qc);
@@ -1047,7 +1047,7 @@ public final class Mutex extends Object {
         }
 
         for (int i = 0; i < waiters.size(); i++) {
-            QueueCell qc = (QueueCell) waiters.get(i);
+            QueueCell qc = waiters.get(i);
 
             synchronized (qc) {
                 if (qc.isGotOut()) {
@@ -1092,7 +1092,7 @@ public final class Mutex extends Object {
         }
 
         for (int i = 0; i < waiters.size(); i++) {
-            QueueCell qc = (QueueCell) waiters.get(i);
+            QueueCell qc = waiters.get(i);
 
             synchronized (qc) {
                 if (qc.isGotOut()) {
@@ -1183,7 +1183,7 @@ public final class Mutex extends Object {
     }
 
     private ThreadInfo getThreadInfo(Thread t) {
-        return (ThreadInfo) registeredThreads.get(t);
+        return registeredThreads.get(t);
     }
 
     private boolean canUpgrade(int threadGranted, int requested) {

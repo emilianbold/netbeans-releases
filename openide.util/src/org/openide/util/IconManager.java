@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
 import java.awt.Component;
@@ -18,12 +19,13 @@ import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
-
-import java.lang.ref.*;
-
-import java.util.*;
+import java.lang.ref.SoftReference;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
-
 
 /** Registers all loaded images into the AbstractNode, so nothing is loaded twice.
 *
@@ -234,14 +236,14 @@ final class IconManager extends Object {
                     ); // NOI18N
                 }
 
-                Image img2 = toBufferedImage((Image) img);
+                Image img2 = toBufferedImage(img);
 
                 //System.err.println("loading icon " + n + " = " + img2);
                 name = new String(name).intern(); // NOPMD
 
                 map.put(name, new ActiveRef(img2, map, name));
 
-                return (Image) img2;
+                return img2;
             } else { // no icon found
 
                 if (!localizedQuery) {

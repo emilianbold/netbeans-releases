@@ -7,21 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util.actions;
 
-import java.util.logging.Logger;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakSet;
-
-import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-
-import java.util.*;
-
+import java.util.Set;
+import java.util.logging.Logger;
+import org.openide.util.WeakSet;
 
 /** An action which may be called programmatically.
 * Typically a presenter will call its {@link #performAction} method,

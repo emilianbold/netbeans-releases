@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@ package org.openide.util.actions;
 * on its behalf, e.g. for {@link CallbackSystemAction}s.
  * @deprecated No longer recommended. See {@link CallbackSystemAction#setActionPerformer} for details.
 */
+@Deprecated
 public interface ActionPerformer {
     /** Called when the action is to be performed.
     * @param action the action to be performed by this performer

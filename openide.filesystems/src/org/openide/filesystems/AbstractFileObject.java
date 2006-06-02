@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -137,9 +137,7 @@ final class AbstractFileObject extends AbstractFolder {
         return lastModified;
     }
 
-    /* Test whether this file can be written to or not.
-    * @return <CODE>true</CODE> if file is read-only
-    */
+    @Deprecated // have to override for compat
     public boolean isReadOnly() {
         AbstractFileSystem fs = getAbstractFileSystem();
 
@@ -262,17 +260,7 @@ final class AbstractFileObject extends AbstractFolder {
         }
     }
 
-    // [???] Implicit file state is important.
-
-    /* Indicate whether this file is important from a user perspective.
-    * This method allows a file system to distingush between important and
-    * unimportant files when this distinction is possible.
-    * <P>
-    * <em>For example:</em> Java sources have important <code>.java</code> files and
-    * unimportant <code>.class</code> files. If the file system provides
-    * an "archive" feature it should archive only <code>.java</code> files.
-    * @param b true if the file should be considered important
-    */
+    @Deprecated // have to override for compat
     public void setImportant(boolean b) {
         getAbstractFileSystem().markImportant(getPath(), b);
     }
@@ -995,9 +983,7 @@ final class AbstractFileObject extends AbstractFolder {
             return false;
         }
 
-        /** Test whether this file can be written to or not.
-        * @return <CODE>true</CODE> if file is read-only
-        */
+        @Deprecated // have to override for compat
         public boolean isReadOnly() {
             return false;
         }
@@ -1058,15 +1044,7 @@ final class AbstractFileObject extends AbstractFolder {
             throw new IOException();
         }
 
-        /** Indicate whether this file is important from a user perspective.
-        * This method allows a file system to distingush between important and
-        * unimportant files when this distinction is possible.
-        * <P>
-        * <em>For example:</em> Java sources have important <code>.java</code> files and
-        * unimportant <code>.class</code> files. If the file system provides
-        * an "archive" feature it should archive only <code>.java</code> files.
-        * @param b true if the file should be considered important
-        */
+        @Deprecated // have to override for compat
         public void setImportant(boolean b) {
         }
 
@@ -1211,6 +1189,7 @@ final class AbstractFileObject extends AbstractFolder {
     /** Replace that stores name of fs and file.
      * @deprecated In favor of AbstractFolder.Replace.
     */
+    @Deprecated
     static final class Replace extends Object implements Serializable {
         /** generated Serialized Version UID */
         static final long serialVersionUID = -8543432135435542113L;
@@ -1228,6 +1207,7 @@ final class AbstractFileObject extends AbstractFolder {
         */
         public Object readResolve() {
             Repository rep = ExternalUtil.getRepository();
+            @SuppressWarnings("deprecation") // FileSystem.systemName historical part of serial form
             FileSystem fs = rep.findFileSystem(fsName);
             FileObject fo = null;
 

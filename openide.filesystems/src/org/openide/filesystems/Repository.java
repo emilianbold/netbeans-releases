@@ -153,6 +153,7 @@ public class Repository implements Serializable {
     * @param fs filesystem to add
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final void addFileSystem(FileSystem fs) {
 
         boolean fireIt = false;
@@ -204,6 +205,7 @@ public class Repository implements Serializable {
     * @param fs filesystem to remove
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final void removeFileSystem(FileSystem fs) {
         boolean fireIt = false;
 
@@ -247,6 +249,7 @@ public class Repository implements Serializable {
     * @throws IllegalArgumentException if the array is not a permutation, or is not the same length as the current number of filesystems in the pool
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final void reorder(int[] perm) {
         synchronized (this) {
             if (perm == null) {
@@ -304,6 +307,7 @@ public class Repository implements Serializable {
     * @return enumeration of type {@link FileSystem}
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final Enumeration<? extends FileSystem> getFileSystems() {
         ArrayList<FileSystem> tempFileSystems = fileSystemsClone;
 
@@ -314,6 +318,7 @@ public class Repository implements Serializable {
     * @return enumeration of type {@link FileSystem}
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final Enumeration<? extends FileSystem> fileSystems() {
         return getFileSystems();
     }
@@ -323,6 +328,7 @@ public class Repository implements Serializable {
      * @return a sorted array of filesystems
      * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
+    @Deprecated
     public final FileSystem[] toArray() {
         ArrayList<FileSystem> tempFileSystems = fileSystemsClone;
 
@@ -338,6 +344,7 @@ public class Repository implements Serializable {
     *   filesystem
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final FileSystem findFileSystem(String systemName) {
         FileSystem fs = (FileSystem) names.get(systemName);
 
@@ -351,6 +358,7 @@ public class Repository implements Serializable {
     * @exception IOException if an error occures
     * @deprecated Unused.
     */
+    @Deprecated
     public final synchronized void writeExternal(ObjectOutput oos)
     throws IOException {
         Iterator iter = fileSystems.iterator();
@@ -373,6 +381,7 @@ public class Repository implements Serializable {
     * @exception ClassNotFoundException if read class is not found
     * @deprecated Unused.
     */
+    @Deprecated
     public final synchronized void readExternal(ObjectInput ois)
     throws IOException, ClassNotFoundException {
         ArrayList<FileSystem> temp = new ArrayList<FileSystem>(10);
@@ -443,6 +452,7 @@ public class Repository implements Serializable {
     *   <CODE>null</CODE> if the file does not exist
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final FileObject find(String aPackage, String name, String ext) {
         assert FileUtil.assertDeprecatedMethod();
 
@@ -467,6 +477,7 @@ public class Repository implements Serializable {
     * @return file object or <code>null</code> if the resource can not be found
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final FileObject findResource(String name) {
         assert FileUtil.assertDeprecatedMethod();
 
@@ -490,6 +501,7 @@ public class Repository implements Serializable {
     * @return enumeration of {@link FileObject}s
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final Enumeration<? extends FileObject> findAllResources(String name) {
         assert FileUtil.assertDeprecatedMethod();
 
@@ -520,6 +532,7 @@ public class Repository implements Serializable {
     * @return enumeration of {@link FileObject}s
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final Enumeration<? extends FileObject> findAll(String aPackage, String name, String ext) {
         assert FileUtil.assertDeprecatedMethod();
 
@@ -575,6 +588,7 @@ public class Repository implements Serializable {
     * @param list the listener
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final void addRepositoryListener(RepositoryListener list) {
         listeners.put(list, list);
     }
@@ -583,6 +597,7 @@ public class Repository implements Serializable {
     * @param list the listener
     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
+    @Deprecated
     public final void removeRepositoryListener(RepositoryListener list) {
         listeners.remove(list);
     }
@@ -610,6 +625,7 @@ public class Repository implements Serializable {
     * default filesystem in Repository. Add new listener directly to
     * default filesystem {@link #getDefaultFileSystem}.
     */
+    @Deprecated
     public final void addFileChangeListener(FileChangeListener fcl) {
         getFCLSupport().addFileChangeListener(fcl);
     }
@@ -621,6 +637,7 @@ public class Repository implements Serializable {
     * default filesystem in Repository. Add new listener directly to
     * default filesystem {@link #getDefaultFileSystem}.
     */
+    @Deprecated
     public final void removeFileChangeListener(FileChangeListener fcl) {
         getFCLSupport().removeFileChangeListener(fcl);
     }

@@ -7,17 +7,25 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
-import java.io.*;
-
-import java.net.*;
-
-import java.security.*;
-
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilePermission;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.net.UnknownServiceException;
+import java.security.Permission;
 
 /** Special URL connection directly accessing an internal file object.
 *

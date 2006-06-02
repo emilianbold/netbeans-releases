@@ -7,20 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectInputValidation;
+import java.io.OutputStream;
+import java.io.SyncFailedException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
-import java.beans.PropertyVetoException;
-
-import java.io.*;
-
 
 /** Local filesystem. Provides access to files on local disk.
 * <p>For historical reasons many AbstractFileSystem.* methods are implemented
@@ -67,6 +73,7 @@ public class LocalFileSystem extends AbstractFileSystem {
     * @param cap capabilities for this filesystem
      * @deprecated Useless.
     */
+    @Deprecated
     public LocalFileSystem(FileSystemCapability cap) {
         this();
         setCapability(cap);
@@ -75,6 +82,11 @@ public class LocalFileSystem extends AbstractFileSystem {
     /* Human presentable name */
     public String getDisplayName() {
         return rootFile.getAbsolutePath();
+    }
+    
+    @SuppressWarnings("deprecation") // need to set it for compat
+    private void _setSystemName(String s) throws PropertyVetoException {
+        setSystemName(s);
     }
 
     /** Set the root directory of the filesystem.
@@ -89,7 +101,7 @@ public class LocalFileSystem extends AbstractFileSystem {
         }
 
         String oldDisplayName = getDisplayName();
-        setSystemName(computeSystemName(r));
+        _setSystemName(computeSystemName(r));
 
         rootFile = r;
 
@@ -127,6 +139,7 @@ public class LocalFileSystem extends AbstractFileSystem {
     * @param environment the environment to add to
      * @deprecated Useless.
     */
+    @Deprecated
     public void prepareEnvironment(FileSystem.Environment environment) {
         environment.addClassPath(rootFile.getAbsolutePath());
     }

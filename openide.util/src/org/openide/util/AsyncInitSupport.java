@@ -7,13 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
 import java.awt.AWTEvent;
-import java.awt.ActiveEvent;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
@@ -21,15 +21,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
-import java.awt.event.PaintEvent;
-
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-
 
 /** Performance helper class, allows to run post-init task for given component.
  * Can also handle cancel logic if contained in AsyncGUIJob.

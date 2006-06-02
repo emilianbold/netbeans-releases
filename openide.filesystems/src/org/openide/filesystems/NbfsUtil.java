@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 /**
  * @author Radek Matous
  */
+@SuppressWarnings("deprecation") // needs to use old Repository methods for compat
 final class NbfsUtil {
     /** url separator */
     private static final char SEPARATOR = '/';

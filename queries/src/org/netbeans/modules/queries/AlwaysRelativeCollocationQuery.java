@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,9 +27,9 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
  * @author Tomas Zezula
  */
 public class AlwaysRelativeCollocationQuery implements CollocationQueryImplementation {
-    
+
     private File[] roots;
-    
+
     /** Creates a new instance of AlwaysRelativeCollocationQuery */
     public AlwaysRelativeCollocationQuery() {
     }
@@ -45,29 +45,29 @@ public class AlwaysRelativeCollocationQuery implements CollocationQueryImplement
             return roots[0];
         }
         else {
-            final Set rootsSet = new HashSet (Arrays.asList(this.roots != null ? this.roots : roots));
+            final Set<File> rootsSet = new HashSet<File>(Arrays.asList(this.roots != null ? this.roots : roots));
             return getRoot (file, rootsSet);
         }
     }
 
-    public boolean areCollocated(File file1, File file2) {        
+    public boolean areCollocated(File file1, File file2) {
         File root1 = findRoot (file1);
         File root2 = findRoot (file2);
         return root1 != null && root1.equals(root2);
     }
-    
-    // ---------------- Unit test helper methods -----------------------        
-    
+
+    // ---------------- Unit test helper methods -----------------------
+
     private File[] getFileSystemRoots () {
         if (this.roots != null) {
             return this.roots;
         }
-        else {       
+        else {
             return File.listRoots();
         }
     }
-    
-    private File getRoot (File f, final Set/*<File>*/ roots) {
+
+    private File getRoot(File f, final Set<File> roots) {
         //We have to compare the file to File.listRoots(),
         //the test file.getParent() == null does not work on Windows
         //when the file was selected from the JFileChooser and user browsed
@@ -77,9 +77,9 @@ public class AlwaysRelativeCollocationQuery implements CollocationQueryImplement
         }
         return f;
     }
-    
+
     final void setFileSystemRoots (File[] roots) {
         this.roots = roots;
     }
-    
+
 }

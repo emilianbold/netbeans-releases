@@ -145,6 +145,7 @@ public abstract class URLMapper {
      * @since  2.22
      * @deprecated Use {@link #findFileObject} instead.
      */
+    @Deprecated
     public static FileObject[] findFileObjects(URL url) {
         Set<FileObject> retSet = new LinkedHashSet<FileObject>();
 
