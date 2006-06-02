@@ -698,19 +698,19 @@ final class HardStringWizardPanel extends JPanel {
 
                     // Get string map.
                     Map stringMap = sourceData.getStringMap();
+                    Object[] stringEntries = stringMap.entrySet().toArray();
 
                     // Get removed strings.
                     Set removed = sourceData.getRemovedStrings();
 
                     // Do actual replacement.
-                    Iterator it = stringMap.keySet().iterator();
-
                     ClassPath cp = ClassPath.getClassPath( ((DataObject)source).getPrimaryFile(), ClassPath.SOURCE );
                     progressPanel.setSubText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Source")+" "+cp.getResourceName( ((DataObject)source).getPrimaryFile(), '.', false ) );
 
-                    for(int j=0; it.hasNext(); j++) {
-                        HardCodedString hcString = (HardCodedString)it.next();
-                        I18nString i18nString = (I18nString)stringMap.get(hcString);
+                    for(int j=0; j < stringEntries.length; j++) {
+                        Map.Entry e = (Map.Entry) stringEntries[j];
+                        HardCodedString hcString = (HardCodedString) e.getKey();
+                        I18nString i18nString = (I18nString) e.getValue();
 
                         if(removed != null && removed.contains(hcString))
                             // Don't proceed.

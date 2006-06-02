@@ -261,19 +261,16 @@ public class FormI18nSupport extends JavaI18nSupport {
                 int index2 = -1;
                 
                 if(!comp1.equals(comp2)) {
-                    Object[] components = formModel.getAllComponents().toArray();
-                    
-                    for(int i=0; i<components.length; i++) {
-                        if(comp1.equals(components[i]))
-                            index1 = i;
-                        
-                        if(comp2.equals(components[i]))
-                            index2 = i;
-                        
-                        if(index1!=-1 && index2!=-1)
-                            break;
+                    Iterator it = formModel.getOrderedComponentList().iterator();
+                    while (it.hasNext()) {
+                        RADComponent comp = (RADComponent) it.next();
+                        if (comp == comp1)
+                            return -1;
+                        if (comp == comp2)
+                            return 1;
                     }
-                    return index1 - index2;
+                    assert false;
+                    return 0;
                 } // end of 2nd stage
                 
                 // 3rd stage
@@ -733,7 +730,7 @@ public class FormI18nSupport extends JavaI18nSupport {
                                                         final Position endPos) {
             JavaEditor javaEditor
                     = ((JavaDataObject) sourceDataObject).getJavaEditor();
-            return javaEditor.testOverlap(
+            return !javaEditor.testOverlap(
                         javaEditor.createBounds(startPos.getOffset(),
                                                 endPos.getOffset(),
                                                 false));
@@ -858,7 +855,9 @@ public class FormI18nSupport extends JavaI18nSupport {
                
                final StyledDocument document = javaI18nString.getSupport().getDocument();
 
-               final int lastP = lastPos + replaceString.length() - formHcString.getText().length() - 2; // 2 for quotes
+               // form editor may change the string, e.g. replace ResourceBundle.getBundle with bundle variable
+               int replaceStringLength = newValue instanceof FormI18nString ? 0 : replaceString.length();
+               final int lastP = lastPos + replaceStringLength - formHcString.getText().length() - 2; // 2 for quotes
                SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                        // Little trick to reset the last position in finder after guarded block was regenerated.
