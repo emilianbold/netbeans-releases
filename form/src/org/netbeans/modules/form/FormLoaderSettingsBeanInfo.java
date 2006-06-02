@@ -141,11 +141,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 new PropertyDescriptor(FormLoaderSettings.PROP_AUTO_I18N,
                                        FormLoaderSettings.class,
                                        "getI18nAutoMode", // NOI18N
-                                       "setI18nAutoMode"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_DESIGNER_LAF,
-                                       FormLoaderSettings.class,
-                                       "getDesignerLAF", // NOI18N
-                                       "setDesignerLAF") // NOI18N
+                                       "setI18nAutoMode") // NOI18N
             };
 
             ResourceBundle bundle = FormUtils.getBundle();
@@ -243,8 +239,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[i].setShortDescription(bundle.getString("HINT_AUTO_I18N_GLOBAL")); // NOI18N
             desc[i].setPropertyEditorClass(I18nModeEditor.class);
             desc[i].setPreferred(true);
-
-            desc[++i].setHidden(true);
 
             return desc;
         }

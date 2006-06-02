@@ -13,18 +13,25 @@
 
 package org.netbeans.modules.form.actions;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.awt.*;
 
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.nodes.*;
 import org.openide.util.actions.*;
+
 import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.palette.PaletteItem;
+import org.netbeans.modules.form.palette.PaletteUtils;
 
 /**
- * @author Tomas Pavek
+ * Preview design action.
+ *
+ * @author Tomas Pavek, Jan Stola
  */
-
 public class TestAction extends CallableSystemAction implements Runnable {
 
     private static String name;
@@ -62,6 +69,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
 
     public void performAction() {
         if (formDesigner != null) {
+            selectedLaf = null;
             if (java.awt.EventQueue.isDispatchThread())
                 run();
             else
@@ -97,9 +105,13 @@ public class TestAction extends CallableSystemAction implements Runnable {
             JFrame.class : Frame.class;
 
         try {
+            if (selectedLaf == null) {
+                selectedLaf = UIManager.getLookAndFeel().getClass();
+            }
+
             // create a copy of form
             final Frame frame = (Frame)
-                FormDesigner.createFormView(topComp, frameClass);
+                FormDesigner.createFormView(topComp, frameClass, selectedLaf);
 
             // set title
             String title = frame.getTitle();
@@ -168,12 +180,139 @@ public class TestAction extends CallableSystemAction implements Runnable {
         }
     }
 
+    public JMenuItem getMenuPresenter() {
+        return getPopupPresenter();
+    }
+
+    public JMenuItem getPopupPresenter() {
+        JMenu layoutMenu = new LAFMenu(getName());
+        layoutMenu.setEnabled(isEnabled());
+        HelpCtx.setHelpIDString(layoutMenu, SelectLayoutAction.class.getName());
+        return layoutMenu;
+    }
+
     // -------
+
+    private FormDesigner formDesigner;
 
     public void setFormDesigner(FormDesigner designer) {
         formDesigner = designer;
         setEnabled(formDesigner != null && formDesigner.getTopDesignComponent() != null);
     }
+    
+    // LAFMenu
 
-    private FormDesigner formDesigner;
+    private Class selectedLaf;
+    
+    private class LAFMenu extends JMenu implements ActionListener {
+        private boolean initialized = false;
+
+        private LAFMenu(String name) {
+            super(name);
+        }
+
+        public JPopupMenu getPopupMenu() {
+            JPopupMenu popup = super.getPopupMenu();
+            JMenuItem mi;
+            if (!initialized) {
+                popup.removeAll();
+                
+                // Swing L&Fs
+                UIManager.LookAndFeelInfo[] lafs = UIManager.getInstalledLookAndFeels();
+                for (int i=0; i<lafs.length; i++) {
+                    mi = new JMenuItem(lafs[i].getName());
+                    mi.putClientProperty("lafInfo", new LookAndFeelItem(lafs[i].getClassName())); // NOI18N
+                    mi.addActionListener(this);
+                    popup.add(mi);
+                }
+
+                // L&Fs from the Palette
+                Node[] cats = PaletteUtils.getCategoryNodes(PaletteUtils.getPaletteNode(), false);
+                for (int i=0; i<cats.length; i++) {
+                    if ("LookAndFeels".equals(cats[i].getName())) { // NOI18N
+                        final Node lafNode = cats[i];
+                        Node[] items = PaletteUtils.getItemNodes(lafNode, true);
+                        if (items.length != 0) {
+                            popup.add(new JSeparator());
+                        }
+                        for (int j=0; j<items.length; j++) {
+                            PaletteItem pitem = (PaletteItem)items[j].getLookup().lookup(PaletteItem.class);
+                            mi = new JMenuItem(items[j].getDisplayName());
+                            mi.putClientProperty("lafInfo", new LookAndFeelItem(pitem)); // NOI18N
+                            mi.addActionListener(this);
+                            popup.add(mi);
+                        }
+                    }
+                }
+
+                initialized = true;
+            }
+            return popup;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Object o = e.getSource();
+            if (o instanceof JComponent) {
+                JComponent source = (JComponent)o;
+                LookAndFeelItem item = (LookAndFeelItem)source.getClientProperty("lafInfo"); // NOI18N
+                try {
+                    selectedLaf = item.getLAFClass();
+                    run();
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Information about one look and feel.
+     */
+    static class LookAndFeelItem {
+        /** Name of the look and feel's class. */
+        private String className;
+        /** The corresponding PaletteItem, if exists. */
+        private PaletteItem pitem;
+
+        public LookAndFeelItem(String className) {
+            this.className = className;
+        }
+
+        public LookAndFeelItem(PaletteItem pitem) {
+            this.pitem = pitem;
+            this.className = pitem.getComponentClassName();
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public Class getLAFClass() throws ClassNotFoundException {
+            Class clazz;
+            if (pitem == null) {
+                if (className == null) {
+                    clazz = UIManager.getLookAndFeel().getClass();
+                } else {
+                    clazz = Class.forName(className);
+                }
+            } else {
+                clazz = pitem.getComponentClass();
+            }
+            return clazz;
+        }
+
+        public boolean equals(Object obj) {
+            if (!(obj instanceof LookAndFeelItem)) return false;
+            LookAndFeelItem item = (LookAndFeelItem)obj;
+            return (pitem == item.pitem) && ((pitem != null)
+                || ((className == null) ? (item.className == null) : className.equals(item.className)));
+        }
+
+        public int hashCode() {
+            return (className == null) ? pitem.hashCode() : className.hashCode();
+        }
+        
+    }
+
 }

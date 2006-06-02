@@ -169,8 +169,6 @@ public class FormLoaderSettings extends SystemOption {
 
     private static boolean toolBarPalette = false;
 
-    private static String designerLAF = null;
-
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;
 
@@ -569,19 +567,6 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_ASSISTANT_SHOWN,
                            oldValue, 
                            value ? Boolean.TRUE : Boolean.FALSE);
-    }
-
-    /** Getter for the designerLAF option. */
-    public String getDesignerLAF() {
-        return designerLAF;
-    }
-
-    /** Setter for the designerLAF option. */
-    public void setDesignerLAF(String designerLAF) {
-        if ((designerLAF == null) ? (this.designerLAF == null) : designerLAF.equals(this.designerLAF)) return;
-        String oldValue = this.designerLAF;
-        this.designerLAF = designerLAF;
-        firePropertyChange(PROP_DESIGNER_LAF, oldValue, designerLAF);
     }
 
     public int getLayoutCodeTarget() {

@@ -37,28 +37,23 @@ class FormLAF {
     private static Map netbeansDefaults = new HashMap();
     /** Maps LAF class to its theme. */
     private static Map lafToTheme = new HashMap();
-    /** Determines whether the designer LAF is subclass of MetalLookAndFeel. */
-    private static boolean designerLafIsMetal;
     /** Determines whether the IDE LAF is subclass of MetalLookAndFeel. */
     private static boolean ideLafIsMetal;
+    private static boolean preview;
+    private static Class previewLaf;
 
     private FormLAF() {
     }
-
-    static void updateLAF() {
+    
+    static UIDefaults initPreviewLaf(Class lafClass) {
         try {
-            if (!initialized) {
-                initialized = true;
-                initialize();
-            }
-            Class lafClass = LAFSelector.getDefault().getDesignerLAF();
-            designerLafIsMetal = MetalLookAndFeel.class.isAssignableFrom(lafClass);
-            if (!ideLafIsMetal && designerLafIsMetal &&
+            boolean previewLafIsMetal = MetalLookAndFeel.class.isAssignableFrom(lafClass);
+            if (!ideLafIsMetal && previewLafIsMetal &&
                 !MetalLookAndFeel.class.equals(lafClass) && (lafToTheme.get(MetalLookAndFeel.class) == null)) {
                 lafToTheme.put(MetalLookAndFeel.class, MetalLookAndFeel.getCurrentTheme());
             }
-            LookAndFeel designerLookAndFeel = (LookAndFeel)lafClass.newInstance();
-            if (designerLafIsMetal) {
+            LookAndFeel previewLookAndFeel = (LookAndFeel)lafClass.newInstance();
+            if (previewLafIsMetal) {
                 MetalTheme theme = (MetalTheme)lafToTheme.get(lafClass);
                 if (theme == null) {
                     lafToTheme.put(lafClass, MetalLookAndFeel.getCurrentTheme());
@@ -66,44 +61,48 @@ class FormLAF {
                     MetalLookAndFeel.setCurrentTheme(theme);
                 }
             }
-            designerLookAndFeel.initialize();
+            previewLookAndFeel.initialize();
 
-            UIDefaults designerDefaults = designerLookAndFeel.getDefaults();
+            UIDefaults previewDefaults = previewLookAndFeel.getDefaults();
 
-            if (designerLafIsMetal && ideLafIsMetal) {
+            if (previewLafIsMetal && ideLafIsMetal) {
                 LookAndFeel ideLaf = UIManager.getLookAndFeel();
                 MetalTheme theme = (MetalTheme)lafToTheme.get(ideLaf.getClass());
                 MetalLookAndFeel.setCurrentTheme(theme);
             }
 
             ClassLoader classLoader = lafClass.getClassLoader();
-            if (classLoader != null) designerDefaults.put("ClassLoader", classLoader); // NOI18N
+            if (classLoader != null) previewDefaults.put("ClassLoader", classLoader); // NOI18N
 
             // Force switch of the LayoutStyle
-            if (designerDefaults.get("LayoutStyle.instance") == null) { // NOI18N
-                designerDefaults.put("LayoutStyle.instance", // NOI18N
-                    createLayoutStyle(designerLookAndFeel.getID())); 
+            if (previewDefaults.get("LayoutStyle.instance") == null) { // NOI18N
+                previewDefaults.put("LayoutStyle.instance", // NOI18N
+                    createLayoutStyle(previewLookAndFeel.getID())); 
             }
 
-            if ("Metal".equals(designerLookAndFeel.getID())) { // NOI18N
-                designerDefaults.put("InternalFrameUI", "org.netbeans.modules.form.FormLAF$FormMetalInternalFrameUI"); // NOI18N
-            }
-
-            delDefaults.setDelegate(designerDefaults);
+            return previewDefaults;
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (LinkageError ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
+        return null;
     }
 
     private static void initialize() throws Exception {
+        initialized = true;
         UIManager.getDefaults(); // Force initialization
 
         LookAndFeel laf = UIManager.getLookAndFeel();
         ideLafIsMetal = laf instanceof MetalLookAndFeel;
         if (ideLafIsMetal) {
             lafToTheme.put(laf.getClass(), MetalLookAndFeel.getCurrentTheme());
+        }
+        LookAndFeel original = laf;
+        try {
+            original = laf.getClass().newInstance();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         java.lang.reflect.Method method = UIManager.class.getDeclaredMethod("getLAFState", new Class[0]); // NOI18N
@@ -112,10 +111,10 @@ class FormLAF {
         method = lafState.getClass().getDeclaredMethod("setLookAndFeelDefaults", new Class[] {UIDefaults.class}); // NOI18N
         method.setAccessible(true);
 
-        UIDefaults original = UIManager.getLookAndFeelDefaults();
-        assert !(original instanceof DelegatingDefaults);
+        UIDefaults ide = UIManager.getLookAndFeelDefaults();
+        assert !(ide instanceof DelegatingDefaults);
 
-        delDefaults = new DelegatingDefaults(null, original);
+        delDefaults = new DelegatingDefaults(null, original.getDefaults(), ide);
         method.invoke(lafState, new Object[] {delDefaults});
     }
 
@@ -187,7 +186,11 @@ class FormLAF {
 
     private static void useDesignerLookAndFeel() {
         if (!initialized) {
-            updateLAF();
+            try {
+                initialize();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
         UIDefaults defaults = UIManager.getDefaults();
         netbeansDefaults.clear();
@@ -195,24 +198,19 @@ class FormLAF {
         Iterator iter = netbeansDefaults.keySet().iterator();
         while (iter.hasNext()) defaults.remove(iter.next());
 
-        setUseDesignerDefaults(true);
-
-        if (designerLafIsMetal) {
-            try {
-                Class designerLAF = LAFSelector.getDefault().getDesignerLAF();
-                MetalLookAndFeel.setCurrentTheme((MetalTheme)lafToTheme.get(designerLAF));
-            } catch (ClassNotFoundException cnfex) {
-                cnfex.printStackTrace(); // Should not happen
-            }
+        if (!preview) {
+            setUseDesignerDefaults(true);
+        } else if (MetalLookAndFeel.class.isAssignableFrom(previewLaf)) {
+            MetalLookAndFeel.setCurrentTheme((MetalTheme)lafToTheme.get(previewLaf));
         }
     }
 
     private static void useIDELookAndFeel() {
         UIManager.getDefaults().putAll(netbeansDefaults);
 
-        setUseDesignerDefaults(false);
-
-        if (ideLafIsMetal) {
+        if (!preview) {
+            setUseDesignerDefaults(false);
+        } else if (ideLafIsMetal) {
             MetalLookAndFeel.setCurrentTheme((MetalTheme)lafToTheme.get(UIManager.getLookAndFeel().getClass()));
         }
     }
@@ -260,11 +258,20 @@ class FormLAF {
     }
 
     static LayoutStyle getDesignerLayoutStyle() {
-        return (LayoutStyle)delDefaults.getDelegate().get("LayoutStyle.instance"); // NOI18N
+        return LayoutStyle.getSharedInstance();
     }
 
     static void setUseDesignerDefaults(boolean designerDefaults) {
         delDefaults.setDelegating(designerDefaults);
+    }
+
+    static void setUsePreviewDefaults(boolean previewing, Class previewLAF, UIDefaults uiDefaults) {
+        preview = previewing;
+        previewLaf = previewLAF;
+        if (previewing) {
+            delDefaults.setPreviewDefaults(uiDefaults);
+        }
+        delDefaults.setPreviewing(previewing);
     }
 
     /**
@@ -272,24 +279,25 @@ class FormLAF {
      * UIDefaults based on some rule.
      */
     static class DelegatingDefaults extends UIDefaults {
-        /** UIDefaults to use for delegation. */
-        private UIDefaults delegate;
-        /** The original UIDefaults. */
+        /** UIDefaults used for preview. */
+        private UIDefaults preview;
+        /** The designer UIDefaults. */
         private UIDefaults original;
-        /** If true, then the delegate map is always used. */
+        /** IDE UIDefaults. */
+        private UIDefaults ide;
+        /** If true, then the designer map is used. */
         private boolean delegating;
+        /** If true, then the preview map is used. */
+        private boolean previewing;        
         
-        DelegatingDefaults(UIDefaults delegate, UIDefaults original) {
-            this.delegate = delegate;
+        DelegatingDefaults(UIDefaults preview, UIDefaults original, UIDefaults ide) {
+            this.preview = preview;
             this.original = original;
+            this.ide = ide;
         }
 
-        public UIDefaults getDelegate() {
-            return delegate;
-        }
-
-        public void setDelegate(UIDefaults delegate) {
-            this.delegate = delegate;
+        public void setPreviewDefaults(UIDefaults preview) {
+            this.preview = preview;
         }
 
         public void setDelegating(boolean delegating){
@@ -300,92 +308,68 @@ class FormLAF {
             return delegating;
         }
 
+        public void setPreviewing(boolean previewing){
+            this.previewing = previewing;
+        }
+
+        public boolean isPreviewing() {
+            return previewing;
+        }
+
         // Delegated methods
 
+        private UIDefaults getCurrentDefaults() {
+            return delegating ? original : (previewing ? preview : ide);
+        }
+
         public Object get(Object key) {
-            return delegating ? delegate.get(key) : original.get(key);
+            return delegating ? original.get(key) : (previewing ? preview.get(key) : ide.get(key));
         }
 
         public Object put(Object key, Object value) {
-            return delegating ? delegate.put(key, value) : original.put(key, value);
+            return delegating ? original.put(key, value) : (previewing ? preview.put(key, value) : ide.put(key, value));
         }
 
         public void putDefaults(Object[] keyValueList) {
-            if (delegating) delegate.putDefaults(keyValueList); else original.putDefaults(keyValueList);
+            getCurrentDefaults().putDefaults(keyValueList);
         }
 
         public Object get(Object key, Locale l) {
-            return delegating ? delegate.get(key, l) : original.get(key, l);
+            return getCurrentDefaults().get(key, l);
         }
 
         public synchronized void addResourceBundle(String bundleName) {
-            if (delegating) delegate.addResourceBundle(bundleName); else original.addResourceBundle(bundleName);
+            getCurrentDefaults().addResourceBundle(bundleName);
         }
 
         public synchronized void removeResourceBundle(String bundleName) {
-            if (delegating) delegate.removeResourceBundle(bundleName); else original.removeResourceBundle(bundleName);
+            getCurrentDefaults().removeResourceBundle(bundleName);
         }
 
         public void setDefaultLocale(Locale l) {
-            if (delegating) delegate.setDefaultLocale(l); else original.setDefaultLocale(l);
+            getCurrentDefaults().setDefaultLocale(l);
         }
 
         public Locale getDefaultLocale() {
-            return delegating ? delegate.getDefaultLocale() : original.getDefaultLocale();
+            return getCurrentDefaults().getDefaultLocale();
         }
 
         public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-            if (delegating) delegate.addPropertyChangeListener(listener); else original.addPropertyChangeListener(listener);
+            getCurrentDefaults().addPropertyChangeListener(listener);
         }
 
         public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-            if (delegating) delegate.removePropertyChangeListener(listener); else original.removePropertyChangeListener(listener);
+            getCurrentDefaults().removePropertyChangeListener(listener);
         }
 
         public synchronized PropertyChangeListener[] getPropertyChangeListeners() {
-            return (delegating) ? delegate.getPropertyChangeListeners() : original.getPropertyChangeListeners();
+            return getCurrentDefaults().getPropertyChangeListeners();
         }
 
         protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
             System.out.println("Warning: FormLAF.firePropertyChange called, but not implemented."); // NOI18N
         }
 
-    }
-
-    // Workaround for issue 4969308
-    public static class FormMetalInternalFrameUI extends MetalInternalFrameUI {
-        public FormMetalInternalFrameUI(JInternalFrame b)   {
-            super(b);
-        }
-
-        protected JComponent createNorthPane(JInternalFrame w) {
-            return new FormMetalInternalFrameTitlePane(w);
-        }
-
-        public static javax.swing.plaf.ComponentUI createUI(JComponent c)    {
-            return new FormMetalInternalFrameUI((JInternalFrame)c);
-        }
-
-        static class FormMetalInternalFrameTitlePane extends MetalInternalFrameTitlePane {
-            FormMetalInternalFrameTitlePane(JInternalFrame w) {
-                super(w);
-            }
-
-            public void paintComponent(java.awt.Graphics g)  {
-                if (delDefaults.isDelegating()) {
-                    super.paintComponent(g);
-                } else {
-                    // RepaintManager.paintDirtyRegions for a previewed frame
-                    // is sometimes able not to use the correct L&F
-                    try {
-                        delDefaults.setDelegating(true);
-                        super.paintComponent(g);
-                    } finally {
-                        delDefaults.setDelegating(false);
-                    }
-                }
-            }
-        }
     }
 
 }

@@ -502,10 +502,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     public static Container createFormView(final RADVisualComponent metacomp,
-                                           final Class contClass)
+                                           final Class contClass,
+                                           final Class previewLaf)
         throws Exception
     {
-        return (Container) FormLAF.executeWithLookAndFeel(
+        final UIDefaults uiDefaults = FormLAF.initPreviewLaf(previewLaf);
+        Container result = null;
+        try {
+            FormLAF.setUsePreviewDefaults(true, previewLaf, uiDefaults);
+            result = (Container) FormLAF.executeWithLookAndFeel(
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
                     VisualReplicator r = new VisualReplicator(
@@ -517,10 +522,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         JLayeredPane newPane = new JLayeredPane() {
                             public void paint(Graphics g) {
                                 try {
-                                    FormLAF.setUseDesignerDefaults(true);
+                                    FormLAF.setUsePreviewDefaults(true, previewLaf, uiDefaults);
                                     super.paint(g);
                                 } finally {
-                                    FormLAF.setUseDesignerDefaults(false);
+                                    FormLAF.setUsePreviewDefaults(false, null, null);
                                 }
                             }
                         };
@@ -542,6 +547,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 }
             }
         );
+        } finally {
+            FormLAF.setUsePreviewDefaults(false, null, null);
+        }
+        return result;
     }
 
     Container getTopVisualContainer() {

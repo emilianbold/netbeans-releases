@@ -308,28 +308,6 @@ public class BeanSupport
         return map;
     }
 
-    /**
-     * Updates BeanSupport's caches. Used when the content of the caches
-     * must be updated during look and feel switch.
-     */
-    static void updateCaches() {
-        // Refresh instances cache
-        Set classes = new HashSet(instancesCache.keySet());
-        instancesCache.clear();
-        Iterator iter = classes.iterator();
-        while (iter.hasNext()) {
-            getDefaultInstance((Class)iter.next());
-        }
-
-        // Refresh values cache
-        classes = new HashSet(valuesCache.keySet());
-        valuesCache.clear();
-        iter = classes.iterator();
-        while (iter.hasNext()) {
-            getDefaultPropertyValues((Class)iter.next());
-        }
-    }
-
     private static abstract class DefaultValueDeviation {
         protected Object[] values;
         DefaultValueDeviation(Object[] values) {

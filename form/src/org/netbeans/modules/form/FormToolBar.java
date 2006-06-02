@@ -142,10 +142,6 @@ class FormToolBar extends JToolBar {
         add(separator3);
         add(Box.createHorizontalStrut(4));
         installResizabilityActions();
-        if (System.getProperty("netbeans.form.lafselector") != null) { // NOI18N
-            add(Box.createHorizontalStrut(6));
-            add(LAFSelector.getDefault().createLAFSelector(formDesigner));
-        }
 
         // Add "addLabel" at the end of the toolbar
         add(Box.createHorizontalGlue());
