@@ -18,10 +18,7 @@ import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author David Kaspar
@@ -49,9 +46,10 @@ public class SceneAnimator {
         return scene;
     }
 
-    public void start (Animator animator) {
+    void start (Animator animator) {
         synchronized (animators) {
             animators.put (animator, System.currentTimeMillis ());
+            animator.reset ();
             if (! taskAlive) {
                 taskAlive = true;
                 RequestProcessor.getDefault ().post (task);
@@ -59,7 +57,7 @@ public class SceneAnimator {
         }
     }
 
-    public boolean isRunning (Animator animator) {
+    boolean isRunning (Animator animator) {
         synchronized (animators) {
             if (animators.containsKey (animator))
                 return true;
@@ -102,7 +100,7 @@ public class SceneAnimator {
                 SwingUtilities.invokeAndWait (new Runnable () {
                     public void run () {
                         for (final Map.Entry<Animator, Double> entry : cache.entrySet ())
-                            entry.getKey ().tick (entry.getValue ());
+                            entry.getKey ().performTick (entry.getValue ());
                         scene.validate ();
                     }
                 });

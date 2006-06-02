@@ -29,7 +29,7 @@ public class IconNodeWidget extends Widget {
         addChild (imageWidget);
 
         labelWidget = new LabelWidget (scene);
-        labelWidget.setFont (scene.getDefaultFont ().deriveFont (Font.BOLD));
+        labelWidget.setFont (scene.getDefaultFont ().deriveFont (Font.BOLD).deriveFont (14.0f));
         addChild (labelWidget);
 
         setState (WidgetState.NORMAL);

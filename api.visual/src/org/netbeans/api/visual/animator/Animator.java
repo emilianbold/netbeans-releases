@@ -12,11 +12,44 @@
  */
 package org.netbeans.api.visual.animator;
 
+import org.netbeans.api.visual.widget.Scene;
+
 /**
  * @author David Kaspar
  */
-public interface Animator {
+public abstract class Animator {
 
-    public void tick (double progress);
+    private SceneAnimator sceneAnimator;
+    private boolean reset;
+
+    protected Animator (SceneAnimator sceneAnimator) {
+        this.sceneAnimator = sceneAnimator;
+    }
+
+    protected Scene getScene () {
+        return sceneAnimator.getScene ();
+    }
+
+    protected void start () {
+        sceneAnimator.start (this);
+    }
+
+    public boolean isRunning () {
+        return sceneAnimator.isRunning (this);
+    }
+
+    void reset () {
+        reset = true;
+    }
+
+    void performTick (double progress) {
+        if (reset) {
+            reset = false;
+            return;
+        }
+        tick (progress);
+    }
+
+    public abstract void tick (double progress);
 
 }
