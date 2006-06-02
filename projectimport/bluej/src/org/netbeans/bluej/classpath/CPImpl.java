@@ -27,6 +27,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -57,8 +58,7 @@ public class CPImpl implements ClassPathImplementation {
             }
             File home = BlueJSettings.getDefault().getHome();
             if (home != null) {
-                File userLibs = new File(new File(home, "lib"), "userlib");  // NOI18N
-                FileObject fo = FileUtil.toFileObject(userLibs);
+                FileObject fo = FileUtil.toFileObject(BluejProject.getUserLibPath(home));
                 if (fo != null) {
                     FileObject[] fos = fo.getChildren();
                     for (int i = 0; i < fos.length; i++) {

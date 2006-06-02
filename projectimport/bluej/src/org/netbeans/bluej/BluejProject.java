@@ -64,7 +64,7 @@ public final class BluejProject implements Project, AntProjectListener {
     
     private static final Icon BLUEJ_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/bluej/resources/bluejproject.png")); // NOI18N
 
-    private static final String PROP_BLUEJ_HOME = "bluej.home"; //NOI18N
+    private static final String PROP_BLUEJ_HOME = "bluej.userlib"; //NOI18N
     
     // Special properties of the project
     public static final String J2SE_PROJECT_NAME = "j2se.project.name"; // NOI18N
@@ -352,6 +352,17 @@ public final class BluejProject implements Project, AntProjectListener {
         
     }
     
+    public static File getUserLibPath(File bjHome) {
+        
+        File userlib;
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            userlib = new File(bjHome.getParentFile(), bjHome.getName() + ".app/Contents/Resources/Java/userlib");
+        } else {
+            userlib = new File(new File(bjHome, "lib"), "userlib");
+        }
+        return userlib;
+    }
+    
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook implements PropertyChangeListener {
         
         ProjectOpenedHookImpl() {}
@@ -365,11 +376,12 @@ public final class BluejProject implements Project, AntProjectListener {
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); // NOI18N                    
                     File bjHome = BlueJSettings.getDefault().getHome();
                     if (bjHome != null) {
-                        ep.setProperty(PROP_BLUEJ_HOME, bjHome.getAbsolutePath());
+                        
+                        ep.setProperty(PROP_BLUEJ_HOME, getUserLibPath(bjHome).getAbsolutePath());
                         ep.setComment(PROP_BLUEJ_HOME, new String[] {
-                            "## the bluej.home property is reset everytime the project is opened in netbeans according to the",
-                            "## setting in the IDE that point to the location of the bluej installation.",
-                            "## It is required to find and use the libraries located in BLUEJ_HOME/lib/userdir when building the project" 
+                            "## the bluej.userlib property is reset everytime the project is opened in netbeans according to the",
+                            "## setting in the IDE that point to the location of the bluej installation's userlib directory.",
+                            "## It is required to find and use the libraries located in BLUEJ_HOME/lib/userlib when building the project" 
                         }, true);
                     } else {
                         ep.remove(PROP_BLUEJ_HOME);

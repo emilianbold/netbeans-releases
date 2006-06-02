@@ -14,11 +14,15 @@
 package org.netbeans.bluej.options;
 
 import java.io.File;
+import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileFilter;
+import org.netbeans.bluej.BluejProject;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -89,13 +93,27 @@ public class BlueJPanel extends javax.swing.JPanel {
 
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
         JFileChooser chooser = new JFileChooser(txtHome.getText());
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            chooser.setFileFilter(new FileFilter() {
+                public boolean accept(File f) {
+                    return f.isDirectory(); // || (f.isFile() && f.getName().endsWith(".app"));
+                }
+                public String getDescription() {
+                    return NbBundle.getMessage(BlueJPanel.class, "Macosx_filter");
+                }
+            });
+        } else {
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        }
         int r = chooser.showDialog(
                 SwingUtilities.getWindowAncestor(this),
                 NbBundle.getMessage(BlueJPanel.class, "Select_Directory"));
         if (r == JFileChooser.APPROVE_OPTION) {
             File file = chooser.getSelectedFile();
-            if (!new File(new File(file, "lib"), "bluej.jar").isFile()) {
+            File bjLib = BluejProject.getUserLibPath(file);
+            System.out.println("bjhome=" + bjLib.getAbsolutePath());
+            if (!bjLib.exists()) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(BlueJPanel.class, "Not_a_bluej_home", file),
                         NotifyDescriptor.Message.WARNING_MESSAGE));

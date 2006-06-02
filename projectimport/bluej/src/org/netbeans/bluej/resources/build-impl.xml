@@ -45,9 +45,9 @@ is divided into following sections:
     </target>
     
     <target name="-init-bluej" depends="-do-init" if="bluej.home.available">
-            <fileset dir="${bluej.home}" id="bluej.home.libraries">
-                <include name="lib/userlib/*.jar"/>
-                <include name="lib/userlib/*.zip"/>
+            <fileset dir="${bluej.userlib}" id="bluej.home.libraries">
+                <include name="*.jar"/>
+                <include name="*.zip"/>
             </fileset>
         <pathconvert property="bluej.libraries" refid="bluej.home.libraries"/>
     </target>
@@ -55,8 +55,8 @@ is divided into following sections:
     <target name="-do-init" depends="-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property">
         <condition property="bluej.home.available">
             <and>
-                <isset property="bluej.home"/>
-                <available file="${bluej.home}"/>
+                <isset property="bluej.userlib"/>
+                <available file="${bluej.userlib}"/>
             </and>
         </condition>
         
