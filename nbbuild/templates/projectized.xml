@@ -226,4 +226,18 @@ Microsystems, Inc. All Rights Reserved.
     }
     -->
 
+    <target name="ecj-lint" depends="init">
+        <condition property="bootclasspath.opt" value="-bootclasspath ${nbjdk.bootclasspath}">
+            <isset property="nbjdk.bootclasspath"/>
+        </condition>
+        <property name="bootclasspath.opt" value=""/>
+        <property name="cp.extra" value=""/>
+        <property name="ecj.warn.opts" value="-warn:+uselessTypeCheck"/>
+        <exec executable="sh">
+            <arg value="-c"/>
+            <arg value="ecj -d none -source ${javac.source} ${bootclasspath.opt} -classpath ${module.classpath}${path.separator}${cp.extra} ${src.dir} ${ecj.warn.opts} 2>&amp;1 |
+                        perl -we 'undef $/; $_ = &lt;STDIN>; s/^(?:-+\n)?\d+\. (?:WARNING|ERROR) in (.+)\n \(at line (\d+)\)\n(.*)\n(.*)\n(.*)(?:\n-+)?$/$1:$2: $5\n$3\n$4/gm; print $_'"/>
+        </exec>
+    </target>
+
 </project>
