@@ -2826,7 +2826,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     initWriter.write("java.util.ResourceBundle " + varName + " = " // NOI18N
                             + code.substring(idx, endIdx + 1) + "; // NOI18N\n"); // NOI18N
                 }
-                code = varName + code.substring(endIdx + 1);
+                code = code.substring(0, idx) + varName + code.substring(endIdx + 1);
             }
         }
         return code;
