@@ -248,7 +248,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
     public void addNotify() {
         super.addNotify();
-        if( null == reloadTimer ) {
+        if( null == reloadTimer && !Boolean.getBoolean("netbeans.full.hack")) {
             if( System.currentTimeMillis() - lastReload >= RSS_FEED_TIMER_RELOAD_MILLIS ) {
                 reload();
             } else {
