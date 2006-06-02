@@ -313,7 +313,7 @@ public class SelectorUtils {
     public static DataObject selectOrCreateBundle(FileObject refFile, DataObject template) {
         Node rootNode = bundlesNode(null, refFile, true);
         FileSelector fs = new FileSelector(refFile, template);
-        fs.getDialog(I18nUtil.getBundle().getString ("CTL_Template_Dialog_Title"), null) // NOI18N
+        fs.getDialog(I18nUtil.getBundle().getString ("CTL_SelectPropDO_Dialog_Title"), null) // NOI18N
             .setVisible(true);
         return fs.isConfirmed() ? fs.getSelectedDataObject() : null;
     }
