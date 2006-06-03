@@ -88,11 +88,11 @@ Microsystems, Inc. All Rights Reserved.
         </path>
     </target>
 
-    <target name="-conditional-javadoc-warn" depends="-conditional-15-init" if="skip.15">
-        <echo level="error" message="Cannot build javadoc for module ${basedir} as it requires JDK 1.5"/>
+    <target name="-conditional-javadoc-warn" depends="-conditional-16-init" if="skip.16">
+        <echo level="error" message="Cannot build javadoc for module ${basedir} as it requires JDK 1.6"/>
     </target>
     
-    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.15">
+    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.16">
         <property name="javadoc.check.failonerror" value="false" />
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
@@ -110,22 +110,22 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="netbeans-javadoc" depends="netbeans,javadoc" />
     
-    <target name="-conditional-15-init" depends="basic-init">
-        <condition property="skip.15">
+    <target name="-conditional-16-init" depends="basic-init">
+        <condition property="skip.16">
             <and>
-                <equals arg1="1.5" arg2="${javac.source}"/>
+                <equals arg1="1.6" arg2="${javac.target}"/>
                 <not>
-                    <available classname="java.lang.StringBuilder"/>
+                    <available classname="java.util.NavigableMap"/>
                 </not>
             </and>
         </condition>
     </target>
     
-    <target name="-conditional-nbm-warn" depends="-conditional-15-init" if="skip.15">
-        <echo level="error" message="Cannot build NBM for module ${basedir} as it requires JDK 1.5"/>
+    <target name="-conditional-nbm-warn" depends="-conditional-16-init" if="skip.16">
+        <echo level="error" message="Cannot build NBM for module ${basedir} as it requires JDK 1.6"/>
     </target>
     
-    <target name="conditional-nbm" unless="skip.15" depends="-conditional-nbm-warn">
+    <target name="conditional-nbm" unless="skip.16" depends="-conditional-nbm-warn">
         <antcall target="nbm"/>
     </target>
     
