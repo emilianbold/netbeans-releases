@@ -14,8 +14,8 @@ package org.netbeans.api.visual.widget.general;
 
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.WidgetState;
 import org.netbeans.api.visual.laf.LookFeel;
+import org.netbeans.api.visual.model.ObjectState;
 
 /**
  * @author David Kaspar
@@ -25,10 +25,10 @@ public class ListItemWidget extends LabelWidget {
     public ListItemWidget (Scene scene) {
         super (scene);
 
-        setState (WidgetState.NORMAL);
+        setState (ObjectState.NORMAL);
     }
 
-    public void setState (WidgetState state) {
+    public void setState (ObjectState state) {
         super.setState (state);
         LookFeel lookFeel = getScene ().getLookFeel ();
         setBorder (lookFeel.getMiniBorder (state));

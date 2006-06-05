@@ -3,6 +3,7 @@ package org.netbeans.api.visual.widget.general;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.layout.SerialLayout;
 import org.netbeans.api.visual.widget.*;
+import org.netbeans.api.visual.model.ObjectState;
 
 import java.awt.*;
 
@@ -26,14 +27,14 @@ public class IconNodeWidget extends Widget {
         labelWidget.setFont (scene.getDefaultFont ().deriveFont (14.0f));
         addChild (labelWidget);
 
-        setState (WidgetState.NORMAL);
+        setState (ObjectState.NORMAL);
     }
 
-    public void setState (WidgetState state) {
+    public void setState (ObjectState state) {
         super.setState (state);
         LookFeel lookFeel = getScene ().getLookFeel ();
-        setBorder (lookFeel.getBorder (state));
-        setForeground (lookFeel.getForeground (state));
+        labelWidget.setBorder (lookFeel.getBorder (state));
+        labelWidget.setForeground (lookFeel.getForeground (state));
     }
 
     public void setImage (Image image) {

@@ -17,6 +17,7 @@ import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.EmptyBorder;
 import org.netbeans.api.visual.layout.AbsoluteLayout;
 import org.netbeans.api.visual.layout.Layout;
+import org.netbeans.api.visual.model.ObjectState;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -55,7 +56,7 @@ public class Widget {
     private Rectangle preferredBounds;
     private boolean checkClipping;
 
-    private WidgetState state = WidgetState.NORMAL;
+    private ObjectState state = ObjectState.NORMAL;
 
     private Cursor cursor;
     private String toolTipText;
@@ -297,11 +298,11 @@ public class Widget {
         this.toolTipText = toolTipText;
     }
 
-    public WidgetState getState () {
+    public ObjectState getState () {
         return state;
     }
 
-    public void setState (WidgetState state) {
+    public void setState (ObjectState state) {
         this.state = state;
     }
 

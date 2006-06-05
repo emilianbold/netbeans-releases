@@ -16,6 +16,7 @@ import org.netbeans.api.visual.border.LineBorder;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.layout.SerialLayout;
 import org.netbeans.api.visual.widget.*;
+import org.netbeans.api.visual.model.ObjectState;
 
 import java.awt.*;
 
@@ -46,10 +47,10 @@ public class ListWidget extends Widget {
 
         addChild (new SeparatorWidget (scene, SeparatorWidget.Orientation.HORIZONTAL));
 
-        setState (WidgetState.NORMAL);
+        setState (ObjectState.NORMAL);
     }
 
-    public void setState (WidgetState state) {
+    public void setState (ObjectState state) {
         super.setState (state);
         LookFeel lookFeel = getScene ().getLookFeel ();
         header.setBorder (lookFeel.getBorder (state));

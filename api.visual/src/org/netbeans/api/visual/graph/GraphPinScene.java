@@ -12,7 +12,8 @@
  */
 package org.netbeans.api.visual.graph;
 
-import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.model.ObjectController;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.util.*;
@@ -21,7 +22,7 @@ import java.util.*;
  * @author David Kaspar
  */
 // TODO - PinCtrl should not have NodeCtrl reference, add NodeCtrl getPinNode (PinCtrl)
-public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeController<Node>, EdgeCtrl extends EdgeController<Edge>, PinCtrl extends PinController<Pin>> extends Scene {
+public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeController<Node>, EdgeCtrl extends EdgeController<Edge>, PinCtrl extends PinController<Pin>> extends ObjectScene {
 
     private HashMap<Node, NodeCtrl> nodeControllers = new HashMap<Node, NodeCtrl> ();
     private HashMap<Edge, EdgeCtrl> edgeControllers = new HashMap<Edge, EdgeCtrl> ();
@@ -50,6 +51,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         NodeCtrl nodeController = attachNodeController (node);
         assert nodeController != null;
         assertWidgets (nodeController.getWidgets ());
+        addObject (nodeController);
         nodeControllers.put (node, nodeController);
         nodePinControllers.put (nodeController, new HashMap<Pin, PinCtrl> ());
         return nodeController;
@@ -63,6 +65,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         nodePinControllers.remove (nodeController);
         nodeControllers.remove (nodeController.getNode ());
         removeWidgets (nodeController);
+        removeObject (nodeController);
     }
 
     public final NodeCtrl getNodeController (Node node) {
@@ -74,6 +77,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         EdgeCtrl edgeController = attachEdgeController (edge);
         assert edgeController != null;
         assertWidgets (edgeController.getWidgets ());
+        addObject (edgeController);
         edgeControllers.put (edge, edgeController);
         return edgeController;
     }
@@ -84,6 +88,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         setEdgeTarget (edgeController, null);
         edgeControllers.remove (edgeController.getEdge ());
         removeWidgets (edgeController);
+        removeObject (edgeController);
     }
 
     public final EdgeCtrl getEdgeController (Edge edge) {
@@ -98,6 +103,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         assert ! pinNodeControllers.containsKey (pinController);
         assert pinController != null;
         assertWidgets (pinController.getWidgets ());
+        addObject (pinController);
         pinControllers.put (pin, pinController);
         pinNodeControllers.put (pinController, nodeController);
         pinInputEdgeControllers.put (pinController, new ArrayList<EdgeCtrl> ());
@@ -119,6 +125,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         pinControllers.remove (pinController.getPin ());
         pinNodeControllers.remove (pinController);
         removeWidgets (pinController);
+        removeObject (pinController);
     }
 
     public final NodeCtrl getPinNode (PinCtrl pinController) {

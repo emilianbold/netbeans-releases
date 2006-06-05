@@ -13,7 +13,7 @@
 package org.netbeans.api.visual.laf;
 
 import org.netbeans.api.visual.border.Border;
-import org.netbeans.api.visual.widget.WidgetState;
+import org.netbeans.api.visual.model.ObjectState;
 
 import java.awt.*;
 
@@ -26,15 +26,15 @@ public abstract class LookFeel {
 
     public abstract Color getForeground ();
 
-    public abstract Border getBorder (WidgetState state);
+    public abstract Border getBorder (ObjectState state);
 
-    public abstract Border getMiniBorder (WidgetState state);
+    public abstract Border getMiniBorder (ObjectState state);
 
-    public abstract boolean getOpaque (WidgetState state);
+    public abstract boolean getOpaque (ObjectState state);
 
-    public abstract Paint getBackground (WidgetState state);
+    public abstract Paint getBackground (ObjectState state);
 
-    public abstract Color getForeground (WidgetState state);
+    public abstract Color getForeground (ObjectState state);
 
     // TODO - is naming correct?
     public abstract int getMargin ();

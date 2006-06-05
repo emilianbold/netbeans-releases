@@ -12,7 +12,8 @@
  */
 package org.netbeans.api.visual.graph;
 
-import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.model.ObjectController;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.util.*;
@@ -20,7 +21,7 @@ import java.util.*;
 /**
  * @author David Kaspar
  */
-public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Node>, EdgeCtrl extends EdgeController<Edge>> extends Scene {
+public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Node>, EdgeCtrl extends EdgeController<Edge>> extends ObjectScene {
 
     private HashMap<Node, NodeCtrl> nodeControllers = new HashMap<Node, NodeCtrl> ();
     private HashMap<Edge, EdgeCtrl> edgeControllers = new HashMap<Edge, EdgeCtrl> ();
@@ -47,6 +48,7 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
         NodeCtrl nodeController = attachNodeController (node);
         assert nodeController != null;
         assertWidgets (nodeController.getWidgets ());
+        addObject (nodeController);
         nodeControllers.put (node, nodeController);
         nodeInputEdgeControllers.put (nodeController, new ArrayList<EdgeCtrl> ());
         nodeOutputEdgeControllers.put (nodeController, new ArrayList<EdgeCtrl> ());
@@ -63,6 +65,7 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
         nodeOutputEdgeControllers.remove (nodeController);
         nodeControllers.remove (nodeController.getNode ());
         removeWidgets (nodeController);
+        removeObject (nodeController);
     }
 
     public final Collection<NodeCtrl> getNodes () {
@@ -78,6 +81,7 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
         EdgeCtrl edgeController = attachEdgeController (edge);
         assert edgeController != null;
         assertWidgets (edgeController.getWidgets ());
+        addObject (edgeController);
         edgeControllers.put (edge, edgeController);
         return edgeController;
     }
@@ -88,6 +92,7 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
         setEdgeTarget (edgeController, null);
         edgeControllers.remove (edgeController.getEdge ());
         removeWidgets (edgeController);
+        removeObject (edgeController);
     }
 
     public final Collection<EdgeCtrl> getEdges () {
