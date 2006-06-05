@@ -33,11 +33,6 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
     public GraphScene () {
     }
 
-    private void assertWidgets (Collection<Widget> widgets) {
-        for (Widget widget : widgets)
-            assert widget.getScene () == this  &&  widget.getParentWidget () != null;
-    }
-
     private void removeWidgets (ObjectController controller) {
         for (Widget widget : controller.getWidgets ())
             widget.getParentWidget ().removeChild (widget);
@@ -47,7 +42,6 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
         assert ! nodeControllers.containsKey (node);
         NodeCtrl nodeController = attachNodeController (node);
         assert nodeController != null;
-        assertWidgets (nodeController.getWidgets ());
         addObject (nodeController);
         nodeControllers.put (node, nodeController);
         nodeInputEdgeControllers.put (nodeController, new ArrayList<EdgeCtrl> ());
@@ -80,7 +74,6 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
         assert ! edgeControllers.containsKey (edge);
         EdgeCtrl edgeController = attachEdgeController (edge);
         assert edgeController != null;
-        assertWidgets (edgeController.getWidgets ());
         addObject (edgeController);
         edgeControllers.put (edge, edgeController);
         return edgeController;

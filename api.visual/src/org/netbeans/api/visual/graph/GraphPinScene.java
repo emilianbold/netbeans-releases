@@ -36,11 +36,6 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
     public GraphPinScene () {
     }
 
-    private void assertWidgets (Collection<Widget> widgets) {
-        for (Widget widget : widgets)
-            assert widget.getScene () == this  &&  widget.getParentWidget () != null;
-    }
-
     private void removeWidgets (ObjectController controller) {
         for (Widget widget : controller.getWidgets ())
             widget.getParentWidget ().removeChild (widget);
@@ -50,7 +45,6 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         assert ! nodeControllers.containsKey (node);
         NodeCtrl nodeController = attachNodeController (node);
         assert nodeController != null;
-        assertWidgets (nodeController.getWidgets ());
         addObject (nodeController);
         nodeControllers.put (node, nodeController);
         nodePinControllers.put (nodeController, new HashMap<Pin, PinCtrl> ());
@@ -76,7 +70,6 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         assert ! edgeControllers.containsKey (edge);
         EdgeCtrl edgeController = attachEdgeController (edge);
         assert edgeController != null;
-        assertWidgets (edgeController.getWidgets ());
         addObject (edgeController);
         edgeControllers.put (edge, edgeController);
         return edgeController;
@@ -102,7 +95,6 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         PinCtrl pinController = attachPinController (nodeController, pin);
         assert ! pinNodeControllers.containsKey (pinController);
         assert pinController != null;
-        assertWidgets (pinController.getWidgets ());
         addObject (pinController);
         pinControllers.put (pin, pinController);
         pinNodeControllers.put (pinController, nodeController);

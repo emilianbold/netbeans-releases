@@ -12,11 +12,12 @@
  */
 package org.netbeans.api.visual.model;
 
+import org.netbeans.api.visual.action.MouseHoverAction;
+import org.netbeans.api.visual.action.MoveAction;
+import org.netbeans.api.visual.action.SelectAction;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.action.SelectAction;
-import org.netbeans.api.visual.action.MouseHoverAction;
 
 import java.util.*;
 
@@ -37,14 +38,16 @@ public class ObjectScene extends Scene {
 
     private WidgetAction selectAction = new ObjectSelectAction ();
     private WidgetAction hoverAction;
+    private WidgetAction moveAction = new MoveAction ();
 
     public void addObject (ObjectController objectController) {
         if (objectController == null)
             return;
         objects.add (objectController);
         for (Widget widget : objectController.getWidgets ()) {
+            assert widget.getScene () == this  &&  widget.getParentWidget () != null;
             ObjectController oldValue = widgets2controllers.put (widget, objectController);
-            assert oldValue != null;
+            assert oldValue == null;
         }
     }
 
@@ -155,6 +158,10 @@ public class ObjectScene extends Scene {
             getActions ().addAction (hoverAction);
         }
         return hoverAction;
+    }
+
+    public WidgetAction createMoveAction () {
+        return moveAction;
     }
 
     public ObjectController findObjectController (Widget widget) {

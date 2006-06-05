@@ -202,21 +202,25 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         AffineTransform previousTransform;
         Point controlPoint;
 
-        previousTransform = gr.getTransform ();
         controlPoint = getFirstControlPoint ();
-        gr.translate (controlPoint.x, controlPoint.y);
-        if (sourceAnchorShape.isLineOriented ())
-            gr.rotate (getSourceAnchorShapeRotation ());
-        sourceAnchorShape.paint (gr, true);
-        gr.setTransform (previousTransform);
+        if (controlPoint != null) {
+            previousTransform = gr.getTransform ();
+            gr.translate (controlPoint.x, controlPoint.y);
+            if (sourceAnchorShape.isLineOriented ())
+                gr.rotate (getSourceAnchorShapeRotation ());
+            sourceAnchorShape.paint (gr, true);
+            gr.setTransform (previousTransform);
+        }
 
-        previousTransform = gr.getTransform ();
         controlPoint = getLastControlPoint ();
-        gr.translate (controlPoint.x, controlPoint.y);
-        if (targetAnchorShape.isLineOriented ())
-            gr.rotate (getTargetAnchorShapeRotation ());
-        targetAnchorShape.paint (gr, false);
-        gr.setTransform (previousTransform);
+        if (controlPoint != null) {
+            previousTransform = gr.getTransform ();
+            gr.translate (controlPoint.x, controlPoint.y);
+            if (targetAnchorShape.isLineOriented ())
+                gr.rotate (getTargetAnchorShapeRotation ());
+            targetAnchorShape.paint (gr, false);
+            gr.setTransform (previousTransform);
+        }
     }
 
 }
