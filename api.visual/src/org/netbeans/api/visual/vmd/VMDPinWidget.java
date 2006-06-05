@@ -59,13 +59,25 @@ public class VMDPinWidget extends Widget {
     public void setPinImage (Image image) {
         imageWidget.setImage (image);
     }
+    
+    public Image getPinImage () {
+        return imageWidget.getImage ();
+    }
 
     public void setPinName (String name) {
         nameWidget.setLabel (name);
     }
+    
+    public String getPinName () {
+        return nameWidget.getLabel();
+    }
 
     public void setPinType (String type) {
         typeWidget.setLabel (" [" + type + "]");
+    }
+    
+     public String getPinType () {
+        return typeWidget.getLabel();
     }
 
 }
