@@ -32,7 +32,9 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.visual.animator</package>
                 <package>org.netbeans.api.visual.border</package>
                 <package>org.netbeans.api.visual.graph</package>
+                <package>org.netbeans.api.visual.laf</package>
                 <package>org.netbeans.api.visual.layout</package>
+                <package>org.netbeans.api.visual.model</package>
                 <package>org.netbeans.api.visual.router</package>
                 <package>org.netbeans.api.visual.uml</package>
                 <package>org.netbeans.api.visual.util</package>
