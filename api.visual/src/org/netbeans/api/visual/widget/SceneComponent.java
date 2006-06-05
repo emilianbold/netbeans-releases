@@ -101,15 +101,18 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
     }
 
     public void keyTyped (KeyEvent e) {
-        // TODO
+        WidgetAction.WidgetKeyEvent event = new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e);
+        processKeyOperator (KeyOperator.KEY_TYPED, event);
     }
 
     public void keyPressed (KeyEvent e) {
-        // TODO
+        WidgetAction.WidgetKeyEvent event = new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e);
+        processKeyOperator (KeyOperator.KEY_PRESSED, event);
     }
 
     public void keyReleased (KeyEvent e) {
-        // TODO
+        WidgetAction.WidgetKeyEvent event = new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e);
+        processKeyOperator (KeyOperator.KEY_RELEASED, event);
     }
 
     private void processMouseOperator (MouseOperator operator, MouseEvent e) {
@@ -166,6 +169,44 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         }
 
         event.translatePoint (location.x, location.y);
+        return WidgetAction.State.REJECTED;
+    }
+
+    private void processKeyOperator (KeyOperator operator, WidgetAction.WidgetKeyEvent event) {
+        WidgetAction.State state;
+
+        if (lockedAction != null) {
+            state = operator.operate (lockedAction, lockedWidget, event);
+            if (! state.isConsumed ())
+                state = processKeyOperator (operator, scene, event);
+        } else
+            state = processKeyOperator (operator, scene, event);
+
+        lockedWidget = state.getLockedWidget ();
+        lockedAction = state.getLockedAction ();
+        scene.validate ();
+
+        if (lockedWidget != null)
+            scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
+    }
+
+    private WidgetAction.State processKeyOperator (KeyOperator operator, Widget widget, WidgetAction.WidgetKeyEvent event) {
+        WidgetAction.State state;
+
+        List<Widget> children = widget.getChildren ();
+        Widget[] childrenArray = children.toArray (new Widget[children.size ()]);
+
+        for (int i = childrenArray.length - 1; i >= 0; i --) {
+            Widget child = childrenArray[i];
+            state = processKeyOperator (operator, child, event);
+            if (state.isConsumed ())
+                return state;
+        }
+
+        state = operator.operate (widget.getActions (), widget, event);
+        if (state.isConsumed ())
+            return state;
+
         return WidgetAction.State.REJECTED;
     }
 
@@ -246,12 +287,32 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
     private interface KeyOperator {
 
+        public static final KeyOperator KEY_TYPED = new KeyOperator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetKeyEvent event) {
+                return action.keyTyped (widget, event);
+            }
+        };
+
+        public static final KeyOperator KEY_PRESSED = new KeyOperator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetKeyEvent event) {
+                return action.keyPressed (widget, event);
+            }
+        };
+
+        public static final KeyOperator KEY_RELEASED = new KeyOperator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetKeyEvent event) {
+                return action.keyReleased (widget, event);
+            }
+        };
+
         public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetKeyEvent event);
 
     }
 
     private static final class MouseContext {
+
         private String toolTipText;
+
         private Cursor cursor;
 
         public boolean update (Widget widget) {
