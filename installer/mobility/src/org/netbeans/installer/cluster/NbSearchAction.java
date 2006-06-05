@@ -117,6 +117,7 @@ public class NbSearchAction extends CancelableWizardAction {
                     for (int j = 0; j < soArr.length; j++) {
                         SoftwareVersion version = soArr[j].getKey().getVersion();
                         logEvent(this, Log.DBG,"so[" + j + "]:"
+                        + " uid: " + soArr[j].getKey().getUID()
                         + " displayName: " + soArr[j].getDisplayName()
                         + " name: " + soArr[j].getName()
                         + " productNumber: " + soArr[j].getProductNumber()
@@ -130,6 +131,7 @@ public class NbSearchAction extends CancelableWizardAction {
                     for (int j = 0; j < soArr.length; j++) {
                         SoftwareVersion version = soArr[j].getKey().getVersion();
                         logEvent(this, Log.DBG,"so[" + j + "]:"
+                        + " uid: " + soArr[j].getKey().getUID()
                         + " displayName: " + soArr[j].getDisplayName()
                         + " name: " + soArr[j].getName()
                         + " productNumber: " + soArr[j].getProductNumber()
