@@ -26,7 +26,12 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -59,6 +64,9 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
     public static final String FEED_CONTENT_PROPERTY = "feedContent";
     
+    private static DateFormat parsingDateFormat = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH ); // NOI18N
+    private static DateFormat printingDateFormat = DateFormat.getDateTimeInstance( DateFormat.MEDIUM, DateFormat.MEDIUM );
+
     public RSSFeed( String url ) {
         this.url = url;
         setBorder(null);
@@ -156,7 +164,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                         if( item.dateTime != null) {
                             JLabel label = new JLabel();
                             label.setFont( RSS_DESCRIPTION_FONT );
-                            label.setText( item.dateTime );
+                            label.setText( formatDateTime( item.dateTime ) );
                             panel.add( label, new GridBagConstraints(0,row++,1,1,0.0,0.0,
                                     GridBagConstraints.WEST,GridBagConstraints.NONE,
                                     new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
@@ -226,6 +234,16 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
             return null;
         
         return child.getNodeValue();
+    }
+
+    protected String formatDateTime( String strDateTime ) {
+        try {
+            Date date = parsingDateFormat.parse( strDateTime );
+            return printingDateFormat.format( date );
+        } catch( ParseException pE ) {
+            //ignore
+        }
+        return strDateTime;
     }
     
     private static final long serialVersionUID = 1L; 
