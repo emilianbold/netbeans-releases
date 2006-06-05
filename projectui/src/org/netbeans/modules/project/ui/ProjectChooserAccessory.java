@@ -64,7 +64,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     
     private Boolean tempSetAsMain;
     
-    private Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
+    private Map<Project,Set<Project>> subprojectsCache = new HashMap<Project,Set<Project>>(); // #59098
     
     /** Creates new form ProjectChooserAccessory */
     public ProjectChooserAccessory( JFileChooser chooser, boolean isOpenSubprojects, boolean isOpenAsMain ) {
@@ -204,7 +204,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             }
 
             // Project project = OpenProjectList.fileToProject( projectDir ); 
-            ArrayList projects = new ArrayList( projectDirs.length );
+            ArrayList<Project> projects = new ArrayList<Project>( projectDirs.length );
             for( int i = 0; i < projectDirs.length; i++ ) {
                 if ( projectDirs[i] != null ) {
                     File dir = FileUtil.normalizeFile( projectDirs[i] );
@@ -371,19 +371,19 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         
     /** Gets all subprojects recursively
      */
-    static void addSubprojects(Project p, List/*<Project>*/ result, Map/*<Project,Set<Project>>*/ cache) {
-        Set/*<Project>*/ subprojects = (Set) cache.get(p);
+    static void addSubprojects(Project p, List<Project> result, Map<Project,Set<Project>> cache) {
+        Set<Project> subprojects = cache.get(p);
         if (subprojects == null) {
-            SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
+            SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
             if (spp != null) {
                 subprojects = spp.getSubprojects();
             } else {
-                subprojects = Collections.EMPTY_SET;
+                subprojects = Collections.<Project>emptySet();
             }
             cache.put(p, subprojects);
         }
-        for (Iterator/*<Project>*/ it = subprojects.iterator(); it.hasNext(); ) {
-            Project sp = (Project)it.next(); 
+        for (Iterator<Project> it = subprojects.iterator(); it.hasNext(); ) {
+            Project sp = it.next(); 
             if ( !result.contains( sp ) ) {
                 result.add( sp );
                 
@@ -618,13 +618,13 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     private class ModelUpdater implements Runnable {
 
         // volatile Project project;
-        volatile List projects;
+        volatile List<Project> projects;
         private DefaultListModel subprojectsToSet;
         
         public void run() {
             
             if ( !SwingUtilities.isEventDispatchThread() ) {
-                List currentProjects = projects;
+                List<Project> currentProjects = projects;
                 if ( currentProjects == null ) {
                     return;
                 }
@@ -634,20 +634,21 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
                 jListSubprojects.setListData (new String [] {NbBundle.getMessage (ProjectChooserAccessory.class, "MSG_PrjChooser_WaitMessage")});
 
-                List/*<Project>*/ subprojects = new ArrayList(currentProjects.size() * 5);
-                for( Iterator it = currentProjects.iterator(); it.hasNext(); ) {
-                    addSubprojects((Project) it.next(), subprojects, subprojectsCache); // Find the projects recursively
+                List<Project> subprojects = new ArrayList<Project>(currentProjects.size() * 5);
+                for( Iterator<Project> it = currentProjects.iterator(); it.hasNext(); ) {
+                    addSubprojects(it.next(), subprojects, subprojectsCache); // Find the projects recursively
                 }
                 
+		List<String> subprojectNames = new ArrayList<String>(currentProjects.size() * 5);
                 if ( !subprojects.isEmpty() ) {
                     String pattern = NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_SubprojectName_Format" ); // NOI18N
                     File pDir = currentProjects.size() == 1 ?
-                                FileUtil.toFile( ((Project)currentProjects.get(0)).getProjectDirectory() ) :
+                                FileUtil.toFile( currentProjects.get(0).getProjectDirectory() ) :
                                 null;
 
                     // Replace projects in the list with formated names
                     for ( int i = 0; i < subprojects.size(); i++ ) {
-                        Project p = (Project)subprojects.get( i );
+                        Project p = subprojects.get( i );
                         FileObject spDir = p.getProjectDirectory();
                         
                         // Try to compute relative path
@@ -663,18 +664,18 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                         String displayName = MessageFormat.format( 
                             pattern, 
                             new Object[] { ProjectUtils.getInformation(p).getDisplayName(), relPath } );
-                        subprojects.set( i, displayName );
+                        subprojectNames.set( i, displayName );
                     }
 
                     // Sort the list
-                    Collections.sort( subprojects, Collator.getInstance() );
+                    Collections.sort( subprojectNames, Collator.getInstance() );
                 }
                 if ( currentProjects != projects ) {
                     return;
                 }
                 DefaultListModel listModel = new DefaultListModel();
                 // Put all the strings into the list model
-                for( Iterator it = subprojects.iterator(); it.hasNext(); ) {
+                for( Iterator<String> it = subprojectNames.iterator(); it.hasNext(); ) {
                     listModel.addElement( it.next() );
                 }
                 subprojectsToSet = listModel;

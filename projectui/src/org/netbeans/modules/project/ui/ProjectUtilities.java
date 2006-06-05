@@ -90,14 +90,15 @@ public class ProjectUtilities {
             return true;
         }
         
-        public Map/*<Project, SortedSet<String>>*/ close (Project[] projects) {
-            List/*<Project>*/ listOfProjects = Arrays.asList (projects);
-            Set/*<DataObject>*/ openFiles = new HashSet ();
-            Set/*<TopComponent>*/ tc2close = new HashSet ();
-            Map/*<Project, SortedSet<String>>*/ urls4project = new HashMap ();
-            Iterator/*<TopComponent>*/ openTCs = WindowManager.getDefault ().getRegistry ().getOpened ().iterator ();
+        public Map<Project, SortedSet<String>> close (Project[] projects) {
+            List<Project> listOfProjects = Arrays.asList (projects);
+            Set<DataObject> openFiles = new HashSet<DataObject> ();
+            Set<TopComponent> tc2close = new HashSet<TopComponent> ();
+            Map<Project, SortedSet<String>> urls4project = new HashMap<Project, SortedSet<String>> ();
+	    @SuppressWarnings("unchecked")
+            Iterator<TopComponent> openTCs = WindowManager.getDefault ().getRegistry ().getOpened ().iterator ();
             while (openTCs.hasNext ()) {
-                TopComponent tc = (TopComponent) openTCs.next ();
+                TopComponent tc = openTCs.next ();
                 // #57621: check if the closed top component isn't instance of ExplorerManager.Provider e.g. Projects/Files tab, if yes then do skip this loop
                 if (tc instanceof ExplorerManager.Provider) {
                     continue;
@@ -116,12 +117,12 @@ public class ProjectUtilities {
                       tc2close.add (tc);
                       if (!urls4project.containsKey (owner)) {
                           // add project
-                          urls4project.put (owner, new TreeSet ());
+                          urls4project.put (owner, new TreeSet<String> ());
                       }
                       URL url = null;
                       try {
                           url = dobj.getPrimaryFile ().getURL ();
-                          ((SortedSet)urls4project.get (owner)).add (url.toExternalForm ());
+                          urls4project.get (owner).add (url.toExternalForm ());
                       } catch (FileStateInvalidException fsie) {
                           assert false : "FileStateInvalidException in " + dobj.getPrimaryFile ();
                       }

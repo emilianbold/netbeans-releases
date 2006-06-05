@@ -77,7 +77,7 @@ public class ProjectTab extends TopComponent
     private static final Image ICON_LOGICAL = org.openide.util.Utilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.gif" );
     private static final Image ICON_PHYSICAL = org.openide.util.Utilities.loadImage( "org/netbeans/modules/project/ui/resources/filesTab.gif" );
     
-    private static Map tabs = new HashMap();                            
+    private static Map<String, ProjectTab> tabs = new HashMap<String, ProjectTab>();                            
                             
     private transient final ExplorerManager manager;
     private transient Node rootNode;
@@ -239,12 +239,14 @@ public class ProjectTab extends TopComponent
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
         
+    @SuppressWarnings("deprecation") 
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return btv.requestFocusInWindow();
     }
 
     //#41258: In the SDI, requestFocus is called rather than requestFocusInWindow:
+    @SuppressWarnings("deprecation") 
     public void requestFocus() {
         super.requestFocus();
         btv.requestFocus();
@@ -263,14 +265,15 @@ public class ProjectTab extends TopComponent
         out.writeObject( getSelectedPaths() );
     }
 
+    @SuppressWarnings("unchecked") 
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {        
         super.readExternal( in );
         id = (String)in.readObject();
         rootNode = ((Node.Handle)in.readObject()).getNode();
-        List exPaths = (List)in.readObject();
-        List selPaths = null;
+	List<String[]> exPaths = (List<String[]>)in.readObject();
+        List<String[]> selPaths = null;
         try {
-            selPaths = (List)in.readObject();
+            selPaths = (List<String[]>)in.readObject();
         }
         catch ( java.io.OptionalDataException e ) {
             // Sel paths missing
@@ -384,9 +387,9 @@ public class ProjectTab extends TopComponent
         btv.expandNode( node );
     }
     
-    private List /*<String[]>*/ getSelectedPaths() {
+    private List<String[]> getSelectedPaths() {
         Node selectedNodes[] = manager.getSelectedNodes();
-        List result = new ArrayList();
+        List<String[]> result = new ArrayList<String[]>();
         Node rootNode = manager.getRootContext();
                 
         for( int i = 0; i < selectedNodes.length; i++ ) {
@@ -400,18 +403,18 @@ public class ProjectTab extends TopComponent
     }
     
     
-    private void selectPaths( List /*<String[]>*/ paths ) {
+    private void selectPaths( List<String[]> paths ) {
         
         if ( paths == null ) {
             return;
         }
         
-        List selectedNodes = new ArrayList();
+        List<Node> selectedNodes = new ArrayList<Node>();
         
         Node rootNode = manager.getRootContext();
         
-        for( Iterator it = paths.iterator(); it.hasNext(); ) {
-            String[] sp = (String[])it.next();
+        for( Iterator<String[]> it = paths.iterator(); it.hasNext(); ) {
+            String[] sp = it.next();
             try {
                 Node n = NodeOp.findPath( rootNode, sp );
                 if ( n != null ) {
@@ -453,9 +456,9 @@ public class ProjectTab extends TopComponent
             if (r != null) tree.scrollRectToVisible(r);
 	}
                         
-        public List getExpandedPaths() { 
+        public List<String[]> getExpandedPaths() { 
 
-            List result = new ArrayList();
+            List<String[]> result = new ArrayList<String[]>();
             
             TreeNode rtn = Visualizer.findVisualizer( rootNode );
             TreePath tp = new TreePath( rtn ); // Get the root

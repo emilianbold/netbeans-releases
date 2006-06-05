@@ -93,7 +93,7 @@ public class PhysicalView {
         
                     
         // Create the nodes
-        ArrayList nodesList = new ArrayList( groups.length );
+        ArrayList<Node> nodesList = new ArrayList<Node>( groups.length );
         nodesList.add(/*new GroupContainmentFilterNode(*/new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(projectDirGroup.getRootFolder()))/*, projectDirGroup)*/);
         
         for( int i = 0; i < groups.length; i++ ) {
@@ -366,7 +366,7 @@ public class PhysicalView {
 
                 String relPath = FileUtil.getRelativePath( groupRoot, fo );
                 
-                ArrayList path = new ArrayList();
+                ArrayList<String> path = new ArrayList<String>();
                 StringTokenizer strtok = new StringTokenizer( relPath, "/" );
                 while( strtok.hasMoreTokens() ) {
                    path.add( strtok.nextToken() );

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -47,7 +48,7 @@ class ActionsUtil {
     
     public static final ShortcutsManager SHORCUTS_MANAGER = new ShortcutsManager();
     
-    public static HashMap /*<String,MessageFormat>*/ pattern2format = new HashMap(); 
+    public static HashMap<String,MessageFormat> pattern2format = new HashMap<String,MessageFormat>(); 
     
     /** Finds all projects in given lookup. If the command is not null it will check 
      * whther given command is enabled on all projects. If and only if all projects
@@ -77,10 +78,8 @@ class ActionsUtil {
      * with given command supported.
      */    
     public static FileObject[] getFilesFromLookup( Lookup lookup, Project project ) {
-        HashSet result = new HashSet();
-        Collection dataObjects = lookup.lookupAll(DataObject.class);
-        for( Iterator it = dataObjects.iterator(); it.hasNext(); ) {
-            DataObject dObj = (DataObject)it.next();
+        HashSet<FileObject> result = new HashSet<FileObject>();
+	for (DataObject dObj: lookup.lookupAll(DataObject.class)) {
             FileObject fObj = dObj.getPrimaryFile();
             Project p = FileOwnerQuery.getOwner(fObj);
             if ( p != null && p.equals( project ) ) {
@@ -176,19 +175,19 @@ class ActionsUtil {
     public static class ShortcutsManager {
         
         // command -> shortcut
-        HashMap shorcuts = new HashMap(); 
+        Map<String,Object> shorcuts = new HashMap<String, Object>(); 
         
         // command -> WeakSet of actions
-        HashMap actions = new HashMap();
+        HashMap<String, Set<Action>> actions = new HashMap<String, Set<Action>>();
         
         
         public void registerAction( String command, Action action ) {
             
             synchronized ( this ) {
-                Set commandActions = (Set)actions.get( command );
+                Set<Action> commandActions = actions.get( command );
 
                 if ( commandActions == null ) {
-                    commandActions = new WeakSet();
+                    commandActions = new WeakSet<Action>();
                     actions.put( command, commandActions );                
                 }
                 
@@ -207,7 +206,7 @@ class ActionsUtil {
         
         public void registerShortcut( String command, Object shortcut ) {
             
-            Set actionsToChange = null;
+            Set<Action> actionsToChange = null;
             
             synchronized ( this ) {
                 
@@ -220,9 +219,9 @@ class ActionsUtil {
                                 
                 shorcuts.put( command, shortcut );
                 
-                Set commandActions = (Set)actions.get( command );
+                Set<Action> commandActions = actions.get( command );
                 if ( commandActions != null && !commandActions.isEmpty() ) {
-                    actionsToChange = new HashSet();
+                    actionsToChange = new HashSet<Action>();
                     actionsToChange.addAll( commandActions );
                 }
                 
@@ -230,8 +229,8 @@ class ActionsUtil {
                         
             if ( actionsToChange != null ) {
                 // Need to change actions in existing actions
-                for( Iterator it = actionsToChange.iterator(); it.hasNext(); ) {
-                    Action a = (Action)it.next();
+                for( Iterator<Action> it = actionsToChange.iterator(); it.hasNext(); ) {
+                    Action a = it.next();
                     if ( a != null ) {
                         a.putValue( Action.ACCELERATOR_KEY, shortcut );
                     }                    
@@ -258,10 +257,10 @@ class ActionsUtil {
      */
     private static class LookupResultsCache implements LookupListener {
         
-        private Class watch[];
+        private Class<?> watch[];
         
-        private Reference/*<Lookup>*/ lruLookup;
-        private List/*<Reference<Lookup.Result>>*/ lruResults;
+        private Reference<Lookup> lruLookup;
+        private List<Reference<Lookup.Result>> lruResults;
         private Project[] projects;
                 
         LookupResultsCache( Class[] watch ) {
@@ -287,35 +286,29 @@ class ActionsUtil {
             }
             
             if ( lruLookupLocal == null ) { // Needs to attach to lookup
-                lruLookup = new CleanableWeakReference(lruLookupLocal = lookup);
-                lruResults = new ArrayList();
+                lruLookup = new CleanableWeakReference<Lookup>(lruLookupLocal = lookup);
+                lruResults = new ArrayList<Reference<Lookup.Result>>();
                 for ( int i = 0; i < watch.length; i++ ) {
                     Lookup.Result result = lookup.lookupResult(watch[i]);
                     
                     result.allItems();
                     result.addLookupListener( this );
                     
-                    lruResults.add(new CleanableWeakReference(result));
+                    lruResults.add(new CleanableWeakReference<Lookup.Result>(result));
                 }                
             }
             
             if ( isDirty() ) { // Needs to recompute the result
                 
-                Set result = new HashSet();
+                Set<Project> result = new HashSet<Project>();
 
-                // First find out whether there is a project directly in the Lookup                        
-                Collection currentProjects = lruLookupLocal.lookupAll(Project.class);
-                
-                for( Iterator it = currentProjects.iterator(); it.hasNext(); ) {
-                    Project p = (Project)it.next();
+                // First find out whether there is a project directly in the Lookup
+		for (Project p: lruLookupLocal.lookupAll(Project.class)) {
                     result.add(p);
                 }
 
                 // Now try to guess the project from dataobjects
-                Collection currentDataObjects = lruLookupLocal.lookupAll(DataObject.class);
-                for( Iterator it = currentDataObjects.iterator(); it.hasNext(); ) {
-
-                    DataObject dObj = (DataObject)it.next();
+		for (DataObject dObj: lruLookupLocal.lookupAll(DataObject.class)) {
                     FileObject fObj = dObj.getPrimaryFile();
                     Project p = FileOwnerQuery.getOwner(fObj);
                     if ( p != null ) {
@@ -347,9 +340,9 @@ class ActionsUtil {
             makeDirty();
         }
         
-        private class CleanableWeakReference extends WeakReference implements Runnable {
+        private class CleanableWeakReference<T> extends WeakReference<T> implements Runnable {
             
-            public CleanableWeakReference(Object o) {
+            public CleanableWeakReference(T o) {
                 super(o, Utilities.activeReferenceQueue());
             }
 

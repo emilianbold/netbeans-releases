@@ -162,7 +162,7 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
         dialogDescriptor.setClosingOptions( new Object[] { options[ 0 ], options[ 1 ] } );
             
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
-        dialog.show();
+        dialog.setVisible(true);
         npn.createFile();        
                 
     }
@@ -171,7 +171,7 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
         
         if ( templates == null ) {
             
-            ArrayList tList = new ArrayList( 2 );
+            ArrayList<DataObject> tList = new ArrayList<DataObject>( 2 );
             DataObject template;
             
             template = findTemplate( "Templates/Other/file" );

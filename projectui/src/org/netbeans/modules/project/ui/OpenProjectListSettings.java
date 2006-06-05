@@ -53,12 +53,12 @@ public class OpenProjectListSettings extends SystemOption {
         return NbBundle.getMessage (OpenProjectListSettings.class,"TXT_UISettings"); //NOI18N
     }        
 
-    public List/*<URL>*/ getOpenProjectsURLs() {
-        List list = (List)getProperty( OPEN_PROJECTS_URLS );
-        return list == null ? new ArrayList( 3 ) : list;
+    public List<URL> getOpenProjectsURLs() {
+        @SuppressWarnings("unchecked") List<URL> list = (List<URL>)getProperty( OPEN_PROJECTS_URLS );
+        return list == null ? new ArrayList<URL>( 3 ) : list;
     }
 
-    public void setOpenProjectsURLs( List/*<URL>*/ list ) {
+    public void setOpenProjectsURLs( List<URL> list ) {
         putProperty( OPEN_PROJECTS_URLS, list, true  );
     }
     
@@ -100,30 +100,30 @@ public class OpenProjectListSettings extends SystemOption {
         putProperty( LAST_OPEN_PROJECT_DIR, path, true  );
     }
     
-    public List/*<URL>*/ getRecentProjectsURLs() {
-        List list = (List)getProperty( RECENT_PROJECTS_URLS );
-        return list == null ? new ArrayList( 5 ) : list;
+    public List<URL> getRecentProjectsURLs() {
+        @SuppressWarnings("unchecked") List<URL> list = (List<URL>)getProperty( RECENT_PROJECTS_URLS );
+        return list == null ? new ArrayList<URL>( 5 ) : list;
     }
     
-    public List/*<String>*/ getRecentProjectsDisplayNames() {
-        List list = (List) getProperty(RECENT_PROJECTS_DISPLAY_NAMES);
-        return list == null ? new ArrayList(5) : list;
+    public List<String> getRecentProjectsDisplayNames() {
+        @SuppressWarnings("unchecked") List<String> list = (List<String>) getProperty(RECENT_PROJECTS_DISPLAY_NAMES);
+        return list == null ? new ArrayList<String>(5) : list;
     }
     
-    public List/*<ExtIcon>*/ getRecentProjectsIcons() {
-        List list = (List) getProperty(RECENT_PROJECTS_DISPLAY_ICONS);
-        return list == null ? new ArrayList(5) : list;
+    public List<ExtIcon> getRecentProjectsIcons() {
+        @SuppressWarnings("unchecked") List<ExtIcon> list = (List<ExtIcon>) getProperty(RECENT_PROJECTS_DISPLAY_ICONS);
+        return list == null ? new ArrayList<ExtIcon>(5) : list;
     }
     
-    public void setRecentProjectsURLs( List/*<URL>*/ list ) {
+    public void setRecentProjectsURLs( List<URL> list ) {
         putProperty( RECENT_PROJECTS_URLS, list, true  );
     }
     
-    public void setRecentProjectsDisplayNames(List/*<String>*/ list) {
+    public void setRecentProjectsDisplayNames(List<String> list) {
         putProperty(RECENT_PROJECTS_DISPLAY_NAMES, list, true);
     }
     
-    public void setRecentProjectsIcons(List/*<ExtIcon>*/ list) {
+    public void setRecentProjectsIcons(List<ExtIcon> list) {
         putProperty(RECENT_PROJECTS_DISPLAY_ICONS, list, true);
     }
     
@@ -163,12 +163,12 @@ public class OpenProjectListSettings extends SystemOption {
         }
     }
     
-    public List /*<String>*/ getRecentTemplates() {        
-        List list = (List)getProperty( RECENT_TEMPLATES );               
-        return list == null ? new ArrayList( 100 ) : list;       
+    public List<String> getRecentTemplates() {        
+        @SuppressWarnings("unchecked") List<String> list = (List<String>)getProperty( RECENT_TEMPLATES );               
+        return list == null ? new ArrayList<String>( 100 ) : list;       
     }
     
-    public void setRecentTemplates( List /*<String>*/ templateNames ) {
+    public void setRecentTemplates( List<String> templateNames ) {
         putProperty( RECENT_TEMPLATES, templateNames, true  );
     }
     

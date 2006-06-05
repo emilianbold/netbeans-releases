@@ -72,7 +72,7 @@ import org.openide.windows.WindowManager;
  */
 public final class OpenProjectList {
     
-    public static final Comparator PROJECT_BY_DISPLAYNAME = new ProjectByDisplayNameComparator();
+    public static final Comparator<Project> PROJECT_BY_DISPLAYNAME = new ProjectByDisplayNameComparator();
     
     // Property names
     public static final String PROPERTY_OPEN_PROJECTS = "OpenProjects";
@@ -85,7 +85,7 @@ public final class OpenProjectList {
     private static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
     
     /** List which holds the open projects */
-    private List/*<Project>*/ openProjects;
+    private List<Project> openProjects;
     
     /** Main project */
     private Project mainProject;
@@ -94,14 +94,14 @@ public final class OpenProjectList {
     private final RecentProjectList recentProjects;
 
     /** LRU List of recently used templates */
-    private List /*<String>*/ recentTemplates;
+    private List<String> recentTemplates;
     
     /** Property change listeners */
     private final PropertyChangeSupport pchSupport;
     
     
     OpenProjectList() {
-        openProjects = new ArrayList();
+        openProjects = new ArrayList<Project>();
         pchSupport = new PropertyChangeSupport( this );
         recentProjects = new RecentProjectList(10); // #47134
     }
@@ -117,7 +117,7 @@ public final class OpenProjectList {
                 needNotify = true;
                 INSTANCE = new OpenProjectList();
                 INSTANCE.openProjects = loadProjectList();                
-                INSTANCE.recentTemplates = new ArrayList( OpenProjectListSettings.getInstance().getRecentTemplates() );
+                INSTANCE.recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
                 URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
                 // Load recent project list
                 INSTANCE.recentProjects.load();
@@ -138,8 +138,7 @@ public final class OpenProjectList {
         }
         if ( needNotify ) {
             //#68738: a project may open other projects in its ProjectOpenedHook:
-            for( Iterator it = new ArrayList(INSTANCE.openProjects).iterator(); it.hasNext(); ) {
-                Project p = (Project)it.next();
+            for(Project p: new ArrayList<Project>(INSTANCE.openProjects)) {
                 notifyOpened(p);             
             }
             
@@ -227,7 +226,7 @@ public final class OpenProjectList {
         int  maxWork = 1000;
         int  workForSubprojects = maxWork / 2;
         double currentWork = 0;
-        Collection projectsToOpen = new LinkedHashSet();
+        Collection<Project> projectsToOpen = new LinkedHashSet<Project>();
         
 	if (handle != null) {
 	    handle.start(maxWork);
@@ -240,28 +239,28 @@ public final class OpenProjectList {
             panel.setProjectName(ProjectUtils.getInformation(projects[0]).getDisplayName());
         }
         
-        Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
+        Map<Project,Set<Project>> subprojectsCache = new HashMap<Project,Set<Project>>(); // #59098
 
-        List toHandle = new LinkedList(Arrays.asList(projects));
+        List<Project> toHandle = new LinkedList<Project>(Arrays.asList(projects));
         
         while (!toHandle.isEmpty()) {
-            Project p = (Project) toHandle.remove(0);
-            Set/*<Project>*/ subprojects = openSubprojects ? (Set) subprojectsCache.get(p) : Collections.EMPTY_SET;
+            Project p = toHandle.remove(0);
+            Set<Project> subprojects = openSubprojects ? subprojectsCache.get(p) : Collections.<Project>emptySet();
             
             if (subprojects == null) {
-                SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
+                SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
                 if (spp != null) {
                     subprojects = spp.getSubprojects();
                 } else {
-                    subprojects = Collections.EMPTY_SET;
+                    subprojects = Collections.<Project>emptySet();
                 }
                 subprojectsCache.put(p, subprojects);
             }
             
             projectsToOpen.add(p);
             
-            for (Iterator i = subprojects.iterator(); i.hasNext(); ) {
-                Project sub = (Project) i.next();
+            for (Iterator<Project> i = subprojects.iterator(); i.hasNext(); ) {
+                Project sub = i.next();
                 
                 if (!projectsToOpen.contains(sub) && !toHandle.contains(sub)) {
                     toHandle.add(sub);
@@ -280,8 +279,7 @@ public final class OpenProjectList {
         
         double workPerProject = (maxWork - workForSubprojects) / projectsToOpen.size();
         
-        for (Iterator i = projectsToOpen.iterator(); i.hasNext(); ) {
-            Project p = (Project) i.next();
+        for (Project p: projectsToOpen) {
             
             if (panel != null) {
                 panel.setProjectName(ProjectUtils.getInformation(p).getDisplayName());
@@ -440,12 +438,12 @@ public final class OpenProjectList {
 
                
     // Used from NewFile action        
-    public List /*<DataObject>*/ getTemplatesLRU( Project project ) {
-        List pLRU = getTemplateNamesLRU( project );
-        List templates = new ArrayList();
+    public List<DataObject> getTemplatesLRU( Project project ) {
+        List<FileObject> pLRU = getTemplateNamesLRU( project );
+        List<DataObject> templates = new ArrayList<DataObject>();
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        for( Iterator it = pLRU.iterator(); it.hasNext(); ) {
-            FileObject fo = (FileObject)it.next();
+        for( Iterator<FileObject> it = pLRU.iterator(); it.hasNext(); ) {
+            FileObject fo = it.next();
             if ( fo != null ) {
                 try {
                     DataObject dobj = DataObject.find( fo );                    
@@ -479,7 +477,7 @@ public final class OpenProjectList {
             recentTemplates.remove( 100 );
         }
         
-        OpenProjectListSettings.getInstance().setRecentTemplates( new ArrayList( recentTemplates ) );
+        OpenProjectListSettings.getInstance().setRecentTemplates( new ArrayList<String>( recentTemplates ) );
     }
     
     
@@ -520,11 +518,10 @@ public final class OpenProjectList {
     
     // Private methods ---------------------------------------------------------
     
-    private static List URLs2Projects( Collection /*<URL>*/ URLs ) {
-        ArrayList result = new ArrayList( URLs.size() );
+    private static List<Project> URLs2Projects( Collection<URL> URLs ) {
+        ArrayList<Project> result = new ArrayList<Project>( URLs.size() );
             
-        for( Iterator it = URLs.iterator(); it.hasNext(); ) {
-            URL url = (URL)it.next();
+        for(URL url: URLs) {
             FileObject dir = URLMapper.findFileObject( url );
             if ( dir != null && dir.isFolder() ) {
                 try {
@@ -549,10 +546,9 @@ public final class OpenProjectList {
         return result;
     }
     
-    private static List projects2URLs( Collection /*<Project>*/ projects ) {
-        ArrayList URLs = new ArrayList( projects.size() );
-        for( Iterator it = projects.iterator(); it.hasNext(); ) {
-            Project p = (Project)it.next();
+    private static List<URL> projects2URLs( Collection<Project> projects ) {
+        ArrayList<URL> URLs = new ArrayList<URL>( projects.size() );
+        for(Project p: projects) {
             try {
                 URL root = p.getProjectDirectory().getURL();
                 if ( root != null ) {
@@ -626,15 +622,15 @@ public final class OpenProjectList {
         return recentProjectsChanged;
     }
     
-    private static List loadProjectList() {               
-        List URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
-        List projects = URLs2Projects( URLs );
+    private static List<Project> loadProjectList() {               
+        List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
+        List<Project> projects = URLs2Projects( URLs );
         return projects;        
     }
     
   
-    private static void saveProjectList( List projects ) {        
-        List /*<URL>*/ URLs = projects2URLs( projects );
+    private static void saveProjectList( List<Project> projects ) {        
+        List<URL> URLs = projects2URLs( projects );
         OpenProjectListSettings.getInstance().setOpenProjectsURLs( URLs );
     }
     
@@ -648,22 +644,22 @@ public final class OpenProjectList {
         }
     }
         
-    private ArrayList /*<FileObject>*/ getTemplateNamesLRU( Project project ) {
+    private ArrayList<FileObject> getTemplateNamesLRU( Project project ) {
         // First take recently used templates and try to find those which
         // are supported by the project.
         
-        ArrayList result = new ArrayList( 10 );        
+        ArrayList<FileObject> result = new ArrayList<FileObject>( 10 );        
         
-        RecommendedTemplates rt = (RecommendedTemplates)project.getLookup().lookup( RecommendedTemplates.class );
+        RecommendedTemplates rt = project.getLookup().lookup( RecommendedTemplates.class );
         String rtNames[] = rt == null ? new String[0] : rt.getRecommendedTypes();
-        PrivilegedTemplates pt = (PrivilegedTemplates)project.getLookup().lookup( PrivilegedTemplates.class );
+        PrivilegedTemplates pt = project.getLookup().lookup( PrivilegedTemplates.class );
         String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();
-        ArrayList privilegedTemplates = new ArrayList( Arrays.asList( pt == null ? new String[0]: ptNames ) );
+        ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();            
                 
-        Iterator it = recentTemplates.iterator();
+        Iterator<String> it = recentTemplates.iterator();
         for( int i = 0; i < 10 && it.hasNext(); i++ ) {
-            String templateName = (String)it.next();
+            String templateName = it.next();
             FileObject fo = sfs.findResource( templateName );
             if ( fo == null ) {
                 it.remove(); // Does not exists remove
@@ -680,7 +676,7 @@ public final class OpenProjectList {
         // If necessary fill the list with the rest of privileged templates
         it = privilegedTemplates.iterator();
         for( int i = result.size(); i < 10 && it.hasNext(); i++ ) {
-            String path = (String)it.next();
+            String path = it.next();
             FileObject fo = sfs.findResource( path );
             if ( fo != null ) {
                 result.add( fo );
@@ -722,8 +718,8 @@ public final class OpenProjectList {
         return rt == null ? null :rt.getRecommendedTypes();
     }
     
-    private static List getCategories (String source) {
-        ArrayList categories = new ArrayList ();
+    private static List<String> getCategories (String source) {
+        ArrayList<String> categories = new ArrayList<String> ();
         StringTokenizer cattok = new StringTokenizer (source, ","); // NOI18N
         while (cattok.hasMoreTokens ()) {
             categories.add (cattok.nextToken ().trim ());
@@ -737,8 +733,8 @@ public final class OpenProjectList {
      */    
     private static class RecentProjectList {
        
-        private List/*<ProjectReference>*/ recentProjects;
-        private List/*<UnloadedProjectInformation>*/ recentProjectsInfos;
+        private List<ProjectReference> recentProjects;
+        private List<UnloadedProjectInformation> recentProjectsInfos;
         
         private int size;
         
@@ -747,8 +743,8 @@ public final class OpenProjectList {
          */
         public RecentProjectList( int size ) {
             this.size = size;
-            recentProjects = new ArrayList( size );
-            recentProjectsInfos = new ArrayList(size);
+            recentProjects = new ArrayList<ProjectReference>( size );
+            recentProjectsInfos = new ArrayList<UnloadedProjectInformation>(size);
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log("created a RecentProjectList: size=" + size);
             }
@@ -810,12 +806,12 @@ public final class OpenProjectList {
         }
         
         
-        public List/*<Project>*/ getProjects() {
-            List/*<Project>*/ result = new ArrayList( recentProjects.size() );
+        public List<Project> getProjects() {
+            List<Project> result = new ArrayList<Project>( recentProjects.size() );
             // Copy the list
-            List/*<ProjectReference>*/ references = new ArrayList( recentProjects );
-            for ( Iterator it = references.iterator(); it.hasNext(); ) {
-                ProjectReference pRef = (ProjectReference)it.next(); 
+            List<ProjectReference> references = new ArrayList<ProjectReference>( recentProjects );
+            for ( Iterator<ProjectReference> it = references.iterator(); it.hasNext(); ) {
+                ProjectReference pRef = it.next(); 
                 Project p = pRef.getProject();
                 if ( p == null || !p.getProjectDirectory().isValid() ) {
                     remove( p );        // Folder does not exist any more => remove from
@@ -843,9 +839,9 @@ public final class OpenProjectList {
         }
         
         public void load() {
-            List/*<URL>*/ URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
-            List/*<String>*/ names = OpenProjectListSettings.getInstance().getRecentProjectsDisplayNames();
-            List/*<ExtIcon>*/ icons = OpenProjectListSettings.getInstance().getRecentProjectsIcons();
+            List<URL> URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
+            List<String> names = OpenProjectListSettings.getInstance().getRecentProjectsDisplayNames();
+            List<ExtIcon> icons = OpenProjectListSettings.getInstance().getRecentProjectsIcons();
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log("recent project list load: " + URLs);
             }
@@ -871,9 +867,8 @@ public final class OpenProjectList {
         }
         
         public void save() {
-            List /*<URL>*/ URLs = new ArrayList( recentProjects.size() );
-            for ( Iterator it = recentProjects.iterator(); it.hasNext(); ) {
-                ProjectReference pRef = (ProjectReference)it.next(); 
+            List<URL> URLs = new ArrayList<URL>( recentProjects.size() );
+            for (ProjectReference pRef: recentProjects) {
                 URL pURL = pRef.getURL();
                 if ( pURL != null ) {
                     URLs.add( pURL );
@@ -884,8 +879,8 @@ public final class OpenProjectList {
             }
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
             int listSize = recentProjectsInfos.size();
-            List/*<String>*/ names = new ArrayList(listSize);
-            List/*<ExtIcons>*/ icons = new ArrayList(listSize);
+            List<String> names = new ArrayList<String>(listSize);
+            List<ExtIcon> icons = new ArrayList<ExtIcon>(listSize);
             for (Iterator it = recentProjectsInfos.iterator(); it.hasNext(); ) {
                 UnloadedProjectInformation prjInfo = (UnloadedProjectInformation) it.next();
                 names.add(prjInfo.getDisplayName());
@@ -928,7 +923,7 @@ public final class OpenProjectList {
         
         private static class ProjectReference {
             
-            private WeakReference projectReference;
+            private WeakReference<Project> projectReference;
             private URL projectURL;
             
             public ProjectReference( URL url ) {                
@@ -936,7 +931,7 @@ public final class OpenProjectList {
             }
             
             public ProjectReference( Project p ) {
-                this.projectReference = new WeakReference( p );
+                this.projectReference = new WeakReference<Project>( p );
                 try {
                     projectURL = p.getProjectDirectory().getURL();                
                 }
@@ -952,7 +947,7 @@ public final class OpenProjectList {
                 Project p = null; 
                 
                 if ( projectReference != null ) { // Reference to project exists
-                    p = (Project)projectReference.get();
+                    p = projectReference.get();
                     if ( p != null ) {
                         // And refers to some project, check for validity:
                         if ( ProjectManager.getDefault().isValid( p ) )
@@ -971,7 +966,7 @@ public final class OpenProjectList {
                         try {
                             p = ProjectManager.getDefault().findProject( dir );
                             if ( p != null ) {
-                                projectReference = new WeakReference( p ); 
+                                projectReference = new WeakReference<Project>( p ); 
                                 if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                                     ERR.log("found " + p);
                                 }
@@ -1001,22 +996,12 @@ public final class OpenProjectList {
         
     }
     
-    public static class ProjectByDisplayNameComparator implements Comparator {
+    public static class ProjectByDisplayNameComparator implements Comparator<Project> {
         
-        private static Comparator COLLATOR = Collator.getInstance();
+	private static Comparator COLLATOR = Collator.getInstance();
         
-        public int compare(Object o1, Object o2) {
-            
-            if ( !( o1 instanceof Project ) ) {
-                return 1;
-            }
-            if ( !( o2 instanceof Project ) ) {
-                return -1;
-            }
-            
-            Project p1 = (Project)o1;
-            Project p2 = (Project)o2;
-            
+        @SuppressWarnings("unchecked") 
+        public int compare(Project p1, Project p2) {
 //            Uncoment to make the main project be the first one
 //            but then needs to listen to main project change
 //            if ( OpenProjectList.getDefault().isMainProject( p1 ) ) {

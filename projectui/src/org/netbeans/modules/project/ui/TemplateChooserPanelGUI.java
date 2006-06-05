@@ -73,7 +73,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
     
     // private final String[] recommendedTypes = null;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
     //Templates folder root
     private FileObject templatesFolder;
@@ -142,13 +142,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     private void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        List templist;
+        List<ChangeListener> templist;
         synchronized (this) {
-            templist = new ArrayList (listeners);
+            templist = new ArrayList<ChangeListener> (listeners);
         }
-        Iterator it = templist.iterator();
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
+	for (ChangeListener l: templist) {
+            l.stateChanged(e);
         }
     }
     
@@ -275,7 +274,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         private void updateKeys() {
-            List l = new ArrayList();
+            List<DataObject> l = new ArrayList<DataObject>();
             DataObject[] kids = folder.getChildren();
             for (int i = 0; i < kids.length; i++) {
                 DataObject d = kids[i];

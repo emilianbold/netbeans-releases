@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class ProjectsRootNode extends AbstractNode {
     static final int PHYSICAL_VIEW = 0;
     static final int LOGICAL_VIEW = 1;
         
-    private static final String ICON_BASE = "org/netbeans/modules/project/ui/resources/projectsRootNode"; //NOI18N
+    private static final String ICON_BASE = "org/netbeans/modules/project/ui/resources/projectsRootNode.gif"; //NOI18N
     private static final String ACTIONS_FOLDER = "ProjectsTabActions"; // NOI18N
     
     private ResourceBundle bundle;
@@ -71,7 +72,7 @@ public class ProjectsRootNode extends AbstractNode {
     
     public ProjectsRootNode( int type ) {
         super( new ProjectChildren( type ) ); 
-        setIconBase( ICON_BASE );
+        setIconBaseWithExtension( ICON_BASE );
         this.type = type;
     }
         
@@ -98,18 +99,16 @@ public class ProjectsRootNode extends AbstractNode {
         if (context || type == PHYSICAL_VIEW) {
             return new Action[0];
         } else {
-            List/*<Action>*/ actions = new ArrayList();
+            List<Action> actions = new ArrayList<Action>();
             DataFolder actionsFolder = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(ACTIONS_FOLDER));
-            Iterator/*<Object>*/ instances = new FolderLookup(actionsFolder).getLookup().lookupAll(Object.class).iterator();
-            while (instances.hasNext()) {
-                Object o = instances.next();
+	    for (Object o: new FolderLookup(actionsFolder).getLookup().lookupAll(Object.class)) {
                 if (o instanceof Action) {
                     actions.add((Action) o);
                 } else if (o instanceof JSeparator) {
                     actions.add(null);
                 }
             }
-            return (Action[]) actions.toArray(new Action[actions.size()]);
+            return actions.toArray(new Action[actions.size()]);
         }
     }
     
@@ -186,7 +185,7 @@ public class ProjectsRootNode extends AbstractNode {
     // However project rename is currently disabled so it is not a big deal
     static class ProjectChildren extends Children.Keys implements ChangeListener, PropertyChangeListener {
         
-        private java.util.Map /*<Sources,Reference<Project>>*/ sources2projects = new WeakHashMap();
+        private java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         
         int type;
         
@@ -222,7 +221,7 @@ public class ProjectsRootNode extends AbstractNode {
                 Sources sources = ProjectUtils.getSources( project );
                 sources.removeChangeListener( this );
                 sources.addChangeListener( this );
-                sources2projects.put( sources, new WeakReference( project ) );
+                sources2projects.put( sources, new WeakReference<Project>( project ) );
                 nodes = PhysicalView.createNodesForProject( project );
             }            
             else if ( lvp == null ) {
@@ -294,8 +293,8 @@ public class ProjectsRootNode extends AbstractNode {
                                 
         // Own methods ---------------------------------------------------------
         
-        public Collection getKeys() {
-            List projects = Arrays.asList( OpenProjectList.getDefault().getOpenProjects() );
+        public Collection<Project> getKeys() {
+            List<Project> projects = Arrays.asList( OpenProjectList.getDefault().getOpenProjects() );
             Collections.sort( projects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
             
             return projects;

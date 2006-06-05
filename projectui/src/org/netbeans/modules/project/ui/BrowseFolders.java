@@ -166,7 +166,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         dialogDescriptor.setClosingOptions( new Object[] { options[ 0 ], options[ 1 ] } );
             
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
-        dialog.show();
+        dialog.setVisible(true);
         
         return optionsListener.getResult();
                 
@@ -305,7 +305,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             }
             else {
                 FileObject files[] = fo.getChildren();
-                ArrayList children = new ArrayList( files.length );
+                ArrayList<Key> children = new ArrayList<Key>( files.length );
                 
                 for( int i = 0; i < files.length; i++ ) {
                     if ( files[i].isFolder() && group.contains( files[i] ) && VisibilityQuery.getDefault().isVisible( files[i] ) ) {

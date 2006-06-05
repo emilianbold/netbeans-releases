@@ -41,7 +41,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
     private static String lastCategory = null;
     private static String lastTemplate = null;
 
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private TemplateChooserPanelGUI gui;
 
     private Project project;
@@ -79,13 +79,12 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
 
     private void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        List templist;
+        List<ChangeListener> templist;
         synchronized (this) {
-            templist = new ArrayList (listeners);
+            templist = new ArrayList<ChangeListener> (listeners);
         }
-        Iterator it = templist.iterator();
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
+	for (ChangeListener l: templist) {
+            l.stateChanged(e);
         }
     }
 

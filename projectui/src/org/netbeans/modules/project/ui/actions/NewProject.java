@@ -119,8 +119,8 @@ public class NewProject extends BasicAction {
                     if ( newObjects != null && !newObjects.isEmpty() ) { 
                         // First. Open all returned projects in the GUI.
 
-                        LinkedList filesToOpen = new LinkedList();
-                        List projectsToOpen = new LinkedList();
+                        LinkedList<DataObject> filesToOpen = new LinkedList<DataObject>();
+                        List<Project> projectsToOpen = new LinkedList<Project>();
 
                         for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
                             Object obj = it.next ();
@@ -163,7 +163,7 @@ public class NewProject extends BasicAction {
                         
                         Project lastProject = projectsToOpen.size() > 0 ? (Project) projectsToOpen.get(0) : null;
                         
-                        OpenProjectList.getDefault().open((Project[] ) projectsToOpen.toArray(new Project[0]), false, true);
+                        OpenProjectList.getDefault().open( projectsToOpen.toArray(new Project[0]), false, true);
                         
                         if (setFirstMainFinal && lastProject != null) {
                             OpenProjectList.getDefault().setMainProject(lastProject);

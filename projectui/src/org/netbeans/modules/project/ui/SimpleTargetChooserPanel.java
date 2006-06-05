@@ -35,7 +35,7 @@ import org.openide.util.NbBundle;
  */
 final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {
 
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private SimpleTargetChooserPanelGUI gui;
 
     private Project project;
@@ -103,13 +103,12 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
 
     private void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        List templist;
+        List<ChangeListener> templist;
         synchronized (this) {
-            templist = new ArrayList (listeners);
+            templist = new ArrayList<ChangeListener> (listeners);
         }
-        Iterator it = templist.iterator();
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
+	for (ChangeListener l: templist) {
+            l.stateChanged(e);
         }
     }
 

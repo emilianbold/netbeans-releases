@@ -68,12 +68,12 @@ final public class ExitDialog extends JPanel implements ActionListener {
     /** Constructs new dlg for unsaved files in filesystems marked 
      * for unmount.
     */
-    private ExitDialog (Set/*DataObject*/ openedFiles) {
+    private ExitDialog (Set<DataObject> openedFiles) {
         setLayout (new BorderLayout ());
 
         listModel = new DefaultListModel();
         
-        Set set = getModifiedFiles (openedFiles);
+        Set<DataObject> set = getModifiedFiles (openedFiles);
         if (!set.isEmpty ()) {
             Iterator iter = set.iterator ();
             while (iter.hasNext ()) {
@@ -215,15 +215,13 @@ final public class ExitDialog extends JPanel implements ActionListener {
      * for unmount and blocks until it's closed. If dialog doesm't
      * exists it creates new one. Returns true if the IDE should be closed.
      */
-    public static boolean showDialog (Set/*DataObject*/ openedFiles) {
+    public static boolean showDialog (Set<DataObject> openedFiles) {
         return innerShowDialog (getModifiedFiles (openedFiles));
     }
     
-    private static Set getModifiedFiles (Set/*DataObject*/ openedFiles) {
-        Set set = new HashSet (openedFiles.size ());
-        Iterator iter = openedFiles.iterator ();
-        while (iter.hasNext()) {
-            DataObject obj = (DataObject) iter.next ();
+    private static Set<DataObject> getModifiedFiles (Set<DataObject> openedFiles) {
+        Set<DataObject> set = new HashSet<DataObject> (openedFiles.size ());
+	for (DataObject obj: openedFiles) {
             if (obj.isModified ()) {
                 set.add (obj);
             }
@@ -235,13 +233,11 @@ final public class ExitDialog extends JPanel implements ActionListener {
     /** Opens the ExitDialog for activated nodes or for
      * whole repository.
      */
-    private static boolean innerShowDialog (Set/*DataObject*/ openedFiles) {
+    private static boolean innerShowDialog (Set<DataObject> openedFiles) {
         if (!openedFiles.isEmpty()) {
             if (SAVE_ALL_UNCONDITIONALLY) {
                 //this section should be invoked only by tests!
-                for (Iterator i = openedFiles.iterator(); i.hasNext(); ) {
-                    DataObject d = (DataObject) i.next();
-                    
+		for (DataObject d: openedFiles) {
                     doSave(d);
                 }
                 

@@ -89,7 +89,7 @@ public class OpenProject extends BasicAction {
                 }
                 
                 // Project project = OpenProjectList.fileToProject( projectDir ); 
-                ArrayList projects = new ArrayList( projectDirs.length );
+                ArrayList<Project> projects = new ArrayList<Project>( projectDirs.length );
                 for( int i = 0; i < projectDirs.length; i++ ) {
                     Project p = OpenProjectList.fileToProject( FileUtil.normalizeFile( projectDirs[i] ) );
                     if ( p != null ) {
@@ -120,7 +120,7 @@ public class OpenProject extends BasicAction {
                         public void run () {
                             Node root = ptLogial.getExplorerManager ().getRootContext ();
                             
-                            ArrayList nodes = new ArrayList( projectDirs.length );
+                            ArrayList<Node> nodes = new ArrayList<Node>( projectDirs.length );
                             for( int i = 0; i < projectDirs.length; i++ ) {                
                                 Node projNode = root.getChildren ().findChild (projectDirs[i].getName () );
                                 if ( projNode != null ) {

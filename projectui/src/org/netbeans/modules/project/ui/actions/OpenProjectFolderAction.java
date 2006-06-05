@@ -63,14 +63,12 @@ public final class OpenProjectFolderAction extends AbstractAction implements Con
     private final class ContextAction extends AbstractAction implements Presenter.Popup {
         
         /** Projects to be opened. */
-        private final Set/*<Project>*/ projects;
+        private final Set<Project> projects;
         
         public ContextAction(Lookup context) {
-            projects = new HashSet();
+            projects = new HashSet<Project>();
             // Collect projects corresponding to selected folders.
-            Iterator it = context.lookupAll(DataFolder.class).iterator();
-            while (it.hasNext()) {
-                DataFolder d = (DataFolder) it.next();
+	    for (DataFolder d: context.lookupAll(DataFolder.class)) {
                 Project p = null;
                 try {
                     p = ProjectManager.getDefault().findProject(d.getPrimaryFile());
@@ -97,7 +95,7 @@ public final class OpenProjectFolderAction extends AbstractAction implements Con
             // Run asynch so that UI is not blocked; might show progress dialog (?).
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    OpenProjectList.getDefault().open((Project[]) projects.toArray(new Project[projects.size()]), false, true);
+                    OpenProjectList.getDefault().open(projects.toArray(new Project[projects.size()]), false, true);
                 }
             });
         }

@@ -40,7 +40,7 @@ import org.openide.util.*;
  */
 public class TemplatesPanel implements WizardDescriptor.Panel {
     
-    private ArrayList listeners;
+    private ArrayList<ChangeListener> listeners;
     private TemplatesPanelGUI panel;
     private WarmupJob warmUp;
     private boolean warmUpActive;
@@ -124,14 +124,14 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         }
     }
     
-    public synchronized void addChangeListener(javax.swing.event.ChangeListener l) {
+    public synchronized void addChangeListener(ChangeListener l) {
         if (this.listeners == null) {
-            this.listeners = new ArrayList ();
+            this.listeners = new ArrayList<ChangeListener> ();
         }
         this.listeners.add (l);
     }
     
-    public synchronized void removeChangeListener(javax.swing.event.ChangeListener l) {
+    public synchronized void removeChangeListener(ChangeListener l) {
         if (this.listeners == null) {
             return;
         }

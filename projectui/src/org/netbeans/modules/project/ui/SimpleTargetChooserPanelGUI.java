@@ -54,7 +54,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         
     private Project project;
     private String expectedExtension;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private SourceGroup[] folders;
     private boolean isFolder;
     
@@ -187,13 +187,12 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     
     private void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        List templist;
+        List<ChangeListener> templist;
         synchronized (this) {
-            templist = new ArrayList (listeners);
+            templist = new ArrayList<ChangeListener> (listeners);
         }
-        Iterator it = templist.iterator();
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
+	for (ChangeListener l: templist) {
+            l.stateChanged(e);
         }
     }
         

@@ -29,7 +29,7 @@ import org.openide.util.WeakListeners;
 public abstract class LookupSensitiveAction extends BasicAction implements LookupListener {
     
     private Lookup lookup;    
-    private Class[] watch;
+    private Class<?>[] watch;
     private Lookup.Result results[];
     private boolean needsRefresh = true;
     private boolean initialized = false;

@@ -44,7 +44,7 @@ public class Hacks {
      */
     static void keepCurrentProjectNameUpdated() {
         try {
-            Class windowSystemImplClazz = Class.forName(
+            Class<?> windowSystemImplClazz = Class.forName(
                 "org.netbeans.core.NbTopManager$WindowSystem", true, 
                 Thread.currentThread().getContextClassLoader());
             windowSystemImpl = Lookup.getDefault().lookup(windowSystemImplClazz);
@@ -61,14 +61,14 @@ public class Hacks {
             final RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
                     Node[] sel = r.getActivatedNodes();
-                    Set/*<Project>*/ projects = new HashSet();
+                    Set<Project> projects = new HashSet<Project>();
                     for (int i = 0; i < sel.length; i++) {
                         Lookup l = sel[i].getLookup();
-                        Project p = (Project) l.lookup(Project.class);
+                        Project p = l.lookup(Project.class);
                         if (p != null) {
                             projects.add(p);
                         } else {
-                            DataObject d = (DataObject) l.lookup(DataObject.class);
+                            DataObject d = l.lookup(DataObject.class);
                             if (d != null) {
                                 FileObject f = d.getPrimaryFile();
                                 p = FileOwnerQuery.getOwner(f);
@@ -80,7 +80,7 @@ public class Hacks {
                     }
                     final String pname;
                     if (projects.size() == 1) {
-                        Project p = (Project) projects.iterator().next();
+                        Project p = projects.iterator().next();
                         pname = ProjectUtils.getInformation(p).getDisplayName();
                         assert pname != null : p;
                     } else if (projects.isEmpty()) {
@@ -91,7 +91,7 @@ public class Hacks {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             try {
-                                setProjectName.invoke(windowSystemImpl, new Object[] {pname});
+                                setProjectName.invoke(windowSystemImpl, pname);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
