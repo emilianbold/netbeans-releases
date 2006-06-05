@@ -112,15 +112,15 @@ public class VMDNodeWidget extends Widget {
     }
 
     public String getNodeName () {
-        return nameWidget.getText ();
+        return nameWidget.getLabel ();
     }
 
     public void setNodeName (String nodeName) {
-        nameWidget.setText (nodeName);
+        nameWidget.setLabel (nodeName);
     }
 
     public void setNodeType (String nodeType) {
-        typeWidget.setText ("[" + nodeType + "]");
+        typeWidget.setLabel ("[" + nodeType + "]");
     }
 
     public void addPin (VMDPinWidget widget) {

@@ -31,8 +31,8 @@ import java.util.List;
 // TODO - clipping does not count with view zoom factor
 public class Widget {
 
-    public static final Color COLOR_BACKGROUND = Color.WHITE;
-    public static final Color COLOR_FOREGROUND = Color.BLACK;
+    private static final Color COLOR_BACKGROUND = Color.WHITE;
+    private static final Color COLOR_FOREGROUND = Color.BLACK;
 
     private Scene scene;
     private Widget parentWidget;
@@ -78,8 +78,8 @@ public class Widget {
 
         opaque = false;
         font = null;
-        background = COLOR_BACKGROUND;
-        foreground = COLOR_FOREGROUND;
+        background = scene != null ? scene.getLookFeel ().getBackground () : COLOR_BACKGROUND;
+        foreground = scene != null ? scene.getLookFeel ().getForeground () : COLOR_FOREGROUND;
         border = EmptyBorder.ZERO;
         layout = AbsoluteLayout.getDefault ();
         preferredLocation = null;

@@ -193,4 +193,8 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
 
     protected abstract void attachEdgeTarget (EdgeCtrl edgeController, PinCtrl targetPinController);
 
+    public static abstract class StringGraph extends GraphPinScene<String, String, String, NodeController.StringNode, EdgeController.StringEdge, PinController.StringPin> {
+
+    }
+
 }

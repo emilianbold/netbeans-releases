@@ -61,11 +61,11 @@ public class VMDPinWidget extends Widget {
     }
 
     public void setPinName (String name) {
-        nameWidget.setText (name);
+        nameWidget.setLabel (name);
     }
 
     public void setPinType (String type) {
-        typeWidget.setText (" [" + type + "]");
+        typeWidget.setLabel (" [" + type + "]");
     }
 
 }

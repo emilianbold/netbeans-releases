@@ -28,7 +28,7 @@ public class LabelWidget extends Widget {
         LEFT, RIGHT, CENTER
     }
 
-    private String text;
+    private String label;
     private Alignment aligment = Alignment.LEFT;
 
     public LabelWidget (Scene scene) {
@@ -39,15 +39,15 @@ public class LabelWidget extends Widget {
         super (scene);
         setOpaque (false);
         setCursor (new Cursor (Cursor.TEXT_CURSOR));
-        setText (text);
+        setLabel (text);
     }
 
-    public String getText () {
-        return text;
+    public String getLabel () {
+        return label;
     }
 
-    public void setText (String text) {
-        this.text = text;
+    public void setLabel (String label) {
+        this.label = label;
         revalidate ();
     }
 
@@ -61,16 +61,16 @@ public class LabelWidget extends Widget {
     }
 
     protected Rectangle calculateClientArea () {
-        if (text == null)
+        if (label == null)
             return super.calculateClientArea ();
         Graphics2D gr = getGraphics ();
         FontMetrics fontMetrics = gr.getFontMetrics (getFont ());
-        Rectangle2D stringBounds = fontMetrics.getStringBounds (text, gr);
+        Rectangle2D stringBounds = fontMetrics.getStringBounds (label, gr);
         return GeomUtil.roundRectangle (stringBounds);
     }
 
     protected void paintWidget () {
-        if (text == null)
+        if (label == null)
             return;
         Graphics2D gr = getGraphics ();
         gr.setColor (getForeground ());
@@ -78,14 +78,14 @@ public class LabelWidget extends Widget {
 
         int x = 0;
         if (aligment == Alignment.RIGHT) {
-            int textWidth = gr.getFontMetrics ().stringWidth (text);
+            int textWidth = gr.getFontMetrics ().stringWidth (label);
             x = getBounds ().width - textWidth;
         } else if (aligment == Alignment.CENTER) {
-            int halfWidth = gr.getFontMetrics ().stringWidth (text) / 2;
+            int halfWidth = gr.getFontMetrics ().stringWidth (label) / 2;
             x = getBounds ().width / 2 - halfWidth;
         }
 
-        gr.drawString (text, x, 0);
+        gr.drawString (label, x, 0);
     }
 
 }

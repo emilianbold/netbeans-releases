@@ -14,6 +14,8 @@ package org.netbeans.api.visual.widget;
 
 import org.netbeans.api.visual.util.GeomUtil;
 import org.netbeans.api.visual.animator.SceneAnimator;
+import org.netbeans.api.visual.laf.DefaultLookFeel;
+import org.netbeans.api.visual.laf.LookFeel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,6 +36,7 @@ public class Scene extends Widget {
 
     private Font defaultFont;
     private HashMap<Widget,Rectangle> repaints = new HashMap<Widget, Rectangle> ();
+    private LookFeel lookFeel = new DefaultLookFeel ();
 
     public Scene () {
         super (null);
@@ -177,6 +180,14 @@ public class Scene extends Widget {
 
     public SceneAnimator getSceneAnimator () {
         return sceneAnimator;
+    }
+
+    public LookFeel getLookFeel () {
+        return lookFeel;
+    }
+
+    public void setLookFeel (LookFeel lookFeel) {
+        this.lookFeel = lookFeel;
     }
 
     public final Point convertSceneToView (Point sceneLocation) {
