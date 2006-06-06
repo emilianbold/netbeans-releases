@@ -58,12 +58,12 @@ public class NbBundle extends Object {
      * Keeps only weak references to the class loaders.
      * @see "#9275"
      */
-    private static final Map<ClassLoader,Map<String,URL>> localizedFileCache = new WeakHashMap<ClassLoader,Map<String,URL>>();
+    static final Map<ClassLoader,Map<String,URL>> localizedFileCache = new WeakHashMap<ClassLoader,Map<String,URL>>();
 
     /**
      * Cache of resource bundles.
      */
-    private static final Map<ClassLoader,Map<String,Reference<ResourceBundle>>> bundleCache = new WeakHashMap<ClassLoader,Map<String,Reference<ResourceBundle>>>();
+    static final Map<ClassLoader,Map<String,Reference<ResourceBundle>>> bundleCache = new WeakHashMap<ClassLoader,Map<String,Reference<ResourceBundle>>>();
 
     /**
      * Do not call.
@@ -517,13 +517,10 @@ public class NbBundle extends Object {
             l.addFirst(it.next());
         }
 
-        it = l.iterator();
-
         Properties p = new Properties();
-        boolean first = true;
 
-        while (it.hasNext()) {
-            String res = sname + it.next() + ".properties";
+        for (String suffix : l) {
+            String res = sname + suffix + ".properties";
 
             // #49961: don't use getResourceAsStream; catch all errors opening it
             URL u = loader != null ? loader.getResource(res) : ClassLoader.getSystemResource(res);
@@ -532,7 +529,9 @@ public class NbBundle extends Object {
                 //System.err.println("Loading " + res);
                 try {
                     // #51667: but in case we are in USE_DEBUG_LOADER mode, use gRAS (since getResource is not overridden)
-                    InputStream is = USE_DEBUG_LOADER ? loader.getResourceAsStream(res) : u.openStream();
+                    InputStream is = USE_DEBUG_LOADER ?
+                        (loader != null ? loader.getResourceAsStream(res) : ClassLoader.getSystemResourceAsStream(res)) :
+                            u.openStream();
 
                     try {
                         p.load(is);
@@ -547,13 +546,11 @@ public class NbBundle extends Object {
 
                     return null;
                 }
-            } else if (first) {
+            } else if (suffix.length() == 0) {
                 // No base *.properties. Try *.class.
                 // Note that you may not mix *.properties w/ *.class this way.
                 return loadBundleClass(name, sname, locale, l, loader);
             }
-
-            first = false;
         }
 
         return new PBundle(NbCollections.checkedMapByFilter(p, String.class, String.class, true), locale);
@@ -982,7 +979,7 @@ public class NbBundle extends Object {
     /** Classloader whose special trick is inserting debug information
      * into any *.properties files it loads.
      */
-    private static final class DebugLoader extends ClassLoader {
+    static final class DebugLoader extends ClassLoader {
         /** global bundle index, each loaded bundle gets its own */
         private static int count = 0;
 
@@ -1071,7 +1068,7 @@ public class NbBundle extends Object {
          * originally came from, assuming NbBundle loaded it from a *.properties file.
          * @see {@link Properties#load} for details on the syntax of *.properties files.
          */
-        private static final class DebugInputStream extends InputStream {
+        static final class DebugInputStream extends InputStream {
             /** state transition diagram constants */
             private static final int WAITING_FOR_KEY = 0;
 
@@ -1101,6 +1098,9 @@ public class NbBundle extends Object {
 
             /** current line number */
             private int line = 0;
+            
+            /** line number in effect for last-encountered key */
+            private int keyLine = 0;
 
             /** current state in state machine */
             private int state = WAITING_FOR_KEY;
@@ -1134,7 +1134,6 @@ public class NbBundle extends Object {
             }
 
             public int read() throws IOException {
-                //try{
                 if (toInsert != null) {
                     char result = toInsert.charAt(0);
 
@@ -1188,6 +1187,7 @@ public class NbBundle extends Object {
 
                     default:
                         state = IN_KEY;
+                        keyLine = line + 1;
 
                         return next;
                     }
@@ -1330,16 +1330,21 @@ public class NbBundle extends Object {
 
                     case '\n':
                     case '\r':
+                    case -1:
 
                         // End of value. This is the tricky part.
                         boolean revLoc = reverseLocalizable;
                         reverseLocalizable = false;
                         state = WAITING_FOR_KEY;
 
-                        // XXX don't annotate keys ending in _Mnemonic
                         if (localizable ^ revLoc) {
                             // This value is intended to be localizable. Annotate it.
-                            toInsert = "(" + id + ":" + line + ")" + new Character((char) next); // NOI18N
+                            assert keyLine > 0;
+                            toInsert = "(" + id + ":" + keyLine + ")"; // NOI18N
+                            if (next != -1) {
+                                toInsert += new Character((char) next);
+                            }
+                            keyLine = 0;
 
                             // Now return the space before the rest of the string explicitly.
                             return ' ';
@@ -1362,27 +1367,6 @@ public class NbBundle extends Object {
                 }
             }
 
-            //catch(IOException ioe) {ioe.printStackTrace(); throw ioe;}
-            //catch(RuntimeException re) {re.printStackTrace(); throw re;}
-            //}
-
-            /** For testing correctness of the transformation. Run:
-             * java org.openide.util.NbBundle$DebugLoader$DebugInputStream true < test.properties
-             * (The argument says whether to treat the input as localizable by default.)
-             */
-            public static void main(String[] args) throws Exception {
-                if (args.length != 1) {
-                    throw new Exception();
-                }
-
-                boolean loc = Boolean.valueOf(args[0]).booleanValue();
-                DebugInputStream dis = new DebugInputStream(System.in, 123, loc);
-                int c;
-
-                while ((c = dis.read()) != -1) {
-                    System.out.write(c);
-                }
-            }
         }
     }
 }

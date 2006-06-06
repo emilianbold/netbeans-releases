@@ -13,13 +13,31 @@
 
 package org.openide.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 import java.util.jar.Attributes;
 import junit.framework.TestCase;
+
+// XXX testGetClassBundle
+// XXX testGetLocalizedFile
+// XXX testDebugLoader
 
 /**
  * Test normal-mode functionality of {@link NbBundle}.
@@ -31,41 +49,141 @@ public class NbBundleTest extends TestCase {
         super(name);
     }
 
-    public void testNormalMode() {
-        doTestReadIntFromBundle(false);
+    protected void setUp() throws Exception {
+        Locale.setDefault(Locale.US);
+        NbBundle.setBranding(null);
+        NbBundle.localizedFileCache.clear();
+        NbBundle.bundleCache.clear();
     }
 
-    static void doTestReadIntFromBundle(boolean debug) {
-        ResourceBundle bundle = NbBundle.getBundle("org.openide.util.NbBundleTest");
-        String val_secure = bundle.getString("INT_VALUE_SECURE");
-        String val_insecure = bundle.getString("INT_VALUE_INSECURE");
-
-        assertNotNull("Value from bundle not null", val_secure);
-        assertNotNull("Value from bundle not null", val_insecure);
-
-        if (debug) {
-            assertTrue ("Values were read in debug mode.", val_insecure.indexOf (':') > 0);
-        } else {
-            assertFalse ("Values were read in normal mode.", val_insecure.indexOf (':') > 0);
-        }
-
-        try {
-            assertEquals("Parsed as int", 123, Integer.parseInt(val_insecure));
-        } catch (NumberFormatException nfe) {
-            if (debug) {
-                // OK, fine
+    public static void testLocalizingSuffixes() throws Exception {
+        assertEquals("_en_US,_en,", locSuff());
+        Locale.setDefault(Locale.JAPAN);
+        assertEquals("_ja_JP,_ja,", locSuff());
+        NbBundle.setBranding("f4j_ce");
+        Locale.setDefault(Locale.US);
+        assertEquals("_f4j_ce_en_US,_f4j_ce_en,_f4j_ce,_f4j_en_US,_f4j_en,_f4j,_en_US,_en,", locSuff());
+        Locale.setDefault(Locale.JAPAN);
+        assertEquals("_f4j_ce_ja_JP,_f4j_ce_ja,_f4j_ce,_f4j_ja_JP,_f4j_ja,_f4j,_ja_JP,_ja,", locSuff());
+    }
+    private static String locSuff() {
+        StringBuffer b = new StringBuffer();
+        boolean first = true;
+        Iterator<String> it = NbBundle.getLocalizingSuffixes();
+        while (it.hasNext()) {
+            if (first) {
+                first = false;
             } else {
-                // Not fine in normal mode!
-                throw nfe;
+                b.append(',');
             }
+            b.append(it.next());
         }
+        return b.toString();
+    }
 
+    public void testGetBundle() throws Exception {
+        ResourceBundle rb = NbBundle.getBundle("foo.Bundle", Locale.ENGLISH, fixedLoader("foo/Bundle.properties:k=v"));
+        assertEquals("v", rb.getString("k"));
         try {
-            assertEquals("Parsed as int", 456, Integer.parseInt(val_secure));
-        } catch (NumberFormatException nfe) {
-            fail("Cannot throw NumberFormatException when read secure value.");
+            rb.getString("kkk");
+            fail();
+        } catch (MissingResourceException mre) {
+            // OK
         }
+        rb = NbBundle.getBundle("foo.Bundle", Locale.US, fixedLoader("foo/Bundle.properties:k=v"));
+        assertEquals("v", rb.getString("k"));
+        rb = NbBundle.getBundle("foo.Bundle", Locale.JAPAN, fixedLoader("foo/Bundle.properties:k=v"));
+        assertEquals("v", rb.getString("k"));
+        rb = NbBundle.getBundle("foo.Bundle", Locale.JAPAN, fixedLoader("foo/Bundle.properties:k=v", "foo/Bundle_ja.properties:k=v2"));
+        assertEquals("v2", rb.getString("k"));
+        assertEquals(Locale.JAPAN, rb.getLocale());
+        try {
+            NbBundle.getBundle("foo.Bundle", Locale.ENGLISH, fixedLoader());
+            fail();
+        } catch (MissingResourceException mre) {
+            // OK
+        }
+        NbBundle.setBranding("nb");
+        rb = NbBundle.getBundle("foo.Bundle", Locale.US, fixedLoader("foo/Bundle.properties:k1=v1\nk2=v2", "foo/Bundle_nb.properties:k1=v1 NB"));
+        assertEquals("v1 NB", rb.getString("k1"));
+        assertEquals("v2", rb.getString("k2"));
+        List<String> keys = new ArrayList<String>(Collections.list(rb.getKeys()));
+        Collections.sort(keys);
+        assertEquals("[k1, k2]", keys.toString());
+    }
 
+    public void testGetMessage() throws Exception {
+        ClassLoader l = fixedLoader("org/openide/util/Bundle.properties:k1=v1\nk2=v2 {0}", "org/openide/util/Bundle_ja.properties:k1=v1 ja");
+        Class<?> c = l.loadClass(Dummy.class.getName());
+        assertEquals(l, c.getClassLoader());
+        assertEquals("v1", NbBundle.getMessage(c, "k1"));
+        Locale.setDefault(Locale.JAPAN);
+        assertEquals("v1 ja", NbBundle.getMessage(c, "k1"));
+        assertEquals("v2 x", NbBundle.getMessage(c, "k2", "x"));
+    }
+
+    static class Dummy {}
+    /**
+     * Creates a loader which can load just fixed resources you supply.
+     * Each entry should be of the form
+     * <pre>
+     * path/to/res1:some contents
+     * for res1
+     * </pre>
+     * Resources are expected to be in ISO-8859-1.
+     * Also can define a class named Dummy.class.getName().
+     */
+    private static ClassLoader fixedLoader(String... entries) throws Exception {
+        final Map<String,byte[]> data = new HashMap<String,byte[]>();
+        for (String entry : entries) {
+            int colon = entry.indexOf(':');
+            data.put(entry.substring(0, colon), entry.substring(colon + 1).getBytes("ISO-8859-1"));
+        }
+        return new ClassLoader() {
+            @Override
+            public URL getResource(final String res) {
+                if (data.containsKey(res)) {
+                    //System.err.println("hit for " + res);
+                    try {
+                        return new URL("dummy", null, 0, res, new URLStreamHandler() {
+                            protected URLConnection openConnection(URL u) throws IOException {
+                                return new URLConnection(u) {
+                                    public void connect() throws IOException {}
+                                    @Override
+                                    public InputStream getInputStream() throws IOException {
+                                        return new ByteArrayInputStream(data.get(res));
+                                    }
+                                };
+                            }
+                        });
+                    } catch (MalformedURLException x) {
+                        throw new AssertionError(x);
+                    }
+                } else {
+                    //System.err.println("miss for " + res);
+                    return null;
+                }
+            }
+            @Override
+            public Class loadClass(String n) throws ClassNotFoundException {
+                if (n.equals(Dummy.class.getName())) {
+                    InputStream is = NbBundleTest.class.getClassLoader().getResourceAsStream(n.replace('.', '/') + ".class");
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    byte[] buf = new byte[4096];
+                    int read;
+                    try {
+                        while ((read = is.read(buf)) != -1) {
+                            baos.write(buf, 0, read);
+                        }
+                    } catch (IOException x) {
+                        throw new AssertionError(x);
+                    }
+                    return defineClass(n, baos.toByteArray(), 0, baos.size());
+                } else {
+                    return super.loadClass(n);
+                }
+            }
+        };
     }
 
     public static void testGetLocalizedValue() throws Exception {
@@ -99,6 +217,15 @@ public class NbBundleTest extends TestCase {
         assertEquals(null, NbBundle.getLocalizedValue(attr, new Attributes.Name("k3"), Locale.ENGLISH));
         assertEquals("v3_ja", NbBundle.getLocalizedValue(attr, new Attributes.Name("k3"), Locale.JAPANESE));
         assertEquals("v3_ja", NbBundle.getLocalizedValue(attr, new Attributes.Name("k3"), Locale.JAPAN));
+        attr = new Attributes();
+        attr.putValue("Think", "Smart");
+        assertEquals("think", "THINK".toLowerCase());
+        assertEquals("Smart", NbBundle.getLocalizedValue(attr, new Attributes.Name("think")));
+        assertEquals("Smart", NbBundle.getLocalizedValue(attr, new Attributes.Name("THINK")));
+        Locale.setDefault(new Locale("tr", "TR"));
+        assertEquals("th\u0131nk", "THINK".toLowerCase());
+        assertEquals("Smart", NbBundle.getLocalizedValue(attr, new Attributes.Name("think")));
+        assertEquals("Smart", NbBundle.getLocalizedValue(attr, new Attributes.Name("THINK")));
     }
 
     /** @see "#57815" */
@@ -110,6 +237,40 @@ public class NbBundleTest extends TestCase {
         } catch (MissingResourceException x) {
             // OK
         }
+    }
+
+    public void testDebugInputStream() throws Exception {
+        assertEquals("basic annotation works", "{key=val (17:1)}", debugIS("key=val\n", true));
+        assertEquals("annotation disabled unless loc", "{key=val}", debugIS("key=val\n", false));
+        assertEquals("comments ignored", "{key=val (17:2)}", debugIS("# some comment\nkey=val\n", true));
+        assertEquals("simple multiline values handled", "{k1=vee one (17:1)}", debugIS("k1=vee \\\none\n", true));
+        assertEquals("whitespace starting cont lines ignored", "{k1=vee one (17:1)}", debugIS("k1=vee \\\n    one\n", true));
+        assertEquals("whitespace around key ignored", "{k1=v1 (17:1)}", debugIS(" k1 =v1\n", true));
+        assertEquals("whitespace before value ignored", "{k1=v1 (17:1)}", debugIS("k1= v1\n", true));
+        assertEquals("whitespace after value significant", "{k1=v1  (17:1)}", debugIS("k1=v1 \n", true));
+        assertEquals("trailing newline not required", "{k1=v1 (17:1)}", debugIS("k1=v1", true));
+        assertEquals("complex case", "{k1=vee one (17:1), k2=vee two  (17:3)}", debugIS(" k1 = vee \\\n    one\n k2  =  vee \\\n    two ", true));
+        assertEquals("NOI18N works", "{k1=v1}", debugIS("#NOI18N\nk1=v1\n", true));
+        assertEquals("I18N works", "{k1=v1 (17:2)}", debugIS("#I18N\nk1=v1\n", false));
+        // XXX \ in key
+        // XXX #PART{,NO}I18N
+        // XXX Unicode escapes
+        // XXX ':' rather than '='
+        // XXX \r\n
+        // XXX key with no value, or empty value
+        // XXX value beginning with \
+    }
+    private static String debugIS(String s, boolean loc) throws IOException {
+        InputStream dis = new NbBundle.DebugLoader.DebugInputStream(new ByteArrayInputStream(s.getBytes("ISO-8859-1")), 17, loc);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buf = new byte[4096];
+        int read;
+        while ((read = dis.read(buf)) != -1) {
+            baos.write(buf, 0, read);
+        }
+        Properties p = new Properties();
+        p.load(new ByteArrayInputStream(baos.toByteArray()));
+        return new TreeMap<String,String>(NbCollections.checkedMapByFilter(p, String.class, String.class, true)).toString();
     }
 
 }
