@@ -22,8 +22,6 @@ import org.openide.util.Lookup;
  * <p>An interface implemented by palette clients to provide custom actions
  * for popup menus and actions for import of new items.</p>
  *
- * <p><b>Important: This SPI is still under development.</b></p>
- *
  * @author S. Aubrecht.
  */
 public abstract class PaletteActions {

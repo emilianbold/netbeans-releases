@@ -39,8 +39,6 @@ import org.openide.util.Lookup;
  * <p>User can override attribute values in palette's user interface. Attribute values
  * are persisted and restored after IDE restarts.</p>
  *
- * <p><b>Important: This SPI is still under development.</b></p>
- *
  * @author S. Aubrecht
  */
 

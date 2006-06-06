@@ -33,8 +33,6 @@ import org.openide.util.datatransfer.PasteType;
  * when dragging an item over different editor area parts that allow only certain
  * item types to be dropped into them.</p>
  *
- * <p><b>Important: This SPI is still under development.</b></p>
- *
  * @author S. Aubrecht
  */
 public abstract class DragAndDropHandler {

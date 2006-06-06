@@ -19,8 +19,6 @@ import org.openide.util.Lookup;
  * <p>A palette filter than can prevent some categories and/or items from being
  * displayed in palette's window.</p>
  *
- * <p><b>Important: This SPI is still under development.</b></p>
- *
  * @author S. Aubrecht
  */
 public abstract class PaletteFilter {

@@ -35,8 +35,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * <p>PaletteFactory creating new PaletteController instances.</p>
  *
- * <p><b>Important: This SPI is still under development.</b></p>
- *
  * @author S. Aubrecht
  */
 public final class PaletteFactory {

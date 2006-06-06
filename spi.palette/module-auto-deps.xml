@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE transformations PUBLIC "-//NetBeans//DTD Module Automatic Dependencies 1.0//EN" "http://www.netbeans.org/dtds/module-auto-deps-1_0.dtd">
+
+<transformations version="1.0">
+
+    <transformationgroup>
+        <description>Major release version of module changed from 0 to 1 to signal stability; update your dependencies</description>
+        <transformation>
+            <trigger-dependency type="older">
+                <module-dependency codenamebase="org.netbeans.spi.palette" major="1"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.netbeans.spi.palette" major="1" spec="1.6"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>
+</transformations>
