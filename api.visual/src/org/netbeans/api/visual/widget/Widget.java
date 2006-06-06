@@ -402,6 +402,7 @@ public class Widget {
     }
 
     public final void paint () {
+        assert bounds != null : "Scene.validate was not called";
         Graphics2D gr = scene.getGraphics ();
         AffineTransform previousTransform = gr.getTransform();
         gr.translate (location.x, location.y);
