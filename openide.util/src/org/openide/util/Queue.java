@@ -7,26 +7,30 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
+import java.util.LinkedList;
 
 /** Queue of objects. When there is no object in the queue the process
 * is suspended till some arrives.
+* Implementation appears to be LIFO.
 *
 * @author Jaroslav Tulach
-* @version 0.10, Feb 06, 1998
+* @deprecated Use {@link java.util.concurrent.BlockingQueue} instead.
 */
-public class Queue extends Object {
+@Deprecated
+public class Queue<T> extends Object {
     /** Queue enumeration */
-    private java.util.LinkedList<Object> queue = new java.util.LinkedList<Object>();
+    private LinkedList<T> queue = new LinkedList<T>();
 
     /** Adds new item.
     * @param o object to add
     */
-    public synchronized void put(Object o) {
+    public synchronized void put(T o) {
         queue.add(o);
         notify();
     }
@@ -36,7 +40,7 @@ public class Queue extends Object {
     *
     * @return object from the queue
     */
-    public synchronized Object get() {
+    public synchronized T get() {
         for (;;) {
             if (queue.isEmpty()) {
                 try {

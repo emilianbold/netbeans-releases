@@ -7,35 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.AbstractSet;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
-
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
 import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -44,12 +35,8 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.Queue;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakSet;
-
 
 /**
  * Filters some original tree of nodes (represented by {@link TreeModel}).
@@ -150,7 +137,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      * @throws  ComputingException if the children resolving process 
      *          is time consuming, and will be performed off-line 
      * @throws  UnknownTypeException if this TreeModelFilter implementation is not
-     *          able to resolve dchildren for given node type
+     *          able to resolve children for given node type
      *
      * @return  children for given parent on given indexes
      */
@@ -176,7 +163,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     }
     
     /**
-     * Returns number of filterred children for given node.
+     * Returns number of filtered children for given node.
      * 
      * @param   original the original tree model
      * @param   node the parent node
@@ -214,7 +201,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      * 
      * @param   original the original tree model
      * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve dchildren for given node type
+     *          able to resolve children for given node type
      * @return  true if node is leaf
      */
     public boolean isLeaf (
