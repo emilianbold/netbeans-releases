@@ -93,7 +93,7 @@ public class MIMESupport69049Test extends TestCase {
                 try {
                     all = MIMESupport.getResolvers();
                 } catch (Throwable e) {
-                    ex.printStackTrace();
+                    e.printStackTrace();
                     ex = e;
                 }
             }
