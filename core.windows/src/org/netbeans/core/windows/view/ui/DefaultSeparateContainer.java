@@ -193,7 +193,8 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
                 public void windowActivated(WindowEvent event) {
                     if (frametimestamp != 0 && System.currentTimeMillis() > frametimestamp + 500) {
                         modeView.getController().userActivatedModeWindow(modeView);
-                    } 
+                    }
+                    frametimestamp = System.currentTimeMillis();
                 }
                 public void windowOpened(WindowEvent event) {
                     frametimestamp = System.currentTimeMillis();
