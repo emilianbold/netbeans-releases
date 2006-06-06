@@ -200,7 +200,11 @@ public final class PlatformComponentFactory {
         
         NbPlatform addPlatform(String id, String destdir, String label) {
             try {
-                NbPlatform plaf = NbPlatform.addPlatform(id, new File(destdir), /* #71629 */ NbPlatform.getDefaultPlatform().getHarnessLocation(), label);
+                NbPlatform def = NbPlatform.getDefaultPlatform();
+                NbPlatform plaf = def != null ?
+                    NbPlatform.addPlatform(id, new File(destdir), /* #71629 */ def.getHarnessLocation(), label) :
+                    // Installation somehow corrupted, but try to behave gracefully:
+                    NbPlatform.addPlatform(id, new File(destdir), label);
                 nbPlafs = getSortedPlatforms(); // refresh
                 fireContentsChanged(this, 0, nbPlafs.length - 1);
                 return plaf;
@@ -212,9 +216,6 @@ public final class PlatformComponentFactory {
         }
     }
     
-    /**
-     * XXX
-     */
     static class ModuleEntryListModel extends AbstractListModel {
         
         private ModuleEntry[] mes;
@@ -232,9 +233,6 @@ public final class PlatformComponentFactory {
         }
     }
     
-    /**
-     * XXX
-     */
     private static class SuiteListModel extends AbstractListModel
             implements MutableComboBoxModel {
         
