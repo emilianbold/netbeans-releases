@@ -38,42 +38,54 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
 
         buttonGroup.add(localChangesRadioButton);
         localChangesRadioButton.setSelected(true);
-        localChangesRadioButton.setText("Revert Local Changes");
+        org.openide.awt.Mnemonics.setLocalizedText(localChangesRadioButton, "Revert &Local Changes");
         localChangesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         localChangesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        localChangesRadioButton.getAccessibleContext().setAccessibleDescription("Revert Local Changes");
 
         buttonGroup.add(moreCommitsRadioButton);
-        moreCommitsRadioButton.setText("Revert Modifications from Previous Commits");
+        org.openide.awt.Mnemonics.setLocalizedText(moreCommitsRadioButton, "Revert Modifications from &Previous Commits");
         moreCommitsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         moreCommitsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        moreCommitsRadioButton.getAccessibleContext().setAccessibleDescription("Revert Modifications from Previous Commits");
 
-        jLabel2.setText("Starting Revision:");
+        jLabel2.setLabelFor(startRevisionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "S&tarting Revision:");
+        jLabel2.getAccessibleContext().setAccessibleDescription("Starting Revision for Revert");
 
         startRevisionTextField.setEnabled(false);
 
-        startSearchButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(startSearchButton, "Se&arch...");
         startSearchButton.setEnabled(false);
+        startSearchButton.getAccessibleContext().setAccessibleDescription("Search Starting Revision");
 
         jLabel9.setText("(empty means repository HEAD)");
 
         endRevisionTextField.setEnabled(false);
 
-        endSearchButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(endSearchButton, "Sear&ch...");
         endSearchButton.setEnabled(false);
+        endSearchButton.getAccessibleContext().setAccessibleDescription("Search Ending Revision");
 
-        jLabel3.setText("Ending Revision:");
+        jLabel3.setLabelFor(endRevisionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "En&ding Revision:");
+        jLabel3.getAccessibleContext().setAccessibleDescription("Ending Revision for Revert");
 
         buttonGroup.add(oneCommitRadioButton);
-        oneCommitRadioButton.setText("Revert Modifications from Single Commit");
+        org.openide.awt.Mnemonics.setLocalizedText(oneCommitRadioButton, "Revert Modifications from &Single Commit");
         oneCommitRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         oneCommitRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        oneCommitRadioButton.getAccessibleContext().setAccessibleDescription("Revert Modifications from Single Commit");
 
-        jLabel4.setText("Revision:");
+        jLabel4.setLabelFor(oneRevisionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "&Revision:");
+        jLabel4.getAccessibleContext().setAccessibleDescription("Desired Revision for Revert");
 
         oneRevisionTextField.setEnabled(false);
 
-        oneRevisionSearchButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(oneRevisionSearchButton, "S&earch...");
         oneRevisionSearchButton.setEnabled(false);
+        oneRevisionSearchButton.getAccessibleContext().setAccessibleDescription("Search Revision");
 
         jLabel10.setText("(empty means repository HEAD)");
 
@@ -110,8 +122,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                     .add(localChangesRadioButton)
                     .add(layout.createSequentialGroup()
                         .add(141, 141, 141)
-                        .add(jLabel9)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 8, Short.MAX_VALUE)))
+                        .add(jLabel9)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

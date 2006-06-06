@@ -37,8 +37,8 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 public class RevertModifications implements PropertyChangeListener {
 
     private RevertModificationsPanel panel;
-
     private JButton okButton;
+    private JButton cancelButton;
     private RevertType[] types;
     
     /** Creates a new instance of RevertModifications */
@@ -68,15 +68,18 @@ public class RevertModifications implements PropertyChangeListener {
 
     public boolean showDialog() {
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, "Revert Modifications");
-        
         okButton = new JButton("Revert");
-        dialogDescriptor.setOptions(new Object[] {okButton, "Cancel"});
+        okButton.getAccessibleContext().setAccessibleDescription("Revert");
+        cancelButton = new JButton("Cancel");
+        cancelButton.getAccessibleContext().setAccessibleDescription("Cancel");
+        dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
         
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
         dialogDescriptor.setValid(false);
         
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
+        dialog.getAccessibleContext().setAccessibleDescription("Revert Modifications");
         dialog.setVisible(true);
         dialog.setResizable(false);
         boolean ret = dialogDescriptor.getValue() == okButton;
