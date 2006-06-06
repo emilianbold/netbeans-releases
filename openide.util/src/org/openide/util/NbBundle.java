@@ -526,7 +526,7 @@ public class NbBundle extends Object {
             String res = sname + it.next() + ".properties";
 
             // #49961: don't use getResourceAsStream; catch all errors opening it
-            URL u = loader.getResource(res);
+            URL u = loader != null ? loader.getResource(res) : ClassLoader.getSystemResource(res);
 
             if (u != null) {
                 //System.err.println("Loading " + res);
@@ -569,21 +569,20 @@ public class NbBundle extends Object {
      * @return a resource bundle (merged according to the suffixes), or null if not found
      */
     private static ResourceBundle loadBundleClass(
-        String name, String sname, Locale locale, List suffixes, ClassLoader l
+        String name, String sname, Locale locale, List<String> suffixes, ClassLoader l
     ) {
-        if (l.getResource(sname + ".class") == null) { // NOI18N
+        if (l != null && l.getResource(sname + ".class") == null) { // NOI18N
 
             // No chance - no base bundle. Don't waste time catching CNFE.
             return null;
         }
 
         ResourceBundle master = null;
-        Iterator it = suffixes.iterator();
 
-        while (it.hasNext()) {
+        for (String suffix : suffixes) {
             try {
-                Class c = Class.forName(name + (String) it.next(), true, l);
-                ResourceBundle b = (ResourceBundle) c.newInstance();
+                Class<? extends ResourceBundle> c = Class.forName(name + suffix, true, l).asSubclass(ResourceBundle.class);
+                ResourceBundle b = c.newInstance();
 
                 if (master == null) {
                     master = b;

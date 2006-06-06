@@ -16,6 +16,7 @@ package org.openide.util;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.jar.Attributes;
 import junit.framework.TestCase;
@@ -25,29 +26,29 @@ import junit.framework.TestCase;
  * @author Jesse Glick
  */
 public class NbBundleTest extends TestCase {
-    
+
     public NbBundleTest(String name) {
         super(name);
     }
-    
+
     public void testNormalMode() {
         doTestReadIntFromBundle(false);
     }
-    
+
     static void doTestReadIntFromBundle(boolean debug) {
         ResourceBundle bundle = NbBundle.getBundle("org.openide.util.NbBundleTest");
         String val_secure = bundle.getString("INT_VALUE_SECURE");
         String val_insecure = bundle.getString("INT_VALUE_INSECURE");
-        
+
         assertNotNull("Value from bundle not null", val_secure);
         assertNotNull("Value from bundle not null", val_insecure);
-        
+
         if (debug) {
             assertTrue ("Values were read in debug mode.", val_insecure.indexOf (':') > 0);
         } else {
             assertFalse ("Values were read in normal mode.", val_insecure.indexOf (':') > 0);
         }
-        
+
         try {
             assertEquals("Parsed as int", 123, Integer.parseInt(val_insecure));
         } catch (NumberFormatException nfe) {
@@ -58,15 +59,15 @@ public class NbBundleTest extends TestCase {
                 throw nfe;
             }
         }
-        
+
         try {
             assertEquals("Parsed as int", 456, Integer.parseInt(val_secure));
         } catch (NumberFormatException nfe) {
             fail("Cannot throw NumberFormatException when read secure value.");
         }
-        
+
     }
-    
+
     public static void testGetLocalizedValue() throws Exception {
         Map<String,String> m = new HashMap<String,String>();
         m.put("k1", "v1");
@@ -99,5 +100,16 @@ public class NbBundleTest extends TestCase {
         assertEquals("v3_ja", NbBundle.getLocalizedValue(attr, new Attributes.Name("k3"), Locale.JAPANESE));
         assertEquals("v3_ja", NbBundle.getLocalizedValue(attr, new Attributes.Name("k3"), Locale.JAPAN));
     }
-    
+
+    /** @see "#57815" */
+    public static void testSystemClassLoaderLoadedClasses() throws Exception {
+        assertNotNull("OK to ask for message from class on app CP", NbBundle.getMessage(NbBundle.class, "OpenIDE-Module-Name"));
+        try {
+            NbBundle.getMessage(Object.class, "whatever");
+            fail();
+        } catch (MissingResourceException x) {
+            // OK
+        }
+    }
+
 }
