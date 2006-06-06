@@ -33,16 +33,16 @@ import java.util.logging.Logger;
 */
 final class IconManager extends Object {
     /** a value that indicates that the icon does not exists */
-    private static final ActiveRef NO_ICON = new ActiveRef(null, null, null);
+    private static final ActiveRef<String> NO_ICON = new ActiveRef<String>(null, null, null);
 
-    /** map of resource name to loaded icon (key is String or CompositeImageKey */
-    private static final HashMap<Object,ActiveRef> map = new HashMap<Object,ActiveRef>(128);
-    private static final HashMap<String,ActiveRef> localizedMap = new HashMap<String,ActiveRef>(128);
+    private static final Map<String,ActiveRef<String>> cache = new HashMap<String,ActiveRef<String>>(128);
+    private static final Map<String,ActiveRef<String>> localizedCache = new HashMap<String,ActiveRef<String>>(128);
+    private static final Map<CompositeImageKey,ActiveRef<CompositeImageKey>> compositeCache = new HashMap<CompositeImageKey,ActiveRef<CompositeImageKey>>(128);
 
     /** Resource paths for which we have had to strip initial slash.
      * @see "#20072"
      */
-    private static final Set<String> extraInitialSlashes = new HashSet<String>(); // Set<String>
+    private static final Set<String> extraInitialSlashes = new HashSet<String>();
     private static volatile Object currentLoader;
     private static Lookup.Result<ClassLoader> loaderQuery = null;
     private static boolean noLoaderWarned = false;
@@ -99,8 +99,8 @@ final class IconManager extends Object {
 
     static Image getIcon(String resource, boolean localized) {
         if (localized) {
-            synchronized (localizedMap) {
-                ActiveRef ref = localizedMap.get(resource);
+            synchronized (localizedCache) {
+                ActiveRef<String> ref = localizedCache.get(resource);
                 Image img = null;
 
                 // no icon for this name (already tested)
@@ -152,13 +152,13 @@ final class IconManager extends Object {
                     }
 
                     if (i != null) {
-                        localizedMap.put(resource, new ActiveRef(i, localizedMap, resource));
+                        localizedCache.put(resource, new ActiveRef<String>(i, localizedCache, resource));
 
                         return i;
                     }
                 }
 
-                localizedMap.put(resource, NO_ICON);
+                localizedCache.put(resource, NO_ICON);
 
                 return null;
             }
@@ -167,14 +167,14 @@ final class IconManager extends Object {
         }
     }
 
-    /** Finds imager for given resource.
+    /** Finds image for given resource.
     * @param name name of the resource
     * @param loader classloader to use for locating it, or null to use classpath
     * @param localizedQuery whether the name contains some localization suffix
     *  and is not optimized/interned
     */
     private static Image getIcon(String name, ClassLoader loader, boolean localizedQuery) {
-        ActiveRef ref = map.get(name);
+        ActiveRef<String> ref = cache.get(name);
         Image img = null;
 
         // no icon for this name (already tested)
@@ -191,9 +191,9 @@ final class IconManager extends Object {
             return img;
         }
 
-        synchronized (map) {
+        synchronized (cache) {
             // again under the lock
-            ref = map.get(name);
+            ref = cache.get(name);
 
             // no icon for this name (already tested)
             if (ref == NO_ICON) {
@@ -241,13 +241,13 @@ final class IconManager extends Object {
                 //System.err.println("loading icon " + n + " = " + img2);
                 name = new String(name).intern(); // NOPMD
 
-                map.put(name, new ActiveRef(img2, map, name));
+                cache.put(name, new ActiveRef<String>(img2, cache, name));
 
                 return img2;
             } else { // no icon found
 
                 if (!localizedQuery) {
-                    map.put(name, NO_ICON);
+                    cache.put(name, NO_ICON);
                 }
 
                 return null;
@@ -263,8 +263,8 @@ final class IconManager extends Object {
         CompositeImageKey k = new CompositeImageKey(im1, im2, x, y);
         Image cached;
 
-        synchronized (map) {
-            ActiveRef r = map.get(k);
+        synchronized (compositeCache) {
+            ActiveRef<CompositeImageKey> r = compositeCache.get(k);
 
             if (r != null) {
                 cached = r.get();
@@ -275,7 +275,7 @@ final class IconManager extends Object {
             }
 
             cached = doMergeImages(im1, im2, x, y);
-            map.put(k, new ActiveRef(cached, map, k));
+            compositeCache.put(k, new ActiveRef<CompositeImageKey>(cached, compositeCache, k));
 
             return cached;
         }
@@ -401,11 +401,11 @@ final class IconManager extends Object {
     }
 
     /** Cleaning reference. */
-    private static final class ActiveRef extends SoftReference<Image> implements Runnable {
-        private Map holder;
-        private Object key;
+    private static final class ActiveRef<T> extends SoftReference<Image> implements Runnable {
+        private Map<T,ActiveRef<T>> holder;
+        private T key;
 
-        public ActiveRef(Image o, Map holder, Object key) {
+        public ActiveRef(Image o, Map<T,ActiveRef<T>> holder, T key) {
             super(o, Utilities.activeReferenceQueue());
             this.holder = holder;
             this.key = key;
