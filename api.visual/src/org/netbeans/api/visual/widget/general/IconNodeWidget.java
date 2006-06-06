@@ -16,9 +16,13 @@ public class IconNodeWidget extends Widget {
     private LabelWidget labelWidget;
 
     public IconNodeWidget (Scene scene) {
+        this (scene, SerialLayout.Orientation.VERTICAL);
+    }
+
+    public IconNodeWidget (Scene scene, SerialLayout.Orientation orientation) {
         super (scene);
         LookFeel lookFeel = getScene ().getLookFeel ();
-        setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL, SerialLayout.Alignment.CENTER, - lookFeel.getMargin () + 1));
+        setLayout (new SerialLayout (orientation, SerialLayout.Alignment.CENTER, - lookFeel.getMargin () + 1));
 
         imageWidget = new ImageWidget (scene);
         addChild (imageWidget);

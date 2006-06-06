@@ -138,6 +138,8 @@ public class Scene extends Widget {
     public final void validate () {
         if (graphics == null)
             return;
+        notifyValidating ();
+
         Rectangle r = null;
         for (Rectangle bounds : repaints.values ()) {
             if (bounds == null)
@@ -167,6 +169,14 @@ public class Scene extends Widget {
         if (r != null)
             component.repaint (convertSceneToView (r));
 //        System.out.println ("time: " + System.currentTimeMillis ());
+
+        notifyValidated ();
+    }
+
+    protected void notifyValidating () {
+    }
+
+    protected void notifyValidated () {
     }
 
     public final double getZoomFactor () {
