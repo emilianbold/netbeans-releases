@@ -7,16 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans;
 
-import java.io.*;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import org.openide.util.NbCollections;
 
 /** Class that can enhance bytecode with information about alternative
  * superclass and access modifiers. It can also extract this information 
@@ -160,7 +161,6 @@ public final class PatchByteCode {
      * @return new version of the bytecode if changed, otherwise null to signal that
      * no change has been made
      */
-    @SuppressWarnings("unchecked")
     public static byte[] enhanceClass(byte[] arr, java.util.Map<String,Object> args) {
         if (isPatched (arr)) {
             // already patched
@@ -169,8 +169,8 @@ public final class PatchByteCode {
         
         String superClass = (String)args.get ("netbeans.superclass");
         String interfaces = (String)args.get ("netbeans.interfaces");
-        List<String> methods = (List<String>)args.get ("netbeans.public");
-        List<String> rename = (List<String>)args.get ("netbeans.rename");
+        List<String> methods = NbCollections.checkedListByCopy((List) args.get("netbeans.public"), String.class, true);
+        List<String> rename = NbCollections.checkedListByCopy((List) args.get ("netbeans.rename"), String.class, true);
         
 
         HashMap<String,int[]> m;
@@ -233,16 +233,15 @@ public final class PatchByteCode {
         }
         
         if (methods != null) {
-            Iterator it = methods.iterator();
-            while (it.hasNext()) {
-                patched |= pc.markMemberPublic((String)it.next());
+            for (String s : methods) {
+                patched |= pc.markMemberPublic(s);
             }
         }
         
         if (rename != null) {
-            Iterator it = rename.iterator();
+            Iterator<String> it = rename.iterator();
             while (it.hasNext()) {
-                patched |= pc.renameMember((String)it.next(), (String)it.next());
+                patched |= pc.renameMember(it.next(), it.next());
             }
         }
         

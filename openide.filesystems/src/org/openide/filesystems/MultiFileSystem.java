@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
+import org.openide.util.NbCollections;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -271,8 +272,7 @@ public class MultiFileSystem extends FileSystem {
     @Deprecated // have to override for compat
     public FileObject find(String aPackage, String name, String ext) {
         // create enumeration of name to look for
-        @SuppressWarnings("unchecked") // XXX use Generics
-        Enumeration<String> st = (Enumeration<String>) new StringTokenizer(aPackage, "."); // NOI18N
+        Enumeration<String> st = NbCollections.checkedEnumerationByFilter(new StringTokenizer(aPackage, "."), String.class, true); // NOI18N
         Enumeration<String> en;
 
         if ((name == null) || (ext == null)) {
@@ -299,8 +299,7 @@ public class MultiFileSystem extends FileSystem {
         if (name.length() == 0) {
             return getMultiRoot();
         } else {
-            @SuppressWarnings("unchecked") // XXX use Generics
-            Enumeration<String> tok = (Enumeration<String>) new StringTokenizer(name, "/"); // NOI18N
+            Enumeration<String> tok = NbCollections.checkedEnumerationByFilter(new StringTokenizer(name, "/"), String.class, true); // NOI18N
             return getMultiRoot().find(tok);
         }
     }

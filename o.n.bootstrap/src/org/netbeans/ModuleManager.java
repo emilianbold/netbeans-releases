@@ -41,6 +41,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.TopologicalSortException;
+import org.openide.util.Union2;
 import org.openide.util.Utilities;
 
 /** Manages a collection of modules.
@@ -64,7 +65,7 @@ public final class ModuleManager {
 
     // for any module, set of known failed dependencies or problems,
     // or null if this has not been computed yet
-    private final Map<Module,Set<Object>> moduleProblems = new HashMap<Module,Set<Object>>(100); // Map<Module,Set<Dependency|InvalidException>>
+    private final Map<Module,Set<Union2<Dependency,InvalidException>>> moduleProblems = new HashMap<Module,Set<Union2<Dependency,InvalidException>>>(100);
 
     // modules providing a given requires token; set may never be empty
     private final Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>(25);
@@ -73,7 +74,7 @@ public final class ModuleManager {
     private ModuleFactory moduleFactory;
 
     private SystemClassLoader classLoader;
-    private List<Object> classLoaderPatches; // List<File|JarFile>
+    private List<Union2<File,JarFile>> classLoaderPatches;
     private final Object classLoaderLock = new String("ModuleManager.classLoaderLock"); // NOI18N
 
     private final Events ev;
@@ -91,15 +92,15 @@ public final class ModuleManager {
             // to a classpath (list of directories and JARs separated by the normal
             // path separator) you may append to the system class loader.
             System.err.println("System class loader patches: " + patches); // NOI18N
-            classLoaderPatches = new ArrayList<Object>();
+            classLoaderPatches = new ArrayList<Union2<File,JarFile>>();
             StringTokenizer tok = new StringTokenizer(patches, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 File f = new File(tok.nextToken());
                 if (f.isDirectory()) {
-                    classLoaderPatches.add(f);
+                    classLoaderPatches.add(Union2.<File,JarFile>createFirst(f));
                 } else {
                     try {
-                        classLoaderPatches.add(new JarFile(f));
+                        classLoaderPatches.add(Union2.<File,JarFile>createSecond(new JarFile(f)));
                     } catch (IOException ioe) {
                         Util.err.log(Level.WARNING, "Problematic file: " + f, ioe);
                     }
@@ -384,28 +385,20 @@ public final class ModuleManager {
         private final StringBuffer debugme;
         private boolean empty = true;
 
-        public SystemClassLoader(List<Object> files, ClassLoader[] parents, Set<Module> modules) throws IllegalArgumentException {
+        public SystemClassLoader(List<Union2<File,JarFile>> files, ClassLoader[] parents, Set<Module> modules) throws IllegalArgumentException {
             super(files, parents, false);
             allPermissions = new Permissions();
             allPermissions.add(new AllPermission());
             allPermissions.setReadOnly();
             debugme = new StringBuffer(100 + 50 * modules.size());
             debugme.append("SystemClassLoader["); // NOI18N
-            Iterator it = files.iterator();
-            while (it.hasNext()) {
-                Object o = it.next();
-                String s;
-                if (o instanceof File) {
-                    s = ((File)o).getAbsolutePath();
-                } else {
-                    s = ((JarFile)o).getName();
-                }
+            for (Union2<File,JarFile> file : files) {
                 if (empty) {
                     empty = false;
                 } else {
                     debugme.append(','); // NOI18N
                 }
-                debugme.append(s);
+                debugme.append(file.hasFirst() ? file.first().getAbsolutePath() : file.second().getName());
             }
             record(modules);
             debugme.append(']'); // NOI18N
@@ -834,16 +827,16 @@ public final class ModuleManager {
                 // Remember that there was a problem with this guy.
                 Module bad = ie.getModule();
                 if (bad == null) throw new IllegalStateException("Problem with no associated module: " + ie); // NOI18N
-                Set<Object> probs = moduleProblems.get(bad); // Set<Dependency|InvalidException>
+                Set<Union2<Dependency,InvalidException>> probs = moduleProblems.get(bad);
                 if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad); // NOI18N
                 if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad); // NOI18N
                 // Record for posterity.
                 if (failedPackageDep != null) {
                     // Structured package dependency failed, track this.
-                    probs.add(failedPackageDep);
+                    probs.add(Union2.<Dependency,InvalidException>createFirst(failedPackageDep));
                 } else {
                     // Some other problem (exception).
-                    probs.add(ie);
+                    probs.add(Union2.<Dependency,InvalidException>createSecond(ie));
                 }
                 // Other modules may have depended on this one and now will not be OK.
                 // So clear all "soft" problems from the cache.
@@ -851,7 +844,7 @@ public final class ModuleManager {
                 // inter-module dependencies will be cleared.
                 clearProblemCache();
                 // #14560: this one definitely changed its set of problems.
-                firer.change(new ChangeFirer.Change(bad, Module.PROP_PROBLEMS, Collections.EMPTY_SET, Collections.singleton(probs.iterator().next())));
+                firer.change(new ChangeFirer.Change(bad, Module.PROP_PROBLEMS, Collections.EMPTY_SET, Collections.singleton("something"))); // NOI18N
                 // Rollback changes made so far before rethrowing.
                 Util.err.fine("enable: will roll back from: " + ie);
                 Iterator fbIt = fallback.iterator();
@@ -1016,7 +1009,7 @@ public final class ModuleManager {
         }
          */
         // XXX also optimize for modules.size == 1
-        Set<Module> willEnable = new HashSet<Module>(modules.size() * 2 + 1); // Set<Module>
+        Set<Module> willEnable = new HashSet<Module>(modules.size() * 2 + 1);
         for (Module m: modules) {
             if (m.isAutoload()) throw new IllegalArgumentException("Cannot simulate enabling an autoload: " + m); // NOI18N
             if (m.isEager()) throw new IllegalArgumentException("Cannot simulate enabling an eager module: " + m); // NOI18N
@@ -1307,10 +1300,10 @@ public final class ModuleManager {
     }
 
     // dummy object to be placed in the problem set while recursive checking is in progress
-    private static final Object PROBING_IN_PROCESS = /* new String(String) intentional! */ new String("PROBING_IN_PROCESS");
+    private static final Union2<Dependency,InvalidException> PROBING_IN_PROCESS = Union2.createSecond(new InvalidException("PROBING_IN_PROCESS"));
     // Access from Module.getProblems, q.v.
     // The probed module must not be currently enabled or fixed.
-    Set<Object> missingDependencies(Module probed) {
+    Set<Union2<Dependency,InvalidException>> missingDependencies(Module probed) {
         // We need to synchronize here because though this method may be called
         // only within a read mutex, it can write to moduleProblems. Other places
         // where moduleProblems are used are write-mutex only and so do not have
@@ -1319,10 +1312,10 @@ public final class ModuleManager {
             return _missingDependencies(probed);
         }
     }
-    private Set<Object> _missingDependencies(Module probed) {
-            Set<Object> probs = moduleProblems.get(probed); // Set<Dependency|InvalidException|PROBING_IN_PROCESS>
+    private Set<Union2<Dependency,InvalidException>> _missingDependencies(Module probed) {
+            Set<Union2<Dependency,InvalidException>> probs = moduleProblems.get(probed);
             if (probs == null) {
-                probs = new HashSet<Object>(8);
+                probs = new HashSet<Union2<Dependency,InvalidException>>(8);
                 probs.add(PROBING_IN_PROCESS);
                 moduleProblems.put(probed, probs);
                 for (Dependency dep : probed.getDependenciesArray()) {
@@ -1339,28 +1332,28 @@ public final class ModuleManager {
                         Module other = get(codeNameBase);
                         if (other == null) {
                             // No such module, bad.
-                            probs.add(dep);
+                            probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                             continue;
                         }
                         if (relVersionMin == relVersionMax) {
                             // Non-ranged dep.
                             if (relVersionMin != other.getCodeNameRelease()) {
                                 // Wrong major version, bad.
-                                probs.add(dep);
+                                probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                                 continue;
                             }
                             if (dep.getComparison() == Dependency.COMPARE_IMPL &&
                                     ! Utilities.compareObjects(dep.getVersion(),
                                           other.getImplementationVersion())) { // NOI18N
                                 // Wrong impl version, bad.
-                                probs.add(dep);
+                                probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                                 continue;
                             }
                             if (dep.getComparison() == Dependency.COMPARE_SPEC &&
                                     new SpecificationVersion(dep.getVersion()).compareTo(
                                         other.getSpecificationVersion()) > 0) {
                                 // Spec version not high enough, bad.
-                                probs.add(dep);
+                                probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                                 continue;
                             }
                         } else if (relVersionMin < relVersionMax) {
@@ -1368,7 +1361,7 @@ public final class ModuleManager {
                             int otherRel = other.getCodeNameRelease();
                             if (otherRel < relVersionMin || otherRel > relVersionMax) {
                                 // Major version outside of range, bad.
-                                probs.add(dep);
+                                probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                                 continue;
                             }
                             if (dep.getComparison() == Dependency.COMPARE_IMPL) {
@@ -1380,7 +1373,7 @@ public final class ModuleManager {
                                     new SpecificationVersion(dep.getVersion()).compareTo(
                                         other.getSpecificationVersion()) > 0) {
                                 // Spec version not high enough, bad.
-                                probs.add(dep);
+                                probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                                 continue;
                             }
                         } else {
@@ -1401,7 +1394,7 @@ public final class ModuleManager {
                                 // also fail with a dependency on that module. In the process,
                                 // both modules get marked permanently bogus (unless you reload
                                 // them both of course).
-                                probs.add(dep);
+                                probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                                 continue;
                             }
                             // If the other module is thought to be OK, assume we can depend
@@ -1415,7 +1408,7 @@ public final class ModuleManager {
                         Set<Module> providers = providersOf.get(token);
                         if (providers == null) {
                             // Nobody provides it. This dep failed.
-                            probs.add(dep);
+                            probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                         } else {
                             // We have some possible providers. Check that at least one is good.
                             boolean foundOne = false;
@@ -1432,7 +1425,7 @@ public final class ModuleManager {
                             }
                             if (!foundOne) {
                                 // Nobody can provide it, fail.
-                                probs.add(dep);
+                                probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                             }
                         }
                     } else {
@@ -1440,7 +1433,7 @@ public final class ModuleManager {
                         // Java dependency. Fixed for whole VM session, safe to check once and keep.
                         if (! Util.checkJavaDependency(dep)) {
                             // Bad.
-                            probs.add(dep);
+                            probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                         }
                     }
                 }
@@ -1460,20 +1453,20 @@ public final class ModuleManager {
      * return a different result).
      */
     private void clearProblemCache() {
-        Iterator<Map.Entry<Module,Set<Object>>> it = moduleProblems.entrySet().iterator();
+        Iterator<Map.Entry<Module,Set<Union2<Dependency,InvalidException>>>> it = moduleProblems.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<Module,Set<Object>> entry = it.next();
+            Map.Entry<Module,Set<Union2<Dependency,InvalidException>>> entry = it.next();
             Module m = entry.getKey();
             if (! m.isEnabled()) {
-                Set<Object> s = entry.getValue();
+                Set<Union2<Dependency,InvalidException>> s = entry.getValue();
                 if (s != null) {
                     boolean clear = false;
-                    for (Object problem : s) {
-                        if (problem instanceof InvalidException) {
+                    for (Union2<Dependency,InvalidException> problem : s) {
+                        if (problem.hasSecond()) {
                             // Hard problem, skip this one.
                             continue;
                         }
-                        Dependency dep = (Dependency)problem;
+                        Dependency dep = problem.first();
                         if (dep.getType() != Dependency.TYPE_MODULE &&
                                 dep.getType() != Dependency.TYPE_REQUIRES) {
                             // Also a hard problem.

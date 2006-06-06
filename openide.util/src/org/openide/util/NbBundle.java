@@ -556,16 +556,7 @@ public class NbBundle extends Object {
             first = false;
         }
 
-        return new PBundle(propsToStringMap(p), locale);
-    }
-
-    /** Just converts the Properties to Map<String,String> assuming the
-     * content is correct.
-     */
-    @SuppressWarnings("unchecked")
-    private static Map<String,String> propsToStringMap(Properties p) {
-        // XXX this is not so nice; use #73637?
-        return (Map<String,String>)(Map<?,?>)p;
+        return new PBundle(NbCollections.checkedMapByFilter(p, String.class, String.class, true), locale);
     }
 
     /**

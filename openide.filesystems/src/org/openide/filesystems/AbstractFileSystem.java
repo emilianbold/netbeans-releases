@@ -28,6 +28,7 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
+import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.SystemAction;
 
@@ -169,8 +170,7 @@ public abstract class AbstractFileSystem extends FileSystem {
     @Deprecated
     public FileObject find(String aPackage, String name, String ext) {
         // create enumeration of name to look for
-        @SuppressWarnings("unchecked") // XXX fix w/ Generics
-        Enumeration<String> st = (Enumeration<String>) new StringTokenizer(aPackage, "."); // NOI18N
+        Enumeration<String> st = NbCollections.checkedEnumerationByFilter(new StringTokenizer(aPackage, "."), String.class, true); // NOI18N
 
         if ((name == null) || (ext == null)) {
             // search for folder, return the object only if it is folder
@@ -229,8 +229,7 @@ public abstract class AbstractFileSystem extends FileSystem {
         if (resourceName.length() == 0) {
             return null;
         } else {
-            @SuppressWarnings("unchecked") // XXX use Generics when possible
-            Enumeration<String> tok = (Enumeration<String>) new StringTokenizer(resourceName, "/"); // NOI18N
+            Enumeration<String> tok = NbCollections.checkedEnumerationByFilter(new StringTokenizer(resourceName, "/"), String.class, true); // NOI18N
 
             return getAbstractRoot().findRefIfExists(tok);
         }
@@ -407,8 +406,7 @@ public abstract class AbstractFileSystem extends FileSystem {
         if (name.length() == 0) {
             return getAbstractRoot();
         } else {
-            @SuppressWarnings("unchecked") // XXX use Generics when possible
-            Enumeration<String> tok = (Enumeration<String>) new StringTokenizer(name, "/"); // NOI18N
+            Enumeration<String> tok = NbCollections.checkedEnumerationByFilter(new StringTokenizer(name, "/"), String.class, true); // NOI18N
 
             return getAbstractRoot().findIfExists(tok);
         }

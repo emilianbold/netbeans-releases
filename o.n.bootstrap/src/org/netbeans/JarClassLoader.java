@@ -39,6 +39,7 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
+import org.openide.util.Union2;
 
 /**
  * A ProxyClassLoader capable of loading classes from a set of jar files
@@ -56,7 +57,7 @@ public class JarClassLoader extends ProxyClassLoader {
     /** Creates new JarClassLoader.
      * Gives transitive flag as true.
      */
-    public JarClassLoader (List<Object> files, ClassLoader[] parents) {
+    public JarClassLoader(List<Union2<File,JarFile>> files, ClassLoader[] parents) {
         this(files, parents, true);
     }
     
@@ -64,18 +65,17 @@ public class JarClassLoader extends ProxyClassLoader {
      * @since org.netbeans.core/1 > 1.6
      * @see ProxyClassLoader#ProxyClassLoader(ClassLoader[],boolean)
      */
-    public JarClassLoader(List<Object> files, ClassLoader[] parents, boolean transitive) {
+    public JarClassLoader(List<Union2<File,JarFile>> files, ClassLoader[] parents, boolean transitive) {
         super(parents, transitive);
 
         sources = new Source[files.size()];
         try {
             int i=0;
-            for (Iterator it = files.iterator(); it.hasNext(); i++ ) {
-                Object act = it.next();
-                if (act instanceof File) {
-                    sources[i] = new DirSource((File)act, this);
+            for (Union2<File,JarFile> file : files) {
+                if (file.hasFirst()) {
+                    sources[i++] = new DirSource(file.first(), this);
                 } else {
-                    sources[i] = new JarSource((JarFile)act, this);
+                    sources[i++] = new JarSource(file.second(), this);
                 }
             }
         } catch (MalformedURLException exc) {
@@ -86,15 +86,15 @@ public class JarClassLoader extends ProxyClassLoader {
     
     /** Boot classloader needs to add entries for netbeans.user later.
      */
-    final void addSources (List<Object> newSources) {
+    final void addSources (List<Union2<File,JarFile>> newSources) {
         ArrayList<Source> l = new ArrayList<Source> (sources.length + newSources.size ());
         l.addAll (Arrays.asList (sources));
         try {
-            for (Object act: newSources) {
-                if (act instanceof File) {
-                    l.add (new DirSource((File)act, this));
+            for (Union2<File,JarFile> file : newSources) {
+                if (file.hasFirst()) {
+                    l.add(new DirSource(file.first(), this));
                 } else {
-                    l.add (new JarSource((JarFile)act, this));
+                    l.add(new JarSource(file.second(), this));
                 }
             }
         } catch (MalformedURLException exc) {

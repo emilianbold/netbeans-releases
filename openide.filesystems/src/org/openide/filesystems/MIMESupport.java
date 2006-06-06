@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Union2;
 
 /**
  * This class is intended to enhance MIME resolving. This class offers
@@ -108,7 +109,7 @@ final class MIMESupport extends Object {
 
     private static class CachedFileObject extends FileObject implements FileChangeListener {
         static Lookup.Result<MIMEResolver> result;
-        private static Object resolvers; // call getResolvers instead 
+        private static Union2<MIMEResolver[],Set<Thread>> resolvers; // call getResolvers instead 
         /** resolvers that were here before we cleaned them */
         private static MIMEResolver[] previousResolvers;
         
@@ -129,25 +130,23 @@ final class MIMESupport extends Object {
         private static MIMEResolver[] getResolvers() {
             Set<Thread> creators;
             synchronized (CachedFileObject.class) {
-                if (resolvers instanceof MIMEResolver[]) {
-                    return (MIMEResolver[])resolvers;
+                if (resolvers != null && resolvers.hasFirst()) {
+                    return resolvers.first();
                 }
-                if (resolvers instanceof Set) {
-                    @SuppressWarnings("unchecked") // XXX should use Union2 for better type safety
-                    Set<Thread> _creators = (Set) resolvers;
-                    creators = _creators;
+                if (resolvers != null) {
+                    creators = resolvers.second();
                     if (creators.contains (Thread.currentThread())) {
                         // prevent stack overflow
                         ERR.fine("Stack Overflow prevention. Returning previousResolvers: " + previousResolvers);
-                        Object toRet = previousResolvers;
-                        if (!(toRet instanceof MIMEResolver[])) {
+                        MIMEResolver[] toRet = previousResolvers;
+                        if (toRet == null) {
                             toRet = new MIMEResolver[0];
                         }
-                        return (MIMEResolver[]) toRet;
+                        return toRet;
                     }
                 } else {
                     creators = new HashSet<Thread>();
-                    resolvers = creators;
+                    resolvers = Union2.createSecond(creators);
                 }
 
                 if (result == null) {
@@ -157,9 +156,9 @@ final class MIMESupport extends Object {
                             public void resultChanged(LookupEvent evt) {
                                 synchronized (CachedFileObject.class) {
                                     ERR.fine("Clearing cache"); // NOI18N
-                                    Object prev = resolvers;
-                                    if (prev instanceof MIMEResolver[]) {
-                                        previousResolvers = (MIMEResolver[]) prev;
+                                    Union2<MIMEResolver[],Set<Thread>> prev = resolvers;
+                                    if (prev.hasFirst()) {
+                                        previousResolvers = prev.first();
                                     }
                                     resolvers = null;
                                     lastFo = EMPTY;
@@ -176,14 +175,14 @@ final class MIMESupport extends Object {
 
             ERR.fine("Computing resolvers"); // NOI18N
             
-            MIMEResolver[] toRet = (MIMEResolver[])result.allInstances().toArray(new MIMEResolver[0]);
+            MIMEResolver[] toRet = result.allInstances().toArray(new MIMEResolver[0]);
 
             ERR.fine("Resolvers computed"); // NOI18N
 
             synchronized (CachedFileObject.class) {
-                if (resolvers == creators) {
+                if (resolvers != null && resolvers.hasSecond() && resolvers.second() == creators) {
                     // ok, we computed the value and nobody cleared it till now
-                    resolvers = toRet;
+                    resolvers = Union2.createFirst(toRet);
                     previousResolvers = null;
                     ERR.fine("Resolvers assigned"); // NOI18N
                 } else {

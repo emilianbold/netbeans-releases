@@ -39,7 +39,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.run.Hyperlink;
 import org.apache.tools.ant.module.run.LoggerTrampoline;
@@ -51,6 +50,7 @@ import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.WeakSet;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -1098,7 +1098,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             verifyRunning();
             Project project = getProjectIfPropertiesDefined();
             if (project != null) {
-                return Generics.checkedSetByFilter(project.getProperties().keySet(), String.class);
+                return NbCollections.checkedSetByFilter(project.getProperties().keySet(), String.class, true);
             } else {
                 return Collections.emptySet();
             }

@@ -27,7 +27,6 @@ import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
-import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.netbeans.api.progress.ProgressHandle;
@@ -39,6 +38,7 @@ import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.ReaderInputStream;
 import org.openide.windows.IOProvider;
@@ -65,7 +65,7 @@ public final class TargetExecutor implements Runnable {
     private OutputStream outputStream;
     private boolean ok = false;
     private int verbosity = AntSettings.getDefault ().getVerbosity ();
-    private Map<String,String> properties = Generics.checkedMapByCopy(AntSettings.getDefault().getProperties(), String.class, String.class, true);
+    private Map<String,String> properties = NbCollections.checkedMapByCopy(AntSettings.getDefault().getProperties(), String.class, String.class, true);
     private List<String> targetNames;
     /** used for the tab etc. */
     private String displayName;

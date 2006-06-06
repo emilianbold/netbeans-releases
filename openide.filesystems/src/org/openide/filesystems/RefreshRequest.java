@@ -16,6 +16,7 @@ package org.openide.filesystems;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Enumeration;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 
 /** Request for parsing of an filesystem. Can be stopped.
@@ -31,7 +32,7 @@ final class RefreshRequest extends Object implements Runnable {
     private Reference<AbstractFileSystem> system;
 
     /** enumeration of folders to process */
-    private Enumeration<? extends FileObject> en;
+    private Enumeration<AbstractFolder> en;
 
     /** how often invoke itself */
     private int refreshTime;
@@ -124,11 +125,11 @@ final class RefreshRequest extends Object implements Runnable {
 
         if ((en == null) || !en.hasMoreElements()) {
             // start again from root
-            en = existingFolders(system); // XXX use Generics to change en to Enumeration<AbstractFolder>
+            en = NbCollections.checkedEnumerationByFilter(existingFolders(system), AbstractFolder.class, true);
         }
 
         for (int i = 0; (i < REFRESH_COUNT) && en.hasMoreElements(); i++) {
-            AbstractFolder fo = (AbstractFolder) en.nextElement();
+            AbstractFolder fo = en.nextElement();
 
             if ((fo != null) && (!fo.isFolder() || fo.isInitialized())) {
                 fo.refresh();

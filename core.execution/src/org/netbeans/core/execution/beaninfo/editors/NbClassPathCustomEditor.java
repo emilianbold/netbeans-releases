@@ -7,31 +7,27 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.core.execution.beaninfo.editors;
-
 
 import java.beans.PropertyEditor;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Collections;
+import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-
+import org.netbeans.beaninfo.editors.FileEditor;
 import org.openide.execution.NbClassPath;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.windows.WindowManager;
-
-import org.netbeans.beaninfo.editors.FileEditor;
-
 
 /**
  * Panel for editing entries in the classpath.
@@ -495,11 +491,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
      *           (and thus it should not be set)
      */
     public Object getPropertyValue() throws IllegalStateException {
-        ArrayList<String> list = new ArrayList<String>();
-	@SuppressWarnings("unchecked") Enumeration<String> e = (Enumeration<String>)listModel.elements();
-        while (e.hasMoreElements() ) {
-            list.add(e.nextElement());
-        }
+        List<String> list = Collections.list(NbCollections.checkedEnumerationByFilter(listModel.elements(), String.class, true));
         String []arr = list.toArray(new String[list.size()]);
         return new NbClassPath(arr);
     }

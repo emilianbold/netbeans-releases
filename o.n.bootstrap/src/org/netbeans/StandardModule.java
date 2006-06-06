@@ -46,6 +46,7 @@ import java.util.zip.ZipEntry;
 import org.openide.ErrorManager;
 import org.openide.modules.Dependency;
 import org.openide.util.NbBundle;
+import org.openide.util.Union2;
 
 /** Object representing one module, possibly installed.
  * Responsible for opening of module JAR file; reading
@@ -562,14 +563,14 @@ final class StandardModule extends Module {
             }
             loaders.add(l);
         }
-        List<Object> classp = new ArrayList<Object>(3); // List<File|JarFile>
+        List<Union2<File,JarFile>> classp = new ArrayList<Union2<File,JarFile>>(3);
         if (patches != null) {
             for (it = patches.iterator(); it.hasNext(); ) {
                 File f = (File)it.next();
                 if (f.isDirectory()) {
-                    classp.add(f);
+                    classp.add(Union2.<File,JarFile>createFirst(f));
                 } else {
-                    classp.add(new JarFile(f, false));
+                    classp.add(Union2.<File,JarFile>createSecond(new JarFile(f, false)));
                 }
             }
         }
@@ -578,30 +579,28 @@ final class StandardModule extends Module {
             // Using OPEN_DELETE does not work well with test modules under 1.4.
             // Random code (URL handler?) still expects the JAR to be there and
             // it is not.
-            classp.add(new JarFile(physicalJar, false));
+            classp.add(Union2.<File,JarFile>createSecond(new JarFile(physicalJar, false)));
         } else {
-            classp.add(new JarFile(jar, false));
+            classp.add(Union2.<File,JarFile>createSecond(new JarFile(jar, false)));
         }
         // URLClassLoader would not otherwise find these, so:
         if (localeVariants != null) {
-        for (it = localeVariants.iterator(); it.hasNext(); ) {
-            classp.add(new JarFile((File)it.next(), false));
-        }
+            for (File var : localeVariants) {
+                classp.add(Union2.<File,JarFile>createSecond(new JarFile(var, false)));
+            }
         }
         if (localeExtensions != null) {
-            for (it = localeExtensions.iterator(); it.hasNext();) {
-                File act = (File) it.next();
-
-                classp.add(act.isDirectory() ? act
-                                             : new JarFile(act, false));
+            for (File ext : localeExtensions) {
+                classp.add(ext.isDirectory() ?
+                    Union2.<File,JarFile>createFirst(ext) :
+                    Union2.<File,JarFile>createSecond(new JarFile(ext, false)));
             }
         }
         if (plainExtensions != null) {
-            for (it = plainExtensions.iterator(); it.hasNext();) {
-                File act = (File) it.next();
-
-                classp.add(act.isDirectory() ? act
-                                             : new JarFile(act, false));
+            for (File ext : plainExtensions) {
+                classp.add(ext.isDirectory() ?
+                    Union2.<File,JarFile>createFirst(ext) :
+                    Union2.<File,JarFile>createSecond(new JarFile(ext, false)));
             }
         }
         
@@ -675,7 +674,7 @@ final class StandardModule extends Module {
          *      The items are JarFiles for jars and Files for directories
          * @param parents a set of parent classloaders (from other modules)
          */
-        public OneModuleClassLoader(List<Object> classp, ClassLoader[] parents) throws IllegalArgumentException {
+        public OneModuleClassLoader(List<Union2<File,JarFile>> classp, ClassLoader[] parents) throws IllegalArgumentException {
             super(classp, parents, false);
             rc = releaseCount++;
         }

@@ -30,6 +30,7 @@ import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
+import org.openide.util.Union2;
 
 /** Object representing one module, possibly installed.
  * Responsible for opening of module JAR file; reading
@@ -507,10 +508,18 @@ public abstract class Module extends ModuleInfo {
      * resources, or failed ad-hoc dependencies. Again these are not guaranteed to be
      * reported unless an install has already been attempted and failed due to them.
      */
-    public Set getProblems() { // XXX should use Union2<Dependency,InvalidException>
+    public Set<Object> getProblems() { // cannot use Union2<Dependency,InvalidException> without being binary-incompatible
         if (! isValid()) throw new IllegalStateException("Not valid: " + this); // NOI18N
-        if (isEnabled()) return Collections.EMPTY_SET;
-        return Collections.unmodifiableSet(mgr.missingDependencies(this));
+        if (isEnabled()) return Collections.emptySet();
+        Set<Object> problems = new HashSet<Object>();
+        for (Union2<Dependency,InvalidException> problem : mgr.missingDependencies(this)) {
+            if (problem.hasFirst()) {
+                problems.add(problem.first());
+            } else {
+                problems.add(problem.second());
+            }
+        }
+        return problems;
     }
     
     // Access from ChangeFirer:

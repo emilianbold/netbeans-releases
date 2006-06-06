@@ -40,7 +40,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
-import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.bridge.BridgeInterface;
@@ -54,6 +53,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputWriter;
 
@@ -262,8 +262,8 @@ public class BridgeImpl implements BridgeInterface {
             public void run() {
                 IntrospectedInfo custom = AntSettings.getDefault().getCustomDefs();
                 Map<String,Map<String,Class>> defs = new HashMap<String,Map<String,Class>>();
-                defs.put("task", Generics.checkedMapByCopy(p2.getTaskDefinitions(), String.class, Class.class, true));
-                defs.put("type", Generics.checkedMapByCopy(p2.getDataTypeDefinitions(), String.class, Class.class, true));
+                defs.put("task", NbCollections.checkedMapByCopy(p2.getTaskDefinitions(), String.class, Class.class, true));
+                defs.put("type", NbCollections.checkedMapByCopy(p2.getDataTypeDefinitions(), String.class, Class.class, true));
                 custom.scanProject(defs);
                 logger.shutdown();
                 // #8993: also try to refresh masterfs...this is hackish...

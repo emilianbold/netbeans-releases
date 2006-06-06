@@ -17,9 +17,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
 import org.apache.tools.ant.module.AntSettings;
-import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.openide.execution.ExecutorTask;
+import org.openide.util.NbCollections;
 
 /**
  * Executes an Ant target or list of targets asynchronously inside NetBeans.
@@ -70,7 +70,7 @@ final public class AntTargetExecutor {
     public ExecutorTask execute(AntProjectCookie antProject, String[] targets) throws IOException {
         TargetExecutor te = new TargetExecutor(antProject, targets);
         te.setVerbosity(env.getVerbosity());
-        te.setProperties(Generics.checkedMapByCopy(env.getProperties(), String.class, String.class, true));
+        te.setProperties(NbCollections.checkedMapByCopy(env.getProperties(), String.class, String.class, true));
         if (env.getLogger() == null) {
             return te.execute();
         } else {

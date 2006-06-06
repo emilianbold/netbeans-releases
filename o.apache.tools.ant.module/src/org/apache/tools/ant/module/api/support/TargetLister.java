@@ -29,15 +29,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
-import static org.apache.tools.ant.module.Generics.*;
-import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbCollections;
 import org.openide.util.TopologicalSortException;
+import org.openide.util.Union2;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -85,7 +85,7 @@ public class TargetLister {
      */
     public static Set<Target> getTargets(AntProjectCookie script) throws IOException {
         Set<File> alreadyImported = new HashSet<File>();
-        Map<String,String> properties = Generics.checkedMapByFilter(System.getProperties(), String.class, String.class);
+        Map<String,String> properties = NbCollections.checkedMapByFilter(System.getProperties(), String.class, String.class, false);
         Script main = new Script(null, script, alreadyImported, properties, Collections.<String,Element>emptyMap());
         Set<Target> targets = new HashSet<Target>();
         Set<AntProjectCookie> visitedScripts = new HashSet<AntProjectCookie>();
@@ -413,7 +413,7 @@ public class TargetLister {
                         } finally {
                             is.close();
                         }
-                        Map<String,String> evaluatedProperties = evaluateAll(propertyDefs, Collections.singletonList(Generics.checkedMapByFilter(p, String.class, String.class)));
+                        Map<String,String> evaluatedProperties = evaluateAll(propertyDefs, Collections.singletonList(NbCollections.checkedMapByFilter(p, String.class, String.class, true)));
                         //System.err.println("loaded properties: " + evaluatedProperties);
                         if (evaluatedProperties == null) {
                             continue;
@@ -528,7 +528,7 @@ public class TargetLister {
             if (rawval.indexOf('$') == -1) {
                 // Shortcut:
                 //System.err.println("shortcut");
-                return union2First(rawval);
+                return Union2.createFirst(rawval);
             }
             // May need to subst something.
             int idx = 0;
@@ -543,9 +543,9 @@ public class TargetLister {
                     //System.err.println("no more $");
                     if (needed.isEmpty()) {
                         val.append(rawval.substring(idx));
-                        return union2First(val.toString());
+                        return Union2.createFirst(val.toString());
                     } else {
-                        return union2Second(needed);
+                        return Union2.createSecond(needed);
                     }
                 }
                 char c = rawval.charAt(shell + 1);
@@ -585,9 +585,9 @@ public class TargetLister {
                         // Unclosed ${ sequence, leave as is.
                         if (needed.isEmpty()) {
                             val.append(rawval.substring(idx));
-                            return union2First(val.toString());
+                            return Union2.createFirst(val.toString());
                         } else {
-                            return union2Second(needed);
+                            return Union2.createSecond(needed);
                         }
                     }
                 } else {

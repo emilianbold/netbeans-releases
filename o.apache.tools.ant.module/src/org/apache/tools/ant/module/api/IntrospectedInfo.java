@@ -32,6 +32,7 @@ import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.bridge.IntrospectionHelperProxy;
 import org.openide.ErrorManager;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -309,14 +310,14 @@ public final class IntrospectedInfo implements Serializable {
         } finally {
             is.close ();
         }
-        for (Map.Entry<Object,Object> entry : p.entrySet()) {
-            String name = (String) entry.getKey ();
+        for (Map.Entry<String,String> entry : NbCollections.checkedMapByFilter(p, String.class, String.class, true).entrySet()) {
+            String name = entry.getKey();
             if (kind.equals("type") && name.equals("description")) { // NOI18N
                 // Not a real data type; handled specially.
                 AntModule.err.log("Skipping pseudodef of <description>");
                 continue;
             }
-            String clazzname = (String) entry.getValue ();
+            String clazzname = entry.getValue();
             try {
                 Class clazz = cl.loadClass (clazzname);
                 register(name, clazz, kind, false);

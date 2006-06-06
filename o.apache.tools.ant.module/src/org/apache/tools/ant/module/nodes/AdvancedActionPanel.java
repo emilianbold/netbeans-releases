@@ -29,13 +29,13 @@ import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.EditorKit;
 import org.apache.tools.ant.module.AntSettings;
-import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  * Panel for advanced Ant target invocation.
@@ -247,7 +247,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
             selection = "";
         }
         StringTokenizer tok = new StringTokenizer(selection, " ,"); // NOI18N
-        List<String> targetsL = Collections.list(Generics.checkedEnumerationByFilter(tok, String.class));
+        List<String> targetsL = Collections.list(NbCollections.checkedEnumerationByFilter(tok, String.class, true));
         String description = "";
         if (targetsL.size() == 1) {
             String targetName = targetsL.get(0);
@@ -284,7 +284,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         String[] targets = null; // default target unless otherwise specified
         if (selection != null) {
             StringTokenizer tok = new StringTokenizer(selection, " ,"); // NOI18N
-            List<String> targetsL = Collections.list(Generics.checkedEnumerationByFilter(tok, String.class));
+            List<String> targetsL = Collections.list(NbCollections.checkedEnumerationByFilter(tok, String.class, true));
             if (!targetsL.isEmpty()) {
                 targets = targetsL.toArray(new String[targetsL.size()]);
             }
@@ -328,7 +328,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         }
         // Actually run the target(s).
         TargetExecutor exec = new TargetExecutor(project, targets);
-        exec.setProperties(Generics.checkedMapByCopy(props, String.class, String.class, true));
+        exec.setProperties(NbCollections.checkedMapByCopy(props, String.class, String.class, true));
         exec.setVerbosity(verbosity);
         exec.execute();
     }

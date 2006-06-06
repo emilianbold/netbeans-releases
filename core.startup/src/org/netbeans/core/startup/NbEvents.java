@@ -35,6 +35,7 @@ import org.netbeans.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 
 /** Report events to the performance logger, status text/splash screen,
@@ -113,7 +114,7 @@ final class NbEvents extends Events {
             setStatusText(
                 "Finished deploying test module."); // NOI18N
         } else if (message == FAILED_INSTALL_NEW) {
-            @SuppressWarnings("unchecked") Set<Module> modules = ((Set<Module>)args[0]);
+            Set<Module> modules = NbCollections.checkedSetByCopy((Set) args[0], Module.class, true);
             {
                 StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new"));
                 NbProblemDisplayer.problemMessagesForModules(buf, modules, false);

@@ -20,6 +20,24 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    
+    <change id="NbCollections">
+        <api name="util"/>
+        <summary>Added <code>NbCollections</code> and <code>Union2</code></summary>
+        <version major="7" minor="1"/>
+        <date day="5" month="6" year="2006"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added two new classes useful for transitioning to JDK 5 generics.
+            </p>
+        </description>
+        <class package="org.openide.util" name="NbCollections"/>
+        <class package="org.openide.util" name="Union2"/>
+        <issue number="73637"/>
+    </change>
+    
     <change id="lookupAll-lookupResult">
         <api name="lookup"/>
         <summary>Convenience methods added to <code>Lookup</code></summary>
