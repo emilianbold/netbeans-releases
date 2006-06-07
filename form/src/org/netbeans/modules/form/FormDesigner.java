@@ -940,6 +940,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     void selectionChanged() {
         updateDesignerActions();
         updateResizabilityActions();
+        updateAssistantContext();
     }
 
     void repaintSelection() {
@@ -1003,7 +1004,50 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 //                getResizabilityButtons()[i].setPaintDisabledIcon(match && miss);
         }
     }
-    
+
+    private void updateAssistantContext() {
+        String context = "select"; // NOI18N
+        List selComps = getSelectedComponents();
+        if (selComps.size() == 1) {
+            RADComponent metacomp = (RADComponent)selComps.get(0);
+            Object bean = metacomp.getBeanInstance();
+            if (bean instanceof JTabbedPane) {
+                JTabbedPane pane = (JTabbedPane)bean;
+                int count = pane.getComponentCount();
+                switch (count) {
+                    case 0: context = "tabbedPaneEmpty"; break; // NOI18N
+                    case 1: context = "tabbedPaneOne"; break; // NOI18N
+                    default: context = "tabbedPane"; break; // NOI18N
+                }
+            } else if (bean instanceof JRadioButton) {
+                Node.Property property = metacomp.getPropertyByName("buttonGroup"); // NOI18N
+                try {
+                    if ((property != null) && (property.getValue() == null)) {
+                        context = "buttonGroup"; // NOI18N
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }        
+            } else if ((bean instanceof JPanel) && (getTopDesignComponent() != metacomp) && (Math.random() < 0.2)) {
+                context = "designThisContainer"; // NOI18N
+            } else if ((bean instanceof JComboBox) && (Math.random() < 0.4)) {
+                context = "comboBoxModel"; // NOI18N
+            } else if ((bean instanceof JList) && (Math.random() < 0.4)) {
+                context = "listModel"; // NOI18N
+            } else if ((bean instanceof JTable) && (Math.random() < 0.4)) {
+                context = "tableModel"; // NOI18N
+            } else if (bean instanceof JScrollPane) {
+                JScrollPane scrollPane = (JScrollPane)bean;
+                if (scrollPane.getViewport().getView() == null) {
+                    context = "scrollPaneEmpty"; // NOI18N
+                } else if (Math.random() < 0.5) {
+                    context = "scrollPane"; // NOI18N
+                }
+            }
+        }
+        FormEditor.getAssistantModel(formModel).setContext(context);
+    }
+
     /** Finds out what component follows after currently selected component
      * when TAB (forward true) or Shift+TAB (forward false) is pressed. 
      * @return the next or previous component for selection
