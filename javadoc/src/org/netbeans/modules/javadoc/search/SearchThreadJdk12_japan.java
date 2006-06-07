@@ -7,12 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javadoc.search;
 
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -354,15 +355,21 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 currentDii.setRemark( text );
 
                 StringTokenizer st = new StringTokenizer( text );
-                String token = st.nextToken();
-                if ( token.equals( STR_DASH ) )
-                    token = st.nextToken();
-
+                String token;
+                
                 boolean isStatic = false;
-
-                if ( token.equalsIgnoreCase( STR_STATIC ) ) {
-                    isStatic = true;
+                try {
                     token = st.nextToken();
+                    if ( token.equals( STR_DASH ) )
+                        token = st.nextToken();
+
+                    if ( token.equalsIgnoreCase( STR_STATIC ) ) {
+                        isStatic = true;
+                        token = st.nextToken();
+                    }
+                } catch (NoSuchElementException ex) { // see #71978
+                    where = IN_DESCRIPTION_SUFFIX;
+                    return;
                 }
                 
                 if ( token.equalsIgnoreCase( STR_CLASS ) )
@@ -404,20 +411,22 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 currentDii.setRemark( currentDii.getRemark() + remark);
                 String declaringClass = remark.trim();
                 if( !(".".equals(declaringClass))){    //NOI18N
-                    currentDii.setDeclaringClass(declaringClass);
+                    if (currentDii.getDeclaringClass() == null) {
+                        currentDii.setDeclaringClass(declaringClass);
 
-                    // System.out.println("Data: " + text );
-                    remark = remark.toUpperCase();
-                    if( remark.indexOf( STR_STATIC ) != -1 )
-                        isStatic = true;
+                        // System.out.println("Data: " + text );
+                        remark = remark.toUpperCase();
+                        if( remark.indexOf( STR_STATIC ) != -1 )
+                            isStatic = true;
 
-                    if( remark.indexOf ( STR_CONSTRUCTOR_JA ) != -1 )
-                        currentDii.setIconIndex (DocSearchIcons.ICON_CONSTRUCTOR );
-                    else if( remark.indexOf ( STR_METHOD_JA ) != -1 )
-                        currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
-                    else if( remark.indexOf ( STR_VARIABLE_JA ) != -1 )
-                        currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
-                    insertDocIndexItem( currentDii );
+                            if( remark.indexOf( STR_CONSTRUCTOR_JA ) != -1 )
+                                currentDii.setIconIndex(DocSearchIcons.ICON_CONSTRUCTOR );
+                            else if( remark.indexOf( STR_METHOD_JA ) != -1 )
+                                currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
+                            else if( remark.indexOf( STR_VARIABLE_JA ) != -1 )
+                                currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
+                        insertDocIndexItem( currentDii );
+                    }
                 }
             }
             else
