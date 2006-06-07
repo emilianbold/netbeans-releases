@@ -24,6 +24,7 @@ import java.util.*;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.EditorCookie;
@@ -151,30 +152,10 @@ public class I18nServiceImpl implements I18nService {
             if (rh.getResource() == null) { // find or create properties file
                 DataObject propertiesDO = getPropertiesDataObject(srcDataObject, bundleName);
                 if (propertiesDO == null) { // create new properties file
-                    if (bundleName == null)
+                    propertiesDO = createPropertiesDataObject(srcDataObject, bundleName);
+                    if (propertiesDO == null)
                         return;
-                    FileObject folder;
-                    String fileName;
-                    int idx = bundleName.lastIndexOf('/');
-                    if (idx < 0) { // default package
-                        folder = ClassPath.getClassPath(srcDataObject.getPrimaryFile(), ClassPath.SOURCE)
-                                 .getRoots()[0];
-                        fileName = bundleName;
-                    }
-                    else {
-                        folder = org.netbeans.modules.i18n.Util.getResource(
-                                srcDataObject.getPrimaryFile(), bundleName.substring(0, idx));
-                        fileName = bundleName.substring(idx + 1);
-                        // [what if folder does not exist - create?]
-                    }
-                    if (folder != null) {
-                        DataObject template = JavaResourceHolder.getTemplate();
-                        propertiesDO = template.createFromTemplate(DataFolder.findFolder(folder), fileName);
-                        // [set auto-create attribute?]
-                    }
-                    else return; // [throw exception - can't create properties file?]
                 }
-
                 rh.setResource(propertiesDO);
 
                 // make sure we use free (unique) key
@@ -386,6 +367,37 @@ public class I18nServiceImpl implements I18nService {
         FileObject bundleFile = org.netbeans.modules.i18n.Util
                 .getResource(srcDataObject.getPrimaryFile(), bundleName);
         return (PropertiesDataObject)(bundleFile != null ? DataObject.find(bundleFile) : null);
+    }
+
+    private static DataObject createPropertiesDataObject(DataObject srcDataObject,
+                                                         String filePath)
+        throws IOException
+    {
+        if (filePath == null)
+            return null;
+
+        FileObject folder;
+        String fileName;
+        ClassPath cp = ClassPath.getClassPath(srcDataObject.getPrimaryFile(), ClassPath.SOURCE);
+        int idx = filePath.lastIndexOf('/');
+        if (idx < 0) { // default package
+            folder = cp.getRoots()[0];
+            fileName = filePath;
+        }
+        else {
+            String folderPath = filePath.substring(0, idx);
+            folder = cp.findResource(folderPath);
+            if (folder == null) {
+                folder = FileUtil.createFolder(cp.getRoots()[0], folderPath);
+            }
+            fileName = filePath.substring(idx + 1);
+        }
+        if (folder != null) {
+            DataObject template = JavaResourceHolder.getTemplate();
+            return template.createFromTemplate(DataFolder.findFolder(folder), fileName);
+            // [set auto-create attribute?]
+        }
+        return null; // [throw exception - can't create properties file?]
     }
 
     private void registerChangedDataObject(DataObject srcDO, DataObject dobj) {
