@@ -175,7 +175,7 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
-                <friend>org.netbeans.modules.e2e.end2end</friend>
+                <friend>org.netbeans.modules.mobility.end2end</friend>
                 <package>org.netbeans.modules.xml.text.api</package>
             </friend-packages>
         </data>
