@@ -38,10 +38,21 @@ Microsystems, Inc. All Rights Reserved.
             </and>
         </condition>
     </target>
+
+    <!-- Build nbjunit/ide only when building against IDE (not platform). -->
+    <target name="build-nbjunit/ide" if="java/javacore.dir">
+        <ant dir="nbjunit/ide" target="jar" inheritAll="false"/>
+        <jar jarfile="lib/nbjunit-ide.jar">
+            <zipfileset src="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar">
+                <include name="**/*"/>
+                <exclude name="META-INF/MANIFEST.MF"/>
+            </zipfileset>
+        </jar>
+    </target>
     
     <target name="prepare-nbjunit" depends="check-prepare-nbjunit" unless="do.not.need.to.prepare.nbjunit"> 
         <ant dir="nbjunit" target="jar" inheritAll="false"/>
-        <ant dir="nbjunit/ide" target="jar" inheritAll="false"/>
+        <antcall target="build-nbjunit/ide"/>
 
         <!-- to keep compatibility, just copy the content of the JARs but not its manifest -->
         <jar jarfile="lib/nbjunit.jar">
@@ -50,16 +61,10 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="META-INF/MANIFEST.MF"/>
             </zipfileset>
         </jar>
-        <jar jarfile="lib/nbjunit-ide.jar">
-            <zipfileset src="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar">
-                <include name="**/*"/>
-                <exclude name="META-INF/MANIFEST.MF"/>
-            </zipfileset>
-        </jar>
         <copy file="external/insanelib.jar" todir="lib"/>
     </target>
 
-    <target name="compile" depends="prepare-nbjunit">
+    <target name="compile" depends="call-bootstrap,prepare-nbjunit">
         <mkdir dir="${build.classes.dir}"/>
         <javac srcdir="src" destdir="${build.classes.dir}"
             deprecation="${build.compiler.deprecation}"

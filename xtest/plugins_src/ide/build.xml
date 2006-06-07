@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="deploy" name="XTest IDE plugin">
@@ -17,50 +17,46 @@ Microsystems, Inc. All Rights Reserved.
     <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
     <property file="build.properties"/>
 
+    <patternset id="xtest.ide.main">
+        <include name="org/netbeans/xtest/plugin/ide/Main*"/>
+        <!-- Exclude when building against NetBeans Platform. -->
+        <exclude name="org/netbeans/xtest/plugin/ide/MainWithProjects*" unless="java/javacore.dir"/>
+        <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
+        <include name="org/netbeans/xtest/plugin/ide/services/XTestErrorManager*"/>
+        <include name="META-INF/**"/>
+    </patternset>
+
+    <patternset id="xtest.ide.plugin">
+        <include name="org/netbeans/xtest/plugin/ide/Ide*"/>
+    </patternset>
+
     <target name="compile">
         <mkdir dir="build/classes"/>
-        
+
         <javac srcdir="src" destdir="build/classes" source="1.4"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">          
           <classpath path="${basecp}"/>  
-          <selector refid="xtest.ide.main" />
+          <patternset refid="xtest.ide.main" />
         </javac> 
  
         <javac srcdir="src" destdir="build/classes" source="1.4"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">          
           <classpath path="${bootcp}"/>
-          <selector refid="xtest.ide.plugin" />
+          <patternset refid="xtest.ide.plugin" />
         </javac> 
         <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
         <copy file="src/META-INF/services/org.openide.ErrorManager" todir="build/classes/META-INF/services"/>
     </target>
 
-    
-        
-    <selector id="xtest.ide.main" >
-      <or>
-        <filename name="org/netbeans/xtest/plugin/ide/Main*"/>
-        <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
-        <filename name="org/netbeans/xtest/plugin/ide/services/XTestErrorManager*"/>
-        <filename name="META-INF/**"/>
-      </or>
-    </selector>
-    
-    <selector id="xtest.ide.plugin">
-      <or>
-        <filename name="org/netbeans/xtest/plugin/ide/Ide*"/>
-      </or>
-    </selector>
-    
     <target name="jar" depends="compile">
         <!-- ant tasks used in ide_plugin_targets.xml -->
         <jar jarfile="lib/xtest-ide-plugin.jar"            
             basedir="build/classes"
             excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
-            <selector refid="xtest.ide.plugin" />
+            <patternset refid="xtest.ide.plugin" />
         </jar>
         <!-- load by system classloader (-J-Dnetbeans.systemclassloader.patches) -->
         <jar jarfile="lib/xtest-ide-testexec.jar"
@@ -76,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
             basedir="build/classes"
             excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
-            <selector refid="xtest.ide.main" />
+            <patternset refid="xtest.ide.main" />
         </jar>        
     </target>
     
