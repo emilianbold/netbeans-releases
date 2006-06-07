@@ -292,9 +292,9 @@ public class AntCustomizer extends JPanel implements ActionListener {
                 .addContainerGap())
         );
         classpathPanelLayout.setVerticalGroup(
-            classpathPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.BASELINE, classpathLabel)
-            .add(org.jdesktop.layout.GroupLayout.BASELINE, bClasspath)
+            classpathPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+            .add(classpathLabel)
+            .add(bClasspath)
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
