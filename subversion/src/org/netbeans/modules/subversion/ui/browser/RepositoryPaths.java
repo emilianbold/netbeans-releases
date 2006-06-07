@@ -27,6 +27,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -205,6 +206,42 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }
     }      
     
+    private void searchRepository() {
+        SVNRevision revision = getRevision();        
+        final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(getRepositoryUrl(), revision));        
+        
+        final DialogDescriptor dialogDescriptor = 
+                new DialogDescriptor(svnSearch.getSearchPanel(), "Search Revisions"); 
+        dialogDescriptor.setModal(true);
+        dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
+        dialogDescriptor.setValid(false);
+        
+        svnSearch.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
+                    dialogDescriptor.setValid(svnSearch.getSelectedRevision() != null);
+                }
+            }
+        });
+        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
+        dialog.setVisible(true);
+
+        // handle results
+        if (DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {       
+            revision = svnSearch.getSelectedRevision();
+            if(revision != null) {
+                if(revision.equals(SVNRevision.HEAD) ) {
+                    revisionTextField.setText("");
+                } else {
+                    revisionTextField.setText(revision.toString());                       
+                }
+            }
+        } else {
+            svnSearch.cancel(); 
+        }
+    }
+    
     private SVNRevision getRevision() {
         if(revisionTextField == null) {
             return SVNRevision.HEAD;
@@ -298,9 +335,6 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         listeners.remove(l);
     }
 
-    private void searchRepository() {
-        NotifyDescriptor d = new NotifyDescriptor.Message("Prototype, this action is not implemented, yet!");
-        DialogDisplayer.getDefault().notify(d);
-    }
+
 
 }
