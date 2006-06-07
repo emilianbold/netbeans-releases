@@ -141,27 +141,14 @@ public class TestAction extends CallableSystemAction implements Runnable {
  
             // set size
             boolean shouldPack = false;
-            if (formModel.isFreeDesignDefaultLayout()) {
-                // [temporary hack for new layout: always set the size according to the form designer]
-                if (formContainer != null) {
-                    Dimension size = formContainer.getDesignerSize();
-                    Dimension diffDim = RADVisualFormContainer.getDecoratedWindowContentDimensionDiff();
-                    size = new Dimension(size.width + diffDim.width,
-                                         size.height + diffDim.height);
-                    frame.setSize(size);
-                }
-                else shouldPack = true;
+            if (formContainer != null
+                && formContainer.getFormSizePolicy()
+                                     == RADVisualFormContainer.GEN_BOUNDS
+                && formContainer.getGenerateSize())
+            {
+                frame.setSize(formContainer.getFormSize());
             }
-            else {
-                if (formContainer != null
-                    && formContainer.getFormSizePolicy()
-                                         == RADVisualFormContainer.GEN_BOUNDS
-                    && formContainer.getGenerateSize())
-                {
-                    frame.setSize(formContainer.getFormSize());
-                }
-                else shouldPack = true;
-            }
+            else shouldPack = true;
 
             // Issue 66594 and 12084
             final boolean pack = shouldPack;
