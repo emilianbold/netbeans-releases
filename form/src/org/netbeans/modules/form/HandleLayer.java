@@ -1935,6 +1935,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 }
             }
             else {
+                FormEditor.getAssistantModel(getFormModel()).setContext("generalPosition"); // NOI18N
                 for (int i=0; i<movingBounds.length; i++) {
                     movingBounds[i].x = p.x - convertPoint.x - hotSpot.x + originalBounds[i].x - convertPoint.x;
                     movingBounds[i].y = p.y - convertPoint.y - hotSpot.y + originalBounds[i].y - convertPoint.y;
@@ -2221,7 +2222,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         void oldMove(Point p) {
             oldDragger.drag(p, targetContainer);
-            FormEditor.getAssistantModel(getFormModel()).setContext("generalPosition"); // NOI18N
         }
 
         void oldPaintFeedback(Graphics2D g, Graphics gg, int index) {
@@ -2644,7 +2644,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             constraints = laysup.getNewConstraints(cont, contDel,
                                                    showingComponents[0], -1,
                                                    posInCont, posInComp);
-            FormEditor.getAssistantModel(getFormModel()).setContext("generalPosition"); // NOI18N
         }
 
         void oldPaintFeedback(Graphics2D g, Graphics gg, int index) {

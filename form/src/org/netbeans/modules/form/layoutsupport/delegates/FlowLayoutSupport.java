@@ -74,11 +74,14 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
         int rowHeight = - vgap;
         int r = 0;
         int i = 0;
-        
+
+        int compIndex = -1;
+        assistantParams = 0;
         if ((components.length > 1) || (component.getParent() != containerDelegate)) {
             for (int j = 0; j < components.length; j++) {
                 Component comp = components[j];
                 if (comp == component) {
+                    compIndex = j;
                     comp = components[(j == 0) ? 1 : j-1];
                 }
                 int posX = comp.getBounds().x;
@@ -110,6 +113,8 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
 
             if (rowStarts[i] < 0) {
                 if (posInCont.y >= rowTops[i]) {
+                    if (component.getParent() == containerDelegate) assistantParams--;
+                    assistantParams += components.length;
                     return components.length;
                 }
                 else {
@@ -118,6 +123,7 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
             }
 
             int m = (r <= 0) ? 0 : rowStarts[r];
+            if ((compIndex > -1) && (compIndex < m)) assistantParams--;
             int n = rowStarts[r + 1];
 
             if (n > components.length || n < 0)
@@ -126,6 +132,7 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
             for (i = m; i < n; i++) {
                 Component comp = components[i];
                 if (comp == component) {
+                    assistantParams--;
                     comp = components[(i == 0) ? 1 : i-1];
                 }
                 Rectangle bounds = comp.getBounds();
@@ -136,7 +143,17 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
 
             i = i < n ? i : n;
         }
+        assistantParams += i;
         return i;
+    }
+
+    private int assistantParams;
+    public String getAssistantContext() {
+        return "flowLayout"; // NOI18N
+    }
+
+    public Object[] getAssistantParams() {
+        return new Object[] {Integer.valueOf(assistantParams+1)};
     }
 
     /** This method paints a dragging feedback for a component dragged over

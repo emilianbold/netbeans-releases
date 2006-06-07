@@ -61,6 +61,10 @@ public class ScrollPaneSupport extends AbstractLayoutSupport {
         return 0;
     }
 
+    public String getAssistantContext() {
+        return "scrollPaneLayout"; // NOI18N
+    }
+
     /** This method paints a dragging feedback for a component dragged over
      * a container (or just for mouse cursor being moved over container,
      * without any component).

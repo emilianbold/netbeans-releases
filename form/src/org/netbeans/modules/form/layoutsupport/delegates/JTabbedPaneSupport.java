@@ -145,6 +145,10 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         return container.getComponentCount();
     }
 
+    public String getAssistantContext() {
+        return "tabbedPaneLayout"; // NOI18N
+    }
+
     /** This method paints a dragging feedback for a component dragged over
      * a container (or just for mouse cursor being moved over container,
      * without any component).

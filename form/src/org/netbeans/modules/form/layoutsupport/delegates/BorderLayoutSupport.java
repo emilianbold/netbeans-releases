@@ -115,16 +115,30 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
             if (str == null) continue;
 
             for (int j=0; j  < free.length; j++)
-                if (free[j].equals(str))
+                if (free[j].equals(str)) {
+                    assistantParams = str;
                     return new BorderConstraints(str);
+                }
 
             if (component != null) {
                 int idx = getComponentOnPosition(str);
-                if (containerDelegate.getComponent(idx) == component)
+                if (containerDelegate.getComponent(idx) == component) {
+                    assistantParams = str;
                     return new BorderConstraints(str);
+                }
             }
         }
+        assistantParams = free[0];
         return new BorderConstraints(free[0]);
+    }
+
+    private String assistantParams;
+    public String getAssistantContext() {
+        return "borderLayout"; // NOI18N
+    }
+
+    public Object[] getAssistantParams() {
+        return new Object[] {assistantParams};
     }
 
     /** This method paints a dragging feedback for a component dragged over

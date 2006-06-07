@@ -94,10 +94,21 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
 		else 
                     freePosition = JSplitPane.BOTTOM;
             }
+            assistantParams = freePosition;
 	    return new SplitConstraints(freePosition);
 	}
 
-	return new SplitConstraints(findFreePosition());	    		
+        assistantParams = findFreePosition();
+	return new SplitConstraints(assistantParams);
+    }
+
+    private String assistantParams;
+    public String getAssistantContext() {
+        return "splitPaneLayout"; // NOI18N
+    }
+
+    public Object[] getAssistantParams() {
+        return new Object[] {assistantParams};
     }
 
     /** This method paints a dragging feedback for a component dragged over

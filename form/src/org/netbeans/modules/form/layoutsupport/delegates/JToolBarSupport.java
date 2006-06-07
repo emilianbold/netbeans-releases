@@ -74,21 +74,39 @@ public class JToolBarSupport extends AbstractLayoutSupport {
 
         int orientation = ((JToolBar)container).getOrientation();
         
+        assistantParams = 0;
         Component[] components = container.getComponents();
         for (int i = 0; i < components.length; i++) {
-            if (component == components[i]) continue;
+            if (component == components[i]) {
+                assistantParams--;
+                continue;
+            }
             Rectangle b = components[i].getBounds();
             if (orientation == SwingConstants.HORIZONTAL) {
-                if (posInCont.x < b.x + b.width / 2)
+                if (posInCont.x < b.x + b.width / 2) {
+                    assistantParams += i;
                     return i;
+                }
             }
             else {
-                if (posInCont.y < b.y + b.height / 2)
+                if (posInCont.y < b.y + b.height / 2) {   
+                    assistantParams += i;
                     return i;
+                }
             }
         }
 
+        assistantParams += components.length;
         return components.length;
+    }
+
+    private int assistantParams;
+    public String getAssistantContext() {
+        return "toolbarLayout"; // NOI18N
+    }
+
+    public Object[] getAssistantParams() {
+        return new Object[] {Integer.valueOf(assistantParams+1)};
     }
 
     /** This method paints a dragging feedback for a component dragged over

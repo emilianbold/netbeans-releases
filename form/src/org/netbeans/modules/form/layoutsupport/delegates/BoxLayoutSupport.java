@@ -89,22 +89,41 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         if (!(containerDelegate.getLayout() instanceof BoxLayout))
             return -1;
         
+        assistantParams = 0;
         Component[] components = containerDelegate.getComponents();
         for (int i = 0; i < components.length; i++) {
-            if (components[i] == component) continue;
+            if (components[i] == component) {
+                assistantParams--;
+                continue;
+            }
             Rectangle b = components[i].getBounds();
             if (axis == BoxLayout.X_AXIS) {
-                if (posInCont.x < b.x + b.width / 2)
+                if (posInCont.x < b.x + b.width / 2) {
+                    assistantParams += i;
                     return i;
+                }
             }
             else {
-                if (posInCont.y < b.y + b.height / 2)
+                if (posInCont.y < b.y + b.height / 2) {
+                    assistantParams += i;
                     return i;
+                }
             }
         }
         
+        assistantParams += components.length;
         return components.length;
     }
+
+    private int assistantParams;
+    public String getAssistantContext() {
+        return "boxLayout"; // NOI18N
+    }
+
+    public Object[] getAssistantParams() {
+        return new Object[] {Integer.valueOf(assistantParams+1)};
+    }
+
 
     /** This method paints a dragging feedback for a component dragged over
      * a container (or just for mouse cursor being moved over container,

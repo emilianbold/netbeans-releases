@@ -128,6 +128,10 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
         return containerDelegate.getComponentCount();
     }
 
+    public String getAssistantContext() {
+        return "cardLayout"; // NOI18N
+    }
+
     /** This method paints a dragging feedback for a component dragged over
      * a container (or just for mouse cursor being moved over container,
      * without any component).

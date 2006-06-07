@@ -692,6 +692,24 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         return -1;
     }
 
+    /**
+     * Returns context for the assistant (context sensitive help bar).
+     *
+     * @rerurn context for the assistant.
+     */
+    public String getAssistantContext() {
+        return null;
+    }
+
+    /**
+     * Returns context parameters for the assistant (context sensitive help bar).
+     *
+     * @return context parameters for the assistant.
+     */
+    public Object[] getAssistantParams() {
+        return null;
+    }
+
     /** This method should paint a feedback for a component dragged over
      * a container (or just for mouse cursor being moved over container,
      * without any component). In principle, it should present given component

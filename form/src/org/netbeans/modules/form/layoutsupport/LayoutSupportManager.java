@@ -650,9 +650,20 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                                                Point posInCont,
                                                Point posInComp)
     {
-        return layoutDelegate.getNewConstraints(container, containerDelegate,
+        
+        LayoutConstraints constraints =  layoutDelegate.getNewConstraints(container, containerDelegate,
                                                 component, index,
                                                 posInCont, posInComp);
+        String context = null;
+        Object[] params = null;
+        if (layoutDelegate instanceof AbstractLayoutSupport) {
+            AbstractLayoutSupport support = (AbstractLayoutSupport)layoutDelegate;
+            context = support.getAssistantContext();
+            params = support.getAssistantParams();
+        }
+        context = (context == null) ? "generalPosition" : context; // NOI18N
+        FormEditor.getAssistantModel(metaContainer.getFormModel()).setContext(context, params);
+        return constraints;
     }
 
     public int getNewIndex(Container container,

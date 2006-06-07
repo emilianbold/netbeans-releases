@@ -170,7 +170,17 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
             y = computeGridSize(y, formSettings.getGridY());
         }
 
+        assistantParams = new Object[] {Integer.valueOf(x), Integer.valueOf(y)};
         return createNewConstraints(constr, x, y, w, h);
+    }
+
+    private Object[] assistantParams;
+    public String getAssistantContext() {
+        return "absoluteLayout"; // NOI18N
+    }
+
+    public Object[] getAssistantParams() {
+        return assistantParams;
     }
 
     /** This method paints a dragging feedback for a component dragged over

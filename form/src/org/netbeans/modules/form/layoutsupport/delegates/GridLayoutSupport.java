@@ -80,17 +80,32 @@ public class GridLayoutSupport extends AbstractLayoutSupport
         sz.height -= insets.top + insets.bottom;
 
         int colwidth = sz.width / ncols;
-        if (colwidth <= 0)
+        if (colwidth <= 0) {
+            assistantParams = components.length;
             return components.length;
+        }
         int col = (posInCont.x - insets.left + colwidth / 2) / colwidth;
         
         int rowheight = sz.height / nrows;
-        if (rowheight <= 0)
+        if (rowheight <= 0) {
+            assistantParams = components.length;
             return components.length;
+        }
         int row = (posInCont.y - insets.top) / rowheight;
 
         int newIndex = row * ncols + col;
-        return newIndex >= components.length ? components.length : newIndex;
+        newIndex = newIndex >= components.length ? components.length : newIndex;
+        assistantParams = newIndex;
+        return newIndex;
+    }
+
+    private int assistantParams;
+    public String getAssistantContext() {
+        return "gridLayout"; // NOI18N
+    }
+
+    public Object[] getAssistantParams() {
+        return new Object[] {Integer.valueOf(assistantParams+1)};
     }
 
     /** This method paints a dragging feedback for a component dragged over

@@ -70,9 +70,14 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
                            Point posInCont,
                            Point posInComp)
     {
-        if (container.getComponentCount() > 1) // [or containerDelegate??]
-            return -1;
-        return 0;
+        assistantParams = (container instanceof JScrollPane
+            && ((JScrollPane)container).getViewport().getView() == null);
+        return assistantParams ? 0 : -1;
+    }
+
+    private boolean assistantParams;
+    public String getAssistantContext() {
+        return assistantParams ? "jscrollPaneLayout" : null; // NOI18N
     }
 
     /** This method paints a dragging feedback for a component dragged over
