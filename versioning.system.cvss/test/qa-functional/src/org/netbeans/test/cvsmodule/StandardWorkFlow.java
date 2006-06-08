@@ -563,8 +563,8 @@ public class StandardWorkFlow extends JellyTestCase {
         
         Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         //nodeClass.select();
-        nodeClass.performMenuActionNoBlock("CVS|Export \"Main.java\" Diff Patch...");
-        NbDialogOperator dialog = new NbDialogOperator("Export Diff Patch");
+        nodeClass.performMenuActionNoBlock("CVS|Export");
+        NbDialogOperator dialog = new NbDialogOperator("Export");
         JTextFieldOperator tf = new JTextFieldOperator(dialog, 0);
         String patchFile = "/tmp/patch" + System.currentTimeMillis() + ".patch"; 
         File file = new File(patchFile);
