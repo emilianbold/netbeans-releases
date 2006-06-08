@@ -119,7 +119,7 @@ public class ModuleListTest extends TestBase {
         assertNotNull("long description", e.getLongDescription());
         assertNotNull("release version", e.getReleaseVersion());
         assertNotNull("specification version", e.getSpecificationVersion());
-        assertEquals("number of public packages for " + e, new Integer(5), new Integer(e.getPublicPackages().length));
+        assertEquals("number of public packages for " + e, new Integer(6), new Integer(e.getPublicPackages().length));
         assertFalse("not deprecated", e.isDeprecated());
         // Test something in a different cluster and dir:
         e = ml.getEntry("org.openide.filesystems");
