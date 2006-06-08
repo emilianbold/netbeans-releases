@@ -15,6 +15,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -35,7 +36,6 @@ import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -79,19 +79,9 @@ public final class BuildImplTest extends NbTestCase {
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         FileObject root = aph.getProjectDirectory();
         for (int i=0; i<numberOfSourceFiles; i++) {
-            String res = "src/pkg/Source" + i + ".java";
-            FileObject source;
-            try {
-                source = FileUtil.createData(root, res);
-            } catch (IOException e) {
-                // Debugging for issue #50802.
-                System.err.println("While calling FileUtil.createData(" + root + ", " + res + "): " + e);
-                throw e;
-            }
-            generateJava(source, false);
+            generateJava(root, "src/pkg/Source" + i + ".java", false);
             if (generateTests) {
-                source = FileUtil.createData(root, "test/pkg/Source"+i+"Test.java");
-                generateJava(source, true);
+                generateJava(root, "test/pkg/Source" + i + "Test.java", true);
             }
         }
         return aph;
@@ -102,40 +92,34 @@ public final class BuildImplTest extends NbTestCase {
         return setupProject(null, numberOfSourceFiles, generateTests);
     }
 
-    private void generateJava(FileObject fo, boolean test) throws Exception {
+    private void generateJava(FileObject root, String path, boolean test) throws Exception {
+        String name = path.replaceFirst("^.+/", "").replaceFirst("\\..+$", "");
         if (test) {
-            writeFile(fo, 
+            writeFile(root, path,
                 "package pkg;\n" +
                 "import junit.framework.TestCase;\n" +
-                "public class "+fo.getName()+" extends TestCase {\n" +
-                "public "+fo.getName()+"() { }\n"+
-                "public void testDoSomething() { System.out.println(\""+fo.getName()+" test executed\"); }\n" +
+                "public class " + name + " extends TestCase {\n" +
+                "public " + name + "() { }\n"+
+                "public void testDoSomething() { System.out.println(\"" + name + " test executed\"); }\n" +
                 "}\n");
         } else {
-            writeFile(fo,
+            writeFile(root, path,
                 "package pkg;\n" +
-                "public class "+fo.getName()+" {\n" +
+                "public class " + name + " {\n" +
                 "public boolean doSomething() { return true; }\n" +
-                "public static void main(String[] args) { System.err.println(\""+fo.getName()+" main class executed\"); }\n" +
+                "public static void main(String[] args) { System.err.println(\"" + name + " main class executed\"); }\n" +
                 "}\n");
         }
     }
 
-    private void writeFile(FileObject fo, String body) throws Exception {
-        FileLock lock = null;
-        PrintWriter pw = null;
-        try {
-            lock = fo.lock();
-            pw = new PrintWriter(fo.getOutputStream(lock), true);
-            pw.println(body);
-        } finally {
-            if (pw != null) {
-                pw.close();
-            }
-            if (lock != null) {
-                lock.releaseLock();
-            }
-        }
+    private FileObject writeFile(FileObject root, String path, String body) throws Exception {
+        FileObject fo = FileUtil.createData(root, path);
+        OutputStream os = fo.getOutputStream();
+        PrintWriter pw = new PrintWriter(os);
+        pw.print(body);
+        pw.flush();
+        os.close();
+        return fo;
     }
 
     private Properties getProperties() {
@@ -196,6 +180,48 @@ public final class BuildImplTest extends NbTestCase {
         assertEquals("Only one class should be compiled", 1, fo.getFileObject("build/classes/pkg").getChildren().length);
         assertNull("build/test folder should not be created", fo.getFileObject("build/test"));
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
+    }
+    
+    private void touch(FileObject f, FileObject ref) throws Exception {
+        File ff = FileUtil.toFile(f);
+        long older = ff.lastModified();
+        if (ref != null) {
+            older = Math.max(older, FileUtil.toFile(ref).lastModified());
+        } 
+        for (long pause = 1; pause < 9999; pause *= 2) {
+            Thread.sleep(pause);
+            ff.setLastModified(System.currentTimeMillis());
+            if (ff.lastModified() > older) {
+                return;
+            }
+        }
+        fail("Did not manage to touch " + ff);
+    }
+    
+    /** @see "issue #36033" */
+    public void testCompileWithDependencyAnalysis() throws Exception {
+        AntProjectHelper aph = setupProject(0, false);
+        FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
+        FileObject d = aph.getProjectDirectory();
+        FileObject x = writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y1();}}");
+        FileObject y = writeFile(d, "src/p/Y.java", "package p; public class Y {static void y1() {}}");
+        assertEquals(0, ActionUtils.runTarget(buildXml, new String[] {"compile"}, getProperties()).result());
+        writeFile(d, "src/p/Y.java", "package p; public class Y {static void y2() {}}");
+        touch(y, d.getFileObject("build/classes/p/Y.class"));
+        assertEquals(1, ActionUtils.runTarget(buildXml, new String[] {"compile"}, getProperties()).result());
+        writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y2();}}");
+        touch(x, null);
+        assertEquals(0, ActionUtils.runTarget(buildXml, new String[] {"compile"}, getProperties()).result());
+        FileObject yt = writeFile(d, "test/p/YTest.java", "package p; public class YTest extends junit.framework.TestCase {public void testY() {Y.y2();}}");
+        assertEquals(0, ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()).result());
+        writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y1();}}");
+        touch(x, d.getFileObject("build/classes/p/X.class"));
+        writeFile(d, "src/p/Y.java", "package p; public class Y {static void y1() {}}");
+        touch(y, d.getFileObject("build/classes/p/Y.class"));
+        assertEquals(1, ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()).result());
+        writeFile(d, "test/p/YTest.java", "package p; public class YTest extends junit.framework.TestCase {public void testY() {Y.y1();}}");
+        touch(yt, null);
+        assertEquals(0, ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()).result());
     }
     
     public void testRun() throws Exception {
@@ -263,8 +289,7 @@ public final class BuildImplTest extends NbTestCase {
 
         // set a manifest
         
-        FileObject manifest = aph.getProjectDirectory().createFolder("manifest").createData("manifest.mf");
-        writeFile(manifest,
+        writeFile(aph.getProjectDirectory(), "manifest/manifest.mf",
             "Manifest-Version: 1.0\n" +
             "Something: s.o.m.e\n\n");
         p.setProperty("manifest.file", "manifest/manifest.mf");
