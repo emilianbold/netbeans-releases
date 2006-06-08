@@ -199,12 +199,13 @@ public abstract class TreeView extends JScrollPane {
     public TreeView(boolean defaultAction, boolean popupAllowed) {
         initializeTree();
 
-        // activation of drop target
-        if (DragDropUtilities.dragAndDropEnabled) {
-            ExplorerDnDManager.getDefault().addFutureDropTarget(this);
-
-            // note: drag target is activated on focus gained
-        }
+//        // activation of drop target
+//        if (DragDropUtilities.dragAndDropEnabled) {
+//            setdroptExplorerDnDManager.getDefault().addFutureDropTarget(this);
+//
+//            // note: drag target is activated on focus gained
+//        }
+        setDropTarget( DragDropUtilities.dragAndDropEnabled );
 
         setPopupAllowed(popupAllowed);
         setDefaultActionAllowed(defaultAction);

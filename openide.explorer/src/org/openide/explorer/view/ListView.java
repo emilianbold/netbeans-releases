@@ -183,11 +183,7 @@ public class ListView extends JScrollPane implements Externalizable {
         initializeList();
 
         // activation of drop target
-        if (DragDropUtilities.dragAndDropEnabled) {
-            ExplorerDnDManager.getDefault().addFutureDropTarget(this);
-
-            // note: drag target is activated on focus gained
-        }
+        setDropTarget( DragDropUtilities.dragAndDropEnabled );
 
         // no border, window system manages outer border itself
         setBorder(BorderFactory.createEmptyBorder());

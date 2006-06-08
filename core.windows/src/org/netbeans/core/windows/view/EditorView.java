@@ -15,19 +15,33 @@
 package org.netbeans.core.windows.view;
 
 
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.openide.ErrorManager;
+import org.openide.cookies.OpenCookie;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.util.Arrays;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExClipboard;
+import org.openide.windows.ExternalDropHandler;
 
 
 /**
@@ -149,6 +163,14 @@ public class EditorView extends ViewElement {
 //        }
     } 
 
+    private static DataFlavor URI_LIST_DATA_FLAVOR;
+    static {
+        try {
+            URI_LIST_DATA_FLAVOR = new DataFlavor("text/uri-list;class=java.lang.String");
+        } catch( ClassNotFoundException cnfE ) {
+            cnfE.printStackTrace();
+        }
+    }
     
     private static class EditorAreaComponent extends JPanel
     implements TopComponentDroppable {
@@ -190,6 +212,36 @@ public class EditorView extends ViewElement {
                     new NullPointerException("Image not found at " + imageSource)); // NOI18N
                 }
             }
+            //listen to files being dragged over the editor area
+            DropTarget dropTarget = new DropTarget( this, new DropTargetListener() {
+                public void dragEnter(DropTargetDragEvent dtde) {
+                }
+                public void dragExit(DropTargetEvent dte) {
+                }
+                public void dragOver(DropTargetDragEvent dtde) {
+                    ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+                    //check if a file is being dragged over and if anybody can process it
+                    if( null != handler && handler.canDrop( dtde ) ) {
+                        dtde.acceptDrag( DnDConstants.ACTION_COPY );
+                    } else {
+                        dtde.rejectDrag();
+                    }
+                }
+                public void drop(DropTargetDropEvent dtde) {
+                    ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+                    if( handler.canDrop( dtde ) ) {
+                        //file is being dragged over
+                        dtde.acceptDrop( DnDConstants.ACTION_COPY );
+                        //let the handler to take care of it
+                        dtde.dropComplete( handler.handleDrop( dtde ) );
+                    } else {
+                        dtde.dropComplete( false );
+                    }
+                }
+                public void dropActionChanged(DropTargetDragEvent dtde) {
+                }
+            } );
+            setDropTarget( dropTarget );
         }
         
         public void setAreaComponent(Component areaComponent) {

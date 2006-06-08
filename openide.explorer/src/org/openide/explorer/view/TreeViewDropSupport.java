@@ -38,7 +38,6 @@ import javax.swing.Timer;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreePath;
 
-
 /** Implementation of drop support for asociated Tree View.
 *
 * @author Dafe Simonek, Jiri Rechtacek
@@ -132,6 +131,8 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
     /** Process events dragEnter or dragOver. */
     private void doDragOver(DropTargetDragEvent dtde) {
+        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( true );
+
         int dropAction = dtde.getDropAction();
         int allowedDropActions = view.getAllowedDropActions();
         
@@ -147,7 +148,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         if (tp == null) {
             // #64469: Can't drop into empty explorer area
             dropNode = view.manager.getRootContext ();
-            if (canDrop(dropNode, dropAction)) {
+            if (canDrop(dropNode, dropAction, dtde.getTransferable())) {
                 // ok, root accept
                 dtde.acceptDrag(dropAction);
             } else {
@@ -318,12 +319,13 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         }
 
         // 5. show to cursor belong to state
-        if (canDrop(dropNode, dropAction)) {
+        if (canDrop(dropNode, dropAction, dtde.getTransferable())) {
             // ok, can accept
             dtde.acceptDrag(dropAction);
         } else {
             // can only reorder?
-            if (canReorder(dropNode, ExplorerDnDManager.getDefault().getDraggedNodes())) {
+            Node[] draggedNodes = ExplorerDnDManager.getDefault().getDraggedNodes();
+            if( null != draggedNodes && canReorder(dropNode, draggedNodes) ) {
                 // ok, can accept only reoder
                 dtde.acceptDrag(dropAction);
             } else {
@@ -370,19 +372,21 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
     public void dropActionChanged(DropTargetDragEvent dtde) {
         // check if the nodes are willing to do selected action
         Node[] nodes = ExplorerDnDManager.getDefault().getDraggedNodes();
-        int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
-                dtde.getDropAction(), view.getAllowedDropActions()
-            );
+        if( null != nodes ) {
+            int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
+                    dtde.getDropAction(), view.getAllowedDropActions()
+                );
 
-        for (int i = 0; i < nodes.length; i++) {
-            if (
-                ((view.getAllowedDropActions() & dropAction) == 0) ||
-                    !DragDropUtilities.checkNodeForAction(nodes[i], dropAction)
-            ) {
-                // this action is not supported
-                dtde.rejectDrag();
+            for (int i = 0; i < nodes.length; i++) {
+                if (
+                    ((view.getAllowedDropActions() & dropAction) == 0) ||
+                        !DragDropUtilities.checkNodeForAction(nodes[i], dropAction)
+                ) {
+                    // this action is not supported
+                    dtde.rejectDrag();
 
-                return;
+                    return;
+                }
             }
         }
 
@@ -391,6 +395,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
     /** User exits the dragging */
     public void dragExit(DropTargetEvent dte) {
+        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( false );
         stopDragging();
     }
 
@@ -561,7 +566,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
     /** Can node recieve given drop action? */
 
     // XXX canditate for more general support
-    private boolean canDrop(Node n, int dropAction) {
+    private boolean canDrop(Node n, int dropAction, Transferable dndEventTransferable) {
         if (n == null) {
             return false;
         }
@@ -576,13 +581,11 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         if ((DnDConstants.ACTION_MOVE & dropAction) != 0) {
             Node[] nodes = ExplorerDnDManager.getDefault().getDraggedNodes();
 
-            if (nodes == null) {
-                return false;
-            }
-
-            for (int i = 0; i < nodes.length; i++) {
-                if (n.equals(nodes[i].getParentNode())) {
-                    return false;
+            if (nodes != null) {
+                for (int i = 0; i < nodes.length; i++) {
+                    if (n.equals(nodes[i].getParentNode())) {
+                        return false;
+                    }
                 }
             }
         }
@@ -592,7 +595,10 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
             );
 
         if (trans == null) {
-            return false;
+            trans = dndEventTransferable;
+            if( null == trans ) {
+                return false;
+            }
         }
 
         // get paste types for given transferred transferable
@@ -622,23 +628,27 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
                 dtde.getDropAction(), view.getAllowedDropActions()
             );
 
-        if (!canDrop(dropNode, dropAction)) {
-            if (canReorder(dropNode, dragNodes)) {
-                performReorder(dropNode, dragNodes, lowerNodeIdx, upperNodeIdx);
-                dtde.acceptDrop(dropAction);
-            } else {
-                dtde.rejectDrop();
-            }
-
-            dtde.dropComplete(true);
-
-            return;
-        }
+        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( false );
 
         // finally perform the drop
         dtde.acceptDrop(dropAction);
 
-        if (DnDConstants.ACTION_LINK == dropAction) {
+        if( null != dragNodes ) {
+            if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
+                if (canReorder(dropNode, dragNodes)) {
+                    performReorder(dropNode, dragNodes, lowerNodeIdx, upperNodeIdx);
+                    dtde.acceptDrop(dropAction);
+                } else {
+                    dtde.rejectDrop();
+                }
+
+                dtde.dropComplete(true);
+
+                return;
+            }
+        }
+
+        if (DnDConstants.ACTION_LINK == dropAction && null != dragNodes) {
             // construct all paste types
             PasteType[] ptCut = new PasteType[] {  };
 
@@ -707,14 +717,13 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
                     }
                 );
             }
-        } else {
+        } else if( dropAction != DnDConstants.ACTION_LINK ) {
             // get correct paste type
-            PasteType pt = DragDropUtilities.getDropType(
-                    dropNode,
-                    ExplorerDnDManager.getDefault().getDraggedTransferable(
-                        (DnDConstants.ACTION_MOVE & dropAction) != 0
-                    ), dropAction
-                );
+            Transferable t = ExplorerDnDManager.getDefault().getDraggedTransferable( (DnDConstants.ACTION_MOVE & dropAction) != 0 );
+            if( null == t ) {
+                t = dtde.getTransferable();
+            }
+            PasteType pt = DragDropUtilities.getDropType( dropNode, t, dropAction );
 
             /*// help loop for all paste actions
             System.out.println("PASTE TYPES FOR "+dropAction);

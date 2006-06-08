@@ -18,6 +18,30 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+<change id="ExternalDragAndDrop">
+    <api name="winsys"/>
+    <summary>Added <code>ExternalDropHandler</code> abstract class.</summary>
+    <version major="6" minor="7"/>
+    <date day="30" month="5" year="2006"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        When a file(s) or other objects are dragged over the editor aread of the IDE,
+        the window system will use the global <code>Lookup</code> to get an
+        instance of <code>ExternalDropHandler</code> class. If such an instance
+        is available then it will be used to check whether the drop can be accepted
+        (methods <code>canDrop</code>) and eventually to handle the dropped
+        object(s) as well - method <code>handleDrop</code> - for example open
+        dropped files in editor.
+        <br/>
+        Note that some IDE components may have their own <code>DropTargetListener</code>s
+        (for example Projects view or Files view) therefore the <code>ExternalDropHandler</code>
+        will not be used when dragging over these components.
+    </description>
+    <class package="org.openide.windows" name="ExternalDropHandler"/>
+    <issue number="50129"/>
+</change>
+
 <change id="TopComponent-getHtmlDisplayName">
     <api name="winsys"/>
     <summary>Added the <code>TopComponent.getHtmlDisplayName</code>, 

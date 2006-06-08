@@ -32,8 +32,18 @@ public final class OpenFile {
     /** do not instantiate */
     private OpenFile() {}
     
+    private static OpenFileImpl theInstance;
     private static OpenFileImpl getImpl() {
-        return new DefaultOpenFileImpl();
+        if( null == theInstance )
+            theInstance = new DefaultOpenFileImpl();
+        return theInstance;
+    }
+
+    /**
+     * For unit testing only.
+     */
+    static void setImpl( OpenFileImpl impl ) {
+        theInstance = impl;
     }
     
     /**

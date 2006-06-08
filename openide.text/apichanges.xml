@@ -18,6 +18,29 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
     
+    <change id="EditorPaneDragAndDrop">
+        <api name="text"/>
+        <summary>QuietEditorPane listens for special objects being dragged over it.</summary>
+        <version major="6" minor="11"/>
+        <date day="30" month="5" year="2006"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            <p>The <code>QuietEditorPane</code> has a custom <code>DropTarget</code>
+            instance which listens for some special objects (usually files) being
+            dragged over the editor pane and uses an instace of
+            <code>ExternalDropHandler</code> class from the global
+            <code>Lookup</code> to see if the drop can be accepted.
+            If the dragged object is supported then the caret in the editor does
+            not follow the cursor to indicate the drop position as if when dragging
+            a text snippet and regular Drop-Copy cursor is shown instead.
+            When the object is dropped into the editor the <code>ExternalDropHandler</code>
+            will process it (e.g. opens the file in a new editor tab).
+        </description>
+        <class package="org.openide.text" name="QuietEditorPane"/>
+        <issue number="50129"/>
+    </change>
+
     <change id="CloneableEditorSupport-messageHtmlName">
         <api name="text"/>
         <summary>Added CloneableEditorSupport.messageHtmlName method</summary>

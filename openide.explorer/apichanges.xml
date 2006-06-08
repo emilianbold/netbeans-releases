@@ -17,6 +17,28 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="ExternalDragAndDrop">
+        <api name="explorer"/>
+        <summary>When an external object(s) is dragged over the Explorer, the drag
+        events are passed to Nodes under the cursor.</summary>
+        <version major="6" minor="7"/>
+        <date day="30" month="5" year="2006"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description> <p>When an external object (e.g. file(s)) is dragged over the
+            Explorer, the drag events passed to Nodes under the cursor. It means
+            that the appropriate Node is asked whether the dragged object(s) can
+            be dropped to it. The drag support classes will also provide appropriate
+            visual drag feedback - change cursor shape and/or draw drop line indicator.
+            </p>
+            <p>When the object is dropped then the Node under the cursor will be
+            asked to provide supported <code>PasteType</code>s that will handle
+            the drop.</p>
+        </description>
+        <package name="org.openide.explorer.view" />
+        <issue number="35228"/>
+    </change>
+
     <change id="dnd.convertor.drag">
         <api name="explorer"/>
         <summary>

@@ -19,15 +19,25 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.InputEvent;
+import java.util.TooManyListenersException;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
+import javax.swing.plaf.UIResource;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.openide.util.Lookup;
+import org.openide.windows.ExternalDropHandler;
 
 /** performance trick - 18% of time saved during open of an editor
 *
@@ -106,11 +116,18 @@ final class QuietEditorPane extends JEditorPane {
         // For more details, please refer issue #53439        
         if (doc != null){
             TransferHandler thn = getTransferHandler();
-            DelegatingTransferHandler dth = new DelegatingTransferHandler(thn);
-            setTransferHandler(dth);
+            if( !(thn instanceof DelegatingTransferHandler) ) {
+                DelegatingTransferHandler dth = new DelegatingTransferHandler(thn);
+                setTransferHandler(dth);
+            }
+
+            DropTarget currDt = getDropTarget();
+            if( !(currDt instanceof DelegatingDropTarget ) ) {
+                DropTarget dt = new DelegatingDropTarget( currDt );
+                setDropTarget( dt );
+            }
         }
     }
-    
     
     public void setWorking(int x) {
         working = x;
@@ -254,4 +271,65 @@ final class QuietEditorPane extends JEditorPane {
 	}
     }
     
+    private class DelegatingDropTarget extends DropTarget implements UIResource {
+        private DropTarget orig;
+        private boolean isDragging = false;
+
+        public DelegatingDropTarget( DropTarget orig ) {
+            this.orig = orig;
+        }
+        public void addDropTargetListener(DropTargetListener dtl) throws TooManyListenersException {
+            orig.addDropTargetListener( dtl );
+        }
+
+        public void removeDropTargetListener(DropTargetListener dtl) {
+            orig.removeDropTargetListener( dtl );
+        }
+
+        public void dragEnter(DropTargetDragEvent dtde) {
+            ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+            if( null != handler && handler.canDrop( dtde ) ) {
+                dtde.acceptDrag( DnDConstants.ACTION_COPY );
+                isDragging = false;
+            } else {
+                orig.dragEnter( dtde );
+                isDragging = true;
+            }
+        }
+
+        public void dragExit(DropTargetEvent dte) {
+            if( isDragging ) {
+                orig.dragExit( dte );
+            }
+            isDragging = false;
+        }
+
+        public void dragOver(DropTargetDragEvent dtde) {
+            ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+            if( null != handler && handler.canDrop( dtde ) ) {
+                dtde.acceptDrag( DnDConstants.ACTION_COPY );
+                isDragging = false;
+            } else {
+                orig.dragOver( dtde );
+                isDragging = true;
+            }
+        }
+
+        public void drop(DropTargetDropEvent e) {
+            ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+            if( handler.canDrop( e ) ) {
+                e.acceptDrop( DnDConstants.ACTION_COPY );
+
+                e.dropComplete( handler.handleDrop( e ) );
+            } else {
+                orig.drop( e );
+            }
+            isDragging = false;
+        }
+
+        public void dropActionChanged(DropTargetDragEvent dtde) {
+            if( isDragging )
+                orig.dropActionChanged( dtde );
+        }
+    }
 }

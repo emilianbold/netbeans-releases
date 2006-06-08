@@ -13,12 +13,14 @@
 
 package org.openide.loaders;
 
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -536,6 +538,8 @@ public class DataNode extends AbstractNode {
             getDataObject (), 
             LoaderTransfer.CLIPBOARD_COPY)
         );
+        //add extra data flavors to allow dragging the file outside the IDE window
+        addExternalFileTransferable( t, getDataObject() );
         return t;
     }
 
@@ -551,9 +555,42 @@ public class DataNode extends AbstractNode {
             getDataObject (), 
             LoaderTransfer.CLIPBOARD_CUT)
         );
+        //add extra data flavors to allow dragging the file outside the IDE window
+        addExternalFileTransferable( t, getDataObject() );
         return t;
     }
     
+    protected void addExternalFileTransferable( ExTransferable t, DataObject d ) {
+        FileObject fo = d.getPrimaryFile();
+        File file = FileUtil.toFile( fo );
+        if( null != file ) {
+            //windows & mac
+            final ArrayList list = new ArrayList(1);
+            list.add( file );
+            t.put( new ExTransferable.Single( DataFlavor.javaFileListFlavor ) {
+                public Object getData() {
+                    return list;
+                }
+            });
+            //linux
+            final String uriList = file.toURI().toString() + "\r\n";
+            t.put( new ExTransferable.Single( createUriListFlavor() ) {
+                public Object getData() {
+                    return uriList;
+                }
+            });
+        }
+    }
+
+    protected DataFlavor createUriListFlavor () {
+        try {
+            return new DataFlavor("text/uri-list;class=java.lang.String");
+        } catch (ClassNotFoundException ex) {
+            //cannot happen
+            throw new AssertionError(ex);
+        }
+    }
+
     /** Creates a name property for given data object.
     */
     static Node.Property createNameProperty (final DataObject obj) {

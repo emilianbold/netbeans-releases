@@ -14,7 +14,9 @@
 package org.openide.loaders;
 
 import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
@@ -23,6 +25,8 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,6 +34,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -62,6 +67,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.ExClipboard;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.NewType;
 
 /** A folder containing data objects.
@@ -98,6 +105,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
     /** name of a shadow file for a root */
     private static final String ROOT_SHADOW_NAME = "Root"; // NOI18N
+
+    /** Drag'n'drop DataFlavor used on Linux for file dragging */
+    private static DataFlavor uriListDataFlavor;
 
     /** listener that contains array of children
     * Also represents the folder as the node delegate.
@@ -1299,7 +1309,104 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             if (getPrimaryFile().canWrite()) {
                 dataTransferSupport.createPasteTypes (t, s);
             }
+
+            List files = getDraggedFilesList( t );
+            if( null != files && !files.isEmpty() && s.isEmpty() ) {
+                //there are some files in the Transferable so let's try to
+                //convert them to DataObjects and create PasteTypes for them
+                List transferables = new ArrayList( files.size() );
+                for( Iterator i=files.iterator(); i.hasNext(); ) {
+                    File f = (File)i.next();
+                    Transferable nodeTransferable = createNodeTransferable( f );
+                    if( null != nodeTransferable )
+                        transferables.add( nodeTransferable );
+                }
+                ExTransferable.Multi multi = new ExTransferable.Multi(
+                        (Transferable[])transferables.toArray(new Transferable[transferables.size()]) );
+                super.createPasteTypes (multi, s);
+                if (getPrimaryFile().canWrite()) {
+                    dataTransferSupport.createPasteTypes (multi, s);
+                }
+            }
         }
+
+        Transferable createNodeTransferable( File f ) {
+            Transferable result = null;
+            FileObject fo = FileUtil.toFileObject( f );
+            if( null != fo ) {
+                try {
+                    DataObject dob = DataObject.find( fo );
+                    if( null != dob ) {
+                        Node delegate = dob.getNodeDelegate();
+                        //cannot paste a node to itself
+                        if( !delegate.equals( (FolderNode)this ) ) {
+                            result = dob.getNodeDelegate().clipboardCopy();
+                            ExClipboard exClipboard = (ExClipboard)Lookup.getDefault().lookup( ExClipboard.class );
+                            if( null != exClipboard ) {
+                                //let refactoring and others to add their own paste wrappers
+                                result = exClipboard.convert( result );
+                            }
+                        }
+                    }
+                } catch( IOException ioE ) {
+                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+                }
+            }
+            return result;
+        }
+
+        protected List getDraggedFilesList( Transferable t ) {
+            try {
+                if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
+                    //windows & mac
+                    return (List)t.getTransferData( DataFlavor.javaFileListFlavor );
+                } else if( t.isDataFlavorSupported( getUriListDataFlavor() ) ) {
+                    //linux
+                    String uriList = (String)t.getTransferData( getUriListDataFlavor() );
+                    return textURIListToFileList( uriList );
+                }
+            } catch( UnsupportedFlavorException ex ) {
+                ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex );
+            } catch( IOException ex ) {
+                ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex );
+            }
+            return null;
+        }
+
+        protected DataFlavor getUriListDataFlavor() {
+            if( null == uriListDataFlavor ) {
+                try {
+                    uriListDataFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
+                } catch( ClassNotFoundException cnfE ) {
+                    //cannot happen
+                    throw new AssertionError(cnfE);
+                }
+            }
+            return uriListDataFlavor;
+        }
+
+        protected List textURIListToFileList( String data ) {
+            List list = new ArrayList(1);
+            for( StringTokenizer st = new StringTokenizer(data, "\r\n");
+                st.hasMoreTokens();) {
+                String s = st.nextToken();
+                if( s.startsWith("#") ) {
+                    // the line is a comment (as per the RFC 2483)
+                    continue;
+                }
+                try {
+                    URI uri = new URI(s);
+                    File file = new File(uri);
+                    list.add( file );
+                } catch( java.net.URISyntaxException e ) {
+                    // malformed URI
+                } catch( IllegalArgumentException e ) {
+                    // the URI is not a valid 'file:' URI
+                }
+            }
+            return list;
+        }
+
     } // end of FolderNode
 
     /** New type for creation of new folder.

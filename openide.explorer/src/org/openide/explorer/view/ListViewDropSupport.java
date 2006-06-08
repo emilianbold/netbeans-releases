@@ -70,6 +70,7 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
 
     /** User is starting to drag over us */
     public void dragEnter(DropTargetDragEvent dtde) {
+        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( true );
         int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
                 dtde.getDropAction(), view.getAllowedDropActions()
             );
@@ -87,6 +88,7 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
 
     /** User drags over us */
     public void dragOver(DropTargetDragEvent dtde) {
+        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( true );
         int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
                 dtde.getDropAction(), view.getAllowedDropActions()
             );
@@ -123,6 +125,7 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
 
     /** User exits the dragging */
     public void dragExit(DropTargetEvent dte) {
+        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( false );
         if (lastIndex >= 0) {
             NodeRenderer.dragExit();
             list.repaint(list.getCellBounds(lastIndex, lastIndex));
@@ -146,19 +149,20 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
                 dtde.getDropAction(), view.getAllowedDropActions()
             );
 
+        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( false );
+
         // return if conditions are not satisfied
-        if ((index < 0) || !canDrop(dropNode, dropAction)) {
+        if ((index < 0) || !canDrop(dropNode, dropAction, dtde.getTransferable())) {
             dtde.rejectDrop();
 
             return;
         }
 
         // get paste types for given transferred transferable
-        PasteType pt = DragDropUtilities.getDropType(
-                dropNode,
-                ExplorerDnDManager.getDefault().getDraggedTransferable((DnDConstants.ACTION_MOVE & dropAction) != 0),
-                dropAction
-            );
+        Transferable t = ExplorerDnDManager.getDefault().getDraggedTransferable((DnDConstants.ACTION_MOVE & dropAction) != 0);
+        if( null == t )
+            t = dtde.getTransferable();
+        PasteType pt = DragDropUtilities.getDropType( dropNode, t, dropAction );
 
         if (pt == null) {
             dtde.dropComplete(false);
@@ -185,7 +189,7 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
     /** Can node recieve given drop action? */
 
     // XXX canditate for more general support
-    private boolean canDrop(Node n, int dropAction) {
+    private boolean canDrop(Node n, int dropAction, Transferable dndEventTransferable) {
         if (n == null) {
             return false;
         }
@@ -199,9 +203,11 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
         if ((DnDConstants.ACTION_MOVE & dropAction) != 0) {
             Node[] nodes = ExplorerDnDManager.getDefault().getDraggedNodes();
 
-            for (int i = 0; i < nodes.length; i++) {
-                if (n.equals(nodes[i].getParentNode())) {
-                    return false;
+            if( null != nodes ) {
+                for (int i = 0; i < nodes.length; i++) {
+                    if (n.equals(nodes[i].getParentNode())) {
+                        return false;
+                    }
                 }
             }
         }
@@ -211,7 +217,10 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
             );
 
         if (trans == null) {
-            return false;
+            trans = dndEventTransferable;
+            if( trans == null ) {
+                return false;
+            }
         }
 
         // get paste types for given transferred transferable

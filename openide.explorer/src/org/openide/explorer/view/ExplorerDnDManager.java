@@ -42,7 +42,7 @@ final class ExplorerDnDManager {
     private boolean isDnDActive = false;
     private int nodeAllowed = 0;
     private Cursor cursor = null;
-    private transient WeakSet setOfTargets;
+    private boolean maybeExternalDnD = false;
 
     /** Creates a new instance of <code>WindowsDnDManager</code>. */
     private ExplorerDnDManager() {
@@ -87,39 +87,18 @@ final class ExplorerDnDManager {
     }
 
     final int getNodeAllowedActions() {
+        if( !isDnDActive && maybeExternalDnD )
+            return DnDConstants.ACTION_COPY;
+        
         return nodeAllowed;
     }
 
     void setDnDActive(boolean state) {
         isDnDActive = state;
-
-        if ((setOfTargets != null) && !setOfTargets.isEmpty()) {
-            Iterator it = setOfTargets.iterator();
-
-            while (it.hasNext()) {
-                JScrollPane pane = (JScrollPane) it.next();
-
-                if (pane.isEnabled()) {
-                    if (pane instanceof TreeView) {
-                        ((TreeView) pane).setDropTarget(state);
-                    } else if (pane instanceof ListView) {
-                        ((ListView) pane).setDropTarget(state);
-                    }
-                }
-            }
-        }
     }
 
     boolean isDnDActive() {
-        return isDnDActive;
-    }
-
-    void addFutureDropTarget(JScrollPane view) {
-        if (setOfTargets == null) {
-            setOfTargets = new WeakSet();
-        }
-
-        setOfTargets.add(view);
+        return isDnDActive || maybeExternalDnD;
     }
 
     int getAdjustedDropAction(int action, int allowed) {
@@ -129,11 +108,15 @@ final class ExplorerDnDManager {
             possibleAction = allowed;
         }
 
-        if ((possibleAction & nodeAllowed) == 0) {
-            possibleAction = nodeAllowed;
+        if ((possibleAction & getNodeAllowedActions()) == 0) {
+            possibleAction = getNodeAllowedActions();
         }
 
         return possibleAction;
+    }
+
+    void setMaybeExternalDragAndDrop( boolean maybeExternalDnD ) {
+        this.maybeExternalDnD = maybeExternalDnD;
     }
 
     void prepareCursor(Cursor c) {
