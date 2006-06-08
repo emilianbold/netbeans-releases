@@ -63,6 +63,10 @@ public final class FileBuiltQuery {
      * @return a status object that can be listened to, or null for no answer
      */
     public static Status getStatus(FileObject file) {
+        if (!file.isValid()) {
+            // Probably a race condition of some kind, abort gracefully.
+            return null;
+        }
         for (FileBuiltQueryImplementation fbqi : implementations.allInstances()) {
             Status s = fbqi.getStatus(file);
             if (s != null) {
