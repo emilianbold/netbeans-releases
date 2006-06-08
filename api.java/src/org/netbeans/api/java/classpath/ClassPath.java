@@ -192,6 +192,7 @@ public final class ClassPath {
             }
         }
         List<ClassPath.Entry> entries = this.entries();
+        FileObject[] ret;
         synchronized (this) {
             if (rootsCache == null || rootsListener == null) {
                 List<FileObject> l = new ArrayList<FileObject> ();
@@ -206,8 +207,10 @@ public final class ClassPath {
                 }
                 this.rootsCache = l.toArray (new FileObject[l.size()]);
             }
+            ret = this.rootsCache;
         }
-        return this.rootsCache;        
+        assert ret != null;
+        return ret;
     }
 
     /**
