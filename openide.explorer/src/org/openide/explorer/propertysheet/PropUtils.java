@@ -760,12 +760,18 @@ final class PropUtils {
         return missing;
     }
 
-    /** Gets a property editor appropriate to the class.  First
-     *  checks property editors registered via XML layers, then
-     *  falls back to <code>java.beans.PropertyEditorManager</code>.
+    /**
+     * Gets a property editor appropriate to the class.
+     * First checks {@link PropertyEditorManager}.
+     * Also handles enum types, and has a fallback dummy editor.
      */
     static PropertyEditor getPropertyEditor(Class c) {
         PropertyEditor result = PropertyEditorManager.findEditor(c);
+        
+        if (result == null && Enum.class.isAssignableFrom(c)) {
+            // XXX should this rather be done in Node.getPropertyEditor?
+            result = new EnumPropertyEditor(c.asSubclass(Enum.class));
+        }
 
         if (result == null) {
             result = new NoPropertyEditorEditor();
