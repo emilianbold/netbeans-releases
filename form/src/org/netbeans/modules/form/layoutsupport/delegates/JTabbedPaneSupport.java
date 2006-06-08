@@ -102,7 +102,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
 
         JTabbedPane tabbedPane = (JTabbedPane) container;
         if (selectedTab >= 0) {
-            if (tabbedPane.getComponentCount() > selectedTab) {
+            if (tabbedPane.getTabCount() > selectedTab) {
                 // select the tab
                 tabbedPane.setSelectedIndex(selectedTab);
 
@@ -113,9 +113,9 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                 tabbedPane.repaint();
             }
         }
-        else if (tabbedPane.getComponentCount() > 0) {
+        else if (tabbedPane.getTabCount() > 0) {
             // workaround for JTabbedPane bug 4190719
-            tabbedPane.getComponent(0).setVisible(true);
+            tabbedPane.getComponentAt(0).setVisible(true);
         }
     }
 
@@ -142,7 +142,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
     {
         if (!(container instanceof JTabbedPane))
             return -1;
-        return container.getComponentCount();
+        return ((JTabbedPane)container).getTabCount();
     }
 
     public String getAssistantContext() {
@@ -172,7 +172,8 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         if (!(container instanceof JTabbedPane))
             return false;
 
-        if ((container.getComponentCount() == 0) || (component == container.getComponent(0))) {
+        JTabbedPane tabbedPane = (JTabbedPane) container;
+        if ((tabbedPane.getTabCount() == 0) || (component == tabbedPane.getComponentAt(0))) {
             Dimension sz = container.getSize();
             Insets insets = container.getInsets();
             sz.width -= insets.left + insets.right;
@@ -180,7 +181,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
             g.drawRect(0, 0, sz.width, sz.height);
         }
         else {
-            Rectangle rect = container.getComponent(0).getBounds();
+            Rectangle rect = tabbedPane.getComponentAt(0).getBounds();
             g.drawRect(rect.x, rect.y, rect.width, rect.height);
         }
         return true;
