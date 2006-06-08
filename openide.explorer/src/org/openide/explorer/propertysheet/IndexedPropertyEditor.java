@@ -399,8 +399,8 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
         protected SystemAction[] createActions() {
             try {
                 return new SystemAction[] {
-                    SystemAction.get(Class.forName("org.openide.actions.MoveUpAction")), // NOI18N
-                    SystemAction.get(Class.forName("org.openide.actions.MoveDownAction")) // NOI18N
+                    SystemAction.get(Class.forName("org.openide.actions.MoveUpAction").asSubclass(SystemAction.class)), // NOI18N
+                    SystemAction.get(Class.forName("org.openide.actions.MoveDownAction").asSubclass(SystemAction.class)), // NOI18N
                 };
             } catch (ClassNotFoundException cnfe) {
                 // silently ignore in case we are in standalone library

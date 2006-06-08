@@ -93,11 +93,9 @@ class IndexedEditorPanel extends javax.swing.JPanel implements ExplorerManager.P
         try {
             selectedLookup = org.openide.util.lookup.Lookups.proxy(this);
 
-            NodeAction globalMoveUp = (NodeAction) SystemAction.get(Class.forName("org.openide.actions.MoveUpAction")); // NOI18N
-            NodeAction globalMoveDown = (NodeAction) SystemAction.get(
-                    Class.forName("org.openide.actions.MoveDownAction")
-                ); // NOI18N
-            NodeAction globalNewAction = (NodeAction) SystemAction.get(Class.forName("org.openide.actions.NewAction")); // NOI18N
+            NodeAction globalMoveUp = SystemAction.get(Class.forName("org.openide.actions.MoveUpAction").asSubclass(NodeAction.class)); // NOI18N
+            NodeAction globalMoveDown = SystemAction.get(Class.forName("org.openide.actions.MoveDownAction").asSubclass(NodeAction.class)); // NOI18N
+            NodeAction globalNewAction = SystemAction.get(Class.forName("org.openide.actions.NewAction").asSubclass(NodeAction.class)); // NOI18N
 
             // Get context aware instances.
             moveUp = globalMoveUp.createContextAwareInstance(selectedLookup);
