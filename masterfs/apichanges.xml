@@ -19,9 +19,8 @@ Microsystems, Inc. All Rights Reserved.
     <changes>
         <change id="added-support-for-subversion">
             <api name="masterfs"/>
-            <summary>
-            </summary>
-            <version major="1" minor="8"/>
+            <summary><code>ProvidedExtensions</code> was added.</summary>
+            <version major="1" minor="9"/>
             <date day="24" month="4" year="2006"/>
             <author login="rmatous"/>
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
@@ -40,35 +39,22 @@ Microsystems, Inc. All Rights Reserved.
     </changes>
     <htmlcontents>
         <head>
-            <title>Change History for the MasterFileSystem API</title>
-            <link rel="stylesheet" href="prose.css" type="text/css"/>
+        <title>Change History for the MasterFileSystem API</title>
+        <link rel="stylesheet" href="prose.css" type="text/css"/>
         </head>
         <body>
             <p class="overviewlink">
                 <a href="overview-summary.html">Overview</a>
             </p>
             <h1>Introduction</h1>
-            <h2>What do the Dates Mean?</h2>
-            <p>
-                The supplied dates indicate when the API change was made, on the CVS
-                trunk. From this you can generally tell whether the change should be
-                present in a given build or not; for trunk builds, simply whether it
-                was made before or after the change; for builds on a stabilization
-                branch, whether the branch was made before or after the given date. In
-                some cases corresponding API changes have been made both in the trunk
-                and in an in-progress stabilization branch, if they were needed for a
-                bug fix; this ought to be marked in this list.
-            </p>
-            <ul>
-                <li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
-                Specification versions: 6.0 begins after this point.</li>
-                <li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
-                Specification versions: 5.0 begins after this point.</li>
-            </ul>
-            <hr/>
-            <standard-changelists module-code-name="$codebase"/>
-            <hr/>
-            <p>@FOOTER@</p>
+
+            <p>This document lists changes made to the <a href="@TOP@">MasterFileSystem API</a>.</p>
+            <!-- The actual lists of changes, as summaries and details: -->
+
+            <hr/><standard-changelists module-code-name="org.netbeans.modules.masterfs"/>
+
+            <hr/><p>@FOOTER@</p>
+
         </body>
     </htmlcontents>
 </apichanges>
