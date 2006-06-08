@@ -17,7 +17,6 @@ import java.io.*;
 import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.*;
-import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.*;
@@ -70,13 +69,19 @@ public class VersionsCache {
             }
         } else if (Setup.REVISION_CURRENT.equals(revision)) {
             return base;
-        } else if (Setup.REVISION_HEAD.equals(revision)) {
+        } else {
+            SVNRevision svnrevision;
+            if (Setup.REVISION_HEAD.equals(revision)) {
+                svnrevision = SVNRevision.HEAD;
+            } else {
+                svnrevision = new SVNRevision.Number(Long.parseLong(revision));
+            }
             try {
                 SvnClient client = Subversion.getInstance().getClient(base);
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 InputStream in;
                 if ((cache.getStatus(base).getStatus() & FileInformation.STATUS_VERSIONED) != 0)  {
-                    in = client.getContent(base, SVNRevision.HEAD);
+                    in = client.getContent(base, svnrevision);
                 } else {
                     SVNUrl url = SvnUtils.getRepositoryUrl(base);
                     if (url != null) {
@@ -107,7 +112,5 @@ public class VersionsCache {
         // (mapping all repository revisions to it)
         //
         // File caching is leveraged in Search History
-        assert false: "Not implemented. Can not load revision: " + revision;
-        return null;
     }
 }

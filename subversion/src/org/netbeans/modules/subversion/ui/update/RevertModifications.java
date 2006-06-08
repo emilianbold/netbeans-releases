@@ -43,13 +43,28 @@ public class RevertModifications implements PropertyChangeListener {
     
     /** Creates a new instance of RevertModifications */
     public RevertModifications(RepositoryFile repositoryFile) {
-        types = new RevertType[] {
-            new LocalRevertType(getPanel().localChangesRadioButton),
-            new OneCommitRevertType(repositoryFile, getPanel().oneCommitRadioButton),
-            new MoreCommitsRevertType(repositoryFile, getPanel().moreCommitsRadioButton)
-        };
+        this (repositoryFile, null);
     }
 
+    /** Creates a new instance of RevertModifications */
+    public RevertModifications(RepositoryFile repositoryFile, String defaultRevision) {
+        OneCommitRevertType ocrt = new OneCommitRevertType(repositoryFile, getPanel().oneCommitRadioButton);
+        types = new RevertType[] {
+            new LocalRevertType(getPanel().localChangesRadioButton),
+            ocrt,
+            new MoreCommitsRevertType(repositoryFile, getPanel().moreCommitsRadioButton)
+        };
+        okButton = new JButton("Revert");
+        okButton.getAccessibleContext().setAccessibleDescription("Revert");
+        cancelButton = new JButton("Cancel");
+        cancelButton.getAccessibleContext().setAccessibleDescription("Cancel");
+        if (defaultRevision != null) {
+            panel.oneCommitRadioButton.setSelected(true);
+            panel.oneRevisionTextField.setText(defaultRevision);
+            ocrt.actionPerformed(null);
+        }
+    } 
+    
     private RevertModificationsPanel getPanel() {
         if(panel == null) {
             panel = new RevertModificationsPanel();
@@ -68,10 +83,6 @@ public class RevertModifications implements PropertyChangeListener {
 
     public boolean showDialog() {
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, "Revert Modifications");
-        okButton = new JButton("Revert");
-        okButton.getAccessibleContext().setAccessibleDescription("Revert");
-        cancelButton = new JButton("Cancel");
-        cancelButton.getAccessibleContext().setAccessibleDescription("Cancel");
         dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
         
         dialogDescriptor.setModal(true);
@@ -157,7 +168,7 @@ public class RevertModifications implements PropertyChangeListener {
         }
 
         protected boolean validateRevision(SVNRevision revision) {
-            boolean valid = revision == null || revision.equals(SVNRevision.HEAD);
+            boolean valid = revision == null || revision.equals(SVNRevision.HEAD) || revision.getKind() == SVNRevision.Kind.number;
             RevertModifications.this.okButton.setEnabled(valid);
             return valid;
         }

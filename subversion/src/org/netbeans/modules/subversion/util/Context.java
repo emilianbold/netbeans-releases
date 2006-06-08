@@ -41,6 +41,14 @@ public class Context implements Serializable {
         while (normalize());
     }
 
+    public Context(File file) {
+        List<File> singleList = new ArrayList<File>(1);
+        singleList.add(file);
+        this.filteredFiles = singleList;
+        this.rootFiles = singleList;
+        this.exclusions = Collections.emptyList();
+    }
+    
     private boolean normalize() {
         for (Iterator<File> i = rootFiles.iterator(); i.hasNext();) {
             File root = i.next();
@@ -102,11 +110,11 @@ public class Context implements Serializable {
      * @return files to operate on
      */ 
     public File [] getFiles() {
-        return (File[]) filteredFiles.toArray(new File[filteredFiles.size()]);
+        return filteredFiles.toArray(new File[filteredFiles.size()]);
     }
 
     public File[] getRootFiles() {
-        return (File[]) rootFiles.toArray(new File[rootFiles.size()]);
+        return rootFiles.toArray(new File[rootFiles.size()]);
     }
     
     public boolean contains(File file) {

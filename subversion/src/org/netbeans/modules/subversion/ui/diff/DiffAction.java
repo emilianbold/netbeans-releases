@@ -52,6 +52,14 @@ public class DiffAction extends ContextAction {
         tc.open();
         tc.requestActive();        
     }
+
+    public static void diff(File file, String rev1, String rev2) {
+        DiffMainPanel panel = new DiffMainPanel(file, rev1, rev2); // spawns bacground DiffPrepareTask
+        DiffTopComponent tc = new DiffTopComponent(panel);
+        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName()));
+        tc.open();
+        tc.requestActive();        
+    }
     
     protected void performContextAction(Node[] nodes) {
         Context ctx = getContext(nodes);

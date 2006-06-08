@@ -168,12 +168,16 @@ public class Subversion {
     }
 
     public SvnClient getClient(File file) throws SVNClientException {
+        return getClient(file, null);
+    }
+
+    public SvnClient getClient(File file, SvnProgressSupport support) throws SVNClientException {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
         assert repositoryUrl != null : "Unable to get repository: " + file.getAbsolutePath() + " is probably unmanaged.";
 
-        return getClient(repositoryUrl);
+        return getClient(repositoryUrl, support);
     }
-
+    
     public SvnClient getClient(Context ctx, SvnProgressSupport support) throws SVNClientException {
         File[] roots = ctx.getRootFiles();
         SVNUrl repositoryUrl = null;

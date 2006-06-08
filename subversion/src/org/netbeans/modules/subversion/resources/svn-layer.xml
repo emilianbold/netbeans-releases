@@ -311,18 +311,27 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-ui-actions-ProjectMenuItem.instance"/>
         </folder>
     </folder>
-<!--
+
     <folder name="Editors">
         <folder name="SideBar">
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-annotate-AnnotationBarManager.instance"/>
-            <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-annotate-AnnotationBarManager.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-annotate-AnnotationBarManager.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance"/>
+            <!-- place in between line numbers sidebar and folding sidebar #57544 -->
+            <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
         </folder>
-        
         <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-versioning-system-cvss-Annotation.xml" url="cvs_annotation.xml"/>
+            <file name="org-netbeans-modules-subversion-Annotation.xml" url="svn_annotation.xml"/>
         </folder>
+        <folder name="text">
+            <folder name="base">
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-subversion-ui-blame-AnnotationMarkInstaller.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.blame.AnnotationMarkInstaller"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>        
+        
     </folder>
-    -->
 
 </filesystem>
