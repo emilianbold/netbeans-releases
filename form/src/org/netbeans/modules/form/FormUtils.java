@@ -402,13 +402,7 @@ public class FormUtils
         }
 
         if (o.getClass() == Font.class) {
-            // Issue 49973
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                Font font = (Font)o;
-                return new Font(font.getName(), font.getStyle(), font.getSize());
-            } else {
-                return Font.getFont(((Font)o).getAttributes());
-            }
+            return o;
         }
         // Issue 49973
         if ((o.getClass() == TitledBorder.class)

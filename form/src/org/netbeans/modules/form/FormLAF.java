@@ -26,7 +26,7 @@ import org.openide.ErrorManager;
  *
  * @author Jan Stola, Tran Duc Trung
  */
-class FormLAF {
+public class FormLAF {
     /** Determines whether the FormLAF has been initialized (e.g. DelegatingDefaults has been installed). */
     private static boolean initialized = false;
     /** Determines whether we already are in LAF block. */
@@ -272,6 +272,10 @@ class FormLAF {
             delDefaults.setPreviewDefaults(uiDefaults);
         }
         delDefaults.setPreviewing(previewing);
+    }
+
+    public static boolean getUsePreviewDefaults() {
+        return preview && !delDefaults.isDelegating();
     }
 
     /**

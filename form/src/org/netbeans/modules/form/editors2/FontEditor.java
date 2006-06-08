@@ -22,7 +22,6 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.form.FormModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -35,11 +34,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.form.FormAwareEditor;
-import org.netbeans.modules.form.FormDesignValue;
-import org.netbeans.modules.form.FormProperty;
-import org.netbeans.modules.form.RADComponent;
-import org.netbeans.modules.form.RADProperty;
+import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.codestructure.CodeVariable;
 
 /**
@@ -170,7 +165,9 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
                     if (propertyValue.size > 0) {
                         exp += '+';
                     }
-                    exp += propertyValue.size + ")"; // NOI18N
+                    exp += propertyValue.size;
+                    if (!styleChanged) exp += "f"; // NOI18N
+                    exp += ")"; // NOI18N
                 }
             }
         }
@@ -474,7 +471,7 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
             if (absolute) {
                 value = font;
             } else {
-                value = (Font)property.getDefaultValue();
+                value = defaultValue(property);
                 if (value != null) {
                     int origStyle = value.getStyle();
                     int style = origStyle;
@@ -497,18 +494,32 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
                     if ((style != origStyle) || (origSize != newSize)) {
                         value = value.deriveFont(style, newSize);
                     }
-                    // Hack - propagation of the new font (created as a result
-                    // of LaF switch) back to the delegate
-                    PropertyEditor editor = property.getCurrentEditor();
-                    if (editor instanceof FontEditor) {
-                        FontEditor fontEditor = (FontEditor)editor;
-                        if (!value.equals(fontEditor.delegate.getValue())) {
-                            fontEditor.delegate.setValue(value);
-                        }
-                    }
                 }
             }
             return value;
+        }
+        
+        private Font defaultValue(FormProperty property) {
+            if ((property instanceof RADProperty) && FormLAF.getUsePreviewDefaults()) {
+                RADProperty radProp = (RADProperty)property;
+                Class clazz = radProp.getRADComponent().getBeanClass();
+                BeanInfo beanInfo = BeanSupport.createBeanInfo(clazz);
+                PropertyDescriptor[] propDesc = beanInfo.getPropertyDescriptors();
+                String propName = property.getName();
+                for (int i=0; i<propDesc.length; i++) {
+                    if (propDesc[i].getName().equals(propName)) {
+                        java.lang.reflect.Method readMethod = propDesc[i].getReadMethod();
+                        if (readMethod != null) {
+                            try {
+                                Object beanInstance = BeanSupport.createBeanInstance(clazz);
+                                return (Font)readMethod.invoke(beanInstance, new Object [0]);
+                            } catch (Exception e) {
+                            }
+                        } 
+                    }
+                }
+            }
+            return (Font)property.getDefaultValue();
         }
 
         public String getDescription() {
