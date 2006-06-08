@@ -1013,7 +1013,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             Object bean = metacomp.getBeanInstance();
             if (bean instanceof JTabbedPane) {
                 JTabbedPane pane = (JTabbedPane)bean;
-                int count = pane.getComponentCount();
+                int count = pane.getTabCount();
                 switch (count) {
                     case 0: context = "tabbedPaneEmpty"; break; // NOI18N
                     case 1: context = "tabbedPaneOne"; break; // NOI18N
