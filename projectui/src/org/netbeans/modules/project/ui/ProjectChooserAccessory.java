@@ -56,43 +56,43 @@ import org.openide.util.Utilities;
  *
  * @author  phrebejk
  */
-public class ProjectChooserAccessory extends javax.swing.JPanel 
+public class ProjectChooserAccessory extends javax.swing.JPanel
     implements ActionListener, PropertyChangeListener {
-    
-    private RequestProcessor.Task updateSubprojectsTask;    
+
+    private RequestProcessor.Task updateSubprojectsTask;
     private ModelUpdater modelUpdater;
-    
+
     private Boolean tempSetAsMain;
-    
+
     private Map<Project,Set<Project>> subprojectsCache = new HashMap<Project,Set<Project>>(); // #59098
-    
+
     /** Creates new form ProjectChooserAccessory */
     public ProjectChooserAccessory( JFileChooser chooser, boolean isOpenSubprojects, boolean isOpenAsMain ) {
         initComponents();
-        
+
         modelUpdater = new ModelUpdater();
         updateSubprojectsTask = new RequestProcessor( "ProjectChooserAccesoryModelUpdater" ).create( modelUpdater );
         updateSubprojectsTask.setPriority( Thread.MIN_PRIORITY );
-        
+
         // Listen on the subproject checkbox to change the option accordingly
         jCheckBoxSubprojects.setSelected( isOpenSubprojects );
         jCheckBoxSubprojects.addActionListener( this );
-        
+
         // Listen on the main checkbox to change the option accordingly
         jCheckBoxMain.setSelected( isOpenAsMain );
         jCheckBoxMain.addActionListener( this );
-        
+
         // Listen on the chooser to update the Accessory
         chooser.addPropertyChangeListener( this );
-        
+
         // Set default list model for the subprojects list
         jListSubprojects.setModel( new DefaultListModel() );
-        
+
         // Disable the Accessory. JFileChooser does not select a file
         // by default
         setAccessoryEnablement( false, 0 );
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -162,8 +162,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         add(jScrollPaneSubprojects, gridBagConstraints);
 
     }//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBoxMain;
     private javax.swing.JCheckBox jCheckBoxSubprojects;
@@ -172,9 +172,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     private javax.swing.JScrollPane jScrollPaneSubprojects;
     private javax.swing.JTextField jTextFieldProjectName;
     // End of variables declaration//GEN-END:variables
-    
+
     // Implementation of action listener ---------------------------------------
-    
+
     public void actionPerformed( ActionEvent e ) {
         if ( e.getSource() == jCheckBoxSubprojects ) {
             OpenProjectListSettings.getInstance().setOpenSubprojects( jCheckBoxSubprojects.isSelected() );
@@ -185,25 +185,25 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     }
 
     // Implementayion of PropertyChange listener
-    
+
     public void propertyChange( PropertyChangeEvent e ) {
-        if ( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals( e.getPropertyName() ) || 
-             JFileChooser.SELECTED_FILES_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {             
-            
+        if ( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals( e.getPropertyName() ) ||
+             JFileChooser.SELECTED_FILES_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {
+
             // We have to update the Accessory
             JFileChooser chooser = (JFileChooser)e.getSource();
             ListModel spListModel = jListSubprojects.getModel();
-            
-                        
+
+
             final File[] projectDirs;
-            if ( chooser.isMultiSelectionEnabled() ) {                    
+            if ( chooser.isMultiSelectionEnabled() ) {
                 projectDirs = chooser.getSelectedFiles();
             }
             else {
                 projectDirs = new File[] { chooser.getSelectedFile() };
             }
 
-            // Project project = OpenProjectList.fileToProject( projectDir ); 
+            // Project project = OpenProjectList.fileToProject( projectDir );
             ArrayList<Project> projects = new ArrayList<Project>( projectDirs.length );
             for( int i = 0; i < projectDirs.length; i++ ) {
                 if ( projectDirs[i] != null ) {
@@ -218,55 +218,55 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             if ( !projects.isEmpty() ) {
                 // Enable all components acessory
                 setAccessoryEnablement( true, projects.size() );
-                
-                if ( projects.size() == 1 ) {                    
-                    String projectName = ProjectUtils.getInformation( (Project)projects.get(0) ).getDisplayName();                    
+
+                if ( projects.size() == 1 ) {
+                    String projectName = ProjectUtils.getInformation( (Project)projects.get(0) ).getDisplayName();
                     jTextFieldProjectName.setText( projectName );
                     jTextFieldProjectName.setToolTipText( projectName );
                 }
                 else {
-                    String pattern = NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Multiselection" ); // NOI18N                    
+                    String pattern = NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Multiselection" ); // NOI18N
                     jTextFieldProjectName.setText( MessageFormat.format( pattern, new Object[] { new Integer( projects.size() ) } ) );
-                    
+
                     StringBuffer toolTipText = new StringBuffer( "<html>" ); // NOI18N
-                    for( Iterator it = projects.iterator(); it.hasNext(); ) {
-                        Project p = (Project)it.next();
+                    for(Iterator<Project> it = projects.iterator(); it.hasNext();) {
+                        Project p = it.next();
                         toolTipText.append( ProjectUtils.getInformation( p ).getDisplayName() );
                         if ( it.hasNext() ) {
                             toolTipText.append( "<br>" ); // NOI18N
                         }
                     }
-                    toolTipText.append( "</html>" ); // NOI18N                    
+                    toolTipText.append( "</html>" ); // NOI18N
                     jTextFieldProjectName.setToolTipText( toolTipText.toString() );
                 }
-                
+
                 if (spListModel instanceof DefaultListModel) {
-                    ((DefaultListModel)spListModel).clear();                
+                    ((DefaultListModel)spListModel).clear();
                 } else {
                     jListSubprojects.setListData (new String[0]);
                 }
-                
+
                 if (modelUpdater != null) { // #72495
                     modelUpdater.projects = projects;
                     updateSubprojectsTask.schedule( 100 );
                 }
             }
-            else {            
+            else {
                 // Clear the accessory data if the dir is not project dir
                 jTextFieldProjectName.setText( "" ); // NOI18N
                 if (modelUpdater != null) { // #72495
                     modelUpdater.projects = null;
                 }
-                
+
                 if (spListModel instanceof DefaultListModel) {
-                    ((DefaultListModel)spListModel).clear();                
+                    ((DefaultListModel)spListModel).clear();
                 } else {
                     jListSubprojects.setListData (new String[0]);
                 }
-                
+
                 // Disable all components in accessory
                 setAccessoryEnablement( false, 0 );
-                
+
                 // But, in case it is a load error, show that:
                 if (projectDirs.length == 1 && projectDirs[0] != null) {
                     File dir = FileUtil.normalizeFile(projectDirs[0]);
@@ -296,17 +296,17 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             }
-                        
+
         }
         else if ( JFileChooser.DIRECTORY_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {
             // Selection lost => disable accessory
             setAccessoryEnablement( false, 0 );
         }
-    }    
-    
-    
+    }
+
+
     // Private methods ---------------------------------------------------------
-    
+
     private static boolean isProjectDir( File dir ) {
         boolean retVal = false;
         if (dir != null) {
@@ -316,13 +316,13 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     retVal = false; // Ignore all subfolders of / on unixes (e.g. /net, /proc)
                 }
                 else {
-                    retVal = ProjectManager.getDefault().isProject( fo );    
+                    retVal = ProjectManager.getDefault().isProject( fo );
                 }
-            }            
+            }
         }
         return retVal;
     }
-    
+
     private static FileObject convertToValidDir(File f) {
         FileObject fo;
         File testFile = new File( f.getPath() );
@@ -331,22 +331,22 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             // directories.
             return null;
         }
-        
+
         /**ATTENTION: on Windows may occure dir.isDirectory () == dir.isFile () == true then
-         * its used testFile instead of dir. 
-        */    
+         * its used testFile instead of dir.
+        */
         if ( !testFile.isDirectory() ) {
             return null;
         }
-            
+
         fo =  FileUtil.toFileObject(FileUtil.normalizeFile(f));
         return fo;
     }
-    
+
     private static Project getProject( File dir ) {
         return OpenProjectList.fileToProject( dir );
     }
-    
+
     private void setAccessoryEnablement( boolean enable, int numberOfProjects ) {
         jLabelProjectName.setEnabled( enable );
         jTextFieldProjectName.setEnabled( enable );
@@ -362,13 +362,13 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             jCheckBoxMain.setEnabled( enable );
         }
         else if ( tempSetAsMain == null ) {
-            tempSetAsMain = new Boolean( jCheckBoxMain.isSelected() );  
-            jCheckBoxMain.setSelected( false );            
-            jCheckBoxMain.setEnabled( false ); 
-        }            
-        
+            tempSetAsMain = new Boolean( jCheckBoxMain.isSelected() );
+            jCheckBoxMain.setSelected( false );
+            jCheckBoxMain.setEnabled( false );
+        }
+
     }
-        
+
     /** Gets all subprojects recursively
      */
     static void addSubprojects(Project p, List<Project> result, Map<Project,Set<Project>> cache) {
@@ -382,19 +382,18 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             }
             cache.put(p, subprojects);
         }
-        for (Iterator<Project> it = subprojects.iterator(); it.hasNext(); ) {
-            Project sp = it.next(); 
+        for (Project sp : subprojects) {
             if ( !result.contains( sp ) ) {
                 result.add( sp );
-                
+
                 //#70029: only add sp's subprojects if sp is not already in result,
                 //to prevent StackOverflow caused by misconfigured projects:
                 addSubprojects(sp, result, cache);
             }
         }
-        
+
     }
-    
+
     /**
      * Get a slash-separated relative path from f1 to f2, if they are collocated
      * and this is possible.
@@ -435,16 +434,16 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             return path + File.separatorChar;
         }
     }
-    
-    
+
+
     // Other methods -----------------------------------------------------------
-    
+
     /** Factory method for project chooser
-     */    
+     */
     public static JFileChooser createProjectChooser( boolean defaultAccessory ) {
-        
+
         ProjectManager.getDefault().clearNonProjectCache(); // #41882
-        
+
         OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
         JFileChooser chooser = new ProjectFileChooser();
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
@@ -454,25 +453,25 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             chooser.putClientProperty("GTKFileChooser.showDirectoryIcons", Boolean.TRUE); // NOI18N
             //chooser.putClientProperty("GTKFileChooser.showFileIcons", Boolean.TRUE); // NOI18N
         }
-        
+
         chooser.setApproveButtonText( NbBundle.getMessage( ProjectChooserAccessory.class, "BTN_PrjChooser_ApproveButtonText" ) ); // NOI18N
         chooser.setApproveButtonMnemonic( NbBundle.getMessage( ProjectChooserAccessory.class, "MNM_PrjChooser_ApproveButtonText" ).charAt (0) ); // NOI18N
         chooser.setApproveButtonToolTipText (NbBundle.getMessage( ProjectChooserAccessory.class, "BTN_PrjChooser_ApproveButtonTooltipText")); // NOI18N
-        // chooser.setMultiSelectionEnabled( true );        
+        // chooser.setMultiSelectionEnabled( true );
         chooser.setDialogTitle( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Title" ) ); // NOI18N
         //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
         chooser.setAcceptAllFileFilterUsed( false );
-        chooser.setFileFilter( ProjectDirFilter.INSTANCE );        
-        
+        chooser.setFileFilter( ProjectDirFilter.INSTANCE );
+
         // A11Y
         chooser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "AN_ProjectChooserAccessory"));
         chooser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "AD_ProjectChooserAccessory"));
 
-        
+
         if ( defaultAccessory ) {
             chooser.setAccessory( new ProjectChooserAccessory( chooser, opls.isOpenSubprojects(), opls.isOpenAsMain() ) );
         }
-        
+
         File currDir = null;
         String dir = opls.getLastOpenProjectDir();
         if ( dir != null ) {
@@ -481,12 +480,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 currDir = d;
             }
         }
-        
+
         FileUtil.preventFileChooserSymlinkTraversal(chooser, currDir);
-        chooser.setFileView( new ProjectFileView( chooser.getFileSystemView() ) );                
-        
-        return chooser;    
-        
+        chooser.setFileView( new ProjectFileView( chooser.getFileSystemView() ) );
+
+        return chooser;
+
     }
 
     public void removeNotify() { // #72006
@@ -497,56 +496,56 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     }
 
     // Aditional innerclasses for the file chooser -----------------------------
-    
+
     private static class ProjectFileChooser extends JFileChooser {
-        
+
         public void approveSelection() {
             File dir = FileUtil.normalizeFile(getSelectedFile());
-            
+
             if ( isProjectDir( dir ) && getProject( dir ) != null ) {
                 super.approveSelection();
             }
             else {
                 setCurrentDirectory( dir );
             }
-            
+
         }
-        
-        
+
+
     }
-    
+
     private static class ProjectDirFilter extends FileFilter {
-        
+
         private static final FileFilter INSTANCE = new ProjectDirFilter( );
-                       
+
         public boolean accept( File f ) {
-            
-            if ( f.isDirectory() ) {                
+
+            if ( f.isDirectory() ) {
                 return true; // Directory selected
             }
-            
+
             return false;
-        }        
-        
+        }
+
         public String getDescription() {
             return NbBundle.getMessage( ProjectDirFilter.class, "LBL_PrjChooser_ProjectDirectoryFilter_Name" ); // NOI18N
-        }        
-        
+        }
+
     }
-    
+
     private static class ProjectFileView extends FileView {
-        
+
         private static final Icon BADGE = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectBadge.gif")); // NOI18N
         private static final Icon EMPTY = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/empty.gif")); // NOI18N
-        
+
         private FileSystemView fsv;
         private Icon lastOriginal;
         private Icon lastMerged;
-        
+
         public ProjectFileView( FileSystemView fsv ) {
-            this.fsv = fsv;            
+            this.fsv = fsv;
         }
-                
+
         public Icon getIcon(File _f) {
             if (!_f.exists()) {
                 // Can happen when a file was deleted on disk while project
@@ -565,64 +564,64 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     return lastMerged;
                 }
                 lastOriginal = original;
-                lastMerged = new MergedIcon(original, BADGE, -1, -1);                
+                lastMerged = new MergedIcon(original, BADGE, -1, -1);
                 return lastMerged;
             }
             else {
                 return original;
             }
         }
-        
-                
+
+
     }
-    
+
     private static class MergedIcon implements Icon {
-        
+
         private Icon icon1;
         private Icon icon2;
         private int xMerge;
         private int yMerge;
-        
+
         MergedIcon( Icon icon1, Icon icon2, int xMerge, int yMerge ) {
-            
+
             this.icon1 = icon1;
             this.icon2 = icon2;
-            
+
             if ( xMerge == -1 ) {
                 xMerge = icon1.getIconWidth() - icon2.getIconWidth();
             }
-            
+
             if ( yMerge == -1 ) {
                 yMerge = icon1.getIconHeight() - icon2.getIconHeight();
             }
-            
+
             this.xMerge = xMerge;
             this.yMerge = yMerge;
         }
-        
+
         public int getIconHeight() {
             return Math.max( icon1.getIconHeight(), yMerge + icon2.getIconHeight() );
         }
-        
+
         public int getIconWidth() {
             return Math.max( icon1.getIconWidth(), yMerge + icon2.getIconWidth() );
         }
-        
+
         public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
             icon1.paintIcon( c, g, x, y );
             icon2.paintIcon( c, g, x + xMerge, y + yMerge );
         }
-        
+
     }
-    
+
     private class ModelUpdater implements Runnable {
 
         // volatile Project project;
         volatile List<Project> projects;
         private DefaultListModel subprojectsToSet;
-        
+
         public void run() {
-            
+
             if ( !SwingUtilities.isEventDispatchThread() ) {
                 List<Project> currentProjects = projects;
                 if ( currentProjects == null ) {
@@ -635,11 +634,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 jListSubprojects.setListData (new String [] {NbBundle.getMessage (ProjectChooserAccessory.class, "MSG_PrjChooser_WaitMessage")});
 
                 List<Project> subprojects = new ArrayList<Project>(currentProjects.size() * 5);
-                for( Iterator<Project> it = currentProjects.iterator(); it.hasNext(); ) {
-                    addSubprojects(it.next(), subprojects, subprojectsCache); // Find the projects recursively
+                for (Project p : currentProjects) {
+                    addSubprojects(p, subprojects, subprojectsCache); // Find the projects recursively
                 }
-                
-		List<String> subprojectNames = new ArrayList<String>(currentProjects.size() * 5);
+
+		List<String> subprojectNames = new ArrayList<String>(subprojects.size());
                 if ( !subprojects.isEmpty() ) {
                     String pattern = NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_SubprojectName_Format" ); // NOI18N
                     File pDir = currentProjects.size() == 1 ?
@@ -647,13 +646,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                                 null;
 
                     // Replace projects in the list with formated names
-                    for ( int i = 0; i < subprojects.size(); i++ ) {
-                        Project p = subprojects.get( i );
+                    for (Project p : subprojects) {
                         FileObject spDir = p.getProjectDirectory();
-                        
+
                         // Try to compute relative path
                         String relPath = null;
-                        if ( pDir != null ) { // If only one project is selected                            
+                        if ( pDir != null ) { // If only one project is selected
                             relPath = relativizePath(pDir, FileUtil.toFile( spDir ));
                         }
 
@@ -661,10 +659,10 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                             // Cannot get a relative path; display it as absolute.
                             relPath = FileUtil.getFileDisplayName(spDir);
                         }
-                        String displayName = MessageFormat.format( 
-                            pattern, 
+                        String displayName = MessageFormat.format(
+                            pattern,
                             new Object[] { ProjectUtils.getInformation(p).getDisplayName(), relPath } );
-                        subprojectNames.set( i, displayName );
+                        subprojectNames.add(displayName);
                     }
 
                     // Sort the list
@@ -675,8 +673,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 }
                 DefaultListModel listModel = new DefaultListModel();
                 // Put all the strings into the list model
-                for( Iterator<String> it = subprojectNames.iterator(); it.hasNext(); ) {
-                    listModel.addElement( it.next() );
+                for (String displayName : subprojectNames) {
+                    listModel.addElement(displayName);
                 }
                 subprojectsToSet = listModel;
                 SwingUtilities.invokeLater( this );
@@ -686,7 +684,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 if ( projects == null ) {
                     ListModel spListModel = jListSubprojects.getModel();
                     if (spListModel instanceof DefaultListModel) {
-                        ((DefaultListModel)spListModel).clear();                
+                        ((DefaultListModel)spListModel).clear();
                     } else {
                         jListSubprojects.setListData (new String[0]);
                     }
@@ -694,16 +692,16 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 }
                 else {
                     jListSubprojects.setModel(subprojectsToSet);
-                    // If no soubprojects checkbox should be disabled                
+                    // If no soubprojects checkbox should be disabled
                     jCheckBoxSubprojects.setEnabled( !subprojectsToSet.isEmpty() );
                     projects = null;
-                }                
+                }
             }
-                        
+
         }
-    
-    
+
+
     }
-    
-    
+
+
 }
