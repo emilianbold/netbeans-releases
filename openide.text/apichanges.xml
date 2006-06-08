@@ -8,10 +8,10 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
---><!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
-
+-->
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
 <apichanges>
 <apidefs>
 <apidef name="text">Text API</apidef>
@@ -36,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
             a text snippet and regular Drop-Copy cursor is shown instead.
             When the object is dropped into the editor the <code>ExternalDropHandler</code>
             will process it (e.g. opens the file in a new editor tab).
+            </p>
         </description>
         <class package="org.openide.text" name="QuietEditorPane"/>
         <issue number="50129"/>
