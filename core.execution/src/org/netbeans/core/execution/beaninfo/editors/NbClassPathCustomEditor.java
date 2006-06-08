@@ -340,11 +340,6 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
                 == JFileChooser.APPROVE_OPTION) {
             File f = chooser.getSelectedFile();
             if ((f != null) && (f.isDirectory())) {
-                try {
-                    f = f.getCanonicalFile ();
-                } catch(IOException ioe) {
-                    // ignore
-                }
                 lastDirFolder = f.getParentFile();
 
                 listModel.addElement(f.getAbsolutePath());
