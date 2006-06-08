@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+<apichanges>
+    <apidefs>
+        <apidef name="masterfs">MasterFileSystem API</apidef>
+    </apidefs>
+    <changes>
+        <change id="added-support-for-subversion">
+            <api name="masterfs"/>
+            <summary>
+            </summary>
+            <version major="1" minor="8"/>
+            <date day="24" month="4" year="2006"/>
+            <author login="rmatous"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    <code>ProvidedExtensions</code> was added.
+                    Registering subclass of <code>ProvidedExtensions</code> 
+                    as a substitution of <code>InterceptionListener</code> is the way 
+                    how to impose handlers for renaming and moving into mastersfs implementation 
+                    which was required by module org.netbeans.modules.subversion.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="73042"/>
+        </change>
+    </changes>
+    <htmlcontents>
+        <head>
+            <title>Change History for the MasterFileSystem API</title>
+            <link rel="stylesheet" href="prose.css" type="text/css"/>
+        </head>
+        <body>
+            <p class="overviewlink">
+                <a href="overview-summary.html">Overview</a>
+            </p>
+            <h1>Introduction</h1>
+            <h2>What do the Dates Mean?</h2>
+            <p>
+                The supplied dates indicate when the API change was made, on the CVS
+                trunk. From this you can generally tell whether the change should be
+                present in a given build or not; for trunk builds, simply whether it
+                was made before or after the change; for builds on a stabilization
+                branch, whether the branch was made before or after the given date. In
+                some cases corresponding API changes have been made both in the trunk
+                and in an in-progress stabilization branch, if they were needed for a
+                bug fix; this ought to be marked in this list.
+            </p>
+            <ul>
+                <li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
+                Specification versions: 6.0 begins after this point.</li>
+                <li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
+                Specification versions: 5.0 begins after this point.</li>
+            </ul>
+            <hr/>
+            <standard-changelists module-code-name="$codebase"/>
+            <hr/>
+            <p>@FOOTER@</p>
+        </body>
+    </htmlcontents>
+</apichanges>
