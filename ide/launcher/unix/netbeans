@@ -70,8 +70,17 @@ readClusters() {
     done
 }
 
+absolutize_paths() {
+    while read path; do
+        oldpwd=`pwd`
+        cd "$path"
+        abspath=`pwd`
+        cd "${oldpwd}"
+        echo "$abspath"
+    done
+}
 
-netbeans_clusters=`readClusters | tr '\n' ':'`
+netbeans_clusters=`readClusters | absolutize_paths | tr '\n' ':'`
 
 if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"

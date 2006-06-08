@@ -331,7 +331,6 @@ final class MainImpl extends Object {
 
     private static void build_cp(File base, Collection<Union2<File,JarFile>> toAdd, Set<File> processedDirs)
     throws java.io.IOException {
-        base = base.getCanonicalFile ();
         if (!processedDirs.add (base)) {
             // already processed
             return;
