@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -63,8 +63,8 @@ public class GUIRegistrationPanelTest extends LayerTestBase {
                 
                 frame = new JFrame("testMemoryLeak_70032");
                 frame.getContentPane().setLayout(new BorderLayout());
-                frame.getContentPane().add(new JLabel("<html><font color='blue'>I will close my self" +
-                        " as soos as I load all data from the SystemFileSystem</font></html>"), BorderLayout.NORTH);
+                frame.getContentPane().add(new JLabel("<html><font color='blue'>I will close myself" +
+                        " as soon as I load all data from the SystemFileSystem</font></html>"), BorderLayout.NORTH);
                 frame.getContentPane().add(outerPane, BorderLayout.CENTER);
                 frame.pack();
                 // NOTE: we have to show the frame to take combobox renderers into the game
