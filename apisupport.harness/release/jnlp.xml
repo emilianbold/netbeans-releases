@@ -114,7 +114,7 @@ Microsystems, Inc. All Rights Reserved.
             dir="${jnlp.dest.dir}/netbeans/"
             codebase="${jnlp.platform.codebase.own}"
             verify="true"
-            verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css"
+            verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/swing-layout-1.0.1-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css"
             permissions="${jnlp.permissions}"
         >
             <modules refid="jnlp.included.modules"/>
