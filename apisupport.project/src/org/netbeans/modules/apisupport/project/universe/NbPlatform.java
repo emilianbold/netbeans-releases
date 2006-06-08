@@ -94,7 +94,11 @@ public final class NbPlatform {
     /**
      * Get a set of all registered platforms.
      */
-    public static Set/*<NbPlatform>*/ getPlatforms() {
+    public static synchronized Set/*<NbPlatform>*/ getPlatforms() {
+        return new HashSet(getPlatformsInternal());
+    }
+
+    private static Set/*<NbPlatform>*/ getPlatformsInternal() {
         if (platforms == null) {
             platforms = new HashSet();
             Map/*<String,String>*/ p = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()}).getProperties();
@@ -150,6 +154,9 @@ public final class NbPlatform {
         // Semi-arbitrary platform* component.
         File bootJar = InstalledFileLocator.getDefault().locate("core/core.jar", "org.netbeans.core.startup", false); // NOI18N
         if (bootJar == null) {
+            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                Util.err.log("no core/core.jar");
+            }
             return null;
         }
         // Semi-arbitrary harness component.
@@ -160,9 +167,16 @@ public final class NbPlatform {
             return null;
         }
         File loc = harnessJar.getParentFile().getParentFile().getParentFile();
-        if (!loc.equals(bootJar.getParentFile().getParentFile().getParentFile())) {
-            // Unusual installation structure, punt.
-            return null;
+        try {
+            if (!loc.getCanonicalFile().equals(bootJar.getParentFile().getParentFile().getParentFile().getCanonicalFile())) {
+                // Unusual installation structure, punt.
+                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    Util.err.log("core.jar & harness.jar locations do not match: " + bootJar + " vs. " + harnessJar);
+                }
+                return null;
+            }
+        } catch (IOException x) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
         }
         // Looks good.
         return FileUtil.normalizeFile(loc);
@@ -199,8 +213,8 @@ public final class NbPlatform {
      * @param id an ID (as in {@link #getID})
      * @return the platform with that ID, or null
      */
-    public static NbPlatform getPlatformByID(String id) {
-        Iterator it = getPlatforms().iterator();
+    public static synchronized NbPlatform getPlatformByID(String id) {
+        Iterator it = getPlatformsInternal().iterator();
         while (it.hasNext()) {
             NbPlatform p = (NbPlatform) it.next();
             if (p.getID().equals(id)) {
@@ -219,8 +233,8 @@ public final class NbPlatform {
      * @param the installation directory (as in {@link #getDestDir})
      * @return the platform with that destination directory
      */
-    public static NbPlatform getPlatformByDestDir(File destDir) {
-        Iterator it = getPlatforms().iterator();
+    public static synchronized NbPlatform getPlatformByDestDir(File destDir) {
+        Iterator it = getPlatformsInternal().iterator();
         while (it.hasNext()) {
             NbPlatform p = (NbPlatform) it.next();
             if (p.getDestDir().equals(destDir)) {
@@ -267,12 +281,12 @@ public final class NbPlatform {
     }
     
     /**
-     * Returns whether the platform within the given direcotry is already
+     * Returns whether the platform within the given directory is already
      * registered.
      */
-    public static boolean contains(File destDir) {
+    public static synchronized boolean contains(File destDir) {
         boolean contains = false;
-        Iterator it = getPlatforms().iterator();
+        Iterator it = getPlatformsInternal().iterator();
         while (it.hasNext()) {
             NbPlatform p = (NbPlatform) it.next();
             if (p.getDestDir().equals(destDir)) {
@@ -325,7 +339,9 @@ public final class NbPlatform {
         }
         NbPlatform plaf = new NbPlatform(id, label, FileUtil.normalizeFile(destdir), harness,
                 findURLs(null), findURLs(null));
-        getPlatforms().add(plaf);
+        synchronized (NbPlatform.class) {
+            getPlatformsInternal().add(plaf);
+        }
         if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             Util.err.log("NbPlatform added: " + plaf);
         }
@@ -364,7 +380,9 @@ public final class NbPlatform {
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
-        getPlatforms().remove(plaf);
+        synchronized (NbPlatform.class) {
+            getPlatformsInternal().remove(plaf);
+        }
         if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             Util.err.log("NbPlatform removed: " + plaf);
         }
