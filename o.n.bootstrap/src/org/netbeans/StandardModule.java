@@ -354,9 +354,8 @@ final class StandardModule extends Module {
         Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
         Util.err.fine("patches of " + jar + ": " + patches);
         if (patches != null) {
-            Iterator it = patches.iterator();
-            while (it.hasNext()) {
-                events.log(Events.PATCH, it.next());
+            for (File patch : patches) {
+                events.log(Events.PATCH, patch);
             }
         }
     }
@@ -368,11 +367,11 @@ final class StandardModule extends Module {
         }
         File[] jars = patchdir.listFiles(Util.jarFilter());
         if (jars != null) {
-            for (int j = 0; j < jars.length; j++) {
+            for (File jar : jars) {
                 if (patches == null) {
                     patches = new HashSet<File>(5);
                 }
-                patches.add(jars[j]);
+                patches.add(jar);
             }
         } else {
             Util.err.warning("Could not search for patches in " + patchdir);
@@ -538,12 +537,11 @@ final class StandardModule extends Module {
             PackageExport[] exports = parent.getPublicPackages();
             if (exports != null && exports.length == 0) {
                 // Check if there is an impl dep here.
-                Dependency[] deps = getDependenciesArray();
                 boolean implDep = false;
-                for (int i = 0; i < deps.length; i++) {
-                    if (deps[i].getType() == Dependency.TYPE_MODULE &&
-                            deps[i].getComparison() == Dependency.COMPARE_IMPL &&
-                            deps[i].getName().equals(parent.getCodeName())) {
+                for (Dependency dep : getDependenciesArray()) {
+                    if (dep.getType() == Dependency.TYPE_MODULE &&
+                            dep.getComparison() == Dependency.COMPARE_IMPL &&
+                            dep.getName().equals(parent.getCodeName())) {
                         implDep = true;
                         break;
                     }
@@ -565,8 +563,7 @@ final class StandardModule extends Module {
         }
         List<Union2<File,JarFile>> classp = new ArrayList<Union2<File,JarFile>>(3);
         if (patches != null) {
-            for (it = patches.iterator(); it.hasNext(); ) {
-                File f = (File)it.next();
+            for (File f : patches) {
                 if (f.isDirectory()) {
                     classp.add(Union2.<File,JarFile>createFirst(f));
                 } else {
