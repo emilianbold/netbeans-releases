@@ -502,20 +502,14 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
         private Font defaultValue(FormProperty property) {
             if ((property instanceof RADProperty) && FormLAF.getUsePreviewDefaults()) {
                 RADProperty radProp = (RADProperty)property;
-                Class clazz = radProp.getRADComponent().getBeanClass();
-                BeanInfo beanInfo = BeanSupport.createBeanInfo(clazz);
-                PropertyDescriptor[] propDesc = beanInfo.getPropertyDescriptors();
-                String propName = property.getName();
-                for (int i=0; i<propDesc.length; i++) {
-                    if (propDesc[i].getName().equals(propName)) {
-                        java.lang.reflect.Method readMethod = propDesc[i].getReadMethod();
-                        if (readMethod != null) {
-                            try {
-                                Object beanInstance = BeanSupport.createBeanInstance(clazz);
-                                return (Font)readMethod.invoke(beanInstance, new Object [0]);
-                            } catch (Exception e) {
-                            }
-                        } 
+                PropertyDescriptor propDesc = radProp.getPropertyDescriptor();
+                java.lang.reflect.Method readMethod = propDesc.getReadMethod();
+                if (readMethod != null) {
+                    try {
+                        Class clazz = radProp.getRADComponent().getBeanClass();
+                        Object beanInstance = BeanSupport.createBeanInstance(clazz);
+                        return (Font)readMethod.invoke(beanInstance, new Object [0]);
+                    } catch (Exception e) {
                     }
                 }
             }
