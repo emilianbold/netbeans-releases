@@ -75,6 +75,11 @@ public class SubprojectProviderImplTest extends TestBase {
         assertDepends("ide/applemenu", "ide/applemenu/eawtstub");
     }
     
+    /** @see "#77533" */
+    public void testSelfRefWithClassPathExts() throws Exception {
+        checkSubprojects("apisupport/samples/PaintApp-suite/ColorChooser", new String[0]);
+    }
+    
     private void checkSubprojects(String project, String[] subprojects) throws Exception {
         Project p = project(project);
         SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);

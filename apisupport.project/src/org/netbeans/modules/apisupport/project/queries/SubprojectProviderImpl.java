@@ -121,7 +121,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             File jar = project.getHelper().resolveFile(eval);
             // Could also use AntArtifactQuery but this should suffice:
             Project owner = FileOwnerQuery.getOwner(jar.toURI());
-            if (owner != null) {
+            if (owner != null && /* #77533 */ owner != project) {
                 s.add(owner);
             }
         }
