@@ -1355,7 +1355,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             return result;
         }
 
-        protected List getDraggedFilesList( Transferable t ) {
+        private List getDraggedFilesList( Transferable t ) {
             try {
                 if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
                     //windows & mac
@@ -1373,7 +1373,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             return null;
         }
 
-        protected DataFlavor getUriListDataFlavor() {
+        private DataFlavor getUriListDataFlavor() {
             if( null == uriListDataFlavor ) {
                 try {
                     uriListDataFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
@@ -1385,7 +1385,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             return uriListDataFlavor;
         }
 
-        protected List textURIListToFileList( String data ) {
+        private List textURIListToFileList( String data ) {
             List list = new ArrayList(1);
             for( StringTokenizer st = new StringTokenizer(data, "\r\n");
                 st.hasMoreTokens();) {

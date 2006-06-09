@@ -560,7 +560,7 @@ public class DataNode extends AbstractNode {
         return t;
     }
     
-    protected void addExternalFileTransferable( ExTransferable t, DataObject d ) {
+    private void addExternalFileTransferable( ExTransferable t, DataObject d ) {
         FileObject fo = d.getPrimaryFile();
         File file = FileUtil.toFile( fo );
         if( null != file ) {
@@ -582,7 +582,7 @@ public class DataNode extends AbstractNode {
         }
     }
 
-    protected DataFlavor createUriListFlavor () {
+    private DataFlavor createUriListFlavor () {
         try {
             return new DataFlavor("text/uri-list;class=java.lang.String");
         } catch (ClassNotFoundException ex) {
