@@ -26,6 +26,7 @@ import java.util.HashMap;
  * @author David Kaspar
  */
 // TODO - revalidateWidget does not work for ConnectionWidget correct - probably the old bounds are not taken in account
+// TODO - take SceneComponent dimension and correct Scene.resolveBounds
 public class Scene extends Widget {
 
     private double zoomFactor = 1.0;

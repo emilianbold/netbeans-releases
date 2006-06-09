@@ -17,6 +17,7 @@ import java.awt.*;
 /**
  * @author David Kaspar
  */
+// TODO - alignment
 public class ImageWidget extends Widget {
 
     private Image image;

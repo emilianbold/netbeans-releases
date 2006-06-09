@@ -22,6 +22,9 @@ import java.util.*;
  * @author David Kaspar
  */
 // TODO - PinCtrl should not have NodeCtrl reference, add NodeCtrl getPinNode (PinCtrl)
+// TODO - is it asserted that removing a node removes all its pins
+// TODO - is it asserted that removing a pin disconnects all the attached edges
+// TODO - attachNodeController should be called first, then value of NodeController.getID should be used and storaged in structures, similarly for attachEdgeController and attachPinController
 public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeController<Node>, EdgeCtrl extends EdgeController<Edge>, PinCtrl extends PinController<Pin>> extends ObjectScene {
 
     private HashMap<Node, NodeCtrl> nodeControllers = new HashMap<Node, NodeCtrl> ();
@@ -46,6 +49,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         NodeCtrl nodeController = attachNodeController (node);
         assert nodeController != null;
         addObject (nodeController);
+        node = nodeController.getNode ();
         nodeControllers.put (node, nodeController);
         nodePinControllers.put (nodeController, new HashMap<Pin, PinCtrl> ());
         return nodeController;
@@ -71,6 +75,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         EdgeCtrl edgeController = attachEdgeController (edge);
         assert edgeController != null;
         addObject (edgeController);
+        edge = edgeController.getEdge ();
         edgeControllers.put (edge, edgeController);
         return edgeController;
     }
@@ -96,6 +101,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         assert ! pinNodeControllers.containsKey (pinController);
         assert pinController != null;
         addObject (pinController);
+        pin = pinController.getPin ();
         pinControllers.put (pin, pinController);
         pinNodeControllers.put (pinController, nodeController);
         pinInputEdgeControllers.put (pinController, new ArrayList<EdgeCtrl> ());

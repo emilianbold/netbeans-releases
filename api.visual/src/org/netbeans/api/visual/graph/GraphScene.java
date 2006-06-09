@@ -21,6 +21,8 @@ import java.util.*;
 /**
  * @author David Kaspar
  */
+// TODO - is it asserted that removing a node disconnects all the attached edges
+// TODO - attachNodeController should be called first, then value of NodeController.getID should be used and storaged in structures, similarly for attachEdgeController
 public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Node>, EdgeCtrl extends EdgeController<Edge>> extends ObjectScene {
 
     private HashMap<Node, NodeCtrl> nodeControllers = new HashMap<Node, NodeCtrl> ();
@@ -43,6 +45,7 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
         NodeCtrl nodeController = attachNodeController (node);
         assert nodeController != null;
         addObject (nodeController);
+        node = nodeController.getNode ();
         nodeControllers.put (node, nodeController);
         nodeInputEdgeControllers.put (nodeController, new ArrayList<EdgeCtrl> ());
         nodeOutputEdgeControllers.put (nodeController, new ArrayList<EdgeCtrl> ());
@@ -75,6 +78,7 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
         EdgeCtrl edgeController = attachEdgeController (edge);
         assert edgeController != null;
         addObject (edgeController);
+        edge = edgeController.getEdge ();
         edgeControllers.put (edge, edgeController);
         return edgeController;
     }
