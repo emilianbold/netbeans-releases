@@ -302,31 +302,7 @@ public class SvnUtils {
      * @param revision num.dot revision or <code>null</code>
      */
     public static String previousRevision(String revision) {
-        if (revision == null) return null;
-        String[] nums = revision.split("\\.");  // NOI18N
-        assert (nums.length % 2) == 0 : "File revisions must consist from even tokens: " + revision; // NOI18N
-
-        // eliminate branches
-        int lastIndex = nums.length -1;
-        boolean cutoff = false;
-        while (lastIndex>1 && "1".equals(nums[lastIndex])) { // NOI18N
-            lastIndex -= 2;
-            cutoff = true;
-        }
-        if (lastIndex <= 0) {
-            return null;
-        } else if (lastIndex == 1 && "1".equals(nums[lastIndex])) { // NOI18N
-            return null;
-        } else {
-            int rev = Integer.parseInt(nums[lastIndex]);
-            if (!cutoff) rev--;
-            StringBuffer sb = new StringBuffer(nums[0]);
-            for (int i = 1; i<lastIndex; i++) {
-                sb.append('.').append(nums[i]); // NOI18N
-            }
-            sb.append('.').append(rev);  // NOI18N
-            return sb.toString();
-        }
+        return revision == null ? null : Long.toString(Long.parseLong(revision) - 1);
     }
 
     /**
