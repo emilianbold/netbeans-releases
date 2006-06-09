@@ -16,6 +16,8 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.border.EmptyBorder;
+import org.netbeans.api.visual.border.CompositeBorder;
 
 /**
  * @author David Kaspar
@@ -31,7 +33,7 @@ public class ListItemWidget extends LabelWidget {
     public void setState (ObjectState state) {
         super.setState (state);
         LookFeel lookFeel = getScene ().getLookFeel ();
-        setBorder (lookFeel.getMiniBorder (state));
+        setBorder (new CompositeBorder (new EmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
         setForeground (lookFeel.getForeground (state));
     }
 

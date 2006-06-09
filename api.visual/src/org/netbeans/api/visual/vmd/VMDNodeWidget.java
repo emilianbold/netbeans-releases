@@ -66,7 +66,7 @@ public class VMDNodeWidget extends Widget {
         header.addChild (desc);
 
         nameWidget = new LabelWidget (scene);
-        nameWidget.setFont (getFont ().deriveFont (Font.BOLD));
+        nameWidget.setFont (scene.getDefaultFont ().deriveFont (Font.BOLD));
         desc.addChild (nameWidget);
 
         typeWidget = new LabelWidget (scene);

@@ -45,6 +45,9 @@ public class Scene extends Widget {
         defaultFont = Font.decode (null);
         resolveBounds (new Point (), new Rectangle ());
         setOpaque(true);
+        setFont (defaultFont);
+        setBackground (lookFeel.getBackground ());
+        setForeground (lookFeel.getForeground ());
         sceneAnimator = new SceneAnimator (this);
     }
 

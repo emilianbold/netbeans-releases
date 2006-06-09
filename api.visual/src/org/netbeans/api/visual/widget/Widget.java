@@ -79,8 +79,8 @@ public class Widget {
 
         opaque = false;
         font = null;
-        background = scene != null ? scene.getLookFeel ().getBackground () : COLOR_BACKGROUND;
-        foreground = scene != null ? scene.getLookFeel ().getForeground () : COLOR_FOREGROUND;
+        background = null;
+        foreground = null;
         border = EmptyBorder.ZERO;
         layout = AbsoluteLayout.getDefault ();
         preferredLocation = null;
@@ -183,7 +183,7 @@ public class Widget {
     }
 
     public final Paint getBackground () {
-        return background;
+        return background != null ? background : parentWidget.getBackground ();
     }
 
     public final void setBackground (Paint background) {
@@ -192,7 +192,7 @@ public class Widget {
     }
 
     public final Color getForeground () {
-        return foreground;
+        return foreground != null ? foreground : parentWidget.getForeground ();
     }
 
     public final void setForeground (Color foreground) {
@@ -201,7 +201,7 @@ public class Widget {
     }
 
     public final Font getFont () {
-        return font != null ? font : scene.getDefaultFont ();
+        return font != null ? font : parentWidget.getFont ();
     }
 
     public final void setFont (Font font) {
