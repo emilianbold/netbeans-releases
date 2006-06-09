@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * @author David Kaspar
  */
-final class SceneComponent extends JPanel implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener {
+final class SceneComponent extends JPanel implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener,FocusListener {
 
     private Scene scene;
     private Widget lockedWidget;
@@ -63,7 +63,15 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
 //        System.out.println ("PAINT Time: " + (System.currentTimeMillis () - s));
     }
+    
+    public void focusGained(FocusEvent e) {
+        processFocusOperator (FocusOperator.FOCUS_GAINED, e);
+    }
 
+    public void focusLost(FocusEvent e) {
+        processFocusOperator (FocusOperator.FOCUS_LOST, e);
+    }
+    
     public void mouseClicked (MouseEvent e) {
         processMouseOperator (MouseOperator.MOUSE_CLICKED, e);
     }
@@ -231,6 +239,50 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         return false;
     }
 
+    
+    private void processFocusOperator (SceneComponent.FocusOperator operator, FocusEvent e) {
+        WidgetAction.WidgetFocusEvent event = new WidgetAction.WidgetFocusEvent (++ eventIDcounter, e);
+        processFocusOperator (operator, event);
+    }
+
+    private void processFocusOperator (SceneComponent.FocusOperator operator,  WidgetAction.WidgetFocusEvent e) {
+        WidgetAction.State state;
+
+        if (lockedAction != null) {
+            state = operator.operate (lockedAction, lockedWidget, e);
+            if (! state.isConsumed ())state = processFocusOperator (operator, scene, e);
+        } else
+            state = processFocusOperator (operator, scene, e);
+
+        lockedWidget = state.getLockedWidget ();
+        lockedAction = state.getLockedAction ();
+        scene.validate ();
+
+        if (lockedWidget != null)
+            scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
+    }
+
+    private WidgetAction.State processFocusOperator (SceneComponent.FocusOperator operator, Widget widget, WidgetAction.WidgetFocusEvent event) {
+        WidgetAction.State state;
+
+        List<Widget> children = widget.getChildren ();
+        Widget[] childrenArray = children.toArray (new Widget[children.size ()]);
+
+        for (int i = childrenArray.length - 1; i >= 0; i --) {
+            Widget child = childrenArray[i];
+            state = processFocusOperator (operator, child, event);
+            if (state.isConsumed ())
+                return state;
+        }
+
+        state = operator.operate (widget.getActions (), widget, event);
+        if (state.isConsumed ())
+            return state;
+
+        return WidgetAction.State.REJECTED;
+    }
+
+    
     private interface MouseOperator {
 
         public static final MouseOperator MOUSE_CLICKED = new MouseOperator() {
@@ -306,6 +358,24 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         };
 
         public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetKeyEvent event);
+
+    }
+    
+    private interface FocusOperator {
+
+        public static final FocusOperator FOCUS_GAINED = new FocusOperator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetFocusEvent event) {
+                return action.focusGained (widget, event);
+            }
+        };
+
+        public static final FocusOperator FOCUS_LOST = new FocusOperator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetFocusEvent event) {
+                return action.focusLost (widget, event);
+            }
+        };
+
+        public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetFocusEvent event);
 
     }
 
