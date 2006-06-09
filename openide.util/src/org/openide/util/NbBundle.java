@@ -258,13 +258,6 @@ public class NbBundle extends Object {
     * @return the localized object or <code>null</code> if no key matches
     */
     public static <T> T getLocalizedValue(Map<String,T> table, String key, Locale locale) {
-        if (table instanceof Attributes) {
-            throw new IllegalArgumentException(
-                "Please do not use a java.util.jar.Attributes for NbBundle.getLocalizedValue " + // NOI18N
-                "without using the special form that works properly with Attributes.Name's as keys."
-            ); // NOI18N
-        }
-
         Iterator<String> it = new LocaleIterator(locale);
 
         while (it.hasNext()) {
