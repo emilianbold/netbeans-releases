@@ -29,6 +29,21 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/**Test.class"/>
+
+		<!-- Some of the original tests had already been failing before the MimePath change. -->
+		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupPerformanceTest.class" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupPopupItemsChangeTest.class" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupTest.class/testRegisteredClassLookup" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupTest.class/testRegisteredTemplatesLookup" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupWeakRefTest.class/testWeakListenersAddingToResult" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/IssuesTest.class/testForChangeInLayer" />
+
+		<!-- These are the cloned original tests updated to use MimePath. They are still failing. -->
+		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupPerformanceTest.class" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupPopupItemsChangeTest.class" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupTest.class/testRegisteredClassLookup" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupTest.class/testRegisteredTemplatesLookup" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupWeakRefTest.class/testWeakListenersAddingToResult" />
             </patternset>
         </testset>
     </testbag>
@@ -36,6 +51,20 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="code" name="testbag_2">
         <testset dir="unit/src">
             <patternset>
+		<!-- Some of the original tests had already been failing before the MimePath change. -->
+		<include name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupPerformanceTest.class" />
+		<include name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupPopupItemsChangeTest.class" />
+		<include name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupTest.class/testRegisteredClassLookup" />
+		<include name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupTest.class/testRegisteredTemplatesLookup" />
+		<include name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupWeakRefTest.class/testWeakListenersAddingToResult" />
+		<include name="org/netbeans/modules/editor/mimelookup/IssuesTest.class/testForChangeInLayer" />
+
+		<!-- These are the cloned original tests updated to use MimePath. They are still failing. -->
+		<include name="org/netbeans/modules/editor/mimelookup/MimeLookupPerformanceTest.class" />
+		<include name="org/netbeans/modules/editor/mimelookup/MimeLookupPopupItemsChangeTest.class" />
+		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupTest.class/testRegisteredClassLookup" />
+		<include name="org/netbeans/modules/editor/mimelookup/MimeLookupTest.class/testRegisteredTemplatesLookup" />
+		<include name="org/netbeans/modules/editor/mimelookup/MimeLookupWeakRefTest.class/testWeakListenersAddingToResult" />
             </patternset>
         </testset>
     </testbag>

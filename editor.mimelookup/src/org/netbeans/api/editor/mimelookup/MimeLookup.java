@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -84,6 +84,7 @@ import org.openide.util.lookup.ProxyLookup;
 final public class MimeLookup extends Lookup {
     
     private static DelegatingResult rootInitializers;
+    private static DelegatingResult dataProviders;
     private static final Map mime2lookup = new HashMap();
     
     private MimeLookup parent;
@@ -91,6 +92,8 @@ final public class MimeLookup extends Lookup {
     private final List initializersListeners = new ArrayList();
     private final List initializersList = new ArrayList();
     private final Map mime2childLookup = new HashMap();    
+    private LookupListener providerListener;
+    private String mimeType;
     
     /** Creates a new instance of MimeLookup 
      *
@@ -101,9 +104,30 @@ final public class MimeLookup extends Lookup {
     private MimeLookup(MimeLookup parent, String mimeType) {
         this.parent = parent;
         this.delegator = new DelegatorLookup();
+        this.mimeType = mimeType;
         initMimeLookup(mimeType);
     }
     
+    /**
+     * Get the lookup for the particular mime-path.
+     *
+     * @param mimePath non-null mime-path for which the lookup should be retrieved.
+     *  <br/>
+     *  {@link MimePath#EMPTY} may be used to obtain global settings.
+     * @return non-null lookup providing data for the particular mime-path.
+     */
+    public static Lookup getLookup(MimePath mimePath) {
+        if (mimePath == MimePath.EMPTY) {
+            return getMimeLookup("");
+        } else {
+            MimeLookup ml = getMimeLookup(mimePath.getMimeType(0));
+            for (int i = 1; i < mimePath.size(); i++) {
+                ml = ml.childLookup(mimePath.getMimeType(i));
+            }
+            return ml;
+        }
+    }
+
     /** Gets mime-type specific lookup.
      *
      *  @param mimeType non-null mime-type string representation, e.g. "text/x-java"
@@ -135,6 +159,9 @@ final public class MimeLookup extends Lookup {
      *
      *  @param mimeType non-null mime-type string representation
      *  @return non-null mime-type specific child (embeded) lookup
+     *  @deprecated The {@link
+     *  org.netbeans.api.editor.mimelookup.MimeLookup#getLookup(org.netbeans.api.editor.mimelookup.MimePath)} 
+     *  method should be used instead.
      */
     public MimeLookup childLookup(String mimeType){
         if (mimeType == null) {
@@ -201,6 +228,14 @@ final public class MimeLookup extends Lookup {
             initializersListeners.add(new InitializersListener(rootInitializers));
         }
         
+        DelegatingResult providers = getDataProviders();
+        providerListener = new LookupListener(){
+            public void resultChanged(LookupEvent ev) {
+                rebuildLookups();
+            }
+        };
+        providers.addLookupListener(providerListener);
+        
         rebuildLookups();
     }
     
@@ -212,6 +247,13 @@ final public class MimeLookup extends Lookup {
         return rootInitializers;
     }
     
+    private static DelegatingResult getDataProviders() {
+        if (dataProviders == null) {
+            dataProviders = new DelegatingResult(Lookup.getDefault().lookup(
+                    new Lookup.Template(MimeDataProvider.class)));
+        }
+        return dataProviders;
+    }
     
     
     private void rebuildLookups() {
@@ -221,6 +263,29 @@ final public class MimeLookup extends Lookup {
             InitializersListener l = (InitializersListener)it.next();
             allLookups.addAll(l.getLookups());
         }
+        
+        MimePath path;
+        MimeLookup tempParent = parent;
+        if (tempParent == null){
+            path = MimePath.get(mimeType);
+        } else {
+            StringBuffer sb = new StringBuffer(mimeType);
+            while (tempParent != null){
+                sb.insert(0, "/");
+                sb.insert(0, tempParent.mimeType);
+                tempParent = tempParent.parent;
+            }
+            path = MimePath.parse(sb.toString());
+        }
+        
+        DelegatingResult dataProviders = getDataProviders();
+        Iterator it = dataProviders.allInstances().iterator();
+        while (it.hasNext()){
+            MimeDataProvider provider = (MimeDataProvider)it.next();
+            Lookup l = provider.getLookup(path);
+            allLookups.add(new MyFiringLookup(l));
+        }
+        
         Lookup[] all = new Lookup[allLookups.size()];
         allLookups.toArray(all);
         delegator.setDelegatorLookups(all);
@@ -317,5 +382,28 @@ final public class MimeLookup extends Lookup {
             rebuildLookups();
         }
         
+    }
+    
+    private final class MyFiringLookup extends Lookup implements LookupListener{
+        
+        Lookup delegator;
+        
+        public MyFiringLookup(Lookup delegator){
+            this.delegator = delegator;
+        }
+        
+        public Object lookup(Class clazz){
+            return delegator.lookup(clazz);
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            rebuildLookups();
+        }
+        
+        public Result lookup(Template template){
+            Result result = delegator.lookup(template);
+            result.addLookupListener(this);
+            return result;
+        }
     }
 }
