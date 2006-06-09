@@ -42,7 +42,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     
     private ProgressUIWorker component;
     private TaskModel model;
-    private List eventQueue;
+    private List<ProgressEvent> eventQueue;
     private boolean dispatchRunning;
     protected Timer timer;
     private long timerStart = 0;
@@ -58,7 +58,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     public Controller(ProgressUIWorker comp) {
         component = comp;
         model = new TaskModel();
-        eventQueue = new ArrayList();
+        eventQueue = new ArrayList<ProgressEvent>();
         dispatchRunning = false;
         timer = new Timer(TIMER_QUANTUM, this);
         timer.setRepeats(false);
@@ -125,7 +125,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     void explicitSelection(InternalHandle handle, int units, int percentage, long estimate) {
         InternalHandle old = model.getExplicitSelection();
         model.explicitlySelect(handle);
-        Collection evnts = new ArrayList();
+        Collection<ProgressEvent> evnts = new ArrayList<ProgressEvent>();
         evnts.add(new ProgressEvent(handle, null, units, percentage, estimate, isWatched(handle)));
         if (old != null && old != handle) {
             // refresh the old one, results in un-bodling the text.
@@ -135,7 +135,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     }
     
     void displayNameChange(InternalHandle handle, int units, int percentage, long estimate, String display) {
-        Collection evnts = new ArrayList();
+        Collection<ProgressEvent> evnts = new ArrayList<ProgressEvent>();
         evnts.add(new ProgressEvent(handle, null, units, percentage, estimate, isWatched(handle), display));
         runImmediately(evnts);
     }
@@ -147,7 +147,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     /**
      * 
      */ 
-    void runImmediately(Collection events) {
+    void runImmediately(Collection<ProgressEvent> events) {
         synchronized (this) {
             // need to add to queue immediately in the current thread
             eventQueue.addAll(events);
@@ -200,17 +200,17 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
      * can be run from awt only.
      */
     public void run() {
-        HashMap map = new HashMap();
+        HashMap<InternalHandle, ProgressEvent> map = new HashMap<InternalHandle, ProgressEvent>();
         boolean hasShortOne = false;
         long minDiff = TIMER_QUANTUM;
         
         InternalHandle oldSelected = model.getSelectedHandle();
         long stamp = System.currentTimeMillis();
         synchronized (this) {
-            Iterator it = eventQueue.iterator();
-            Collection justStarted = new ArrayList();
+            Iterator<ProgressEvent> it = eventQueue.iterator();
+            Collection<InternalHandle> justStarted = new ArrayList<InternalHandle>();
             while (it.hasNext()) {
-                ProgressEvent event = (ProgressEvent)it.next();
+                ProgressEvent event = it.next();
                 boolean isShort = (stamp - event.getSource().getTimeStampStarted()) < event.getSource().getInitialDelay();
                 if (event.getType() == ProgressEvent.TYPE_START) {
                     if (event.getSource().isCustomPlaced() || !isShort) {
@@ -248,9 +248,9 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
             // now re-add the just started events into queue
             // if they don't last longer than the initial delay of the task.
             // applies just for status bar items
-            Iterator startIt = justStarted.iterator();
+            Iterator<InternalHandle> startIt = justStarted.iterator();
             while (startIt.hasNext()) {
-                InternalHandle hndl = (InternalHandle)startIt.next();
+                InternalHandle hndl = startIt.next();
                 long diff = stamp - hndl.getTimeStampStarted();
                 if (diff >= hndl.getInitialDelay()) {
                     model.addHandle(hndl);
@@ -267,9 +267,9 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         }
         InternalHandle selected = model.getSelectedHandle();
         selected = selected == null ? oldSelected : selected;
-        Iterator it = map.values().iterator();
+        Iterator<ProgressEvent> it = map.values().iterator();
         while (it.hasNext()) {
-            ProgressEvent event = (ProgressEvent)it.next();
+            ProgressEvent event = it.next();
             if (selected == event.getSource()) {
                 component.processSelectedProgressEvent(event);
             }

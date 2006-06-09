@@ -37,14 +37,14 @@ public final class AggregateProgressHandle {
     private ProgressHandle handle;
     static final int WORKUNITS = 10000;
     private boolean finished;
-    private Collection contributors;
+    private Collection<ProgressContributor> contributors;
     private int current;
     
     /** Creates a new instance of AggregateProgressHandle */
     AggregateProgressHandle(String displayName, ProgressContributor[] contribs, Cancellable cancellable, Action listAction, boolean systemtask) {
         handle = ProgressHandleFactory.createHandle(displayName, cancellable, listAction);
         finished = false;
-        contributors = new ArrayList();
+        contributors = new ArrayList<ProgressContributor>();
         if (contribs != null) {
             for (int i = 0; i < contribs.length; i++) {
                 addContributor(contribs[i]);
@@ -108,11 +108,11 @@ public final class AggregateProgressHandle {
         int length = contributors.size();
         int remainingUnits = 0;
         double completedRatio = 0;
-        Iterator it;
+        Iterator<ProgressContributor> it;
         if (length > 0) {
             it = contributors.iterator();
             while (it.hasNext()) {
-                ProgressContributor cont = (ProgressContributor)it.next();
+                ProgressContributor cont = it.next();
                 remainingUnits = remainingUnits + cont.getRemainingParentWorkUnits();
                 completedRatio = completedRatio + (1 - cont.getCompletedRatio());
             }
@@ -127,7 +127,7 @@ public final class AggregateProgressHandle {
 //        System.out.println("current share=" + currentShare);
         it = contributors.iterator();
         while (it.hasNext()) {
-            ProgressContributor cont = (ProgressContributor)it.next();
+            ProgressContributor cont = it.next();
             int newshare = (int)((1 - cont.getCompletedRatio()) * currentShare);
 //            System.out.println(" new share for " + cont.getTrackingId() + " is " + newshare);
             remainingUnits = remainingUnits - newshare;
