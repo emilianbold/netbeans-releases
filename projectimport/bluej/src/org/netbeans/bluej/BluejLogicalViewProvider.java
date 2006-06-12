@@ -155,12 +155,13 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                     String name = dobj.getPrimaryFile().getName();
                     if (name.endsWith("Test")) {
                         name = name.substring(0, name.length() - "Test".length()); //NOI18N
-                        if (dobj.getPrimaryFile().getParent().getFileObject(name, "java") != null) { //NOI18N
-                            iconPath = "org/netbeans/bluej/resources/bluej-testclass.png"; //NOI18N
-                            attached = true;
-                        } else {
+//#77306 - remove the icon padding..                        
+//                        if (dobj.getPrimaryFile().getParent().getFileObject(name, "java") != null) { //NOI18N
+//                            iconPath = "org/netbeans/bluej/resources/bluej-testclass.png"; //NOI18N
+//                            attached = true;
+//                        } else {
                             iconPath = "org/netbeans/bluej/resources/bluej-testclass-unattached.png"; //NOI18N
-                        }
+//                        }
                     } else {
                         iconPath = "org/netbeans/bluej/resources/bluej-class.png"; //NOI18N
                     }
