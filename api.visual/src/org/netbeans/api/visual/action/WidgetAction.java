@@ -12,10 +12,16 @@
  */
 package org.netbeans.api.visual.action;
 
-import java.awt.event.FocusEvent;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetContext;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -99,11 +105,23 @@ public interface WidgetAction {
     public State keyPressed(Widget widget, WidgetKeyEvent event);
     
     public State keyReleased(Widget widget, WidgetKeyEvent event);
-    
+
+
     public State focusGained(Widget widget, WidgetFocusEvent event);
     
     public State focusLost(Widget widget, WidgetFocusEvent event);
-    
+
+
+    public State dragEnter (Widget widget, WidgetDropTargetDragEvent event);
+
+    public State dragOver (Widget widget, WidgetDropTargetDragEvent event);
+
+    public State dropActionChanged (Widget widget, WidgetDropTargetDragEvent event);
+
+    public State dragExit (Widget widget, WidgetDropTargetEvent event);
+
+    public State drop (Widget widget, WidgetDropTargetDropEvent event);
+
     public static class Adapter implements WidgetAction {
         
         public State mouseClicked(Widget widget, WidgetMouseEvent event) {
@@ -157,7 +175,27 @@ public interface WidgetAction {
         public State focusLost(Widget widget, WidgetFocusEvent event) {
             return State.REJECTED;
         }
-        
+
+        public State dragEnter (Widget widget, WidgetDropTargetDragEvent event) {
+            return State.REJECTED;
+        }
+
+        public State dragOver (Widget widget, WidgetDropTargetDragEvent event) {
+            return State.REJECTED;
+        }
+
+        public State dropActionChanged (Widget widget, WidgetDropTargetDragEvent event) {
+            return State.REJECTED;
+        }
+
+        public State dragExit (Widget widget, WidgetDropTargetEvent event) {
+            return State.REJECTED;
+        }
+
+        public State drop (Widget widget, WidgetDropTargetDropEvent event) {
+            return State.REJECTED;
+        }
+
     }
     
     public static final class Chain implements WidgetAction {
@@ -358,10 +396,89 @@ public interface WidgetAction {
             }
             return chainState;
         }
-        
+
+        public State dragEnter (Widget widget, WidgetDropTargetDragEvent event) {
+            WidgetAction[] actionsArray = actions.toArray (new WidgetAction[actions.size ()]);
+            State chainState = State.REJECTED;
+            for (WidgetAction action : actionsArray) {
+                State state = action.dragEnter (widget, event);
+                if (state.isConsumed ())
+                    return state;
+                if (state.isLockedInChain ())
+                    chainState = State.CONSUMED;
+            }
+            return chainState;
+        }
+
+        public State dragOver (Widget widget, WidgetDropTargetDragEvent event) {
+            WidgetAction[] actionsArray = actions.toArray (new WidgetAction[actions.size ()]);
+            State chainState = State.REJECTED;
+            for (WidgetAction action : actionsArray) {
+                State state = action.dragOver (widget, event);
+                if (state.isConsumed ())
+                    return state;
+                if (state.isLockedInChain ())
+                    chainState = State.CONSUMED;
+            }
+            return chainState;
+        }
+
+        public State dropActionChanged (Widget widget, WidgetDropTargetDragEvent event) {
+            WidgetAction[] actionsArray = actions.toArray (new WidgetAction[actions.size ()]);
+            State chainState = State.REJECTED;
+            for (WidgetAction action : actionsArray) {
+                State state = action.dropActionChanged (widget, event);
+                if (state.isConsumed ())
+                    return state;
+                if (state.isLockedInChain ())
+                    chainState = State.CONSUMED;
+            }
+            return chainState;
+        }
+
+        public State dragExit (Widget widget, WidgetDropTargetEvent event) {
+            WidgetAction[] actionsArray = actions.toArray (new WidgetAction[actions.size ()]);
+            State chainState = State.REJECTED;
+            for (WidgetAction action : actionsArray) {
+                State state = action.dragExit (widget, event);
+                if (state.isConsumed ())
+                    return state;
+                if (state.isLockedInChain ())
+                    chainState = State.CONSUMED;
+            }
+            return chainState;
+        }
+
+        public State drop (Widget widget, WidgetDropTargetDropEvent event) {
+            WidgetAction[] actionsArray = actions.toArray (new WidgetAction[actions.size ()]);
+            State chainState = State.REJECTED;
+            for (WidgetAction action : actionsArray) {
+                State state = action.drop (widget, event);
+                if (state.isConsumed ())
+                    return state;
+                if (state.isLockedInChain ())
+                    chainState = State.CONSUMED;
+            }
+            return chainState;
+        }
+
     }
-    
-    public static class WidgetMouseEvent {
+
+    public static interface WidgetEvent {
+
+        public long getEventID ();
+
+    }
+
+    public static interface WidgetLocationEvent extends WidgetEvent {
+
+        public Point getPoint ();
+        public void setPoint (Point point);
+        public void translatePoint (int x, int y);
+
+    }
+
+    public static class WidgetMouseEvent implements WidgetLocationEvent {
         
         private long id;
         private MouseEvent event;
@@ -440,10 +557,8 @@ public interface WidgetAction {
     
     public static class WidgetMouseWheelEvent extends WidgetMouseEvent {
         
-        private long id;
         private MouseWheelEvent event;
-        private int x, y;
-        
+
         public WidgetMouseWheelEvent(long id, MouseWheelEvent event) {
             super(id, event);
             this.event = event;
@@ -467,7 +582,7 @@ public interface WidgetAction {
         
     }
     
-    public static class WidgetKeyEvent {
+    public static class WidgetKeyEvent implements WidgetEvent {
         
         private long id;
         private KeyEvent event;
@@ -531,7 +646,7 @@ public interface WidgetAction {
         
     }
     
-    public static class WidgetFocusEvent{
+    public static class WidgetFocusEvent implements WidgetEvent {
         
         private long id;
         private FocusEvent event;
@@ -558,5 +673,173 @@ public interface WidgetAction {
             return event.isTemporary();
         }
     }
-    
+
+    public static class WidgetDropTargetDragEvent implements WidgetLocationEvent {
+
+        private long id;
+        private DropTargetDragEvent event;
+        private int x, y;
+
+        public WidgetDropTargetDragEvent (long id, DropTargetDragEvent event) {
+            this.id = id;
+            this.event = event;
+            Point location = event.getLocation ();
+            x = location.x;
+            y = location.y;
+        }
+
+        public long getEventID () {
+            return id;
+        }
+
+        public Point getPoint () {
+            return new Point (x, y);
+        }
+
+        public void setPoint (Point point) {
+            x = point.x;
+            y = point.y;
+        }
+
+        public void translatePoint (int x, int y) {
+            this.x += x;
+            this.y += y;
+        }
+
+        public DataFlavor[] getCurrentDataFlavors () {
+            return event.getCurrentDataFlavors ();
+        }
+
+        public List<DataFlavor> getCurrentDataFlavorsAsList () {
+            return event.getCurrentDataFlavorsAsList ();
+        }
+
+        public boolean isDataFlavorSupported (DataFlavor df) {
+            return event.isDataFlavorSupported (df);
+        }
+
+        public int getSourceActions () {
+            return event.getSourceActions ();
+        }
+
+        public int getDropAction () {
+            return event.getDropAction ();
+        }
+
+        public Transferable getTransferable () {
+            return event.getTransferable ();
+        }
+
+        public void acceptDrag (int dragOperation) {
+            event.acceptDrag (dragOperation);
+        }
+
+        public void rejectDrag () {
+            event.rejectDrag ();
+        }
+
+        public DropTargetContext getDropTargetContext () {
+            return event.getDropTargetContext ();
+        }
+
+    }
+
+    public static class WidgetDropTargetDropEvent implements WidgetLocationEvent {
+
+        private long id;
+        private DropTargetDropEvent event;
+        private int x, y;
+
+        public WidgetDropTargetDropEvent (long id, DropTargetDropEvent event) {
+            this.id = id;
+            this.event = event;
+            Point location = event.getLocation ();
+            x = location.x;
+            y = location.y;
+        }
+
+        public long getEventID () {
+            return id;
+        }
+
+        public Point getPoint () {
+            return new Point (x, y);
+        }
+
+        public void setPoint (Point point) {
+            x = point.x;
+            y = point.y;
+        }
+
+        public void translatePoint (int x, int y) {
+            this.x += x;
+            this.y += y;
+        }
+
+        public DataFlavor[] getCurrentDataFlavors () {
+            return event.getCurrentDataFlavors ();
+        }
+
+        public List<DataFlavor> getCurrentDataFlavorsAsList () {
+            return event.getCurrentDataFlavorsAsList ();
+        }
+
+        public boolean isDataFlavorSupported (DataFlavor df) {
+            return event.isDataFlavorSupported (df);
+        }
+
+        public int getSourceActions () {
+            return event.getSourceActions ();
+        }
+
+        public int getDropAction () {
+            return event.getDropAction ();
+        }
+
+        public Transferable getTransferable () {
+            return event.getTransferable ();
+        }
+
+        public void acceptDrop (int dropAction) {
+            event.acceptDrop (dropAction);
+        }
+
+        public void rejectDrop () {
+            event.rejectDrop ();
+        }
+
+        public void dropComplete (boolean success) {
+            event.dropComplete (success);
+        }
+
+        public boolean isLocalTransfer () {
+            return event.isLocalTransfer ();
+        }
+
+        public DropTargetContext getDropTargetContext () {
+            return event.getDropTargetContext ();
+        }
+
+    }
+
+    public static class WidgetDropTargetEvent implements WidgetEvent {
+
+        private long id;
+        private DropTargetEvent event;
+
+        public WidgetDropTargetEvent (long id, DropTargetEvent event) {
+            this.id = id;
+            this.event = event;
+        }
+
+        public long getEventID () {
+            return id;
+        }
+
+        public DropTargetContext getDropTargetContext () {
+            return event.getDropTargetContext ();
+        }
+
+    }
+
 }

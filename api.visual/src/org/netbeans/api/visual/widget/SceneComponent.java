@@ -13,17 +13,23 @@
 package org.netbeans.api.visual.widget;
 
 import org.netbeans.api.visual.action.WidgetAction;
+import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
+import java.util.TooManyListenersException;
 
 /**
  * @author David Kaspar
  */
-final class SceneComponent extends JPanel implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener,FocusListener {
+final class SceneComponent extends JPanel implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener,FocusListener, DropTargetListener {
 
     private Scene scene;
     private Widget lockedWidget;
@@ -38,6 +44,11 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         addMouseMotionListener (this);
         addMouseWheelListener (this);
         addKeyListener (this);
+        try {
+            getDropTarget ().addDropTargetListener (this);
+        } catch (TooManyListenersException e) {
+            ErrorManager.getDefault ().notify (e);
+        }
     }
 
     public void addNotify () {
@@ -63,72 +74,83 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
 //        System.out.println ("PAINT Time: " + (System.currentTimeMillis () - s));
     }
-    
+
     public void focusGained(FocusEvent e) {
-        processFocusOperator (FocusOperator.FOCUS_GAINED, e);
+        processOperator (Operator.FOCUS_GAINED, new WidgetAction.WidgetFocusEvent (++ eventIDcounter, e));
     }
 
     public void focusLost(FocusEvent e) {
-        processFocusOperator (FocusOperator.FOCUS_LOST, e);
+        processOperator (Operator.FOCUS_LOST, new WidgetAction.WidgetFocusEvent (++ eventIDcounter, e));
     }
-    
+
     public void mouseClicked (MouseEvent e) {
-        processMouseOperator (MouseOperator.MOUSE_CLICKED, e);
+        processLocationOperator (Operator.MOUSE_CLICKED, new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e));
     }
 
     public void mousePressed (MouseEvent e) {
-        processMouseOperator (MouseOperator.MOUSE_PRESSED, e);
+        processLocationOperator (Operator.MOUSE_PRESSED, new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e));
     }
 
     public void mouseReleased (MouseEvent e) {
-        processMouseOperator (MouseOperator.MOUSE_RELEASED, e);
+        processLocationOperator (Operator.MOUSE_RELEASED, new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e));
     }
 
     public void mouseEntered (MouseEvent e) {
-        processMouseOperator (MouseOperator.MOUSE_ENTERED, e);
+        processLocationOperator (Operator.MOUSE_ENTERED, new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e));
     }
 
     public void mouseExited (MouseEvent e) {
-        processMouseOperator (MouseOperator.MOUSE_EXITED, e);
+        processLocationOperator (Operator.MOUSE_EXITED, new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e));
     }
 
     public void mouseDragged (MouseEvent e) {
-        processMouseOperator (MouseOperator.MOUSE_DRAGGED, e);
+        processLocationOperator (Operator.MOUSE_DRAGGED, new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e));
     }
 
     public void mouseMoved (MouseEvent e) {
         MouseContext context = new MouseContext ();
         resolveContext (scene, scene.convertViewToScene (e.getPoint ()), context);
         context.commit (this);
-        processMouseOperator (MouseOperator.MOUSE_MOVED, e);
+        processLocationOperator (Operator.MOUSE_MOVED, new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e));
     }
 
     public void mouseWheelMoved (MouseWheelEvent e) {
-        WidgetAction.WidgetMouseWheelEvent event = new WidgetAction.WidgetMouseWheelEvent (++ eventIDcounter, e);
-        processMouseOperator (MouseOperator.MOUSE_WHEEL, event);
+        processLocationOperator (Operator.MOUSE_WHEEL, new WidgetAction.WidgetMouseWheelEvent (++ eventIDcounter, e));
     }
 
     public void keyTyped (KeyEvent e) {
-        WidgetAction.WidgetKeyEvent event = new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e);
-        processKeyOperator (KeyOperator.KEY_TYPED, event);
+        processOperator (Operator.KEY_TYPED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
     }
 
     public void keyPressed (KeyEvent e) {
-        WidgetAction.WidgetKeyEvent event = new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e);
-        processKeyOperator (KeyOperator.KEY_PRESSED, event);
+        processOperator (Operator.KEY_PRESSED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
     }
 
     public void keyReleased (KeyEvent e) {
-        WidgetAction.WidgetKeyEvent event = new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e);
-        processKeyOperator (KeyOperator.KEY_RELEASED, event);
+        processOperator (Operator.KEY_RELEASED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
     }
 
-    private void processMouseOperator (MouseOperator operator, MouseEvent e) {
-        WidgetAction.WidgetMouseEvent event = new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e);
-        processMouseOperator (operator, event);
+    public void dragEnter (DropTargetDragEvent e) {
+        processLocationOperator (Operator.DRAG_ENTER, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
     }
 
-    private void processMouseOperator (MouseOperator operator, WidgetAction.WidgetMouseEvent event) {
+    public void dragOver (DropTargetDragEvent e) {
+        processLocationOperator (Operator.DRAG_OVER, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
+    }
+
+    public void dropActionChanged (DropTargetDragEvent e) {
+        processLocationOperator (Operator.DROP_ACTION_CHANGED, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
+    }
+
+    public void dragExit (DropTargetEvent e) {
+        processOperator (Operator.DRAG_EXIT, new WidgetAction.WidgetDropTargetEvent (++ eventIDcounter, e));
+    }
+
+    public void drop (DropTargetDropEvent e) {
+        processOperator (Operator.DROP, new WidgetAction.WidgetDropTargetDropEvent (++ eventIDcounter, e));
+    }
+
+    private void processLocationOperator (Operator operator, WidgetAction.WidgetLocationEvent event) {
         event.setPoint (scene.convertViewToScene (event.getPoint ()));
 
         WidgetAction.State state;
@@ -140,9 +162,9 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
             event.translatePoint (- location.x, - location.y);
 
             if (! state.isConsumed ())
-                state = processMouseOperator (operator, scene, event);
+                state = processLocationOperator (operator, scene, event);
         } else
-            state = processMouseOperator (operator, scene, event);
+            state = processLocationOperator (operator, scene, event);
 
         lockedWidget = state.getLockedWidget ();
         lockedAction = state.getLockedAction ();
@@ -152,7 +174,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
             scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
     }
 
-    private WidgetAction.State processMouseOperator (MouseOperator operator, Widget widget, WidgetAction.WidgetMouseEvent event) {
+    private WidgetAction.State processLocationOperator (Operator operator, Widget widget, WidgetAction.WidgetLocationEvent event) {
         Point location = widget.getLocation ();
         event.translatePoint (- location.x, - location.y);
 
@@ -164,7 +186,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
             for (int i = childrenArray.length - 1; i >= 0; i --) {
                 Widget child = childrenArray[i];
-                state = processMouseOperator (operator, child, event);
+                state = processLocationOperator (operator, child, event);
                 if (state.isConsumed ())
                     return state;
             }
@@ -180,15 +202,15 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         return WidgetAction.State.REJECTED;
     }
 
-    private void processKeyOperator (KeyOperator operator, WidgetAction.WidgetKeyEvent event) {
+    private void processOperator (Operator operator, WidgetAction.WidgetEvent event) {
         WidgetAction.State state;
 
         if (lockedAction != null) {
             state = operator.operate (lockedAction, lockedWidget, event);
             if (! state.isConsumed ())
-                state = processKeyOperator (operator, scene, event);
+                state = processOperator (operator, scene, event);
         } else
-            state = processKeyOperator (operator, scene, event);
+            state = processOperator (operator, scene, event);
 
         lockedWidget = state.getLockedWidget ();
         lockedAction = state.getLockedAction ();
@@ -198,7 +220,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
             scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
     }
 
-    private WidgetAction.State processKeyOperator (KeyOperator operator, Widget widget, WidgetAction.WidgetKeyEvent event) {
+    private WidgetAction.State processOperator (Operator operator, Widget widget, WidgetAction.WidgetEvent event) {
         WidgetAction.State state;
 
         List<Widget> children = widget.getChildren ();
@@ -206,7 +228,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
         for (int i = childrenArray.length - 1; i >= 0; i --) {
             Widget child = childrenArray[i];
-            state = processKeyOperator (operator, child, event);
+            state = processOperator (operator, child, event);
             if (state.isConsumed ())
                 return state;
         }
@@ -239,143 +261,118 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         return false;
     }
 
-    
-    private void processFocusOperator (SceneComponent.FocusOperator operator, FocusEvent e) {
-        WidgetAction.WidgetFocusEvent event = new WidgetAction.WidgetFocusEvent (++ eventIDcounter, e);
-        processFocusOperator (operator, event);
-    }
 
-    private void processFocusOperator (SceneComponent.FocusOperator operator,  WidgetAction.WidgetFocusEvent e) {
-        WidgetAction.State state;
+    private interface Operator {
 
-        if (lockedAction != null) {
-            state = operator.operate (lockedAction, lockedWidget, e);
-            if (! state.isConsumed ())state = processFocusOperator (operator, scene, e);
-        } else
-            state = processFocusOperator (operator, scene, e);
-
-        lockedWidget = state.getLockedWidget ();
-        lockedAction = state.getLockedAction ();
-        scene.validate ();
-
-        if (lockedWidget != null)
-            scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
-    }
-
-    private WidgetAction.State processFocusOperator (SceneComponent.FocusOperator operator, Widget widget, WidgetAction.WidgetFocusEvent event) {
-        WidgetAction.State state;
-
-        List<Widget> children = widget.getChildren ();
-        Widget[] childrenArray = children.toArray (new Widget[children.size ()]);
-
-        for (int i = childrenArray.length - 1; i >= 0; i --) {
-            Widget child = childrenArray[i];
-            state = processFocusOperator (operator, child, event);
-            if (state.isConsumed ())
-                return state;
-        }
-
-        state = operator.operate (widget.getActions (), widget, event);
-        if (state.isConsumed ())
-            return state;
-
-        return WidgetAction.State.REJECTED;
-    }
-
-    
-    private interface MouseOperator {
-
-        public static final MouseOperator MOUSE_CLICKED = new MouseOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetMouseEvent event) {
-                return action.mouseClicked (widget, event);
+        public static final Operator MOUSE_CLICKED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.mouseClicked (widget, (WidgetAction.WidgetMouseEvent) event);
             }
         };
 
-        public static final MouseOperator MOUSE_PRESSED = new MouseOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetMouseEvent event) {
-                return action.mousePressed (widget, event);
+        public static final Operator MOUSE_PRESSED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.mousePressed (widget, (WidgetAction.WidgetMouseEvent) event);
             }
         };
 
-        public static final MouseOperator MOUSE_RELEASED = new MouseOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetMouseEvent event) {
-                return action.mouseReleased (widget, event);
+        public static final Operator MOUSE_RELEASED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.mouseReleased (widget, (WidgetAction.WidgetMouseEvent) event);
             }
         };
 
-        public static final MouseOperator MOUSE_ENTERED = new MouseOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetMouseEvent event) {
-                return action.mouseEntered (widget, event);
+        public static final Operator MOUSE_ENTERED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.mouseEntered (widget, (WidgetAction.WidgetMouseEvent) event);
             }
         };
 
-        public static final MouseOperator MOUSE_EXITED = new MouseOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetMouseEvent event) {
-                return action.mouseExited (widget, event);
+        public static final Operator MOUSE_EXITED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.mouseExited (widget, (WidgetAction.WidgetMouseEvent) event);
             }
         };
 
-        public static final MouseOperator MOUSE_DRAGGED = new MouseOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetMouseEvent event) {
-                return action.mouseDragged (widget, event);
+        public static final Operator MOUSE_DRAGGED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.mouseDragged (widget, (WidgetAction.WidgetMouseEvent) event);
             }
         };
 
-        public static final MouseOperator MOUSE_MOVED = new MouseOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetMouseEvent event) {
-                return action.mouseMoved (widget, event);
+        public static final Operator MOUSE_MOVED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.mouseMoved (widget, (WidgetAction.WidgetMouseEvent) event);
             }
         };
 
-        public static final MouseOperator MOUSE_WHEEL = new MouseOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetMouseEvent event) {
+        public static final Operator MOUSE_WHEEL = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
                 return action.mouseWheelMoved (widget, (WidgetAction.WidgetMouseWheelEvent) event);
             }
         };
 
-        public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetMouseEvent event);
-
-    }
-
-    private interface KeyOperator {
-
-        public static final KeyOperator KEY_TYPED = new KeyOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetKeyEvent event) {
-                return action.keyTyped (widget, event);
+        public static final Operator KEY_TYPED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.keyTyped (widget, (WidgetAction.WidgetKeyEvent) event);
             }
         };
 
-        public static final KeyOperator KEY_PRESSED = new KeyOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetKeyEvent event) {
-                return action.keyPressed (widget, event);
+        public static final Operator KEY_PRESSED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.keyPressed (widget, (WidgetAction.WidgetKeyEvent) event);
             }
         };
 
-        public static final KeyOperator KEY_RELEASED = new KeyOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetKeyEvent event) {
-                return action.keyReleased (widget, event);
+        public static final Operator KEY_RELEASED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.keyReleased (widget, (WidgetAction.WidgetKeyEvent) event);
             }
         };
 
-        public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetKeyEvent event);
-
-    }
-    
-    private interface FocusOperator {
-
-        public static final FocusOperator FOCUS_GAINED = new FocusOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetFocusEvent event) {
-                return action.focusGained (widget, event);
+        public static final Operator FOCUS_GAINED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.focusGained (widget, (WidgetAction.WidgetFocusEvent) event);
             }
         };
 
-        public static final FocusOperator FOCUS_LOST = new FocusOperator() {
-            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetFocusEvent event) {
-                return action.focusLost (widget, event);
+        public static final Operator FOCUS_LOST = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.focusLost (widget, (WidgetAction.WidgetFocusEvent) event);
             }
         };
 
-        public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetFocusEvent event);
+        public static final Operator DRAG_ENTER = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.dragEnter (widget, (WidgetAction.WidgetDropTargetDragEvent) event);
+            }
+        };
+
+        public static final Operator DRAG_OVER = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.dragOver (widget, (WidgetAction.WidgetDropTargetDragEvent) event);
+            }
+        };
+
+        public static final Operator DROP_ACTION_CHANGED = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.dropActionChanged (widget, (WidgetAction.WidgetDropTargetDragEvent) event);
+            }
+        };
+
+        public static final Operator DRAG_EXIT = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.dragExit (widget, (WidgetAction.WidgetDropTargetEvent) event);
+            }
+        };
+
+        public static final Operator DROP = new Operator() {
+            public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event) {
+                return action.drop (widget, (WidgetAction.WidgetDropTargetDropEvent) event);
+            }
+        };
+
+        public WidgetAction.State operate (WidgetAction action, Widget widget, WidgetAction.WidgetEvent event);
 
     }
 
