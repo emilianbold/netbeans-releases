@@ -2607,15 +2607,18 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
 
-                if ((addedComponent != null) && addedComponent.getBeanInfo().getBeanDescriptor().getValue("customizeOnCreation") != null) { // NOI18N
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            RADComponentNode node = addedComponent.getNodeReference();
-                            if (node.hasCustomizer()) {
-                                org.openide.nodes.NodeOperation.getDefault().customize(node);
+                if (addedComponent != null) { // NOI18N
+                    java.beans.BeanDescriptor bDesc = addedComponent.getBeanInfo().getBeanDescriptor();
+                    if ((bDesc != null) && (bDesc.getValue("customizeOnCreation") != null)) {
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                RADComponentNode node = addedComponent.getNodeReference();
+                                if (node.hasCustomizer()) {
+                                    org.openide.nodes.NodeOperation.getDefault().customize(node);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
                 else if ((modifiers & InputEvent.SHIFT_MASK) != 0) {
 //                    init();

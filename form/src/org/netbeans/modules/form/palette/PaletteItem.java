@@ -225,7 +225,8 @@ public final class PaletteItem implements Node.Cookie {
                 return Introspector.getBeanInfo(compClass);
             }
             catch (Exception ex) {} // ignore failure
-            catch (LinkageError ex) {}
+            //catch (LinkageError ex) {}
+            catch (Error er) {} // Issue 74002
         }
         return null;
     }
@@ -237,7 +238,8 @@ public final class PaletteItem implements Node.Cookie {
                 return Introspector.getBeanInfo(compClass).getBeanDescriptor();
             }
             catch (Exception ex) {} // ignore failure
-            catch (LinkageError ex) {}
+            //catch (LinkageError ex) {}
+            catch (Error er) {} // Issue 74002
         }
         return null;
     }

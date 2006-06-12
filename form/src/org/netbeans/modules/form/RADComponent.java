@@ -343,8 +343,14 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
      * @return the BeanInfo of the bean represented by this RADComponent
      */
     public BeanInfo getBeanInfo() {
-        if (beanInfo == null)
-        beanInfo = BeanSupport.createBeanInfo(beanClass);        
+        if (beanInfo == null) {
+            try {
+                beanInfo = BeanSupport.createBeanInfo(beanClass);        
+            } catch (Error err) { // Issue 74002
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, err);
+                beanInfo = new FakeBeanInfo();
+            }
+        }
         if(isValid()) {            
             return beanInfo;
         } else {
@@ -1484,7 +1490,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         private List propertyDescriptors = new ArrayList();
         
         public BeanDescriptor getBeanDescriptor() {
-            return beanInfo.getBeanDescriptor();            
+            return (beanInfo == this) ? null : beanInfo.getBeanDescriptor();            
         }
 
         public PropertyDescriptor[] getPropertyDescriptors() {

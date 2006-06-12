@@ -713,7 +713,7 @@ public class FormUtils
         catch (Exception ex) { // ignore failure
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        catch (LinkageError ex) {
+        catch (Error ex) { // Issue 74002
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
