@@ -173,7 +173,7 @@ public class CreationFactory {
         if (cd != null) {
             CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
             if (creator != null)
-                   creator.getJavaCreationCode(props);
+                   creator.getJavaCreationCode(props, null);
         }
         return null;
     }

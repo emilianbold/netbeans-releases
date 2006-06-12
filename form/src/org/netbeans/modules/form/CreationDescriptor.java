@@ -46,7 +46,7 @@ public class CreationDescriptor {
                    IllegalArgumentException, InvocationTargetException;
         
         // [this will become useless when we can rely on getCodeOrigin(...)]
-        public String getJavaCreationCode(FormProperty[] props);
+        public String getJavaCreationCode(FormProperty[] props, Class expressionType);
 
         public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params);
     }
@@ -320,7 +320,7 @@ public class CreationDescriptor {
             return constructor.newInstance(paramValues);
         }        
         
-        public String getJavaCreationCode(FormProperty[] props) {
+        public String getJavaCreationCode(FormProperty[] props, Class expressionType) {
             StringBuffer buf = new StringBuffer();
             buf.append("new "); // NOI18N
             buf.append(theClass.getName().replace('$', '.'));
@@ -439,8 +439,12 @@ public class CreationDescriptor {
             return ret;
         }
         
-        public String getJavaCreationCode(FormProperty[] props) {
+        public String getJavaCreationCode(FormProperty[] props, Class expressionType) {
             StringBuffer buf = new StringBuffer();
+            if (expressionType == null) expressionType = describedClass;
+            if (!expressionType.isAssignableFrom(method.getReturnType())) { // Issue 71220
+                buf.append('(').append(expressionType.getName()).append(')');
+            }
             buf.append(factoryClass.getName()); // NOI18N
             buf.append("."); // NOI18N
             buf.append(method.getName());

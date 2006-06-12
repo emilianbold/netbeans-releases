@@ -1319,7 +1319,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
                 else props = RADComponent.NO_PROPERTIES;
 
-                initCodeWriter.write(creator.getJavaCreationCode(props) + ";\n"); // NOI18N
+                initCodeWriter.write(creator.getJavaCreationCode(props, null) + ";\n"); // NOI18N
 
                 if (exceptions != null)
                     generateCatchCode(exceptions, initCodeWriter.getWriter());
@@ -1598,7 +1598,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
 	String propertyInitializationString = 
 		creator.getJavaCreationCode(
-		    (FormProperty[])creatorProperties.toArray(new FormProperty[creatorProperties.size()]));	
+		    (FormProperty[])creatorProperties.toArray(new FormProperty[creatorProperties.size()]), prop.getValueType());
 	
 	String javaStr = "";  // NOI18N
 	if(remainingProperties.size() == 0) {		    		    
