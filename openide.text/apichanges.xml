@@ -20,13 +20,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <change id="EditorPaneDragAndDrop">
         <api name="text"/>
-        <summary>QuietEditorPane listens for special objects being dragged over it.</summary>
+        <summary>Editor panes listen for special objects being dragged over them</summary>
         <version major="6" minor="11"/>
         <date day="30" month="5" year="2006"/>
         <author login="saubrecht"/>
         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
         <description>
-            <p>The <code>QuietEditorPane</code> has a custom <code>DropTarget</code>
+            <p>The custom <code>JEditorPane</code> used by <code>CloneableEditor</code>
+            has a custom <code>DropTarget</code>
             instance which listens for some special objects (usually files) being
             dragged over the editor pane and uses an instace of
             <code>ExternalDropHandler</code> class from the global
@@ -38,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
             will process it (e.g. opens the file in a new editor tab).
             </p>
         </description>
-        <class package="org.openide.text" name="QuietEditorPane"/>
+        <class package="org.openide.text" name="CloneableEditor"/>
         <issue number="50129"/>
     </change>
 
