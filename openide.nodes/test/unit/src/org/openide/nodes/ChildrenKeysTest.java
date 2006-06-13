@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.ErrorManager;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -43,8 +44,8 @@ public class ChildrenKeysTest extends NbTestCase {
     }
     
     public static junit.framework.Test suite() {
-        return new ChildrenKeysTest("testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces");
-        //return new NbTestSuite(ChildrenKeysTest.class);
+        //return new ChildrenKeysTest("testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces");
+        return new NbTestSuite(ChildrenKeysTest.class);
     }
 
     protected void setUp () throws Exception {
@@ -103,6 +104,19 @@ public class ChildrenKeysTest extends NbTestCase {
             fail(w.toString());;
         }
     }
+    
+    /**
+     * See issue #76614
+     */
+    public void testNodesCreatedJustOnce() throws Exception {
+        Counter children = new Counter(1);
+        Node node = new AbstractNode(children);
+        children.keys(Arrays.asList(new Object[] {"Add Children"}));
+        Node[] nodes = node.getChildren().getNodes(true);
+        
+        assertEquals("One node returned", 1, nodes.length);
+        assertEquals("One node created", 1, children.count);
+    }        
 
     
     public void testDestroyIsCalledWhenANodeIsRemovedOrig () throws Exception {
@@ -739,6 +753,45 @@ public class ChildrenKeysTest extends NbTestCase {
          *   nodes for this key
          */
         protected Node[] createNodes(Object key) {
+            AbstractNode an = new AbstractNode (Children.LEAF);
+            an.setName (key.toString ());
+
+            return new Node[] { an };
+        }
+
+    }
+    
+    public static class Counter extends Children.Keys {
+        int limit;
+        int count = 0;
+        
+        public Counter (int limit) {
+            this.limit = limit;
+        }
+        
+        
+        /** Changes the keys.
+         */
+        public void keys (String[] args) {
+            super.setKeys (args);
+        }
+
+        /** Changes the keys.
+         */
+        public void keys (Collection args) {
+            super.setKeys (args);
+        }
+        
+        /** Create nodes for a given key.
+         * @param key the key
+         * @return child nodes for this key or null if there should be no 
+         *   nodes for this key
+         */
+        protected Node[] createNodes(Object key) {
+            synchronized(this) {
+                count++;
+                assertTrue("# of created nodes", count <= limit);
+            }
             AbstractNode an = new AbstractNode (Children.LEAF);
             an.setName (key.toString ());
 
