@@ -80,7 +80,7 @@ absolutize_paths() {
     done
 }
 
-netbeans_clusters=`readClusters | absolutize_paths | tr '\n' ':'`
+netbeans_clusters=`readClusters | absolutize_paths | tr '\012' ':'`
 
 if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"
