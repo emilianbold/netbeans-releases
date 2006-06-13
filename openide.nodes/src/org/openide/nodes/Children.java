@@ -799,6 +799,17 @@ public abstract class Children extends Object {
         }
     }
 
+    private void checkInfo(Info info, Entry entry) {
+        if (info == null) {
+            throw new IllegalStateException(
+                "Error in " + getClass().getName() + " with entry " + entry + // NOI18N
+                " probably caused by faulty key implementation." + // NOI18N
+                " The key hashCode() and equals() methods must behave as for an IMMUTABLE object" + // NOI18N
+                " and the hashCode() must return the same value for equals() keys."
+            ); // NOI18N
+        }
+    }
+    
     /** Removes the objects from the children.
     */
     private void updateRemove(Node[] current, Set toRemove) {
@@ -813,7 +824,9 @@ public abstract class Children extends Object {
             //debug.append ("Removed: " + en + " info: " + info); // NOI18N
             //debug.append ('\n');
             //printStackTrace();
-            nodes.addAll(info.nodes()); // Has a NullPointerException been thrown?
+//            checkInfo(info, en);
+
+            nodes.addAll(info.nodes());
         }
 
         // modify the current set of entries and empty the list of nodes
@@ -891,15 +904,7 @@ public abstract class Children extends Object {
                 Entry entry = (Entry) it.next();
 
                 Info info = (Info) map.get(entry);
-
-                if (info == null) {
-                    throw new IllegalStateException(
-                        "Error in " + getClass().getName() + " with entry " + entry + // NOI18N
-                        " probably caused by faulty key implementation." + // NOI18N
-                        " The key hashCode() and equals() methods must behave as for an IMMUTABLE object" + // NOI18N
-                        " and the hashCode() must return the same value for equals() keys."
-                    ); // NOI18N
-                }
+                checkInfo(info, entry);
 
                 offsets.put(info, new Integer(previousPos));
 
