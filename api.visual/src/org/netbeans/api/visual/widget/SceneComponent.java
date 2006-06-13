@@ -55,7 +55,6 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
     }
 
     public void paint (Graphics g) {
-        System.out.println ("g.getClipBounds () = " + g.getClipBounds ());
 //        long s = System.currentTimeMillis ();
         Graphics2D gr = (Graphics2D) g;
 
