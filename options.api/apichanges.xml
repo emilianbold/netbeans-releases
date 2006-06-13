@@ -53,6 +53,21 @@ Microsystems, Inc. All Rights Reserved.
             Options Dialog API integrated to NetBeans.
         </description>
     </change>
+    <change id="api_stabilization" >
+        <api name="OptionsAPI"/>
+        <summary>The Options Dialog API has been stabilized.</summary>
+        <version major="1" minor="4"/>
+        <date day="13" month="6" year="2006"/>
+        <author login="rmatous"/>
+        <compatibility deprecation="yes"/>
+        <description>
+            <p>
+                To indicate that this is now considered a stable API, the major release version was
+                incremented to 1 from 0.
+            </p>
+        </description>
+        <issue number="70826"/>
+    </change>          
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->
