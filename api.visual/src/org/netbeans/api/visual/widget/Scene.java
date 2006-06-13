@@ -112,7 +112,10 @@ public class Scene extends Widget {
             rect.height += insets.top + insets.bottom;
         }
 
+        Point preLocation = getLocation ();
+        Rectangle preBounds = getBounds ();
         resolveBounds (rect != null ? new Point (- rect.x, - rect.y) : new Point (), rect);
+
         Dimension preferredSize = rect != null ? rect.getSize () : new Dimension ();
         preferredSize = new Dimension ((int) (preferredSize.width * zoomFactor), (int) (preferredSize.height * zoomFactor));
         if (! preferredSize.equals (component.getPreferredSize ())) {
@@ -124,6 +127,7 @@ public class Scene extends Widget {
         componentSize.width = (int) (componentSize.width / zoomFactor);
         componentSize.height = (int) (componentSize.height / zoomFactor);
         Rectangle bounds = getBounds ();
+
         boolean sceneResized = false;
         if (bounds.width < componentSize.width) {
             bounds.width = componentSize.width;
@@ -133,10 +137,11 @@ public class Scene extends Widget {
             bounds.height = componentSize.height;
             sceneResized = true;
         }
-        if (sceneResized) {
+        if (sceneResized)
             resolveBounds (getLocation (), bounds);
+
+        if (! getLocation ().equals (preLocation)  ||  ! bounds.equals (preBounds))
             component.repaint ();
-        }
     }
 
     public final void validate () {
