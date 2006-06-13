@@ -170,7 +170,8 @@ public class ServerLocationPanel extends JPanel
         
         // add server installation directory field
         locationField.addKeyListener(new LocationKeyListener());
-        if(System.getProperty("websphere.home")==null) {
+        if(System.getProperty("websphere.home")==null ||
+                System.getProperty("websphere.home").equals("")) {
             String home = System.getProperty("user.home");
             if(home!=null) {
                 try{
@@ -186,7 +187,7 @@ public class ServerLocationPanel extends JPanel
                     }
                 } catch (IOException e){
                     e=null;
-                    //either the file does not exist or not available. Do nothing                    
+                    //either the file does not exist or not available. Do nothing
                 }
             }
         }
