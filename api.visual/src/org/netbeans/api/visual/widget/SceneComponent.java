@@ -17,10 +17,7 @@ import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.dnd.DropTargetListener;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
@@ -44,11 +41,11 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         addMouseMotionListener (this);
         addMouseWheelListener (this);
         addKeyListener (this);
-        try {
-            getDropTarget ().addDropTargetListener (this);
-        } catch (TooManyListenersException e) {
-            ErrorManager.getDefault ().notify (e);
-        }
+        setDropTarget (new DropTarget (this, DnDConstants.ACTION_COPY_OR_MOVE, this));
+        setAutoscrolls (true);
+        setRequestFocusEnabled (true);
+        setFocusable (true);
+        setFocusTraversalKeysEnabled (false);
     }
 
     public void addNotify () {
@@ -58,6 +55,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
     }
 
     public void paint (Graphics g) {
+        System.out.println ("g.getClipBounds () = " + g.getClipBounds ());
 //        long s = System.currentTimeMillis ();
         Graphics2D gr = (Graphics2D) g;
 
@@ -131,15 +129,27 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
     }
 
     public void dragEnter (DropTargetDragEvent e) {
-        processLocationOperator (Operator.DRAG_ENTER, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processLocationOperator (Operator.DRAG_ENTER, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
+        if (state.isConsumed ())
+            e.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
+        else
+            e.rejectDrag ();
     }
 
     public void dragOver (DropTargetDragEvent e) {
-        processLocationOperator (Operator.DRAG_OVER, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processLocationOperator (Operator.DRAG_OVER, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
+        if (state.isConsumed ())
+            e.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
+        else
+            e.rejectDrag ();
     }
 
     public void dropActionChanged (DropTargetDragEvent e) {
-        processLocationOperator (Operator.DROP_ACTION_CHANGED, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processLocationOperator (Operator.DROP_ACTION_CHANGED, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
+        if (state.isConsumed ())
+            e.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
+        else
+            e.rejectDrag ();
     }
 
     public void dragExit (DropTargetEvent e) {
@@ -147,10 +157,14 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
     }
 
     public void drop (DropTargetDropEvent e) {
-        processOperator (Operator.DROP, new WidgetAction.WidgetDropTargetDropEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processOperator (Operator.DROP, new WidgetAction.WidgetDropTargetDropEvent (++ eventIDcounter, e));
+        if (state.isConsumed ())
+            e.acceptDrop (DnDConstants.ACTION_COPY_OR_MOVE);
+        else
+            e.rejectDrop ();
     }
 
-    private void processLocationOperator (Operator operator, WidgetAction.WidgetLocationEvent event) {
+    private WidgetAction.State processLocationOperator (Operator operator, WidgetAction.WidgetLocationEvent event) {
         event.setPoint (scene.convertViewToScene (event.getPoint ()));
 
         WidgetAction.State state;
@@ -172,6 +186,8 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
         if (lockedWidget != null)
             scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
+
+        return state;
     }
 
     private WidgetAction.State processLocationOperator (Operator operator, Widget widget, WidgetAction.WidgetLocationEvent event) {
@@ -202,7 +218,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         return WidgetAction.State.REJECTED;
     }
 
-    private void processOperator (Operator operator, WidgetAction.WidgetEvent event) {
+    private WidgetAction.State processOperator (Operator operator, WidgetAction.WidgetEvent event) {
         WidgetAction.State state;
 
         if (lockedAction != null) {
@@ -218,6 +234,8 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
         if (lockedWidget != null)
             scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
+
+        return state;
     }
 
     private WidgetAction.State processOperator (Operator operator, Widget widget, WidgetAction.WidgetEvent event) {

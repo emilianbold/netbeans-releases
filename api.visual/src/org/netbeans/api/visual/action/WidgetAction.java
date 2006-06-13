@@ -730,14 +730,6 @@ public interface WidgetAction {
             return event.getTransferable ();
         }
 
-        public void acceptDrag (int dragOperation) {
-            event.acceptDrag (dragOperation);
-        }
-
-        public void rejectDrag () {
-            event.rejectDrag ();
-        }
-
         public DropTargetContext getDropTargetContext () {
             return event.getDropTargetContext ();
         }
@@ -798,18 +790,6 @@ public interface WidgetAction {
 
         public Transferable getTransferable () {
             return event.getTransferable ();
-        }
-
-        public void acceptDrop (int dropAction) {
-            event.acceptDrop (dropAction);
-        }
-
-        public void rejectDrop () {
-            event.rejectDrop ();
-        }
-
-        public void dropComplete (boolean success) {
-            event.dropComplete (success);
         }
 
         public boolean isLocalTransfer () {
