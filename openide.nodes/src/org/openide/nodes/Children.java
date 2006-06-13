@@ -824,8 +824,8 @@ public abstract class Children extends Object {
             //debug.append ("Removed: " + en + " info: " + info); // NOI18N
             //debug.append ('\n');
             //printStackTrace();
-//            checkInfo(info, en);
-
+            checkInfo(info, en);
+            
             nodes.addAll(info.nodes());
         }
 
