@@ -15,6 +15,8 @@ package org.netbeans.core;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
@@ -133,6 +135,10 @@ class ShortcutsFolder {
                 } else { // see e.g. secondary exception in #74169
                     ErrorManager.getDefault().log(ErrorManager.WARNING, "Unrecognized shortcut name from " + dataObject.getPrimaryFile().getPath());
                 }
+            } catch (ClassNotFoundException x) {
+                Logger.getLogger(ShortcutsFolder.class.getName()).log(Level.WARNING,
+                        "{0} ignored; cannot load class {1}",
+                        new Object[] {dataObject.getPrimaryFile().getPath(), ic.instanceName()});
             } catch (Exception ex) {
                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
             }
