@@ -2687,9 +2687,11 @@ widthcheck:  {
         return actionsToPopup(actions, lookup);
     }
 
-    /** Global context for actions. Toolbar, menu or any other "global"
+    /**
+     * Global context for actions. Toolbar, menu or any other "global"
      * action presenters shall operate in this context.
-     *
+     * Presenters for context menu items should <em>not</em> use
+     * this method; instead see {@link ContextAwareAction}.
      * @see ContextGlobalProvider
      * @return the context for actions
      * @since 4.10
