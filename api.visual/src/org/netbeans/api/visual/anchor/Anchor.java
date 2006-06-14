@@ -14,6 +14,7 @@ package org.netbeans.api.visual.anchor;
 
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.util.GeomUtil;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -51,21 +52,22 @@ public abstract class Anchor implements Widget.Dependency {
     }
 
     public void removeDependency (Widget.Dependency dependency) {
-        if (dependencies != null)
-            if (! dependencies.remove (dependency))
-                return;
-        if (dependencies.size () == 0  &&  attachedToWidget) {
-            notifyUnused ();
-            attachedToWidget = false;
+        if (dependencies != null  &&  dependencies.remove (dependency)) {
+            if (dependencies.size () == 0  &&  attachedToWidget) {
+                notifyUnused ();
+                attachedToWidget = false;
+            }
         }
     }
     
     public void notifyUsed () {
-        relatedWidget.addDependency (this);
+        if (relatedWidget != null)
+            relatedWidget.addDependency (this);
     }
     
     public void notifyUnused () {
-        relatedWidget.removeDependency (this);
+        if (relatedWidget != null)
+            relatedWidget.removeDependency (this);
     }
     
     public void revalidate () {
@@ -77,10 +79,21 @@ public abstract class Anchor implements Widget.Dependency {
     public Widget getRelatedWidget () {
         return relatedWidget;
     }
-    
-    public Widget getOppositeWidget (ConnectionWidget connectionWidget, boolean isThisSourceAnchor) {
-        Anchor oppositeAnchor = isThisSourceAnchor ? connectionWidget.getTargetAnchor() : connectionWidget.getSourceAnchor();
-        return oppositeAnchor != null ? oppositeAnchor.getRelatedWidget() : null;
+
+    public Point getRelatedSceneLocation () {
+        if (relatedWidget != null)
+            return GeomUtil.center (relatedWidget.convertLocalToScene (relatedWidget.getBounds ()));
+        assert false : "Anchor.getRelatedSceneLocation has to be overridden when a related widget is not used";
+        return null;
+    }
+
+    public Point getOppositeSceneLocation (ConnectionWidget connectionWidget, boolean isThisSourceAnchor) {
+        Anchor oppositeAnchor = getOppositeAnchor (connectionWidget, isThisSourceAnchor);
+        return oppositeAnchor != null ? oppositeAnchor.getRelatedSceneLocation () : null;
+    }
+
+    public Anchor getOppositeAnchor (ConnectionWidget connectionWidget, boolean isThisSourceAnchor) {
+        return isThisSourceAnchor ? connectionWidget.getTargetAnchor() : connectionWidget.getSourceAnchor();
     }
     
     public abstract Result compute (ConnectionWidget connectionWidget, boolean isThisSourceAnchor);
