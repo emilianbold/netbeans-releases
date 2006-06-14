@@ -118,10 +118,10 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
 
         // description document is parsed in the same thread
         private short parseDesc() {
-            this.smell = new FileElement[0];
+            smell = new FileElement[0];
             DescParser parser = new DescParser(data);
             parser.parse();
-            smell = parser.template;                
+            smell = (parser.template != null) ? parser.template : smell;
             if (DEBUG) {
                 if (parser.state == DescParser.ERROR) {
                     ERR.log("MIMEResolverImpl.Impl parsing error!");
