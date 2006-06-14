@@ -20,6 +20,7 @@ import org.netbeans.api.visual.router.Router;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +32,8 @@ import java.util.List;
 // TODO - control points can be modified by accessing: getControlPoints ().get (0).x or y
 public class ConnectionWidget extends Widget implements Widget.Dependency {
 
+    private static final double HIT_DISTANCE_SQUARE = 16.0;
+    
     private Anchor sourceAnchor;
     private Anchor targetAnchor;
     private AnchorShape sourceAnchorShape;
@@ -181,7 +184,17 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
     }
 
     public boolean isHitAt (Point localLocation) {
-        return super.isHitAt (localLocation); // TODO - do checking with line segments
+        if (! super.isHitAt (localLocation))
+                return false;
+        List<Point> controlPoints = getControlPoints ();
+        for (int i = 0; i < controlPoints.size () - 1; i++) {
+            Point point1 = controlPoints.get (i);
+            Point point2 = controlPoints.get (i + 1);
+            double dist = Line2D.ptSegDistSq (point1.x, point1.y, point2.x, point2.y, localLocation.x, localLocation.y);
+            if (dist < HIT_DISTANCE_SQUARE)
+                return true;
+        }
+        return false;
     }
     
     protected void paintWidget () {

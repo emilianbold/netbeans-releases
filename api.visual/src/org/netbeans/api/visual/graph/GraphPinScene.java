@@ -169,7 +169,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
         return edgeTargetPinControllers.get (edgeController);
     }
 
-    public final Collection<EdgeCtrl> findPinEdges (PinCtrl pinController, boolean allowInputEdges, boolean allowOutputEdges) {
+    public final Collection<EdgeCtrl> findPinEdges (PinCtrl pinController, boolean allowOutputEdges, boolean allowInputEdges) {
         ArrayList<EdgeCtrl> list = new ArrayList<EdgeCtrl> ();
         if (allowInputEdges)
             list.addAll (pinInputEdgeControllers.get (pinController));

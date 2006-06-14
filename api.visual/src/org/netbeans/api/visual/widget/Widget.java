@@ -433,6 +433,10 @@ public class Widget {
 //        gr.setClip (clip);
     }
 
+    public final boolean equals (Object obj) {
+        return this == obj;
+    }
+
     public interface Dependency {
         
         public void revalidate ();

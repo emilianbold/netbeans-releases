@@ -213,10 +213,12 @@ public interface WidgetAction {
         }
         
         public void addAction(WidgetAction action) {
+            assert action != null;
             actions.add(action);
         }
         
         public void addAction(int index, WidgetAction action) {
+            assert action != null;
             actions.add(index, action);
         }
         

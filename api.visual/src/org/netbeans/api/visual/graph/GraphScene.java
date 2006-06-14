@@ -131,7 +131,7 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
         return edgeTargetNodeControllers.get (edgeController);
     }
 
-    public final Collection<EdgeCtrl> findNodeEdges (NodeCtrl nodeController, boolean allowInputEdges, boolean allowOutputEdges) {
+    public final Collection<EdgeCtrl> findNodeEdges (NodeCtrl nodeController, boolean allowOutputEdges, boolean allowInputEdges) {
         ArrayList<EdgeCtrl> list = new ArrayList<EdgeCtrl> ();
         if (allowInputEdges)
             list.addAll (nodeInputEdgeControllers.get (nodeController));
