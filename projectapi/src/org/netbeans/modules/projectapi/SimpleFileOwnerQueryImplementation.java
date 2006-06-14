@@ -14,6 +14,7 @@
 package org.netbeans.modules.projectapi;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -58,7 +59,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         return getOwner(file);
     }
     
-    private final Set/*<FileObject>*/ warnedAboutBrokenProjects = new WeakSet();
+    private final Set<FileObject> warnedAboutBrokenProjects = new WeakSet<FileObject>();
         
     public Project getOwner(FileObject f) {
         while (f != null) {
@@ -79,11 +80,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             }
             
             if (!externalOwners.isEmpty()) {
-                WeakReference/*<FileObject>*/ externalOwnersReference =
-                        (WeakReference/*<FileObject>*/) externalOwners.get(fileObject2URI(f));
+                Reference<FileObject> externalOwnersReference = externalOwners.get(fileObject2URI(f));
 
                 if (externalOwnersReference != null) {
-                    FileObject externalOwner = (FileObject) externalOwnersReference.get();
+                    FileObject externalOwner = externalOwnersReference.get();
 
                     if (externalOwner != null) {
                         try {
@@ -105,10 +105,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     /**
      * Map from external source roots to the owning project directories.
      */
-    private static final Map/*<URI,WeakReference<FileObject>>*/ externalOwners =
-        Collections.synchronizedMap(new WeakHashMap());
-    private static final Map/*<FileObject, Collection<URI>>*/ project2External =
-        Collections.synchronizedMap(new WeakHashMap());
+    private static final Map<URI,Reference<FileObject>> externalOwners =
+        Collections.synchronizedMap(new WeakHashMap<URI,Reference<FileObject>>());
+    private static final Map<FileObject,Collection<URI>> project2External =
+        Collections.synchronizedMap(new WeakHashMap<FileObject,Collection<URI>>());
     
     /** @see FileOwnerQuery#reset */
     public static void reset() {
@@ -131,25 +131,25 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     /** @see FileOwnerQuery#markExternalOwner */
     public static void markExternalOwnerTransient(URI root, Project owner) {
         if (owner != null) {
-            externalOwners.put(root, new WeakReference(owner.getProjectDirectory()));            
+            externalOwners.put(root, new WeakReference<FileObject>(owner.getProjectDirectory()));            
             synchronized (project2External) {
                 FileObject prjDir = owner.getProjectDirectory();
-                Collection/*<URI>*/ roots = (Collection/*<URI>*/) project2External.get (prjDir);
+                Collection<URI> roots = project2External.get (prjDir);
                 if (roots == null) {
-                    roots = new LinkedList ();
+                    roots = new LinkedList<URI>();
                     project2External.put(prjDir, roots);
                 }
                 roots.add (root);                
             }
         } else {
-            WeakReference/*<FileObject>*/ ownerReference = (WeakReference/*<FileObject>*/) externalOwners.remove(root);
+            Reference<FileObject> ownerReference = externalOwners.remove(root);
             
             if (ownerReference != null) {
-                FileObject ownerFO = (FileObject) ownerReference.get();
+                FileObject ownerFO = ownerReference.get();
                 
                 if (ownerFO != null) {
                     synchronized (project2External) {
-                        Collection/*<URI>*/ roots = (Collection) project2External.get(ownerFO);
+                        Collection<URI> roots = project2External.get(ownerFO);
                         if (roots != null) {
                             roots.remove(root);
                             if (roots.size() == 0) {

@@ -7,27 +7,22 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.project;
 
 import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Utilities;
 import org.openide.util.Mutex;
-
-import java.util.HashSet;
-
-import java.util.Set;
-
-import java.util.Iterator;
-
-import org.netbeans.spi.project.SubprojectProvider;
+import org.openide.util.Utilities;
 
 /**
  * Utility methods to get information about {@link Project}s.
@@ -46,7 +41,7 @@ public class ProjectUtils {
      * @see Project#getLookup
      */
     public static ProjectInformation getInformation(Project p) {
-        ProjectInformation pi = (ProjectInformation)p.getLookup().lookup(ProjectInformation.class);
+        ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);
         if (pi != null) {
             return pi;
         } else {
@@ -64,7 +59,7 @@ public class ProjectUtils {
      * @see Project#getLookup
      */
     public static Sources getSources(Project p) {
-        Sources s = (Sources)p.getLookup().lookup(Sources.class);
+        Sources s = p.getLookup().lookup(Sources.class);
         if (s != null) {
             return s;
         } else {
@@ -109,11 +104,11 @@ public class ProjectUtils {
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=43845">Issue #43845</a>
      */
     public static boolean hasSubprojectCycles(final Project master, final Project candidate) {
-        return ((Boolean) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
-                return Boolean.valueOf(visit(new HashSet(), master, master, candidate));
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
+                return visit(new HashSet<Project>(), master, master, candidate);
             }
-        })).booleanValue();
+        });
     }
     
     /**
@@ -123,15 +118,13 @@ public class ProjectUtils {
      * @param master the original master project (for use with candidate param)
      * @param candidate a candidate added subproject for master, or null
      */
-    private static boolean visit(Set/*<Project>*/ encountered, Project curr, Project master, Project candidate) {
+    private static boolean visit(Set<Project> encountered, Project curr, Project master, Project candidate) {
         if (!encountered.add(curr)) {
             return true;
         }
-        SubprojectProvider spp = (SubprojectProvider) curr.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = curr.getLookup().lookup(SubprojectProvider.class);
         if (spp != null) {
-            Iterator/*<Project>*/ children = spp.getSubprojects().iterator();
-            while (children.hasNext()) {
-                Project child = (Project) children.next();
+            for (Project child : spp.getSubprojects()) {
                 if (candidate == child) {
                     candidate = null;
                 }

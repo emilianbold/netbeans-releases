@@ -18,13 +18,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -42,10 +40,10 @@ public class FileOwnerQuery {
     
     // XXX acquire the appropriate ProjectManager.mutex for the duration of calls
 
-    private static Lookup.Result/*<FileOwnerQueryImplementation>*/ implementations;
+    private static Lookup.Result<FileOwnerQueryImplementation> implementations;
 
     /** Cache of all available FileOwnerQueryImplementation instances. */
-    private static List/*<FileOwnerQueryImplementation>*/ cache;
+    private static List<FileOwnerQueryImplementation> cache;
     
     private FileOwnerQuery() {}
 
@@ -62,9 +60,7 @@ public class FileOwnerQuery {
         if (archiveRoot != null) {
             file = archiveRoot;
         }
-        Iterator it = getInstances().iterator();
-        while (it.hasNext()) {
-            FileOwnerQueryImplementation q = (FileOwnerQueryImplementation)it.next();
+        for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(file);
             if (p != null) {
                 return p;
@@ -106,9 +102,7 @@ public class FileOwnerQuery {
         else if (!uri.isAbsolute() || uri.isOpaque()) {
             throw new IllegalArgumentException("Bad URI: " + uri); // NOI18N
         }
-        Iterator it = getInstances().iterator();
-        while (it.hasNext()) {
-            FileOwnerQueryImplementation q = (FileOwnerQueryImplementation)it.next();
+        for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(uri);
             if (p != null) {
                 return p;
@@ -213,7 +207,7 @@ public class FileOwnerQuery {
     public static FileObject getMarkedExternalOwner(FileObject root) {}
      */
 
-    private static synchronized List getInstances() {
+    private static synchronized List<FileOwnerQueryImplementation> getInstances() {
         if (implementations == null) {
             implementations = Lookup.getDefault().lookupResult(FileOwnerQueryImplementation.class);
             implementations.addLookupListener(new LookupListener() {
@@ -224,7 +218,7 @@ public class FileOwnerQuery {
                 }});
         }
         if (cache == null) {
-            cache = new ArrayList(implementations.allInstances());
+            cache = new ArrayList<FileOwnerQueryImplementation>(implementations.allInstances());
         }
         return cache;
     }

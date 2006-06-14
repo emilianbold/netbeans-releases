@@ -35,6 +35,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.Union2;
 
 /**
  * Manages loaded projects.
@@ -54,7 +55,7 @@ public final class ProjectManager {
     // for unit testing purposes:
     private static final int ERR_LVL = Boolean.getBoolean(ProjectManager.class.getName() + ".LOG_WARN") ? ErrorManager.WARNING : ErrorManager.INFORMATIONAL; // NOI18N
     
-    private static final Lookup.Result/*<ProjectFactory>*/ factories =
+    private static final Lookup.Result<ProjectFactory> factories =
         Lookup.getDefault().lookupResult(ProjectFactory.class);
     
     private ProjectManager() {
@@ -91,35 +92,45 @@ public final class ProjectManager {
         return MUTEX;
     }
     
-    /**
-     * Marker for a directory which is known to not be a project.
-     */
-    private static final Object NO_SUCH_PROJECT = "NO_SUCH_PROJECT"; // NOI18N
-    /**
-     * Marker for a directory which is known to (probably) be a project but is not loaded.
-     */
-    private static final Object SOME_SUCH_PROJECT = "SOME_SUCH_PROJECT"; // NOI18N
-    /**
-     * Marker for a directory which may currently be being loaded as a project.
-     * When this is the value, other reader threads should wait for the result.
-     */
-    private static final Object LOADING_PROJECT = "LOADING_PROJECT"; // NOI18N
+    private static enum LoadStatus {
+        /**
+         * Marker for a directory which is known to not be a project.
+         */
+        NO_SUCH_PROJECT,
+        /**
+         * Marker for a directory which is known to (probably) be a project but is not loaded.
+         */
+        SOME_SUCH_PROJECT,
+        /**
+         * Marker for a directory which may currently be being loaded as a project.
+         * When this is the value, other reader threads should wait for the result.
+         */
+        LOADING_PROJECT;
+        
+        public boolean is(Union2<Reference<Project>,LoadStatus> o) {
+            return o != null && o.hasSecond() && o.second() == this;
+        }
+        
+        public Union2<Reference<Project>,LoadStatus> wrap() {
+            return Union2.createSecond(this);
+        }
+    }
     
     /**
      * Cache of loaded projects (modified or not).
      * Also caches a dir which is <em>not</em> a project.
      */
-    private final Map/*<FileObject,Reference<Project>|NO_SUCH_PROJECT|SOME_SUCH_PROJECT|LOADING_PROJECT>*/ dir2Proj = new WeakHashMap();
+    private final Map<FileObject,Union2<Reference<Project>,LoadStatus>> dir2Proj = new WeakHashMap<FileObject,Union2<Reference<Project>,LoadStatus>>();
     
     /**
      * Set of modified projects (subset of loaded projects).
      */
-    private final Set/*<Project>*/ modifiedProjects = new HashSet();
+    private final Set<Project> modifiedProjects = new HashSet<Project>();
     
     /**
      * Mapping from projects to the factories that created them.
      */
-    private final Map/*<Project,ProjectFactory>*/ proj2Factory = new WeakHashMap();
+    private final Map<Project,ProjectFactory> proj2Factory = new WeakHashMap<Project,ProjectFactory>();
     
     /**
      * Checks for deleted projects.
@@ -176,17 +187,17 @@ public final class ProjectManager {
             throw new IllegalArgumentException("Attempted to pass a non-directory to findProject: " + projectDirectory); // NOI18N
         }
         try {
-            return (Project)mutex().readAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            return mutex().readAccess(new Mutex.ExceptionAction<Project>() {
+                public Project run() throws IOException {
                     // Read access, but still needs to synch on the cache since there
                     // may be >1 reader.
                     try {
                         boolean wasSomeSuchProject;
                     synchronized (dir2Proj) {
-                        Object o;
+                        Union2<Reference<Project>,LoadStatus> o;
                         do {
                             o = dir2Proj.get(projectDirectory);
-                            if (o == LOADING_PROJECT) {
+                            if (LoadStatus.LOADING_PROJECT.is(o)) {
                                 try {
                                     if (Thread.currentThread() == loadingThread) {
                                         throw new IllegalStateException("Attempt to call ProjectManager.findProject within the body of ProjectFactory.loadProject (hint: try using ProjectManager.mutex().postWriteRequest(...) within the body of your Project's constructor to prevent this)"); // NOI18N
@@ -202,17 +213,16 @@ public final class ProjectManager {
                                     e.printStackTrace();
                                 }
                             }
-                        } while (o == LOADING_PROJECT);
-                        assert o != LOADING_PROJECT;
-                        wasSomeSuchProject = (o == SOME_SUCH_PROJECT);
-                        if (o == NO_SUCH_PROJECT) {
+                        } while (LoadStatus.LOADING_PROJECT.is(o));
+                        assert !LoadStatus.LOADING_PROJECT.is(o);
+                        wasSomeSuchProject = LoadStatus.SOME_SUCH_PROJECT.is(o);
+                        if (LoadStatus.NO_SUCH_PROJECT.is(o)) {
                             if (ERR.isLoggable(ERR_LVL)) {
                                 ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": NO_SUCH_PROJECT");
                             }
                             return null;
-                        } else if (o != null && o != SOME_SUCH_PROJECT) {
-                            Reference r = (Reference)o;
-                            Project p = (Project)r.get();
+                        } else if (o != null && !LoadStatus.SOME_SUCH_PROJECT.is(o)) {
+                            Project p = o.first().get();
                             if (p != null) {
                                 if (ERR.isLoggable(ERR_LVL)) {
                                     ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": cached project");
@@ -221,7 +231,7 @@ public final class ProjectManager {
                             }
                         }
                         // not in cache
-                        dir2Proj.put(projectDirectory, LOADING_PROJECT);
+                        dir2Proj.put(projectDirectory, LoadStatus.LOADING_PROJECT.wrap());
                         loadingThread = Thread.currentThread();
                         if (ERR.isLoggable(ERR_LVL)) {
                             ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": will load new project...");
@@ -238,11 +248,11 @@ public final class ProjectManager {
                             dir2Proj.notifyAll();
                             projectDirectory.addFileChangeListener(projectDeletionListener);
                             if (p != null) {
-                                dir2Proj.put(projectDirectory, new TimedWeakReference(p));
+                                dir2Proj.put(projectDirectory, Union2.<Reference<Project>,LoadStatus>createFirst(new TimedWeakReference<Project>(p)));
                                 resetLP = true;
                                 return p;
                             } else {
-                                dir2Proj.put(projectDirectory, NO_SUCH_PROJECT);
+                                dir2Proj.put(projectDirectory, LoadStatus.NO_SUCH_PROJECT.wrap());
                                 resetLP = true;
                                 if (wasSomeSuchProject) {
                                     ERR.log(ErrorManager.WARNING, "Directory " + FileUtil.getFileDisplayName(projectDirectory) + " was initially claimed to be a project folder but really was not");
@@ -267,7 +277,7 @@ public final class ProjectManager {
                                 ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": cleaning up after error");
                             }
                             synchronized (dir2Proj) {
-                                assert dir2Proj.get(projectDirectory) == LOADING_PROJECT;
+                                assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory));
                                 dir2Proj.remove(projectDirectory);
                                 dir2Proj.notifyAll(); // make sure other threads can continue
                             }
@@ -313,9 +323,7 @@ public final class ProjectManager {
         assert dir.isFolder();
         assert mutex().isReadAccess();
         ProjectStateImpl state = new ProjectStateImpl();
-        Iterator it = factories.allInstances().iterator();
-        while (it.hasNext()) {
-            ProjectFactory factory = (ProjectFactory)it.next();
+        for (ProjectFactory factory : factories.allInstances()) {
             Project p = factory.loadProject(dir, state);
             if (p != null) {
                 proj2Factory.put(p, factory);
@@ -354,29 +362,29 @@ public final class ProjectManager {
         if (!projectDirectory.isFolder()) {
             throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
         }
-        return ((Boolean)mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return mutex().readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 synchronized (dir2Proj) {
-                    Object o;
+                    Union2<Reference<Project>,LoadStatus> o;
                     do {
                         o = dir2Proj.get(projectDirectory);
-                        if (o == LOADING_PROJECT) {
+                        if (LoadStatus.LOADING_PROJECT.is(o)) {
                             try {
                                 dir2Proj.wait();
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                         }
-                    } while (o == LOADING_PROJECT);
-                    assert o != LOADING_PROJECT;
-                    if (o == NO_SUCH_PROJECT) {
-                        return Boolean.FALSE;
+                    } while (LoadStatus.LOADING_PROJECT.is(o));
+                    assert !LoadStatus.LOADING_PROJECT.is(o);
+                    if (LoadStatus.NO_SUCH_PROJECT.is(o)) {
+                        return false;
                     } else if (o != null) {
                         // Reference<Project> or SOME_SUCH_PROJECT
-                        return Boolean.TRUE;
+                        return true;
                     }
                     // Not in cache.
-                    dir2Proj.put(projectDirectory, LOADING_PROJECT);
+                    dir2Proj.put(projectDirectory, LoadStatus.LOADING_PROJECT.wrap());
                 }
                 boolean resetLP = false;
                 try {
@@ -385,22 +393,22 @@ public final class ProjectManager {
                         resetLP = true;
                         dir2Proj.notifyAll();
                         if (p) {
-                            dir2Proj.put(projectDirectory, SOME_SUCH_PROJECT);
-                            return Boolean.TRUE;
+                            dir2Proj.put(projectDirectory, LoadStatus.SOME_SUCH_PROJECT.wrap());
+                            return true;
                         } else {
-                            dir2Proj.put(projectDirectory, NO_SUCH_PROJECT);
-                            return Boolean.FALSE;
+                            dir2Proj.put(projectDirectory, LoadStatus.NO_SUCH_PROJECT.wrap());
+                            return false;
                         }
                     }
                 } finally {
                     if (!resetLP) {
                         // some runtime exception interrupted.
-                        assert dir2Proj.get(projectDirectory) == LOADING_PROJECT;
+                        assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory));
                         dir2Proj.remove(projectDirectory);
                     }
                 }
             }
-        })).booleanValue();
+        });
     }
     
     private boolean checkForProject(FileObject dir) {
@@ -426,8 +434,8 @@ public final class ProjectManager {
     public void clearNonProjectCache() {
         synchronized (dir2Proj) {
             dir2Proj.values().removeAll(Arrays.asList(new Object[] {
-                NO_SUCH_PROJECT,
-                SOME_SUCH_PROJECT,
+                LoadStatus.NO_SUCH_PROJECT.wrap(),
+                LoadStatus.SOME_SUCH_PROJECT.wrap(),
             }));
             // XXX remove everything too? but then e.g. AntProjectFactorySingleton
             // will stay while its delegates are changed, which does no good
@@ -451,8 +459,8 @@ public final class ProjectManager {
             if (ERR.isLoggable(ERR_LVL)) {
                 ERR.log(ERR_LVL, "markModified(" + p.getProjectDirectory()+ ")");
             }
-            mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
+            mutex().writeAccess(new Mutex.Action<Void>() {
+                public Void run() {
                     if (!proj2Factory.containsKey(p)) {
                         throw new IllegalStateException("An attempt to call ProjectState.markModified on a deleted project: " + p.getProjectDirectory()); // NOI18N
                     }
@@ -464,8 +472,8 @@ public final class ProjectManager {
 
         public void notifyDeleted() throws IllegalStateException {
             assert p != null;
-            mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
+            mutex().writeAccess(new Mutex.Action<Void>() {
+                public Void run() {
                     if (proj2Factory.get(p) == null) {
                         throw new IllegalStateException("An attempt to call notifyDeleted more than once. Project: " + p.getProjectDirectory()); // NOI18N
                     }
@@ -483,12 +491,12 @@ public final class ProjectManager {
     /**
      * Get a list of all projects which are modified and need to be saved.
      * <p>Acquires read access.
-     * @return an immutable set of {@link Project}s
+     * @return an immutable set of projects
      */
-    public Set/*<Project>*/ getModifiedProjects() {
-        return (Set/*<Project>*/)mutex().readAccess(new Mutex.Action() {
-            public Object run() {
-                return new HashSet(modifiedProjects);
+    public Set<Project> getModifiedProjects() {
+        return mutex().readAccess(new Mutex.Action<Set<Project>>() {
+            public Set<Project> run() {
+                return new HashSet<Project>(modifiedProjects);
             }
         });
     }
@@ -500,16 +508,16 @@ public final class ProjectManager {
      * @throws IllegalArgumentException if the project was not created through this manager
      */
     public boolean isModified(final Project p) throws IllegalArgumentException {
-        return ((Boolean)mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return mutex().readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 synchronized (dir2Proj) {
                     if (!proj2Factory.containsKey(p)) {
                         throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this + " or was already deleted"); // NOI18N
                     }
                 }
-                return Boolean.valueOf(modifiedProjects.contains(p));
+                return modifiedProjects.contains(p);
             }
-        })).booleanValue();
+        });
     }
     
     /**
@@ -530,13 +538,13 @@ public final class ProjectManager {
      */
     public void saveProject(final Project p) throws IOException, IllegalArgumentException {
         try {
-            mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     if (!proj2Factory.containsKey(p)) {
                         throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this + " or was already deleted"); // NOI18N
                     }
                     if (modifiedProjects.contains(p)) {
-                        ProjectFactory f = (ProjectFactory)proj2Factory.get(p);
+                        ProjectFactory f = proj2Factory.get(p);
                         f.saveProject(p);
                         if (ERR.isLoggable(ERR_LVL)) {
                             ERR.log(ERR_LVL, "saveProject(" + p.getProjectDirectory()+ ")");
@@ -558,12 +566,12 @@ public final class ProjectManager {
      */
     public void saveAllProjects() throws IOException {
         try {
-            mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
-                    Iterator it = modifiedProjects.iterator();
+            mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
+                    Iterator<Project> it = modifiedProjects.iterator();
                     while (it.hasNext()) {
-                        Project p = (Project)it.next();
-                        ProjectFactory f = (ProjectFactory)proj2Factory.get(p);
+                        Project p = it.next();
+                        ProjectFactory f = proj2Factory.get(p);
                         assert f != null : p;
                         f.saveProject(p);
                         if (ERR.isLoggable(ERR_LVL)) {
@@ -588,13 +596,13 @@ public final class ProjectManager {
      * @param p a project loaded by this manager
      */
     public boolean isValid(final Project p) {
-        return ((Boolean)mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return mutex().readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 synchronized (dir2Proj) {
-                    return Boolean.valueOf(proj2Factory.containsKey(p));
+                    return proj2Factory.containsKey(p);
                 }
             }
-        })).booleanValue();
+        });
     }
     
     /**

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,7 +19,6 @@ package org.netbeans.modules.projectapi;
 //     removed map key functionality
 
 import java.lang.ref.WeakReference;
-import java.util.Map;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -41,7 +40,7 @@ import org.openide.util.Utilities;
  * </ol>
  * @author Jesse Glick
  */
-public final class TimedWeakReference/*<T>*/ extends WeakReference/*<T>*/ implements Runnable {
+public final class TimedWeakReference<T> extends WeakReference<T> implements Runnable {
     
     public static int TIMEOUT = 15000;
     
@@ -49,7 +48,7 @@ public final class TimedWeakReference/*<T>*/ extends WeakReference/*<T>*/ implem
     
     private RequestProcessor.Task task;
     
-    private Object/*T*/ o;
+    private T o;
     
     /** Time when the object was last time touched */
     private long touched;
@@ -58,7 +57,7 @@ public final class TimedWeakReference/*<T>*/ extends WeakReference/*<T>*/ implem
      * Create a weak reference with timeout.
      * @param o the referent
      */
-    public TimedWeakReference(Object/*T*/ o) {
+    public TimedWeakReference(T o) {
         super(o, Utilities.activeReferenceQueue());
         this.o = o;
         task = RP.create(this);
@@ -79,7 +78,7 @@ public final class TimedWeakReference/*<T>*/ extends WeakReference/*<T>*/ implem
         }
     }
     
-    public synchronized Object/*T*/ get() {
+    public synchronized T get() {
         if (o == null) {
             o = super.get();
         }
