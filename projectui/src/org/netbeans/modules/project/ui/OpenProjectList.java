@@ -59,7 +59,6 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
@@ -252,16 +251,14 @@ public final class OpenProjectList {
                 if (spp != null) {
                     subprojects = spp.getSubprojects();
                 } else {
-                    subprojects = Collections.<Project>emptySet();
+                    subprojects = Collections.emptySet();
                 }
                 subprojectsCache.put(p, subprojects);
             }
             
             projectsToOpen.add(p);
             
-            for (Iterator<Project> i = subprojects.iterator(); i.hasNext(); ) {
-                Project sub = i.next();
-                
+            for (Project sub : subprojects) {
                 if (!projectsToOpen.contains(sub) && !toHandle.contains(sub)) {
                     toHandle.add(sub);
                 }
@@ -309,8 +306,8 @@ public final class OpenProjectList {
         
         final boolean recentProjectsChangedCopy = recentProjectsChanged;
         
-        Mutex.EVENT.readAccess(new Action() {
-            public Object run() {
+        Mutex.EVENT.readAccess(new Action<Void>() {
+            public Void run() {
                 pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, null, null );
                 if ( recentProjectsChangedCopy ) {
                     pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
@@ -610,8 +607,8 @@ public final class OpenProjectList {
         // Notify projects opened
         notifyOpened(p);
         
-        Mutex.EVENT.readAccess(new Action() {
-            public Object run() {
+        Mutex.EVENT.readAccess(new Action<Void>() {
+            public Void run() {
                 // Open project files
                 ProjectUtilities.openProjectFiles(p);
                 
