@@ -25,6 +25,8 @@ import org.openide.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -32,6 +34,7 @@ import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.util.UserQuestionException;
 import org.openide.windows.*;
 import org.openide.text.*;
 import org.openide.util.Utilities;
@@ -413,6 +416,37 @@ public class FormEditorSupport extends JavaEditor
         boolean alreadyModified = isModified();
         boolean retVal = super.notifyModified();
         if (!alreadyModified) {
+            FileObject formFile = formDataObject.getFormFile();
+            if (!formFile.canWrite()) { // Issue 74092
+                FileLock lock = null;
+                try {
+                    lock = formFile.lock();
+                } catch (UserQuestionException uqex) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                        uqex.getLocalizedMessage(),
+                        FormUtils.getBundleString("TITLE_UserQuestion"), // NOI18N
+                        NotifyDescriptor.YES_NO_OPTION);
+                    DialogDisplayer.getDefault().notify(nd);
+                    if (NotifyDescriptor.YES_OPTION.equals(nd.getValue())) {
+                        try {
+                            uqex.confirmed();
+                            EventQueue.invokeLater(new Runnable() {
+                                public void run()  {
+                                    reloadForm();
+                                }
+                            });         
+                        } catch (IOException ioex) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+                        }
+                    }
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                } finally {
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
+                }
+            }
             updateMVTCDisplayName();
         }
         return retVal;
