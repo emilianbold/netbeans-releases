@@ -206,7 +206,7 @@ public final class Mutex extends Object {
     * @param action the action to perform
     * @return the object returned from {@link Mutex.Action#run}
     */
-    public Object readAccess(Action action) {
+    public <T> T readAccess(Action<T> action) {
         if (this == EVENT) {
             try {
                 return doEventAccess(action);
@@ -249,7 +249,7 @@ public final class Mutex extends Object {
     * @exception RuntimeException if any runtime exception is thrown from the run method
     * @see #readAccess(Mutex.Action)
     */
-    public Object readAccess(ExceptionAction action) throws MutexException {
+    public <T> T readAccess(ExceptionAction<T> action) throws MutexException {
         if (this == EVENT) {
             return doEventAccess(action);
         }
@@ -297,7 +297,7 @@ public final class Mutex extends Object {
     * @param action the action to perform
     * @return the result of {@link Mutex.Action#run}
     */
-    public Object writeAccess(Action action) {
+    public <T> T writeAccess(Action<T> action) {
         if (this == EVENT) {
             try {
                 return doEventAccess(action);
@@ -337,7 +337,7 @@ public final class Mutex extends Object {
     * @see #writeAccess(Mutex.Action)
     * @see #readAccess(Mutex.ExceptionAction)
     */
-    public Object writeAccess(ExceptionAction action) throws MutexException {
+    public <T> T writeAccess(ExceptionAction<T> action) throws MutexException {
         if (this == EVENT) {
             return doEventAccess(action);
         }
@@ -1211,9 +1211,9 @@ public final class Mutex extends Object {
     }
 
     /** Methods for access to event queue and waiting for result.
-    * @param run runabble to post later
+    * @param run runnable to post later
     */
-    private static Object doEventAccess(final ExceptionAction run)
+    private static <T> T doEventAccess(final ExceptionAction<T> run)
     throws MutexException {
         if (isDispatchThread()) {
             try {
@@ -1228,12 +1228,12 @@ public final class Mutex extends Object {
         final Throwable[] arr = new Throwable[1];
 
         try {
-            final Object[] res = new Object[1];
+            final List<T> res = new ArrayList<T>(1);
             EventQueue.invokeAndWait(
                 new Runnable() {
                     public void run() {
                         try {
-                            res[0] = run.run();
+                            res.add(run.run());
                         } catch (Exception e) {
                             arr[0] = e;
                         } catch (LinkageError e) {
@@ -1248,7 +1248,7 @@ public final class Mutex extends Object {
             );
 
             if (arr[0] == null) {
-                return res[0];
+                return res.get(0);
             }
         } catch (InterruptedException e) {
             arr[0] = e;
@@ -1323,11 +1323,12 @@ public final class Mutex extends Object {
     /** Action to be executed in a mutex without throwing any checked exceptions.
     * Unchecked exceptions will be propagated to calling code.
     */
-    public static interface Action extends ExceptionAction {
+    public interface Action<T> extends ExceptionAction<T> {
         /** Execute the action.
         * @return any object, then returned from {@link Mutex#readAccess(Mutex.Action)} or {@link Mutex#writeAccess(Mutex.Action)}
+         * @param T the type of object to return
         */
-        public Object run();
+        T run();
     }
 
     /** Action to be executed in a mutex, possibly throwing checked exceptions.
@@ -1335,14 +1336,15 @@ public final class Mutex extends Object {
     * code should catch the encapsulating exception and rethrow the
     * real one.
     * Unchecked exceptions will be propagated to calling code without encapsulation.
+     * @param T the type of object to return
     */
-    public static interface ExceptionAction {
+    public interface ExceptionAction<T> {
         /** Execute the action.
         * Can throw an exception.
         * @return any object, then returned from {@link Mutex#readAccess(Mutex.ExceptionAction)} or {@link Mutex#writeAccess(Mutex.ExceptionAction)}
         * @exception Exception any exception the body needs to throw
         */
-        public Object run() throws Exception;
+        T run() throws Exception;
     }
 
     private static final class ThreadInfo {
