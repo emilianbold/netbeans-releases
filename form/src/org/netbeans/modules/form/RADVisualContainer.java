@@ -111,6 +111,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     private void refillContainerInstance() {
         Container cont = getContainerDelegate(getBeanInstance());
         cont.removeAll();
+        cont.setLayout(null); // Issue 77904
         for (RADVisualComponent sub : subComponents) {
             Component comp = (Component) sub.getBeanInstance();
             FakePeerSupport.attachFakePeer(comp);
