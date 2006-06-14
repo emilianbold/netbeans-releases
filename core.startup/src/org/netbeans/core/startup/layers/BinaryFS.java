@@ -335,25 +335,25 @@ public class BinaryFS extends FileSystem {
         public Object getAttribute(String attrName) {
             initialize();
             AttrImpl attr = attrs.get(attrName);
-            if (attr != null) {
-                FileObject topFO = null;
-                // XXX big hack! See #29356 for explanation for this nonsense.
-                try {
-                    Class mfoClass = Class.forName("org.openide.filesystems.MultiFileObject"); //NOI18N
-                    Field field = mfoClass.getDeclaredField("attrAskedFileObject"); //NOI18N
-                    field.setAccessible(true);
+            return (attr != null) ? attr.getValue(this, attrName) : null;
+        }
+        
+        public FileObject getFileObjectForAttr() {
+            FileObject topFO = null;
+            // XXX big hack! See #29356 for explanation for this nonsense.
+            try {
+                Class mfoClass = Class.forName("org.openide.filesystems.MultiFileObject"); //NOI18N
+                Field field = mfoClass.getDeclaredField("attrAskedFileObject"); //NOI18N
+                field.setAccessible(true);
 
-                    ThreadLocal<?> attrAskedFileObject = ThreadLocal.class.cast(field.get(null));
-                    topFO = (FileObject)attrAskedFileObject.get();
-                    attrAskedFileObject.set(null);
-                } catch (Exception e) {
-                    ErrorManager.getDefault().notify(e);
-                }
-
-                return attr.getValue(topFO == null ? this : topFO, attrName);
-            } else {
-                return null;
+                ThreadLocal<?> attrAskedFileObject = ThreadLocal.class.cast(field.get(null));
+                topFO = (FileObject)attrAskedFileObject.get();
+                attrAskedFileObject.set(null);
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(e);
             }
+
+            return topFO == null ? this : topFO;
         }
 
         /** Get all file attribute names for this file. */
@@ -423,7 +423,7 @@ public class BinaryFS extends FileSystem {
             return 2343 + index + value.hashCode();
         }
 
-        public Object getValue( FileObject fo, String attrName) {
+        public Object getValue( BFSBase foProvider, String attrName) {
             try {
                 switch(index) {
                     case 0: // bytevalue
@@ -448,7 +448,7 @@ public class BinaryFS extends FileSystem {
                     case 9: // urlvalue
                         return new URL(value);
                     case 10: // methodvalue
-                        return methodValue (value,fo,attrName);
+                        return methodValue (value,foProvider,attrName);
                     case 11: // newvalue
                         Class<?> cls =  findClass (value);
                         // special support for singletons
@@ -472,7 +472,7 @@ public class BinaryFS extends FileSystem {
         }
 
         /** Constructs new attribute as Object. Used for dynamic creation: methodvalue. */
-        private Object methodValue(String method, FileObject fo, String attr) throws Exception {
+        private Object methodValue(String method, BFSBase foProvider, String attr) throws Exception {
             String className,methodName;
             int i = method.lastIndexOf('.');
             if (i != -1) {
@@ -483,7 +483,7 @@ public class BinaryFS extends FileSystem {
                 Object objArray[][] = {null,null,null};
                 Method methArray[] = {null,null,null};
 
-                Class<?> fParam = fo.getClass(), sParam = attr.getClass();
+                FileObject fo = null;
 
                 Method[] allMethods = cls.getDeclaredMethods();
                 Class<?>[] paramClss;
@@ -502,18 +502,21 @@ public class BinaryFS extends FileSystem {
                     }
 
                     if (paramClss.length == 2  && methArray[2] == null)  {
-                        if (paramClss[0].isAssignableFrom(fParam) && paramClss[1].isAssignableFrom(sParam)) {
+                        if (paramClss[0].isAssignableFrom(FileObject.class) && paramClss[1].isAssignableFrom(String.class)) {
                             methArray[2] = allMethods[j];
+                            if (fo == null) fo = foProvider.getFileObjectForAttr();
                             objArray[2] = new Object[] {fo,attr};
                             break;
                         }
-                        if (paramClss[0].isAssignableFrom(Map.class) && paramClss[1].isAssignableFrom(sParam)) {
+                        if (paramClss[0].isAssignableFrom(Map.class) && paramClss[1].isAssignableFrom(String.class)) {
                             methArray[2] = allMethods[j];
+                            if (fo == null) fo = foProvider.getFileObjectForAttr();
                             objArray[2] = new Object[]{wrapToMap(fo),attr};
                         }
 
-                        if (paramClss[0].isAssignableFrom(sParam) && paramClss[1].isAssignableFrom(fParam)) {
+                        if (paramClss[0].isAssignableFrom(String.class) && paramClss[1].isAssignableFrom(FileObject.class)) {
                             methArray[2] = allMethods[j];
+                            if (fo == null) fo = foProvider.getFileObjectForAttr();
                             objArray[2] = new Object[] {attr,fo};
                             break;
                         }
@@ -521,17 +524,19 @@ public class BinaryFS extends FileSystem {
                     }
 
                     if (paramClss.length == 1 && methArray[1] == null)  {
-                        if (paramClss[0].isAssignableFrom(fParam)) {
+                        if (paramClss[0].isAssignableFrom(FileObject.class)) {
                             methArray[1] = allMethods[j];
+                            if (fo == null) fo = foProvider.getFileObjectForAttr();
                             objArray[1] = new Object[] {fo};
                             continue;
                         }
                         if (paramClss[0].isAssignableFrom(Map.class)) {
                             methArray[2] = allMethods[j];
+                            if (fo == null) fo = foProvider.getFileObjectForAttr();
                             objArray[2] = new Object[]{wrapToMap(fo)};
                         }
 
-                        if (paramClss[0].isAssignableFrom(sParam)) {
+                        if (paramClss[0].isAssignableFrom(String.class)) {
                             methArray[1] = allMethods[j];
                             objArray[1] = new Object[] {attr};
                             continue;
