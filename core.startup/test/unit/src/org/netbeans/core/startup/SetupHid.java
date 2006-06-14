@@ -95,16 +95,11 @@ abstract class SetupHid extends NbTestCase {
     }
 
     protected static void copy(File a, FileObject b) throws IOException {
-        FileLock lock = b.lock();
+        OutputStream os = b.getOutputStream();
         try {
-            OutputStream os = b.getOutputStream(lock);
-            try {
-                copyStreams(new FileInputStream(a), os);
-            } finally {
-                os.close();
-            }
+            copyStreams(new FileInputStream(a), os);
         } finally {
-            lock.releaseLock();
+            os.close();
         }
     }
 
