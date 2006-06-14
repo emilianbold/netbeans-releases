@@ -18,7 +18,10 @@
       </file>
     </folder>
     
-      <file name="org-netbeans-bluej-options-BlueJSettings.settings" url="options/BlueJSettings.xml">
+      <folder name="JavaHelp">
+            <file name="bluej-helpset.xml" url="bluej-helpset.xml"/>
+        </folder>
+        <file name="org-netbeans-bluej-options-BlueJSettings.settings" url="options/BlueJSettings.xml">
       </file>
   </folder>
     <folder name="Templates">
@@ -62,7 +65,7 @@
                 <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.packagewizard.Bundle"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/bluej/packagewizard/Package.html" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/bluej/packagewizard/Package.html"/>
             </file>        
             
         </folder>
