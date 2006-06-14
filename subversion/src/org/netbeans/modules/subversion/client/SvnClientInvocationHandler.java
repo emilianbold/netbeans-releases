@@ -39,6 +39,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private static Set<String> remoteMethods = new HashSet<String>();
     private static Set<String> locallyHandledMethod = new HashSet<String>();
 
+    private static Object semaphor = new Object();
+        
     static {
         remoteMethods.add("checkout");  // NOI19N
         remoteMethods.add("commit"); // NOI19N
@@ -107,7 +109,14 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         assert noRemoteCallinAWT(method, args) : "noRemoteCallinAWT(): " + method.getName();
 
         try {             
-            return invokeMethod(method, args);
+            if(SwingUtilities.isEventDispatchThread()) {
+                return invokeMethod(method, args);    
+            } else {
+                synchronized (semaphor) {
+                    return invokeMethod(method, args);    
+                }
+            }
+            
         } catch (Exception e) {
             try {
                 if(handleException((SvnClient) proxy, e) ) {
@@ -134,25 +143,33 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }
         }
     }
-
+    
     private Object invokeMethod(Method proxyMethod, Object[] args)
     throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
         Object ret = null;        
         if (isHandledLocally(proxyMethod, args)) {
             try {
-                return handleLocally(proxyMethod, args);
+                ret = handleLocally(proxyMethod, args);
             } catch (LocalSubversionException ex) {
                 //Exception thrown.  Call out to the default adapter
             }
+        } else {
+            ret = handleRemotely(proxyMethod, args);    
         }
+        return ret;
+    }
 
-        // XXX refactor
+    private Object handleRemotely(final Method proxyMethod, final Object[] args) 
+    throws SecurityException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException 
+    {
+        Object ret;
+
         Class[] parameters = proxyMethod.getParameterTypes();
-        Class clazz = null;
         Class declaringClass = proxyMethod.getDeclaringClass();
 
         if( ISVNClientAdapter.class.isAssignableFrom(declaringClass) ) {
+            // Cliet Adapter
             if(support != null) {
                 support.setCancellableDelegate(cancellable);
             }
@@ -160,17 +177,19 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if(support != null) {
                 support.setCancellableDelegate(null);
             }
-        } else if( Cancellable.class.isAssignableFrom(declaringClass) ) {
+        } else if( Cancellable.class.isAssignableFrom(declaringClass) ) {return 
+            // Cancellable
             ret = cancellable.getClass().getMethod(proxyMethod.getName(), parameters).invoke(cancellable, args);
         } else if( SvnClientDescriptor.class.isAssignableFrom(declaringClass) ) {            
+            // Client Descriptor
             ret = desc.getClass().getMethod(proxyMethod.getName(), parameters).invoke(desc, args);
         } else {
-            // try to take care for hashCode, equals & co.
+            // try to take care for hashCode, equals & co. -> fallback to clientadapter
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
         }        
         return ret;
     }
-
+    
     private static boolean isHandledLocally(Method method, Object[] args) {
         boolean exec = ISVNSTATUS_IMPL.equals("exec");
         return !exec && locallyHandledMethod.contains(method.getName());
