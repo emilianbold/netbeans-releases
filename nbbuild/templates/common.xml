@@ -78,6 +78,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="init">
         <mkdir dir="${build.classes.dir}"/>
+        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
+            <classpath refid="cp"/>
+        </depend>
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
@@ -121,6 +124,9 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${build.classes.dir}"/>
         <!-- XXX consider forcing debug=true and deprecation=true -->
         <!-- XXX consider deleting the .class file first to force a rebuild -->
+        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
+            <classpath refid="cp"/>
+        </depend>
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
                debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}"
                source="${javac.source}" target="${javac.target}" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
@@ -312,6 +318,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="do-test-build" depends="init,test-init">
         <mkdir dir="${build.test.unit.classes.dir}"/>
+        <depend srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}" cache="${build.test.unit.dir}/depcache">
+            <classpath refid="test.unit.cp"/>
+        </depend>
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
                source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
@@ -337,6 +346,9 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${build.test.unit.classes.dir}"/>
         <!-- XXX consider forcing deprecation=true -->
         <!-- XXX consider deleting the .class file first to force a rebuild -->
+        <depend srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}" cache="${build.test.unit.dir}/depcache">
+            <classpath refid="test.unit.cp"/>
+        </depend>
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
                source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
