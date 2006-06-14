@@ -95,35 +95,35 @@ public class NewProject extends BasicAction {
     
     private void doPerform () {
         
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
-        NewProjectWizard wizard = prepareWizardDescriptor(fo);
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N
+        final NewProjectWizard wizard = prepareWizardDescriptor(fo);
         
-        try {
-                        
-            final Set newObjects = wizard.instantiate ();            
-            Object mainProperty = wizard.getProperty( /* XXX Define somewhere */ "setAsMain" ); // NOI18N
-            boolean setFirstMain = true;
-            if ( mainProperty instanceof Boolean ) {
-                setFirstMain = ((Boolean)mainProperty).booleanValue();
-            }
-            final boolean setFirstMainFinal = setFirstMain; 
+        
+        SwingUtilities.invokeLater( new Runnable() {
             
-            //#69618: the non-project cache may contain a project folder listed in newObjects:
-            ProjectManager.getDefault().clearNonProjectCache();
-                                    
-            SwingUtilities.invokeLater( new Runnable() {
-            
-                public void run() {
+            public void run() {
+                try {
+                    
+                    Set newObjects = wizard.instantiate();
+                    Object mainProperty = wizard.getProperty( /* XXX Define somewhere */ "setAsMain" ); // NOI18N
+                    boolean setFirstMain = true;
+                    if ( mainProperty instanceof Boolean ) {
+                        setFirstMain = ((Boolean)mainProperty).booleanValue();
+                    }
+                    final boolean setFirstMainFinal = setFirstMain;
+                    
+                    //#69618: the non-project cache may contain a project folder listed in newObjects:
+                    ProjectManager.getDefault().clearNonProjectCache();
                     ProjectUtilities.WaitCursor.show();
                     
-                    if ( newObjects != null && !newObjects.isEmpty() ) { 
+                    if ( newObjects != null && !newObjects.isEmpty() ) {
                         // First. Open all returned projects in the GUI.
 
                         LinkedList<DataObject> filesToOpen = new LinkedList<DataObject>();
                         List<Project> projectsToOpen = new LinkedList<Project>();
 
                         for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
-                            Object obj = it.next ();
+                            Object obj = it.next();
                             FileObject newFo;
                             DataObject newDo;
                             if (obj instanceof DataObject) {
@@ -172,25 +172,25 @@ public class NewProject extends BasicAction {
                         // Show the project tab to show the user we did something
                         ProjectUtilities.makeProjectTabVisible( true );
                         
-                        // Second open the files                
+                        // Second open the files
                         if (filesToOpen.isEmpty() && lastProject != null) {
                             // Just select and expand the project node
                             ProjectUtilities.selectAndExpandProject(lastProject);
-                        }
-                        else {
+                        } else {
                             for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) { // Open the files
                                 ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
                             }
-                        }                                                
-
+                        }
+                        
                     }
                     ProjectUtilities.WaitCursor.hide();
+                } catch ( IOException e ) {
+                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
                 }
-            } );
-        }
-        catch ( IOException e ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-        }
+            }
+            
+        } );
+        
         
         
     }
