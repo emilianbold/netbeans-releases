@@ -204,11 +204,10 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             }
 
             // Project project = OpenProjectList.fileToProject( projectDir );
-            ArrayList<Project> projects = new ArrayList<Project>( projectDirs.length );
-            for( int i = 0; i < projectDirs.length; i++ ) {
-                if ( projectDirs[i] != null ) {
-                    File dir = FileUtil.normalizeFile( projectDirs[i] );
-                    Project project = getProject( dir );
+            List<Project> projects = new ArrayList<Project>( projectDirs.length );
+            for (File dir : projectDirs) {
+                if (dir != null) {
+                    Project project = getProject(FileUtil.normalizeFile(dir));
                     if ( project != null ) {
                         projects.add( project );
                     }
@@ -220,13 +219,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 setAccessoryEnablement( true, projects.size() );
 
                 if ( projects.size() == 1 ) {
-                    String projectName = ProjectUtils.getInformation( (Project)projects.get(0) ).getDisplayName();
+                    String projectName = ProjectUtils.getInformation(projects.get(0)).getDisplayName();
                     jTextFieldProjectName.setText( projectName );
                     jTextFieldProjectName.setToolTipText( projectName );
                 }
                 else {
-                    String pattern = NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Multiselection" ); // NOI18N
-                    jTextFieldProjectName.setText( MessageFormat.format( pattern, new Object[] { new Integer( projects.size() ) } ) );
+                    jTextFieldProjectName.setText(NbBundle.getMessage(ProjectChooserAccessory.class, "LBL_PrjChooser_Multiselection", projects.size()));
 
                     StringBuffer toolTipText = new StringBuffer( "<html>" ); // NOI18N
                     for(Iterator<Project> it = projects.iterator(); it.hasNext();) {
@@ -378,7 +376,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             if (spp != null) {
                 subprojects = spp.getSubprojects();
             } else {
-                subprojects = Collections.<Project>emptySet();
+                subprojects = Collections.emptySet();
             }
             cache.put(p, subprojects);
         }
@@ -414,6 +412,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             base = base.getParentFile();
             if (base == null) {
                 return null;
+            }
+            if (base.equals(f2)) {
+                // #61687: file is a parent of basedir
+                b.append(".."); // NOI18N
+                return b.toString();
             }
             b.append("../"); // NOI18N
         }
@@ -661,7 +664,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                         }
                         String displayName = MessageFormat.format(
                             pattern,
-                            new Object[] { ProjectUtils.getInformation(p).getDisplayName(), relPath } );
+                            ProjectUtils.getInformation(p).getDisplayName(),
+                            relPath);
                         subprojectNames.add(displayName);
                     }
 
