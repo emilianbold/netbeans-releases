@@ -54,6 +54,10 @@ class ListViewDragSupport extends ExplorerDragSupport {
         return view.getAllowedDropActions();
     }
 
+    protected int getAllowedDragActions() {
+        return view.getAllowedDragActions();
+    }
+
     /** Initiating the drag */
     public void dragGestureRecognized(DragGestureEvent dge) {
         super.dragGestureRecognized(dge);
