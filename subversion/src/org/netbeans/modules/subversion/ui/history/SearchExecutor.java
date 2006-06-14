@@ -58,26 +58,26 @@ class SearchExecutor implements Runnable {
 
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
-        File [] roots = master.getRoots();
         criteria = master.getCriteria();
         filterUsername = criteria.getUsername() != null;
         filterMessage = criteria.getCommitMessage() != null;
         
-        workFiles = new HashMap<SVNUrl, Set<File>>();
         urlToRoot = new HashMap<SVNUrl, File>();
-        for (File file : roots) {
-            SVNUrl url = SvnUtils.getRepositoryUrl(file);           // svn://localhost/sbs/src/sbs/Main.java
-            SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);   // svn://localhost
-            String urlPath = SVNUrlUtils.getRelativePath(rootUrl, url, true);         // /sbs/src/sbs/Main.java
-            String rootPath = file.getAbsolutePath();
-            rootPath = rootPath.substring(0, rootPath.length() - urlPath.length());
-            urlToRoot.put(rootUrl, new File(rootPath));
-            Set<File> set = workFiles.get(rootUrl);
-            if (set == null) {
-                set = new HashSet<File>(2);
-                workFiles.put(rootUrl, set);
+        if (searchingUrl()) {
+            urlToRoot.put(master.getRepositoryUrl(), master.getRoots()[0]);
+        } else {
+            workFiles = new HashMap<SVNUrl, Set<File>>();
+            for (File file : master.getRoots()) {
+                File rootFile = SvnUtils.getRootFile(file);
+                SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
+                urlToRoot.put(rootUrl, rootFile);
+                Set<File> set = workFiles.get(rootUrl);
+                if (set == null) {
+                    set = new HashSet<File>(2);
+                    workFiles.put(rootUrl, set);
+                }
+                set.add(file);
             }
-            set.add(file);
         }
     }
 
@@ -104,18 +104,28 @@ class SearchExecutor implements Runnable {
         
         final SVNRevision fromRevision = toRevision(from, new SVNRevision.Number(1));
         final SVNRevision toRevision = toRevision(to, SVNRevision.HEAD);
-        
+
         completedSearches = 0;
-        for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
-            final SVNUrl url = (SVNUrl) i.next();
-            final Set<File> files = workFiles.get(url);  
-            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
+        if (searchingUrl()) {
+            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getRepositoryUrl());
             SvnProgressSupport support = new SvnProgressSupport() {
                 public void perform() {                    
-                    search(url, files, fromRevision, toRevision, this);
+                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this);
                 }
             };
             support.start(rp, "Searching History...");
+        } else {
+            for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
+                final SVNUrl url = (SVNUrl) i.next();
+                final Set<File> files = workFiles.get(url);  
+                RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
+                SvnProgressSupport support = new SvnProgressSupport() {
+                    public void perform() {                    
+                        search(url, files, fromRevision, toRevision, this);
+                    }
+                };
+                support.start(rp, "Searching History...");
+            }
         }
     }
 
@@ -131,16 +141,26 @@ class SearchExecutor implements Runnable {
             searchCanceled = true;
             return;
         }
-        String [] paths = new String[files.size()];
-        int idx = 0;
-        for (File file : files) {
-            paths[idx++] = SvnUtils.getRelativePath(url, file);
-        }
-        try {
-            ISVNLogMessage [] messages = client.getLogMessages(url, paths, fromRevision, toRevision, false, true);
-            appendResults(url, messages);
-        } catch (SVNClientException e) {
-            ErrorManager.getDefault().notify(e);
+        
+        if (searchingUrl()) {
+            try {
+                ISVNLogMessage [] messages = client.getLogMessages(url, null, fromRevision, toRevision, false, true, 0);
+                appendResults(url, messages);
+            } catch (SVNClientException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        } else {
+            String [] paths = new String[files.size()];
+            int idx = 0;
+            for (File file : files) {
+                paths[idx++] = SvnUtils.getRelativePath(url, file);
+            }
+            try {
+                ISVNLogMessage [] messages = client.getLogMessages(url, paths, fromRevision, toRevision, false, true);
+                appendResults(url, messages);
+            } catch (SVNClientException e) {
+                ErrorManager.getDefault().notify(e);
+            }
         }
     }
     
@@ -175,7 +195,12 @@ class SearchExecutor implements Runnable {
         checkFinished();
     }
 
+    private boolean searchingUrl() {
+        return master.getRepositoryUrl() != null;
+    }
+    
     private boolean underSearchRoots(File file) {
+        if (searchingUrl()) return true;
         for (File root : master.getRoots()) {
             if (SvnUtils.isParentOrEqual(root, file)) return true;
         }
@@ -189,7 +214,7 @@ class SearchExecutor implements Runnable {
 
     private void checkFinished() {
         completedSearches++;
-        if (workFiles.size() == completedSearches) {
+        if (searchingUrl() && completedSearches >= 1 || workFiles.size() == completedSearches) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     master.setResults(results);

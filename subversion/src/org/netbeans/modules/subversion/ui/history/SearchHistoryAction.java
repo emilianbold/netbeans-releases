@@ -21,6 +21,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 import javax.swing.*;
 import java.io.File;
@@ -107,5 +108,20 @@ public class SearchHistoryAction extends ContextAction {
         Project [] projects = OpenProjects.getDefault().getOpenProjects();
         return SvnUtils.getProjectsContext(projects);
     }
-    
+
+    /**
+     * Opens search panel in the context of the given repository URL.
+     * 
+     * @param repositoryUrl URL to search
+     * @param localRoot local working copy root that corresponds to the repository URL 
+     * @param revision revision to search for
+     */ 
+    public static void openSearch(SVNUrl repositoryUrl, File localRoot, long revision) {
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repositoryUrl, localRoot, revision);
+        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", repositoryUrl);
+        tc.setDisplayName(tcTitle);
+        tc.open();
+        tc.requestActive();
+        tc.search();
+    }
 }

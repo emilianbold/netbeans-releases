@@ -38,13 +38,21 @@ import java.awt.Dialog;
 class SearchCriteriaPanel extends javax.swing.JPanel {
     
     private final File[] roots;
+    private final SVNUrl url;
 
     /** Creates new form SearchCriteriaPanel */
     public SearchCriteriaPanel(File [] roots) {
         this.roots = roots;
+        this.url = null;
         initComponents();
     }
 
+    public SearchCriteriaPanel(SVNUrl url) {
+        this.url = url;
+        this.roots = null;
+        initComponents();
+    }
+    
     public String getFrom() {
         String s = tfFrom.getText().trim();
         return s.length() > 0 ? s : null;
@@ -252,7 +260,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
     private void onBrowse(JTextField destination) {
         SVNRevision revision = SVNRevision.HEAD;
-        SVNUrl repositoryUrl = SvnUtils.getRepositoryUrl(roots[0]); 
+        SVNUrl repositoryUrl = url != null ? url : SvnUtils.getRepositoryUrl(roots[0]); 
         final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(repositoryUrl, revision));        
         
         final DialogDescriptor dialogDescriptor = 

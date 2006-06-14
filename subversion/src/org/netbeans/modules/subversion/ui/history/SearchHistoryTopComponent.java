@@ -17,6 +17,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 import java.util.*;
 import java.io.File;
@@ -30,6 +31,8 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     private SearchHistoryPanel shp;
 
     public SearchHistoryTopComponent() {
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSN_SearchHistoryT_Top_Component")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
     }
     
     public SearchHistoryTopComponent(Context context) {
@@ -37,15 +40,28 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
 
     public SearchHistoryTopComponent(Context context, String commitMessage, String username, Date from, Date to) {
+        this();
         initComponents(context.getRootFiles(), commitMessage, username, from, to);
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSN_SearchHistoryT_Top_Component")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
+    }
+
+    public SearchHistoryTopComponent(SVNUrl repositoryUrl, File localRoot, long revision) {
+        this();
+        initComponents(repositoryUrl, localRoot, revision);
     }
 
     public void search() {
         shp.executeSearch();
     }
     
+    private void initComponents(SVNUrl repositoryUrl, File localRoot, long revision) {
+        setLayout(new BorderLayout());
+        SearchCriteriaPanel scp = new SearchCriteriaPanel(repositoryUrl);
+        scp.setFrom(Long.toString(revision));
+        scp.setTo(Long.toString(revision));
+        shp = new SearchHistoryPanel(repositoryUrl, localRoot, scp);
+        add(shp);
+    }
+
     private void initComponents(File[] roots, String commitMessage, String username, Date from, Date to) {
         setLayout(new BorderLayout());
         SearchCriteriaPanel scp = new SearchCriteriaPanel(roots);

@@ -22,6 +22,8 @@ import org.openide.awt.Mnemonics;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 import org.netbeans.modules.subversion.util.NoContentPanel;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
 
 import javax.swing.*;
 import java.io.File;
@@ -42,6 +44,7 @@ import java.text.DateFormat;
 class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener, DiffSetupSource {
 
     private final File[]                roots;
+    private final SVNUrl                repositoryUrl;
     private final SearchCriteriaPanel   criteria;
     
     private Divider                 divider;
@@ -62,6 +65,18 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
         this.roots = roots;
+        this.repositoryUrl = null;
+        this.criteria = criteria;
+        criteriaVisible = true;
+        explorerManager = new ExplorerManager ();
+        initComponents();
+        setupComponents();
+        refreshComponents(true);
+    }
+    
+    public SearchHistoryPanel(SVNUrl repositoryUrl, File localRoot, SearchCriteriaPanel criteria) {
+        this.repositoryUrl = repositoryUrl;
+        this.roots = new File[] { localRoot };
         this.criteria = criteria;
         criteriaVisible = true;
         explorerManager = new ExplorerManager ();
@@ -206,7 +221,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         diffView = null;
         refreshComponents(true);
     }
-    
+
+    public SVNUrl getRepositoryUrl() {
+        return repositoryUrl;
+    }
+
     public File[] getRoots() {
         return roots;
     }
