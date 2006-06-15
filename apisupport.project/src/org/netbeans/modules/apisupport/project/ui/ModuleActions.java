@@ -83,36 +83,8 @@ public final class ModuleActions implements ActionProvider {
         }
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
         actions.add(null);
-        boolean testactions = false;
         if (project.supportsUnitTests()) {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ModuleActions.class, "ACTION_test"), null));
-            if (findTestBuildXml(project) != null) { // hide for external modules w/o XTest infrastructure
-                Properties props = new Properties();
-                props.setProperty("xtest.testtype", "unit"); // NOI18N
-                actions.add(createTestAction(project, new String[] {"cleanresults", "runtests", "show-results-nb"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_xtest")));
-                actions.add(createTestAction(project, new String[] {"cleanresults", "coverage", "show-coverage-results-nb"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_coverage")));
-            }
-            testactions = true;
-        }
-        if (project.getFunctionalTestSourceDirectory() != null) {
-            Properties props = new Properties();
-            props.setProperty("xtest.testtype", "qa-functional"); // NOI18N
-            actions.add(createTestAction(project, new String[] {"buildtests"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_build_func_tests")));
-            props = new Properties();
-            props.setProperty("xtest.testtype", "qa-functional"); // NOI18N
-            actions.add(createTestAction(project, new String[] {"cleanresults", "runtests", "show-results-nb"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_xtest_functional")));
-            testactions = true;
-        }
-        if (project.getPerformanceTestSourceDirectory() != null) {
-            Properties props = new Properties();
-            props.setProperty("xtest.testtype", "qa-performance"); // NOI18N
-            actions.add(createTestAction(project, new String[] {"buildtests"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_build_perf_tests")));
-            props = new Properties();
-            props.setProperty("xtest.testtype", "qa-performance"); // NOI18N
-            actions.add(createTestAction(project, new String[] {"cleanresults", "runtests", "show-results-nb"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_xtest_perf")));
-            testactions = true;
-        }
-        if (testactions) {
             actions.add(null);
         }
         actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, NbBundle.getMessage(ModuleActions.class, "ACTION_javadoc"), null));
@@ -487,21 +459,6 @@ public final class ModuleActions implements ActionProvider {
             public void actionPerformed(ActionEvent ignore) {
                 try {
                     ActionUtils.runTarget(findMasterBuildXml(project), targetNames, null);
-                } catch (IOException e) {
-                    Util.err.notify(e);
-                }
-            }
-        };
-    }
-    
-    private static Action createTestAction(final NbModuleProject project, final String[] targetNames, final Properties props, String displayName) {
-        return new AbstractAction(displayName) {
-            public boolean isEnabled() {
-                return findTestBuildXml(project) != null;
-            }
-            public void actionPerformed(ActionEvent ignore) {
-                try {
-                    ActionUtils.runTarget(findTestBuildXml(project), targetNames, props);
                 } catch (IOException e) {
                     Util.err.notify(e);
                 }

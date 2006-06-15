@@ -167,5 +167,12 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-    
+
+    <folder name="Projects" >
+        <folder name="Actions" >
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-ProjectCvsMenuItem.instance/org-netbeans-modules-apisupport-project-ui-XTestProjectMenuItem.instance" boolvalue="true" />
+            <!-- Adds XTest sub menu to project root node -->
+            <file name="org-netbeans-modules-apisupport-project-ui-XTestProjectMenuItem.instance"/>
+        </folder>
+    </folder>
 </filesystem>
