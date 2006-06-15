@@ -521,7 +521,7 @@ public class OptionsPanel extends JPanel {
         // add shortcut
         KeyStroke keyStroke = KeyStroke.getKeyStroke 
             (button.getDisplayedMnemonic (), KeyEvent.ALT_MASK);
-        getInputMap ().put (keyStroke, button);
+        getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW).put (keyStroke, button);
         getActionMap ().put (button, new SelectAction (index));
 
         if (isMac) {
@@ -549,7 +549,7 @@ public class OptionsPanel extends JPanel {
     private void removeButton (Button button) {
         KeyStroke keyStroke = KeyStroke.getKeyStroke 
             (button.getDisplayedMnemonic (), KeyEvent.ALT_MASK);
-        getInputMap ().remove (keyStroke);
+        getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW).remove (keyStroke);
         getActionMap ().remove (button);
     }
     
