@@ -29,6 +29,7 @@ import java.util.Set;
  * All of this is designed to be done lazily, i.e. elements created on demand.
  * @since 4.37
  * @author Jaroslav Tulach
+ * @see NbCollections#checkedEnumerationByFilter
  */
 public final class Enumerations extends Object {
     /** No instances */
@@ -174,6 +175,7 @@ public final class Enumerations extends Object {
      * @param en enumeration of any objects
      * @param filter a callback processor for the elements (its toAdd arguments is always null)
      * @return new enumeration which does not include non-processed (returned null from processor) elements
+     * @see NbCollections#checkedEnumerationByFilter
      */
     public static <T,R> Enumeration<R> filter(Enumeration<? extends T> en, Processor<T,R> filter) {
         return new FilEn<T,R>(en, filter);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,7 +19,9 @@ import org.openide.util.Lookup;
 /**
  * Represents one IDE project in memory.
  * <p>
- * <strong>Never cast a project instance</strong> to any subtype. The project
+ * <strong>Never cast a project instance</strong> to any subtype.
+ * (Nor call {@link Object#getClass} on the <code>Project</code> instance.)
+ * The project
  * manager is free to wrap any project in an unspecified proxy for its own
  * purposes. For extensibility, use {@link #getLookup}.
  * </p>

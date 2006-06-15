@@ -399,7 +399,7 @@ public final class FileUtil extends Object {
      * that this method never returns null for a file which exists on disk.
      * </p>
      * @param file a disk file (may or may not exist). This file
-     * must be normalized {@link #normalizeFile normalized}.
+     * must be {@link #normalizeFile normalized}.
      * @return a corresponding file object, or null if the file does not exist
      *         or there is no {@link URLMapper} available to convert it
      * @since 4.29
