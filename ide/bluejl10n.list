@@ -12,3 +12,10 @@ ide/projectimport/bluej/src/**/Bundle.properties
 ide/projectimport/bluej/src/**/*.gif
 ide/projectimport/bluej/src/**/*.png
 ide/projectimport/bluej/src/**/*.html
+ide/projectimport/bluej/javahelp/**/*.html
+ide/projectimport/bluej/javahelp/**/*.hs
+ide/projectimport/bluej/javahelp/**/*.xml
+ide/projectimport/bluej/javahelp/**/*.jhm
+ide/projectimport/bluej/javahelp/**/*.css
+ide/projectimport/bluej/javahelp/**/*.gif
+ide/projectimport/bluej/javahelp/**/*.png
