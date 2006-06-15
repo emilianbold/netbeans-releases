@@ -12,7 +12,7 @@
  */
 package org.netbeans.modules.subversion.ui.search;
 
-import org.openide.util.NbBundle;
+import javax.swing.event.ListSelectionListener;
 import org.openide.ErrorManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -23,8 +23,8 @@ import java.awt.event.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.text.DateFormat;
-import org.openide.explorer.view.ListView;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  * Shows Search results in a JList.
@@ -33,33 +33,33 @@ import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
  */
 class SvnSearchView implements ComponentListener {
 
-    private JList master;
+    private JList resultsList;
     private ISVNLogMessage[] lm;
     private AttributeSet searchHiliteAttrs;
-    
-    private class BloodyListView extends ListView {
-        JList getList() {            
-            return list;
-        }           
-    };
-    
-    public SvnSearchView(JList master) {
-        this.master = master;
-        
+    private JScrollPane pane;
+                            
+                            
+    public SvnSearchView() {
         FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
         
-        master.setFixedCellHeight(-1);
-        master.setCellRenderer(new SummaryCellRenderer());
+        resultsList = new JList(new SvnSearchListModel());
+        resultsList.setFixedCellHeight(-1);
+        resultsList.setCellRenderer(new SvnSearchListCellRenderer());
       //  master.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SvnSearchView.class, "ACSN_SummaryView_List"));
       //  master.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SvnSearchView.class, "ACSD_SummaryView_List"));
-        master.addComponentListener(this);
+        resultsList.addComponentListener(this);        
+        pane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     }
 
+    JComponent getComponent() {
+        return pane;
+    }
+    
     public void componentResized(ComponentEvent e) {
-//        int [] selection = master.getSelectedIndices();
-//        master.setModel(new SummaryListModel());
-//        master.setSelectedIndices(selection);
+        int [] selection = resultsList.getSelectedIndices();
+        resultsList.setModel(new SvnSearchListModel());
+        resultsList.setSelectedIndices(selection);
     }
 
     public void componentHidden(ComponentEvent e) {
@@ -76,10 +76,30 @@ class SvnSearchView implements ComponentListener {
     
     public void setResults(ISVNLogMessage[] lm) {
         this.lm = lm;
-        master.setModel(new SummaryListModel());
+        resultsList.setModel(new SvnSearchListModel());
     }
 
-    private class SummaryListModel extends AbstractListModel {
+    SVNRevision getSelectedValue() {
+        Object selection = resultsList.getSelectedValue();
+        if(selection == null) {
+            return null;
+        }
+        if(!(selection instanceof ISVNLogMessage)) {
+            return null;
+        }
+        ISVNLogMessage message = (ISVNLogMessage) selection;
+        return message.getRevision();
+    }
+
+    void addListSelectionListener(ListSelectionListener listener) {
+        resultsList.addListSelectionListener(listener);
+    }
+
+    void removeListSelectionListener(ListSelectionListener listener) {
+        resultsList.removeListSelectionListener(listener);
+    }
+
+    private class SvnSearchListModel extends AbstractListModel {
 
         public int getSize() {
             if(lm == null) {
@@ -93,7 +113,7 @@ class SvnSearchView implements ComponentListener {
         }
     }
     
-    private class SummaryCellRenderer extends JPanel implements ListCellRenderer {
+    private class SvnSearchListCellRenderer extends JPanel implements ListCellRenderer {
 
         private static final String FIELDS_SEPARATOR = "        "; // NOI18N
         private static final double DARKEN_FACTOR = 0.95;
@@ -109,7 +129,7 @@ class SvnSearchView implements ComponentListener {
         
         private int index;
 
-        public SummaryCellRenderer() {
+        public SvnSearchListCellRenderer() {
             selectedStyle = textPane.addStyle("selected", null); // NOI18N
             StyleConstants.setForeground(selectedStyle, UIManager.getColor("List.selectionForeground")); // NOI18N
             normalStyle = textPane.addStyle("normal", null); // NOI18N
@@ -161,7 +181,7 @@ class SvnSearchView implements ComponentListener {
                 }
                 
                 if (message.getMessage() != null) {
-                    int width = master.getWidth();
+                    int width = resultsList.getWidth();
                     if (width > 0) {
                         FontMetrics fm = list.getFontMetrics(list.getFont());
                         Rectangle2D rect = fm.getStringBounds(message.getMessage(), textPane.getGraphics());

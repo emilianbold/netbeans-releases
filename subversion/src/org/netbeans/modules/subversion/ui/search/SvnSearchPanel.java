@@ -35,39 +35,46 @@ public class SvnSearchPanel extends javax.swing.JPanel implements ExplorerManage
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        jScrollPane1 = new javax.swing.JScrollPane();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
+        setPreferredSize(new java.awt.Dimension(650, 330));
         dateFromTextField.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.dateFromTextField.text")); // NOI18N
 
         listButton.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.listButton.text_1")); // NOI18N
-
-        list.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane1.setViewportView(list);
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.jLabel1.text_1")); // NOI18N
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.jLabel2.text_1")); // NOI18N
 
+        listPanel.setLayout(new java.awt.GridBagLayout());
+
+        org.jdesktop.layout.GroupLayout noContentPanelLayout = new org.jdesktop.layout.GroupLayout(noContentPanel);
+        noContentPanel.setLayout(noContentPanelLayout);
+        noContentPanelLayout.setHorizontalGroup(
+            noContentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 556, Short.MAX_VALUE)
+        );
+        noContentPanelLayout.setVerticalGroup(
+            noContentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 154, Short.MAX_VALUE)
+        );
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, noContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(listPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(dateFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 101, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
+                        .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(listButton)))
                 .addContainerGap())
@@ -82,7 +89,9 @@ public class SvnSearchPanel extends javax.swing.JPanel implements ExplorerManage
                     .add(jLabel2)
                     .add(dateFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
+                .add(listPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(noContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -92,9 +101,9 @@ public class SvnSearchPanel extends javax.swing.JPanel implements ExplorerManage
     final javax.swing.JTextField dateFromTextField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    final javax.swing.JList list = new javax.swing.JList();
     final javax.swing.JButton listButton = new javax.swing.JButton();
+    final javax.swing.JPanel listPanel = new javax.swing.JPanel();
+    final javax.swing.JPanel noContentPanel = new javax.swing.JPanel();
     // End of variables declaration//GEN-END:variables
     
 }

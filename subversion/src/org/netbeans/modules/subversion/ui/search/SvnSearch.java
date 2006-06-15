@@ -12,6 +12,9 @@
  */
 package org.netbeans.modules.subversion.ui.search;
 
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -19,6 +22,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -28,6 +32,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.settings.HistorySettings;
+import org.netbeans.modules.subversion.util.NoContentPanel;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -49,10 +54,10 @@ public class SvnSearch implements ActionListener, DocumentListener {
     private final SvnSearchPanel panel;    
     
     private RepositoryFile repositoryRoot;
-
+    private SvnSearchView searchView ;
     private SvnProgressSupport support;
-    private SvnSearchView searchView;
-    
+    private NoContentPanel noContentPanel;
+            
     public SvnSearch(RepositoryFile repositoryRoot) {
         this.repositoryRoot = repositoryRoot;
         panel = new SvnSearchPanel();
@@ -60,8 +65,20 @@ public class SvnSearch implements ActionListener, DocumentListener {
         panel.dateFromTextField.getDocument().addDocumentListener(this); 
         
         String date = DATE_FORMAT.format(new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 7));
-        panel.dateFromTextField.setText(HistorySettings.getDefault().getSearchDateFrom(date));        
-        searchView = new SvnSearchView(panel.list);
+        panel.dateFromTextField.setText(HistorySettings.getDefault().getSearchDateFrom(date));
+        
+        searchView = new SvnSearchView();
+        
+        panel.listPanel.setLayout(new BorderLayout());  
+        panel.listPanel.add(searchView.getComponent());
+
+        noContentPanel = new NoContentPanel();
+        panel.noContentPanel.setLayout(new BorderLayout());  
+        panel.noContentPanel.add(noContentPanel);
+        noContentPanel.setLabel("<No Results - Search Not Performed>");        
+
+        panel.listPanel.setVisible(false);
+        panel.noContentPanel.setVisible(true);
     }       
 
     /**
@@ -91,6 +108,10 @@ public class SvnSearch implements ActionListener, DocumentListener {
         final Date dateFrom = getDateFrom();
         HistorySettings.getDefault().setSearchDateFrom(DATE_FORMAT.format(dateFrom));
                 
+        noContentPanel.setLabel("<No Results Yet - Search in Progress...>");        
+        panel.listPanel.setVisible(false);
+        panel.noContentPanel.setVisible(true);       
+        
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(this.repositoryRoot.getRepositoryUrl());
         try { 
             support = new SvnProgressSupport() {
@@ -115,33 +136,37 @@ public class SvnSearch implements ActionListener, DocumentListener {
                         return;
                     }    
 
-                    searchView.setResults(lm);
+                    final ISVNLogMessage[] results = lm;
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            panel.listPanel.setVisible(true);
+                            panel.noContentPanel.setVisible(false);                     
+                            searchView.setResults(results);      
+                        }
+                    });
                 }                        
             };
             support.start(rp, "Searching revisions");
         } finally {
+            // XXX and how is this supposed to work?
             support = null;
         }
     }
-   
+    
     public JPanel getSearchPanel() {
         return panel;
     }
     
     public SVNRevision getSelectedRevision() {
-        ISVNLogMessage message = (ISVNLogMessage) panel.list.getSelectedValue();
-        if(message == null) {
-            return null;
-        }
-        return message.getRevision();
+        return searchView.getSelectedValue();
     }
 
     public void addListSelectionListener(ListSelectionListener listener) {
-        panel.list.addListSelectionListener(listener);
+        searchView.addListSelectionListener(listener);
     }
     
     public void removeListSelectionListener(ListSelectionListener listener) {
-        panel.list.removeListSelectionListener(listener);
+        searchView.removeListSelectionListener(listener);
     }
 
     public void actionPerformed(ActionEvent e) {
