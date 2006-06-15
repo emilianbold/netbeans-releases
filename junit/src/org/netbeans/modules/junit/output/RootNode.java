@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -77,6 +77,12 @@ final class RootNode extends AbstractNode {
     }
     
     /**
+     * Displays a message that a given test suite is running.
+     *
+     * @param  suiteName  name of the running test suite,
+     *                    or {@code ANONYMOUS_SUITE} for anonymous suites
+     *
+     * @see  ResultDisplayHandler#ANONYMOUS_SUITE
      */
     void displaySuiteRunning(final String suiteName) {
         assert EventQueue.isDispatchThread();

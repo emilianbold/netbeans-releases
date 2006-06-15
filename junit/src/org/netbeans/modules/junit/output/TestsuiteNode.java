@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,11 +23,15 @@ import org.openide.util.NbBundle;
  */
 final class TestsuiteNode extends AbstractNode {
     
-    private final String suiteName;
+    private String suiteName;
     private Report report;
     private boolean filtered;
     
     /**
+     *
+     * @param  suiteName  name of the test suite, or {@code ANONYMOUS_SUITE}
+     *                    in the case of anonymous suite
+     * @see  ResultDisplayHandler#ANONYMOUS_SUITE
      */
     TestsuiteNode(final String suiteName, final boolean filtered) {
         this(null, suiteName, filtered);
@@ -41,6 +45,10 @@ final class TestsuiteNode extends AbstractNode {
     }
     
     /**
+     *
+     * @param  suiteName  name of the test suite, or {@code ANONYMOUS_SUITE}
+     *                    in the case of anonymous suite
+     * @see  ResultDisplayHandler#ANONYMOUS_SUITE
      */
     private TestsuiteNode(final Report report,
                           final String suiteName,
@@ -52,6 +60,8 @@ final class TestsuiteNode extends AbstractNode {
         this.suiteName = (report != null) ? report.suiteClassName : suiteName;
         this.filtered = filtered;
         
+        assert suiteName != null;
+        
         setDisplayName();
         setIconBaseWithExtension(
                 "org/netbeans/modules/junit/output/res/class.gif");     //NOI18N
@@ -61,9 +71,11 @@ final class TestsuiteNode extends AbstractNode {
      */
     void displayReport(final Report report) {
         assert (this.report == null) && (report != null);
-        assert report.suiteClassName.equals(this.suiteName);
+        assert report.suiteClassName.equals(this.suiteName)
+               || (this.suiteName == ResultDisplayHandler.ANONYMOUS_SUITE);
         
         this.report = report;
+        suiteName = report.suiteClassName;
         
         setDisplayName();
         setChildren(new TestsuiteNodeChildren(report, filtered));
@@ -84,7 +96,7 @@ final class TestsuiteNode extends AbstractNode {
     private void setDisplayName() {
         String displayName;
         if (report == null) {
-            if (suiteName != null) {
+            if (suiteName != ResultDisplayHandler.ANONYMOUS_SUITE) {
                 displayName = NbBundle.getMessage(
                                           getClass(),
                                           "MSG_TestsuiteRunning",       //NOI18N
@@ -109,8 +121,11 @@ final class TestsuiteNode extends AbstractNode {
     /**
      */
     public String getHtmlDisplayName() {
+        
+        assert suiteName != null;
+        
         StringBuffer buf = new StringBuffer(60);
-        if (suiteName != null) {
+        if (suiteName != ResultDisplayHandler.ANONYMOUS_SUITE) {
             buf.append(suiteName);
             buf.append("&nbsp;&nbsp;");                                 //NOI18N
         } else {

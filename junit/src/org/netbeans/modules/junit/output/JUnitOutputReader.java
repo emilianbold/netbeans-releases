@@ -516,6 +516,10 @@ final class JUnitOutputReader {
     }
     
     /**
+     * Notifies that a test suite was just started.
+     *
+     * @param  suiteName  name of the suite; or {@code null}
+     *                    in the case of anonymous suite
      */
     private Report suiteStarted(final String suiteName) {
         closePreviousReport();

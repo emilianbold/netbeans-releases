@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -234,23 +234,27 @@ final class ResultDisplayHandler {
     //-----------------------------------------------------------//
     //------------------- DISPLAYING TREE -----------------------//
     
-    private static final String ANONYMOUS_SUITE = new String();
+    static final String ANONYMOUS_SUITE = new String();
     private String runningSuite;
     private List reports;
     private String message;
     
     /**
+     *
+     * @param  suiteName  name of the running suite; or {@code null} in the case
+     *                    of anonymous suite
      */
-    void displaySuiteRunning(final String suiteName) {
+    void displaySuiteRunning(String suiteName) {
         
         /* Called from the AntLogger's thread */
         
         assert runningSuite == null;
         
+        suiteName = (suiteName != null) ? suiteName : ANONYMOUS_SUITE;
+        
         synchronized (this) {
             if (treePanel == null) {
-                runningSuite = (suiteName != null) ? suiteName
-                                                   : ANONYMOUS_SUITE;
+                runningSuite = suiteName;
                 return;
             }
         }
@@ -300,6 +304,11 @@ final class ResultDisplayHandler {
     private Map/*<String, Method>*/ methodsMap;
     
     /**
+     * Calls a given display-method of class {@code ResutlPanelTree}
+     * in the AWT event queue thread.
+     *
+     * @param  methodName  name of the {@code ResultPanelTree} method
+     * @param  param  argument to be passed to the method
      */
     private void displayInDispatchThread(final String methodName,
                                          final Object param) {

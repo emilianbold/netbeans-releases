@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -161,6 +161,11 @@ final class ResultPanelTree extends JPanel
     }
     
     /**
+     * Displays a message about a running suite.
+     *
+     * @param  suiteName  name of the running suite,
+     *                    or {@code ANONYMOUS_SUITE} for anonymous suites
+     * @see  ResultDisplayHandler#ANONYMOUS_SUITE
      */
     void displaySuiteRunning(final String suiteName) {
         assert EventQueue.isDispatchThread();
