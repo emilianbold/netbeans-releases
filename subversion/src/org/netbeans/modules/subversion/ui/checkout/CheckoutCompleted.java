@@ -97,7 +97,7 @@ public class CheckoutCompleted implements ActionListener {
         panel.closeButton.addActionListener(this);
         panel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
         panel.againCheckBox.setVisible(openProject == false);
-        String title = NbBundle.getMessage(CheckoutAction.class, "BK3008");
+        String title = NbBundle.getMessage(CheckoutAction.class, "BK3008"); // NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(panel, title);
         descriptor.setModal(true);
 
@@ -108,7 +108,7 @@ public class CheckoutCompleted implements ActionListener {
 
         Object[] options = null;
         if (checkedOutProjects.size() > 1) {
-            String msg = NbBundle.getMessage(CheckoutAction.class, "BK3009", new Integer(checkedOutProjects.size()));
+            String msg = NbBundle.getMessage(CheckoutAction.class, "BK3009", new Integer(checkedOutProjects.size())); // NOI18N
             panel.jLabel1.setText(msg);
             options = new Object[] {
                 panel.openButton,
@@ -119,15 +119,15 @@ public class CheckoutCompleted implements ActionListener {
             projectToBeOpened = project;
             ProjectInformation projectInformation = ProjectUtils.getInformation(project);
             String projectName = projectInformation.getDisplayName();
-            String msg = NbBundle.getMessage(CheckoutAction.class, "BK3011", projectName);
+            String msg = NbBundle.getMessage(CheckoutAction.class, "BK3011", projectName); // NOI18N
             panel.jLabel1.setText(msg);
-            panel.openButton.setText(NbBundle.getMessage(CheckoutAction.class, "BK3012"));
+            panel.openButton.setText(NbBundle.getMessage(CheckoutAction.class, "BK3012")); // NOI18N
             options = new Object[] {
                 panel.openButton,
                 panel.closeButton
             };
         } else {
-            String msg = NbBundle.getMessage(CheckoutAction.class, "BK3010");
+            String msg = NbBundle.getMessage(CheckoutAction.class, "BK3010"); // NOI18N
             panel.jLabel1.setText(msg);
             options = new Object[] {
                 panel.createButton,
@@ -141,7 +141,7 @@ public class CheckoutCompleted implements ActionListener {
         descriptor.setClosingOptions(options);
         descriptor.setHelpCtx(new HelpCtx(CheckoutCompletedPanel.class));
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CheckoutAction.class, "ACSD_CheckoutCompleted_Dialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CheckoutAction.class, "ACSD_CheckoutCompleted_Dialog")); // NOI18N
 
         if(support!=null && support.isCanceled()) {
             return;
@@ -175,7 +175,7 @@ public class CheckoutCompleted implements ActionListener {
                             }
                         } catch (IOException e1) {
                             ErrorManager err = ErrorManager.getDefault();
-                            err.annotate(e1, NbBundle.getMessage(CheckoutAction.class, "BK3014", projectFolder));
+                            err.annotate(e1, NbBundle.getMessage(CheckoutAction.class, "BK3014", projectFolder)); // NOI18N
                             err.notify(e1);
                         }
                     }

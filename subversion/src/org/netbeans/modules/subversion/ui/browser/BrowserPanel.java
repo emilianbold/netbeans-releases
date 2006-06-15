@@ -43,7 +43,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
     
     /** Creates new form BrowserPanel */
     public BrowserPanel(String labelText, String browserAcsn, String browserAcsd, boolean singelSelectionOnly) {      
-        setName("Browse Repository Folders");
+        setName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_Prompt")); // NOI18N
         
         manager = new ExplorerManager();
         

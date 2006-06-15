@@ -37,6 +37,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -65,7 +66,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     private BrowserAction[] browserActions;
 
     private boolean valid = false;
-    public static final String PROP_VALID = "valid";
+    public static final String PROP_VALID = "valid"; // NOI18N
     private List<PropertyChangeListener> listeners;
     
     public RepositoryPaths(RepositoryFile repositoryFile, 
@@ -115,32 +116,32 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return new RepositoryFile[] {rf};
         }
 
-        if(repositoryPathTextField.getText().trim().equals("")) {
+        if(repositoryPathTextField.getText().trim().equals("")) { // NOI18N
             return EMPTY_REPOSITORY_FILES;
         }
         if(revision == null) {
             // should not be possible to get here!
             return EMPTY_REPOSITORY_FILES;
         }        
-        String[] paths = repositoryPathTextField.getText().trim().split(",");
+        String[] paths = repositoryPathTextField.getText().trim().split(","); // NOI18N
         RepositoryFile[] ret = new RepositoryFile[paths.length];
         SVNUrl repositoryUrl = getRepositoryUrl();
        
         for (int i = 0; i < paths.length; i++) {
             String path = paths[i].trim();
             String repositoryUrlString = getRepositoryUrl().toString();
-            if(path.startsWith("file://") ||
-               path.startsWith("http://") ||
-               path.startsWith("https://") ||
-               path.startsWith("svn://") ||
-               path.startsWith("svn+ssh://")) { 
+            if(path.startsWith("file://") || // NOI18N
+               path.startsWith("http://") || // NOI18N
+               path.startsWith("https://") || // NOI18N
+               path.startsWith("svn://") || // NOI18N
+               path.startsWith("svn+ssh://")) {  // NOI18N
                 // must be a complete URL 
                 // so check if it matches with the given repository URL
                 if(path.startsWith(repositoryUrlString)) {
                     // lets take only the part without the repository base URL
                     ret[i] = new RepositoryFile(repositoryUrl, path.substring(repositoryUrlString.length()), revision);
                 } else {
-                    throw new MalformedURLException("The Url " + path + "doesn't start with " + repositoryUrlString);
+                    throw new MalformedURLException(NbBundle.getMessage(RepositoryPaths.class, "MSG_RepositoryPath_WrongStart", path, repositoryUrlString)); // NOI18N
                 }
             } else {
                 ret[i] = new RepositoryFile(repositoryUrl, path, revision);    
@@ -161,13 +162,13 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         
         final Browser browser = 
             new Browser(
-                "Repository Folders:",
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_RepositoryPath_BrowseFolders_Prompt"),
                 showFiles, 
                 singleSelection,
                 fileSelectionOnly);        
         
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(browser.getBrowserPanel(), "Browse Repository folders"); 
+                new DialogDescriptor(browser.getBrowserPanel(), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_RepositoryPath_BrowseFolders_Title")); 
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
         dialogDescriptor.setValid(false);
@@ -198,7 +199,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                 for (int i = 0; i < selectedFiles.length; i++) {
                     paths.append(selectedFiles[i].getPath());
                     if(i < selectedFiles.length - 1) {
-                        paths.append(", ");                    
+                        paths.append(", "); // NOI18N
                     }
                 }                        
                 repositoryPathTextField.setText(paths.toString());
@@ -213,7 +214,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(getRepositoryUrl(), revision));        
         
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(svnSearch.getSearchPanel(), "Search Revisions"); 
+                new DialogDescriptor(svnSearch.getSearchPanel(), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_RepositoryPath_SearchRevisions")); 
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
         dialogDescriptor.setValid(false);
@@ -234,7 +235,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             revision = svnSearch.getSelectedRevision();
             if(revision != null) {
                 if(revision.equals(SVNRevision.HEAD) ) {
-                    revisionTextField.setText("");
+                    revisionTextField.setText(""); // NOI18N
                 } else {
                     revisionTextField.setText(revision.toString());                       
                 }
@@ -249,7 +250,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return SVNRevision.HEAD;
         }
         String revisionString = revisionTextField.getText().trim();
-        if(revisionString.equals("") || revisionString.equals(SVNRevision.HEAD.toString())) {
+        if(revisionString.equals("") || revisionString.equals(SVNRevision.HEAD.toString())) { // NOI18N
             return SVNRevision.HEAD;    
         }
         return new SVNRevision.Number(Long.parseLong(revisionString));        
@@ -302,7 +303,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             searchRevisionButton.setEnabled(valid);
         }
 
-        if(repositoryPathTextField != null && repositoryPathTextField.getText().trim().equals("")) {
+        if(repositoryPathTextField != null && repositoryPathTextField.getText().trim().equals("")) { // NOI18N
             valid = false;
         }
         

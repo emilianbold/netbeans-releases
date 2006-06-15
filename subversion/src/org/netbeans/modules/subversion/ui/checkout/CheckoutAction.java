@@ -54,7 +54,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
         
                 try {
-                    setDisplayName("Checking out ...");
+                    setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
                     checkout(client, repository, repositoryFiles, file, atWorkingDirLevel, this);
                 } catch (SVNClientException ex) {
                     ExceptionHandler eh = new ExceptionHandler(ex);
@@ -66,12 +66,12 @@ public final class CheckoutAction extends CallableSystemAction {
                     return;
                 }
 
-                setDisplayName("Scaning folders ...");
+                setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
                 if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0) {
                     String[] folders;
                     if(atWorkingDirLevel) {
                         folders = new String[1];
-                        folders[0] = ".";
+                        folders[0] = "."; // NOI18N
                     } else {
                         folders = new String[repositoryFiles.length];
                         for (int i = 0; i < repositoryFiles.length; i++) {
@@ -79,7 +79,7 @@ public final class CheckoutAction extends CallableSystemAction {
                                 return;
                             }
                             if(repositoryFiles[i].isRepositoryRoot()) {
-                                folders[i] = ".";
+                                folders[i] = "."; // NOI18N
                             } else {
                                 folders[i] = repositoryFiles[i].getFileUrl().getLastPathSegment();
                             }
@@ -93,17 +93,17 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
             }
         };
-        support.start(Subversion.getInstance().getRequestProcessor(repository), "Checking out...");
+        support.start(Subversion.getInstance().getRequestProcessor(repository), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
 
     }
     
     public String getName() {
-        return NbBundle.getMessage(CheckoutAction.class, "CTL_CheckoutAction");
+        return NbBundle.getMessage(CheckoutAction.class, "CTL_CheckoutAction"); // NOI18N
     }
     
     protected void initialize() {
         super.initialize();        
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
     public HelpCtx getHelpCtx() {

@@ -103,13 +103,13 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                 }
 
                 DialogDescriptor.InputLine input = 
-                    new DialogDescriptor.InputLine("Folder name:", "Create a new folder");
+                    new DialogDescriptor.InputLine(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_NewFolder_Prompt"), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_NewFolder_Title"));
                 input.setInputText(defaultFolderName);
                 DialogDisplayer.getDefault().notify(input);                    
                 String newDir = input.getInputText().trim();                    
                 if(input.getValue() == DialogDescriptor.CANCEL_OPTION || 
                    input.getValue() == DialogDescriptor.CLOSED_OPTION || 
-                   newDir.equals("")) 
+                   newDir.equals(""))  // NOI18N
                 {
                     return;
                 }                    
@@ -119,10 +119,10 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                     childNodes = children.getNodes();
                     for (int i = 0; i < childNodes.length; i++) {
                         if(childNodes[i].getDisplayName().equals(newDir)) {
-                            JButton ok = new JButton("OK");
+                            JButton ok = new JButton(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_OK"));
                             NotifyDescriptor descriptor = new NotifyDescriptor(
-                                    "Folder '" + newDir + "' already exists!",
-                                    "Wrong folder name",
+                                    org.openide.util.NbBundle.getMessage(CreateFolderAction.class, "MSG_Browser_FolderExists", newDir), // NOI18N
+                                    java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("MSG_Browser_WrongFolerName"), // NOI18N
                                     NotifyDescriptor.DEFAULT_OPTION,
                                     NotifyDescriptor.ERROR_MESSAGE,
                                     new Object [] { ok },
@@ -135,7 +135,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
 
                 RepositoryFile parentFile = repositoryPathNode.getEntry().getRepositoryFile();                    
                 Node segmentNode = repositoryPathNode;
-                String[] segments = newDir.split("/");
+                String[] segments = newDir.split("/"); // NOI18N
                 for (int i = 0; i < segments.length; i++) {                                                
                     
                     RepositoryFile newFile = parentFile.appendPath(segments[i]);
