@@ -184,6 +184,8 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     throws PropertyVetoException {
         class AtomicSetSelectedNodes implements Runnable {
             public PropertyVetoException veto;
+            private boolean doFire;
+            private Node[] oldValue;
 
             /** @return false if no further processing is needed */
             private boolean checkArgumentIsValid() {
@@ -218,7 +220,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             }
 
             private void updateSelection() {
-                Node[] oldValue = selectedNodes;
+                oldValue = selectedNodes;
 
                 Collection currentNodes = Arrays.asList(oldValue);
 
@@ -248,6 +250,10 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                     n.addNodeListener(weakListener);
                 }
 
+                doFire = true;
+            }
+            
+            public void fire() {
                 fireInAWT(PROP_SELECTED_NODES, oldValue, selectedNodes);
             }
 
@@ -260,7 +266,8 @@ public final class ExplorerManager extends Object implements Serializable, Clone
 
         AtomicSetSelectedNodes setNodes = new AtomicSetSelectedNodes();
         Children.MUTEX.readAccess(setNodes);
-
+        setNodes.fire();
+        
         if (setNodes.veto != null) {
             throw setNodes.veto;
         }
@@ -296,6 +303,9 @@ public final class ExplorerManager extends Object implements Serializable, Clone
      */
     public final void setExploredContext(final Node value, final Node[] selection) {
         class SetExploredContext implements Runnable {
+            boolean doFire;
+            Object oldValue;
+            
             public void run() {
                 // handles nulls correctly:
                 if (Utilities.compareObjects(value, exploredContext)) {
@@ -307,15 +317,21 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                 checkUnderRoot(value, "EXC_ContextMustBeWithinRootContext");
                 setSelectedNodes0(selection);
 
-                Object oldValue = exploredContext;
+                oldValue = exploredContext;
                 exploredContext = value;
 
-                fireInAWT(PROP_EXPLORED_CONTEXT, oldValue, value);
+                doFire = true;
+            }
+            public void fire() {
+                if (doFire) {
+                    fireInAWT(PROP_EXPLORED_CONTEXT, oldValue, value);
+                }
             }
         }
 
         SetExploredContext set = new SetExploredContext();
         Children.MUTEX.readAccess(set);
+        set.fire();
     }
 
     /** Set the explored context and selected nodes. If the change in selected nodes is vetoed,
@@ -329,6 +345,8 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     throws PropertyVetoException {
         class SetExploredContextAndSelection implements Runnable {
             public PropertyVetoException veto;
+            private boolean doFire;
+            private Object oldValue;
 
             public void run() {
                 try {
@@ -342,18 +360,25 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                     checkUnderRoot(value, "EXC_ContextMustBeWithinRootContext");
                     setSelectedNodes(selection);
 
-                    Object oldValue = exploredContext;
+                    oldValue = exploredContext;
                     exploredContext = value;
 
-                    fireInAWT(PROP_EXPLORED_CONTEXT, oldValue, exploredContext);
+                    doFire = true;
                 } catch (PropertyVetoException ex) {
                     veto = ex;
+                }
+            }
+            
+            public void fire() {
+                if (doFire) {
+                    fireInAWT(PROP_EXPLORED_CONTEXT, oldValue, exploredContext);
                 }
             }
         }
 
         SetExploredContextAndSelection set = new SetExploredContextAndSelection();
         Children.MUTEX.readAccess(set);
+        set.fire();
 
         if (set.veto != null) {
             throw set.veto;

@@ -53,6 +53,9 @@ public class ExplorerManagerTest extends NbTestCase
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
+        assertFalse("No read lock held", Children.MUTEX.isReadAccess());
+        assertFalse("No write lock held", Children.MUTEX.isWriteAccess());
+        
         events.add(ev);
     }
     
