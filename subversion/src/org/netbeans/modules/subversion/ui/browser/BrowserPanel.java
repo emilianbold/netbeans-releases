@@ -33,7 +33,7 @@ import org.openide.explorer.view.BeanTreeView;
  *
  * @author Tomas Stupka
  */
-public class BrowserPanel extends JPanel implements ExplorerManager.Provider{
+public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
 
     private final BrowserBeanTreeView treeView;
     private final JLabel label;
@@ -98,7 +98,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider{
     }
 
     public void setActions(AbstractAction[] actions) {
-        if(actions!=null) {
+        if(actions != null) {
             buttonPanel.removeAll();
             for (int i = 0; i < actions.length; i++) {
                 JButton button = new JButton(); 
@@ -121,12 +121,5 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider{
             tree.startEditingAtPath(path);
         }         
     }     
-
-    public BeanTreeView getTreeView() {        
-        return treeView;
-    }
-
-    public JTree getJTree() {        
-        return treeView.getTree();
-    }            
+          
 }

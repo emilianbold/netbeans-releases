@@ -25,6 +25,8 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
@@ -216,11 +218,11 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
         dialogDescriptor.setValid(false);
         
-        svnSearch.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
+        svnSearch.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                //if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
                     dialogDescriptor.setValid(svnSearch.getSelectedRevision() != null);
-                }
+               // }
             }
         });
         

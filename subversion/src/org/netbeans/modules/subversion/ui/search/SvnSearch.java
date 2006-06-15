@@ -12,13 +12,22 @@
  */
 package org.netbeans.modules.subversion.ui.search;
 
-import java.beans.PropertyChangeListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -30,22 +39,29 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
- * Handles the UI for repository browsing.
+ * Handles the UI for revision search.
  *
  * @author Tomas Stupka
  */
-public class SvnSearch {
-        
+public class SvnSearch implements ActionListener, DocumentListener {
+    
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     private final SvnSearchPanel panel;    
     
     private RepositoryFile repositoryRoot;
 
     private SvnProgressSupport support;
+    private SvnSearchView searchView;
     
     public SvnSearch(RepositoryFile repositoryRoot) {
         this.repositoryRoot = repositoryRoot;
         panel = new SvnSearchPanel();
-        listLogEntries();
+        panel.listButton.addActionListener(this);
+        panel.dateFromTextField.getDocument().addDocumentListener(this); 
+        
+        String date = DATE_FORMAT.format(new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 7));
+        panel.dateFromTextField.setText(HistorySettings.getDefault().getSearchDateFrom(date));        
+        searchView = new SvnSearchView(panel.list);
     }       
 
     /**
@@ -68,10 +84,13 @@ public class SvnSearch {
     
     private void listLogEntries() {
         final Node root = new AbstractNode(new Children.Array());
-        panel.getExplorerManager().setRootContext(root);
+        getExplorerManager().setRootContext(root);
         final Node[] waitNodes = new Node[] { new WaitNode("Loading..." )};
         root.getChildren().add(waitNodes);
         
+        final Date dateFrom = getDateFrom();
+        HistorySettings.getDefault().setSearchDateFrom(DATE_FORMAT.format(dateFrom));
+                
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(this.repositoryRoot.getRepositoryUrl());
         try { 
             support = new SvnProgressSupport() {
@@ -80,7 +99,9 @@ public class SvnSearch {
                     ISVNLogMessage[] lm;
                     try {
                         client = Subversion.getInstance().getClient(SvnSearch.this.repositoryRoot.getRepositoryUrl(), this);
-                        lm = client.getLogMessages(repositoryRoot.getRepositoryUrl(), new SVNRevision.Number(1), SVNRevision.HEAD);
+                        lm = client.getLogMessages(repositoryRoot.getRepositoryUrl(), 
+                                                   SVNRevision.HEAD, 
+                                                   new SVNRevision.DateSpec(dateFrom));
                     } catch (SVNClientException ex) {
                         AbstractNode errorNode = new AbstractNode(Children.LEAF);
                         errorNode.setDisplayName("Error"); 
@@ -94,12 +115,7 @@ public class SvnSearch {
                         return;
                     }    
 
-                    root.getChildren().remove(waitNodes);
-                    Node[] nodes = new Node[lm.length];
-                    for (int i = 0; i < lm.length; i++) {
-                        nodes[i] = new LogMessageNode(lm[i]);
-                    }
-                    root.getChildren().add(nodes);
+                    searchView.setResults(lm);
                 }                        
             };
             support.start(rp, "Searching revisions");
@@ -111,25 +127,66 @@ public class SvnSearch {
     public JPanel getSearchPanel() {
         return panel;
     }
+    
+    public SVNRevision getSelectedRevision() {
+        ISVNLogMessage message = (ISVNLogMessage) panel.list.getSelectedValue();
+        if(message == null) {
+            return null;
+        }
+        return message.getRevision();
+    }
 
+    public void addListSelectionListener(ListSelectionListener listener) {
+        panel.list.addListSelectionListener(listener);
+    }
+    
+    public void removeListSelectionListener(ListSelectionListener listener) {
+        panel.list.removeListSelectionListener(listener);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if(e.getSource()==panel.listButton) {
+            listLogEntries();            
+        }        
+    }
+    
     private ExplorerManager getExplorerManager() {
         return panel.getExplorerManager();
     }
-    
-    public SVNRevision getSelectedRevision() {
-        Node[] nodes = getExplorerManager().getSelectedNodes();
-        if(nodes == null || nodes.length == 0) {
-            return null;
+
+    private Date getDateFrom() {
+        try {
+            return DATE_FORMAT.parse(panel.dateFromTextField.getText());
+        } catch (ParseException ex) {
+            return null; // should not happen
         }
-        return ((LogMessageNode) nodes[0]).getLogMessage().getRevision();
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        getExplorerManager().addPropertyChangeListener(listener);
+    public void insertUpdate(DocumentEvent e) {
+         validateUserInput();
     }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        getExplorerManager().removePropertyChangeListener(listener);
+
+    public void removeUpdate(DocumentEvent e) {
+         validateUserInput();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+         validateUserInput();
+    }
+
+    private void validateUserInput() {
+        String dateString = panel.dateFromTextField.getText();
+        if(dateString.equals("")) {
+            return;
+        }
+        boolean isValid = false;
+        try {
+            DATE_FORMAT.parse(panel.dateFromTextField.getText());
+            isValid = true;
+        } catch (ParseException ex) {
+            ex.printStackTrace();
+        }
+        panel.listButton.setEnabled(isValid);
     }
     
 }
