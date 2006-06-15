@@ -13,16 +13,19 @@
 
 package org.netbeans.modules.subversion.ui.history;
 
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
+import org.tigris.subversion.svnclientadapter.*;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import java.io.File;
@@ -258,21 +261,25 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         onBrowse(tfFrom);
     }//GEN-LAST:event_onFromBrowse
 
-    private void onBrowse(JTextField destination) {
-        SVNRevision revision = SVNRevision.HEAD;
-        SVNUrl repositoryUrl = url != null ? url : SvnUtils.getRepositoryUrl(roots[0]); 
-        final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(repositoryUrl, revision));        
+    private void onBrowse(final JTextField destination) {
+        final SVNUrl repositoryUrl = url != null ? url : SvnUtils.getRepositoryRootUrl(roots[0]); 
+
+        String title = destination == tfFrom ? "Choose a start tag to search from:" : "Choose an end tag to search to:";
+        final Browser browser = new Browser(title, false, true, false);
+        RepositoryFile repoFile = new RepositoryFile(repositoryUrl, SVNRevision.HEAD);
+        browser.setup(repoFile, null, null);
+
         
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(svnSearch.getSearchPanel(), "Search Revisions"); 
+                new DialogDescriptor(browser.getBrowserPanel(), "Browse Repository folders"); 
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
         dialogDescriptor.setValid(false);
         
-        svnSearch.addPropertyChangeListener(new PropertyChangeListener() {
+        browser.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
-                    dialogDescriptor.setValid(svnSearch.getSelectedRevision() != null);
+                    dialogDescriptor.setValid(browser.getSelectedNodes().length > 0);
                 }
             }
         });
@@ -281,18 +288,44 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         dialog.setVisible(true);
 
         // handle results
-        if (DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {       
-            revision = svnSearch.getSelectedRevision();
-            if(revision != null) {
-                if(revision.equals(SVNRevision.HEAD) ) {
-                    destination.setText("");
-                } else {
-                    destination.setText(revision.toString());                       
-                }
-            }
-        } else {
-            svnSearch.cancel(); 
+        if (!DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {       
+            browser.cancel();
+            return;
         }
+
+        final SVNUrl tagURL = browser.getSelectedFiles()[0].getFileUrl();
+        destination.setText("Please wait...");
+
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
+        SvnProgressSupport support = new SvnProgressSupport() {
+            public void perform() {                    
+                processTagSelection(destination, repositoryUrl, tagURL, this);
+            }
+        };
+        support.start(rp, "Resolving tag URL...");
+    }
+
+    private void processTagSelection(final JTextField destination, SVNUrl repositoryURL, final SVNUrl tagURL, SvnProgressSupport progress) {
+        SvnClient client;
+        try {
+            client = Subversion.getInstance().getClient(repositoryURL, progress);
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return;
+        }
+        ISVNLogMessage[] log = new org.tigris.subversion.svnclientadapter.ISVNLogMessage[0];
+        try {
+            log = client.getLogMessages(tagURL, null, new SVNRevision.Number(1), SVNRevision.HEAD, true, false, 1);
+        } catch (SVNClientException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return;
+        }
+        final SVNRevision.Number revision = log[0].getRevision();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                destination.setText(Long.toString(revision.getNumber()));
+            }
+        });
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
