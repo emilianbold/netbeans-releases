@@ -50,7 +50,7 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  */
 public class SvnSearch implements ActionListener, DocumentListener {
     
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
     private final SvnSearchPanel panel;    
     
     private RepositoryFile repositoryRoot;
@@ -75,7 +75,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         noContentPanel = new NoContentPanel();
         panel.noContentPanel.setLayout(new BorderLayout());  
         panel.noContentPanel.add(noContentPanel);
-        noContentPanel.setLabel("<No Results - Search Not Performed>");        
+        noContentPanel.setLabel(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_NoResults_SearchNotPerformed")); // NOI18N
 
         panel.listPanel.setVisible(false);
         panel.noContentPanel.setVisible(true);
@@ -94,7 +94,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         final Date dateFrom = getDateFrom();
         HistorySettings.getDefault().setSearchDateFrom(DATE_FORMAT.format(dateFrom));
                 
-        noContentPanel.setLabel("<No Results Yet - Search in Progress...>");        
+        noContentPanel.setLabel(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_NoResults_SearchInProgress")); // NOI18N
         panel.listPanel.setVisible(false);
         panel.noContentPanel.setVisible(true);       
         
@@ -111,7 +111,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                                                    new SVNRevision.DateSpec(dateFrom));
                     } catch (SVNClientException ex) {
                         AbstractNode errorNode = new AbstractNode(Children.LEAF);
-                        errorNode.setDisplayName("Error"); 
+                        errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Error")); // NOI18N
                         errorNode.setShortDescription(ex.getLocalizedMessage());
                         return;
                     }
@@ -130,7 +130,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                     });
                 }                        
             };
-            support.start(rp, "Searching revisions");
+            support.start(rp, org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Search_Progress")); // NOI18N
         } finally {
             // XXX and how is this supposed to work?
             support = null;
@@ -181,7 +181,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
 
     private void validateUserInput() {
         String dateString = panel.dateFromTextField.getText();
-        if(dateString.equals("")) {
+        if(dateString.equals("")) { // NOI18N
             return;
         }
         boolean isValid = false;

@@ -45,7 +45,7 @@ public final class ImportAction extends NodeAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(ImportAction.class, "BK0006");
+        return NbBundle.getMessage(ImportAction.class, "BK0006"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
@@ -109,7 +109,7 @@ public final class ImportAction extends NodeAction {
                 CommitAction.performCommit(message, commitFiles, context, this);
             }
         };
-        support.start(rp, "Comitting...");
+        support.start(rp, org.openide.util.NbBundle.getMessage(ImportAction.class, "LBL_Import_Progress"));
     }
 
     public boolean cancel() {

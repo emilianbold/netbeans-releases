@@ -175,7 +175,7 @@ class SvnSearchView implements ComponentListener {
                     sd.setCharacterAttributes(0, sd.getLength(), boldStyle, false);
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR + message.getAuthor(), null);
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR +  defaultFormat.format(message.getDate()), null);
-                    sd.insertString(sd.getLength(), "\n" + message.getMessage(), null);
+                    sd.insertString(sd.getLength(), "\n" + message.getMessage(), null); // NOI18N
                 } catch (BadLocationException e) {
                     ErrorManager.getDefault().notify(e);
                 }
