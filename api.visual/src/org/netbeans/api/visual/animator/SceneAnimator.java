@@ -25,7 +25,7 @@ import java.util.*;
  */
 public class SceneAnimator {
 
-    private static final long TIME_PERIOD = 1000;
+    private static final long TIME_PERIOD = 500;
     private static final long SLEEP = 10;
 
     private Scene scene;
