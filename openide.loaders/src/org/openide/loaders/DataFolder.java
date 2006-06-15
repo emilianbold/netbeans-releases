@@ -1332,7 +1332,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
         Transferable createNodeTransferable( File f ) {
             Transferable result = null;
-            FileObject fo = FileUtil.toFileObject( f );
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
             if( null != fo ) {
                 try {
                     DataObject dob = DataObject.find( fo );
@@ -1387,6 +1387,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
         private List textURIListToFileList( String data ) {
             List list = new ArrayList(1);
+            // XXX consider using BufferedReader(StringReader) instead
             for( StringTokenizer st = new StringTokenizer(data, "\r\n");
                 st.hasMoreTokens();) {
                 String s = st.nextToken();
