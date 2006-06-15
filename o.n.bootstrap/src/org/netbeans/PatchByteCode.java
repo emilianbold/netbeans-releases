@@ -169,8 +169,10 @@ public final class PatchByteCode {
         
         String superClass = (String)args.get ("netbeans.superclass");
         String interfaces = (String)args.get ("netbeans.interfaces");
-        List<String> methods = NbCollections.checkedListByCopy((List) args.get("netbeans.public"), String.class, true);
-        List<String> rename = NbCollections.checkedListByCopy((List) args.get ("netbeans.rename"), String.class, true);
+        List _methods = (List) args.get("netbeans.public");
+        List<String> methods = _methods != null ? NbCollections.checkedListByCopy(_methods, String.class, true) : null;
+        List _rename = (List) args.get ("netbeans.rename");
+        List<String> rename = _rename != null ? NbCollections.checkedListByCopy(_rename, String.class, true) : null;
         
 
         HashMap<String,int[]> m;
