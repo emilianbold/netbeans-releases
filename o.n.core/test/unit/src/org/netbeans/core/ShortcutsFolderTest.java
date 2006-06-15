@@ -54,9 +54,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import junit.textui.TestRunner;
 
-/**
- * Tests shortcuts folder to ensure it handles wildcard keystrokes correctly. 
- */
 public class ShortcutsFolderTest extends LoggingTestCaseHid {
     private ErrorManager err;
     private Keymap keymap;
