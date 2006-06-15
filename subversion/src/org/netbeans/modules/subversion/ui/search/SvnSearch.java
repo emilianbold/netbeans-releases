@@ -85,26 +85,12 @@ public class SvnSearch implements ActionListener, DocumentListener {
      * Cancels all running tasks
      */
     public void cancel() {
-        Node rootNode = getExplorerManager().getRootContext();
-        if(rootNode != null) {
-            getExplorerManager().setRootContext(Node.EMPTY);
-            try {                                
-                rootNode.destroy();
-                if(support != null) {
-                    support.cancel();
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
-            }            
+        if(support != null) {
+            support.cancel();
         }
     }
     
     private void listLogEntries() {
-        final Node root = new AbstractNode(new Children.Array());
-        getExplorerManager().setRootContext(root);
-        final Node[] waitNodes = new Node[] { new WaitNode("Loading..." )};
-        root.getChildren().add(waitNodes);
-        
         final Date dateFrom = getDateFrom();
         HistorySettings.getDefault().setSearchDateFrom(DATE_FORMAT.format(dateFrom));
                 
@@ -127,8 +113,6 @@ public class SvnSearch implements ActionListener, DocumentListener {
                         AbstractNode errorNode = new AbstractNode(Children.LEAF);
                         errorNode.setDisplayName("Error"); 
                         errorNode.setShortDescription(ex.getLocalizedMessage());
-                        root.getChildren().remove(waitNodes);
-                        root.getChildren().add(new Node[] {errorNode});
                         return;
                     }
 
@@ -175,10 +159,6 @@ public class SvnSearch implements ActionListener, DocumentListener {
         }        
     }
     
-    private ExplorerManager getExplorerManager() {
-        return panel.getExplorerManager();
-    }
-
     private Date getDateFrom() {
         try {
             return DATE_FORMAT.parse(panel.dateFromTextField.getText());

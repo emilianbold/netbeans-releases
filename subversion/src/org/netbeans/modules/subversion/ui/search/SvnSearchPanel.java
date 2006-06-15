@@ -12,22 +12,13 @@ import org.openide.explorer.ExplorerManager;
  *
  * @author  tst
  */
-public class SvnSearchPanel extends javax.swing.JPanel implements ExplorerManager.Provider {
-    
-    private ExplorerManager manager;
+public class SvnSearchPanel extends javax.swing.JPanel {
     
     /** Creates new form SvnSearchPanel */
     public SvnSearchPanel() {
         initComponents();
     }
 
-    public ExplorerManager getExplorerManager() {
-        if(manager==null) {
-            manager = new ExplorerManager();
-        }
-        return manager;
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
