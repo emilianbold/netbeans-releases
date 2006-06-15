@@ -47,8 +47,8 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     private static SvnVersioningTopComponent instance;
 
     public SvnVersioningTopComponent() {
-        setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
-        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/versioning-view.png"));  //NOI18N        
+        setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
+        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/versioning-view.png"));  // NOI18N
         setLayout(new BorderLayout());
         syncPanel = new VersioningPanel(this);
         add(syncPanel);
@@ -125,12 +125,12 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         SwingUtilities.invokeLater(new Runnable (){
             public void run() {
                 if (contentTitle == null) {
-                    setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
+                    setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
                 } else {
                     if (branchTitle == null) {
-                        setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_MultiTitle", contentTitle, age));
+                        setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_MultiTitle", contentTitle, age)); // NOI18N
                     } else {
-                        setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title_ContentBranch", contentTitle, branchTitle, age));
+                        setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title_ContentBranch", contentTitle, branchTitle, age)); // NOI18N
                     }
                 }                
             }
@@ -143,25 +143,25 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
 
     private String computeAge(long l) {
         if (lastUpdateTimestamp == 0) {
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeUnknown");
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeUnknown"); // NOI18N
         } else if (l < 1000) { // 1000 equals 1 second
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeCurrent");
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeCurrent"); // NOI18N
         } else if (l < 2000) { // age between 1 and 2 seconds
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeOneSecond");
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeOneSecond"); // NOI18N
         } else if (l < 60000) { // 60000 equals 1 minute
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeSeconds", Long.toString(l / 1000));
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeSeconds", Long.toString(l / 1000)); // NOI18N
         } else if (l < 120000) { // age between 1 and 2 minutes
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeOneMinute");
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeOneMinute"); // NOI18N
         } else if (l < 3600000) { // 3600000 equals 1 hour
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeMinutes", Long.toString(l / 60000));
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeMinutes", Long.toString(l / 60000)); // NOI18N
         } else if (l < 7200000) { // age between 1 and 2 hours
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeOneHour");
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeOneHour"); // NOI18N
         } else if (l < 86400000) { // 86400000 equals 1 day
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeHours", Long.toString(l / 3600000));
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeHours", Long.toString(l / 3600000)); // NOI18N
         } else if (l < 172800000) { // age between 1 and 2 days
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeOneDay");
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeOneDay"); // NOI18N
         } else {
-            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeDays", Long.toString(l / 86400000));
+            return NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_AgeDays", Long.toString(l / 86400000)); // NOI18N
         }
     }
 
@@ -197,7 +197,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     public void setContext(Context ctx) {
         syncPanel.cancelRefresh();
         if (ctx == null) {
-            setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "MSG_Preparing"));
+            setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "MSG_Preparing")); // NOI18N
             setEnabled(false);
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         } else {
@@ -235,7 +235,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     }
 
     protected String preferredID() {
-        return "synchronize";    //NOI18N       
+        return "synchronize";    // NOI18N       
     }
 
     public int getPersistenceType() {

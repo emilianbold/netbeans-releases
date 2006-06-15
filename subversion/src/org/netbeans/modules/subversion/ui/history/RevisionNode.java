@@ -131,23 +131,23 @@ class RevisionNode extends AbstractNode {
         }
                                 
         protected String messageName() {
-            return revision.getLogInfoHeader().getFile().getName() + " " + getName();
+            return revision.getLogInfoHeader().getFile().getName() + " " + getName(); // NOI18N
         }
         
         protected String messageSave() {
-            return revision.getLogInfoHeader().getFile().getName() + " " + getName();
+            return revision.getLogInfoHeader().getFile().getName() + " " + getName(); // NOI18N
         }
         
         protected java.lang.String messageToolTip() {
-            return revision.getLogInfoHeader().getFile().getName() + " " + getName();
+            return revision.getLogInfoHeader().getFile().getName() + " " + getName(); // NOI18N
         }
 
         protected java.lang.String messageOpening() {
-            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", revision.getLogInfoHeader().getFile().getName() + " " + getName());
+            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", revision.getLogInfoHeader().getFile().getName() + " " + getName()); // NOI18N
         }
         
         protected java.lang.String messageOpened() {
-            return "";
+            return ""; // NOI18N
         }
 
         //#20646 associate the entry node with editor top component
@@ -249,7 +249,7 @@ class RevisionNode extends AbstractNode {
     private class RollbackAction extends AbstractAction {
 
         public RollbackAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getNumber()));
+            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getNumber())); // NOI18N
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -261,7 +261,7 @@ class RevisionNode extends AbstractNode {
     private class RollbackChangeAction extends AbstractAction {
 
         public RollbackChangeAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"));
+            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange")); // NOI18N
             setEnabled(SvnUtils.previousRevision(revision.getNumber()) != null);
         }
 

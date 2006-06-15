@@ -66,7 +66,7 @@ public class DiffStreamSource extends StreamSource {
         if (baseFile != null) {
             return baseFile.getName();
         } else {
-            return "anonymous";
+            return NbBundle.getMessage(DiffStreamSource.class, "LBL_Diff_Anonymous"); // NOI18N
         }
     }
 
@@ -93,12 +93,12 @@ public class DiffStreamSource extends StreamSource {
             // XXX return directory listing?
             // could be nice te return sorted directory content
             // such as vim if user "edits" directory
-            return new StringReader("[No Content, This is Folder]");
+            return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "LBL_Diff_NoFolderDiff")); // NOI18N
         }
         init();
         if (revision == null || remoteFile == null) return null;
         if (binary) {
-            return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle()));
+            return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle())); // NOI18N
         } else {
             // XXX diff implementation dependency, we need Encoding API or rewrite to binary diff
             return EncodedReaderFactory.getDefault().getReader(remoteFile, mimeType);  

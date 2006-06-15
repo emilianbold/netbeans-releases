@@ -160,11 +160,11 @@ public class SyncFileNode extends AbstractNode {
     private class StickyProperty extends SyncFileProperty {
 
         public StickyProperty() {
-            super(COLUMN_NAME_STICKY, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2001"), NbBundle.getMessage(SyncFileNode.class, "BK2002"));
+            super(COLUMN_NAME_STICKY, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2001"), NbBundle.getMessage(SyncFileNode.class, "BK2002")); // NOI18N
         }
 
         public Object getValue() {
-            return "";//getSticky();
+            return "";//getSticky(); // NOI18N
         }
     }
     
@@ -173,7 +173,7 @@ public class SyncFileNode extends AbstractNode {
         private String shortPath;
 
         public PathProperty() {
-            super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2003"), NbBundle.getMessage(SyncFileNode.class, "BK2004"));
+            super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2003"), NbBundle.getMessage(SyncFileNode.class, "BK2004")); // NOI18N
             setValue("sortkey", "\u65000\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
@@ -183,14 +183,14 @@ public class SyncFileNode extends AbstractNode {
                     public void run() {
                         shortPath = SvnUtils.getRelativePath(node.getFile());
                         if (shortPath == null) {
-                            shortPath = "[not in repository]";
+                            shortPath = org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_Location_NotInRepository"); // NOI18N
                         }
                         setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
                         firePropertyChange(COLUMN_NAME_PATH, null, null);
                     }
                 };
                 repoload = Subversion.getInstance().getRequestProcessor().post(run);
-                return "Asking remote repository...";
+                return org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_RepositoryPath_LoadingProgress"); // NOI18N
             }
             return shortPath;
         }
@@ -207,7 +207,7 @@ public class SyncFileNode extends AbstractNode {
     private class NameProperty extends SyncFileProperty {
 
         public NameProperty() {
-            super(COLUMN_NAME_NAME, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2005"), NbBundle.getMessage(SyncFileNode.class, "BK2006"));
+            super(COLUMN_NAME_NAME, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2005"), NbBundle.getMessage(SyncFileNode.class, "BK2006")); // NOI18N
             setValue("sortkey", SyncFileNode.this.getName()); // NOI18N
         }
 
@@ -221,8 +221,8 @@ public class SyncFileNode extends AbstractNode {
     private class StatusProperty extends SyncFileProperty {
         
         public StatusProperty() {
-            super(COLUMN_NAME_STATUS, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2007"), NbBundle.getMessage(SyncFileNode.class, "BK2008"));
-            String shortPath = "path";//SvnUtils.getRelativePath(node.getFile());
+            super(COLUMN_NAME_STATUS, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2007"), NbBundle.getMessage(SyncFileNode.class, "BK2008")); // NOI18N
+            String shortPath = "path";//SvnUtils.getRelativePath(node.getFile()); // NOI18N
             String sortable = Integer.toString(SvnUtils.getComparableStatus(node.getInformation().getStatus()));
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
         }

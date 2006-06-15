@@ -162,11 +162,11 @@ class DiffTreeTable extends TreeTableView {
         }
 
         public String getDisplayName() {
-            return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name");
+            return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name"); // NOI18N
         }
 
         public String getShortDescription() {
-            return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name_Desc");
+            return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name_Desc"); // NOI18N
         }
     }
 

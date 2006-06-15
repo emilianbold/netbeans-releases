@@ -21,6 +21,7 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.Node;
 import org.openide.cookies.EditorCookie;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -92,7 +93,7 @@ public class BlameAction extends ContextAction {
                     computeAnnotations(file, this, ab);
                 }
             };
-            support.start(rp, "Annotating...");
+            support.start(rp, NbBundle.getMessage(BlameAction.class, "MSG_Annotation_Progress")); // NOI18N
         }
     }
 

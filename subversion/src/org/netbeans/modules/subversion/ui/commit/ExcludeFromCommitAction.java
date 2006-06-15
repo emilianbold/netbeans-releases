@@ -37,9 +37,9 @@ public final class ExcludeFromCommitAction extends ContextAction {
         switch (actionStatus) {
         case UNDEFINED:
         case EXCLUDING:
-            return "popup_commit_exclude";
+            return "popup_commit_exclude"; // NOI18N
         case INCLUDING:
-            return "popup_commit_include";
+            return "popup_commit_include"; // NOI18N
         default:
             throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
         }

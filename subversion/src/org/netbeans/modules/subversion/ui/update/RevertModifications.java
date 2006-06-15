@@ -54,10 +54,10 @@ public class RevertModifications implements PropertyChangeListener {
             ocrt,
             new MoreCommitsRevertType(repositoryFile, getPanel().moreCommitsRadioButton)
         };
-        okButton = new JButton("Revert");
-        okButton.getAccessibleContext().setAccessibleDescription("Revert");
-        cancelButton = new JButton("Cancel");
-        cancelButton.getAccessibleContext().setAccessibleDescription("Cancel");
+        okButton = new JButton(org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Revert")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertForm_Action_Revert")); // NOI18N
+        cancelButton = new JButton(org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertForm_Action_Cancel")); // NOI18N
         if (defaultRevision != null) {
             panel.oneCommitRadioButton.setSelected(true);
             panel.oneRevisionTextField.setText(defaultRevision);
@@ -82,7 +82,7 @@ public class RevertModifications implements PropertyChangeListener {
     }      
 
     public boolean showDialog() {
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, "Revert Modifications");
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertDialog")); // NOI18N
         dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
         
         dialogDescriptor.setModal(true);
@@ -90,7 +90,7 @@ public class RevertModifications implements PropertyChangeListener {
         dialogDescriptor.setValid(false);
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
-        dialog.getAccessibleContext().setAccessibleDescription("Revert Modifications");
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertDialog")); // NOI18N
         dialog.setVisible(true);
         dialog.setResizable(false);
         boolean ret = dialogDescriptor.getValue() == okButton;

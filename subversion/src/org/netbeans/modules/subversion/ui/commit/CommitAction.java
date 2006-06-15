@@ -103,10 +103,10 @@ public class CommitAction extends ContextAction {
         panel.filesPanel.setLayout(new BorderLayout());
         panel.filesPanel.add(component, BorderLayout.CENTER);
 
-        DialogDescriptor dd = new DialogDescriptor(panel, "Commit");
+        DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Title")); // NOI18N
         dd.setModal(true);
-        JButton commitButton = new JButton("Commit");
-        dd.setOptions(new Object[] {commitButton, "Cancel"});
+        JButton commitButton = new JButton(org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit")); // NOI18N
+        dd.setOptions(new Object[] {commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel")}); // NOI18N
         dd.setHelpCtx(new HelpCtx(CommitAction.class));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.pack();
@@ -124,7 +124,7 @@ public class CommitAction extends ContextAction {
                     performCommit(message, commitFiles, ctx, this);
                 }
             };
-            support.start(rp, "Comitting...");
+            support.start(rp, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
         }
 
         // if OK setup sequence of add, remove and commit calls
@@ -146,7 +146,7 @@ public class CommitAction extends ContextAction {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
                 return;
             }                   
-            support.setDisplayName("Committing...");
+            support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
 
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
             List<SvnFileNode> removeCandidates = new ArrayList<SvnFileNode>();
@@ -267,11 +267,11 @@ public class CommitAction extends ContextAction {
                     ISVNProperty prop = client.propertyGet(commitCandidateFile, ISVNProperty.MIME_TYPE);
                     if(prop != null) {
                         String s = prop.getValue();
-                        if (s == null || s.startsWith("text/")) {
-                            client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false);
+                        if (s == null || s.startsWith("text/")) { // NOI18N
+                            client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false); // NOI18N
                         }    
                     } else {
-                         client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false);
+                         client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false); // NOI18N
                     }   
                 }
                 
@@ -325,7 +325,7 @@ public class CommitAction extends ContextAction {
         File file = node.getFile();
         File parent = file.getParentFile();
         while (true) {
-            if (new File(parent, ".svn/entries").canRead() || new File(parent, "_svn/entries").canRead()) {
+            if (new File(parent, ".svn/entries").canRead() || new File(parent, "_svn/entries").canRead()) { // NOI18N
                 break;
             }
             unmanaged.add(0, parent);

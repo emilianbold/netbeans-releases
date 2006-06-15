@@ -61,7 +61,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
         diffView = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         diffView.setTopComponent(treeView);
-        setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")));
+        setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions"))); // NOI18N
     }
 
     public void ancestorAdded(AncestorEvent event) {
@@ -91,12 +91,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             final Node [] nodes = (Node[]) evt.getNewValue();
             currentDifferenceIndex = 0;
             if (nodes.length == 0) {
-                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions"));
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 parent.refreshComponents(false);
                 return;
             }
             else if (nodes.length > 2) {
-                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_TooManyRevisions"));
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_TooManyRevisions")); // NOI18N
                 parent.refreshComponents(false);
                 return;
             }
@@ -125,7 +125,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                             showDiff(r1.getRevision().getLogInfoHeader(), revision1, revision2, false);
                         }
                     } catch (Exception e) {
-                        showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));
+                        showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection")); // NOI18N
                         parent.refreshComponents(false);
                         return;
                     }

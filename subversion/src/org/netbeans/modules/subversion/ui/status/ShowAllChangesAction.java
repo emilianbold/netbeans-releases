@@ -37,7 +37,7 @@ public class ShowAllChangesAction extends AbstractAllAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(ShowAllChangesAction.class, "CTL_MenuItem_ShowAllChanges_Label");
+        return NbBundle.getMessage(ShowAllChangesAction.class, "CTL_MenuItem_ShowAllChanges_Label"); // NOI18N
     }
 
 
@@ -69,7 +69,7 @@ public class ShowAllChangesAction extends AbstractAllAction {
                 ProjectInformation pinfo = ProjectUtils.getInformation(project);
                 title = pinfo.getDisplayName();
             } else {
-                title = NbBundle.getMessage(ShowAllChangesAction.class, "CTL_ShowAllChanges_WindowTitle", Integer.toString(projects.length));
+                title = NbBundle.getMessage(ShowAllChangesAction.class, "CTL_ShowAllChanges_WindowTitle", Integer.toString(projects.length)); // NOI18N
             }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

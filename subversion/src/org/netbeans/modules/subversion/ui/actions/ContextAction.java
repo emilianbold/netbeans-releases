@@ -302,7 +302,7 @@ public abstract class ContextAction extends NodeAction {
 
         protected void startProgress() {
             OutputLogger logger = Subversion.getInstance().getLogger();
-            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getRunningName(nodes));
+            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + action.getRunningName(nodes)); // NOI18N
             ProgressHandle progress = getProgressHandle();
             progress.setInitialDelay(500);
             progressStamp = System.currentTimeMillis() + 500;
@@ -314,7 +314,7 @@ public abstract class ContextAction extends NodeAction {
 
             final ProgressHandle progress = getProgressHandle();
             progress.switchToDeterminate(100);
-            progress.progress("Done!", 100);
+            progress.progress(NbBundle.getMessage(ContextAction.class, "MSG_Progress_Done"), 100); // NOI18N
             if (System.currentTimeMillis() > progressStamp) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -327,9 +327,9 @@ public abstract class ContextAction extends NodeAction {
 
             OutputLogger logger = Subversion.getInstance().getLogger();
             if (isCanceled() == false) {
-                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + ActionUtils.cutAmpersand(action.getName("", nodes)) + " finished.");
+                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + ActionUtils.cutAmpersand(action.getName("", nodes)) + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Finished")); // NOI18N
             } else {
-                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + ActionUtils.cutAmpersand(action.getName("", nodes)) + " cancelled.");
+                logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + ActionUtils.cutAmpersand(action.getName("", nodes)) + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Canceled")); // NOI18N
             }
             
         }

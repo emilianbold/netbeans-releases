@@ -62,7 +62,7 @@ public final class ActionUtils {
             } else {
                 //Remove ampersand from middle of string
                 //Is ampersand followed by space? If yes do not remove it.
-                if (" ".equals(text.substring(i + 1, i + 2))) {
+                if (" ".equals(text.substring(i + 1, i + 2))) { // NOI18N
                     result = text;
                 } else {
                     result = text.substring(0, i) + text.substring(i + 1);

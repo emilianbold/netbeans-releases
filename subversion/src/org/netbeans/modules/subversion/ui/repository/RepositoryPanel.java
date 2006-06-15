@@ -38,7 +38,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(620, 160));
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel")); // NOI18N
         titleLabel.setText(bundle.getString("BK0001")); // NOI18N
-        titleLabel.getAccessibleContext().setAccessibleDescription("Specify Subversion repository location");
+        titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel_Title")); // NOI18N
         titleLabel.getAccessibleContext().setAccessibleParent(this);
 
         jLabel2.setLabelFor(urlComboBox);
@@ -67,7 +67,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
         proxySettingsButton.getAccessibleContext().setAccessibleParent(this);
 
         leaveBlankLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0005")); // NOI18N
-        leaveBlankLabel.getAccessibleContext().setAccessibleDescription("information message");
+        leaveBlankLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_InfoLabel")); // NOI18N
         leaveBlankLabel.getAccessibleContext().setAccessibleParent(this);
 
         userPasswordField.setMinimumSize(new java.awt.Dimension(11, 22));

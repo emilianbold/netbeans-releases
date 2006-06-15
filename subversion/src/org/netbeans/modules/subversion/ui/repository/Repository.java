@@ -42,6 +42,7 @@ import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -53,20 +54,12 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class Repository implements ActionListener, DocumentListener, FocusListener {
 
-    private final static String LOCAL_URL_HELP      = "file:///repository_path[@REV]";
-    private final static String HTTP_URL_HELP       = "http://hostname/repository_path[@REV]";
-    private final static String HTTPS_URL_HELP      = "https://hostname/repository_path[@REV]";
-    private final static String SVN_URL_HELP        = "svn://hostname/repository_path[@REV]";
-    private final static String SVN_SSH_URL_HELP    = "svn+ssh://hostname/repository_path[@REV]";
-    private final static String ALL_URLS_HELP       =
-            "<html><body>IDE directly supports the following Subversion URL types:" +
-                "<dl><dt><tt>" + LOCAL_URL_HELP + "</tt></dt><dd>for direct SVN repositories access</dd>" +
-                    "<dt><tt>" + HTTP_URL_HELP  + "</tt></dt><dd>for connecting SVN repository via WebDAV protocol</dd>" +
-                    "<dt><tt>" + HTTPS_URL_HELP + "</tt></dt><dd>for connecting SVN repository via WebDAV protocol with SSL encryption</dd>" +
-                    "<dt><tt>" + SVN_URL_HELP + "</tt></dt><dd>for connecting SVN repository via custom protocol to a <tt>svnserver</tt> server</dd>" +
-                    "<dt><tt>" + SVN_SSH_URL_HELP + "</tt></dt><dd>for connecting SVN repository via custom protocol to a <tt>svnserver</tt> server</dd>" +
-                "</dl></body></html>";
-    
+    private final static String LOCAL_URL_HELP      = "file:///repository_path[@REV]"; // NOI18N
+    private final static String HTTP_URL_HELP       = "http://hostname/repository_path[@REV]"; // NOI18N
+    private final static String HTTPS_URL_HELP      = "https://hostname/repository_path[@REV]"; // NOI18N
+    private final static String SVN_URL_HELP        = "svn://hostname/repository_path[@REV]"; // NOI18N
+    private final static String SVN_SSH_URL_HELP    = "svn+ssh://hostname/repository_path[@REV]"; // NOI18N
+
     private RepositoryPanel repositoryPanel;
     private ProxyDescriptor proxyDescriptor;
     private RequestProcessor.Task updatePasswordTask;
@@ -77,7 +70,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private List<PropertyChangeListener> listeners;
 
 
-    public static final String PROP_VALID = "valid";
+    public static final String PROP_VALID = "valid"; // NOI18N
 
     private String message;
 
@@ -290,25 +283,25 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     private SelectedRepository getSelectedRepository(String urlString) throws MalformedURLException {
         int idx = urlString.lastIndexOf('@');
-        int hostIdx = urlString.indexOf("://");
-        int firstSlashIdx = urlString.indexOf("/", hostIdx + 3);
+        int hostIdx = urlString.indexOf("://"); // NOI18N
+        int firstSlashIdx = urlString.indexOf("/", hostIdx + 3); // NOI18N
         SVNRevision revision = null;
         if(idx < 0 || firstSlashIdx < 0 || idx < firstSlashIdx) {
             revision = SVNRevision.HEAD;
         } else if (acceptRevision) {
             if( idx + 1 < urlString.length()) {
-                String number = "";
+                String number = ""; // NOI18N
                 try {
                     number = urlString.substring(idx+1);
                     revision = new SVNRevision.Number(Long.parseLong(number));
                 } catch (NumberFormatException ex) {
-                    setValid(false, "Wrong revision number: " + number);
+                    setValid(false, NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", number)); // NOI18N
                     return null;
                 }
             }
             urlString = urlString.substring(0, idx);
         } else {
-            throw new MalformedURLException("The only revision allowed here is HEAD!");
+            throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision")); // NOI18N
         }
         SVNUrl url = removeEmptyPathSegments(new SVNUrl(urlString));
         return new SelectedRepository(url, revision);
@@ -318,17 +311,17 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         String[] pathSegments = url.getPathSegments();
         StringBuffer urlString = new StringBuffer();
         urlString.append(url.getProtocol());
-        urlString.append("://");
+        urlString.append("://"); // NOI18N
         urlString.append(SvnUtils.ripUserFromHost(url.getHost()));
         if(url.getPort() > 0) {
-            urlString.append(":");
+            urlString.append(":"); // NOI18N
             urlString.append(url.getPort());
         }
         boolean gotSegments = false;
         for (int i = 0; i < pathSegments.length; i++) {
-            if(!pathSegments[i].trim().equals("")) {
+            if(!pathSegments[i].trim().equals("")) { // NOI18N
                 gotSegments = true;
-                urlString.append("/");
+                urlString.append("/"); // NOI18N
                 urlString.append(pathSegments[i]);                
             }
         }
@@ -374,14 +367,14 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         SVNUrl url = null;
         if(repository != null) {
             url = repository.getUrl();
-            if (url != null && !url.getProtocol().equals("file")) {
+            if (url != null && !url.getProtocol().equals("file")) { // NOI18N
                 if (userVisitedProxySettings == false) {
                     proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(SvnUtils.ripUserFromHost(url.getHost()));
                 }
                 schedulePasswordUpdate();
             }
         }
-        message = "";
+        message = ""; // NOI18N
         updateVisibility();
     }            
 
@@ -389,22 +382,24 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private void updateVisibility() {
         String selectedUrlString = selectedUrlString();
         boolean remoteServerFields = false;
-        if(selectedUrlString.startsWith("http:")) {
+        if(selectedUrlString.startsWith("http:")) { // NOI18N
             repositoryPanel.tipLabel.setText(HTTP_URL_HELP);
             remoteServerFields = true;
-        } else if(selectedUrlString.startsWith("https:")) {
+        } else if(selectedUrlString.startsWith("https:")) { // NOI18N
             repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
             remoteServerFields = true;
-        } else if(selectedUrlString.startsWith("svn:")) {
+        } else if(selectedUrlString.startsWith("svn:")) { // NOI18N
             repositoryPanel.tipLabel.setText(SVN_URL_HELP);
             remoteServerFields = true;
-        } else if(selectedUrlString.startsWith("svn+ssh:")) {
+        } else if(selectedUrlString.startsWith("svn+ssh:")) { // NOI18N
             repositoryPanel.tipLabel.setText(SVN_SSH_URL_HELP);
             remoteServerFields = true;
-        } else if(selectedUrlString.startsWith("file:")) {
+        } else if(selectedUrlString.startsWith("file:")) { // NOI18N
             repositoryPanel.tipLabel.setText(LOCAL_URL_HELP);
         } else {
-            repositoryPanel.tipLabel.setText(ALL_URLS_HELP);
+            repositoryPanel.tipLabel.setText(NbBundle.getMessage(Repository.class, "MSG_Repository_Url_Help", new Object [] { // NOI18N
+                LOCAL_URL_HELP, HTTP_URL_HELP, HTTPS_URL_HELP, SVN_URL_HELP, SVN_SSH_URL_HELP
+            }));
         }
 
         repositoryPanel.userPasswordField.setVisible(remoteServerFields);

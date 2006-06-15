@@ -68,8 +68,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         resultsList.addMouseListener(this);
         resultsList.addMouseMotionListener(this);
         resultsList.setCellRenderer(new SummaryCellRenderer());
-        resultsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SummaryView.class, "ACSN_SummaryView_List"));
-        resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SummaryView.class, "ACSD_SummaryView_List"));
+        resultsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SummaryView.class, "ACSN_SummaryView_List")); // NOI18N
+        resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SummaryView.class, "ACSD_SummaryView_List")); // NOI18N
         scrollPane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         master.addComponentListener(this);
     }
@@ -213,14 +213,14 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             if (eldest == null) {
                 eldest = ((SearchHistoryPanel.DispRevision) container.getRevisions().get(container.getRevisions().size() - 1)).getRevision().getNumber();
             }
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_Diff", eldest, container.getNewestRevision())) {
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_Diff", eldest, container.getNewestRevision())) { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     diffPrevious(selection[0]);
                 }
             }));
         } else {
             if (previousRevision != null) {
-                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) {
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) { // NOI18N
                     {
                         setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
                     }
@@ -230,7 +230,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 }));
             }
         }
-        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) {
+        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
             {
                 setEnabled(someRevisions(selection));
             }
@@ -240,7 +240,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }));
         if (drev != null) {
             if (!"dead".equals(drev.getRevision().getState())) { // NOI18N
-                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View", drev.getRevision().getNumber())) {
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View", drev.getRevision().getNumber())) { // NOI18N
                     {
                         setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
                     }
@@ -255,7 +255,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 
             }
         }
-        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommit")) {
+        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommit")) { // NOI18N
             {
                 setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
             }
@@ -305,7 +305,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 RevertModificationsAction.performRevert(ctx, revertModifications, this);
             }
         };
-        support.start(rp, "Reverting...");
+        support.start(rp, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
     }
 
     static void rollbackChanges(LogInformation.Revision [] changes) {
@@ -495,7 +495,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 sd.insertString(sd.getLength(), defaultFormat.format(revision.getDate()) + FIELDS_SEPARATOR, null);
                 sd.insertString(sd.getLength(), revision.getAuthor(), null);
                 if ("dead".equalsIgnoreCase(dispRevision.getRevision().getState())) { // NOI18N
-                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + NbBundle.getMessage(SummaryView.class, "MSG_SummaryView_DeadState"), null);
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + NbBundle.getMessage(SummaryView.class, "MSG_SummaryView_DeadState"), null); // NOI18N
                 }
                 sd.insertString(sd.getLength(), "\n", null); // NOI18N
                 sd.insertString(sd.getLength(), commitMessage, null);
@@ -534,19 +534,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             actionsPane.removeAll();
             String prev = SvnUtils.previousRevision(dispRevision.getRevision().getNumber());
             if (prev != null) {
-                JLabel l1 = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_DiffTo"));
+                JLabel l1 = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_DiffTo")); // NOI18N
                 l1.setForeground(foregroundColor);
                 actionsPane.add(l1);
                 diffLink = new HyperlinkLabel(prev, foregroundColor, backgroundColor);
                 actionsPane.add(diffLink);
-                JLabel comma = new JLabel(", ");
+                JLabel comma = new JLabel(", "); // NOI18N
                 comma.setForeground(foregroundColor);
                 actionsPane.add(comma);
             } else {
                 diffLink = null;
             }
 
-            fcLink = new HyperlinkLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommit"), foregroundColor, backgroundColor);
+            fcLink = new HyperlinkLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommit"), foregroundColor, backgroundColor); // NOI18N
             actionsPane.add(fcLink);
 
             actionsPane.revalidate();

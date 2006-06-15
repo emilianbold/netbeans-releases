@@ -26,6 +26,7 @@ import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.io.File;
@@ -264,14 +265,14 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     private void onBrowse(final JTextField destination) {
         final SVNUrl repositoryUrl = url != null ? url : SvnUtils.getRepositoryRootUrl(roots[0]); 
 
-        String title = destination == tfFrom ? "Choose a start tag to search from:" : "Choose an end tag to search to:";
+        String title = destination == tfFrom ? NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_StartTag") : NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_EndTag"); // NOI18N
         final Browser browser = new Browser(title, false, true, false);
         RepositoryFile repoFile = new RepositoryFile(repositoryUrl, SVNRevision.HEAD);
         browser.setup(repoFile, null, null);
 
         
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(browser.getBrowserPanel(), "Browse Repository folders"); 
+                new DialogDescriptor(browser.getBrowserPanel(), NbBundle.getMessage(SearchCriteriaPanel.class, "LBL_Search_BrowseRepository")); // NOI18N 
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
         dialogDescriptor.setValid(false);
@@ -294,7 +295,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         }
 
         final SVNUrl tagURL = browser.getSelectedFiles()[0].getFileUrl();
-        destination.setText("Please wait...");
+        destination.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_PleaseWait")); // NOI18N
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         SvnProgressSupport support = new SvnProgressSupport() {
@@ -302,7 +303,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
                 processTagSelection(destination, repositoryUrl, tagURL, this);
             }
         };
-        support.start(rp, "Resolving tag URL...");
+        support.start(rp, NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_ResolvingTagProgress")); // NOI18N
     }
 
     private void processTagSelection(final JTextField destination, SVNUrl repositoryURL, final SVNUrl tagURL, SvnProgressSupport progress) {

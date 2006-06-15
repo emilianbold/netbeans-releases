@@ -163,7 +163,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         annotated = true;
         elementAnnotations = null;
         ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
-        elementAnnotationsSubstitute = loc.getString("CTL_AnnotationSubstitute");
+        elementAnnotationsSubstitute = loc.getString("CTL_AnnotationSubstitute"); // NOI18N
 
         doc.addDocumentListener(this);
         textComponent.addComponentListener(this);
@@ -394,7 +394,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 RevertModificationsAction.performRevert(ctx, revertModifications, this);
             }
         };
-        support.start(rp, "Reverting...");
+        support.start(rp, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
     }
 
     private String getPreviousRevision(String revision) {
@@ -582,7 +582,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     private String getDisplayName(AnnotateLine line) {
-        return line.getRevision() + "  " + line.getAuthor();
+        return line.getRevision() + "  " + line.getAuthor(); // NOI18N
     }
 
     /**
@@ -654,7 +654,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             AnnotateLine al = getAnnotateLine(line);
 
             if (al != null) {
-                String escapedAuthor = NbBundle.getMessage(AnnotationBar.class, "TT_Annotation");
+                String escapedAuthor = NbBundle.getMessage(AnnotationBar.class, "TT_Annotation"); // NOI18N
                 try {
                     escapedAuthor = XMLUtil.toElementContent(al.getAuthor());
                 } catch (CharConversionException e1) {

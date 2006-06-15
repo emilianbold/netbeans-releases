@@ -23,7 +23,7 @@ public class UpdateWithDependenciesAction extends PlaceholderAction {
     
     /** Creates a new instance of UpdateWithDependenciesAction */
     public UpdateWithDependenciesAction() {
-        name = "Update with Dependencies";
+        name = "Update with Dependencies"; // NOI18N
     }
     
 }

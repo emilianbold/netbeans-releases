@@ -158,7 +158,7 @@ class CommitTableModel extends AbstractTableModel {
                 }
                 //shortPath = SvnUtils.getRelativePath(nodes[rowIndex].getFile());
                 if (shortPath == null) {
-                    shortPath = "[not in repository]";
+                    shortPath = org.openide.util.NbBundle.getMessage(CommitTableModel.class, "CTL_CommitForm_NotInRepository"); // NOI18N
                 }
             }
             return shortPath;

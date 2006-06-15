@@ -130,9 +130,9 @@ roots_loop:
             }
         }
         if (conflict) {
-            StatusDisplayer.getDefault().setStatusText("Subversion update caused conflicts!");
+            StatusDisplayer.getDefault().setStatusText(org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Conflicts")); // NOI18N
         } else {
-            StatusDisplayer.getDefault().setStatusText("Subversion update completed");
+            StatusDisplayer.getDefault().setStatusText(org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Completed")); // NOI18N
         }
         return;
     }
@@ -161,7 +161,7 @@ roots_loop:
                 }
             }
         };
-        support.start(rp, "Updating...");
+        support.start(rp, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
     }
 
 }

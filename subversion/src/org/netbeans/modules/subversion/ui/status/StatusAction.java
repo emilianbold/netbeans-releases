@@ -40,7 +40,7 @@ public class StatusAction  extends ContextAction {
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;  
     
     protected String getBaseName(Node[] nodes) {
-        return "CTL_MenuItem_ShowChanges";
+        return "CTL_MenuItem_ShowChanges"; // NOI18N
     }
 
     protected int getFileEnabledStatus() {

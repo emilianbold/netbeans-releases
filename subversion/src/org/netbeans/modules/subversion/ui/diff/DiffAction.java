@@ -48,7 +48,7 @@ public class DiffAction extends ContextAction {
         
         DiffMainPanel panel = new DiffMainPanel(ctx, type, contextName); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName));
+        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); // NOI18N
         tc.open();
         tc.requestActive();        
     }
@@ -56,7 +56,7 @@ public class DiffAction extends ContextAction {
     public static void diff(File file, String rev1, String rev2) {
         DiffMainPanel panel = new DiffMainPanel(file, rev1, rev2); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName()));
+        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
         tc.open();
         tc.requestActive();        
     }

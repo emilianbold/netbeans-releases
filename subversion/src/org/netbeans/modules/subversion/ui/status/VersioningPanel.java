@@ -81,7 +81,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         refreshViewTask = rp.create(new RefreshViewTask());
         explorerManager = new ExplorerManager ();
         displayStatuses = FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE;
-        noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All"));
+        noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
         syncTable = new SyncTable();
 
         initComponents();
@@ -225,7 +225,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
             return;
         }
         // XXX attach Cancelable hook
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View"));
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View")); // NOI18N
         try {
             refreshViewThread = Thread.currentThread();
             refreshViewThread.interrupted();  // clear interupted status
@@ -240,13 +240,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
             final String branchTitle;
             if (nodes.length > 0) {
                 boolean stickyCommon = true;
-                String currentSticky = "";//nodes[0].getSticky();
+                String currentSticky = "";//nodes[0].getSticky(); // NOI18N
                 for (int i = 1; i < nodes.length; i++) {
                     if (Thread.interrupted()) {
                         // TODO set model that displays that fact to user
                         return;
                     }
-                    String sticky = "";//nodes[i].getSticky();
+                    String sticky = "";//nodes[i].getSticky(); // NOI18N
                     if (sticky != currentSticky && (sticky == null || currentSticky == null || !sticky.equals(currentSticky))) {
                         stickyCommon = false;
                         break;
@@ -254,10 +254,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
                 }
                 if (stickyCommon) {
                     tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-                    branchTitle = currentSticky.length() == 0 ? null : NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Single", currentSticky);
+                    branchTitle = currentSticky.length() == 0 ? null : NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Single", currentSticky); // NOI18N
                 } else {
                     tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STICKY, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-                    branchTitle = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Multi");
+                    branchTitle = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Multi"); // NOI18N
                 }
             } else {
                 tableColumns = null;
@@ -349,7 +349,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
                 setupModels();
             }            
         };
-        onRefreshTask = support.start(rp, "Refreshing...");
+        onRefreshTask = support.start(rp, org.openide.util.NbBundle.getMessage(VersioningPanel.class, "LBL_Refresh_Progress")); // NOI18N
         return onRefreshTask;
     }
 
@@ -375,15 +375,15 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
-            noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Local"));
+            noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Local")); // NOI18N
         }
         else if (tgbRemote.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE);
-            noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Remote"));
+            noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Remote")); // NOI18N
         }
         else if (tgbAll.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE);
-            noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All"));
+            noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
         }
     }
 

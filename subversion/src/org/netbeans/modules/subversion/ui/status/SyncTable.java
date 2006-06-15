@@ -129,8 +129,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         table.setDefaultRenderer(Node.Property.class, new SyncTableCellRenderer());
         table.getSelectionModel().addListSelectionListener(this);
         table.addAncestorListener(this);
-        table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SyncTable.class, "ACSN_VersioningTable"));
-        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SyncTable.class, "ACSD_VersioningTable"));
+        table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SyncTable.class, "ACSN_VersioningTable")); // NOI18N
+        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SyncTable.class, "ACSD_VersioningTable")); // NOI18N
         setColumns(new String[] {
             SyncFileNode.COLUMN_NAME_NAME,
             SyncFileNode.COLUMN_NAME_STATUS,
@@ -290,11 +290,11 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
         
         menu.add(new JSeparator());        
-        item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), "Conflict Resolved")); 
+        item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_ConflictResolved"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
                 
         menu.add(new JSeparator());        
-        item = menu.add(new SystemActionBridge(SystemAction.get(BlameAction.class), "Blame"));
+        item = menu.add(new SystemActionBridge(SystemAction.get(BlameAction.class), org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_Blame"))); // NOI18N
 //                                               ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ?
 //                                               actionString("CTL_PopupMenuItem_HideAnnotations") : // NOI18N
 //                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); // NOI18N
@@ -307,9 +307,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         String label;
         ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
         if (exclude.getActionStatus(null) == exclude.INCLUDING) {
-            label = "Include in Commit";            
+            label = org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_IncludeInCommit"); // NOI18N
         } else {
-            label = "Exclude from Commit";
+            label = org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_ExcludeFromCommit"); // NOI18N
         }
         item = menu.add(new SystemActionBridge(exclude, label));
         Mnemonics.setLocalizedText(item, item.getText());

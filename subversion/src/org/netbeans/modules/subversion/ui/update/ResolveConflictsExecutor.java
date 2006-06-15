@@ -105,14 +105,14 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         if (leftFileRevision != null) leftFileRevision.trim();
         if (rightFileRevision != null) rightFileRevision.trim();
         if (leftFileRevision == null || leftFileRevision.equals(file.getName())) {
-            leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile");
+            leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
-            leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", leftFileRevision);
+            leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", leftFileRevision); // NOI18N
         }
         if (rightFileRevision == null || rightFileRevision.equals(file.getName())) {
-            rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile");
+            rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
-            rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", rightFileRevision);
+            rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", rightFileRevision); // NOI18N
         }
         
         final StreamSource s1;
@@ -326,7 +326,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     }
 
     public void run() {
-        throw new RuntimeException("Not implemented");
+        throw new RuntimeException("Not implemented"); // NOI18N
     }
     
     
@@ -365,7 +365,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         }
         
         public String getTitle() {
-            return org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Merge.titleResult");
+            return org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Merge.titleResult"); // NOI18N
         }
         
         public String getMIMEType() {

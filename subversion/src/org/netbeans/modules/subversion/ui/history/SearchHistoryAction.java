@@ -51,7 +51,7 @@ public class SearchHistoryAction extends ContextAction {
     }
 
     protected void performContextAction(Node[] nodes) {
-        String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes));
+        String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes)); // NOI18N
         openHistory(getContext(nodes), title);
     }
 
@@ -97,7 +97,7 @@ public class SearchHistoryAction extends ContextAction {
             commitMessage = commitMessage.substring(0, commitMessage.indexOf('\n'));
         }
         SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context, commitMessage, username, from, to);
-        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", title);
+        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", title); // NOI18N
         tc.setDisplayName(tcTitle);
         tc.open();
         tc.requestActive();
@@ -118,7 +118,7 @@ public class SearchHistoryAction extends ContextAction {
      */ 
     public static void openSearch(SVNUrl repositoryUrl, File localRoot, long revision) {
         SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repositoryUrl, localRoot, revision);
-        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", repositoryUrl);
+        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", repositoryUrl); // NOI18N
         tc.setDisplayName(tcTitle);
         tc.open();
         tc.requestActive();

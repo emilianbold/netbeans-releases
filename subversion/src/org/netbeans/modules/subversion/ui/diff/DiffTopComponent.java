@@ -33,8 +33,8 @@ public class DiffTopComponent extends TopComponent {
         c.putClientProperty(TopComponent.class, this);
         add(c, BorderLayout.CENTER);
         panel = c;
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component"));
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component"));
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
     }
 
     public int getPersistenceType(){

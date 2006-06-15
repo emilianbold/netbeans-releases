@@ -34,7 +34,7 @@ public class OpenVersioningAction extends ShowAllChangesAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(OpenVersioningAction.class, "CTL_MenuItem_OpenVersioning");
+        return NbBundle.getMessage(OpenVersioningAction.class, "CTL_MenuItem_OpenVersioning"); // NOI18N
     }
 
     /**

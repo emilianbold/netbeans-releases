@@ -41,7 +41,7 @@ public class ResolveConflictsAction extends ContextAction {
         File[] files = cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT);
 
         if (files.length == 0) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message("No Conflicts found!");
+            NotifyDescriptor nd = new NotifyDescriptor.Message(org.openide.util.NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflictsFound")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
         } else {
             for (int i = 0; i<files.length; i++) {

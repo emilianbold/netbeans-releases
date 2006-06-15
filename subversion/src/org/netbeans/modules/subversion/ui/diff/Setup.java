@@ -70,9 +70,9 @@ public final class Setup {
      */
     public static final int DIFFTYPE_ALL       = 2;
     
-    public static final String REVISION_BASE = "BASE";
-    public static final String REVISION_CURRENT = "LOCAL";
-    public static final String REVISION_HEAD    = "HEAD";
+    public static final String REVISION_BASE = "BASE"; // NOI18N
+    public static final String REVISION_CURRENT = "LOCAL"; // NOI18N
+    public static final String REVISION_HEAD    = "HEAD"; // NOI18N
     
     private final File      baseFile;
     private final String    firstRevision;
@@ -108,7 +108,7 @@ public final class Setup {
                     firstTitle = loc.getString("MSG_DiffPanel_LocalNew");
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     firstRevision = null;
-                    firstTitle = "No local file";
+                    firstTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N
                 } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY
                 | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
                     firstRevision = REVISION_BASE;
@@ -141,7 +141,7 @@ public final class Setup {
                 break;
 
             default:
-                throw new IllegalArgumentException("Unknow diff type: " + type);
+                throw new IllegalArgumentException("Unknow diff type: " + type); // NOI18N
         }
 
 
@@ -162,7 +162,7 @@ public final class Setup {
                     secondTitle = loc.getString("MSG_DiffPanel_LocalNew");
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     secondRevision = null;
-                    secondTitle = "No local file";
+                    secondTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N
                 } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY
                 | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
                     secondRevision = null;
@@ -194,7 +194,7 @@ public final class Setup {
                 break;
 
             default:
-                throw new IllegalArgumentException("Unknow diff type: " + type);
+                throw new IllegalArgumentException("Unknow diff type: " + type); // NOI18N
         }
 
         firstSource = new DiffStreamSource(baseFile, firstRevision, firstTitle);

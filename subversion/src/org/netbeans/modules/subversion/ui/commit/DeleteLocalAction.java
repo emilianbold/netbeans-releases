@@ -50,8 +50,8 @@ public final class DeleteLocalAction extends ContextAction {
     }
     
     protected void performContextAction(final Node[] nodes) {
-        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Prompt"));
-        descriptor.setTitle(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Title"));
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Prompt")); // NOI18N
+        descriptor.setTitle(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Title")); // NOI18N
         descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
         descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
 
@@ -103,7 +103,7 @@ public final class DeleteLocalAction extends ContextAction {
                     fo.delete(lock);       
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, NbBundle.getMessage(DeleteLocalAction.class, "BK0001", file.getAbsolutePath()));
+                    err.annotate(e, NbBundle.getMessage(DeleteLocalAction.class, "BK0001", file.getAbsolutePath())); // NOI18N
                     err.notify(e);
                 } finally {
                     if (lock != null) {

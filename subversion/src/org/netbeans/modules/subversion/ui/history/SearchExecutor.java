@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -86,9 +87,9 @@ class SearchExecutor implements Runnable {
         if (date != null) {
             return new SVNRevision.DateSpec(date);
         } else if (s != null) {
-            if ("BASE".equals(s)) {
+            if ("BASE".equals(s)) { // NOI18N
                 return SVNRevision.BASE;
-            } else if ("HEAD".equals(s)) {
+            } else if ("HEAD".equals(s)) { // NOI18N
                 return SVNRevision.HEAD;
             } else {
                 return new SVNRevision.Number(Long.parseLong(s));
@@ -113,7 +114,7 @@ class SearchExecutor implements Runnable {
                     search(master.getRepositoryUrl(), null, fromRevision, toRevision, this);
                 }
             };
-            support.start(rp, "Searching History...");
+            support.start(rp, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
         } else {
             for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
                 final SVNUrl url = (SVNUrl) i.next();
@@ -124,7 +125,7 @@ class SearchExecutor implements Runnable {
                         search(url, files, fromRevision, toRevision, this);
                     }
                 };
-                support.start(rp, "Searching History...");
+                support.start(rp, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
             }
         }
     }
