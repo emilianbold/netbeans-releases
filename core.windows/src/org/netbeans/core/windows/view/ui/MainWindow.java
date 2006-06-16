@@ -455,8 +455,11 @@ public final class MainWindow extends JFrame {
         } 
         invalidate();
         validate();
-        if( firstTimeHack && !System.getProperty("os.name").startsWith("Windows") )
+        // use #24291 hack only on Win OS
+        if( isOlderJDK && !System.getProperty("os.name").startsWith("Windows") ) {
             releaseWaitingForPaintDummyGraphic();
+        }
+
         repaint();
     }
 
@@ -505,7 +508,43 @@ public final class MainWindow extends JFrame {
         
     }
 
-    public Graphics getGraphics() {
+    // [dafe] Start of #24291 hacky fix, to prevent from main window flicking on
+    // JDK 1.5.x and older. Can be freely deleted when we will drop JDK 1.5.x
+    // support in future
+
+    private Image waitingForPaintDummyImage;
+    private Graphics waitingForPaintDummyGraphic;
+    boolean isOlderJDK = System.getProperty("java.version").startsWith("1.5");
+
+    public void setVisible (boolean flag) {
+        // The setVisible will cause a PaintEvent to be queued up, as a LOW_PRIORITY one
+        // As the painting of my child components occurs, they cause painting of their own
+        // When the PaintEvent queued from the setVisible is finally processed, it assumes
+        // nothing has been displayed and redraws the whole window.
+        // So we make it such that, UNTIL there is the repaint is dispatched, return a graphics
+        // which goes nowhere.
+        if (flag && isOlderJDK) {
+            waitingForPaintDummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+            waitingForPaintDummyGraphic = waitingForPaintDummyImage.getGraphics();
+        }
+        super.setVisible(flag);
+    }
+
+    public void paint(Graphics g) {
+        // As a safeguard, always release the dummy graphic when we get a paint
+        if (waitingForPaintDummyGraphic != null) {
+            releaseWaitingForPaintDummyGraphic();
+            // Since the release did not occur before the getGraphics() call,
+            // I need to get the actual graphics now that I've released
+            g = getGraphics();
+        }
+        super.paint(g);
+    }
+
+    /** Overrides parent version to return fake dummy graphic in certain time
+     * during startup
+     */
+    public Graphics getGraphics () {
         // Return the dummy graphics that paint nowhere, until we receive a paint() 
         if (waitingForPaintDummyGraphic != null) {
             // If we are the PaintEvent we are waiting for is being dispatched
@@ -519,37 +558,15 @@ public final class MainWindow extends JFrame {
         return super.getGraphics();
     }
 
-    public void paint(Graphics g) {
-        // As a safeguard, always release the dummy graphic when we get a paint
-        if (waitingForPaintDummyGraphic != null) {
-            releaseWaitingForPaintDummyGraphic();
-            // Since the release did not occur before the getGraphics() call,
-            // I need to get the actual graphics now that I've released
-            g = getGraphics();
-        }
-        super.paint(g);
-    }
-    
-
-    protected Image waitingForPaintDummyImage; 
-    protected Graphics waitingForPaintDummyGraphic; 
-    
-    boolean firstTimeHack = true;
-    
-    public void setVisible( boolean flag ) {
-        if( firstTimeHack ) {
-            waitingForPaintDummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-            waitingForPaintDummyGraphic = waitingForPaintDummyImage.getGraphics();
-        }
-        super.setVisible(flag);
-    }
-    
-    protected void releaseWaitingForPaintDummyGraphic() {
+    private void releaseWaitingForPaintDummyGraphic () {
         if (waitingForPaintDummyGraphic != null) {
             waitingForPaintDummyGraphic.dispose();
             waitingForPaintDummyGraphic = null;
             waitingForPaintDummyImage = null;
         }
     }
+
+    // end of #24291 hacky fix
+
 }
 
