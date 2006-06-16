@@ -24,6 +24,7 @@ import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -35,7 +36,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
     
     /** Creates a new instance of CreateCopy */
     public CreateCopy(RepositoryFile repositoryRoot, String context, boolean localChanges) {
-        super(new CreateCopyPanel(), "Copy " + context, "Copy");        
+        super(new CreateCopyPanel(), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Prompt", context), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title")); // NOI18N
         CreateCopyPanel panel = getCreateCopyPanel();
         panel.warningLabel.setVisible(localChanges);                              
                 

@@ -109,7 +109,7 @@ public class CreateCopyAction extends ContextAction {
                 if(info == null) {
                     client.mkdir(folderToCreate,
                                  true, 
-                                 "[Netbeans SVN client generated message: create a new folder for copy]: " + message);
+                                 "[Netbeans SVN client generated message: create a new folder for copy]: " + message); // NOI18N
                 }                            
             }                        
 

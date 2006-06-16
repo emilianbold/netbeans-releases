@@ -32,6 +32,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -41,11 +42,11 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class Merge extends CopyDialog implements ItemListener {
         
-    private String MERGE_START_URL_HISTORY_KEY = Merge.class.getName() + "_merge_from";
-    private String MERGE_END_URL_HISTORY_KEY = Merge.class.getName() + "_merge_after";
+    private String MERGE_START_URL_HISTORY_KEY = Merge.class.getName() + "_merge_from"; // NOI18N
+    private String MERGE_END_URL_HISTORY_KEY = Merge.class.getName() + "_merge_after"; // NOI18N
     
     public Merge(RepositoryFile repositoryRoot, File root) {
-        super(new MergePanel(), "Merge into " + root.getName(), "Merge");
+        super(new MergePanel(), NbBundle.getMessage(Merge.class, "CTL_Merge_Prompt", root.getName()), NbBundle.getMessage(Merge.class, "CTL_Merge_Title")); // NOI18N
 
         MergePanel panel = getMergePanel();
 
@@ -164,7 +165,7 @@ public class Merge extends CopyDialog implements ItemListener {
         protected static void init(RepositoryPaths paths, JLabel label, File root) {
             if(root.isFile()) {
                 if(label!=null) {
-                    label.setText("Repository File");
+                    label.setText(org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_RepositoryFile")); // NOI18N
                 }
                 paths.setupBrowserBehavior(true, true, true);
             } else {
@@ -290,11 +291,11 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         public String getDisplayName() {
-            return "Two Repository Folders";
+            return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_TwoRepositoryFolders"); // NOI18N
         }
 
         public String getDescription() {
-            return "Merge into local folder changes between two repository folders.";
+            return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_TwoFoldersDesc"); // NOI18N
         }
 
         public JPanel getFieldsPanel() {
@@ -314,8 +315,8 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         protected void setPreviewLabels() {
-            previewPanel.repositoryFolderTextField1.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString());
-            previewPanel.repositoryFolderTextField2.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString());
+            previewPanel.repositoryFolderTextField1.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString()); // NOI18N
+            previewPanel.repositoryFolderTextField2.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
         }
         
     }
@@ -367,11 +368,11 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         public String getDisplayName() {
-            return "One Repository Folder";
+            return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_OneRepositoryFolder"); // NOI18N
         }
 
         public String getDescription() {
-            return "Merge into local folder changes from one repository folder.";
+            return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_OneRepositoryFolderDesc"); // NOI18N
         }
 
         public JPanel getFieldsPanel() {
@@ -391,7 +392,7 @@ public class Merge extends CopyDialog implements ItemListener {
         }    
 
         protected void setPreviewLabels() {            
-            previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString());
+            previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + org.openide.util.NbBundle.getMessage(Merge.class, "/") + panel.mergeStartUrlComboBox.getEditor().getItem().toString()); // NOI18N
         }
 
     }
@@ -423,11 +424,11 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         public String getDisplayName() {
-            return "One Repository Folder Since Its Origin";
+            return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_OneRepositoryFolderSinceOrigin"); // NOI18N
         }
 
         public String getDescription() {
-            return "Merge into local folder changes from one repository folder since its origin.";
+            return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_OneRepositoryFolderSinceOriginDesc"); // NOI18N
         }
 
         public JPanel getFieldsPanel() {
@@ -485,7 +486,7 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         protected void setPreviewLabels() {            
-            previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString());
+            previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
         }
 
     }    

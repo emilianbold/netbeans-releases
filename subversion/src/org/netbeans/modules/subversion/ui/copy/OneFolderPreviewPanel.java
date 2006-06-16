@@ -26,13 +26,11 @@ public class OneFolderPreviewPanel extends javax.swing.JPanel {
     private void initComponents() {
         jLabel1 = new javax.swing.JLabel();
 
-        repositoryFolderTextField.setBackground(new java.awt.Color(238, 238, 238));
         repositoryFolderTextField.setEditable(false);
-        repositoryFolderTextField.setText(" ");
+        repositoryFolderTextField.setText(" "); // NOI18N
 
-        localFolderTextField.setBackground(new java.awt.Color(238, 238, 238));
         localFolderTextField.setEditable(false);
-        localFolderTextField.setText(" ");
+        localFolderTextField.setText(" "); // NOI18N
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/onefolder.png")));
 

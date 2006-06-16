@@ -36,30 +36,30 @@ public class SwitchToPanel extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
 
-        setName("Message");
-        urlLabel.setText("Repository Folder:");
+        setName(org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Message")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Folder")); // NOI18N
 
-        browseRepositoryButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Browse")); // NOI18N
 
         urlComboBox.setEditable(true);
 
-        jLabel5.setText("Repository Revision:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Revision")); // NOI18N
 
-        searchRevisionButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(searchRevisionButton, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Search")); // NOI18N
 
-        jLabel6.setText("(empty means repository HEAD)");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_EmptyHint")); // NOI18N
 
         warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/ui/resources/warning.png")));
-        warningLabel.setText("Warning - there are locally modified files!");
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Warning")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(urlLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))
@@ -73,9 +73,7 @@ public class SwitchToPanel extends javax.swing.JPanel {
                             .add(jLabel6))
                         .add(10, 10, 10)
                         .add(browseRepositoryButton))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(warningLabel)))
+                    .add(warningLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

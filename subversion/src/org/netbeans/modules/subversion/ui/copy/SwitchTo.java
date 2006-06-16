@@ -20,6 +20,7 @@ import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -30,7 +31,7 @@ public class SwitchTo extends CopyDialog {
     private RepositoryPaths repositoryPaths;
     
     public SwitchTo(RepositoryFile repositoryRoot, File root, boolean localChanges) {
-        super(new SwitchToPanel(), "Switch " + root.getName(), "Switch");
+        super(new SwitchToPanel(), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Title", root.getName()), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Action")); // NOI18N
 
         SwitchToPanel panel = getSwitchToPanel();
         panel.warningLabel.setVisible(localChanges);
@@ -46,7 +47,7 @@ public class SwitchTo extends CopyDialog {
         repositoryPaths.addPropertyChangeListener(this);
         
         if(root.isFile()) {
-            getSwitchToPanel().urlLabel.setText("Repository File");
+            getSwitchToPanel().urlLabel.setText(NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_RepositoryFile")); // NOI18N
             repositoryPaths.setupBrowserBehavior(true, true, true, null);
         } else {
             repositoryPaths.setupBrowserBehavior(true, false, false, null);

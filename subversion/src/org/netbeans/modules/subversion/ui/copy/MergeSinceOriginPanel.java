@@ -34,19 +34,21 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setName("Message");
-        mergeEndRepositoryFolderLabel.setText("Repository Folder:");
+        setName(org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_Message")); // NOI18N
+        mergeEndRepositoryFolderLabel.setLabelFor(mergeEndUrlComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(mergeEndRepositoryFolderLabel, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_RepositoryFolder")); // NOI18N
 
         mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png")));
-        mergeAfterRevisionLabel.setText("Ending Revision:");
+        mergeAfterRevisionLabel.setLabelFor(mergeEndRevisionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_EndingRevision")); // NOI18N
 
-        mergeAfterEmptyLabel.setText("(empty means repository HEAD)");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeAfterEmptyLabel, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_EmptyHint")); // NOI18N
 
         mergeEndUrlComboBox.setEditable(true);
 
-        mergeEndBrowseButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeEndBrowseButton, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_Browse")); // NOI18N
 
-        mergeEndSearchButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeEndSearchButton, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_Search")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

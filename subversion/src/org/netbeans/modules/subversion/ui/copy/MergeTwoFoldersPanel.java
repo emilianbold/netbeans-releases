@@ -36,32 +36,32 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
 
-        setName("Message");
-        mergeStartRepositoryFolderLabel.setText("First Repository Folder:");
+        setName(org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Message")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(mergeStartRepositoryFolderLabel, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_FirstFolder")); // NOI18N
 
-        mergeEndBrowseButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeEndBrowseButton, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Browse2")); // NOI18N
 
         mergeEndUrlComboBox.setEditable(true);
 
         mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png")));
-        mergeAfterRevisionLabel.setText("Ending Revision:");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Ending")); // NOI18N
 
-        mergeStartSearchButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeStartSearchButton, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Search1")); // NOI18N
 
-        mergeAfterEmptyLabel.setText("(empty means repository HEAD)");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeAfterEmptyLabel, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_EmptyHint")); // NOI18N
 
-        mergeEndRepositoryFolderLabel.setText("Second Repository Folder:");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeEndRepositoryFolderLabel, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Second")); // NOI18N
 
         mergeStartUrlComboBox.setEditable(true);
 
-        mergeStartBrowseButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeStartBrowseButton, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Browse1")); // NOI18N
 
-        mergeEndSearchButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeEndSearchButton, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Search2")); // NOI18N
 
         jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/starting_revision.png")));
-        jLabel8.setText("Starting Revision:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Starting")); // NOI18N
 
-        jLabel9.setText("(empty means repository HEAD)");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_EmptyHint")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

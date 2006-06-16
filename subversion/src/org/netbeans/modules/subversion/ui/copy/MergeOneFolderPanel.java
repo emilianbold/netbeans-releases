@@ -36,26 +36,27 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
 
-        setName("Message");
-        mergeStartRepositoryFolderLabel.setText("Repository Folder:");
+        setName(org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Message")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(mergeStartRepositoryFolderLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_RepositoryFolder")); // NOI18N
 
         mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png")));
-        mergeAfterRevisionLabel.setText("Ending Revision:");
+        mergeAfterRevisionLabel.setLabelFor(mergeEndRevisionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EndingRev")); // NOI18N
 
-        mergeStartSearchButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeStartSearchButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Search")); // NOI18N
 
-        mergeAfterEmptyLabel.setText("(empty means repository HEAD)");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeAfterEmptyLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EmptyHint")); // NOI18N
 
         mergeStartUrlComboBox.setEditable(true);
 
-        mergeStartBrowseButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeStartBrowseButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Browse")); // NOI18N
 
-        mergeEndSearchButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(mergeEndSearchButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Search2")); // NOI18N
 
         jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/starting_revision.png")));
-        jLabel8.setText("Starting Revision:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Start")); // NOI18N
 
-        jLabel9.setText("(empty means repository HEAD)");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EmptyHint")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

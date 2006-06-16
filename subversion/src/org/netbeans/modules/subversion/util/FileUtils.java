@@ -62,7 +62,7 @@ public class FileUtils {
         if(preserveTimestamp) targetDir.setLastModified(sourceDir.lastModified());
         for (int i = 0; i < files.length; i++) {
             try {
-                File target = FileUtil.normalizeFile(new File(targetDir.getAbsolutePath() + "/" + files[i].getName()));
+                File target = FileUtil.normalizeFile(new File(targetDir.getAbsolutePath() + "/" + files[i].getName())); // NOI18N
                 if(files[i].isDirectory()) {
                     copyDirFiles(files[i], target, preserveTimestamp);
                 } else {

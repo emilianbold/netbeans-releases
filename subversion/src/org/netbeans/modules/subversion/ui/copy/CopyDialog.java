@@ -49,7 +49,7 @@ public abstract class CopyDialog implements PropertyChangeListener {
         
         okButton = new JButton(okLabel);
         okButton.setEnabled(false);
-        dialogDescriptor.setOptions(new Object[] {okButton, "Cancel"});
+        dialogDescriptor.setOptions(new Object[] {okButton, org.openide.util.NbBundle.getMessage(CopyDialog.class, "CTL_Copy_Cancel")}); // NOI18N
         
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
@@ -97,7 +97,7 @@ public abstract class CopyDialog implements PropertyChangeListener {
             String key = (String)  it.next();
             JComboBox cbo = (JComboBox) urlComboBoxes.get(key);
             Object item = cbo.getEditor().getItem();
-            if(item != null && !item.equals("")) {
+            if(item != null && !item.equals("")) { // NOI18N
                 HistorySettings.addRecent(key, (String) item); 
             }            
         }                

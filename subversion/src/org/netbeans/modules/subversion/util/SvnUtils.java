@@ -396,7 +396,7 @@ public class SvnUtils {
                     StringBuffer sb = new StringBuffer();
                     while (it.hasNext()) {
                         String segment = (String) it.next();
-                        sb.append("/" + segment);
+                        sb.append("/" + segment); // NOI18N
                     }
                     repositoryPath += sb.toString();
                     break;
@@ -450,7 +450,7 @@ public class SvnUtils {
                     StringBuffer sb = new StringBuffer();
                     while (it.hasNext()) {
                         String segment = (String) it.next();
-                        sb.append("/" + segment);
+                        sb.append("/" + segment); // NOI18N
                     }
                     repositoryPath += sb.toString();
                     break;
@@ -573,7 +573,7 @@ public class SvnUtils {
                     StringBuffer sb = new StringBuffer();
                     while (it.hasNext()) {
                         String segment = (String) it.next();
-                        sb.append("/" + segment);
+                        sb.append("/" + segment); // NOI18N
                     }
                     fileURL = fileURL.appendPath(sb.toString());
                     break;
@@ -714,8 +714,8 @@ public class SvnUtils {
         }
     }         
 
-    static Pattern branchesPattern = Pattern.compile(".*/branches/(.+?)/.*");
-    static Pattern tagsPattern = Pattern.compile(".*/tags/(.+?)/.*");
+    static Pattern branchesPattern = Pattern.compile(".*/branches/(.+?)/.*"); // NOI18N
+    static Pattern tagsPattern = Pattern.compile(".*/tags/(.+?)/.*"); // NOI18N
 
     /**
      * Returns copy branch or tag name if lives

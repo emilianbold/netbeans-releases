@@ -37,10 +37,16 @@ public class MergePanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
 
         typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        typeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeComboBoxActionPerformed(evt);
+            }
+        });
 
-        jLabel1.setText("Merge from:");
+        jLabel1.setLabelFor(typeComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MergePanel.class, "CTL_MergePanel_MergeFrom")); // NOI18N
 
-        typeDescriptionLabel.setText("jLabel2");
+        org.openide.awt.Mnemonics.setLocalizedText(typeDescriptionLabel, "jLabel2"); // NOI18N
 
         mergeFieldsPanel.setMinimumSize(new java.awt.Dimension(350, 500));
         org.jdesktop.layout.GroupLayout mergeFieldsPanelLayout = new org.jdesktop.layout.GroupLayout(mergeFieldsPanel);
@@ -65,7 +71,7 @@ public class MergePanel extends javax.swing.JPanel {
             .add(0, 73, Short.MAX_VALUE)
         );
 
-        jLabel2.setText("Preview:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MergePanel.class, "CTL_MergePanel_Preview")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -79,7 +85,7 @@ public class MergePanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(typeComboBox, 0, 682, Short.MAX_VALUE))
+                        .add(typeComboBox, 0, 704, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabel2))
                 .addContainerGap())
@@ -102,6 +108,10 @@ public class MergePanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void typeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeComboBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_typeComboBoxActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
