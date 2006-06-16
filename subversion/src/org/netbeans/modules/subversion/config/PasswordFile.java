@@ -25,12 +25,12 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class PasswordFile extends SVNCredentialFile {
 
-    private static final Key PASSTYPE_KEY = new Key(0, "passtype");
-    private static final Key PASSWORD_KEY = new Key(1, "password");
-    private static final Key REALMSTRING_KEY = new Key(2, "svn:realmstring");
-    private static final Key USERNAME_KEY = new Key(3, "username");
+    private static final Key PASSTYPE_KEY = new Key(0, "passtype"); // NOI18N
+    private static final Key PASSWORD_KEY = new Key(1, "password"); // NOI18N
+    private static final Key REALMSTRING_KEY = new Key(2, "svn:realmstring"); // NOI18N
+    private static final Key USERNAME_KEY = new Key(3, "username"); // NOI18N
     
-    private final static String PASSTYPE_SIMPLE = "simple";
+    private final static String PASSTYPE_SIMPLE = "simple"; // NOI18N
         
     public PasswordFile (String realmString) {
         super(getFile(realmString));
@@ -51,12 +51,12 @@ public class PasswordFile extends SVNCredentialFile {
     public static PasswordFile findFileForUrl(SVNUrl svnUrl) {
         // create our own realmstring  -
         String urlString = SvnUtils.ripUserFromHost(svnUrl.getHost());
-        String realmString = "<" + svnUrl.getProtocol() + "://" + urlString + ">";
+        String realmString = "<" + svnUrl.getProtocol() + "://" + urlString + ">"; // NOI18N
         PasswordFile nbPasswordFile = new PasswordFile(realmString);
         
         if(!nbPasswordFile.getFile().exists()) {
 
-            File configDir = new File(SvnConfigFiles.getUserConfigPath() + "/auth/svn.simple");
+            File configDir = new File(SvnConfigFiles.getUserConfigPath() + "/auth/svn.simple"); // NOI18N
             File[] files = configDir.listFiles();
             if(files==null) {
                 return null;
@@ -75,8 +75,8 @@ public class PasswordFile extends SVNCredentialFile {
             // no password file - let's create an empty one then...
             nbPasswordFile.setRealmString(realmString);
             nbPasswordFile.setPasstype(PASSTYPE_SIMPLE);
-            nbPasswordFile.setPassword("");
-            nbPasswordFile.setUsername("");            
+            nbPasswordFile.setPassword(""); // NOI18N
+            nbPasswordFile.setUsername(""); // NOI18N
             return nbPasswordFile;
             
         } else {
@@ -130,11 +130,11 @@ public class PasswordFile extends SVNCredentialFile {
             return false;
         }
         String urlString = SvnUtils.ripUserFromHost(svnUrl.getHost());
-        return realmStrig.substring(1).startsWith(svnUrl.getProtocol() + "://" + urlString);         
+        return realmStrig.substring(1).startsWith(svnUrl.getProtocol() + "://" + urlString); // NOI18N
     }
     
     private static File getFile(String realmString) {
-        return new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.simple/" + getFileName(realmString));
+        return new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.simple/" + getFileName(realmString)); // NOI18N
     }
     
     private Key getPasstypeKey() {

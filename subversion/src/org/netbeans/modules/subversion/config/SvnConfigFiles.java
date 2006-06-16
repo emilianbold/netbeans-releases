@@ -58,12 +58,12 @@ public class SvnConfigFiles {
      * file used by the Subversion module */
     private Ini config = null;
 
-    private static final String UNIX_CONFIG_DIR = ".subversion/";    
-    private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   
-    private static final String GROUPS = "groups";
+    private static final String UNIX_CONFIG_DIR = ".subversion/"; // NOI18N
+    private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"}; // NOI18N
+    private static final String GROUPS = "groups"; // NOI18N
     private static final String WINDOWS_USER_APPDATA = getAPPDATA();
-    private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Subversion";
-    private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion";
+    private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Subversion"; // NOI18N
+    private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion"; // NOI18N
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -78,11 +78,11 @@ public class SvnConfigFiles {
     private class ConfigIniFilePatcher implements IniFilePatcher {
         public void patch(Ini file) {
             // patch store-auth-creds to "no"
-            Ini.Section auth = (Ini.Section) file.get("auth");
+            Ini.Section auth = (Ini.Section) file.get("auth"); // NOI18N
             if(auth == null) {
-                auth = file.add("auth");
+                auth = file.add("auth"); // NOI18N
             }
-            auth.put("store-auth-creds", "no");
+            auth.put("store-auth-creds", "no"); // NOI18N
         }
     }
 
@@ -91,9 +91,9 @@ public class SvnConfigFiles {
      */
     private SvnConfigFiles() {      
         // copy config file        
-        config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher());        
+        config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher()); // NOI18N
         // get the nb servers file merged with the systems servers files
-        servers = loadNetbeansIniFile("servers");        
+        servers = loadNetbeansIniFile("servers"); // NOI18N
     }
     
     /**
@@ -119,7 +119,7 @@ public class SvnConfigFiles {
      *
      */
     public ProxyDescriptor getProxyDescriptor(String host) {
-        if(host == null || host.equals("")) {
+        if(host == null || host.equals("")) { // NOI18N
             return ProxyDescriptor.DIRECT;
         }
         Ini.Section group = getServerGroup(host);
@@ -127,20 +127,20 @@ public class SvnConfigFiles {
             // no proxy specified -> direct
             return ProxyDescriptor.DIRECT;
         }
-        String proxyHost = group.get("http-proxy-host");
+        String proxyHost = group.get("http-proxy-host"); // NOI18N
         if(proxyHost == null || proxyHost.length() == 0) {
             // no host specified -> direct
             return ProxyDescriptor.DIRECT;
         }
-        String proxyPortString = group.get("http-proxy-port");
+        String proxyPortString = group.get("http-proxy-port"); // NOI18N
         int proxyPort;
         if(proxyPortString == null || proxyPortString.length() == 0) {
             proxyPort = 0; // XXX
         } else {
             proxyPort = Integer.parseInt(proxyPortString); // XXX what if null ?
         }
-        String username = group.get("http-proxy-username");
-        String password = group.get("http-proxy-password");
+        String username = group.get("http-proxy-username"); // NOI18N
+        String password = group.get("http-proxy-password"); // NOI18N
         return new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, proxyHost, proxyPort, username, password);    
     }
 
@@ -162,18 +162,18 @@ public class SvnConfigFiles {
                 if(group==null) {
                     group = addServerGroup(host);
 
-                    group.put("http-proxy-host", pd.getHost());
-                    group.put("http-proxy-port", String.valueOf(pd.getPort()));
+                    group.put("http-proxy-host", pd.getHost()); // NOI18N
+                    group.put("http-proxy-port", String.valueOf(pd.getPort())); // NOI18N
                     if(pd.getUserName()!=null) {
-                        group.put("http-proxy-username", pd.getUserName());
+                        group.put("http-proxy-username", pd.getUserName()); // NOI18N
                     }
                     if(pd.getPassword()!=null) {
-                        group.put("http-proxy-password", pd.getPassword());
+                        group.put("http-proxy-password", pd.getPassword()); // NOI18N
                     }
                 } else {
                     String groupName = group.getName();
                     String groupsHosts = getServerGroups().get(groupName);
-                    getServerGroups().put(groupName, groupsHosts + "," + host);
+                    getServerGroups().put(groupName, groupsHosts + "," + host); // NOI18N
                 }
             }            
         } else {
@@ -182,7 +182,7 @@ public class SvnConfigFiles {
         }
 
         try {
-            File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/servers"));
+            File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/servers")); // NOI18N
             file.getParentFile().mkdirs();
             servers.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
@@ -198,18 +198,18 @@ public class SvnConfigFiles {
      */
     public List<String> getGlobalIgnores() {
         List<String> ret = new ArrayList<String>();
-        Ini.Section miscellany = config.get("miscellany");
+        Ini.Section miscellany = config.get("miscellany"); // NOI18N
         if(miscellany == null) {
             return Collections.emptyList();
         }
-        String ignores = miscellany.get("global-ignores");
-        if(ignores == null || ignores.trim().equals("")) {
+        String ignores = miscellany.get("global-ignores"); // NOI18N
+        if(ignores == null || ignores.trim().equals("")) { // NOI18N
             return Collections.emptyList();
         }
-        StringTokenizer st = new StringTokenizer(ignores, " "); // XXX what if the space is a part of a pattern?
+        StringTokenizer st = new StringTokenizer(ignores, " "); // XXX what if the space is a part of a pattern? // NOI18N
         while (st.hasMoreTokens()) {
             String entry = st.nextToken();
-            if (!entry.equals(""))
+            if (!entry.equals("")) // NOI18N
                 ret.add(entry);
         }
         return ret;
@@ -224,14 +224,14 @@ public class SvnConfigFiles {
      */ 
     public static String getUserConfigPath() {        
         if(Utilities.isUnix()) {
-            String path = System.getProperty("user.home") ;
-            return path + "/" + UNIX_CONFIG_DIR;
+            String path = System.getProperty("user.home") ; // NOI18N
+            return path + "/" + UNIX_CONFIG_DIR; // NOI18N
         } else if (Utilities.isWindows()){
             return WINDOWS_CONFIG_DIR;
         } else {
             // XXX Mac (e.g. mkleint)
         }
-        return "";
+        return ""; // NOI18N
     }
 
     /**
@@ -242,8 +242,8 @@ public class SvnConfigFiles {
      *
      */ 
     public static String getNBConfigPath() {
-        String nbHome = System.getProperty("netbeans.user");       
-        return nbHome + "/config/svn/config/";
+        String nbHome = System.getProperty("netbeans.user"); // NOI18N
+        return nbHome + "/config/svn/config/"; // NOI18N
     }
     
     /** 
@@ -257,10 +257,10 @@ public class SvnConfigFiles {
     private Ini.Section addServerGroup(String host) {
         Ini.Section groups = getServerGroups();
         int idx = 0;
-        String name = "group0";
+        String name = "group0"; // NOI18N
         while(groups.get(name)!=null) {
             idx++;
-            name = "group" + idx;
+            name = "group" + idx; // NOI18N
         }
         
         Ini.Section group = servers.add(name);
@@ -279,7 +279,7 @@ public class SvnConfigFiles {
         Ini.Section group = getServerGroup(host);
         if(group != null) {
             String groupName = group.getName();
-            String[] hosts = getServerGroups().get(groupName).split(",");
+            String[] hosts = getServerGroups().get(groupName).split(","); // NOI18N
             if(hosts.length == 1) {
                 getServerGroups().remove(groupName);
                 servers.remove(group);
@@ -289,7 +289,7 @@ public class SvnConfigFiles {
                     if(!hosts[i].trim().equals(host)) {
                         newHosts.append(hosts[i]);
                         if(i < hosts.length - 1) {
-                            newHosts.append(",");
+                            newHosts.append(","); // NOI18N
                         }
                     }
                 }
@@ -306,7 +306,7 @@ public class SvnConfigFiles {
     private Ini.Section getServerGroups() {
         Ini.Section groups = servers.get(GROUPS);
         if(groups==null) {
-            groups = servers.add("groups");
+            groups = servers.add("groups"); // NOI18N
         }
         return groups;
     }
@@ -319,7 +319,7 @@ public class SvnConfigFiles {
      * @return the section holding the proxy settings for the given host
      */ 
     private Ini.Section getServerGroup(String host) {
-        if(host == null || host.equals("")) {
+        if(host == null || host.equals("")) { // NOI18N
             return null;
         }
         Ini.Section groups = getServerGroups();
@@ -358,10 +358,10 @@ public class SvnConfigFiles {
             if (group.getName().equals(GROUPS)) {
                 continue;
             }
-            if( pd.getHost().equals(group.get("http-proxy-host")) &&
-                String.valueOf(pd.getPort()).equals(group.get("http-proxy-port")) &&
-                (pd.getUserName()==null || pd.getUserName().equals(group.get("http-proxy-username")))  &&
-                (pd.getPassword()==null || pd.getPassword().equals(group.get("http-proxy-password"))) )
+            if( pd.getHost().equals(group.get("http-proxy-host")) && // NOI18N
+                String.valueOf(pd.getPort()).equals(group.get("http-proxy-port")) && // NOI18N
+                (pd.getUserName()==null || pd.getUserName().equals(group.get("http-proxy-username")))  && // NOI18N
+                (pd.getPassword()==null || pd.getPassword().equals(group.get("http-proxy-password"))) ) // NOI18N
             {
                 return group;
             }
@@ -378,15 +378,15 @@ public class SvnConfigFiles {
      * @return true if the host name or IP address was found in the values String, otherwise false.
      */
     private boolean match(String value, String host) {
-        String[] values = value.split(",");
+        String[] values = value.split(","); // NOI18N
         for (int i = 0; i < values.length; i++) {
             value = values[i].trim();
 
-            if(value.equals("*") || value.equals(host) ) {
+            if(value.equals("*") || value.equals(host) ) { // NOI18N
                 return true;
             }
 
-            int idx = value.indexOf("*");
+            int idx = value.indexOf("*"); // NOI18N
             if(idx > -1 && matchSegments(value, host) ) {
                 return true;
             }
@@ -403,17 +403,17 @@ public class SvnConfigFiles {
      * @return true if the host name or IP address matches with the values String, otherwise false.
      */
     private boolean matchSegments(String value, String host) {
-        String[] valueSegments = value.split(".");
-        String[] hostSegments = host.split(".");
+        String[] valueSegments = value.split("."); // NOI18N
+        String[] hostSegments = host.split("."); // NOI18N
 
         int idx = 0;
         for (int i = 0; i < hostSegments.length; i++) {
-            if( !valueSegments[idx].equals("*") &&
+            if( !valueSegments[idx].equals("*") && // NOI18N
                 !valueSegments[idx].equals(hostSegments[i]) )
             {
                 return false;
             }
-            if( !valueSegments[idx].equals("*") ) {
+            if( !valueSegments[idx].equals("*") ) { // NOI18N
                 idx++;
             }
         }
@@ -429,7 +429,7 @@ public class SvnConfigFiles {
 
         patcher.patch(systemIniFile);
 
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + fileName));
+        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + fileName)); // NOI18N
         try {
             file.getParentFile().mkdirs();
             systemIniFile.store(FileUtils.createOutputStream(file));
@@ -446,7 +446,7 @@ public class SvnConfigFiles {
      * @return an Ini instance holding the cofiguration file. 
      */    
     private Ini loadNetbeansIniFile(String fileName) {
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + fileName));       
+        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + fileName)); // NOI18N
         Ini nbIni = null;
         try {
             if(file.exists()) {
@@ -483,7 +483,7 @@ public class SvnConfigFiles {
      */       
     private Ini loadSystemIniFile(String fileName) {
         // config files from userdir
-        String filePath = getUserConfigPath() + "/" + fileName;
+        String filePath = getUserConfigPath() + "/" + fileName; // NOI18N
         File file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
         try {            
@@ -497,12 +497,12 @@ public class SvnConfigFiles {
         String registryFileName = null;
         if(Utilities.isWindows()) {
             registryFileName = fileName.substring(0, 1).toUpperCase() + fileName.substring(1);
-            mergeFromRegistry("HKEY_LOCAL_MACHINE", registryFileName, system);
+            mergeFromRegistry("HKEY_LOCAL_MACHINE", registryFileName, system); // NOI18N
         }
 
         Ini global = null;      
         try {
-            global = new Ini(new FileReader(getGlobalConfigPath() + "/" + fileName));
+            global = new Ini(new FileReader(getGlobalConfigPath() + "/" + fileName)); // NOI18N
         } catch (FileNotFoundException ex) {
             // just doesn't exist - ignore
         } catch (IOException ex) {
@@ -514,11 +514,11 @@ public class SvnConfigFiles {
         }
         
         if(Utilities.isWindows()) {
-            mergeFromRegistry("HKEY_CURRENT_USER", registryFileName, system);
+            mergeFromRegistry("HKEY_CURRENT_USER", registryFileName, system); // NOI18N
         }
 
         if(system.size() < 1) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not load the file " + filePath + ". Falling back on svn defaults.");
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not load the file " + filePath + ". Falling back on svn defaults."); // NOI18N
         }
         return system;
     }
@@ -613,10 +613,10 @@ public class SvnConfigFiles {
      */    
     private boolean isProxyConfigurationSection(Ini.Section section) {
         Collection<String> keys = section.keySet();
-        return keys.contains("http-proxy-host")     ||
-               keys.contains("http-proxy-port")     ||
-               keys.contains("http-proxy-username") ||
-               keys.contains("http-proxy-password");
+        return keys.contains("http-proxy-host")     || // NOI18N
+               keys.contains("http-proxy-port")     || // NOI18N
+               keys.contains("http-proxy-username") || // NOI18N
+               keys.contains("http-proxy-password");   // NOI18N
     }
     
     /**
@@ -626,10 +626,10 @@ public class SvnConfigFiles {
      * @return true if the value stored under the key is a proxy setting value. Otherwise false
      */
     private boolean isProxyConfigurationKey(String key) {
-        return key.equals("http-proxy-host")     ||
-               key.equals("http-proxy-port")     ||
-               key.equals("http-proxy-username") ||
-               key.equals("http-proxy-password");
+        return key.equals("http-proxy-host")     || // NOI18N
+               key.equals("http-proxy-port")     || // NOI18N
+               key.equals("http-proxy-username") || // NOI18N
+               key.equals("http-proxy-password");   // NOI18N
     }
     
     /**
@@ -637,13 +637,13 @@ public class SvnConfigFiles {
      */
     private static String getGlobalConfigPath () {
         if(Utilities.isUnix()) {
-            return "/etc/subversion";
+            return "/etc/subversion"; // NOI18N
         } else if (Utilities.isWindows()){
             // XXX
         } else {
             // XXX
         }
-        return "";
+        return ""; // NOI18N
     }
 
     /**
@@ -656,15 +656,15 @@ public class SvnConfigFiles {
      */   
     // XXX shouldn't be in this case also used the merge only the values witch aren't already present logic?
     private void mergeFromRegistry(String keyPrefix, String svnFile, Ini iniFile) {
-        String key = keyPrefix + "\\Software\\Tigris.org\\Subversion\\" + svnFile;
-        String tmpDirPath = System.getProperty("netbeans.user") + "/config/svn/tmp";  // XXX maybe an another location... XXX java.io.tmpdir create temp file
+        String key = keyPrefix + "\\Software\\Tigris.org\\Subversion\\" + svnFile; // NOI18N
+        String tmpDirPath = System.getProperty("netbeans.user") + "/config/svn/tmp";  // XXX maybe an another location... XXX java.io.tmpdir create temp file // NOI18N
         File tmpDir = FileUtil.normalizeFile(new File(tmpDirPath));
         tmpDir.mkdirs();        
-        String tmpFilePath = System.getProperty("netbeans.user") + "/config/svn/tmp/out.reg";                
+        String tmpFilePath = System.getProperty("netbeans.user") + "/config/svn/tmp/out.reg"; // NOI18N
         File tmpFile = FileUtil.normalizeFile(new File(tmpFilePath));
         
         String[] cmdLine = new String[] {
-            "regedit.exe", "/e" , tmpFile.getAbsolutePath(), key       // XXX don't have to use regedit.exe
+            "regedit.exe", "/e" , tmpFile.getAbsolutePath(), key       // XXX don't have to use regedit.exe // NOI18N
         };
         
         Process p = null;
@@ -688,13 +688,13 @@ public class SvnConfigFiles {
             return;
         }
 
-        key = "[" + key + "\\";     // for parsing purposes
+        key = "[" + key + "\\";     // for parsing purposes // NOI18N
         BufferedInputStream is = null;        
         BufferedReader br = null;
         try {
             is = FileUtils.createInputStream(tmpFile);                                    
-            br = new BufferedReader(new InputStreamReader(is, "Unicode"));    // XXX hm, unicode...        
-            String line = "";            
+            br = new BufferedReader(new InputStreamReader(is, "Unicode"));    // XXX hm, unicode...         // NOI18N
+            String line = ""; // NOI18N
             Ini.Section section = null;
             while( (line = br.readLine()) != null ) {
                 line = line.trim();            
@@ -707,9 +707,9 @@ public class SvnConfigFiles {
                         }                            
                     }                    
                 } else {
-                    if( line.startsWith("\"#") && section != null )  
+                    if( line.startsWith("\"#") && section != null ) // NOI18N
                     {
-                        String[] elements = line.split("\"=\""); 
+                        String[] elements = line.split("\"=\""); // NOI18N
                         String variable = elements[0].substring(2);
                         String value = elements[1].substring(0, elements[1].length()-1);
                         if(!section.containsKey(variable)) {
@@ -745,13 +745,13 @@ public class SvnConfigFiles {
      */
     private static String getAPPDATA() {
         if(Utilities.isWindows()) {
-            String appdata = System.getProperty("Env-APPDATA"); // should work on XP
-            if(appdata == null || appdata.trim().equals("")) {            
-                appdata = getWindowsProperty("APPDATA");
+            String appdata = System.getProperty("Env-APPDATA"); // should work on XP // NOI18N
+            if(appdata == null || appdata.trim().equals("")) { // NOI18N
+                appdata = getWindowsProperty("APPDATA"); // NOI18N
             }
             return appdata;
         }
-        return "";
+        return ""; // NOI18N
     }
 
     /**
@@ -760,30 +760,30 @@ public class SvnConfigFiles {
      */
     private static String getGlobalAPPDATA() {
         if(Utilities.isWindows()) {
-            String globalProfile = System.getProperty("Env-ALLUSERSPROFILE"); // should work on XP
-            if(globalProfile == null || globalProfile.trim().equals("")) {            
-                globalProfile = getWindowsProperty("ALLUSERSPROFILE");
+            String globalProfile = System.getProperty("Env-ALLUSERSPROFILE"); // should work on XP // NOI18N
+            if(globalProfile == null || globalProfile.trim().equals("")) { // NOI18N
+                globalProfile = getWindowsProperty("ALLUSERSPROFILE"); // NOI18N
             }
             String appdataPath = WINDOWS_USER_APPDATA;
-            if(appdataPath == null || appdataPath.equals("")) {
-                return "";
+            if(appdataPath == null || appdataPath.equals("")) { // NOI18N
+                return ""; // NOI18N
             }
-            String appdata = "";
-            int idx = appdataPath.lastIndexOf("\\");
+            String appdata = ""; // NOI18N
+            int idx = appdataPath.lastIndexOf("\\"); // NOI18N
             if(idx > -1) {
                 appdata = appdataPath.substring(idx + 1);
-                if(appdata.trim().equals("")) {
-                    int previdx = appdataPath.lastIndexOf("\\", idx);
+                if(appdata.trim().equals("")) { // NOI18N
+                    int previdx = appdataPath.lastIndexOf("\\", idx); // NOI18N
                     if(idx > -1) {
                         appdata = appdataPath.substring(previdx + 1, idx);
                     }
                 }
             } else {
-                return "";
+                return ""; // NOI18N
             }
-            return globalProfile + "/" + appdata;
+            return globalProfile + "/" + appdata; // NOI18N
         }
-        return "";
+        return ""; // NOI18N
     }
     
     /**
@@ -794,7 +794,7 @@ public class SvnConfigFiles {
         Properties propVals = new Properties();
         Runtime r = Runtime.getRuntime();
         try {
-            p = r.exec("cmd /C set");
+            p = r.exec("cmd /C set"); // NOI18N
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String line;
             while((line = br.readLine()) != null) {
@@ -807,7 +807,7 @@ public class SvnConfigFiles {
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e); 
         } 
-        return "";
+        return ""; // NOI18N
     }
     
     private class StreamHandler extends Thread {

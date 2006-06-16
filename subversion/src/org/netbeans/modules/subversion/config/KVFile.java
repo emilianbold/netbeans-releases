@@ -213,19 +213,19 @@ public class KVFile {
                 byte[] value = (byte[]) map.get(key);                
                 
                 StringBuffer sb = new StringBuffer();
-                sb.append("K ");
+                sb.append("K "); // NOI18N
                 sb.append(key.getName().length());
-                sb.append("\n");
+                sb.append("\n"); // NOI18N
                 sb.append(key.getName());
-                sb.append("\n");
-                sb.append("V ");
+                sb.append("\n"); // NOI18N
+                sb.append("V "); // NOI18N
                 sb.append(value.length);
-                sb.append("\n");
+                sb.append("\n"); // NOI18N
                 os.write(sb.toString().getBytes());    
                 os.write(value);            
-                os.write("\n".getBytes());
+                os.write("\n".getBytes()); // NOI18N
             }
-            os.write("END\n".getBytes());     
+            os.write("END\n".getBytes()); // NOI18N
             os.flush();
             
         } finally {

@@ -38,15 +38,15 @@ public abstract class SVNCredentialFile extends KVFile {
      */
     protected static String getFileName(String realmString) {
         assert realmString != null;        
-        String fileName = "";
+        String fileName = ""; // NOI18N
         try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");            
+            MessageDigest md5 = MessageDigest.getInstance("MD5"); // NOI18N
             md5.update(realmString.getBytes());
             byte[] md5digest = md5.digest();
             for (int i = 0; i < md5digest.length; i++) {
                 String hex = Integer.toHexString(md5digest[i] & 0x000000FF);
                 if(hex.length()==1) {
-                    hex = "0" + hex;
+                    hex = "0" + hex; // NOI18N
                 }
                 fileName += hex;
             }            

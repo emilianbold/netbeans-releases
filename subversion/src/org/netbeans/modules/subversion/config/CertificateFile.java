@@ -26,11 +26,11 @@ import org.openide.filesystems.FileUtil;
  */
 public class CertificateFile extends SVNCredentialFile {
         
-    private final static Key CERT = new Key(0, "ascii_cert");
-    private final static Key FAILURES = new Key(1, "failures");        
-    private final static Key REALMSTRING = new Key(2, "svn:realmstring");
+    private final static Key CERT = new Key(0, "ascii_cert"); // NOI18N
+    private final static Key FAILURES = new Key(1, "failures"); // NOI18N
+    private final static Key REALMSTRING = new Key(2, "svn:realmstring"); // NOI18N
 
-    private static final String NEWLINE = System.getProperty("line.separator"); 
+    private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     
     public CertificateFile(X509Certificate cert, String realmString, int failures, boolean temporarily) throws CertificateEncodingException {
         super(getNBCertFile(realmString));
@@ -43,7 +43,7 @@ public class CertificateFile extends SVNCredentialFile {
 
     private void setCert(X509Certificate cert) throws CertificateEncodingException {
         String encodedCert = new sun.misc.BASE64Encoder().encode(cert.getEncoded());        
-        encodedCert = encodedCert.replace(NEWLINE, ""); // XXX where does this come from ????!!!        
+        encodedCert = encodedCert.replace(NEWLINE, ""); // XXX where does this come from ????!!!         // NOI18N
         setValue(getCertKey(), encodedCert.getBytes());
     }
         
@@ -60,12 +60,12 @@ public class CertificateFile extends SVNCredentialFile {
     }        
 
     public static File getSystemCertFile(String realmString) {
-        File file = new File(SvnConfigFiles.getUserConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString));
+        File file = new File(SvnConfigFiles.getUserConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
         return FileUtil.normalizeFile(file);
     }
 
     public static File getNBCertFile(String realmString) {
-        File file = new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString));
+        File file = new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
         return FileUtil.normalizeFile(file);
     }
 
