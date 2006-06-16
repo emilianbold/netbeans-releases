@@ -26,6 +26,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -95,6 +96,7 @@ public class RevertModificationsAction extends ContextAction {
                             return;
                         }
                         SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
+                        revisions = recountStartRevision(client, url, revisions);
                         client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);
                     }
                 } else {
@@ -109,6 +111,20 @@ public class RevertModificationsAction extends ContextAction {
                 ExceptionHandler eh = new ExceptionHandler (ex);
                 eh.annotate();
             }
-        }
+        }                       
     }
+    
+    private static RevertModifications.RevisionInterval recountStartRevision(SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {            
+        if(ret.startRevision.equals(SVNRevision.HEAD)) {
+            ISVNInfo info = client.getInfo(repository);
+            ret.startRevision = info.getRevision();
+        } 
+        Long start = Long.parseLong(ret.startRevision.toString());
+        if(start > 0) {
+            start = start - 1;
+        }
+        ret.startRevision = new SVNRevision.Number(start);
+        return ret;
+    }
+
 }

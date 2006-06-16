@@ -172,15 +172,6 @@ public class RevertModifications implements PropertyChangeListener {
             RevertModifications.this.okButton.setEnabled(valid);
             return valid;
         }
-
-        protected RevisionInterval recountStartRevision(RevisionInterval ret) {
-            Long start = Long.parseLong(ret.startRevision.toString());
-            if(start > 0) {
-                start = start - 1;
-            }
-            ret.startRevision = new SVNRevision.Number(start);
-            return ret;
-        }
     }
 
     private class LocalRevertType extends RevertType {
@@ -221,7 +212,7 @@ public class RevertModifications implements PropertyChangeListener {
             RevisionInterval ret = new RevisionInterval();
             ret.startRevision = revision;
             ret.endRevision = revision;
-            return recountStartRevision(ret);
+            return ret;
         }
 
         void validateUserInput() {
@@ -265,15 +256,13 @@ public class RevertModifications implements PropertyChangeListener {
         }
 
         RevertModifications.RevisionInterval getRevisionInterval() {                       
-            RevisionInterval ret = new RevisionInterval();
             SVNRevision revision1 = getRevision(startPath);
             SVNRevision revision2 = getRevision(endPath);
             if(revision1 == null || revision2 == null) {
                 return null;
             }
 
-            ret = getResortedRevisionInterval(revision1, revision2);
-            return recountStartRevision(ret);
+            return getResortedRevisionInterval(revision1, revision2);            
         }
 
         void validateUserInput() {
@@ -293,15 +282,15 @@ public class RevertModifications implements PropertyChangeListener {
 
         private RevisionInterval getResortedRevisionInterval(SVNRevision revision1, SVNRevision revision2) {
             RevisionInterval ret = new RevisionInterval ();
-            if(revision1.toString().equals(SVNRevision.HEAD) &&
-               revision1.toString().equals(SVNRevision.HEAD))
+            if(revision1.equals(SVNRevision.HEAD) &&
+               revision1.equals(SVNRevision.HEAD))
             {
                 ret.startRevision = revision1;
                 ret.endRevision = revision2;
-            } else if (revision1.toString().equals(SVNRevision.HEAD)) {
+            } else if (revision1.equals(SVNRevision.HEAD)) {
                 ret.startRevision = revision2;
                 ret.endRevision = revision1;
-            } else if (revision2.toString().equals(SVNRevision.HEAD)) {
+            } else if (revision2.equals(SVNRevision.HEAD)) {
                 ret.startRevision = revision1;
                 ret.endRevision = revision2;
             } else {
