@@ -137,7 +137,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 }
                 File oldFile = new File(parent, name);
                 if (oldFile.equals(newFile)) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Wrong (identity) rename event for " + newFile.getAbsolutePath());
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Wrong (identity) rename event for " + newFile.getAbsolutePath()); // NOI18N
                 }
                 cache.refresh(oldFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
@@ -154,7 +154,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         if (ignoringEvents()) return;
         File file = FileUtil.toFile(fo);
         try {
-            Diagnostics.println("[createSuccess " + file);
+            Diagnostics.println("[createSuccess " + file); // NOI18N
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
                 if (fo.isFolder() && svn.isAdministrative(fo.getNameExt())) {
@@ -169,7 +169,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 }
             }
         } finally {
-            Diagnostics.println("]createSuccess " + file);
+            Diagnostics.println("]createSuccess " + file); // NOI18N
         }
     }
 
@@ -179,7 +179,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         if (file != null) {
             try {
                 file = new File(file, name);
-                Diagnostics.println("[beforeCreate " + file);
+                Diagnostics.println("[beforeCreate " + file); // NOI18N
                 if (file.exists() == false) {
                     int status = cache.getStatus(file).getStatus();
                     if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
@@ -193,7 +193,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                     }
                 }
             } finally {
-                Diagnostics.println("]beforeCreate " + file);
+                Diagnostics.println("]beforeCreate " + file); // NOI18N
             }
         }
         
@@ -214,7 +214,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         if (ignoringEvents()) return;
         File file = FileUtil.toFile(fo);
         try {
-            Diagnostics.println("[beforeDelete " + file);
+            Diagnostics.println("[beforeDelete " + file); // NOI18N
             File admin = getUpAdministrative(file);
             if (admin != null) {
     //            FileStatusCache cache = Subversion.getInstance().getStatusCache();
@@ -223,7 +223,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     //            }
             }
         } finally {
-            Diagnostics.println("]beforeDelete " + file);
+            Diagnostics.println("]beforeDelete " + file); // NOI18N
         }
     }
 
@@ -253,7 +253,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         if (ignoringEvents()) return;
         File file = FileUtil.toFile(fo);
         try {
-            Diagnostics.println("[deleteSuccess " + file);
+            Diagnostics.println("[deleteSuccess " + file); // NOI18N
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
                 if (fo.isFolder()) {
@@ -269,7 +269,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 }
             }
         } finally {
-            Diagnostics.println("]deleteSuccess " + file);
+            Diagnostics.println("]deleteSuccess " + file); // NOI18N
         }
     }
 
@@ -295,7 +295,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         if (ignoringEvents()) return;
         File file = FileUtil.toFile(fo);
         try {
-            Diagnostics.println("[deleteFailure " + file);
+            Diagnostics.println("[deleteFailure " + file); // NOI18N
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
                 if (fo.isFolder()) {
@@ -313,7 +313,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 }
             }
         } finally {
-            Diagnostics.println("]deleteFailure " + file);
+            Diagnostics.println("]deleteFailure " + file); // NOI18N
         }
     }
 
@@ -471,7 +471,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         if (file.isFile()) {
             srcDir = file.getParentFile();
         }
-        File admin = new File(srcDir, ".svn");
+        File admin = new File(srcDir, ".svn"); // NOI18N
         return admin;
     }
 
@@ -524,7 +524,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                         break;
                     } catch (SVNClientException e) {
                         // svn: Working copy '/tmp/co/svn-prename-19/AnagramGame-pack-rename/src/com/toy/anagrams/ui2' locked
-                        if (e.getMessage().endsWith("' locked") && retryCounter > 0) {
+                        if (e.getMessage().endsWith("' locked") && retryCounter > 0) { // NOI18N
                             // XXX HACK AWT- or FS Monitor Thread performs
                             // concurrent operation
                             try {
@@ -539,11 +539,11 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                         // XXX loosing file history is less harm than raising IOException
                         // that completelly breaks clients (namely refactoring can not handle IOEx)
                         if (srcFile.renameTo(dstFile)) {
-                            ErrorManager.getDefault().annotate(e, "Relaxing Subversion rename error....");
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                            ErrorManager.getDefault().annotate(e, "Relaxing Subversion rename error...."); // NOI18N
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e); // NOI18N
                             break;
                         } else {
-                            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
+                            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath()); // NOI18N
                             ex.initCause(e);
                             throw ex;
                         }
@@ -555,7 +555,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                 }
             }
         } catch (SVNClientException e) {
-            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
+            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath()); // NOI18N
             ex.initCause(e);
             throw ex;
         }
@@ -577,7 +577,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
             client.addDirectory(dir, false);
             cache.refresh(dir, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         } else {
-            throw new SVNClientException("Reached FS root, but it's still not Subversion versioned!");
+            throw new SVNClientException("Reached FS root, but it's still not Subversion versioned!"); // NOI18N
         }
     }
 
@@ -592,7 +592,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
             // relax our asserts by reposting to non-AWT thread and wait
             // and print out warning so original gets fixed
             
-            Exception ex = new IllegalThreadStateException("WARNING: above code access filesystem from AWT.\nImagine that Subversion's filesystem handler can connect to server over (slow) network.\nWorkarounding... (it may deadlocks however).");
+            Exception ex = new IllegalThreadStateException("WARNING: above code access filesystem from AWT.\nImagine that Subversion's filesystem handler can connect to server over (slow) network.\nWorkarounding... (it may deadlocks however)."); // NOI18N
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
             final Throwable innerT[] = new Throwable[1];
             Runnable outOfAwt = new Runnable() {

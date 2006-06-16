@@ -46,7 +46,7 @@ import org.netbeans.api.queries.SharabilityQuery;
  */
 public class Subversion {
     
-    static final String INVALID_METADATA_MARKER = "invalid-metadata";
+    static final String INVALID_METADATA_MARKER = "invalid-metadata"; // NOI18N
     
     private static Subversion instance;
     
@@ -88,7 +88,7 @@ public class Subversion {
         getRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
-                    Diagnostics.println("Cleaning up");
+                    Diagnostics.println("Cleaning up"); // NOI18N
                     // HACK: FileStatusProvider cannot do it itself
                     if (FileStatusProvider.getInstance() != null) {
                         // must be called BEFORE cache is cleaned up
@@ -100,7 +100,7 @@ public class Subversion {
                     fileStatusCache.cleanUp();
                     filesystemHandler.init();
                 } finally {
-                    Diagnostics.println("END Cleaning up");
+                    Diagnostics.println("END Cleaning up"); // NOI18N
                 }
             }
         }, 3000);
@@ -144,7 +144,7 @@ public class Subversion {
     }
 
     public boolean isAdministrative(String fileName) {
-        return fileName.equals(".svn") || fileName.equals("_svn");
+        return fileName.equals(".svn") || fileName.equals("_svn"); // NOI18N
     }
     
     public FileStatusCache getStatusCache() {
@@ -173,7 +173,7 @@ public class Subversion {
 
     public SvnClient getClient(File file, SvnProgressSupport support) throws SVNClientException {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
-        assert repositoryUrl != null : "Unable to get repository: " + file.getAbsolutePath() + " is probably unmanaged.";
+        assert repositoryUrl != null : "Unable to get repository: " + file.getAbsolutePath() + " is probably unmanaged."; // NOI18N
 
         return getClient(repositoryUrl, support);
     }
@@ -188,7 +188,7 @@ public class Subversion {
             }
         }
 
-        assert repositoryUrl != null : "Unable to get repository, context contains only unmanaged files!";
+        assert repositoryUrl != null : "Unable to get repository, context contains only unmanaged files!"; // NOI18N
 
         return getClient(repositoryUrl, support);
     }
@@ -247,7 +247,7 @@ public class Subversion {
         if (isAdministrative(file)) return false;
         if (file.isFile()) file = file.getParentFile();
         for (; file != null; file = file.getParentFile()) {
-            if (new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead()) {
+            if (new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead()) { // NOI18N
                 return true;
             }
         }
@@ -331,7 +331,7 @@ public class Subversion {
                             patterns.add(escapeRegExp(file.getName()));
                             Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
                         } else {
-                            assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName();
+                            assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName(); // NOI18N
                         }
                     }
                 }
@@ -351,26 +351,26 @@ public class Subversion {
     }    
 
     private String regExpToFilePatterns(String exp) {
-        exp = exp.replaceAll("\\.", "\\\\.");
-        exp = exp.replaceAll("\\*", ".*");  
-        exp = exp.replaceAll("\\?", ".");
+        exp = exp.replaceAll("\\.", "\\\\."); // NOI18N
+        exp = exp.replaceAll("\\*", ".*"); // NOI18N
+        exp = exp.replaceAll("\\?", "."); // NOI18N
         return exp;
     }
 
     private String escapeRegExp(String exp) {
-        exp = exp.replaceAll("\\.", "\\\\.");
-        exp = exp.replaceAll("\\$", "\\\\\\$");
-        exp = exp.replaceAll("\\^", "\\\\^");
-        exp = exp.replaceAll("\\<", "\\\\<");
-        exp = exp.replaceAll("\\>", "\\\\>");
-        exp = exp.replaceAll("\\[", "\\\\[");
-        exp = exp.replaceAll("\\]", "\\\\]");
-        exp = exp.replaceAll("\\{", "\\\\{");
-        exp = exp.replaceAll("\\}", "\\\\}");
-        exp = exp.replaceAll("\\(", "\\\\(");
-        exp = exp.replaceAll("\\)", "\\\\)");
-        exp = exp.replaceAll("\\+", "\\\\+");
-        exp = exp.replaceAll("\\|", "\\\\|");
+        exp = exp.replaceAll("\\.", "\\\\."); // NOI18N
+        exp = exp.replaceAll("\\$", "\\\\\\$"); // NOI18N
+        exp = exp.replaceAll("\\^", "\\\\^"); // NOI18N
+        exp = exp.replaceAll("\\<", "\\\\<"); // NOI18N
+        exp = exp.replaceAll("\\>", "\\\\>"); // NOI18N
+        exp = exp.replaceAll("\\[", "\\\\["); // NOI18N
+        exp = exp.replaceAll("\\]", "\\\\]"); // NOI18N
+        exp = exp.replaceAll("\\{", "\\\\{"); // NOI18N
+        exp = exp.replaceAll("\\}", "\\\\}"); // NOI18N
+        exp = exp.replaceAll("\\(", "\\\\("); // NOI18N
+        exp = exp.replaceAll("\\)", "\\\\)"); // NOI18N
+        exp = exp.replaceAll("\\+", "\\\\+"); // NOI18N
+        exp = exp.replaceAll("\\|", "\\\\|"); // NOI18N
         return exp;
     }   
 
@@ -393,7 +393,7 @@ public class Subversion {
         if(url != null) {
             key = url.toString();
         } else {
-            key = "ANY_URL";
+            key = "ANY_URL"; // NOI18N
         }
 
         RequestProcessor rp = processorsToUrl.get(key);

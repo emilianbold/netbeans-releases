@@ -81,8 +81,8 @@ public class SvnClientFactory {
     public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support)
     throws SVNClientException 
     {                                                
-        String username = "";
-        String password = "";
+        String username = ""; // NOI18N
+        String password = ""; // NOI18N
         PasswordFile passwordFile = PasswordFile.findFileForUrl(repositoryUrl);
         if(passwordFile!=null) {
             username = passwordFile.getUsername();

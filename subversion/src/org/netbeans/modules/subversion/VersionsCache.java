@@ -87,17 +87,17 @@ public class VersionsCache {
                     if (url != null) {
                         in = client.getContent(url, SVNRevision.HEAD);
                     } else {
-                        in = new ByteArrayInputStream("[Unknown repository URL]".getBytes());
+                        in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
                     }
                 }
                 // keep original extension so MIME can be guessed by the extension
-                File tmp = File.createTempFile("nb-svn", base.getName());  // NOI19N
+                File tmp = File.createTempFile("nb-svn", base.getName());  // NOI18N
                 tmp = FileUtil.normalizeFile(tmp);
                 tmp.deleteOnExit();  // hard to track actual lifetime
                 FileUtils.copyStreamToFile(new BufferedInputStream(in), tmp);
                 return tmp;
             } catch (SVNClientException ex) {
-                IOException ioex = new IOException("Can not load: " + base.getAbsolutePath() + " in revision: " + revision);
+                IOException ioex = new IOException("Can not load: " + base.getAbsolutePath() + " in revision: " + revision); // NOI18N
                 ioex.initCause(ex);
                 throw ioex;
             }

@@ -74,8 +74,8 @@ public class FileStatusCache implements ISVNNotifyListener {
      * After update: *.r#, *.mine
      * After merge: *.working, *.merge-right.r#, *.metge-left.r#
      */
-    private static final Pattern auxConflictPattern = Pattern.compile("(.*?)\\.((r\\d+)|(mine)|" +
-        "(working)|(merge-right\\.r\\d+)|((merge-left.r\\d+)))$");
+    private static final Pattern auxConflictPattern = Pattern.compile("(.*?)\\.((r\\d+)|(mine)|" + // NOI18N
+        "(working)|(merge-right\\.r\\d+)|((merge-left.r\\d+)))$"); // NOI18N
 
     /*
      * Holds three kinds of information: what folders we have scanned, what files we have found
@@ -595,9 +595,9 @@ public class FileStatusCache implements ISVNNotifyListener {
                 // TODO systematically handle all repository statuses
                 // so far above were observed....
                 // XXX
-                System.err.println("SVN.FSC: unhandled repository status: " + file.getAbsolutePath());
-                System.err.println("\ttext: " + repositoryStatus.getRepositoryTextStatus());
-                System.err.println("\tprop: " + repositoryStatus.getRepositoryPropStatus());
+                System.err.println("SVN.FSC: unhandled repository status: " + file.getAbsolutePath()); // NOI18N
+                System.err.println("\ttext: " + repositoryStatus.getRepositoryTextStatus()); // NOI18N
+                System.err.println("\tprop: " + repositoryStatus.getRepositoryPropStatus()); // NOI18N
             }
         }
 
@@ -612,7 +612,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         } else if (SVNStatusKind.CONFLICTED.equals(pkind)) {
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
         } else {
-            throw new IllegalArgumentException("Unknown prop status: " + status.getPropStatus());
+            throw new IllegalArgumentException("Unknown prop status: " + status.getPropStatus()); // NOI18N
         }
 
 
@@ -650,12 +650,12 @@ public class FileStatusCache implements ISVNNotifyListener {
             // TODO: create new status constant?
             return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE | remoteStatus, status);
         } else {        
-            throw new IllegalArgumentException("Unknown text status: " + status.getTextStatus());
+            throw new IllegalArgumentException("Unknown text status: " + status.getTextStatus()); // NOI18N
         }
     }
 
     static String statusText(ISVNStatus status) {
-        return "file: " + status.getTextStatus().toString() + " copied: " + status.isCopied() + " prop: " + status.getPropStatus().toString();
+        return "file: " + status.getTextStatus().toString() + " copied: " + status.isCopied() + " prop: " + status.getPropStatus().toString(); // NOI18N
     }
 
     /**
@@ -792,7 +792,7 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     private boolean isInsideSubversionMetadata(File file) {
-        return file.getPath().indexOf(File.separatorChar + ".svn" + File.separatorChar) != -1;
+        return file.getPath().indexOf(File.separatorChar + ".svn" + File.separatorChar) != -1; // NOI18N
     }
 
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {

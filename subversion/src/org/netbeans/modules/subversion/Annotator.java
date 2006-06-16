@@ -267,10 +267,10 @@ public class Annotator {
                 textAnnotation = " [" + sticky + "]"; // NOI18N
             } else  if (sticky == null) {
                 String statusText = info.getShortStatusText();
-                if(!statusText.equals("")) {
+                if(!statusText.equals("")) { // NOI18N
                     textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
                 } else {
-                    textAnnotation = "";
+                    textAnnotation = ""; // NOI18N
                 }
             } else {
                 textAnnotation = " [" + info.getShortStatusText() + "; " + sticky + "]"; // NOI18N
@@ -279,7 +279,7 @@ public class Annotator {
             textAnnotation = ""; // NOI18N
         }
         if (textAnnotation.length() > 0) {
-            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation);
+            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation); // NOI18N
         }
         
         if (status == FileInformation.STATUS_UNKNOWN) {

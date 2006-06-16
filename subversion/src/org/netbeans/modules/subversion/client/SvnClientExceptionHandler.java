@@ -45,6 +45,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -57,8 +58,8 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
     private final ISVNClientAdapter adapter;
     private final SvnClient client;
-    private static final String NEWLINE = System.getProperty("line.separator"); 
-    private final String CHARSET_NAME = "ASCII7";
+    private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
+    private final String CHARSET_NAME = "ASCII7"; // NOI18N
 
     public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client) {
         super(exception);
@@ -78,14 +79,14 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
     private boolean handleAuthenticationError() {
         SVNUrl url = client.getSvnUrl();
-        Repository repository = new Repository(url, false, false, "Correct the password, username and proxy settings for the URL:");
+        Repository repository = new Repository(url, false, false, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
         CorrectAuthPanel corectPanel = new CorrectAuthPanel();
         corectPanel.panel.setLayout(new BorderLayout());
         corectPanel.panel.add(repository.getPanel(), BorderLayout.NORTH);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, "Authentication failed"); 
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed")); // NOI18N
 
-        JButton retryButton = new JButton("Retry"); 
-        dialogDescriptor.setOptions(new Object[] {retryButton, "Cancel"}); 
+        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry")); // NOI18N
+        dialogDescriptor.setOptions(new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")}); // NOI18N
         
         showDialog(dialogDescriptor);
 
@@ -105,7 +106,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         // copy the certificate if it already exists
         SVNUrl url = client.getSvnUrl();
         String hostString = SvnUtils.ripUserFromHost(url.getHost());
-        String realmString = url.getProtocol() + "://" + hostString + ":" + url.getPort();
+        String realmString = url.getProtocol() + "://" + hostString + ":" + url.getPort(); // NOI18N
         File certFile = CertificateFile.getSystemCertFile(realmString);
         if(certFile.exists()) {
             FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));
@@ -136,7 +137,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
         SSLContext context = null;
         try {
-            context = SSLContext.getInstance("SSL");
+            context = SSLContext.getInstance("SSL"); // NOI18N
             context.init(null, trust, null);
         } catch (NoSuchAlgorithmException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -176,11 +177,11 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
         AcceptCertificatePanel acceptCertificatePanel = new AcceptCertificatePanel();
         acceptCertificatePanel.certificatePane.setText(getCertMessage(cert, hostString));
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, "Server certificate verification failed"); 
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N
 
-        JButton permanentlyButton = new JButton("Accept permanently"); 
-        JButton temporarilyButton = new JButton("Accept temporarily"); 
-        JButton rejectButton = new JButton("Reject"); 
+        JButton permanentlyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptPermanently")); // NOI18N
+        JButton temporarilyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptTemp")); // NOI18N
+        JButton rejectButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_Reject")); // NOI18N
         dialogDescriptor.setOptions(new Object[] {permanentlyButton, temporarilyButton, rejectButton}); 
 
         showDialog(dialogDescriptor);
@@ -192,7 +193,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         CertificateFile cf = null;
         try {
             boolean temporarily = dialogDescriptor.getValue() == temporarilyButton;
-            cf = new CertificateFile(cert, url.getProtocol() + "://" + hostString + ":" + url.getPort(), 10, temporarily); // XXX how to get the value for failures            
+            cf = new CertificateFile(cert, url.getProtocol() + "://" + hostString + ":" + url.getPort(), 10, temporarily); // XXX how to get the value for failures  // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -216,7 +217,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     
     private void connectProxy(Socket tunnel, String host, int port, String proxyHost, int proxyPort) throws IOException {
       
-      String connectString = "CONNECT "+ host + ":" + port + " HTTP/1.0\r\n" + "Connection: Keep-Alive\r\n\r\n";
+      String connectString = "CONNECT "+ host + ":" + port + " HTTP/1.0\r\n" + "Connection: Keep-Alive\r\n\r\n"; // NOI18N
         
       byte connectBytes[];
       try {
@@ -238,7 +239,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
       while (newlinesSeen < 2) {
          byte b = (byte) in.read();
          if (b < 0) {
-            throw new IOException("Unexpected EOF from proxy");
+            throw new IOException("Unexpected EOF from proxy"); // NOI18N
          }
          if (b == '\n') {
             headerDone = true;
@@ -251,47 +252,42 @@ class SvnClientExceptionHandler extends ExceptionHandler {
          }
       }
 
-      String ret = "";
+      String ret = ""; // NOI18N
       try {
         ret = new String(reply, 0, replyLen, CHARSET_NAME);
       } catch (UnsupportedEncodingException ignored) {
         ret = new String(reply, 0, replyLen);
       }      
-      if(ret.toLowerCase().indexOf("200 connection established") == -1) {
-         throw new IOException("Unable to connect through proxy "
-                              + proxyHost + ":" + proxyPort
-                              + ".  Proxy returns \"" + ret + "\"");
+      if(ret.toLowerCase().indexOf("200 connection established") == -1) { // NOI18N
+         throw new IOException("Unable to connect through proxy " // NOI18N
+                              + proxyHost + ":" + proxyPort // NOI18N
+                              + ".  Proxy returns \"" + ret + "\""); // NOI18N
       }      
    }
     
    private String getCertMessage(X509Certificate cert, String host) {
-        return       " - The certificate is not issued by a trusted authority. Use the fingerprint to validate the certificate manually!\n" +
-                     " - The certificate has expired.\n" +
-                     "Certificate information:\n" + 
-                     " - Hostname: " + host + "\n" + 
-                     " - Valid: from " + cert.getNotBefore() + " until " + cert.getNotAfter() + "\n" +
-                     " - Issuer: " + cert.getIssuerDN().getName() + "\n" + 
-                     " - Fingerprint : \n" + 
-                     "    - SHA1: " + getFingerprint(cert, "SHA1") + " \n" +
-                     "    - MD5:  " + getFingerprint(cert, "MD5") + " \n";
-   } 
+       return NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_BadCertificate", new Object [] { // NOI18N
+           host, cert.getNotBefore(), cert.getNotAfter(), cert.getIssuerDN().getName(),
+           getFingerprint(cert, "SHA1"), getFingerprint(cert, "MD5") // NOI18N
+       });
+   }
 
     private String getFingerprint(X509Certificate cert, String alg) {
         String str;
         try {
             str = new sun.misc.BASE64Encoder().encode(cert.getEncoded());            
-            str = str.replace(NEWLINE, "");
+            str = str.replace(NEWLINE, ""); // NOI18N
             MessageDigest md5 = MessageDigest.getInstance(alg);
             byte[] url = new sun.misc.BASE64Decoder().decodeBuffer(str);            
             md5.update(url);
             byte[] md5digest = md5.digest();            
-            String ret = "";
+            String ret = ""; // NOI18N
             for (int i = 0; i < md5digest.length; i++) {
                 String hex = Integer.toHexString(md5digest[i] & 0x000000FF);
                 if(hex.length()==1) {
-                    hex = "0" + hex;
+                    hex = "0" + hex; // NOI18N
                 }
-                ret += hex + (i < md5digest.length - 1 ? ":"  : "");
+                ret += hex + (i < md5digest.length - 1 ? ":"  : ""); // NOI18N
             }
             return ret;
         } catch (CertificateEncodingException ex) {
@@ -301,7 +297,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }                       
-        return "";
+        return ""; // NOI18N
     }
     
 }

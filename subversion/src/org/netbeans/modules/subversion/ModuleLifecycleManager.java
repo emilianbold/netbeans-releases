@@ -45,11 +45,11 @@ import java.io.ByteArrayInputStream;
 public final class ModuleLifecycleManager extends ModuleInstall implements ErrorHandler, EntityResolver {
 
     static final String [] vcsGenericModules = {
-        "org.netbeans.modules.vcs.advanced",
-        "org.netbeans.modules.vcs.profiles.cvsprofiles",
-        "org.netbeans.modules.vcs.profiles.vss",
-        "org.netbeans.modules.vcs.profiles.pvcs",
-        "org.netbeans.modules.vcs.profiles.teamware"
+        "org.netbeans.modules.vcs.advanced", // NOI18N
+        "org.netbeans.modules.vcs.profiles.cvsprofiles", // NOI18N
+        "org.netbeans.modules.vcs.profiles.vss", // NOI18N
+        "org.netbeans.modules.vcs.profiles.pvcs", // NOI18N
+        "org.netbeans.modules.vcs.profiles.teamware" // NOI18N
     };
     
     public void restored() {
@@ -65,20 +65,20 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                     OutputStream os = null;
                     try {
                         String newModule = vcsGenericModules[i];
-                        String newModuleXML = "Modules/" + newModule.replace('.', '-') + ".xml";
+                        String newModuleXML = "Modules/" + newModule.replace('.', '-') + ".xml"; // NOI18N
                         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(newModuleXML);
                         if (fo == null) continue;
                         Document document = readModuleDocument(fo);
 
-                        NodeList list = document.getDocumentElement().getElementsByTagName("param");
+                        NodeList list = document.getDocumentElement().getElementsByTagName("param"); // NOI18N
                         int n = list.getLength();
                         for (int j = 0; j < n; j++) {
                             Element node = (Element) list.item(j);
-                            if ("enabled".equals(node.getAttribute("name"))) {
+                            if ("enabled".equals(node.getAttribute("name"))) { // NOI18N
                                 Text text = (Text) node.getChildNodes().item(0);
                                 String value = text.getNodeValue();
-                                if ("true".equals(value)) {
-                                    text.setNodeValue("false");
+                                if ("true".equals(value)) { // NOI18N
+                                    text.setNodeValue("false"); // NOI18N
                                     break;
                                 } else {
                                     continue outter;
@@ -87,15 +87,15 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                         }
                         if (!notified) {
                             JOptionPane.showMessageDialog(null, 
-                                                          NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Install_Warning"), 
-                                                          NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Install_Warning_Title"), 
+                                                          NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Install_Warning"),  // NOI18N
+                                                          NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Install_Warning_Title"),  // NOI18N
                                                           JOptionPane.WARNING_MESSAGE);
                             notified = true;
                         }
                         lock = fo.lock();
                         os = fo.getOutputStream(lock);
                         
-                        XMLUtil.write(document, os, "UTF-8");
+                        XMLUtil.write(document, os, "UTF-8"); // NOI18N
                     } catch (Exception e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     } finally {

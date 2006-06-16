@@ -32,7 +32,7 @@ class DiskMapTurboProvider implements TurboProvider {
     static final String ATTR_STATUS_MAP = "subversion.STATUS_MAP";  // NOI18N
 
     private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_VERSIONED_UPTODATE;
-    private static final String CACHE_DIRECTORY = "svncache";
+    private static final String CACHE_DIRECTORY = "svncache"; // NOI18N
     
     private File                            cacheStore;
     private int                             storeSerial;
@@ -50,7 +50,7 @@ class DiskMapTurboProvider implements TurboProvider {
             File [] files = cacheStore.listFiles();
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
-                if (file.getName().endsWith(".bin") == false) {
+                if (file.getName().endsWith(".bin") == false) { // NOI18N
                     // on windows list returns already deleted .new files
                     continue;
                 }

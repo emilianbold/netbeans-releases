@@ -60,7 +60,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         if (shutdown) return null;
         if (isManaged(files)) {
             try {
-                Diagnostics.println("Html annotating " + name);
+                Diagnostics.println("Html annotating " + name); // NOI18N
                 return Subversion.getInstance().getAnnotator().annotateNameHtml(
                         name,
                         files,
@@ -69,7 +69,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
                         | FileInformation.STATUS_NOTVERSIONED_EXCLUDED
                 );
             } finally {
-                Diagnostics.println("END Html annotating " + name);
+                Diagnostics.println("END Html annotating " + name); // NOI18N
             }
         } else {
             return null;
@@ -80,10 +80,10 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         if (shutdown) return null;
         if (isManaged(files)) {
             try {
-                Diagnostics.println("Annotating " + name);
+                Diagnostics.println("Annotating " + name); // NOI18N
                 return Subversion.getInstance().getAnnotator().annotateName(name, files);
             } finally {
-                Diagnostics.println("END Annotating " + name);
+                Diagnostics.println("END Annotating " + name); // NOI18N
             }
         } else {
             return null;
@@ -127,7 +127,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
 
 
         try {
-            Diagnostics.println("Annotating icons " + fileNames(roots));
+            Diagnostics.println("Annotating icons " + fileNames(roots)); // NOI18N
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             boolean isVersioned = false;
             for (Iterator<File> i = roots.iterator(); i.hasNext();) {
@@ -141,7 +141,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
 
             return Subversion.getInstance().getAnnotator().annotateFolderIcon(roots, icon);
         } finally {
-            Diagnostics.println("END Annotating icons " + fileNames(roots));
+            Diagnostics.println("END Annotating icons " + fileNames(roots)); // NOI18N
         }
     }
 
@@ -162,9 +162,9 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         while (it.hasNext()) {
             Object next = it.next();
             if (next instanceof File) {
-                sb.append(((File)next).getAbsolutePath() + ", ");
+                sb.append(((File)next).getAbsolutePath() + ", "); // NOI18N
             } else if (next instanceof FileObject) {
-                sb.append(((FileObject)next).getPath() + ", ");
+                sb.append(((FileObject)next).getPath() + ", "); // NOI18N
             }
         }
         return sb.toString();
@@ -229,7 +229,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             try {
-                Diagnostics.println("Firing status event: " + file.getAbsolutePath());
+                Diagnostics.println("Firing status event: " + file.getAbsolutePath()); // NOI18N
                 fireFileStatusChanged(new FileStatusEvent(fo.getFileSystem(), fo, false, true));
             } catch (FileStateInvalidException e) {
                 // ignore files in invalid filesystems
@@ -238,7 +238,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         for (Iterator i = folders.keySet().iterator(); i.hasNext();) {
             FileSystem fs = (FileSystem) i.next();
             Set files = (Set) folders.get(fs);
-            Diagnostics.println("Firing status event: " + file.getAbsolutePath());
+            Diagnostics.println("Firing status event: " + file.getAbsolutePath()); // NOI18N
             fireFileStatusChanged(new FileStatusEvent(fs, files, true, false));
         }
     }

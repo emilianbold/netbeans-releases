@@ -91,7 +91,7 @@ public class RepositoryFile {
         
         if(!repositoryRoot) {                        
             fileUrl = repositoryUrl.appendPath(path);        
-            pathSegments = path.split("/");
+            pathSegments = path.split("/"); // NOI18N
         }
     }
     
@@ -161,7 +161,7 @@ public class RepositoryFile {
     }       
 
     public RepositoryFile replaceLastSegment(String segment, int level) {
-        assert segment != null && !segment.equals("");
+        assert segment != null && !segment.equals(""); // NOI18N
         assert level > -1 && level < fileUrl.getPathSegments().length;
         assert !isRepositoryRoot(); // can't do this 
 

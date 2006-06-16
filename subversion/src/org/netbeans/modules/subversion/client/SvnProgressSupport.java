@@ -34,8 +34,8 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     private Thread interruptibleThread;
     
     private ProgressHandle progressHandle = null;    
-    private String displayName = "";
-    private String originalDisplayName = "";
+    private String displayName = ""; // NOI18N
+    private String originalDisplayName = ""; // NOI18N
     
     public RequestProcessor.Task start(RequestProcessor rp, String displayName) {
         setDisplayName(displayName);
@@ -50,9 +50,9 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     protected void performIntern() {
         try {
             interruptibleThread = Thread.currentThread();
-            Diagnostics.println("Start - " + displayName);
+            Diagnostics.println("Start - " + displayName); // NOI18N
             perform();
-            Diagnostics.println("End - " + displayName);
+            Diagnostics.println("End - " + displayName); // NOI18N
         } finally {
             finnishProgress();
         }
@@ -83,7 +83,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     }
 
     public void setDisplayName(String displayName) {
-        if(originalDisplayName.equals("")) {
+        if(originalDisplayName.equals("")) { // NOI18N
             originalDisplayName = displayName;
         }
         this.displayName = displayName;
@@ -106,16 +106,16 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     protected void startProgress() {
         getProgressHandle().start();
         OutputLogger logger = Subversion.getInstance().getLogger(); // XXX to use the logger this way is a hack
-        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName);
+        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName); // NOI18N
     }
 
     protected void finnishProgress() {
         getProgressHandle().finish();
         OutputLogger logger = Subversion.getInstance().getLogger();
         if (isCanceled() == false) {
-            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " finished.");
+            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + org.openide.util.NbBundle.getMessage(SvnProgressSupport.class, "MSG_Progress_Finished")); // NOI18N
         } else {
-            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " cancelled.");
+            logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + org.openide.util.NbBundle.getMessage(SvnProgressSupport.class, "MSG_Progress_Canceled")); // NOI18N
         }
     }
 
