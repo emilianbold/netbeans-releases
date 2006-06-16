@@ -28,6 +28,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 
 /**
  * Executes searches in Search History panel.
@@ -148,7 +149,8 @@ class SearchExecutor implements Runnable {
                 ISVNLogMessage [] messages = client.getLogMessages(url, null, fromRevision, toRevision, false, true, 0);
                 appendResults(url, messages);
             } catch (SVNClientException e) {
-                ErrorManager.getDefault().notify(e);
+                ExceptionHandler eh = new ExceptionHandler(e);
+                eh.annotate();
             }
         } else {
             String [] paths = new String[files.size()];
@@ -160,7 +162,8 @@ class SearchExecutor implements Runnable {
                 ISVNLogMessage [] messages = client.getLogMessages(url, paths, fromRevision, toRevision, false, true);
                 appendResults(url, messages);
             } catch (SVNClientException e) {
-                ErrorManager.getDefault().notify(e);
+                ExceptionHandler eh = new ExceptionHandler(e);
+                eh.annotate();
             }
         }
     }
