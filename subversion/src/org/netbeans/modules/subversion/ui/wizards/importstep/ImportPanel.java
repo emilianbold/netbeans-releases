@@ -38,22 +38,24 @@ public class ImportPanel extends javax.swing.JPanel {
         jLabel4 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
-        setName("Repository folder");
-        jLabel1.setText("Specify the message:");
+        setName(org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Name")); // NOI18N
+        jLabel1.setLabelFor(messageTextArea);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Message")); // NOI18N
 
         messageTextArea.setColumns(20);
         messageTextArea.setRows(5);
         jScrollPane1.setViewportView(messageTextArea);
 
-        jLabel4.setText("Repository Folder:");
+        jLabel4.setLabelFor(repositoryPathTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Folder")); // NOI18N
 
-        browseRepositoryButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Browse")); // NOI18N
 
-        jLabel2.setText("Specify the repository folder you want to import in");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Hint")); // NOI18N
 
         progressPanel.setLayout(new java.awt.BorderLayout());
 
-        progressLabel.setText(" ");
+        org.openide.awt.Mnemonics.setLocalizedText(progressLabel, " "); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -64,9 +66,9 @@ public class ImportPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(jLabel4)
                         .add(15, 15, 15)
-                        .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE))
+                        .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
                     .add(jLabel2)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE))
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseRepositoryButton))
             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)

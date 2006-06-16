@@ -31,8 +31,8 @@ public class PreviewPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setName("Files to Import");
-        tablePanel.setName("");
+        setName(org.openide.util.NbBundle.getMessage(PreviewPanel.class, "CTL_Import_Preview_Name")); // NOI18N
+        tablePanel.setName(""); // NOI18N
         org.jdesktop.layout.GroupLayout tablePanelLayout = new org.jdesktop.layout.GroupLayout(tablePanel);
         tablePanel.setLayout(tablePanelLayout);
         tablePanelLayout.setHorizontalGroup(
@@ -44,7 +44,7 @@ public class PreviewPanel extends javax.swing.JPanel {
             .add(0, 220, Short.MAX_VALUE)
         );
 
-        tableLabel.setText("jLabel1");
+        org.openide.awt.Mnemonics.setLocalizedText(tableLabel, "jLabel1"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

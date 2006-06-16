@@ -87,7 +87,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     protected void validateBeforeNext() {
         try {
             if(support != null) {
-                support.performInCurrentThread("Importing..."); 
+                support.performInCurrentThread(org.openide.util.NbBundle.getMessage(ImportStep.class, "CTL_Import_Progress")); // NOI18N
             }
         } finally {
             support = null;
@@ -104,7 +104,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         
         String text = importPanel.repositoryPathTextField.getText().trim();
         if (text.length() == 0) {
-            invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014"));
+            invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014")); // NOI18N
             return false;
         }        
         
@@ -113,7 +113,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         if(valid) {
             valid();
         } else {
-            invalid("Import message required");
+            invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "CTL_Import_MessageRequired")); // NOI18N
         }
 
         return valid;
@@ -143,7 +143,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     }
 
     public void setup(RepositoryFile repositoryFile) {
-        if(importPanel.repositoryPathTextField.getText().trim().equals("")) {
+        if(importPanel.repositoryPathTextField.getText().trim().equals("")) { // NOI18N
             // no value set yet ...
             if(repositoryPaths == null) {
                 repositoryPaths =
@@ -216,9 +216,9 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     try {
                         // if the user came back from the last step and changed the repository folder name,
                         // then this could be already a working copy ...    
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn"));
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn"));
-                        File importDummyFolder = new File(System.getProperty("java.io.tmpdir") + "/" + importDirectory.getName());
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn")); // NOI18N
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn")); // NOI18N
+                        File importDummyFolder = new File(System.getProperty("java.io.tmpdir") + "/" + importDirectory.getName()); // NOI18N
                         importDummyFolder.mkdirs();                     
                         importDummyFolder.deleteOnExit();
                         client.doImport(importDummyFolder, repositoryFile.getFileUrl(), getImportMessage(), false);
@@ -239,8 +239,8 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
                     forceStatusRefresh(importDirectory);  // XXX the same for another implementations like this in the code.... (see SvnUtils.refreshRecursively() )
                     if(isCanceled()) {                        
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn"));
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn"));                        
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn")); // NOI18N
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn")); // NOI18N
                         return;
                     }
                 } catch (SVNClientException ex) {
@@ -251,7 +251,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
 
             } finally {
                 if(isCanceled()) {
-                    valid("Action cancelled by user.");
+                    valid(org.openide.util.NbBundle.getMessage(ImportStep.class, "MSG_Import_ActionCanceled")); // NOI18N
                 } else if(invalidMsg != null) {
                     valid(invalidMsg);
                 } else {

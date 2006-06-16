@@ -68,7 +68,7 @@ public class RepositoryStep
 
     protected JComponent createComponent() {
         if (repository == null) {
-            repository = new Repository(true, acceptRevision, "Specify the location of Subversion repository.");
+            repository = new Repository(true, acceptRevision, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Location")); // NOI18N
             repository.addPropertyChangeListener(this);
             panel = new RepositoryStepPanel();            
             panel.repositoryPanel.setLayout(new BorderLayout());
@@ -81,7 +81,7 @@ public class RepositoryStep
     protected void validateBeforeNext() {    
         try {
             if(support != null) {
-                support.performInCurrentThread(NbBundle.getMessage(RepositoryStep.class, "BK2012"));
+                support.performInCurrentThread(NbBundle.getMessage(RepositoryStep.class, "BK2012")); // NOI18N
             }
         } finally {
             support = null;
@@ -198,12 +198,12 @@ public class RepositoryStep
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
                     }
                 } else {
-                    invalidMsg = "No information available for :" + selectedRepository.getUrl();
+                    invalidMsg = org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Invalid", selectedRepository.getUrl()); // NOI18N
                     return;
                 }
             } finally {
                 if(isCanceled()) {
-                    valid("Action canceled by user");
+                    valid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Canceled")); // NOI18N
                 } else if(invalidMsg == null) {
                   valid();
                   storeHistory();

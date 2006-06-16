@@ -49,7 +49,7 @@ public class ImportPreviewStep extends AbstractStep {
             previewPanel = new PreviewPanel();
 
             table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS);
-            previewPanel.tableLabel.setText("Commit files");
+            previewPanel.tableLabel.setText(org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "CTL_Import_CommitTitle")); // NOI18N
             JComponent component = table.getComponent();
             previewPanel.tablePanel.setLayout(new BorderLayout());
             previewPanel.tablePanel.add(component, BorderLayout.CENTER);
@@ -65,7 +65,7 @@ public class ImportPreviewStep extends AbstractStep {
         if(table != null && table.getCommitFiles().size() > 0) {
             valid();
         } else {
-            invalid("No files to import");   
+            invalid(org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "CTL_Import_NothingToImport")); // NOI18N
         }        
     }    
 

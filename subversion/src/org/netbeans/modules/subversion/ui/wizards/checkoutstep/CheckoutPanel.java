@@ -43,7 +43,7 @@ public class CheckoutPanel extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
 
-        jMenuItem1.setText("Item");
+        org.openide.awt.Mnemonics.setLocalizedText(jMenuItem1, "Item"); // NOI18N
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem1ActionPerformed(evt);
@@ -52,28 +52,32 @@ public class CheckoutPanel extends javax.swing.JPanel {
 
         jPopupMenu1.add(jMenuItem1);
 
-        setName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/wizards/checkoutstep/Bundle").getString("BK2024"));
-        jLabel1.setText("Specify the local folder to checkout folders into.");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/wizards/checkoutstep/Bundle"); // NOI18N
+        setName(bundle.getString("BK2024")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_LocalFolderHint")); // NOI18N
 
-        jLabel2.setText("Local Folder:");
+        jLabel2.setLabelFor(workdirTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_LocalFolder")); // NOI18N
 
-        browseWorkdirButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(browseWorkdirButton, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Browse2")); // NOI18N
 
-        jLabel3.setText("Specify the folder(s) to checkout from Subversion repository.");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_RepositoryHint")); // NOI18N
 
-        jLabel4.setText("Repository Folder(s):");
+        jLabel4.setLabelFor(repositoryPathTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_RepositoryFolder")); // NOI18N
 
-        browseRepositoryButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Browse1")); // NOI18N
 
-        jLabel5.setText("Repository Revision:");
+        jLabel5.setLabelFor(revisionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Revision")); // NOI18N
 
-        searchRevisionButton.setText("Search...");
+        org.openide.awt.Mnemonics.setLocalizedText(searchRevisionButton, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Search")); // NOI18N
 
-        jLabel6.setText("(empty means repository HEAD)");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_EmptyHint")); // NOI18N
 
-        jLabel7.setText("(local Subversion working copy) ");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_LocalHint")); // NOI18N
 
-        atWorkingDirLevelCheckBox.setText("Checkout only folder contents");
+        org.openide.awt.Mnemonics.setLocalizedText(atWorkingDirLevelCheckBox, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_CheckoutContent")); // NOI18N
         atWorkingDirLevelCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         atWorkingDirLevelCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -101,8 +105,8 @@ public class CheckoutPanel extends javax.swing.JPanel {
                                         .add(searchRevisionButton))
                                     .add(jLabel6)
                                     .add(jLabel7)
-                                    .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-                                    .add(workdirTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE))
+                                    .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                                    .add(workdirTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
