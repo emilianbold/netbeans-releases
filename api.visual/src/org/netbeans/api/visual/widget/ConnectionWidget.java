@@ -16,6 +16,7 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.router.DirectRouter;
 import org.netbeans.api.visual.router.Router;
+import org.netbeans.api.visual.model.ObjectState;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -47,6 +48,11 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         sourceAnchorShape = AnchorShape.NONE;
         targetAnchorShape = AnchorShape.NONE;
         router = DirectRouter.DEFAULT;
+    }
+
+    public void setState (ObjectState state) {
+        super.setState (state);
+        setForeground (getScene ().getLookFeel ().getLineColor (state));
     }
 
     public final Anchor getSourceAnchor () {

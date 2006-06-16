@@ -32,6 +32,8 @@ public abstract class LookFeel {
 
     public abstract boolean getOpaque (ObjectState state);
 
+    public abstract Color getLineColor (ObjectState state);
+
     public abstract Paint getBackground (ObjectState state);
 
     public abstract Color getForeground (ObjectState state);
