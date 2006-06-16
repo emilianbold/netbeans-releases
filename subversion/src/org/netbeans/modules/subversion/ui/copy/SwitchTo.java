@@ -32,7 +32,6 @@ public class SwitchTo extends CopyDialog {
     
     public SwitchTo(RepositoryFile repositoryRoot, File root, boolean localChanges) {
         super(new SwitchToPanel(), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Title", root.getName()), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Action")); // NOI18N
-
         SwitchToPanel panel = getSwitchToPanel();
         panel.warningLabel.setVisible(localChanges);
 
@@ -45,7 +44,7 @@ public class SwitchTo extends CopyDialog {
                 panel.searchRevisionButton
             );
         repositoryPaths.addPropertyChangeListener(this);
-        
+        getSwitchToPanel().getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_RepositoryFile"));
         if(root.isFile()) {
             getSwitchToPanel().urlLabel.setText(NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_RepositoryFile")); // NOI18N
             repositoryPaths.setupBrowserBehavior(true, true, true, null);

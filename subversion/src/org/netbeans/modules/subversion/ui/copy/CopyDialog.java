@@ -30,6 +30,7 @@ import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -38,7 +39,7 @@ import org.openide.util.HelpCtx;
 public abstract class CopyDialog implements PropertyChangeListener {
 
     private DialogDescriptor dialogDescriptor;
-    private JButton okButton;
+    private JButton okButton, cancelButton;
     private JPanel panel;
 
     private Map<String, JComboBox> urlComboBoxes;
@@ -48,12 +49,17 @@ public abstract class CopyDialog implements PropertyChangeListener {
         dialogDescriptor = new DialogDescriptor(panel, title); 
         
         okButton = new JButton(okLabel);
+        okButton.getAccessibleContext().setAccessibleDescription(okLabel);
         okButton.setEnabled(false);
-        dialogDescriptor.setOptions(new Object[] {okButton, org.openide.util.NbBundle.getMessage(CopyDialog.class, "CTL_Copy_Cancel")}); // NOI18N
+        cancelButton = new JButton(org.openide.util.NbBundle.getMessage(CopyDialog.class, "CTL_Copy_Cancel"));
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CopyDialog.class, "CTL_Copy_Cancel"));
+        dialogDescriptor.setOptions(new Object[] {okButton, cancelButton}); // NOI18N
         
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
         dialogDescriptor.setValid(false);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CopyDialog.class, "CTL_Title"));
     }
 
     protected void resetUrlComboBoxes() {
@@ -85,6 +91,7 @@ public abstract class CopyDialog implements PropertyChangeListener {
     public boolean showDialog() {                        
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
         dialog.setVisible(true);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyDialog.class, "CTL_Title"));
         boolean ret = dialogDescriptor.getValue()==okButton;
         if(ret) {
             storeValidValues();
