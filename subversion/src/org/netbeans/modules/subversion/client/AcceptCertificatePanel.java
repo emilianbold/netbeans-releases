@@ -34,6 +34,7 @@ public class AcceptCertificatePanel extends javax.swing.JPanel {
 
         certificatePane.setEditable(false);
         jScrollPane1.setViewportView(certificatePane);
+        certificatePane.getAccessibleContext().setAccessibleName("text plain");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
