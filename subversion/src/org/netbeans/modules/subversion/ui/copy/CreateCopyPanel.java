@@ -37,27 +37,32 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jLabel4 = new javax.swing.JLabel();
 
-        setName("Message");
+        setName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Name")); // NOI18N
         jLabel1.setLabelFor(messageTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Description")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription("Copy Description");
 
         messageTextArea.setColumns(20);
         messageTextArea.setRows(5);
         jScrollPane1.setViewportView(messageTextArea);
+        messageTextArea.getAccessibleContext().setAccessibleName("Copy Description");
+        messageTextArea.getAccessibleContext().setAccessibleDescription("Copy Description");
 
         jLabel4.setLabelFor(urlComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Folder")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Browse")); // NOI18N
+        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Folders");
 
         urlComboBox.setEditable(true);
 
         warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/ui/resources/warning.png")));
-        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, "Warning - there are locally modified files!");
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Warning")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(switchToCheckBox, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Switch")); // NOI18N
         switchToCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         switchToCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        switchToCheckBox.getAccessibleContext().setAccessibleDescription("Switch to new copy after creation");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -70,7 +75,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(jLabel4)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(urlComboBox, 0, 394, Short.MAX_VALUE)
+                        .add(urlComboBox, 0, 396, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseRepositoryButton))
                     .add(warningLabel)

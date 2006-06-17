@@ -39,7 +39,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         super(new CreateCopyPanel(), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Prompt", context), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title")); // NOI18N
         CreateCopyPanel panel = getCreateCopyPanel();
         panel.warningLabel.setVisible(localChanges);                              
-                
+        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title"));        
         repositoryPaths = 
             new RepositoryPaths(
                 repositoryRoot, 
