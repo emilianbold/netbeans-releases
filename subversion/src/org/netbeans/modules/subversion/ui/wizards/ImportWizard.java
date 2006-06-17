@@ -58,6 +58,7 @@ public final class ImportWizard implements ChangeListener {
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(ImportWizard.class, "CTL_Import")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportWizard.class, "CTL_Import"));
         dialog.setVisible(true);
         dialog.toFront();
         Object value = wizardDescriptor.getValue();

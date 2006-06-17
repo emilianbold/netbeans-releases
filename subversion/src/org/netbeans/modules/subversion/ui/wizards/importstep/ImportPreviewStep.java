@@ -49,7 +49,7 @@ public class ImportPreviewStep extends AbstractStep {
             previewPanel = new PreviewPanel();
 
             table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS);
-            previewPanel.tableLabel.setText(org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "CTL_Import_CommitTitle")); // NOI18N
+            //previewPanel.tableLabel.setText(org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "CTL_Import_CommitTitle")); // NOI18N
             JComponent component = table.getComponent();
             previewPanel.tablePanel.setLayout(new BorderLayout());
             previewPanel.tablePanel.add(component, BorderLayout.CENTER);

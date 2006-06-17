@@ -44,7 +44,9 @@ public class PreviewPanel extends javax.swing.JPanel {
             .add(0, 220, Short.MAX_VALUE)
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(tableLabel, "jLabel1"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tableLabel, org.openide.util.NbBundle.getMessage(PreviewPanel.class, "BK3001")); // NOI18N
+        tableLabel.getAccessibleContext().setAccessibleName("Commit Files");
+        tableLabel.getAccessibleContext().setAccessibleDescription("Commit Files");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

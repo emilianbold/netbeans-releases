@@ -67,9 +67,13 @@
     <Component class="javax.swing.JLabel" name="tableLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <PlainString value="jLabel1"/>
+          <ResourceString bundle="org/netbeans/modules/subversion/ui/wizards/importstep/Bundle.properties" key="BK3001" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Commit Files"/>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Commit Files"/>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>

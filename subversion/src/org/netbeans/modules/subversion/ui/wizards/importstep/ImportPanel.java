@@ -45,11 +45,15 @@ public class ImportPanel extends javax.swing.JPanel {
         messageTextArea.setColumns(20);
         messageTextArea.setRows(5);
         jScrollPane1.setViewportView(messageTextArea);
+        messageTextArea.getAccessibleContext().setAccessibleName("Specify the Message");
+        messageTextArea.getAccessibleContext().setAccessibleDescription("Specify the Message");
 
         jLabel4.setLabelFor(repositoryPathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Folder")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription("Repository Folder");
 
         org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Browse")); // NOI18N
+        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Folders");
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Hint")); // NOI18N
 
@@ -66,9 +70,9 @@ public class ImportPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(jLabel4)
                         .add(15, 15, 15)
-                        .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
+                        .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
                     .add(jLabel2)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE))
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseRepositoryButton))
             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
