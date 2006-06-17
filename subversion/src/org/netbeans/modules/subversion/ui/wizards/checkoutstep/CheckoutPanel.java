@@ -58,20 +58,26 @@ public class CheckoutPanel extends javax.swing.JPanel {
 
         jLabel2.setLabelFor(workdirTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_LocalFolder")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription("Local Folder");
 
         org.openide.awt.Mnemonics.setLocalizedText(browseWorkdirButton, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Browse2")); // NOI18N
+        browseWorkdirButton.getAccessibleContext().setAccessibleDescription("Browse Local Directory");
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_RepositoryHint")); // NOI18N
 
         jLabel4.setLabelFor(repositoryPathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_RepositoryFolder")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription("Repository Folders to Checkout");
 
         org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Browse1")); // NOI18N
+        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Foldres");
 
         jLabel5.setLabelFor(revisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Revision")); // NOI18N
+        jLabel5.getAccessibleContext().setAccessibleDescription("Repository Revision");
 
         org.openide.awt.Mnemonics.setLocalizedText(searchRevisionButton, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Search")); // NOI18N
+        searchRevisionButton.getAccessibleContext().setAccessibleDescription("Search Revision Number");
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_EmptyHint")); // NOI18N
 
@@ -80,6 +86,7 @@ public class CheckoutPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(atWorkingDirLevelCheckBox, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_CheckoutContent")); // NOI18N
         atWorkingDirLevelCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         atWorkingDirLevelCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        atWorkingDirLevelCheckBox.getAccessibleContext().setAccessibleDescription("Checkout only folder contents");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

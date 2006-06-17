@@ -48,6 +48,7 @@ public final class CheckoutWizard implements ChangeListener {
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "CTL_Checkout")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "CTL_Checkout"));
         dialog.setVisible(true);
         dialog.toFront();
         Object value = wizardDescriptor.getValue();
