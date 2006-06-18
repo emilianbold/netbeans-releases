@@ -79,7 +79,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                                  org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSN_RepositoryTree"),         // NOI18N
                                  org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSD_RepositoryTree"),         // NOI18N
                                  singleSelectionOnly);
-        
+        panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Browser_Prompt"));
         getExplorerManager().addVetoableChangeListener(this);                
     }       
 

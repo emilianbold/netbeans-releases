@@ -187,7 +187,8 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             browserActions
         );
         
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositoryPaths.class, "CTL_RepositoryPath_BrowseFolders_Title"));
         dialog.setVisible(true);
 
         // handle results

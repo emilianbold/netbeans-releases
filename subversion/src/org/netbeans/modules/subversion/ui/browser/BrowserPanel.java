@@ -12,7 +12,6 @@
  */
 package org.netbeans.modules.subversion.ui.browser;
 
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -76,13 +75,14 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         label = new JLabel();        
         label.setLabelFor(treeView.getTree());
         label.setToolTipText(browserAcsd);
+        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BK2003"));
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 0;
         c.insets = new Insets(4,0,4,4);
         c.fill = GridBagConstraints.HORIZONTAL;
         c.anchor = GridBagConstraints.WEST;
-        Mnemonics.setLocalizedText(label, labelText);
+        //Mnemonics.setLocalizedText(label, labelText);
         add(label, c);
         
         buttonPanel = new JPanel();
@@ -102,7 +102,9 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
             buttonPanel.removeAll();
             for (int i = 0; i < actions.length; i++) {
                 JButton button = new JButton(); 
-                button.setAction(actions[i]);            
+                button.setAction(actions[i]);      
+                button.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "CTL_Action_MakeDir"));
+                org.openide.awt.Mnemonics.setLocalizedText(button, org.openide.util.NbBundle.getMessage(BrowserPanel.class, "CTL_Action_MakeDir"));
                 buttonPanel.add(button);                
             }            
             revalidate();
