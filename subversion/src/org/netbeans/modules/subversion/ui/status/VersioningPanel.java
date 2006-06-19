@@ -655,20 +655,21 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(tgbAll, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_Synchronize_Action_All_Label"));
-        tgbAll.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_Synchronize_Action_All_Tooltip"));
+        org.openide.awt.Mnemonics.setLocalizedText(tgbAll, org.openide.util.NbBundle.getBundle(VersioningPanel.class).getString("CTL_Synchronize_Action_All_Label")); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle"); // NOI18N
+        tgbAll.setToolTipText(bundle.getString("CTL_Synchronize_Action_All_Tooltip")); // NOI18N
         tgbAll.addActionListener(this);
 
         jPanel2.add(tgbAll);
 
-        org.openide.awt.Mnemonics.setLocalizedText(tgbLocal, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_Synchronize_Action_Local_Label"));
-        tgbLocal.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_Synchronize_Action_Local_Tooltip"));
+        org.openide.awt.Mnemonics.setLocalizedText(tgbLocal, org.openide.util.NbBundle.getBundle(VersioningPanel.class).getString("CTL_Synchronize_Action_Local_Label")); // NOI18N
+        tgbLocal.setToolTipText(bundle.getString("CTL_Synchronize_Action_Local_Tooltip")); // NOI18N
         tgbLocal.addActionListener(this);
 
         jPanel2.add(tgbLocal);
 
-        org.openide.awt.Mnemonics.setLocalizedText(tgbRemote, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_Synchronize_Action_Remote_Label"));
-        tgbRemote.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_Synchronize_Action_Remote_Tooltip"));
+        org.openide.awt.Mnemonics.setLocalizedText(tgbRemote, org.openide.util.NbBundle.getBundle(VersioningPanel.class).getString("CTL_Synchronize_Action_Remote_Label")); // NOI18N
+        tgbRemote.setToolTipText(bundle.getString("CTL_Synchronize_Action_Remote_Tooltip")); // NOI18N
         tgbRemote.addActionListener(this);
 
         jPanel2.add(tgbRemote);
@@ -678,14 +679,17 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         jPanel2.add(jSeparator1);
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/refresh.png")));
-        btnRefresh.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_Synchronize_Action_Refresh_Tooltip"));
+        btnRefresh.setMnemonic('f');
+        btnRefresh.setToolTipText(bundle.getString("CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
+        btnRefresh.setActionCommand(null); // NOI18N
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 23));
         btnRefresh.addActionListener(this);
 
         jPanel2.add(btnRefresh);
 
         btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff.png")));
-        btnDiff.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_Synchronize_Action_Diff_Tooltip"));
+        btnDiff.setMnemonic('d');
+        btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
         btnDiff.setPreferredSize(new java.awt.Dimension(22, 25));
         btnDiff.addActionListener(this);
 
@@ -695,14 +699,15 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         jPanel2.add(jPanel3);
 
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/update.png")));
-        btnUpdate.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_Synchronize_Action_Update_Tooltip"));
+        btnUpdate.setMnemonic('c');
+        btnUpdate.setToolTipText(bundle.getString("CTL_Synchronize_Action_Update_Tooltip")); // NOI18N
         btnUpdate.setPreferredSize(new java.awt.Dimension(22, 25));
         btnUpdate.addActionListener(this);
 
         jPanel2.add(btnUpdate);
 
         btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/commit.png")));
-        btnCommit.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle").getString("CTL_CommitForm_Action_Commit_Tooltip"));
+        btnCommit.setToolTipText(bundle.getString("CTL_CommitForm_Action_Commit_Tooltip")); // NOI18N
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));
         btnCommit.addActionListener(this);
 
