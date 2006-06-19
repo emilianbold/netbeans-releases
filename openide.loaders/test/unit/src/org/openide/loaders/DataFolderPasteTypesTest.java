@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.util.datatransfer.PasteType;
 
@@ -33,6 +35,7 @@ public class DataFolderPasteTypesTest extends NbTestCase {
 
     private File dir;
     private Node folderNode;
+    private LocalFileSystem testFileSystem;
 
     
     public DataFolderPasteTypesTest (String name) {
@@ -40,66 +43,68 @@ public class DataFolderPasteTypesTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-//        dir = new File( getWorkDir(), "testDir" );
-//        dir.mkdir();
-//        FileObject fo = FileUtil.toFileObject( dir );
-//        DataObject dob = DataObject.find( fo );
-//        folderNode = dob.getNodeDelegate();
+        clearWorkDir();
+        
+        testFileSystem = new LocalFileSystem();
+        testFileSystem.setRootDirectory( getWorkDir() );
+        Repository.getDefault().addFileSystem( testFileSystem );
+        
+        FileObject fo = FileUtil.createFolder( testFileSystem.getRoot(), "testDir");
+        DataObject dob = DataObject.find( fo );
+        folderNode = dob.getNodeDelegate();
     }
 
     protected void tearDown() throws Exception {
-//
-//        dir.delete();
-//        dir.deleteOnExit();
+
+        clearWorkDir();
+        Repository.getDefault().removeFileSystem( testFileSystem );
     }
 
     public void testNoPasteTypes() throws ClassNotFoundException {
-//        DataFlavor flavor = new DataFlavor( "unsupported/flavor;class=java.lang.Object" );
-//
-//        DataFolder.FolderNode node = (DataFolder.FolderNode)folderNode;
-//        ArrayList list = new ArrayList();
-//        node.createPasteTypes( new MockTransferable( new DataFlavor[] {flavor}, null ), list );
-//        assertEquals( 0, list.size() );
+        DataFlavor flavor = new DataFlavor( "unsupported/flavor;class=java.lang.Object" );
+
+        DataFolder.FolderNode node = (DataFolder.FolderNode)folderNode;
+        ArrayList list = new ArrayList();
+        node.createPasteTypes( new MockTransferable( new DataFlavor[] {flavor}, null ), list );
+        assertEquals( 0, list.size() );
     }
 
     public void testJavaFileListPasteTypes() throws ClassNotFoundException, IOException {
-//        File testFile = File.createTempFile( "testFile", ".txt", getWorkDir() );
-//        testFile.deleteOnExit();
-//        ArrayList fileList = new ArrayList(1);
-//        fileList.add( testFile );
-//        Transferable t = new MockTransferable( new DataFlavor[] {DataFlavor.javaFileListFlavor}, fileList );
-//
-//        DataFolder.FolderNode node = (DataFolder.FolderNode)folderNode;
-//        ArrayList list = new ArrayList();
-//        node.createPasteTypes( t, list );
-//        assertFalse( list.isEmpty() );
-//        PasteType paste = (PasteType)list.get( 0 );
-//        paste.paste();
-//
-//        File newFile = new File( dir, testFile.getName() );
-//        assertTrue( newFile.exists() );
-//        newFile.delete();
-//        testFile.delete();
+        FileObject testFO = FileUtil.createData( testFileSystem.getRoot(), "testFile.txt" );
+        File testFile = FileUtil.toFile( testFO );
+        ArrayList fileList = new ArrayList(1);
+        fileList.add( testFile );
+        Transferable t = new MockTransferable( new DataFlavor[] {DataFlavor.javaFileListFlavor}, fileList );
+
+        DataFolder.FolderNode node = (DataFolder.FolderNode)folderNode;
+        ArrayList list = new ArrayList();
+        node.createPasteTypes( t, list );
+        assertFalse( list.isEmpty() );
+        PasteType paste = (PasteType)list.get( 0 );
+        paste.paste();
+
+        FileObject[] children = testFileSystem.getRoot().getFileObject( "testDir" ).getChildren();
+        assertEquals( 1, children.length );
+        assertEquals( children[0].getNameExt(), "testFile.txt" );
     }
 
     public void testUriFileListPasteTypes() throws ClassNotFoundException, IOException {
-//        DataFlavor flavor = new DataFlavor( "unsupported/flavor;class=java.lang.Object" );
-//        File testFile = File.createTempFile( "testFile", ".txt", getWorkDir() );
-//        testFile.deleteOnExit();
-//        String uriList = testFile.toURI() + "\r\n";
-//        Transferable t = new MockTransferable( new DataFlavor[] {new DataFlavor("text/uri-list;class=java.lang.String")}, uriList );
-//
-//        DataFolder.FolderNode node = (DataFolder.FolderNode)folderNode;
-//        ArrayList list = new ArrayList();
-//        node.createPasteTypes( t, list );
-//        assertFalse( list.isEmpty() );
-//        PasteType paste = (PasteType)list.get( 0 );
-//        paste.paste();
-//
-//        File newFile = new File( dir, testFile.getName() );
-//        assertTrue( newFile.exists() );
-//        newFile.delete();
-//        testFile.delete();
+        DataFlavor flavor = new DataFlavor( "unsupported/flavor;class=java.lang.Object" );
+        FileObject testFO = FileUtil.createData( testFileSystem.getRoot(), "testFile.txt" );
+        File testFile = FileUtil.toFile( testFO );
+        String uriList = testFile.toURI() + "\r\n";
+        Transferable t = new MockTransferable( new DataFlavor[] {new DataFlavor("text/uri-list;class=java.lang.String")}, uriList );
+
+        DataFolder.FolderNode node = (DataFolder.FolderNode)folderNode;
+        ArrayList list = new ArrayList();
+        node.createPasteTypes( t, list );
+        assertFalse( list.isEmpty() );
+        PasteType paste = (PasteType)list.get( 0 );
+        paste.paste();
+
+        FileObject[] children = testFileSystem.getRoot().getFileObject( "testDir" ).getChildren();
+        assertEquals( 1, children.length );
+        assertEquals( children[0].getNameExt(), "testFile.txt" );
     }
 
     private static class MockTransferable implements Transferable {
