@@ -28,11 +28,16 @@ public class OneFolderPreviewPanel extends javax.swing.JPanel {
 
         repositoryFolderTextField.setEditable(false);
         repositoryFolderTextField.setText(" "); // NOI18N
+        repositoryFolderTextField.getAccessibleContext().setAccessibleName("Repository Folder Location");
+        repositoryFolderTextField.getAccessibleContext().setAccessibleDescription("Repository Folder Location");
 
         localFolderTextField.setEditable(false);
         localFolderTextField.setText(" "); // NOI18N
+        localFolderTextField.getAccessibleContext().setAccessibleName("Local Copy");
+        localFolderTextField.getAccessibleContext().setAccessibleDescription("Local Copy");
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/onefolder.png")));
+        jLabel1.setLabelFor(repositoryFolderTextField);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

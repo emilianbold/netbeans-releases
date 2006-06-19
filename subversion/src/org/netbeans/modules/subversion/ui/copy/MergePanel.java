@@ -43,10 +43,15 @@ public class MergePanel extends javax.swing.JPanel {
             }
         });
 
+        typeComboBox.getAccessibleContext().setAccessibleDescription("Merge From Repository URL");
+
         jLabel1.setLabelFor(typeComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MergePanel.class, "CTL_MergePanel_MergeFrom")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription("Merge From Repository URL");
 
+        typeDescriptionLabel.setLabelFor(mergeFieldsPanel);
         org.openide.awt.Mnemonics.setLocalizedText(typeDescriptionLabel, "jLabel2"); // NOI18N
+        typeDescriptionLabel.getAccessibleContext().setAccessibleDescription("Merge desired selection");
 
         mergeFieldsPanel.setMinimumSize(new java.awt.Dimension(350, 500));
         org.jdesktop.layout.GroupLayout mergeFieldsPanelLayout = new org.jdesktop.layout.GroupLayout(mergeFieldsPanel);
@@ -72,6 +77,7 @@ public class MergePanel extends javax.swing.JPanel {
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MergePanel.class, "CTL_MergePanel_Preview")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription("Preview Figures for Chosen Action");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

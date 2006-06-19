@@ -27,15 +27,24 @@ public class TwoFoldersPreviewPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/twofolders.png")));
+        jLabel1.setLabelFor(repositoryFolderTextField1);
+        jLabel1.getAccessibleContext().setAccessibleName("Preview Image");
+        jLabel1.getAccessibleContext().setAccessibleDescription("Preview Image for ");
 
         repositoryFolderTextField1.setColumns(27);
         repositoryFolderTextField1.setEditable(false);
+        repositoryFolderTextField1.getAccessibleContext().setAccessibleName("Repository Url");
+        repositoryFolderTextField1.getAccessibleContext().setAccessibleDescription("Repository Url");
 
         repositoryFolderTextField2.setColumns(27);
         repositoryFolderTextField2.setEditable(false);
+        repositoryFolderTextField2.getAccessibleContext().setAccessibleName("Repository Url");
+        repositoryFolderTextField2.getAccessibleContext().setAccessibleDescription("Repository Url");
 
         localFolderTextField.setColumns(27);
         localFolderTextField.setEditable(false);
+        localFolderTextField.getAccessibleContext().setAccessibleName("Working Copy");
+        localFolderTextField.getAccessibleContext().setAccessibleDescription("Working Copy");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

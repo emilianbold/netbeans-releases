@@ -27,12 +27,17 @@ public class SinceOriginPreviewPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/sinceorigin.png")));
+        jLabel1.setLabelFor(localFolderTextField);
 
         repositoryFolderTextField.setEditable(false);
         repositoryFolderTextField.setText("jTextField1"); // NOI18N
+        repositoryFolderTextField.getAccessibleContext().setAccessibleName("Repository Folder Location");
+        repositoryFolderTextField.getAccessibleContext().setAccessibleDescription("Local Copy Location");
 
         localFolderTextField.setEditable(false);
         localFolderTextField.setText("jTextField1"); // NOI18N
+        localFolderTextField.getAccessibleContext().setAccessibleName("Repository Location");
+        localFolderTextField.getAccessibleContext().setAccessibleDescription("Local Copy Location");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

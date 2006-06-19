@@ -37,24 +37,37 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
         jLabel9 = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Message")); // NOI18N
+        mergeStartRepositoryFolderLabel.setLabelFor(mergeStartUrlComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(mergeStartRepositoryFolderLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_RepositoryFolder")); // NOI18N
+        mergeStartRepositoryFolderLabel.getAccessibleContext().setAccessibleDescription("Repository Folder");
 
         mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png")));
         mergeAfterRevisionLabel.setLabelFor(mergeEndRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EndingRev")); // NOI18N
+        mergeAfterRevisionLabel.getAccessibleContext().setAccessibleDescription("End Repository Revision for Merging");
+
+        mergeEndRevisionTextField.getAccessibleContext().setAccessibleName("Ending Revision");
+        mergeEndRevisionTextField.getAccessibleContext().setAccessibleDescription("Ending Revision for Merging");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeStartSearchButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Search")); // NOI18N
+        mergeStartSearchButton.getAccessibleContext().setAccessibleDescription("Search Repository Revision");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterEmptyLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EmptyHint")); // NOI18N
 
         mergeStartUrlComboBox.setEditable(true);
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeStartBrowseButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Browse")); // NOI18N
+        mergeStartBrowseButton.getAccessibleContext().setAccessibleDescription("Browse Repository Folder");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndSearchButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Search2")); // NOI18N
+        mergeEndSearchButton.getAccessibleContext().setAccessibleDescription("Search End Repository Revision for Merging");
+
+        mergeStartRevisionTextField.getAccessibleContext().setAccessibleDescription("Starting Revision for Merging");
 
         jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/starting_revision.png")));
+        jLabel8.setLabelFor(mergeStartRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Start")); // NOI18N
+        jLabel8.getAccessibleContext().setAccessibleDescription("Start Revision for Merging");
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EmptyHint")); // NOI18N
 

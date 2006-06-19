@@ -37,29 +37,48 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
         jLabel9 = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Message")); // NOI18N
+        mergeStartRepositoryFolderLabel.setLabelFor(mergeStartUrlComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(mergeStartRepositoryFolderLabel, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_FirstFolder")); // NOI18N
+        mergeStartRepositoryFolderLabel.getAccessibleContext().setAccessibleDescription("First Repository Folder");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndBrowseButton, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Browse2")); // NOI18N
+        mergeEndBrowseButton.getAccessibleContext().setAccessibleDescription("Browse Repository Folders");
 
         mergeEndUrlComboBox.setEditable(true);
+        mergeEndUrlComboBox.getAccessibleContext().setAccessibleDescription("Second Repository Folder");
 
         mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png")));
+        mergeAfterRevisionLabel.setLabelFor(mergeEndRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Ending")); // NOI18N
+        mergeAfterRevisionLabel.getAccessibleContext().setAccessibleDescription("End Repository Revision for Merging");
+
+        mergeEndRevisionTextField.getAccessibleContext().setAccessibleName("Ending Revision for Merging");
+        mergeEndRevisionTextField.getAccessibleContext().setAccessibleDescription("Ending Revision for Merging");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeStartSearchButton, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Search1")); // NOI18N
+        mergeStartSearchButton.getAccessibleContext().setAccessibleDescription("Search Repository Revision Number");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterEmptyLabel, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_EmptyHint")); // NOI18N
 
+        mergeEndRepositoryFolderLabel.setLabelFor(mergeEndUrlComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndRepositoryFolderLabel, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Second")); // NOI18N
+        mergeEndRepositoryFolderLabel.getAccessibleContext().setAccessibleDescription("Second Repository Folder");
 
         mergeStartUrlComboBox.setEditable(true);
+        mergeStartUrlComboBox.getAccessibleContext().setAccessibleDescription("Second Repository Folder");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeStartBrowseButton, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Browse1")); // NOI18N
+        mergeStartBrowseButton.getAccessibleContext().setAccessibleDescription("Browse Repository Folders");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndSearchButton, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Search2")); // NOI18N
+        mergeEndSearchButton.getAccessibleContext().setAccessibleDescription("Search Repository Revision");
+
+        mergeStartRevisionTextField.getAccessibleContext().setAccessibleDescription("Staring Repository Revision for Merging");
 
         jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/starting_revision.png")));
+        jLabel8.setLabelFor(mergeStartRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Starting")); // NOI18N
+        jLabel8.getAccessibleContext().setAccessibleDescription("Starting Revision for Merging");
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_EmptyHint")); // NOI18N
 

@@ -58,6 +58,7 @@ public class Merge extends CopyDialog implements ItemListener {
                 }
         ));
         panel.typeComboBox.setRenderer(createTypeRenderer());
+        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Merge.class, "CTL_Merge_Title"));
         panel.typeComboBox.addItemListener(this);
         mergeTypeSelected(((MergeType) panel.typeComboBox.getSelectedItem()));
     }            
