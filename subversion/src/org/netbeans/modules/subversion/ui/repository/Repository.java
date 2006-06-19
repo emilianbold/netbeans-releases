@@ -343,14 +343,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private void validateSvnUrl() {
         boolean valid;
         try {
-            
             valid = getSelectedRepository() != null;
         } catch (InterruptedException ex) {
-            return; // should not happen
+            valid = false; // should not happen
         }
-        
-        valid = false;
-        
         setValid(valid, message);
         repositoryPanel.proxySettingsButton.setEnabled(valid);
         repositoryPanel.userPasswordField.setEnabled(valid);    
