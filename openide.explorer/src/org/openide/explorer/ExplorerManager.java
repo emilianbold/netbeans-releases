@@ -254,7 +254,9 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             }
             
             public void fire() {
-                fireInAWT(PROP_SELECTED_NODES, oldValue, selectedNodes);
+                if (doFire) {
+                    fireInAWT(PROP_SELECTED_NODES, oldValue, selectedNodes);
+                }
             }
 
             public void run() {

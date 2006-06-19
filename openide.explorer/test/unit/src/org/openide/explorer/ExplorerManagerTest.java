@@ -73,6 +73,10 @@ public class ExplorerManagerTest extends NbTestCase
         assertEquals("One event", 1, events.size());
         PropertyChangeEvent ev = (PropertyChangeEvent)events.removeFirst();
         assertEquals("Name is good", ExplorerManager.PROP_SELECTED_NODES, ev.getPropertyName());
+
+        events.clear();
+        em.setSelectedNodes(new Node[] { a });
+        assertEquals("No change: " + events, 0, events.size());
     }
     
     public void testCannotSetNodesNotUnderTheRoot() throws Exception {
