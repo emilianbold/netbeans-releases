@@ -334,9 +334,8 @@ public class SvnConfigFiles {
             InetAddress hostAddress = null;
             try {
                 hostAddress = InetAddress.getByName(host);
-            } catch (UnknownHostException ex) {
-                // behind a proxy ?
-                return null;
+            } catch (UnknownHostException ex) {                
+                continue; // behind a proxy ? still try the rest...
             }
             if(match(value, hostAddress.getHostName()) || match(value, hostAddress.getHostAddress()) ) {
                 return (Ini.Section) servers.get(key);

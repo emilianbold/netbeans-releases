@@ -92,11 +92,6 @@ public class RepositoryStep
         support = new RepositoryStepProgressSupport(panel.progressPanel);
         support.startProgress();
     }
-    
-        
-    void storeConfigValues() {
-        repository.storeConfigValues();        
-    }
 
     private void storeHistory() {
         repository.storeHistory();
@@ -162,13 +157,17 @@ public class RepositoryStep
 
                 repositoryFile = null; // reset
 
-                storeConfigValues();
-                if(isCanceled()) {
-                    return;
-                }
-
                 ISVNInfo info = null;
                 try {
+                    try {
+                        repository.storeConfigValues(); 
+                    } catch (InterruptedException ex) {
+                        stop();
+                    }
+                    if(isCanceled()) {
+                        return;
+                    }
+                
                     info = client.getInfo(selectedRepository.getUrl());
                 } catch (SVNClientException ex) {
                     ExceptionHandler eh = new ExceptionHandler(ex);

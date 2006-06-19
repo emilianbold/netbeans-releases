@@ -92,10 +92,16 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
         boolean ret = dialogDescriptor.getValue()==retryButton;
         if(ret) {
-            adapter.setUsername(repository.getUserName());
-            adapter.setPassword(repository.getPassword());
-
-            repository.storeConfigValues();
+            String username = repository.getUserName();
+            String password = repository.getPassword();
+            
+            adapter.setUsername(username);
+            adapter.setPassword(password);
+            try {
+                repository.storeConfigValues();
+            } catch (InterruptedException ex) {
+                return false; // should not happen
+            }
         }        
         return ret;
     }

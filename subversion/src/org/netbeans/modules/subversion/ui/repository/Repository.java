@@ -117,9 +117,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 SVNUrl url = null;
                 try {
                     url = getSelectedRepository().getUrl();
-                } catch (MalformedURLException ex) {
-                    // ignore, should not happen
+                } catch (InterruptedException ex) {
+                    return; // should not happen
                 }
+
                 if(!userVisitedProxySettings) {
                     proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(SvnUtils.ripUserFromHost(url.getHost()));
                 }                
@@ -194,24 +195,23 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.proxySettingsButton.setEnabled(editable);        
     }
     
-    public void storeConfigValues() {
-        SelectedRepository repository = null;
-        try {
-            repository = getSelectedRepository();
-        } catch (Exception ex) {}
+    public void storeConfigValues() throws InterruptedException {
+        SelectedRepository repository = null;        
+        repository = getSelectedRepository();        
         if(repository==null) {
             return; // uups 
         }
         
-        if (repository.getUrl().getProtocol().equals("http")  ||    // NOI18N
-            repository.getUrl().getProtocol().equals("https") ||    // NOI18N
-            repository.getUrl().getProtocol().equals("svn")   ||    // NOI18N
-            repository.getUrl().getProtocol().equals("svn+ssh") )   // NOI18N
+        SVNUrl repositoryUrl = repository.getUrl();
+        if (repositoryUrl.getProtocol().equals("http")  ||    // NOI18N
+            repositoryUrl.getProtocol().equals("https") ||    // NOI18N
+            repositoryUrl.getProtocol().equals("svn")   ||    // NOI18N
+            repositoryUrl.getProtocol().equals("svn+ssh") )   // NOI18N
         {                                
-            PasswordFile passwordFile = PasswordFile.findFileForUrl(repository.getUrl());                    
+            PasswordFile passwordFile = PasswordFile.findFileForUrl(repositoryUrl);                    
             if(passwordFile != null ) {
-                passwordFile.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
-                passwordFile.setUsername(repositoryPanel.userTextField.getText());
+                passwordFile.setPassword(getPassword());
+                passwordFile.setUsername(getUserName());
                 try {
                     passwordFile.store();   
                 } catch (IOException ex) {
@@ -223,19 +223,20 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             
             // XXX the way the usr, password and proxy settings are stored is not symetric and consistent...
             if(userVisitedProxySettings) {
-                SvnConfigFiles.getInstance().setProxy(proxyDescriptor, SvnUtils.ripUserFromHost(repository.getUrl().getHost()));
+                SvnConfigFiles.getInstance().setProxy(proxyDescriptor, SvnUtils.ripUserFromHost(repositoryUrl.getHost()));
             }            
         }    
         
     }
 
     public void storeHistory() {        
+        SelectedRepository repository;
         try {
-            SelectedRepository repository = getSelectedRepository();
-            HistorySettings.addRecent(HistorySettings.PROP_SVN_URLS, repository.getUrl().toString());
-        } catch (Exception ex) {
-            // ignore
-        }        
+            repository = getSelectedRepository();
+        } catch (InterruptedException ex) {
+            return; // should not happen
+        }
+        HistorySettings.addRecent(HistorySettings.PROP_SVN_URLS, repository.getUrl().toString());        
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -268,7 +269,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         SwingUtilities.invokeLater(awt);
     }
         
-    public SelectedRepository getSelectedRepository() throws MalformedURLException {
+    public SelectedRepository getSelectedRepository() throws InterruptedException {
         String urlString = selectedUrlString();        
         if(urlString == null ) {
             return null;
@@ -342,10 +343,14 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private void validateSvnUrl() {
         boolean valid;
         try {
+            
             valid = getSelectedRepository() != null;
-        } catch (Exception ex) {
-            valid = false;
+        } catch (InterruptedException ex) {
+            return; // should not happen
         }
+        
+        valid = false;
+        
         setValid(valid, message);
         repositoryPanel.proxySettingsButton.setEnabled(valid);
         repositoryPanel.userPasswordField.setEnabled(valid);    
@@ -360,8 +365,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         SelectedRepository repository = null;
         try {
             repository = getSelectedRepository();
-        } catch (MalformedURLException ex) {
-            // ignore
+        } catch (InterruptedException ex) {
+            return; // should not happen
         }
 
         SVNUrl url = null;
@@ -380,7 +385,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     /** Shows proper fields depending on Svn connection method. */
     private void updateVisibility() {
-        String selectedUrlString = selectedUrlString();
+        String selectedUrlString;
+        try {
+            selectedUrlString = selectedUrlString();
+        } catch (InterruptedException ex) {
+            return;
+        }
         boolean remoteServerFields = false;
         if(selectedUrlString.startsWith("http:")) { // NOI18N
             repositoryPanel.tipLabel.setText(HTTP_URL_HELP);
@@ -414,7 +424,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
      * Load selected root from Swing structures (from arbitrary thread).
      * @return null on failure
      */
-    private String selectedUrlString() {        
+    private String selectedUrlString() throws InterruptedException {        
         final String[] svnUrl = new String[1];
         try {
             Runnable awt = new Runnable() {
@@ -428,9 +438,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 SwingUtilities.invokeAndWait(awt);
             }
             return svnUrl[0].trim();
-        } catch (InterruptedException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.notify(e);
         } catch (InvocationTargetException e) {
             ErrorManager err = ErrorManager.getDefault();
             err.notify(e);
@@ -442,7 +449,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
      * Visually notifies user about password length
      */
     private void schedulePasswordUpdate() {
-        String selectedUrlString = selectedUrlString();
+        String selectedUrlString;
+        try {
+            selectedUrlString = selectedUrlString();
+        } catch (InterruptedException ex) {
+            return;
+        }
         if ( selectedUrlString.startsWith("http:")     || // NOI18N
              selectedUrlString.startsWith("https:")    || // NOI18N
              selectedUrlString.startsWith("svn:")      || // NOI18N
