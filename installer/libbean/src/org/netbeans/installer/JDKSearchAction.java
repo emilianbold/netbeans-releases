@@ -282,10 +282,35 @@ public class JDKSearchAction extends CancelableWizardAction  {
         boolean found = false;
         logEvent(this, Log.DBG, "Searching " + jdkHomeFile + " in " + jdkHomeList);
         if (jdkHomeList.contains(jdkHomeFile)) {
-            found = true;
+            //Nothing to do. JDK is already in list.
+            return;
         }
         
-        if (!found) {
+        //Add JDK to list.
+        //Following check is done only for asbundle installer on Windows and Linux.
+        if (Names.INSTALLER_AS_BUNDLE.equals(Util.getStringPropertyValue(Names.INSTALLER_TYPE)) &&
+            (Util.isWindowsOS() || Util.isLinuxOS())) {
+            //Get os.arch property value
+            logEvent(this, Log.DBG,"Checking os.arch of " + jdkHomeFile);
+            String jvm = Util.getJVMName();
+            File jvmFile = new File(jdkHomeFile + File.separator + "bin" + File.separator + jvm);
+            RunCommand runCommand = new RunCommand();
+            runCommand = new RunCommand();
+            String [] cmdArr = new String[5];
+            cmdArr[0] = jvmFile.getAbsolutePath();
+            cmdArr[1] = "-cp";
+            cmdArr[2] = JDKSearchAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            cmdArr[3] = "org.netbeans.installer.Verify";
+            cmdArr[4] = "os.arch";
+            runCommand.execute(cmdArr);
+            runCommand.waitFor();
+
+            String osArch = runCommand.getOutputLine().trim();
+            if (!osArch.equals("amd64")) {
+                logEvent(this, Log.DBG,"Found Valid JDK Home ... " + jdkHomeFile);
+                jdkHomeList.add(jdkHomeFile);
+            }
+        } else {
             logEvent(this, Log.DBG,"Found Valid JDK Home ... " + jdkHomeFile);
             jdkHomeList.add(jdkHomeFile);
         }
@@ -358,28 +383,7 @@ public class JDKSearchAction extends CancelableWizardAction  {
                 }
                 jdkVersion = stringBuffer.toString();
             }
-
-            //Following check is done only for asbundle installer on Windows and Linux.
-            if (Names.INSTALLER_AS_BUNDLE.equals(Util.getStringPropertyValue(Names.INSTALLER_TYPE)) &&
-                (Util.isWindowsOS() || Util.isLinuxOS())) {
-                //Get os.arch property value
-                runCommand = new RunCommand();
-                cmdArr = new String[5];
-                cmdArr[0] = jvmFile.getAbsolutePath();
-                cmdArr[1] = "-cp";
-                cmdArr[2] = JDKSearchAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-                cmdArr[3] = "org.netbeans.installer.Verify";
-                cmdArr[4] = "os.arch";
-                runCommand.execute(cmdArr);
-                runCommand.waitFor();
-
-                String osArch = runCommand.getOutputLine().trim();
-                if (!osArch.equals("amd64")) {
-                    jdkHomeList1.add(new JDKInfoAux(jdkPath,jdkVersion));
-                }
-            } else {
-                jdkHomeList1.add(new JDKInfoAux(jdkPath,jdkVersion));
-            }
+            jdkHomeList1.add(new JDKInfoAux(jdkPath,jdkVersion));
         }
         return jdkHomeList1;
     }
