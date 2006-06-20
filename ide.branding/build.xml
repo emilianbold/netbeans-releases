@@ -114,6 +114,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       excludes="**/*"
       manifest="manifest.mf"
       jarfile="${cluster}/modules/org-netbeans-modules-ide-branding.jar" 
+      compress="${build.package.compress}"
     >
         <fileset dir="build" >
             <include name="org/netbeans/modules/ide/branding/Bundle.properties" />
