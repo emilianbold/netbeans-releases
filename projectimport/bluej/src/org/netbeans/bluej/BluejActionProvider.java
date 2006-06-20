@@ -204,9 +204,6 @@ class BluejActionProvider implements ActionProvider {
             // check project's main class
             String mainClass = (String)ep.get ("main.class"); // NOI18N
             
-            int result = -1;
-            do {
-                boolean showDialog = true;
 //                if (!JMManager.getManager().isScanInProgress()) {
 //                    // in case the value gets back in some reasonable time,
 //                    // check if we have just one mainclass and use it then without a dialog.
@@ -216,23 +213,19 @@ class BluejActionProvider implements ActionProvider {
 //                        ep.put ("main.class", lst.get(0) == null ? "" : (String)lst.get(0)); // NOI18N
 //                    }
 //                }
-                if (showDialog) {
+                if (mainClass == null) {
                     // show warning, if cancel then return
-                    if (showMainClassWarning(mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep, eprivate, result)) {
+                    if (showMainClassWarning(mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep, eprivate, -1)) {
                         return null;
                     }
+                    mainClass = (String)ep.get("main.class"); // NOI18N
                 }
-                mainClass = (String)ep.get("main.class"); // NOI18N
-                result = 0;
 //                result = isSetMainClass(project.getProjectDirectory(), mainClass);
-            } while (result != 0);
             try {
                 if (updateHelper.requestSave()) {
                     updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, eprivate);
                     ProjectManager.getDefault().saveProject(project);
-                } else {
-                    return null;
                 }
             } catch (IOException ioe) {
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe);

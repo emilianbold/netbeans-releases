@@ -56,6 +56,14 @@ public class MainClassChooser extends JPanel {
     public MainClassChooser (FileObject[] sourcesRoots) {
         this (sourcesRoots, null);
     }
+    
+    public MainClassChooser (FileObject[] sourcesRoots, String subtitle, boolean showArguments) {
+        this (sourcesRoots, subtitle);
+        if (!showArguments) {
+            lblArguments.setVisible(false);
+            txtArguments.setVisible(false);
+        }
+    }
 
     public MainClassChooser (FileObject[] sourcesRoots, String subtitle) {
         dialogSubtitle = subtitle;
