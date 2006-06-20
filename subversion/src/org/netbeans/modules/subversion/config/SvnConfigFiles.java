@@ -161,21 +161,16 @@ public class SvnConfigFiles {
                 group = getServerGroup(pd);
                 if(group==null) {
                     group = addServerGroup(host);
-
-                    group.put("http-proxy-host", pd.getHost()); // NOI18N
-                    group.put("http-proxy-port", String.valueOf(pd.getPort())); // NOI18N
-                    if(pd.getUserName()!=null) {
-                        group.put("http-proxy-username", pd.getUserName()); // NOI18N
-                    }
-                    if(pd.getPassword()!=null) {
-                        group.put("http-proxy-password", pd.getPassword()); // NOI18N
-                    }
+                    setProxy(group, pd);
                 } else {
                     String groupName = group.getName();
                     String groupsHosts = getServerGroups().get(groupName);
                     getServerGroups().put(groupName, groupsHosts + "," + host); // NOI18N
                 }
+            } else {
+                setProxy(group, pd);
             }            
+            
         } else {
             // no proxy host means no proxy at all
             removeFromServerGroup(host);
@@ -187,6 +182,18 @@ public class SvnConfigFiles {
             servers.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+    }
+
+    private void setProxy(final Ini.Section group, final ProxyDescriptor pd) {
+
+        group.put("http-proxy-host", pd.getHost()); // NOI18N
+        group.put("http-proxy-port", String.valueOf(pd.getPort())); // NOI18N
+        if(pd.getUserName()!=null) {
+            group.put("http-proxy-username", pd.getUserName()); // NOI18N
+        }
+        if(pd.getPassword()!=null) {
+            group.put("http-proxy-password", pd.getPassword()); // NOI18N
         }
     }
 
