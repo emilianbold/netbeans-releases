@@ -570,6 +570,8 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private void initAccessibility() {
         managePlafsButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ManagePlafsButton"));
         platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformValue"));
+        javaPlatformCombo.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformCombo"));
+        javaPlatformButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformButton"));
     }
     
     // #65924: show warnings if some dependencies cannot be satisfied
