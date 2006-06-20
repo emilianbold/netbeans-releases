@@ -111,10 +111,6 @@ public class OutputLogger implements ISVNNotifyListener {
         e.printStackTrace(log.getOut());
     }
 
-//    private void focusLog() {
-//        log.select();
-//    }
-
     public void closeLog() {
         log.getOut().flush();
         log.getOut().close();        
