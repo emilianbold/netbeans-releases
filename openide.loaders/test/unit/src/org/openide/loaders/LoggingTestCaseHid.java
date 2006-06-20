@@ -103,6 +103,7 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
     
     /** Allows subclasses to register content for the lookup. Can be used in 
      * setUp and test methods, after that the content is cleared.
+     * @deprecated Please use {@link org.netbeans.junit.MockServices} instead.
      */
     protected final void registerIntoLookup(Object instance) {
         Lookup l = Lookup.getDefault();
