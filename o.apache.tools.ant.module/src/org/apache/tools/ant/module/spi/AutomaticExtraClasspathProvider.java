@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,25 @@ import java.io.File;
  * standard "optional" tasks that ship with Ant - e.g. <code>junit.jar</code>
  * as needed by the <code>&lt;junit&gt;</code> task.
  * Register instances to default lookup.
+ * <p>
+ * Since version <code>org.apache.tools.ant.module/3 3.26</code> there is a
+ * way to register a library declaratively. Just put fragment like this into
+ * your layer file:
+ * <pre>
+ * &lt;filesystems&gt;
+ *   &lt;folder name="Services"&gt;
+ *     &lt;folder name="Hidden"&gt;
+ *       &lt;file name="org-your-lib-Ant-Registration.instance"&gt;
+ *         &lt;attr name="instanceCreate" methodvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspath.url"/&gt;
+ *         &lt;attr name="url" urlvalue="nbinst:/modules/ext/org-your-lib.jar"/&gt;
+ *         &lt;attr name="instanceOf" stringvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider"/&gt;
+ *       &lt;/file&gt;
+ *     &lt;/folder&gt;
+ *   &lt;/folder&gt;
+ * &lt;/filesystems&gt;
+ * </pre>
+ *
+ *
  * @since org.apache.tools.ant.module/3 3.8
  * @author Jesse Glick
  */
