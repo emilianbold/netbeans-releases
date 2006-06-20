@@ -94,7 +94,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         logEvent(this, Log.DBG,"jreInstallDir: " + jreInstallDir);
         System.getProperties().put("jreInstallDir",jreInstallDir);
         
-        tempDir = resolveString("$J(temp.dir)");
+        tempDir = Util.getTmpDir();
         logEvent(this, Log.DBG,"Tempdir: " + tempDir);
         
         mutableOperationState = support.getOperationState();
@@ -441,7 +441,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         //#48948: We must set dirs here because init() is not run yet when getRequiredBytes
         //is called.
         origJ2SEInstallDir = (String) System.getProperties().get("j2seInstallDir");
-        tempDir = resolveString("$J(temp.dir)");
+        tempDir = Util.getTmpDir();
         
         RequiredBytesTable req = new RequiredBytesTable();
 	//  String imageDirPath = getProductTree().getInstallLocation(this);

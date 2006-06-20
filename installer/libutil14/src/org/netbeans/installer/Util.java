@@ -116,15 +116,6 @@ public class Util {
         return System.getProperty(Names.INSTALLER_TYPE).equals(Names.INSTALLER_AS_BUNDLE);
     }
     
-    // Product Directories
-    public static String getTmpDir() {
-        return getStringPropertyValue("tmpDir");
-    }
-    
-    public static void setTmpDir(String tmpDir) {
-        setStringPropertyValue("tmpDir", tmpDir);
-    }
-    
     public static String getBackupDir() {
         return getStringPropertyValue("backupDir");
     }
@@ -401,6 +392,18 @@ public class Util {
     
     public static void setBooleanPropertyValue(String key, boolean value) {
         System.getProperties().put(key, (value)?Boolean.TRUE:Boolean.FALSE);
+    }
+    
+    /** Returns temporary dir. First it checks system property temp.dir which is
+     * set by native launcher. If temp.dir is not set value of system property
+     * java.io.tmpdir is returned.
+     */
+    public static String getTmpDir () {
+        String tmpDir = System.getProperty("temp.dir");
+        if (tmpDir == null) {
+            tmpDir = System.getProperty("java.io.tmpdir");
+        }
+        return tmpDir;
     }
     
     /*deletes the whole directory with the given filter*/

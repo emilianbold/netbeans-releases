@@ -87,7 +87,7 @@ public class StorageBuilderAction extends ProductAction {
         uninstDir = nbInstallDir + File.separator + "_uninst";
         logEvent(this, Log.DBG,"uninstDir: " + uninstDir);
         logEvent(this, Log.DBG,"jdkHome: " + Util.getJdkHome());
-        tempPath = resolveString("$J(temp.dir)");
+        tempPath = Util.getTmpDir();
         logEvent(this, Log.DBG,"TempPath: " + tempPath);
         
         ideClusterDir = resolveString("$L(org.netbeans.installer.Bundle,NetBeans.ideClusterDir)");
@@ -325,7 +325,7 @@ public class StorageBuilderAction extends ProductAction {
         
         //#48948: We must set dirs here because init() is not run yet when getRequiredBytes
         //is called.
-        tempPath = resolveString("$J(temp.dir)");
+        tempPath = Util.getTmpDir();
         logEvent(this, Log.DBG, "getRequiredBytes tempPath: " + tempPath);
         
         //Storage is first built to temp dir then it is copied to destination

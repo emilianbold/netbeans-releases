@@ -147,7 +147,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         webPort = (String)System.getProperties().get("webPort");
         httpsPort = (String)System.getProperties().get("httpsPort");
 	*/
-        setTmpDir();
+        tmpDir = Util.getTmpDir();
        
         mutableOperationState = support.getOperationState();
     }
@@ -732,18 +732,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         return 105000000L;
     }
     
-    public void setTmpDir() {
-        if (tmpDir != null && tmpDir.length() > 0) {
-                return;
-        }
-        
-        tmpDir = (String)System.getProperties().get("tmpDir");
-        if ((tmpDir == null) || tmpDir.length() < 1) {
-            tmpDir = resolveString("$D(temp)");
-        }
-        logEvent(this, Log.DBG,"in getTmpDir(): tmpDir -> " + tmpDir);
-    }
-    
     /* Returns the required bytes table information for application server.  
      * @return required bytes table for application server.
      * @see com.installshield.product.RequiredBytesTable
@@ -755,7 +743,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         RequiredBytesTable req = new RequiredBytesTable();
         req.addBytes(asInstallDirPath, getCheckSum());
         
-        setTmpDir();
+        tmpDir = Util.getTmpDir();
         
         logEvent(this, Log.DBG,"in getRequiredBytes(): tmpDir -> " + tmpDir);
         // same for all platforms, actually Solaris is biggest
