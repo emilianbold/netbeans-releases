@@ -65,7 +65,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     public static final String FEED_CONTENT_PROPERTY = "feedContent";
     
     private static DateFormat parsingDateFormat = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH ); // NOI18N
-    private static DateFormat printingDateFormat = DateFormat.getDateTimeInstance( DateFormat.MEDIUM, DateFormat.MEDIUM );
+    private static DateFormat printingDateFormat = DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
 
     public RSSFeed( String url ) {
         this.url = url;
