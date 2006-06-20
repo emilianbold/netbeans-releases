@@ -96,10 +96,16 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
             findWhat.insertItemAt(txt, 0);
             findWhat.setSelectedIndex(0);
         }
+        selectText();
+    
+    }
+    
+    private void selectText() {
         Component comp = findWhat.getEditor().getEditorComponent();
         if (comp instanceof JTextField) {
-            ((JTextField)comp).setSelectionStart(0);
-            ((JTextField)comp).setSelectionEnd(txt.length());
+            JTextField fld = (JTextField)comp;
+            fld.setSelectionStart(0);
+            fld.setSelectionEnd(fld.getText().length());
         }
     }
     
@@ -158,6 +164,10 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
             findPanel.acceptButton.addActionListener(al);
         }
         dialog.setVisible(true);
+        
+        // always select the text.
+        findPanel.selectText();
+
 
         dialog.addWindowListener (new DlgWindowListener(al, findPanel.acceptButton));
     }
