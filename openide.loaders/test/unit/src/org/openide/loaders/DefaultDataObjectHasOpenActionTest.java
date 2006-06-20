@@ -30,66 +30,59 @@ import org.openide.util.Lookup;
  * @author  Jaroslav Tulach
  */
 public final class DefaultDataObjectHasOpenActionTest extends NbTestCase {
-    
+
     private FileSystem lfs;
     private DataObject obj;
-    
+
     public DefaultDataObjectHasOpenActionTest(String name) {
         super(name);
     }
-    
+
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         // initialize modules
         Lookup.getDefault().lookup(ModuleInfo.class);
-        
+
         String fsstruct [] = new String [] {
             "AA/a.test"
         };
-        
+
         TestUtilHid.destroyLocalFileSystem(getName());
         lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
         Repository.getDefault().addFileSystem(lfs);
-        
+
         FileObject fo = lfs.findResource("AA/a.test");
         assertNotNull("file not found", fo);
         obj = DataObject.find(fo);
-        
+
         assertEquals("The right class", obj.getClass(), DefaultDataObject.class);
-        
+
         assertFalse("Designed to run outside of AWT", SwingUtilities.isEventDispatchThread());
     }
-    
+
     protected void tearDown() throws Exception {
         super.tearDown();
         Repository.getDefault().removeFileSystem(lfs);
     }
-    
+
     public void testOpenActionIsAlwaysFirst() throws Exception {
         Node n = obj.getNodeDelegate();
-        
+
         assertEquals(
                 "Open action is the default one",
                 OpenAction.get(OpenAction.class),
                 n.getPreferredAction()
                 );
-        
+
         Action[] actions = n.getActions(false);
         assertTrue("There are some actions", actions.length > 1);
-        
+
         assertEquals(
                 "First one is open",
                 OpenAction.get(OpenAction.class),
                 actions[0]
                 );
-        
-        assertNull(
-                "Then there is a separator",
-                actions[1]
-                );
     }
-    
-    
-    
+
 }
