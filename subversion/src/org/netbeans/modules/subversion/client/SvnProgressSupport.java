@@ -53,8 +53,10 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
             Diagnostics.println("Start - " + displayName); // NOI18N
             perform();
             Diagnostics.println("End - " + displayName); // NOI18N
-        } finally {
+        } finally {            
             finnishProgress();
+            OutputLogger logger = Subversion.getInstance().getLogger();
+            logger.closeLog();
         }
     }
 

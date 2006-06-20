@@ -41,22 +41,22 @@ public class OutputLogger implements ISVNNotifyListener {
     
     public void logCommandLine(String commandLine) {
         logln(commandLine, false);
-        flushLog();
+       // closeLog();
     }
     
     public void logCompleted(String message) {
         logln(message, ignoreCommand);
-        closeLog();
+       // closeLog();
     }
     
     public void logError(String message) {
         logln(message, false);
-        flushLog();
+      //  flushLog();
     }
     
     public void logMessage(String message) {
         logln(message, ignoreCommand);
-        flushLog(); 
+     //   flushLog(); 
     }
     
     public void logRevision(long revision, String path) {
@@ -81,7 +81,7 @@ public class OutputLogger implements ISVNNotifyListener {
         log(message, null, ignore);
     }
     
-    private void log(String message, OutputListener hyperlinkListener, boolean ignore) {        
+    private void log(String message, OutputListener hyperlinkListener, boolean ignore) {                
         if(ignore) {
             return;
         }
@@ -111,16 +111,17 @@ public class OutputLogger implements ISVNNotifyListener {
         e.printStackTrace(log.getOut());
     }
 
-    private void focusLog() {
-        log.select();
+//    private void focusLog() {
+//        log.select();
+//    }
+
+    public void closeLog() {
+        log.getOut().flush();
+        log.getOut().close();        
     }
 
-    private void flushLog() {
-        log.getOut().close();
-    }
-
-    private void closeLog() {
-        log.getOut().close();
-    }
+//    public void closeLog() {
+//        log.getOut().close();
+//    }
     
 }
