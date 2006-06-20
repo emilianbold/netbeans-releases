@@ -19,7 +19,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -31,7 +31,6 @@ import org.openide.util.Lookup;
  */
 public final class DefaultDataObjectHasOpenActionTest extends NbTestCase {
 
-    private FileSystem lfs;
     private DataObject obj;
 
     public DefaultDataObjectHasOpenActionTest(String name) {
@@ -44,26 +43,13 @@ public final class DefaultDataObjectHasOpenActionTest extends NbTestCase {
         // initialize modules
         Lookup.getDefault().lookup(ModuleInfo.class);
 
-        String fsstruct [] = new String [] {
-            "AA/a.test"
-        };
-
-        TestUtilHid.destroyLocalFileSystem(getName());
-        lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
-        Repository.getDefault().addFileSystem(lfs);
-
-        FileObject fo = lfs.findResource("AA/a.test");
-        assertNotNull("file not found", fo);
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject fo = fs.getRoot().createData("x.test");
         obj = DataObject.find(fo);
 
         assertEquals("The right class", obj.getClass(), DefaultDataObject.class);
 
         assertFalse("Designed to run outside of AWT", SwingUtilities.isEventDispatchThread());
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        Repository.getDefault().removeFileSystem(lfs);
     }
 
     public void testOpenActionIsAlwaysFirst() throws Exception {
