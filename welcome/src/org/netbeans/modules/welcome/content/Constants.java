@@ -40,6 +40,7 @@ public interface Constants {
     static final Color HEADER_TEXT_COLOR = new Color( 14,27,85 );
     static final Color SECTION_TEXT_COLOR = new Color( 96,96,96 );
     static final Color DEFAULT_TEXT_COLOR = new Color( 0,0,0 );
+    static final Color RSS_DATETIME_COLOR = new Color( 128,128,128 );
 
     static final String FONT_NAME = Utils.getFontName();
     static final int FONT_SIZE = Utils.getDefaultFontSize();

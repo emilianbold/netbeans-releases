@@ -19,6 +19,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -164,6 +165,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                         if( item.dateTime != null) {
                             JLabel label = new JLabel();
                             label.setFont( RSS_DESCRIPTION_FONT );
+                            label.setForeground( RSS_DATETIME_COLOR );
                             label.setText( formatDateTime( item.dateTime ) );
                             panel.add( label, new GridBagConstraints(0,row++,1,1,0.0,0.0,
                                     GridBagConstraints.WEST,GridBagConstraints.NONE,
@@ -280,10 +282,20 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         String res = htmlSnippet.replaceAll( "<[^>]*>", "" ); // NOI18N // NOI18N
         res = res.replaceAll( "&nbsp;", " " ); // NOI18N // NOI18N
         res = res.trim();
-        if( res.length() > 100 ) {
-            res = res.substring( 0, 100 ) + "..."; // NOI18N
+        int maxLen = getMaxDecsriptionLength();
+        if( res.length() > maxLen ) {
+            res = res.substring( 0, maxLen ) + "..."; // NOI18N
         }
         return res;
+    }
+    
+    protected int getMaxDecsriptionLength() {
+        int verticalSize = Toolkit.getDefaultToolkit().getScreenSize().height;
+        if( verticalSize >= 1200 )
+            return 350;
+        if( verticalSize >= 1024 )
+            return 220;
+        return 140;
     }
 
     protected Component getContentHeader() {
