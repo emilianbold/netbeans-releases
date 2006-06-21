@@ -837,7 +837,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             String name = getDisplayName();
             try {
                 FileObject fo = dataFolder.getPrimaryFile();
-                Set set = new NonResursiveFolderSet(fo);                
+                Set set = new NonRecursiveFolderSet(fo);
                 org.openide.filesystems.FileSystem.Status status = fo.getFileSystem().getStatus();
                 if (status instanceof org.openide.filesystems.FileSystem.HtmlStatus) {
                     name = ((org.openide.filesystems.FileSystem.HtmlStatus) status).annotateNameHtml(name, set);
@@ -875,7 +875,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
             try {
                 FileObject fo = dataFolder.getPrimaryFile();
-                Set set = new NonResursiveFolderSet(fo);                
+                Set set = new NonRecursiveFolderSet(fo);
                 img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, set);
             } catch (FileStateInvalidException e) {
                 // no fs, do nothing
@@ -889,7 +889,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
             try {
                 FileObject fo = dataFolder.getPrimaryFile();
-                Set set = new NonResursiveFolderSet(fo);                
+                Set set = new NonRecursiveFolderSet(fo);
                 img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, set);
             } catch (FileStateInvalidException e) {
                 // no fs, do nothing
@@ -1192,14 +1192,14 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
      * FileObject set that represents package. It means
      * that it's content must not be processed recursively.
      */
-    private static class NonResursiveFolderSet extends HashSet implements NonRecursiveFolder {
+    private static class NonRecursiveFolderSet extends HashSet implements NonRecursiveFolder {
         
         private final FileObject folder;
         
         /**
          * Creates set with one element, the folder.
          */
-        public NonResursiveFolderSet(FileObject folder) {
+        public NonRecursiveFolderSet(FileObject folder) {
             this.folder = folder;
             add(folder);
         }
