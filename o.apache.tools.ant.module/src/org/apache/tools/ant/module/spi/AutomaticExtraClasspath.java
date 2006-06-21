@@ -26,30 +26,29 @@ import org.openide.filesystems.URLMapper;
  * @author Jaroslav Tulach
  */
 final class AutomaticExtraClasspath implements AutomaticExtraClasspathProvider {
-    private URL url;
+    private File file;
     
     
-    private AutomaticExtraClasspath(URL url) {
-        this.url = url;
+    private AutomaticExtraClasspath(File file) {
+        this.file = file;
     }
     
     public static AutomaticExtraClasspathProvider url(Map<?,?> map) throws Exception {
         Object obj = map.get("url"); // NOI18N
         if (obj instanceof URL) {
-            AutomaticExtraClasspath aec = new AutomaticExtraClasspath((URL)obj);
-            if (aec.getClasspathItems().length > 0) {
+            FileObject fo = URLMapper.findFileObject((URL)obj);
+            File f = fo != null ? FileUtil.toFile(fo) : null;
+            if (f != null) {
+                AutomaticExtraClasspath aec = new AutomaticExtraClasspath(f);
                 return aec;
             }
-            throw new IllegalStateException("file does not exists: " + obj); // NOI18N
+            throw new IllegalArgumentException("file does not exists: " + obj); // NOI18N
         } else {
-            throw new IllegalStateException("url arg is not URL: " + obj); // NOI18N
+            throw new IllegalArgumentException("url arg is not URL: " + obj); // NOI18N
         }
     }
 
     public File[] getClasspathItems() {
-        FileObject fo = URLMapper.findFileObject(url);
-        File f = fo != null ? FileUtil.toFile(fo) : null;
-        
-        return f == null ? new File[0] : new File[] { f };
+        return new File[] { file };
     }
 }

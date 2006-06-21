@@ -78,8 +78,8 @@ public class AutomaticExtraClasspathTest extends NbTestCase {
         Object value = bad.getAttribute("instanceCreate");
         assertNull("no provider created: " + value, value);
         
-        if (log.toString().indexOf("IllegalStateException") == -1) {
-            fail("IllegalStateException shall be thrown:\n" + log);
+        if (log.toString().indexOf("IllegalArgumentException") == -1) {
+            fail("IllegalArgumentException shall be thrown:\n" + log);
         }
     }
 
@@ -91,8 +91,8 @@ public class AutomaticExtraClasspathTest extends NbTestCase {
         Object value = fo.getAttribute("instanceCreate");
         assertNull("no provider created: " + value, value);
         
-        if (log.toString().indexOf("IllegalStateException") == -1) {
-            fail("IllegalStateException shall be thrown:\n" + log);
+        if (log.toString().indexOf("IllegalArgumentException") == -1) {
+            fail("IllegalArgumentException shall be thrown:\n" + log);
         }
     }
     
