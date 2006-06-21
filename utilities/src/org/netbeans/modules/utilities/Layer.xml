@@ -253,6 +253,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Tutorials">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
           <!--      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/> -->
+                <!-- XXX this is probably bogus, supplied by ide/welcome, should be deleted? what about the other items? should be moved to ide cluster -->
                 <file name="quick-start.url" url="nbresloc:/org/netbeans/modules/utilities/quick-start.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 </file>
