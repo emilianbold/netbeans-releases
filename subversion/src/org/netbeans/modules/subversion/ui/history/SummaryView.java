@@ -342,11 +342,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
             long revision = Long.parseLong(drev.getRevision().getNumber());
             File file = drev.getRevision().getLogInfoHeader().getFile();
-            // execute remote search with known results
-            File rootFile = SvnUtils.getRootFile(file);
-            SearchHistoryAction.openSearch(SvnUtils.getRepositoryRootUrl(drev.getRevision().getLogInfoHeader().getFile()),
-                                           rootFile,
-                                           revision);
+            // look for the top folder that is checked out from the same repository
+            SVNUrl repoUrl = SvnUtils.getRepositoryRootUrl(drev.getRevision().getLogInfoHeader().getFile());
+            File rootFile = file;
+            for (;;) {
+                File rootParent = rootFile.getParentFile();
+                if (rootParent == null || !repoUrl.equals(SvnUtils.getRepositoryRootUrl(rootParent))) break;
+                rootFile = rootParent;
+            }
+            SearchHistoryAction.openSearch(repoUrl, rootFile, revision);
         }
     }
     

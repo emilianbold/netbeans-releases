@@ -49,7 +49,7 @@ class SearchExecutor implements Runnable {
     
     private final SearchHistoryPanel    master;
     private Map<SVNUrl, Set<File>>      workFiles;
-    private Map<SVNUrl, File>           urlToRoot;
+    private Map<String,File>            pathToRoot;
     private final SearchCriteriaPanel   criteria;
     private boolean                     filterUsername;
     private boolean                     filterMessage;
@@ -64,15 +64,16 @@ class SearchExecutor implements Runnable {
         filterUsername = criteria.getUsername() != null;
         filterMessage = criteria.getCommitMessage() != null;
         
-        urlToRoot = new HashMap<SVNUrl, File>();
+        pathToRoot = new HashMap<String, File>(); 
         if (searchingUrl()) {
-            urlToRoot.put(master.getRepositoryUrl(), master.getRoots()[0]);
+            String rootPath = SvnUtils.getRepositoryPath(master.getRoots()[0]);
+            pathToRoot.put(rootPath, master.getRoots()[0]); 
         } else {
             workFiles = new HashMap<SVNUrl, Set<File>>();
             for (File file : master.getRoots()) {
-                File rootFile = SvnUtils.getRootFile(file);
+                String rootPath = SvnUtils.getRepositoryPath(file);
+                pathToRoot.put(rootPath, file);
                 SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
-                urlToRoot.put(rootUrl, rootFile);
                 Set<File> set = workFiles.get(rootUrl);
                 if (set == null) {
                     set = new HashSet<File>(2);
@@ -181,7 +182,9 @@ class SearchExecutor implements Runnable {
                 SVNUrl fileUrl = url.appendPath(path.getPath());
                 LogInformation logInfo = urlToLoginfo.get(fileUrl);
                 if (logInfo == null) {
-                    File file = FileUtil.normalizeFile(computeFile(url, path.getPath()));
+                    File file = computeFile(path.getPath());
+                    if (file == null) continue;
+                    file = FileUtil.normalizeFile(file);
                     if (!underSearchRoots(file)) continue;
                     logInfo = new LogInformation();
                     logInfo.setRepositoryFilename(fileUrl.toString());
@@ -211,9 +214,13 @@ class SearchExecutor implements Runnable {
         return false;
     }
 
-    private File computeFile(SVNUrl url, String path) {
-        File rootFile = urlToRoot.get(url);
-        return new File(rootFile, path);
+    private File computeFile(String path) {
+        for (String s : pathToRoot.keySet()) {
+            if (path.startsWith(s)) {
+                return new File(pathToRoot.get(s), path.substring(s.length()));
+            }
+        }
+        return null;
     }
 
     private void checkFinished() {

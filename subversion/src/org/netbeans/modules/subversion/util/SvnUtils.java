@@ -588,18 +588,15 @@ public class SvnUtils {
     }
 
     /**
-     * Determines the top level working copy folder that is checked out from the same repository as the given file.
+     * Determines a versioned file's repository path
      * 
      * @param file versioned file
-     * @return file's top level parent 
+     * @return file's path in repository 
      */ 
-    public static File getRootFile(File file) {
-        SVNUrl url = getRepositoryUrl(file);           // svn://localhost/some/path/Main.java
-        SVNUrl rootUrl = getRepositoryRootUrl(file);   // svn://localhost
-        String urlPath = SVNUrlUtils.getRelativePath(rootUrl, url, true);         // /some/path/Main.java
-        String rootPath = file.getAbsolutePath();      // /home/workdir/projects/sbs/some/path/Main.java
-        rootPath = rootPath.substring(0, rootPath.length() - urlPath.length()); // /home/workdir/projects/sbs
-        return new File(rootPath);
+    public static String getRepositoryPath(File file) {
+        SVNUrl url = getRepositoryUrl(file);
+        SVNUrl rootUrl = getRepositoryRootUrl(file);
+        return SVNUrlUtils.getRelativePath(rootUrl, url, true);
     }
 
     /**
