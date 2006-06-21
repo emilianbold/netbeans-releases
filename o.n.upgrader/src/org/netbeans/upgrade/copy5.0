@@ -36,6 +36,7 @@ include Services/org-netbeans-modules-httpserver-HttpServerSettings\.settings
 include org-netbeans-api-project-libraries/Libraries/.*\.xml
 include Services/Platforms/org-netbeans-api-java-Platform/.*\.xml
 include Services/org-netbeans-modules-project-ui-OpenProjectList\.settings
+include Services/org-netbeans-modules-xml-core-settings-CoreSettings.settings
 
 include HTTPMonitor/.*
 
