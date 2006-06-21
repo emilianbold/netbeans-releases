@@ -679,32 +679,32 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         jPanel2.add(jSeparator1);
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/refresh.png")));
-        btnRefresh.setMnemonic('f');
         btnRefresh.setToolTipText(bundle.getString("CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
         btnRefresh.setActionCommand(null); // NOI18N
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 23));
         btnRefresh.addActionListener(this);
 
         jPanel2.add(btnRefresh);
+        btnRefresh.getAccessibleContext().setAccessibleName("Refresh Status");
 
         btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff.png")));
-        btnDiff.setMnemonic('d');
         btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
         btnDiff.setPreferredSize(new java.awt.Dimension(22, 25));
         btnDiff.addActionListener(this);
 
         jPanel2.add(btnDiff);
+        btnDiff.getAccessibleContext().setAccessibleName("Diff All");
 
         jPanel3.setOpaque(false);
         jPanel2.add(jPanel3);
 
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/update.png")));
-        btnUpdate.setMnemonic('c');
         btnUpdate.setToolTipText(bundle.getString("CTL_Synchronize_Action_Update_Tooltip")); // NOI18N
         btnUpdate.setPreferredSize(new java.awt.Dimension(22, 25));
         btnUpdate.addActionListener(this);
 
         jPanel2.add(btnUpdate);
+        btnUpdate.getAccessibleContext().setAccessibleName("Update");
 
         btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/commit.png")));
         btnCommit.setToolTipText(bundle.getString("CTL_CommitForm_Action_Commit_Tooltip")); // NOI18N
@@ -712,6 +712,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         btnCommit.addActionListener(this);
 
         jPanel2.add(btnCommit);
+        btnCommit.getAccessibleContext().setAccessibleName("Commit");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
