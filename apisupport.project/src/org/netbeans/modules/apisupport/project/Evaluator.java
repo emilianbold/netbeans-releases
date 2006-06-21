@@ -312,6 +312,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 // Cf. apisupport/harness/release/build.xml#test-lib-init
                 testJars =
                         "${test.unit.lib.cp}:" +
+                        // XXX this is ugly, try to look for the JAR using wildcards instead
                         "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
                         "${netbeans.dest.dir}/ide8/modules/ext/junit-3.8.2.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar:" + // NOI18N
