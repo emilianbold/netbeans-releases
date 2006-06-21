@@ -156,7 +156,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
     }
 
     public void drop (DropTargetDropEvent e) {
-        WidgetAction.State state = processOperator (Operator.DROP, new WidgetAction.WidgetDropTargetDropEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processLocationOperator (Operator.DROP, new WidgetAction.WidgetDropTargetDropEvent (++ eventIDcounter, e));
         if (state.isConsumed ())
             e.acceptDrop (DnDConstants.ACTION_COPY_OR_MOVE);
         else

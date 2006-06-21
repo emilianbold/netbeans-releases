@@ -131,6 +131,8 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
     }
 
     public final PinCtrl getPinController (NodeCtrl nodeController, Pin pin) {
+        if (nodeController == null)
+            return null;
         return nodePinControllers.get (nodeController).get (pin);
     }
 
