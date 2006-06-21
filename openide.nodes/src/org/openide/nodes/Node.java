@@ -121,7 +121,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     /** template for changes in cookies */
     private static final Lookup.Template TEMPL_COOKIE = new Lookup.Template(Node.Cookie.class);
 
-    /** Lock for initialication */
+    /** Lock for initialization */
     private static final Object INIT_LOCK = new Object();
 
     /** children representing parent node (Children or ChildrenArray),
@@ -151,7 +151,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     /** Creates a new node with a given hierarchy of children and a lookup
     * providing content for {@link #getCookie} and {@link #getLookup} methods.
     * <p>
-    * As the lookup needs to be constucted before Node's constructor is called,
+    * As the lookup needs to be constructed before Node's constructor is called,
     * it might not be obvious how to add Node or other objects into it without
     * type casting. Here is the recommended suggestion that uses public/private
     * pair of constructors:
@@ -173,7 +173,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         <span class="keyword">super</span><span class="constant">(</span><span class="variable-name">ch</span><span class="constant">,</span> <span class="keyword">new</span> <span class="function-name">AbstractLookup</span><span class="constant">(</span><span class="variable-name">content</span><span class="constant">)</span><span class="constant">)</span><span class="constant">;</span>
         <span class="comment">// adds the node to our own lookup</span>
         <span class="variable-name">content</span><span class="constant">.</span><span class="function-name">add</span> <span class="constant">(</span><span class="keyword">this</span><span class="constant">)</span><span class="constant">;</span>
-        <span class="comment">// adds aditional items to the lookup</span>
+        <span class="comment">// adds additional items to the lookup</span>
         <span class="variable-name">content</span><span class="constant">.</span><span class="function-name">add</span> <span class="constant">(</span><span class="variable-name">file</span><span class="constant">)</span><span class="constant">;</span>
     <span class="constant">}</span>
     </PRE>
@@ -300,7 +300,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         }
     }
 
-    /** Code that reasignes the reference from to parent from its
+    /** Code that reassigns the reference from to parent from its
      * Children to its ChildrenArray.
      */
     final synchronized void reassignTo(Children currentParent, ChildrenArray itsArray) {
@@ -313,7 +313,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         this.parent = itsArray;
     }
 
-    /** Deassignes the node from a children, when it is removed from
+    /** Deassigns the node from a children, when it is removed from
     * a children.
     */
     final synchronized void deassignFrom(Children parent) {
@@ -393,7 +393,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         return hierarchy;
     }
 
-    /** Can be overriden in subclasses (probably in FilterNode) to check
+    /** Can be overridden in subclasses (probably in FilterNode) to check
      * whether children are of the right subclass
      */
     void updateChildren() {
@@ -560,9 +560,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     *
     * @param t the transferable
     * @param action the drag'n'drop action to do DnDConstants.ACTION_MOVE, ACTION_COPY, ACTION_LINK
-    * @param index index between children the drop occured at or -1 if not specified
+    * @param index index between children the drop occurred at or -1 if not specified
     * @return null if the transferable cannot be accepted or the paste type
-    *    to execute when the drop occures
+    *    to execute when the drop occurs
     */
     public abstract PasteType getDropType(Transferable t, int action, int index);
 
@@ -573,11 +573,11 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     public abstract NewType[] getNewTypes();
 
     /** Get the set of actions that are associated with this node.
-     * This set is used to construct the popup menu for the node.
+     * This set is used to construct the context menu for the node.
      *
      * <P>
      * By default this method delegates to the deprecated getActions or getContextActions
-     * method depending on the value of suplied argument.
+     * method depending on the value of supplied argument.
      * <P>
      * It is supposed to be overridden by subclasses accordingly.
      *
@@ -610,7 +610,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * is serving as the parent of a (say) a window tab full of icons (e.g., in
     * <code>IconView</code>), and the users right-clicks on
     * the empty space in this pane, then this method should be used to get
-    * the appropriate actions for a popup menu.
+    * the appropriate actions for a context menu.
     * <p>Note that in the Windows UI system, e.g., these action sets are quite different.
     *
     * @return actions for a context. In the default implementation, same as {@link #getActions}.
@@ -631,7 +631,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     /** Gets the preferred action for this node.
      * This action can but need not to be one from the action array returned
      * from {@link #getActions(boolean)}.
-     * In case it is, the popup menu created from those actions
+     * In case it is, the context menu created from those actions
      * is encouraged to highlight the preferred action.
      * Override in subclasses accordingly.
      *
@@ -645,7 +645,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     /** Make a context menu for this node.
     * The menu is constructed from the set of actions returned by {@link #getActions}.
     *
-    * @return the popup menu
+    * @return the context menu
     */
     public final JPopupMenu getContextMenu() {
         return NodeOp.findContextMenuImpl(new Node[] { this }, null);
@@ -689,7 +689,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         return null;
     }
 
-    /** Obtains a Lookup represeting additional content of this Node.
+    /** Obtains a Lookup representing additional content of this Node.
      * If the lookup was provided in a constructor, it is returned here,
      * if not, a lookup based on the content of <link>getCookie</link>
      * method is provided.
@@ -722,11 +722,11 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     /** Return a variant of the display name containing HTML markup
      * conforming to the limited subset of font-markup HTML supported by
      * the lightweight HTML renderer <code>org.openide.awt.HtmlRenderer</code>
-     * (font color, bold, italic and strikethrough supported; font
+     * (font color, bold, italic and strike-through supported; font
      * colors can be UIManager color keys if they are prefixed with
      * a ! character, i.e. <samp>&lt;font color='!controlShadow'&gt;</samp>).
      * Enclosing <samp>&lt;html&gt;</samp> tags are not needed. If returning non-null, HTML
-     * markup characters that should be literally renderered must be
+     * markup characters that should be literally rendered must be
      * escaped (<samp>&gt;</samp> becomes <samp>&amp;gt;</samp> and so forth).
      * <p><strong>This method should return either an HTML display name
      * or null; it should not return the non-HTML display name.</strong>
@@ -755,7 +755,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     }
 
     /** Finds delegating lookup that was previously registered
-     * @return the lookup or null if nothing was registed or the
+     * @return the lookup or null if nothing was registered or the
      *    lookup was GCed.
      */
     final Lookup findDelegatingLookup() {
@@ -1114,7 +1114,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         }
     }
 
-    /** Compares for equaliness. Does special treatment of
+    /** Compares for equality. Does special treatment of
      * FilterNodes. If argument is FilterNode then this node can be
      * equal with it if it is its original.
      *
@@ -1410,13 +1410,13 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
 
         /** Return a variant of the display name containing HTML markup
          * conforming to the limited subset of font-markup HTML supported by
-         * the lightweight HTML renderer org.openide.awt.HtmlRenderer
-         * (font color, bold, italic and strikethrough supported; font
+         * the lightweight HTML renderer {@link org.openide.awt.HtmlRenderer}
+         * (font color, bold, italic and strike-through supported; font
          * colors can be UIManager color keys if they are prefixed with
          * a ! character, i.e. &lt;font color=&amp;'controlShadow'&gt;).
-         * Enclosing html tags are not needed.
+         * Enclosing HTML tags are not needed.
          * <p><strong>This method should return either an HTML display name
-         * or null; it should not return the non-html display name.
+         * or null; it should not return the non-HTML display name.
          *
          * @see org.openide.awt.HtmlRenderer
          * @since 4.30

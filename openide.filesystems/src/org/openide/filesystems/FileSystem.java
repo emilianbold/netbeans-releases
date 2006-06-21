@@ -826,16 +826,19 @@ public abstract class FileSystem implements Serializable {
      */
     public static interface HtmlStatus extends Status {
         /** Annotate a name such that the returned value contains HTML markup.
-         * The return value less the html content should typically be the same
+         * The return value less the HTML content should typically be the same
          * as the return value from <code>annotateName()</code>.  This is used,
-         * for example, by VCS filesystems to de&euml;phasize the status information
+         * for example, by VCS filesystems to de&euml;mphasize the status information
          * included in the file name by using a light grey font color.
          * <p>
          * For consistency with <code>Node.getHtmlDisplayName()</code>,
          * filesystems that proxy other filesystems (and so must implement
          * this interface to supply HTML annotations) should return null if
          * the filesystem they proxy does not provide an implementation of
-         * HTMLStatus.
+         * {@link FileSystem.HtmlStatus}.
+         * @param name the name suggested by default
+         * @param files an immutable set of files belonging to this filesystem
+         * @return the annotated name (XXX may it be the same as the passed-in name or should it then be null?)
          * @since 4.30
          * @see org.openide.awt.HtmlRenderer
          * @see <a href="@OPENIDE/LOADERS@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
