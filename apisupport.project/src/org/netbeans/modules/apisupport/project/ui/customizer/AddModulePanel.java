@@ -288,6 +288,7 @@ public final class AddModulePanel extends JPanel {
         moduleSP.getVerticalScrollBar().getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_ModuleListVerticalScroll"));
         moduleSP.getHorizontalScrollBar().getAccessibleContext().setAccessibleName(getMessage("ACS_CTL_ModuleListHorizontalScroll"));
         moduleSP.getHorizontalScrollBar().getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_ModuleListHorizontalScroll"));
+        showNonAPIModules.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ShowNonApiModules"));
     }
     
     private static String getMessage(String key) {
