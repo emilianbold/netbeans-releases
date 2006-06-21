@@ -25,13 +25,13 @@ import java.util.MissingResourceException;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.Util;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -348,7 +348,7 @@ public final class Main extends Object {
             }
         }
     } catch (Exception e) {
-        ErrorManager.getDefault().notify(e);
+        Exceptions.printStackTrace(e);
     }
     StartLog.logProgress ("License check performed and upgrade wizard consulted"); // NOI18N
 

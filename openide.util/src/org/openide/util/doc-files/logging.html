@@ -62,8 +62,8 @@
     
     <p>
     It is possible to use 
-    <a href="@JDK@/java/util/logging/Logger.html#getAnonymousLogger()">
-        anonymous loggers
+    <a href="@JDK@/java/util/logging/Logger.html#global">
+        global logger
     </a>
     but it is preferred to create
     <a href="@JDK@/java/util/logging/Logger.html#getLogger(java.lang.String)">
@@ -84,7 +84,7 @@
     
     <p>
     However there is a simpler way how to enable logging of an named logger.
-    Just start NetBeans with <code>-J-Dname.of.the.Logger.level=100</code>
+    Just start NetBeans with <code>-J-Dname.of.the.Logger.<b>level</b>=100</code>
     or any other number and all the log 
     <a href="@JDK@/java/util/logging/Level.html">Level</a>s 
     with higher or equal value will immediatelly
@@ -94,7 +94,7 @@
     <p>
     It is possible to turn the logging dynamically when the application
     is running. It is enough to just:<pre>
-System.setProperty("name.of.the.Logger.level", "100");
+System.setProperty("name.of.the.Logger.<b>level</b>", "100");
 LogManager.getLogManager().readConfiguration();
 </pre>
     and logging state for the <q>name.of.the.Logger</q> is changed. The
@@ -121,7 +121,9 @@ LogManager.getLogManager().readConfiguration();
 <h5>Handling Exceptions</h5>
 
 <p>
-To handle an exception and sent it to the log file:
+To handle an exception and sent it to the log file (and possibly
+show blinking
+icon to the user in bottom right corner of main window):
 </p>
 <pre>
 private static <a href="@JDK@/java/util/logging/Logger.html">Logger</a> logger = <a href="@JDK@/java/util/logging/Logger.html#getLogger(java.lang.String)">Logger.getLogger</a>("name.of.your.Logger");
@@ -143,6 +145,33 @@ try {
     logger.log(Level.FINE, "msg", ioe);
 }
 </pre>
+<p>
+The easiest way to make sure an exception is reported to the user is to 
+use the 
+<a href="@org-openide-dialogs@/org/openide/DialogDisplayer.html">dialog API</a>
+with a code like this:
+</p>
+<pre>
+try {
+  // some operations
+} catch (Exception ex) {
+  <a href="@org-openide-dialogs@/org/openide/NotifyDescriptor.Exception.html">NotifyDescriptor.Exception</a> e = new NotifyDescriptor.Exception(ex);
+  <a href="@org-openide-dialogs@/org/openide/DialogDisplayer.html">DialogDisplayer</a>.getDefault().notifyLater(e);
+}
+</pre>
+<p>
+This code will present a dialog box with warning message extracted from
+the exception <code>ex</code> sometime in the <q>future</q> - e.g. when the
+AWT event queue is empty and can show the dialog. Use of
+<a href="@org-openide-dialogs@/org/openide/DialogDisplayer.html#notifyLater(org.openide.NotifyDescriptor)">
+notifyLater</a> 
+to plain
+<a href="@org-openide-dialogs@/org/openide/DialogDisplayer.html#notify(org.openide.NotifyDescriptor)">
+notify</a> 
+
+is recommended in order to prevent deadlocks and
+starvations
+</p>
 
 <h5>Retain nested stacktraces / change exception type</h5>
     
@@ -209,6 +238,25 @@ class Something {
 </pre>
 
 <p>
+
+<h5>Annotate Exceptions</h5>
+
+<p>
+There is an easy way how to annotate exceptions with localized and non-localized
+messages in NetBeans. One can use
+<a href="@TOP@/org/openide/util/Exceptions.html#attachMessage(E,%20java.lang.String)">
+    Exceptions.attachMessage
+</a> or 
+<a href="@TOP@/org/openide/util/Exceptions.html#attachMessage(E,%20java.lang.String)">
+    Exceptions.attachLocalizedMessage
+</a>. The non-localized messages are guaranteed to be printed when one does
+<code>ex.printStackTrace()</code>, to extract associated localized message
+one can use 
+<a href="@TOP@/org/openide/util/Exceptions.html#findLocalizedMessage(java.lang.Throwable)">
+    Exceptions.findLocalizedMessage
+</a>.
+</p>
+
 
 <h3>Using Structured Logging for Communication</h3>
 

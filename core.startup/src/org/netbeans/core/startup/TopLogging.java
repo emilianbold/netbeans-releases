@@ -24,10 +24,14 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -36,8 +40,10 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.xml.sax.SAXParseException;
 
 /**
  * Class that sets the java.util.logging.LogManager configuration to log into
@@ -49,6 +55,9 @@ public final class TopLogging {
     private static boolean disabledConsole = ! Boolean.getBoolean("netbeans.logger.console"); // NOI18N
     /** reference to the old error stream */
     private static final PrintStream OLD_ERR = System.err;
+    static {
+        System.setProperty("sun.awt.exception.handler", "org.netbeans.core.startup.TopLogging$AWTHandler"); // NOI18N
+    }
 
     /** Initializes the logging configuration. Invoked by <code>LogManager.readConfiguration</code> method.
      */
@@ -93,6 +102,13 @@ public final class TopLogging {
         if (!disabledConsole) { // NOI18N
             logger.addHandler (streamHandler ());
         }
+        logger.addHandler(new LookupDel());
+
+        /* TBD:
+        for (Handler h : Lookup.getDefault().lookupAll(Handler.class)) {
+            logger.addHandler(h);
+        }
+         */
     }
 
     private static String previousUser;
@@ -361,13 +377,20 @@ public final class TopLogging {
 
         
         public String format(java.util.logging.LogRecord record) {
+            StringBuilder sb = new StringBuilder();
+            print(sb, record, new HashSet<Throwable>());
+            return sb.toString();
+        }
+
+
+        private void print(StringBuilder sb, LogRecord record, Set<Throwable> beenThere) {
             String message = formatMessage(record);
             if (message != null && message.indexOf('\n') != -1 && record.getThrown() == null) {
                 // multi line messages print witout any wrappings
-                return message;
+                sb.append(message);
+                return;
             }
 
-            StringBuffer sb = new StringBuffer();
             sb.append(record.getLevel().getLocalizedName());
             addLoggerName (sb, record);
             if (message != null) {
@@ -375,31 +398,139 @@ public final class TopLogging {
                 sb.append(message);
             }
             sb.append(lineSeparator);
-            if (record.getThrown() != null) {
+            if (record.getThrown() != null && record.getLevel().intValue() != 1973) { // 1973 signals ErrorManager.USER
                 try {
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
-                    record.getThrown().printStackTrace(pw);
+                    // All other kinds of throwables we check for a stack trace.
+                    // First try to find where the throwable was caught.
+                    StackTraceElement[] tStack = record.getThrown().getStackTrace();
+                    StackTraceElement[] hereStack = new Throwable().getStackTrace();
+                    int idx = -1;
+                    for (int i = 1; i <= Math.min(tStack.length, hereStack.length); i++) {
+                        if (!tStack[tStack.length - i].equals(hereStack[hereStack.length - i])) {
+                            idx = tStack.length - i + 1;
+                            break;
+                        }
+                    }
+                    String[] tLines = decompose(record.getThrown());
+                    for (int i = 0; i < tLines.length; i++) {
+                        if (i == idx) {
+                            pw.print("[catch]"); // NOI18N
+                            // Also translate following tab -> space since formatting is bad in
+                            // Output Window (#8104) and some mail agents screw it up etc.
+                            if (tLines[i].charAt(0) == '\t') {
+                                pw.print(' ');
+                                tLines[i] = tLines[i].substring(1);
+                            }
+                        }
+                        pw.println(tLines[i]);
+                    }
                     pw.close();
                     sb.append(sw.toString());
                 } catch (Exception ex) {
                 }
+
+                LogRecord[] arr = extractDelegates(sb, record.getThrown(), beenThere);
+                if (arr != null) {
+                    for (LogRecord r : arr) {
+                        print(sb, r, beenThere);
+                    }
+                }
+
+                specialProcessing(sb, record.getThrown(), beenThere);
             }
-            return sb.toString();
         }
         
-        private static void addLoggerName (StringBuffer sb, java.util.logging.LogRecord record) {
+        private static void addLoggerName (StringBuilder sb, java.util.logging.LogRecord record) {
             String name = record.getLoggerName ();
             if (!"".equals (name)) {
                 sb.append(" [");
                 sb.append(name);
                 sb.append(']');
-//                if (record.getSourceClassName() != null) {	
-//                    sb.append(record.getSourceClassName());
-//                } else {
-//                    sb.append(record.getLoggerName());
-//                }
             }
+        }
+
+        private static LogRecord[] extractDelegates(StringBuilder sb, Throwable t, Set<Throwable> beenThere) {
+            if (!beenThere.add(t)) {
+                sb.append("warning: cyclic dependency between annotated throwables"); // NOI18N
+                return null;
+            }
+
+            if (t instanceof Callable) {
+                Object rec = null;
+                try {
+                    rec = ((Callable) t).call();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                if (rec instanceof LogRecord[]) {
+                    return (LogRecord[])rec;
+                }
+            }
+            if (t == null) {
+                return null;
+            }
+            return extractDelegates(sb, t.getCause(), beenThere);
+        }
+
+
+        private void specialProcessing(StringBuilder sb, Throwable t, Set<Throwable> beenThere) {
+            // MissingResourceException should be printed nicely... --jglick
+            if (t instanceof MissingResourceException) {
+                MissingResourceException mre = (MissingResourceException) t;
+                String cn = mre.getClassName();
+                if (cn != null) {
+                    LogRecord rec = new LogRecord(Level.CONFIG, null);
+                    rec.setResourceBundle(NbBundle.getBundle(TopLogging.class));
+                    rec.setMessage("EXC_MissingResourceException_class_name");
+                    rec.setParameters(new Object[] { cn });
+                    print(sb, rec, beenThere);
+                }
+                String k = mre.getKey();
+                if (k != null) {
+                    LogRecord rec = new LogRecord(Level.CONFIG, null);
+                    rec.setResourceBundle(NbBundle.getBundle(TopLogging.class));
+                    rec.setMessage("EXC_MissingResourceException_key");
+                    rec.setParameters(new Object[] { k });
+                    print(sb, rec, beenThere);
+                }
+            }
+            if (t instanceof SAXParseException) {
+                // For some reason these fail to come with useful data, like location.
+                SAXParseException spe = (SAXParseException)t;
+                String pubid = spe.getPublicId();
+                String sysid = spe.getSystemId();
+                if (pubid != null || sysid != null) {
+                    int col = spe.getColumnNumber();
+                    int line = spe.getLineNumber();
+                    String msg;
+                    Object[] param;
+                    if (col != -1 || line != -1) {
+                        msg = "EXC_sax_parse_col_line"; // NOI18N
+                        param = new Object[] {String.valueOf(pubid), String.valueOf(sysid), new Integer(col), new Integer(line)};
+                    } else {
+                        msg = "EXC_sax_parse"; // NOI18N
+                        param = new Object[] { String.valueOf(pubid), String.valueOf(sysid) };
+                    }
+                    LogRecord rec = new LogRecord(Level.CONFIG, null);
+                    rec.setResourceBundle(NbBundle.getBundle(TopLogging.class));
+                    rec.setMessage(msg);
+                    rec.setParameters(param);
+                    print(sb, rec, beenThere);
+                }
+            }
+        }
+        /** Get a throwable's stack trace, decomposed into individual lines. */
+        private static String[] decompose(Throwable t) {
+            StringWriter sw = new StringWriter();
+            t.printStackTrace(new PrintWriter(sw));
+            StringTokenizer tok = new StringTokenizer(sw.toString(), "\n\r"); // NOI18N
+            int c = tok.countTokens();
+            String[] lines = new String[c];
+            for (int i = 0; i < c; i++)
+                lines[i] = tok.nextToken();
+            return lines;
         }
     } // end of NbFormater
 
@@ -442,7 +573,38 @@ public final class TopLogging {
                 sb.delete(0, first);
             }
         }
+    } // end of LgStream
 
+    private static final class LookupDel extends Handler {
+        public void publish(LogRecord record) {
+            for (Handler h : Lookup.getDefault().lookupAll(Handler.class)) {
+                h.publish(record);
+            }
+        }
 
-    }
+        public void flush() {
+            for (Handler h : Lookup.getDefault().lookupAll(Handler.class)) {
+                h.flush();
+            }
+        }
+
+        public void close() throws SecurityException {
+            for (Handler h : Lookup.getDefault().lookupAll(Handler.class)) {
+                h.close();
+            }
+        }
+    } // end of LookupDel
+
+    /** Instances are created in awt.EventDispatchThread */
+    public static final class AWTHandler {
+        /** The name MUST be handle and MUST be public */
+        public static void handle(Throwable t) {
+            // Either org.netbeans or org.netbeans.core.execution pkgs:
+            if (t.getClass().getName().endsWith(".ExitSecurityException")) { // NOI18N
+                return;
+            }
+            Logger.global.log(Level.SEVERE, null, t);
+        }
+    } // end of AWTHandler
+
 }

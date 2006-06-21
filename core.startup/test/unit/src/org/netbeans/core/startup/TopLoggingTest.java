@@ -27,6 +27,7 @@ import java.util.logging.StreamHandler;
 import java.util.logging.XMLFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 
 
@@ -254,6 +255,31 @@ public class TopLoggingTest extends NbTestCase {
         }
 
         fail("msg shall be logged to file: " + disk);
+    }
+    
+    public void testLetsTryToReportToABugInAWT() throws Exception {
+        class R implements Runnable {
+            public RuntimeException ex;
+            public void run() {
+                if (ex != null) {
+                    throw ex;
+                }
+            }
+        }
+
+        R thrw = new R();
+        thrw.ex = new IllegalStateException();
+        
+        SwingUtilities.invokeLater(thrw);
+        
+        R wai = new R();
+        SwingUtilities.invokeAndWait(wai);
+        
+
+        String log = readLog(true);
+        if (log.indexOf("IllegalStateException") == -1) {
+            fail("There should be IllegalStateException:\n" + log);
+        }
     }
 
     private String readLog(boolean doFlush) throws IOException {

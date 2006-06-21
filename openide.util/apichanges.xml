@@ -20,6 +20,23 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Exceptions">
+        <api name="util"/>
+        <summary>Added <code>Exceptions</code> class as a replacement for <code>ErrorManager</code></summary>
+        <version major="7" minor="2"/>
+        <date day="20" month="6" year="2006"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" deprecation="yes"/>
+        <description>
+            <p>
+                <code>ErrorManager</code> is now deprecated and its replacement
+                is either <a href="@JDK@/java/util/logging/Logger.html">Logger</a> 
+                or <code>Exceptions</code>.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Exceptions"/>
+        <issue number="35067"/>
+    </change>
     
     <change id="NbCollections">
         <api name="util"/>

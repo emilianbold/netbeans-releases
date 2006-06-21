@@ -17,6 +17,24 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
+    <change id="notifyLater">
+           <api name="dialogs"/>
+           <summary>New method to asynchronously show messages</summary>
+           <version major="7" minor="0"/>
+           <date day="20" month="6" year="2006"/>
+           <author login="jtulach"/>
+           <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+           <description>
+             Now it is simple to display a message box described by
+             <a href="@TOP@/org/openide/NotifyDescriptor.html">NotifyDescriptor</a>
+             asynchronously using
+             <a href="@TOP@/org/openide/DialogDisplayer.html#notifyLater(org.openide.NotifyDescriptor)">
+                 DialogDisplayer.notifyLater
+             </a>.
+           </description>
+           <class package="org.openide" name="DialogDisplayer"/>
+           <issue number="35067"/>
+    </change>
     <change id="WizardDescriptor.AsynchronousInstantiatingIterator">
            <api name="dialogs"/>
            <summary>Interface <code>AsynchronousInstantiatingIterator</code> added</summary>

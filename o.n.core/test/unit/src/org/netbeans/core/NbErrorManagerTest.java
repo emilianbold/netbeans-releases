@@ -13,31 +13,40 @@
 
 package org.netbeans.core;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
 import org.netbeans.core.startup.CLIOptions;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.xml.sax.SAXParseException;
+
 
 /**
  * Test the core error manager impl.
  * @author Jesse Glick
  * @see "#18141"
  */
-public class NbErrorManagerTest extends NbTestCase {
-    
-    public NbErrorManagerTest(String name) {
-        super(name);
+public final class NbErrorManagerTest extends NbTestCase {
+    public NbErrorManagerTest(String s) {
+        super(s);
+    }
+
+    public static Test suite() {
+        //return new NbErrorManagerTest("testAddedInfo");
+        return new NbTestSuite(NbErrorManagerTest.class);
     }
     
-    private NbErrorManager err;
+    private ErrorManager err;
     protected void setUp() throws Exception {
         clearWorkDir();
         
@@ -46,22 +55,10 @@ public class NbErrorManagerTest extends NbTestCase {
         CLIOptions.initialize();
 
 
-        Iterator it = Lookup.getDefault().lookup(new Lookup.Template(ErrorManager.class)).allInstances().iterator();
-        while (it.hasNext()) {
-            Object o = it.next();
-            if (o instanceof NbErrorManager) {
-                assertNull("No err yet", err);
-                err = (NbErrorManager)o;
-            }
-        }
-
+        err = ErrorManager.getDefault();
         assertNotNull("One Error manager found", err);
     }
     
-    public void testEMFound() throws Exception {
-        assertEquals(NbErrorManager.class, Lookup.getDefault().lookup(ErrorManager.class).getClass());
-    }
-
     public void testIsLoggable() {
         assertFalse(ErrorManager.getDefault ().isLoggable(ErrorManager.INFORMATIONAL));
         assertFalse(ErrorManager.getDefault ().isLoggable(ErrorManager.INFORMATIONAL + 1));
@@ -205,8 +202,8 @@ public class NbErrorManagerTest extends NbTestCase {
     public void testNotifyException() throws Exception {
         IOException ioe = new IOException("unloc msg");
         err.annotate(ioe, "loc msg");
-        NbErrorManager.Exc x = err.createExc(ioe, ErrorManager.USER);
-        assertEquals(ErrorManager.USER, x.getSeverity());
+        NbErrorManager.Exc x = NbErrorManager.ROOT.createExc(ioe, Level.INFO, null);
+        assertEquals(Level.INFO, x.getSeverity());
         assertEquals("loc msg", x.getLocalizedMessage());
         assertTrue(x.isLocalized());
         // could do more here...
@@ -220,8 +217,8 @@ public class NbErrorManagerTest extends NbTestCase {
         
         // Simple exception is EXCEPTION.
         Throwable t = new IOException("unloc msg");
-        NbErrorManager.Exc x = err.createExc(t, ErrorManager.UNKNOWN);
-        assertEquals(ErrorManager.EXCEPTION, x.getSeverity());
+        NbErrorManager.Exc x = NbErrorManager.ROOT.createExc(t, null, null);
+        assertEquals(Level.WARNING, x.getSeverity());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("unloc msg", x.getLocalizedMessage());
         assertFalse(x.isLocalized());
@@ -229,8 +226,8 @@ public class NbErrorManagerTest extends NbTestCase {
         // Same when there is unloc debug info attached.
         t = new IOException("unloc msg");
         err.annotate(t, ErrorManager.UNKNOWN, "some debug info", null, null, null);
-        x = err.createExc(t, ErrorManager.UNKNOWN);
-        assertEquals(ErrorManager.EXCEPTION, x.getSeverity());
+        x = NbErrorManager.ROOT.createExc(t, null, null);
+        assertEquals(Level.WARNING, x.getSeverity());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("unloc msg", x.getLocalizedMessage());
         assertFalse(x.isLocalized());
@@ -239,8 +236,8 @@ public class NbErrorManagerTest extends NbTestCase {
         t = new IOException("unloc msg");
         Throwable t2 = new IOException("unloc msg #2");
         err.annotate(t, ErrorManager.UNKNOWN, null, null, t2, null);
-        x = err.createExc(t, ErrorManager.UNKNOWN);
-        assertEquals(ErrorManager.EXCEPTION, x.getSeverity());
+        x = NbErrorManager.ROOT.createExc(t, null, null);
+        assertEquals(Level.WARNING, x.getSeverity());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("unloc msg", x.getLocalizedMessage());
         assertFalse(x.isLocalized());
@@ -249,8 +246,8 @@ public class NbErrorManagerTest extends NbTestCase {
         // set the severity for the exception.
         t = new IOException("unloc msg");
         err.annotate(t, ErrorManager.USER, null, "loc msg", null, null);
-        x = err.createExc(t, ErrorManager.UNKNOWN);
-        assertEquals(ErrorManager.USER, x.getSeverity());
+        x = NbErrorManager.ROOT.createExc(t, null, null);
+        assertEquals(1973, x.getSeverity().intValue());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("loc msg", x.getLocalizedMessage());
         assertTrue(x.isLocalized());
@@ -260,8 +257,8 @@ public class NbErrorManagerTest extends NbTestCase {
         t2 = new IOException("unloc msg #2");
         err.annotate(t2, ErrorManager.USER, null, "loc msg", null, null);
         err.annotate(t, ErrorManager.UNKNOWN, null, null, t2, null);
-        x = err.createExc(t, ErrorManager.UNKNOWN);
-        assertEquals(ErrorManager.USER, x.getSeverity());
+        x = NbErrorManager.ROOT.createExc(t, null, null);
+        assertEquals(1973, x.getSeverity().intValue());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("loc msg", x.getLocalizedMessage());
         assertTrue(x.isLocalized());
@@ -271,8 +268,8 @@ public class NbErrorManagerTest extends NbTestCase {
         err.annotate(t2, ErrorManager.USER, null, "loc msg", null, null);
         t = new IOException("loc msg");
         err.annotate(t, ErrorManager.USER, null, null, t2, null);
-        x = err.createExc(t, ErrorManager.UNKNOWN);
-        assertEquals(ErrorManager.USER, x.getSeverity());
+        x = NbErrorManager.ROOT.createExc(t, null, null);
+        assertEquals(1973, x.getSeverity().intValue());
         assertEquals("loc msg", x.getMessage());
         assertEquals("loc msg", x.getLocalizedMessage());
         // Note that it is stil considered localized even though the messages
@@ -297,9 +294,9 @@ public class NbErrorManagerTest extends NbTestCase {
         // wait for a dialog to be shown
         waitEQ();
         
-        int report = output.indexOf("Exception occurred");
+        int report = output.indexOf("My: Ahoj");
         assertTrue("There is one exception reported: " + output, report > 0);
-        int next = output.indexOf("Exception occurred", report + 1);
+        int next = output.indexOf("My: Ahoj", report + 1);
         assertEquals("No next exceptions there (after " + report + "):\n" + output, -1, next);
     }
     

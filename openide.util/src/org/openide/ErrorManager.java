@@ -13,12 +13,20 @@
 
 package org.openide;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -216,10 +224,8 @@ import org.openide.util.lookup.Lookups;
  * @author Jaroslav Tulach, Jesse Glick
  */
 public abstract class ErrorManager extends Object {
-    // XXX note that these levels accidentally used hex rather than binary,
-    // so it goes 0, 1, 16, 256, ....
-    // Unfortunately too late to change now: public int constants are part of the
-    // API - documented, inlined into compiled code, etc.
+    // XXX deprecate error manager after phase II and III are done. See:
+    // http://openide.netbeans.org/tutorial/reviews/opinions_35067.html
 
     /**
      * Undefined severity.
@@ -611,15 +617,11 @@ public abstract class ErrorManager extends Object {
                         }
                     };
                     rec.setResourceBundle(rb);
-                    rec.setResourceBundleName("msg"); // NOI18N
+                    rec.setMessage("msg"); // NOI18N
                 }
                 
-                Throwable last = t;
-                while (last.getCause() != null) {
-                    last = last.getCause();
-                }
-                
-                last.initCause(new LogException(rec));
+                AnnException ann = AnnException.findOrCreate(t, true);
+                ann.addRecord(rec);
                 
                 return t;
             }
@@ -635,9 +637,9 @@ public abstract class ErrorManager extends Object {
         /** Calls all delegates. */
         public void notify(int severity, Throwable t) {
             if (delegates.isEmpty()) {
+                if (enterLogger()) return;
                 try {
-                    if (enterLogger()) return;
-                    logger().log(convertSeverity(severity, true, Level.SEVERE), t.getMessage(), t);
+                    logger().log(convertSeverity(severity, true, OwnLevel.UNKNOWN), t.getMessage(), t);
                 } finally {
                     exitLogger();
                 }
@@ -668,8 +670,8 @@ public abstract class ErrorManager extends Object {
 
             if (delegates.isEmpty()) {
                 Level sev = convertSeverity(severity, false, Level.FINE);
+                if (enterLogger()) return;
                 try {
-                    if (enterLogger()) return;
                     logger().log(sev, s);
                 } finally {
                     exitLogger();
@@ -691,7 +693,7 @@ public abstract class ErrorManager extends Object {
             } else if (severity >= EXCEPTION) {
                 sev = Level.SEVERE;
             } else if (severity >= USER) {
-                sev = Level.INFO;
+                sev = OwnLevel.USER;
             } else if (severity >= WARNING) {
                 sev = Level.WARNING;
             } else if (severity >= INFORMATIONAL) {
@@ -811,15 +813,94 @@ public abstract class ErrorManager extends Object {
     /** An exception that has a log record associated with itself, so
      * the NbErrorManager can extract info about the annotation.
      */
-    private static final class LogException extends Exception implements Lookup.Provider {
-        private Lookup lookup;
-        
-        public LogException(LogRecord rec) {
-            this.lookup = Lookups.singleton(rec);
+    private static final class AnnException extends Exception implements Callable<LogRecord[]> {
+        private List<LogRecord> records;
+
+        public String getMessage() {
+            StringBuilder sb = new StringBuilder();
+            String sep = "";
+            for (LogRecord r : records) {
+                if (r.getMessage() != null) {
+                    sb.append(sep);
+                    sb.append(r.getMessage());
+                    sep = "\n";
+                }
+            }
+            return sb.toString();
         }
 
-        public Lookup getLookup() {
-            return this.lookup;
+        static AnnException findOrCreate(Throwable t, boolean create) {
+            if (t instanceof AnnException) {
+                return (AnnException)t;
+            }
+            if (t.getCause() == null) {
+                if (create) {
+                    t.initCause(new AnnException());
+                }
+                return (AnnException)t.getCause();
+            }
+            return findOrCreate(t.getCause(), create);
         }
-    } // end LogException
+
+        private AnnException() {
+        }
+
+        public synchronized void addRecord(LogRecord rec) {
+            if (records == null) {
+                records = new ArrayList<LogRecord>();
+            }
+            records.add(rec);
+        }
+
+        public LogRecord[] call() {
+            List<LogRecord> r = records;
+            LogRecord[] empty = new LogRecord[0];
+            return r == null ? empty : r.toArray(empty);
+        }
+
+        public void printStackTrace(PrintStream s) {
+            super.printStackTrace(s);
+            logRecords(s);
+        }
+
+        public void printStackTrace(PrintWriter s) {
+            super.printStackTrace(s);
+            logRecords(s);
+        }
+
+        public void printStackTrace() {
+            printStackTrace(System.err);
+        }
+
+        private void logRecords(Appendable a) {
+            List<LogRecord> r = records;
+            if (r == null) {
+                return;
+            }
+            try {
+
+                for (LogRecord log : r) {
+                    if (log.getMessage() != null) {
+                        a.append(log.getMessage()).append("\n");;
+                    }
+                    if (log.getThrown() != null) {
+                        StringWriter w = new StringWriter();
+                        log.getThrown().printStackTrace(new PrintWriter(w));
+                        a.append(w.toString()).append("\n");
+                    }
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    } // end AnnException
+
+    private static final class OwnLevel extends Level {
+        public static final Level USER = new OwnLevel("USER", 1973); // NOI18N
+        public static final Level UNKNOWN = new OwnLevel("SEVERE", Level.SEVERE.intValue() + 1); // NOI18N
+
+        private OwnLevel(String s, int i) {
+            super(s, i);
+        }
+    } // end of UserLevel
 }

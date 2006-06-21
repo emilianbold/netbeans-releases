@@ -14,7 +14,9 @@
 package org.openide;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringBufferInputStream;
+import java.io.StringWriter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -86,6 +88,40 @@ public class ErrorManagerDelegatesToLoggingTest extends NbTestCase {
         assertEquals ("attachAnnotations must return the same exception", t, value);
         
     }
+
+    public void testThatWeNotifyAnException() throws Exception {
+        Throwable t = new NullPointerException("npe");
+        Throwable v = new ClassNotFoundException("cnf", t);
+
+        Throwable a = new IOException();
+        ErrorManager.getDefault().annotate(a, v);
+        ErrorManager.getDefault().notify(a);
+
+        assertEquals("Last throwable is a", a, MyHandler.lastThrowable);
+        assertNotNull("And it has a cause", MyHandler.lastThrowable.getCause());
+
+        StringWriter w = new StringWriter();
+        MyHandler.lastThrowable.getCause().printStackTrace(new PrintWriter(w));
+        String msg = w.toString();
+
+        if (msg.indexOf("npe") == -1) fail("there should be npe: " + msg);
+        if (msg.indexOf("cnf") == -1) fail("there should be cnf: " + msg);
+
+    }
+
+    public void testAnnotatedMessagesShallBePresentInPrintStackTrace() throws Exception {
+        Throwable t = new NullPointerException("npe");
+
+        ErrorManager.getDefault().annotate(t, ErrorManager.UNKNOWN, "Ahoj Null!", null, null, null);
+
+        StringWriter w = new StringWriter();
+        t.printStackTrace(new PrintWriter(w));
+        String msg = w.toString();
+
+        if (msg.indexOf("npe") == -1) fail("there should be npe: " + msg);
+        if (msg.indexOf("Ahoj Null") == -1) fail("there should be Ahoj Null: " + msg);
+
+    }
     
     //
     // Manager to delegate to
@@ -118,20 +154,16 @@ public class ErrorManagerDelegatesToLoggingTest extends NbTestCase {
             
             lastText = record.getMessage();
             lastThrowable = record.getThrown();
-            if (Level.WARNING == record.getLevel()) {
+
+            Level l = record.getLevel();
+            if (l.intValue() >= Level.FINEST.intValue()) {
+                lastSeverity = ErrorManager.INFORMATIONAL;
+            }
+            if (l.intValue() >= Level.WARNING.intValue()) {
                 lastSeverity = ErrorManager.WARNING;
             }
-            if (Level.INFO == record.getLevel()) {
-                lastSeverity = ErrorManager.INFORMATIONAL;
-            }
-            if (Level.CONFIG == record.getLevel()) {
-                lastSeverity = ErrorManager.INFORMATIONAL;
-            }
-            if (Level.SEVERE == record.getLevel()) {
+            if (l.intValue() >= Level.SEVERE.intValue()) {
                 lastSeverity = ErrorManager.EXCEPTION;
-            }
-            if (Level.FINE == record.getLevel()) {
-                lastSeverity = ErrorManager.INFORMATIONAL;
             }
         }
 

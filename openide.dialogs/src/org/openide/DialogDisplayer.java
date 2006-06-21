@@ -66,6 +66,23 @@ public abstract class DialogDisplayer {
      */
     public abstract Object notify(NotifyDescriptor descriptor);
 
+    /** Notify the user of something in a message box, possibly with feedback,
+     * this method method may be called
+     * from any thread. The thread will return immediately and
+     * the dialog will be shown <q>later</q>, usually when AWT thread
+     * is empty and can handle the request.
+     *
+     * @param descriptor description of the notification
+     * @since 7.0
+     */
+    public void notifyLater(final NotifyDescriptor descriptor) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                DialogDisplayer.this.notify(descriptor);
+            }
+        });
+    }
+
     /** Get a new standard dialog.
      * The dialog is designed and created as specified in the parameter.
      * Anyone who wants a dialog with standard buttons and
