@@ -995,9 +995,8 @@ public final class OpenProjectList {
     
     public static class ProjectByDisplayNameComparator implements Comparator<Project> {
         
-	private static Comparator COLLATOR = Collator.getInstance();
+	private static Comparator<Object> COLLATOR = Collator.getInstance();
         
-        @SuppressWarnings("unchecked") 
         public int compare(Project p1, Project p2) {
 //            Uncoment to make the main project be the first one
 //            but then needs to listen to main project change
