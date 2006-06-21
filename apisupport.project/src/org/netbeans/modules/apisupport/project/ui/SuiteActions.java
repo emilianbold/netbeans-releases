@@ -68,6 +68,9 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction("build-mac", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_mac"), null));
+        actions.add(null);
+        
         NbPlatform platform = project.getPlatform(false);
         if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1) { // #71631
             actions.add(ProjectSensitiveActions.projectCommandAction("nbms", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_nbms"), null)); // #64426
@@ -130,6 +133,7 @@ public final class SuiteActions implements ActionProvider {
             "build-jnlp", // NOI18N
             "run-jnlp", // NOI18N
             "debug-jnlp", // NOI18N
+            "build-mac", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N
             ActionProvider.COMMAND_RENAME,
@@ -201,6 +205,8 @@ public final class SuiteActions implements ActionProvider {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
+        } else if (command.equals("build-mac")) { // NOI18N
+            targetNames = new String[] {"build-mac"}; // NOI18N
         } else if (command.equals("nbms")) { // NOI18N
             targetNames = new String[] {"nbms"}; // NOI18N
         } else if (command.equals("profile")) { // NOI18N

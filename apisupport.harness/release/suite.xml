@@ -163,6 +163,52 @@ Microsystems, Inc. All Rights Reserved.
             
         </zip>
     </target>
+    
+    <target name="build-mac" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
+        <mkdir dir="dist"/>
+        <mkdir dir="dist/${app.name}.app"/>
+        <mkdir dir="dist/${app.name}.app/Contents"/>
+        <mkdir dir="dist/${app.name}.app/Contents/MacOS"/>
+        <mkdir dir="dist/${app.name}.app/Contents/Resources"/>
+        <copy file="${harness.dir}/applicationIcon.icns" tofile="dist/${app.name}.app/Contents/Resources/${app.name}.icns"/>
+        <copy todir="dist/${app.name}.app/Contents/Resources/${app.name}/bin">
+            <fileset dir="${build.launcher.dir}/bin/" />
+        </copy>
+        <copy todir="dist/${app.name}.app/Contents/Resources/${app.name}/etc">
+            <fileset dir="${build.launcher.dir}/etc/" />
+        </copy>
+        <copy todir="dist/${app.name}.app/Contents/Resources/${app.name}">
+            <fileset dir="${netbeans.dest.dir}">
+                <include name="**/lib/nbexec*"/>
+            </fileset>
+                
+            <fileset dir="${netbeans.dest.dir}">
+                <and>
+                    <not>
+                        <filename name="**/lib/nbexec*"/>
+                    </not>
+                    <selector refid="zip.platform.included.files"/>
+                </and>
+            </fileset>
+        </copy>
+        <copy todir="dist/${app.name}.app/Contents/Resources/${app.name}/${app.name}">
+            
+            <fileset dir="${cluster}"/>
+        </copy>
+        <delete file="${basedir}/dist/${app.name}.app/Contents/MacOS/${app.name}"/>
+        <symlink link="${basedir}/dist/${app.name}.app/Contents/MacOS/${app.name}" resource="../Resources/${app.name}/bin/${app.name}"/>
+        <chmod file="dist/${app.name}.app/Contents/Resources/${app.name}/bin/${app.name}" perm="755"/>
+        <chmod dir="dist" includes="${app.name}.app/Contents/Resources/${app.name}/platform*/lib/nbexec" perm="755"/>
+        
+        <copy file="${harness.dir}/Info.plist" tofile="dist/${app.name}.app/Contents/Info.plist">
+            <filterchain>
+                <replacestring from="$${app.name}" to="${app.name}"/>
+                <replacestring from="$${app.title}" to="${app.title}"/>
+                <replacestring from="$${app.icon}" to="master.png"/>
+                <replacestring from="$${branding.token}" to="${branding.token}"/>
+            </filterchain>
+        </copy>
+    </target>    
 
     <target name="-testuserdir-delete-init" depends="-init">
         <property name="test.user.dir" location="build/testuserdir"/>
