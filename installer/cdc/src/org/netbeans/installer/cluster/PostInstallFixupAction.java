@@ -83,232 +83,76 @@ public class PostInstallFixupAction extends ProductAction {
         }
     }
     
-    
     /**
-     * Update etc/netbeans.conf is necessary
+     * Update etc/netbeans.clusters is necessary
      *
      * @param reverse whether cluster entry should be removed or added
      * @author Anton Chechel
      */
     private void patchNbConfig(boolean reverse) throws ServiceException {
         FileService fileService = (FileService) getServices().getService(FileService.NAME);
-        ProductService pservice = (ProductService)getService(ProductService.NAME);
+        ProductService pservice = (ProductService) getService(ProductService.NAME);
         
         String fsep = fileService.getSeparator();
         String psep = fileService.getPathSeparator();
         
-        String installDir = resolveString((String)pservice.getProductBeanProperty(
-                ProductService.DEFAULT_PRODUCT_SOURCE, null, "absoluteInstallLocation"));
+        String installDir = resolveString((String) pservice.getProductBeanProperty(
+                ProductService.DEFAULT_PRODUCT_SOURCE, null, "absoluteInstallLocation")); //NOI18N
         
-        String nbdir = resolveString(installDir + fsep + "..");
+        String nbdir = resolveString(installDir + fsep + ".."); //NOI18N
+        String clusterName = resolveString(BUNDLE + "Product.clusterDir)"); //NOI18N
         
         StringBuffer cf = new StringBuffer();
         cf.append(nbdir);
         cf.append(fsep);
-        cf.append("etc");
+        cf.append("etc"); //NOI18N
         cf.append(fsep);
-        cf.append("netbeans.conf");
-        
+        cf.append(CLUSTERS_CONF_FILE_NAME); //NOI18N
         String configFilename = cf.toString();
-        logEvent(this, Log.DBG, "patching " + configFilename);
         
+        logEvent(this, Log.DBG, "patching " + configFilename); //NOI18N
         String[] content = fileService.readAsciiFile(configFilename);
         
-        if (! reverse) { // add new cluster entry
+        if (! reverse) { // add new cluster name
             StringBuffer lineToAdd = new StringBuffer();
+//            lineToAdd.append('\n'); //NOI18N
+            lineToAdd.append(clusterName);
+//            lineToAdd.append('\n'); //NOI18N
+            
             if (null != content) {
-                boolean beenUpdated = false;
+                boolean found = false;
                 for (int i = 0; i < content.length; i++) {
-                    Matcher matcher = Pattern.compile("(#*)\\s*netbeans_extraclusters\\s*=\\s*\\\"([^\\\"]*)\\\"").matcher(content[i]);
-                    if (matcher.find()) {
-                        if (!beenUpdated) {
-                            logEvent(this, Log.DBG, "netbeans_extraclusters found");
-                            logEvent(this, Log.DBG, "value: " + matcher.group());
-                            
-                            if (matcher.group(1).length() == 0) { // uncommented line
-                                lineToAdd.append("netbeans_extraclusters=");
-                                lineToAdd.append('"');
-                                if (matcher.group(2).length() > 0) {
-                                    lineToAdd.append(matcher.group(2));
-                                    lineToAdd.append(psep);
-                                }
-                                lineToAdd.append(installDir);
-                                lineToAdd.append('"');
-                                lineToAdd.append('\n');
-                                
-                                fileService.updateAsciiFile(configFilename, new String[] {lineToAdd.toString()}, i);
-                                logEvent(this, Log.DBG, "update line: " + lineToAdd);
-                                beenUpdated = true;
-                                break;
-                            } else { // commented line
-                                logEvent(this, Log.DBG, "commented line skiped");
-                            }
-                        }
+                    if (content[i].contains(clusterName)) {
+                        found = true;
+                        break;
                     }
                 }
                 
-                if (!beenUpdated) { // no uncommented line was found
-                    lineToAdd.append('\n');
-                    lineToAdd.append("netbeans_extraclusters=");
-                    lineToAdd.append('"');
-                    lineToAdd.append(installDir);
-                    lineToAdd.append('"');
-                    lineToAdd.append('\n');
-                    
-                    logEvent(this, Log.DBG, "matcher was not found");
+                if (!found) {
+                    logEvent(this, Log.DBG, clusterName + " added"); //NOI18N
                     fileService.appendToAsciiFile(configFilename, new String[] {lineToAdd.toString()});
-                    logEvent(this, Log.DBG, "append line: " + lineToAdd);
+                } else {
+                    logEvent(this, Log.DBG, clusterName + " cluster already exists, appending content..."); //NOI18N
                 }
             } else { // empty file
-                lineToAdd.append('\n');
-                lineToAdd.append("netbeans_extraclusters=");
-                lineToAdd.append('"');
-                lineToAdd.append(installDir);
-                lineToAdd.append('"');
-                lineToAdd.append('\n');
-                
-                logEvent(this, Log.DBG, "config file is empty");
+                logEvent(this, Log.DBG, "clusters file is empty"); //NOI18N
+                logEvent(this, Log.DBG, clusterName + " added"); //NOI18N
                 fileService.appendToAsciiFile(configFilename, new String[] {lineToAdd.toString()});
-                logEvent(this, Log.DBG, "append line: " + lineToAdd);
             }
         } else { // remove cluster entry
             if (null == content) { // empty file
-                logEvent(this, Log.DBG, "there is nothing to patch");
+                logEvent(this, Log.DBG, "there is nothing to patch"); //NOI18N
                 return;
             }
             
-            for (int i = 0; i < content.length; i++) { // update any line which contains our cluster path
-                int index = content[i].indexOf(installDir);
+            for (int i = 0; i < content.length; i++) { // remove any line which contains our cluster name
+                int index = content[i].indexOf(clusterName);
                 if (index != -1) {
-                    logEvent(this, Log.DBG, installDir + " entry found");
-                    logEvent(this, Log.DBG, "value: " + content[i]);
-                    
-                    String line = content[i].replaceAll(psep + '?' + prepareString(installDir), "");
-                    if (line.matches("\\s*netbeans_extraclusters\\s*=\\s*\\\"{2}")) { // remove empty uncommented entries
-                        line = "";
-                    }
-                    
-                    fileService.updateAsciiFile(configFilename, new String[] {line}, i);
-                    logEvent(this, Log.DBG, "update line: " + line);
-                } else {
-                    logEvent(this, Log.DBG, "nothing to update"); // no any entry
+                    fileService.updateAsciiFile(configFilename, new String[] {""}, i); //NOI18N
                 }
             }
         }
-        logEvent(this, Log.DBG, "update end");
+        logEvent(this, Log.DBG, "patching finished"); //NOI18N
     }
-    
-    private String prepareString(String str) {
-        char[] c = str.toCharArray();
-        List l = new ArrayList(c.length);
-        for (int i = 0; i < c.length; i++) {
-            if (c[i] == '\\' || c[i] == '.' || c[i] == '+') {
-                l.add(new Character('\\'));
-            }
-            l.add(new Character(c[i]));
-        }
-        char[] cc = new char[l.size()];
-        for (int i = 0; i < cc.length; i++) {
-            cc[i] = ((Character) l.get(i)).charValue();
-        }
-        return new String(cc);
-    }
-    
-//    private void patchNbConfig(boolean reverse) {
-//        try {
-//            FileService fileService = (FileService) getServices().getService(FileService.NAME);
-//            ProductService pservice = (ProductService)getService(ProductService.NAME);
-//
-//            String fsep = fileService.getSeparator();
-//            String psep = fileService.getPathSeparator();
-//
-//            String installDir = resolveString((String)pservice.getProductBeanProperty(
-//                    ProductService.DEFAULT_PRODUCT_SOURCE,
-//                    null,
-//                    "absoluteInstallLocation"));
-//
-//            String nbdir = resolveString(installDir + fsep + "..");
-//
-//            String configFilename = nbdir + fsep + "etc" + fsep + "netbeans.conf";
-//            logEvent(this, Log.DBG, "patching " + configFilename);
-//
-//            String[] content = fileService.readAsciiFile(configFilename);
-//
-//            if (! reverse) {
-//                int index = -1;
-//                if (content != null ) {
-//                    for (int i = 0; i < content.length; i++) {
-//                        String line = content[i].trim();
-//                        if (line.startsWith("netbeans_extraclusters=") || line.startsWith("#netbeans_extraclusters=")) {
-//                            index = i;
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//                String line = "";
-//
-//                if (index >= 0 && ! content[index].trim().startsWith("#")) {
-//                    StringTokenizer stok = new StringTokenizer(content[index], psep);
-//                    while (stok.hasMoreElements()) {
-//                        if (! "".equals(line))
-//                            line += psep;
-//                        line += stok.nextToken();
-//                    }
-//                }
-//                if (! "".equals(line))
-//                    line += psep;
-//                line += installDir;
-//
-//                line = "netbeans_extraclusters=" + line;
-//
-//                if (index >= 0) {
-//                    fileService.updateAsciiFile(configFilename, new String[] {line}, index);
-//                } else {
-//                    fileService.appendToAsciiFile(configFilename, new String[] {line});
-//                }
-//
-//                logEvent(this, Log.DBG, "replace line " + line);
-//            } else {
-//                int index = -1;
-//                if (content != null ) {
-//                    for (int i = 0; i < content.length; i++) {
-//                        String line = content[i].trim();
-//                        if (line.startsWith("netbeans_extraclusters=")) {
-//                            index = i;
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//                if (index < 0)
-//                    return;
-//
-//                File instdir = new File(installDir);
-//                String line = "";
-//                StringTokenizer stok = new StringTokenizer(content[index].substring("netbeans_extraclusters=".length()), psep);
-//
-//                while (stok.hasMoreElements()) {
-//                    String tok = stok.nextToken();
-//                    if (instdir.equals(new File(tok)))
-//                        continue;
-//
-//                    if (! "".equals(line))
-//                        line += psep;
-//                    line += tok;
-//                }
-//
-//                if (! "".equals(line)) {
-//                    line = "netbeans_extraclusters=" + line;
-//                }
-//
-//                fileService.updateAsciiFile(configFilename, new String[] {line}, index);
-//
-//                logEvent(this, Log.DBG, "replace line " + line);
-//            }
-//        } catch (Exception ex) {
-//            logEvent(this, Log.ERROR, ex);
-//        }
-//    }
 }
 
