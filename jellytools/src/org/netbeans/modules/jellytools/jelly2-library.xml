@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -22,14 +22,14 @@ Author: Jiri.Skrivanek@sun.com
     <localizing-bundle>org/netbeans/modules/jellytools/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/jelly2-nb.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.jellytools/modules/ext/jelly2-nb.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst:///sources/jelly2-nb-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.jellytools/sources/jelly2-nb-src.zip!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/jelly2-nb-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.jellytools/docs/jelly2-nb-javadoc.zip!/</resource>
     </volume>
 </library>

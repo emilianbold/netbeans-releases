@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 Author: Jiri.Skrivanek@sun.com
 -->
@@ -20,11 +20,11 @@ Author: Jiri.Skrivanek@sun.com
     <localizing-bundle>org/netbeans/junit/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/org-netbeans-modules-nbjunit.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/insanelib.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.nbjunit/modules/org-netbeans-modules-nbjunit.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.nbjunit/modules/ext/insanelib.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/org-netbeans-modules-nbjunit.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.nbjunit/docs/org-netbeans-modules-nbjunit.zip!/</resource>
     </volume>
 </library>

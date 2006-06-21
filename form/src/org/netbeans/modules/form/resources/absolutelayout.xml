@@ -20,6 +20,6 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org.netbeans.modules.form.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/AbsoluteLayout.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.form/modules/ext/AbsoluteLayout.jar!/</resource>
     </volume>
 </library>

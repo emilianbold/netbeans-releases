@@ -27,17 +27,17 @@ import java.io.File;
  * way to register a library declaratively. Just put fragment like this into
  * your layer file:
  * <pre>
- * &lt;filesystems&gt;
+ * &lt;filesystem&gt;
  *   &lt;folder name="Services"&gt;
  *     &lt;folder name="Hidden"&gt;
- *       &lt;file name="org-your-lib-Ant-Registration.instance"&gt;
+ *       &lt;file name="org-your-lib-ant-registration.instance"&gt;
  *         &lt;attr name="instanceCreate" methodvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspath.url"/&gt;
- *         &lt;attr name="url" urlvalue="nbinst:/modules/ext/org-your-lib.jar"/&gt;
+ *         &lt;attr name="url" urlvalue="nbinst://org.your.module.name/modules/ext/org-your-lib.jar"/&gt;
  *         &lt;attr name="instanceOf" stringvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider"/&gt;
  *       &lt;/file&gt;
  *     &lt;/folder&gt;
  *   &lt;/folder&gt;
- * &lt;/filesystems&gt;
+ * &lt;/filesystem&gt;
  * </pre>
  *
  *

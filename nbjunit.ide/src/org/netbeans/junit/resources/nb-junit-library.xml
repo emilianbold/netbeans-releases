@@ -13,17 +13,16 @@ Microsystems, Inc. All Rights Reserved.
 Author: Jiri.Skrivanek@sun.com
 -->
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-
 <library version="1.0">
     <name>nb-junit-ide</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/junit/resources/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/org-netbeans-modules-nbjunit-ide.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.nbjunit.ide/modules/org-netbeans-modules-nbjunit-ide.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/org-netbeans-modules-nbjunit-ide.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.nbjunit.ide/docs/org-netbeans-modules-nbjunit-ide.zip!/</resource>
     </volume>
 </library>

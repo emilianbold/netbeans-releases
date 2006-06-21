@@ -22,10 +22,10 @@ Author: Jiri.Skrivanek@sun.com
     <localizing-bundle>org/netbeans/modules/jemmy/idemodule/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/jemmy.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.jemmy.idemodule/modules/ext/jemmy.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/org-netbeans-jemmy.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.jemmy.idemodule/docs/org-netbeans-jemmy.zip!/</resource>
     </volume>
 </library>

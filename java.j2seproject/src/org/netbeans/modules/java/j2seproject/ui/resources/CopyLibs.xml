@@ -6,7 +6,7 @@
     <localizing-bundle>org.netbeans.modules.java.j2seproject.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///ant/extra/org-netbeans-modules-java-j2seproject-copylibstask.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.java.j2seproject/ant/extra/org-netbeans-modules-java-j2seproject-copylibstask.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>        
