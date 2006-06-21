@@ -883,7 +883,12 @@ will be packed into
 
 build - build all suite modules.
 
-build-jnlp - builds the JNLP war file with your application
+build-jnlp - builds a JNLP WAR file from your application suitable for
+publishing in a Java EE container.
+
+build-mac [since 5.0u2] - creates a Mac OS X application.
+
+build-zip - builds a ZIP file containing your application including launchers.
 
 clean - clean everything.
 
