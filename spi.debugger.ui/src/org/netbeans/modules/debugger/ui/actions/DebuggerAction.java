@@ -115,12 +115,26 @@ public class DebuggerAction extends AbstractAction {
     public static DebuggerAction createMakeCalleeCurrentAction() {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_MAKE_CALLEE_CURRENT);
         action.putValue (Action.NAME, "CTL_MakeCalleeCurrentAction_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/GoToCalledMethod" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/GoToCalledMethod.gif" // NOI18N
+        );
         return action;
     }
 
     public static DebuggerAction createMakeCallerCurrentAction() {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_MAKE_CALLER_CURRENT);
         action.putValue (Action.NAME, "CTL_MakeCallerCurrentAction_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/GoToCallingMethod" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/GoToCallingMethod.gif" // NOI18N
+        );
         return action;
     }
     
