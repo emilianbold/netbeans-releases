@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 <toc version="2.0">
-    <tocitem text="BlueJ project type">
-        <tocitem text="About BlueJ project type" target="org.netbeans.bluej.about"/>
+    <tocitem text="NetBeans IDE BlueJ Edition Help">
+        <tocitem text="About Using NetBeans IDE BlueJ Edition" target="org.netbeans.bluej.about"/>
+        <tocitem text="About the Help in NetBeans IDE BlueJ Edition" target="bluej-about-help"/>
+        <tocitem text="Importing a BlueJ Project" target="bluej-proj-import"/>
+        <tocitem text="Creating a New Project" target="bluej-proj-new"/>
+        <tocitem text="Project Window and BlueJ View" target="bluej-projectwindows"/>
     </tocitem>
 </toc>
