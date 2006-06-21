@@ -137,7 +137,7 @@ public final class TargetExecutor implements Runnable {
                         // Reuse it.
                         io = free;
                         io.getOut().reset();
-                        io.getErr().reset();
+                        // Apparently useless and just prints warning: io.getErr().reset();
                         // useless: io.flushReader();
                     } else {
                         // Discard it.
