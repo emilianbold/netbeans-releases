@@ -37,12 +37,15 @@ import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 
 /** Checks consistency of System File System contents.
  *
  * @author Jaroslav Tulach
  */
 public class ValidateLayerConsistencyTest extends NbTestCase {
+    
+    private ClassLoader contextClassLoader;   
     
     public ValidateLayerConsistencyTest(String name) {
         super (name);
@@ -52,6 +55,25 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         return new NbTestSuite(ValidateLayerConsistencyTest.class);
     }
 
+    public void setUp() {
+        Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+                contextClassLoader = Thread.currentThread().getContextClassLoader();
+                Thread.currentThread().setContextClassLoader((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class));
+                return null;
+            }
+        });
+    }
+    
+    public void tearDown() {
+        Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+                Thread.currentThread().setContextClassLoader(contextClassLoader);
+                return null;
+            }
+        });
+    }
+    
     protected boolean runInEQ() {
         return true;
     }
