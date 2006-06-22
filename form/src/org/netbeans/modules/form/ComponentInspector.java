@@ -31,6 +31,7 @@ import org.openide.util.actions.ActionPerformer;
 import org.openide.util.datatransfer.*;
 
 import org.netbeans.modules.form.actions.TestAction;
+import org.netbeans.modules.form.palette.PaletteUtils;
 
 /**
  * The ComponentInspector - special explorer for form editor.
@@ -235,6 +236,7 @@ public class ComponentInspector extends TopComponent
 
         if (form == null) {
             testAction.setFormDesigner(null);
+            PaletteUtils.setContext(null);
 
             // swing memory leak workaround
             removeAll();
@@ -245,7 +247,9 @@ public class ComponentInspector extends TopComponent
         }
         else {
             Node[] selectedNodes = form.getFormDesigner().getSelectedComponentNodes();
+
             testAction.setFormDesigner(form.getFormDesigner());
+            PaletteUtils.setContext(form.getFormDataObject().getPrimaryFile());
 
             Node formNode = form.getFormRootNode();
             if (formNode == null) { // form not loaded yet, should not happen

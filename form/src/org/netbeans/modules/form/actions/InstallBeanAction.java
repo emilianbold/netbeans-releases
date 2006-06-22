@@ -56,6 +56,6 @@ public class InstallBeanAction extends CallableSystemAction {
      * some user's action that should lead to actual "performing" of the action.
      */
     public void performAction() {
-        PaletteUtils.getPalette().showCustomizer();
+        PaletteUtils.showPaletteManager();
     }
 }

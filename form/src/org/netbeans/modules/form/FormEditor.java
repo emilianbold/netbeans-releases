@@ -85,7 +85,7 @@ public class FormEditor {
     private FormDataObject formDataObject;
     private PropertyChangeListener dataObjectListener;
     private static PropertyChangeListener settingsListener;
-    private static PropertyChangeListener paletteListener;
+    private PropertyChangeListener paletteListener;
     
     // listeners
     private FormModelListener formListener;
@@ -582,10 +582,10 @@ public class FormEditor {
             // remove listeners
             detachFormListener();
             detachDataObjectListener();
+            detachPaletteListener();
             if (openForms.isEmpty()) {
                 ComponentInspector.getInstance().focusForm(null);
                 detachSettingsListener();
-                detachPaletteListener();
             }
             else { // still any opened forms - focus some
                 FormEditor next = (FormEditor)openForms.values().iterator().next();
@@ -823,7 +823,7 @@ public class FormEditor {
         }
     }
     
-    private static void attachPaletteListener() {
+    private void attachPaletteListener() {
         if (paletteListener != null)
             return;
 
@@ -857,12 +857,12 @@ public class FormEditor {
             }
         };
 
-        PaletteUtils.getPalette().addPropertyChangeListener(paletteListener);
+        PaletteUtils.addPaletteListener(paletteListener, formDataObject.getPrimaryFile());
     }
 
-    private static void detachPaletteListener() {
+    private void detachPaletteListener() {
         if (paletteListener != null) {
-            PaletteUtils.getPalette().removePropertyChangeListener(paletteListener);
+            PaletteUtils.removePaletteListener(paletteListener, formDataObject.getPrimaryFile());
             paletteListener = null;
         }
     }

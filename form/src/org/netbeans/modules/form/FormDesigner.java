@@ -150,12 +150,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             // add FormDataObject to lookup so it can be obtained from multiview TopComponent
             ActionMap map = ComponentInspector.getInstance().setupActionMap(getActionMap());
-            FormDataObject formDataObject = formEditor.getFormDataObject();
+            final FormDataObject formDataObject = formEditor.getFormDataObject();
             lookup = new FormProxyLookup(new Lookup[] {
                 ExplorerUtils.createLookup(explorerManager, map),
-                Lookups.fixed(new Object[] { formDataObject,  PaletteUtils.getPalette() }),
+                Lookups.fixed(new Object[] { formDataObject }),
+                PaletteUtils.getPaletteLookup(formDataObject.getPrimaryFile()),
                 formDataObject.getNodeDelegate().getLookup()
-            });        
+            });
             associateLookup(lookup);
 
             formToolBar = new FormToolBar(this);
