@@ -170,7 +170,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="dist/${app.name}.app/Contents"/>
         <mkdir dir="dist/${app.name}.app/Contents/MacOS"/>
         <mkdir dir="dist/${app.name}.app/Contents/Resources"/>
-        <copy file="${harness.dir}/applicationIcon.icns" tofile="dist/${app.name}.app/Contents/Resources/${app.name}.icns"/>
+        <copy file="${harness.dir}/etc/applicationIcon.icns" tofile="dist/${app.name}.app/Contents/Resources/${app.name}.icns"/>
         <copy todir="dist/${app.name}.app/Contents/Resources/${app.name}/bin">
             <fileset dir="${build.launcher.dir}/bin/" />
         </copy>
@@ -200,7 +200,7 @@ Microsystems, Inc. All Rights Reserved.
         <chmod file="dist/${app.name}.app/Contents/Resources/${app.name}/bin/${app.name}" perm="755"/>
         <chmod dir="dist" includes="${app.name}.app/Contents/Resources/${app.name}/platform*/lib/nbexec" perm="755"/>
         
-        <copy file="${harness.dir}/Info.plist" tofile="dist/${app.name}.app/Contents/Info.plist">
+        <copy file="${harness.dir}/etc/Info.plist" tofile="dist/${app.name}.app/Contents/Info.plist">
             <filterchain>
                 <replacestring from="$${app.name}" to="${app.name}"/>
                 <replacestring from="$${app.title}" to="${app.title}"/>
