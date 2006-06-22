@@ -40,7 +40,6 @@ public class DiffStreamSource extends StreamSource {
      * Null is a valid value if base file does not exist in this revision. 
      */ 
     private File            remoteFile;
-    private boolean         binary;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -97,7 +96,7 @@ public class DiffStreamSource extends StreamSource {
         }
         init();
         if (revision == null || remoteFile == null) return null;
-        if (binary) {
+        if (!mimeType.startsWith("text/")) {
             return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle())); // NOI18N
         } else {
             // XXX diff implementation dependency, we need Encoding API or rewrite to binary diff
@@ -117,11 +116,11 @@ public class DiffStreamSource extends StreamSource {
             return;
         }
         if (remoteFile != null || revision == null) return;
-//        binary = !CvsVersioningSystem.getInstance().isText(baseFile);
+        mimeType = Subversion.getInstance().getMimeType(baseFile);
         try {
             remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
             if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
-//                binary = !CvsVersioningSystem.getInstance().isText(remoteFile);
+                mimeType = Subversion.getInstance().getMimeType(remoteFile);
             }
             failure = null;
         } catch (Exception e) {
@@ -136,10 +135,6 @@ public class DiffStreamSource extends StreamSource {
         }
         if (fo != null) {
             mimeType = fo.getMIMEType();
-        } else if (binary) {
-            mimeType = "application/octet-stream"; // NOI18N
-        } else {
-            mimeType = "text/plain"; // NOI18N
         }
     }
 }

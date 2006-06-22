@@ -15,12 +15,9 @@ package org.netbeans.modules.subversion;
 
 import java.util.*;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.UnsupportedSvnClientAdapter;
+import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.tigris.subversion.svnclientadapter.*;
@@ -28,6 +25,7 @@ import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFa
 import org.openide.util.RequestProcessor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
@@ -117,20 +115,25 @@ public class Subversion {
     }
 
     /**
-     * @return true if the buffer is almost certainly binary.
-     * Note: Non-ASCII based encoding encoded text is binary,
-     * newlines cannot be reliably detected.
-     */
-    public boolean isBinary(byte[] buffer) {
-        for (int i = 0; i<buffer.length; i++) {
-            int ch = buffer[i];
-            if (ch < 32 && ch != '\t' && ch != '\n' && ch != '\r') {
-                return true;
+     * Reads the svn:mime-type property or uses content analysis for unversioned files.
+     * 
+     * @param file file to examine
+     * @return String mime type of the file (or best guess)
+     */ 
+    public String getMimeType(File file) {
+        if ((fileStatusCache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
+            return SvnUtils.isFileContentBinary(file) ? "application/octet-stream" : "text/plain";
+        } else {
+            PropertiesClient client = new PropertiesClient(file);
+            try {
+                byte [] mimeProperty = client.getProperties().get("svn:mime-type");
+                if (mimeProperty == null) return "text/plain";
+                return new String(mimeProperty);
+            } catch (IOException e) {
+                return "text/plain";   // use some deafult
             }
         }
-        return false;
     }
-
 
     /**
      * Tests <tt>.svn</tt> directory itself.  

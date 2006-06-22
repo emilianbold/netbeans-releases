@@ -104,7 +104,7 @@ class CommitTableModel extends AbstractTableModel {
     }
     
     public String getColumnName(int column) {
-        return ((String []) columnLabels.get(columns[column]))[0];
+        return columnLabels.get(columns[column])[0];
     }
 
     public int getColumnCount() {
@@ -210,29 +210,11 @@ class CommitTableModel extends AbstractTableModel {
 
     private CommitOptions getDefaultCommitOptions(File file) {
         if (file.isFile()) {
-            InputStream in = null;
-            try {
-                in = new BufferedInputStream(new FileInputStream(file), 1024);
-                long size = Math.min(1024, file.length());
-                byte[] probe = new byte[(int)size];
-                int read = in.read(probe);
-                assert read == size;
-                if (Subversion.getInstance().isBinary(probe)) {
-                    return CommitOptions.ADD_BINARY;
-                } else {
-                    return CommitOptions.ADD_TEXT;
-                }
-            } catch (IOException ex) {
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException ex) {
-                        // closed
-                    }
-                }
+            if (SvnUtils.isFileContentBinary(file)) {
+                return CommitOptions.ADD_BINARY;
+            } else {
+                return CommitOptions.ADD_TEXT;
             }
-            return CommitOptions.ADD_TEXT;
         } else {
             return CommitOptions.ADD_DIRECTORY;
         }

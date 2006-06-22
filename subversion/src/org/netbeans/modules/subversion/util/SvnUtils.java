@@ -77,7 +77,7 @@ public class SvnUtils {
                 continue;
             }
 */
-            Project project =  (Project) node.getLookup().lookup(Project.class);
+            Project project =  node.getLookup().lookup(Project.class);
             if (project != null) {
                 addProjectFiles(files, rootFiles, rootFileExclusions, project);
                 continue;
@@ -128,7 +128,7 @@ public class SvnUtils {
      */
     public static boolean isVersionedProject(Node node) {
         Lookup lookup = node.getLookup();
-        Project project = (Project) lookup.lookup(Project.class);
+        Project project = lookup.lookup(Project.class);
         return isVersionedProject(project);
     }
 
@@ -599,6 +599,41 @@ public class SvnUtils {
         return SVNUrlUtils.getRelativePath(rootUrl, url, true);
     }
 
+    /**
+     * Scans file content for binary data.
+     * 
+     * @param file file to check
+     * @return true if the file contains non-printable characters, false otherwise
+     */ 
+    public static boolean isFileContentBinary(File file) {
+        BufferedInputStream in = null;
+        try {
+            in = new BufferedInputStream(new FileInputStream(file), 1024);
+            byte [] probe = new byte[1024];
+            in.read(probe);
+            return isBinary(probe);
+        } catch (IOException e) {
+            return false;
+        } finally {
+            try { in.close(); } catch (Exception e) {}
+        }
+    }
+
+    /**
+     * @return true if the buffer is almost certainly binary.
+     * Note: Non-ASCII based encoding encoded text is binary,
+     * newlines cannot be reliably detected.
+     */
+    public static boolean isBinary(byte[] buffer) {
+        for (int i = 0; i<buffer.length; i++) {
+            int ch = buffer[i];
+            if (ch < 32 && ch != '\t' && ch != '\n' && ch != '\r') {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 
