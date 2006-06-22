@@ -22,19 +22,19 @@ import org.netbeans.modules.xml.wsdl.model.BindingInput;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.Documentation;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Input;
-import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Output;
-import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.Service;
-import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.Referenceable;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
 
 /**
@@ -43,7 +43,7 @@ import org.openide.ErrorManager;
  */
 public class FindWSDLUsageVisitor extends ChildVisitor {
     
-    private ReferenceableWSDLComponent referenced;
+    private Referenceable<WSDLComponent> referenced;
     private UsageGroup usage;
     private List<UsageGroup> usages;
     
@@ -63,63 +63,81 @@ public class FindWSDLUsageVisitor extends ChildVisitor {
         return usages;
     }
     
-    public void visit(BindingOperation bo) {
+    private <T extends ReferenceableWSDLComponent> void check(NamedComponentReference<T> ref, Component referencing) {
+        if (ref == null || ! (referenced instanceof ReferenceableWSDLComponent)) {
+            return;
+        }
+        
         try {
-            if (referenced instanceof Operation) {
-                Operation op = (Operation) referenced;
-                if (op.getName().equals(bo.getOperation().get())) {
-                    usage.addItem(bo);
-                }
+            if (ref.references(ref.getType().cast(referenced))) {
+                usage.addItem(referencing);
             }
         } catch(Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            usage.addError(bo, e.getMessage());
+            usage.addError(referencing, e.getMessage());
         }
-        super.visit(bo);
     }
-
-    private void check(OperationParameter oparam) {
-        //TODO NamedComponentReference<Message> getMessage
+    
+    private <T extends Referenceable<WSDLComponent>> void check(Reference<T> ref, Component referencing) {
+        if (ref == null) return;
+        try {
+            if (ref.references(ref.getType().cast(referenced))) {
+                usage.addItem(referencing);
+            }
+        } catch(Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            usage.addError(referencing, e.getMessage());
+        }
+    }
+    
+    private void check(OperationParameter referencing) {
+        check(referencing.getMessage(), referencing);
+    }
+    
+    public void visit(BindingOperation component) {
+        check(component.getOperation(), component);
+        super.visit(component);
     }
     
     public void visit(Input oparam) {
         check(oparam);
         super.visit(oparam);
     }
-
+    
     public void visit(Output oparam) {
         check(oparam);
         super.visit(oparam);
     }
-
+    
     public void visit(Fault oparam) {
         check(oparam);
         super.visit(oparam);
     }
-
+    
     public void visit(Port port) {
-        //TODO getBinding
+        check(port.getBinding(), port);
         super.visit(port);
     }
-
-    public void visit(BindingInput bi) {
-        //TODO getInput
-        super.visit(bi);
+    
+    public void visit(BindingInput component) {
+        check(component.getInput(), component);
+        super.visit(component);
     }
-
-    public void visit(BindingOutput bo) {
-        //TODO getOutput
-        super.visit(bo);
+    
+    public void visit(BindingOutput component) {
+        check(component.getOutput(), component);
+        super.visit(component);
     }
-
-    public void visit(BindingFault bf) {
-        //TODO getFault()
-        super.visit(bf);
+    
+    public void visit(BindingFault component) {
+        check(component.getFault(), component);
+        super.visit(component);
     }
-
-    public void visit(Binding binding) {
-        //TODO NamedComponentReference<PortType> getType();
-        super.visit(binding);
+    
+    public void visit(Binding component) {
+        check(component.getType(), component); 
+        super.visit(component);
     }
-
 }
+
+

@@ -61,7 +61,7 @@ public class WSDLRefactoringEngine extends RefactoringEngine {
     public List<UsageGroup> findUsages(Component target, Component searchRoot) {
         if (target instanceof ReferenceableWSDLComponent &&
             searchRoot instanceof Definitions) {
-            return new FindSchemaUsageVisitor().findUsages(
+            return new FindWSDLUsageVisitor().findUsages(
                     (ReferenceableWSDLComponent)target, (Definitions)searchRoot, this);
         }
         return Collections.emptyList();
