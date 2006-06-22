@@ -260,7 +260,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         ISVNStatus status = null;
         try {
             ISVNClientAdapter client = Subversion.getInstance().getClient();
-            client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
+            client.removeNotifyListener(Subversion.getInstance().getLogger(null)); //avoid (Not versioned resource) in OW
             status = client.getSingleStatus(file);
             if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
                 status = null;

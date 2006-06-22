@@ -102,7 +102,7 @@ public class IgnoreAction extends ContextAction {
         File parent = file.getParentFile();
         try {
             SvnClient client = Subversion.getInstance().getClient();
-            client.removeNotifyListener(Subversion.getInstance().getLogger());
+            client.removeNotifyListener(Subversion.getInstance().getLogger(null));
             List patterns = client.getIgnoredPatterns(parent);
             return patterns.contains(file.getName());
         } catch (SVNClientException ex) {

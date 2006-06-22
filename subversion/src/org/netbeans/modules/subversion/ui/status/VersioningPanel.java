@@ -349,7 +349,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
                 setupModels();
             }            
         };
-        onRefreshTask = support.start(rp, org.openide.util.NbBundle.getMessage(VersioningPanel.class, "LBL_Refresh_Progress")); // NOI18N
+        onRefreshTask = support.start(rp, repository, org.openide.util.NbBundle.getMessage(VersioningPanel.class, "LBL_Refresh_Progress")); // NOI18N
         return onRefreshTask;
     }
 

@@ -352,7 +352,7 @@ public class SvnUtils {
     public static String getRelativePath(File file) {
         String repositoryPath = null;
         SvnClient client = Subversion.getInstance().getClient();
-        client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
+        client.removeNotifyListener(Subversion.getInstance().getLogger(null)); //avoid (Not versioned resource) in OW
 
         List<String> path = new ArrayList<String>();
         SVNUrl repositoryURL = null;
@@ -424,7 +424,7 @@ public class SvnUtils {
     public static String getRelativePath(SVNUrl repositoryURL, File file) {
         String repositoryPath = null;
         SvnClient client = Subversion.getInstance().getClient();
-        client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
+        client.removeNotifyListener(Subversion.getInstance().getLogger(null)); //avoid (Not versioned resource) in OW
 
         List<String> path = new ArrayList<String>();
         while (Subversion.getInstance().isManaged(file)) {
@@ -476,7 +476,7 @@ public class SvnUtils {
      */    
     public static SVNUrl getRepositoryRootUrl(File file) {        
         SvnClient client = Subversion.getInstance().getClient();
-        client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
+        client.removeNotifyListener(Subversion.getInstance().getLogger(null)); //avoid (Not versioned resource) in OW
 
         SVNUrl repositoryURL = null;
         while (Subversion.getInstance().isManaged(file)) {
@@ -533,7 +533,7 @@ public class SvnUtils {
      */    
     public static SVNUrl getRepositoryUrl(File file) {
         SvnClient client = Subversion.getInstance().getClient();
-        client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
+        client.removeNotifyListener(Subversion.getInstance().getLogger(null)); //avoid (Not versioned resource) in OW
 
         List<String> path = new ArrayList<String>();
         SVNUrl fileURL = null;

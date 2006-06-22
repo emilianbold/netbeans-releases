@@ -90,6 +90,13 @@ public class RepositoryStep
     
     public void prepareValidation() {
         support = new RepositoryStepProgressSupport(panel.progressPanel);
+        SVNUrl url = null;
+        try {
+            url = repository.getSelectedRepository().getUrl();
+        } catch (InterruptedException e) {
+            // ignore
+        }
+        support.setRepositoryRoot(url);
         support.startProgress();
     }
 

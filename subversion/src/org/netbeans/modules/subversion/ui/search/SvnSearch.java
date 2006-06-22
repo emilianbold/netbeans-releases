@@ -130,7 +130,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                     });
                 }                        
             };
-            support.start(rp, org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Search_Progress")); // NOI18N
+            support.start(rp, SvnSearch.this.repositoryRoot.getRepositoryUrl(), org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Search_Progress")); // NOI18N
         } finally {
             // XXX and how is this supposed to work?
             support = null;

@@ -109,7 +109,7 @@ public final class ImportAction extends NodeAction {
                 CommitAction.performCommit(message, commitFiles, context, this);
             }
         };
-        support.start(rp, org.openide.util.NbBundle.getMessage(ImportAction.class, "LBL_Import_Progress"));
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(ImportAction.class, "LBL_Import_Progress"));
     }
 
     public boolean cancel() {

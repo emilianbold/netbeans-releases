@@ -14,7 +14,6 @@
 package org.netbeans.modules.subversion;
 
 import java.util.*;
-import java.util.regex.Matcher;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
@@ -54,8 +53,6 @@ public class Subversion {
     private FilesystemHandler                   filesystemHandler;
     private Annotator                           annotator;
     private HashMap<String, RequestProcessor>   processorsToUrl;
-
-    private OutputLogger outputLogger;
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -255,17 +252,20 @@ public class Subversion {
     }
 
     private void attachListeners(SvnClient client, boolean quite) {
-        client.addNotifyListener(getLogger()); 
+        client.addNotifyListener(getLogger(client.getSvnUrl())); 
         if(!quite) {
             client.addNotifyListener(fileStatusCache);
         }
     }
 
-    public OutputLogger getLogger() {
-        if(outputLogger==null) {
-           outputLogger = new OutputLogger();
-        }
-        return outputLogger;
+    /**
+     * 
+     * @param repositoryRoot URL of Subversion repository so that logger writes to correct output tab. Can be null
+     * in which case the logger will not print anything
+     * @return OutputLogger logger to write to 
+     */ 
+    public OutputLogger getLogger(SVNUrl repositoryRoot) {
+        return OutputLogger.getLogger(repositoryRoot);
     }
 
     /**
@@ -289,7 +289,7 @@ public class Subversion {
             if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
                 try {
                     SvnClient client = Subversion.getInstance().getClient();
-                    client.removeNotifyListener(Subversion.getInstance().getLogger());
+                    client.removeNotifyListener(getLogger(null));
 
                     // XXX property can contain shell patterns (almost identical to RegExp)
                     List<String> patterns = client.getIgnoredPatterns(parent);

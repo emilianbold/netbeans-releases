@@ -394,7 +394,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 RevertModificationsAction.performRevert(ctx, revertModifications, this);
             }
         };
-        support.start(rp, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
+        support.start(rp, url, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
     }
 
     private String getPreviousRevision(String revision) {

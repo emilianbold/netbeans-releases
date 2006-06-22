@@ -338,7 +338,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         Iterator it = dispResults.iterator();
         while (it.hasNext()) {
             ResultsContainer entry = (ResultsContainer) it.next();
-            File file = entry.getHeader().getFile();
 
             boolean atomicRange = true;
             String prev = null;
@@ -381,10 +380,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         public ResultsContainer(LogInformation header) {
             this.header = header;
-            File file = header.getFile();
             try {
                 name = header.getRepositoryFilename();
-//                name = Subversion.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName(); // NOI18N
             } catch (Exception e) {
                 name = header.getRepositoryFilename();
                 if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v")); // NOI18N
@@ -442,10 +439,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         public DispRevision(LogInformation.Revision revision) {
             this.revision = revision;
-            File file = revision.getLogInfoHeader().getFile();
             try {
                 name = revision.getLogInfoHeader().getRepositoryFilename();// Subversion.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName(); // NOI18N
-//                name = Subversion.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName(); // NOI18N
             } catch (Exception e) {
                 name = revision.getLogInfoHeader().getRepositoryFilename();
                 if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v")); // NOI18N

@@ -93,7 +93,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
             }
         };
-        support.start(Subversion.getInstance().getRequestProcessor(repository), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
+        support.start(Subversion.getInstance().getRequestProcessor(repository), repository, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
 
     }
     

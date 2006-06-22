@@ -303,7 +303,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
                 processTagSelection(destination, repositoryUrl, tagURL, this);
             }
         };
-        support.start(rp, NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_ResolvingTagProgress")); // NOI18N
+        support.start(rp, repositoryUrl, NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_ResolvingTagProgress")); // NOI18N
     }
 
     private void processTagSelection(final JTextField destination, SVNUrl repositoryURL, final SVNUrl tagURL, SvnProgressSupport progress) {

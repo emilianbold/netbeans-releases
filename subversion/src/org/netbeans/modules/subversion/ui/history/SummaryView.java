@@ -305,7 +305,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 RevertModificationsAction.performRevert(ctx, revertModifications, this);
             }
         };
-        support.start(rp, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
+        support.start(rp, url, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
     }
 
     static void rollbackChanges(LogInformation.Revision [] changes) {

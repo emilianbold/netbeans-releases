@@ -93,7 +93,7 @@ public class BlameAction extends ContextAction {
                     computeAnnotations(file, this, ab);
                 }
             };
-            support.start(rp, NbBundle.getMessage(BlameAction.class, "MSG_Annotation_Progress")); // NOI18N
+            support.start(rp, repository, NbBundle.getMessage(BlameAction.class, "MSG_Annotation_Progress")); // NOI18N
         }
     }
 

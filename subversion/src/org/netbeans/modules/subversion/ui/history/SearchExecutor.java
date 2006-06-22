@@ -116,7 +116,7 @@ class SearchExecutor implements Runnable {
                     search(master.getRepositoryUrl(), null, fromRevision, toRevision, this);
                 }
             };
-            support.start(rp, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
+            support.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
         } else {
             for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
                 final SVNUrl url = (SVNUrl) i.next();
@@ -127,7 +127,7 @@ class SearchExecutor implements Runnable {
                         search(url, files, fromRevision, toRevision, this);
                     }
                 };
-                support.start(rp, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
+                support.start(rp, url, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
             }
         }
     }

@@ -161,7 +161,7 @@ roots_loop:
                 }
             }
         };
-        support.start(rp, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
     }
 
 }

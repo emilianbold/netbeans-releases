@@ -1,4 +1,4 @@
-/*
+    /*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -16,12 +16,12 @@ package org.netbeans.modules.subversion;
 import java.io.File;
 import java.io.IOException;
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -30,13 +30,24 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
  */
 public class OutputLogger implements ISVNNotifyListener {
 
-    private static final String OUTPUT_TAB_NAME = NbBundle.getMessage(OutputLogger.class, "CTL_OutputTab_Name"); // NOI18N
-
     private InputOutput log;
     private boolean ignoreCommand = false;
+    private String      repositoryRootString;
+
+    public static OutputLogger getLogger(SVNUrl repositoryRoot) {
+        if (repositoryRoot != null) {
+            return new OutputLogger(repositoryRoot);
+        } else {
+            return new NullLogger();
+        }
+    }
     
-    public OutputLogger() {
-        log = IOProvider.getDefault().getIO(OUTPUT_TAB_NAME, false);
+    private OutputLogger(SVNUrl repositoryRoot) {
+        repositoryRootString = repositoryRoot.toString();
+        log = IOProvider.getDefault().getIO(repositoryRootString, false);
+    }
+
+    private OutputLogger() {
     }
     
     public void logCommandLine(String commandLine) {
@@ -77,16 +88,12 @@ public class OutputLogger implements ISVNNotifyListener {
         log(message + "\n", null, ignore); // NOI18N
     }
     
-    private void log(String message, boolean ignore) {
-        log(message, null, ignore);
-    }
-    
     private void log(String message, OutputListener hyperlinkListener, boolean ignore) {                
         if(ignore) {
             return;
         }
         if (log.isClosed()) {
-            log = IOProvider.getDefault().getIO(OUTPUT_TAB_NAME, false);
+            log = IOProvider.getDefault().getIO(repositoryRootString, false);
             try {
                 // HACK (mystic logic) workaround, otherwise it writes to nowhere 
                 log.getOut().reset();
@@ -107,10 +114,6 @@ public class OutputLogger implements ISVNNotifyListener {
         }
     }    
 
-    private void logError(Throwable e) {
-        e.printStackTrace(log.getOut());
-    }
-
     public void closeLog() {
         log.getOut().flush();
         log.getOut().close();        
@@ -120,4 +123,33 @@ public class OutputLogger implements ISVNNotifyListener {
         log.getOut().flush();
     }
     
+    private static class NullLogger extends OutputLogger {
+
+        public void logCommandLine(String commandLine) {
+        }
+
+        public void logCompleted(String message) {
+        }
+
+        public void logError(String message) {
+        }
+
+        public void logMessage(String message) {
+        }
+
+        public void logRevision(long revision, String path) {
+        }
+
+        public void onNotify(File path, SVNNodeKind kind) {
+        }
+
+        public void setCommand(int command) {
+        }
+
+        public void closeLog() {
+        }
+
+        public void flushLog() {
+        }
+    }
 }

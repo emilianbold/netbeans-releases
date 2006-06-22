@@ -124,7 +124,7 @@ public class CommitAction extends ContextAction {
                     performCommit(message, commitFiles, ctx, this);
                 }
             };
-            support.start(rp, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
+            support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
         }
 
         // if OK setup sequence of add, remove and commit calls

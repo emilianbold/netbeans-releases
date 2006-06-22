@@ -392,7 +392,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         if (file == null) return;
         try {
             ISVNClientAdapter client = Subversion.getInstance().getClient();
-            client.removeNotifyListener(Subversion.getInstance().getLogger());
+            client.removeNotifyListener(Subversion.getInstance().getLogger(null));
             client.remove(new File [] { file }, true);
 
             // fire event explicitly because the file is already gone

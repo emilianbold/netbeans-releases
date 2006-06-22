@@ -224,7 +224,7 @@ public class RepositoryPathNode extends AbstractNode {
                     }
                 }
             };
-            support.start(rp, org.openide.util.NbBundle.getMessage(Browser.class, "BK2001")); // NOI18N
+            support.start(rp, pathEntry.getRepositoryFile().getRepositoryUrl(), org.openide.util.NbBundle.getMessage(Browser.class, "BK2001")); // NOI18N
         }
 
         private static Node errorNode(Exception ex) {
