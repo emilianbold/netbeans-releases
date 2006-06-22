@@ -13,23 +13,15 @@
 
 package org.openide.loaders;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+
+import java.io.*;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.ErrorManager;
+import java.util.*;
+import java.util.logging.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.Task;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.*;
+import org.openide.util.lookup.*;
 
 /** Implements a lookup, that scans a content of a folder for its
  * data objects and asks them for instance cookie, the created objects
@@ -247,10 +239,10 @@ public class FolderLookup extends FolderInstance {
     
     /** Notifies the exception. Helper method. */
     private static void exception (Exception e) {
-        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+        Logger.global.log(Level.WARNING, null, e);
     }
     private static void exception(Exception e, FileObject fo) {
-        ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "Bad file: " + fo, null, null, null); // NOI18N
+        Exceptions.attachMessage(e, "Bad file: " + fo); // NOI18N
         exception(e);
     }
 

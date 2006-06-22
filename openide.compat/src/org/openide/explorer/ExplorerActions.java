@@ -13,7 +13,6 @@
 package org.openide.explorer;
 
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -24,11 +23,8 @@ import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.datatransfer.*;
-
-import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.event.*;
 
@@ -38,8 +34,11 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -627,7 +626,7 @@ public class ExplorerActions {
             try {
                 return copyCut ? node.clipboardCopy() : node.clipboardCut();
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.global.log(Level.WARNING, null, e);
 
                 return null;
             }
@@ -735,23 +734,22 @@ public class ExplorerActions {
         */
         private void doDestroy(final Node[] sel) {
             try {
-                Repository.getDefault().getDefaultFileSystem().runAtomicAction(
-                    new FileSystem.AtomicAction() {
-                        public void run() throws IOException {
-                            for (int i = 0; i < sel.length; i++) {
-                                try {
-                                    sel[i].destroy();
-                                } catch (IOException e) {
-                                    ErrorManager.getDefault().notify(e);
-                                }
-                            }
-                        }
-                    }
-                );
+                Repository.getDefault().getDefaultFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+
+                                                                                   public void run() throws IOException {
+                                                                                       for (int i = 0; i <
+                                                                                                       sel.length; i++) {
+                                                                                           try {
+                                                                                               sel[i].destroy();
+                                                                                           }
+                                                                                           catch (IOException e) {
+                                                                                               Exceptions.printStackTrace(e);
+                                                                                           }
+                                                                                       }
+                                                                                   }
+                                                                               });
             } catch (IOException ioe) {
-                IllegalStateException ise = new IllegalStateException();
-                ErrorManager.getDefault().annotate(ise, ioe);
-                throw ise;
+                throw (IllegalStateException) new IllegalStateException(ioe.toString()).initCause(ioe);
             }
         }
 

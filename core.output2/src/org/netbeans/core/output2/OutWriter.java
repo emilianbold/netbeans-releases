@@ -19,24 +19,12 @@
 package org.netbeans.core.output2;
 
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputListener;
-import org.openide.windows.OutputWriter;
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.util.StringTokenizer;
-import java.util.TooManyListenersException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -195,10 +183,11 @@ class OutWriter extends PrintWriter {
     /** Generic exception handling, marking the error flag and notifying it with ErrorManager */
     private void handleException (Exception e) {
         setError();
-	    ErrorManager em = ErrorManager.getDefault();
-        if (em.findAnnotations(e) == null || em.findAnnotations(e).length == 0) {
-            em.annotate(e, NbBundle.getMessage(OutWriter.class, 
-                "MSG_GenericError")); //NOI18N
+        String msg = Exceptions.findLocalizedMessage(e);
+        if (msg == null) {
+            Exceptions.attachLocalizedMessage(e,
+                                              NbBundle.getMessage(OutWriter.class,
+                                                                  "MSG_GenericError")); //NOI18N
         }
         if (Controller.log) {
             StackTraceElement[] el = e.getStackTrace();
@@ -207,7 +196,7 @@ class OutWriter extends PrintWriter {
                 Controller.log (el[i].toString());
             }
         }
-        em.notify(e);
+        Exceptions.printStackTrace(e);
     }
 
     /**
@@ -241,16 +230,15 @@ class OutWriter extends PrintWriter {
                 lowDiskSpace = true;
                 String msg = NbBundle.getMessage(OutWriter.class, 
                     "MSG_DiskSpace", storage); //NOI18N
-                ErrorManager.getDefault().annotate (ioe, ErrorManager.USER, 
-                    ioe.getMessage(), msg, ioe, null);
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.attachLocalizedMessage(ioe, msg);
+                Exceptions.printStackTrace(ioe);
                 setError();
                 storage.dispose();
             } else {
                 //Existing output may still be readable - close, but leave
                 //open for reads - if there's a problem there too, the error
                 //flag will be set when a read is attempted
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
                 threadDeathClose();
             }
         }

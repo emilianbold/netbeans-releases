@@ -36,7 +36,6 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -49,6 +48,7 @@ import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
@@ -219,8 +219,6 @@ public class MenuBar extends JMenuBar implements Externalizable {
      * @param list list to add created objects to
      */
     static void allInstances (InstanceCookie[] arr, java.util.List list) {
-        ErrorManager err = ErrorManager.getDefault();
-        
         Exception ex = null;
         
         for (int i = 0; i < arr.length; i++) {
@@ -236,20 +234,14 @@ public class MenuBar extends JMenuBar implements Externalizable {
             }
             
             if (newEx != null) {
-                ErrorManager.Annotation[] anns = err.findAnnotations(newEx);
-                if (anns == null || anns.length == 0) {
-                    // if the exception is not annotated, assign it low
-                    // priority
-                    err.annotate(newEx, err.INFORMATIONAL, null, null, null, null);
-                }
-                err.annotate(newEx, ex);
+                newEx.initCause(ex);
                 ex = newEx;
             }
         }
      
         // if there was an exception => notify it
         if (ex != null) {
-            err.notify (ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 

@@ -13,21 +13,13 @@
 
 package org.openide.actions;
 
+
 import java.io.IOException;
 import org.openide.cookies.SaveCookie;
-
+import org.openide.loaders.*;
+import org.openide.nodes.*;
+import org.openide.util.*;
 import org.openide.util.actions.NodeAction;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.UserCancelException;
-import org.openide.nodes.NodeAcceptor;
-
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.ErrorManager;
-import org.openide.filesystems.*;
-import org.openide.nodes.NodeOperation;
-import org.openide.util.NbBundle;
 
 /** Saves a data object to a folder under in the
 * system's templates area.
@@ -115,7 +107,7 @@ public final class SaveAsTemplateAction extends NodeAction {
             DataObject newTemplate = source.copy(targetFolder);
             newTemplate.setTemplate(true);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 

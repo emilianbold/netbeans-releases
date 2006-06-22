@@ -13,72 +13,28 @@
 
 package org.openide.loaders;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+
+import java.io.*;
+import java.lang.ref.*;
+import java.lang.reflect.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.*;
+import java.util.logging.*;
 import javax.swing.Action;
 import javax.xml.parsers.DocumentBuilder;
-import org.openide.ErrorManager;
 import org.openide.actions.OpenAction;
-import org.openide.cookies.CloseCookie;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.InstanceCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.cookies.PrintCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.FilterNode;
+import org.openide.cookies.*;
+import org.openide.filesystems.*;
+import org.openide.nodes.*;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.windows.CloneableOpenSupport;
-import org.openide.xml.EntityCatalog;
-import org.openide.xml.XMLUtil;
+import org.openide.xml.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
-import org.xml.sax.Attributes;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Parser;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -353,9 +309,9 @@ public class XMLDataObject extends MultiDataObject {
     }
 
     private void notifyEx(Exception e) {
-        ErrorManager emgr = ErrorManager.getDefault();        
-        emgr.annotate(e, "Cannot resolve following class in xmlinfo."); // NOI18N
-        emgr.notify(e);
+        Exceptions.attachLocalizedMessage(e,
+                                          "Cannot resolve following class in xmlinfo."); // NOI18N
+        Exceptions.printStackTrace(e);
     }
     
     /** Allows subclasses to provide their own editor cookie.
@@ -933,9 +889,9 @@ public class XMLDataObject extends MultiDataObject {
             sharedParserImpl = XMLUtil.createXMLReader();        
             sharedParserImpl.setEntityResolver(new EmptyEntityResolver());
         } catch (SAXException ex) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(ex, "System does not contain JAXP 1.1 compliant parser!"); // NOI18N
-            err.notify(err.ERROR, ex);            
+            Exceptions.attachLocalizedMessage(ex,
+                                              "System does not contain JAXP 1.1 compliant parser!"); // NOI18N
+            Logger.global.log(Level.WARNING, null, ex);
         }
         
         

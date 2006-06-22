@@ -12,7 +12,6 @@
  */
 package org.openide.explorer.view;
 import javax.swing.table.TableColumnModel;
-import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.Node;
@@ -34,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -44,6 +45,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.*;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -499,7 +501,7 @@ class TreeTable extends JTable implements Runnable {
 
                         return false;
                     } catch (Exception e1) {
-                        ErrorManager.getDefault().notify(ErrorManager.WARNING, e1);
+                        Logger.global.log(Level.WARNING, null, e1);
 
                         return false;
                     }
@@ -1269,30 +1271,17 @@ class TreeTable extends JTable implements Runnable {
                             n.setName(newStr);
                         }
                     } catch (IllegalArgumentException exc) {
-                        boolean needToAnnotate = true;
-                        ErrorManager em = ErrorManager.getDefault();
-                        ErrorManager.Annotation[] ann = em.findAnnotations(exc);
-
-                        // determine if "new annotation" of this exception is needed
-                        if ((ann != null) && (ann.length > 0)) {
-                            for (int i = 0; i < ann.length; i++) {
-                                String glm = ann[i].getLocalizedMessage();
-
-                                if ((glm != null) && !glm.equals("")) { // NOI18N
-                                    needToAnnotate = false;
-                                }
-                            }
-                        }
+                        boolean needToAnnotate = Exceptions.findLocalizedMessage(exc) == null;
 
                         // annotate new localized message only if there is no localized message yet
                         if (needToAnnotate) {
                             String msg = NbBundle.getMessage(
                                     TreeViewCellEditor.class, "RenameFailed", n.getName(), newStr
                                 );
-                            em.annotate(exc, msg);
+                            Exceptions.attachLocalizedMessage(exc, msg);
                         }
 
-                        em.notify(exc);
+                        Exceptions.printStackTrace(exc);
                     }
                 }
             }

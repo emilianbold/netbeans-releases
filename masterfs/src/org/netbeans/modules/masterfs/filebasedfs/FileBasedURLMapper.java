@@ -14,7 +14,6 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -23,6 +22,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import org.openide.util.Exceptions;
 
 //TODO: JDK problems with URL, URI, File conversion for UNC
 /*
@@ -93,7 +93,7 @@ public final class FileBasedURLMapper extends URLMapper {
             if (!file.exists()) {
                 final StringBuffer sb = new StringBuffer();
                 sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append(']');//NOI18N
-                ErrorManager.getDefault().notify(new IllegalArgumentException(sb.toString()));
+                Exceptions.printStackTrace(new IllegalArgumentException(sb.toString()));
                 return null;
             }
         }

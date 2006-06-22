@@ -36,11 +36,11 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeNode;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
@@ -145,7 +145,7 @@ final class DragDropUtilities extends Object {
             //System.out.println("--> "+image.getSource());
             return Utilities.createCustomCursor(comp, image, name);
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
 
         return DragSource.DefaultMoveNoDrop;
@@ -283,7 +283,7 @@ final class DragDropUtilities extends Object {
             // ignore - user just pressed cancel in some dialog....
             return new Node[] {  };
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
 
             return new Node[] {  };
         }
@@ -307,7 +307,7 @@ final class DragDropUtilities extends Object {
             try {
                 pt = node.getPasteTypes(trans);
             } catch (NullPointerException npe) {
-                ErrorManager.getDefault().notify(npe);
+                Exceptions.printStackTrace(npe);
 
                 // there are not paste types
             }
@@ -366,7 +366,7 @@ final class DragDropUtilities extends Object {
             try {
                 pt = node.getDropType(trans, action, -1);
             } catch (NullPointerException npe) {
-                ErrorManager.getDefault().notify(npe);
+                Exceptions.printStackTrace(npe);
 
                 // there is not drop type
             }

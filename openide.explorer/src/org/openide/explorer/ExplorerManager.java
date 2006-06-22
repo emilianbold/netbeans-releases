@@ -12,10 +12,8 @@
  */
 package org.openide.explorer;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.util.*;
-import org.openide.util.datatransfer.*;
 import org.openide.util.io.SafeException;
 
 import java.awt.Component;
@@ -654,9 +652,10 @@ bigloop:
                 SafeException safe = new SafeException(ioe);
 
                 if (!Utilities.compareObjects(ioe.getMessage(), ioe.getLocalizedMessage())) {
-                    ErrorManager.getDefault().annotate(
-                        safe, NbBundle.getMessage(ExplorerManager.class, "EXC_handle_failed", rootName)
-                    );
+                    Exceptions.attachLocalizedMessage(safe,
+                                                      NbBundle.getMessage(ExplorerManager.class,
+                                                                          "EXC_handle_failed",
+                                                                          rootName));
                 }
 
                 throw safe;

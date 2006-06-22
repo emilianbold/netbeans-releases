@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.options;
 
-import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -22,10 +21,7 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.BorderLayout;
-import java.awt.Image;
-import java.awt.KeyboardFocusManager;
 import java.awt.SystemColor;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -65,12 +61,12 @@ import org.netbeans.modules.options.ui.LoweredBorder;
 import org.netbeans.modules.options.ui.VariableBorder;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderLookup;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -126,51 +122,55 @@ public class OptionsPanel extends JPanel {
         // 1) init UI components, layout and actions, and add some default values
         initUI ();
         
-        RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-        
-                        // 2) Load OptionsCategory instances from layers
-                        optionCategories = loadOptionsCategories ();
+        RequestProcessor.getDefault().post(new Runnable() {
 
-                        // 4) init OptionsPanelControllers
-                        //    inits categoryToController
-                        initControllers ();
+                                               public void run() {
+                                                   SwingUtilities.invokeLater(new Runnable() {
 
-                        // 5) create master lookup
-                        Lookup masterLookup = createMasterLookup ();
+                                                                                  public void run() {
+                                                                                      // 2) Load OptionsCategory instances from layers
+                                                                                      optionCategories = loadOptionsCategories();
+                                                                                      // 4) init OptionsPanelControllers
+                                                                                      // inits categoryToController
+                                                                                      initControllers();
+                                                                                      // 5) create master lookup
+                                                                                      Lookup masterLookup = createMasterLookup();
+                                                                                      // 6) init option panels & categoryToPanel map
+                                                                                      Dimension maxSize = initPanels(masterLookup);
+                                                                                      int i;
+                                                                                      int k = optionCategories.size();
 
-                        // 6) init option panels & categoryToPanel map
-                        Dimension maxSize = initPanels (masterLookup);
+                                                                                      for (i = 0; i <
+                                                                                                  k; i++)
+                                                                                          try {
+                                                                                              OptionsCategory category = (OptionsCategory) optionCategories.get(i);
+                                                                                              OptionsPanelController controller = (OptionsPanelController) categoryToController.get(category);
 
-                        int i, k = optionCategories.size ();
-                        for (i = 0; i < k; i++)
-                            try {
-                                OptionsCategory category = (OptionsCategory) 
-                                    optionCategories.get (i);
-                                OptionsPanelController controller = (OptionsPanelController) categoryToController.get (category);
-                                updatedCategories.add (category);
-                                if (controller == null) continue;
-                                controller.update ();
-                            } catch (Throwable t) {
-                                ErrorManager.getDefault ().notify (t);
-                            }
-                        
-                        // paint
-                        refreshButtons ();
-                        checkSize (maxSize);
-                        int index = getCurrentIndex ();
-                        if (index < 0) index = 0;
-                        setCurrentIndex (index);
-                        
-                        // 7) reset cursor
-                        frame.setCursor (cursor);
-                        setCursor (cursor);
-                    }
-                });
-            }
-        }, 250);
+                                                                                              updatedCategories.add(category);
+                                                                                              if (controller ==
+                                                                                                  null)
+                                                                                                  continue;
+                                                                                              controller.update();
+                                                                                          }
+                                                                                          catch (Throwable t) {
+                                                                                              Exceptions.printStackTrace(t);
+                                                                                          }
+                                                                                      // paint
+                                                                                      refreshButtons();
+                                                                                      checkSize(maxSize);
+                                                                                      int index = getCurrentIndex();
+
+                                                                                      if (index <
+                                                                                          0)
+                                                                                          index = 0;
+                                                                                      setCurrentIndex(index);
+                                                                                      // 7) reset cursor
+                                                                                      frame.setCursor(cursor);
+                                                                                      setCursor(cursor);
+                                                                                  }
+                                                                              });
+                                               }
+                                           }, 250);
     }
     
     int getCurrentIndex () {
@@ -267,7 +267,7 @@ public class OptionsPanel extends JPanel {
             try {
                 ((OptionsPanelController) it.next ()).update ();
             } catch (Throwable t) {
-                ErrorManager.getDefault ().notify (t);
+                Exceptions.printStackTrace(t);
             }
     }
     
@@ -423,7 +423,7 @@ public class OptionsPanel extends JPanel {
                 categoryToController.put (category, controller);
                 controller.addPropertyChangeListener (coltrollerListener);
             } catch (Exception ex) {
-                ErrorManager.getDefault ().notify (ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }

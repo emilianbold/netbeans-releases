@@ -12,16 +12,13 @@
  */
 package org.openide.explorer.view;
 
-import org.openide.ErrorManager;
 import org.openide.awt.HtmlRenderer;
 import org.openide.awt.ListPane;
 import org.openide.nodes.Node;
-
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Image;
-import java.awt.KeyboardFocusManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
@@ -78,7 +75,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
         IllegalStateException ise = new IllegalStateException(
                 "NodeRenderer." + "sharedInstance() is deprecated.  Create an instance of NodeRenderer" + "instead"
             );
-        ErrorManager.getDefault().notify(ErrorManager.WARNING, ise);
+        Logger.global.log(Level.WARNING, null, ise);
 
         return instance;
     }

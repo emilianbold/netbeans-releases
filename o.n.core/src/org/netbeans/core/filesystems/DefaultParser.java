@@ -14,15 +14,13 @@
 package org.netbeans.core.filesystems;
 
 import java.io.*;
-import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
-
-import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.util.*;
-import org.openide.util.lookup.*;
 import org.openide.xml.*;
 import org.openide.*;
 
@@ -110,17 +108,15 @@ abstract class DefaultParser  extends DefaultHandler {
         } catch (IOException io) {
             if (!isStopException(io)) {
                 if (fo.isValid() && fo.canRead()) {
-                    ErrorManager emgr = ErrorManager.getDefault();
-                    emgr.log("While parsing: " + fo.toString());
-                    emgr.notify(emgr.INFORMATIONAL, io);
+                    Logger.global.warning("While parsing: " + fo.toString());
+                    Logger.global.log(Level.WARNING, null, io);
                     state = ERROR;
                 }
             }
         } catch (SAXException sex) {
             if (!isStopException(sex)) {
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.annotate(sex, ErrorManager.UNKNOWN, "While parsing: " + fo, null, null, null); // NOI18N
-                emgr.notify(ErrorManager.INFORMATIONAL, sex);
+                Exceptions.attachMessage(sex, "While parsing: " + fo); // NOI18N
+                Logger.global.log(Level.WARNING, null, sex);
                 state = ERROR;
             }
         } finally {

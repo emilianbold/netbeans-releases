@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NotImplementedException;
 import org.openide.xml.XMLUtil;
@@ -144,7 +143,11 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
                     if (carrier == null) {
                         carrier = e;
                     } else {
-                        ErrorManager.getDefault().annotate(carrier, e);
+                        Throwable t = carrier;
+                        while (t.getCause() != null) {
+                            t = t.getCause();
+                        }
+                        t.initCause(e);
                     }
                 }
             }

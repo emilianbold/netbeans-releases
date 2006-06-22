@@ -13,14 +13,11 @@
 
 package org.openide.actions;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.openide.LifecycleManager;
 
+import javax.swing.event.*;
+import org.openide.LifecycleManager;
 import org.openide.loaders.DataObject;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.actions.CallableSystemAction;
 
 /** Save all open objects.
@@ -69,7 +66,7 @@ public final class SaveAllAction extends CallableSystemAction {
                 try {
                     RUNNING.wait ();
                 } catch (InterruptedException ex) {
-                    org.openide.ErrorManager.getDefault ().notify (ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
             putProperty (RUNNING, RUNNING);

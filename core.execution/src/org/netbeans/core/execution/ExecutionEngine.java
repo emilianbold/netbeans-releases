@@ -21,8 +21,9 @@ import java.util.*;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.openide.ErrorManager;
 import org.openide.execution.NbClassPath;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Lookup;
@@ -135,7 +136,7 @@ public final class
                 Class clz = Class.forName("java.lang.UNIXProcess"); // NOI18N
             }
         } catch (ClassNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
     }
 

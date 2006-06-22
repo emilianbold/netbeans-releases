@@ -13,31 +13,22 @@
 
 package org.openide.text;
 
-import java.awt.event.*;
+
 import java.beans.PropertyChangeEvent;
 import java.io.*;
-import java.util.*;
-
 import javax.swing.JEditorPane;
-import javax.swing.text.*;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
-
+import javax.swing.text.*;
 import org.openide.awt.UndoRedo;
-import org.openide.actions.*;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.cookies.CloseCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.cookies.PrintCookie;
+import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
-import org.openide.nodes.NodeAdapter;
-import org.openide.windows.*;
+import org.openide.nodes.*;
+import org.openide.text.CloneableEditorSupport.Pane;
+import org.openide.util.Exceptions;
 import org.openide.util.Task;
 import org.openide.util.actions.SystemAction;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.Node;
+import org.openide.windows.*;
 
 /** Support for associating an editor and a Swing {@link Document} to a data object.
  * Can be assigned as a cookie to any editable data object.
@@ -891,7 +882,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
                 }
                 return (org.openide.nodes.CookieSet) getCookieSetMethod.invoke (obj, new Object[] { });
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
                 return new org.openide.nodes.CookieSet ();
             }
         }

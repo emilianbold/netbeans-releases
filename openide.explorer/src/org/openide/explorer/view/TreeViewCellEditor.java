@@ -12,7 +12,6 @@
  */
 package org.openide.explorer.view;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -40,6 +39,9 @@ import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreePath;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 
 
 /** In-place editor in the tree view component.
@@ -107,28 +109,15 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
                         n.setName(newStr);
                     }
                 } catch (IllegalArgumentException exc) {
-                    boolean needToAnnotate = true;
-                    ErrorManager em = ErrorManager.getDefault();
-                    ErrorManager.Annotation[] ann = em.findAnnotations(exc);
-
-                    // determine if "new annotation" of this exception is needed
-                    if ((ann != null) && (ann.length > 0)) {
-                        for (int i = 0; i < ann.length; i++) {
-                            String glm = ann[i].getLocalizedMessage();
-
-                            if ((glm != null) && !glm.equals("")) { // NOI18N
-                                needToAnnotate = false;
-                            }
-                        }
-                    }
+                    boolean needToAnnotate = Exceptions.findLocalizedMessage(exc) == null;
 
                     // annotate new localized message only if there is no localized message yet
                     if (needToAnnotate) {
                         String msg = NbBundle.getMessage(TreeViewCellEditor.class, "RenameFailed", n.getName(), newStr);
-                        em.annotate(exc, msg);
+                        Exceptions.attachLocalizedMessage(exc, msg);
                     }
 
-                    em.notify(ErrorManager.USER, exc);
+                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(exc));
                 }
             }
         }

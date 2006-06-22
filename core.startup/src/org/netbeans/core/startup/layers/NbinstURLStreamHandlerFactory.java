@@ -21,8 +21,8 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.net.UnknownServiceException;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * StreamHandlerFactory for nbinst protocol
@@ -115,7 +115,7 @@ public class NbinstURLStreamHandlerFactory implements URLStreamHandlerFactory {
                     this.connect();
                     return fo.getMIMEType();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
             return super.getHeaderField(name);

@@ -14,10 +14,10 @@
 package org.openide.actions;
 
 import java.io.IOException;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
@@ -53,9 +53,11 @@ public class SaveAction extends CookieAction {
                 NbBundle.getMessage(SaveAction.class, "MSG_saved", getSaveMessage(activatedNodes[0]))
             );
         } catch (IOException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, NbBundle.getMessage(SaveAction.class, "EXC_notsaved", getSaveMessage(activatedNodes[0])));
-            err.notify(e);
+            Exceptions.attachLocalizedMessage(e,
+                                              NbBundle.getMessage(SaveAction.class,
+                                                                  "EXC_notsaved",
+                                                                  getSaveMessage(activatedNodes[0])));
+            Exceptions.printStackTrace(e);
         }
     }
 
@@ -85,7 +87,7 @@ public class SaveAction extends CookieAction {
                 dataObject = Class.forName("org.openide.loaders.DataObject", true, l); // NOI18N
                 getNodeDelegate = dataObject.getMethod("getNodeDelegate", new Class[0]); // NOI18N
             } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -97,7 +99,7 @@ public class SaveAction extends CookieAction {
                 try {
                     n = (Node) getNodeDelegate.invoke(obj, new Object[0]);
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }

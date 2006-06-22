@@ -20,10 +20,6 @@ import java.net.URL;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-
-import org.netbeans.core.windows.persistence.TCGroupConfig;
-
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 

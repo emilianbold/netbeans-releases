@@ -287,7 +287,7 @@ public class Task extends Object implements Runnable {
 
                 return does.booleanValue();
             } catch (Exception ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
 
                 return true;
             }

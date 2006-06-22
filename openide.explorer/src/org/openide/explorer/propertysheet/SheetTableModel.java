@@ -17,21 +17,16 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
-import org.openide.nodes.*;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.util.NbBundle;
-
-import java.awt.*;
-import java.awt.event.*;
 
 import java.beans.*;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
@@ -185,9 +180,9 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
                 ); //NOI18N
             }
         } catch (IllegalAccessException iae) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, iae);
+            Logger.global.log(Level.WARNING, null, iae);
         } catch (java.lang.reflect.InvocationTargetException ite) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ite);
+            Logger.global.log(Level.WARNING, null, ite);
         }
     }
 

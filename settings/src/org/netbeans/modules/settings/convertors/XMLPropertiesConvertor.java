@@ -17,16 +17,17 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xml.sax.SAXException;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.spi.settings.Convertor;
 import org.netbeans.spi.settings.Saver;
 
 import org.netbeans.modules.settings.Env;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /** Implementation of xml properties format described by
@@ -109,9 +110,9 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             "ObjectChangesNotifier: NoSuchMethodException: " + // NOI18N
             inst.getClass().getName() + ".addPropertyChangeListener"); // NOI18N
         } catch (IllegalAccessException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         } catch (java.lang.reflect.InvocationTargetException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -134,10 +135,10 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             inst.getClass().getName() + ".removePropertyChangeListener"); // NOI18N
             // just changes done through gui will be saved
         } catch (IllegalAccessException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             // just changes done through gui will be saved
         } catch (java.lang.reflect.InvocationTargetException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             // just changes done through gui will be saved
         }
     }
@@ -148,7 +149,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             try {
                 saver.requestSave();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }
         } else {
             saver.markDirty();
@@ -195,9 +196,9 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
         try {
             return c.newInstance();
         } catch (Exception ex) { // IllegalAccessException, InstantiationException
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException("Cannot create instance of " + c.getName()), //NOI18N
-                ex);
+            IOException ioe = new IOException("Cannot create instance of " + c.getName()); // NOI18N
+            ioe.initCause(ex);
+            throw ioe;
         }
     }
 
@@ -224,15 +225,18 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             m.setAccessible(true);
             m.invoke(inst, new Object[] {r.getProperties()});
         } catch (NoSuchMethodException ex) {
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException(ex.getLocalizedMessage()), ex);
+            IOException ioe = new IOException(ex.getMessage());
+            ioe.initCause(ex);
+            throw ioe;
         } catch (IllegalAccessException ex) {
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException(ex.getLocalizedMessage()), ex);
+            IOException ioe = new IOException(ex.getMessage());
+            ioe.initCause(ex);
+            throw ioe;
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException(t.getLocalizedMessage()), t);
+            IOException ioe = new IOException(ex.getMessage());
+            ioe.initCause(t);
+            throw ioe;
         }
     }
     
@@ -259,15 +263,18 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             m.invoke(inst, new Object[] {prop});
             return prop;
         } catch (NoSuchMethodException ex) {
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException(ex.getLocalizedMessage()), ex);
+            IOException ioe = new IOException(ex.getMessage());
+            ioe.initCause(ex);
+            throw ioe;
         } catch (IllegalAccessException ex) {
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException(ex.getLocalizedMessage()), ex);
+            IOException ioe = new IOException(ex.getMessage());
+            ioe.initCause(ex);
+            throw ioe;
         } catch (java.lang.reflect.InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException(t.getLocalizedMessage()), t);
+            IOException ioe = new IOException(ex.getMessage());
+            ioe.initCause(t);
+            throw ioe;
         }
     }
     
@@ -315,11 +322,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
                 reader.parse(is);
             } catch (SAXException ex) {
                 IOException ioe = new IOException();
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.annotate(ioe, ex);
-                if (ex.getException () != null) {
-                    emgr.annotate (ioe, ex.getException());
-                }
+                ioe.initCause(ex);
                 throw ioe;
             }
         }

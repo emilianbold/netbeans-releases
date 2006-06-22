@@ -19,6 +19,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -27,7 +29,6 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import org.netbeans.core.ActionsPoolNode;
-import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
@@ -317,7 +318,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements PropertyCh
             if (! SystemAction.class.isAssignableFrom (clazz)) return null;
             return (SystemAction) inst.instanceCreate ();
         } catch (Exception e) {
-            org.openide.ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
             return null;
         }
     }
@@ -370,7 +371,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements PropertyCh
             } catch (RuntimeException re) {
                 // May happen if actions are misconfigured, bogus icons, etc.
                 // So best to recover semigracefully.
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, re);
+                Logger.global.log(Level.WARNING, null, re);
             }
         } else {
             label.setText (NbBundle.getBundle(LoaderActionsPanel.class).getString("LBL_separator_rather_than_action"));

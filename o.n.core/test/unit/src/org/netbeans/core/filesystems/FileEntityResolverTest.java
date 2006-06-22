@@ -17,8 +17,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.jar.Attributes;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.LoaderPoolNode;
@@ -145,7 +146,7 @@ implements LookupListener, ChangeListener {
     }
 
     public void resultChanged(LookupEvent ev) {
-        err.notify(err.INFORMATIONAL, new Exception("change in lookup"));
+        Logger.global.log(Level.WARNING, null, new Exception("change in lookup"));
         change++;
     }
 

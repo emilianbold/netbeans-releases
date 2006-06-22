@@ -12,7 +12,6 @@
  */
 package org.openide.explorer.view;
 
-import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.*;
 import org.openide.nodes.Node;
 
@@ -37,6 +36,8 @@ import java.util.EventObject;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -276,9 +277,9 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
                     tooltipText = tooltipValue.toString();
                 }
             } catch (IllegalAccessException eaE) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, eaE);
+                Logger.global.log(Level.WARNING, null, eaE);
             } catch (InvocationTargetException itE) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, itE);
+                Logger.global.log(Level.WARNING, null, itE);
             }
 
             propPanel.setToolTipText(createHtmlTooltip(tooltipText, propPanel.getFont()));

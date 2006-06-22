@@ -13,33 +13,22 @@
 
 package org.openide.loaders;
 
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Frame;
+
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.beans.*;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.text.MessageFormat;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
+import org.openide.*;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.*;
 import org.openide.nodes.Node;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
+import org.openide.util.*;
 
 /** Wizard for creation of new objects from a template.
 *
@@ -440,18 +429,19 @@ public class TemplateWizard extends WizardDescriptor {
                 final Throwable t = thrownMessage;
                 thrownMessage = null;
                 d.addComponentListener(new java.awt.event.ComponentAdapter() {
-                    public void componentShown(java.awt.event.ComponentEvent e) {
-                        if (t.getMessage() != null) {
-                            // this is only for backward compatitility (plus bugfix #15618, using errMan to log stack trace)
-                            ErrorManager.getDefault ().notify (ErrorManager.USER, t);
-                        } else {
-                            // this should be used (it checks for exception
-                            // annotations and severity)
-                            ErrorManager.getDefault().notify(t);
-                        }
-                        d.removeComponentListener(this);
-                    }
-                });
+
+                                           public void componentShown(java.awt.event.ComponentEvent e) {
+                                               if (t.getMessage() != null) {
+                                                   // this is only for backward compatitility (plus bugfix #15618, using errMan to log stack trace)
+                                                   DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(t));
+                                               } else {
+                                                   // this should be used (it checks for exception
+                                                   // annotations and severity)
+                                                   Exceptions.printStackTrace(t);
+                                               }
+                                               d.removeComponentListener(this);
+                                           }
+                                       });
             }
             d.setVisible(true);
         } catch (IllegalStateException ise) {
@@ -467,41 +457,52 @@ public class TemplateWizard extends WizardDescriptor {
         //
         // waiting times
         //
-        Mutex.EVENT.writeAccess (new Runnable () {
-            public void run () {
-                try {
-                    Frame f = WindowManager.getDefault().getMainWindow();
-                    if (f instanceof JFrame) {
-                        Component c = ((JFrame) f).getGlassPane();
-                        c.setVisible(true);
-                        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    }
-                } catch (NullPointerException npe) {
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
-                }
+        org.openide.util.Mutex.EVENT.writeAccess(new java.lang.Runnable() {
 
-            }
-        });
+                                                     public void run() {
+                                                         try {
+                                                             java.awt.Frame f = org.openide.windows.WindowManager.getDefault().getMainWindow();
+
+                                                             if (f instanceof javax.swing.JFrame) {
+                                                                 java.awt.Component c = ((javax.swing.JFrame) f).getGlassPane();
+
+                                                                 c.setVisible(true);
+                                                                 c.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+                                                             }
+                                                         }
+                                                         catch (java.lang.NullPointerException npe) {
+                                                             Logger.global.log(Level.WARNING,
+                                                                               null,
+                                                                               npe);
+                                                         }
+                                                     }
+                                                 });
     }
     
     private void showNormalCursor () {
         //
         // normal times
         //
-        Mutex.EVENT.writeAccess (new Runnable () {
-            public void run () {
-                try {
-                    Frame f = WindowManager.getDefault().getMainWindow();
-                    if (f instanceof JFrame) {
-                        Component c = ((JFrame) f).getGlassPane();
-                        c.setCursor(null);
-                        c.setVisible(false);
-                    }
-                } catch (NullPointerException npe) {
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
-                }
-            }
-        });
+        org.openide.util.Mutex.EVENT.writeAccess(new java.lang.Runnable() {
+
+                                                     public void run() {
+                                                         try {
+                                                             java.awt.Frame f = org.openide.windows.WindowManager.getDefault().getMainWindow();
+
+                                                             if (f instanceof javax.swing.JFrame) {
+                                                                 java.awt.Component c = ((javax.swing.JFrame) f).getGlassPane();
+
+                                                                 c.setCursor(null);
+                                                                 c.setVisible(false);
+                                                             }
+                                                         }
+                                                         catch (java.lang.NullPointerException npe) {
+                                                             Logger.global.log(Level.WARNING,
+                                                                               null,
+                                                                               npe);
+                                                         }
+                                                     }
+                                                 });
     }
     
 
@@ -569,7 +570,7 @@ public class TemplateWizard extends WizardDescriptor {
                 }
                 return better;
             } catch (MalformedURLException mfue) {
-                ErrorManager.getDefault().notify(mfue);
+                Exceptions.printStackTrace(mfue);
             }
         }
         return null;
@@ -583,7 +584,7 @@ public class TemplateWizard extends WizardDescriptor {
      */
     public static void setDescriptionAsResource (DataObject obj, String rsrc) throws IOException {
         if (rsrc != null && rsrc.startsWith ("/")) { // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning: auto-stripping leading slash from resource path in TemplateWizard.setDescriptionAsResource: " + rsrc);
+            Logger.global.warning("auto-stripping leading slash from resource path in TemplateWizard.setDescriptionAsResource: " + rsrc);
             rsrc = rsrc.substring (1);
         }
         obj.getPrimaryFile ().setAttribute (EA_DESC_RESOURCE, rsrc);

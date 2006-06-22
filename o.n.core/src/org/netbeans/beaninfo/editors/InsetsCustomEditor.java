@@ -16,17 +16,14 @@ package org.netbeans.beaninfo.editors;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-import java.util.ResourceBundle;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-
-import org.openide.ErrorManager;
+import org.netbeans.core.UIException;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -107,17 +104,19 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyCh
             int height = Integer.parseInt (heightField.getText ());
             if ((x < 0) || (y < 0) || (width < 0) || (height < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                ErrorManager.getDefault().annotate(
-                    ise, ErrorManager.USER, null, 
-                    NbBundle.getMessage (InsetsCustomEditor.class, "CTL_NegativeSize"), null, null);
+                UIException.annotateUser(ise, null,
+                                         NbBundle.getMessage(InsetsCustomEditor.class,
+                                                             "CTL_NegativeSize"),
+                                         null, null);
                 throw ise;
             }
             return new Insets (x, y, width, height);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            ErrorManager.getDefault().annotate(
-                ise, ErrorManager.USER, null, 
-                NbBundle.getMessage (InsetsCustomEditor.class, "CTL_InvalidValue"), null, null);
+            UIException.annotateUser(ise, null,
+                                     NbBundle.getMessage(InsetsCustomEditor.class,
+                                                         "CTL_InvalidValue"),
+                                     null, null);
             throw ise;
         }
     }

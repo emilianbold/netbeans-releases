@@ -15,15 +15,16 @@ package org.netbeans.modules.settings;
 
 import java.beans.*;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.spi.settings.Convertor;
 import org.netbeans.spi.settings.Saver;
+import org.openide.util.Exceptions;
 
 /** Support handles automatic storing/upgrading; notifies about changes in file.
  *
@@ -97,7 +98,7 @@ final class SaveSupport {
             }
             convertor = ip.getConvertor();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
         }
         return convertor;
     }
@@ -280,9 +281,8 @@ final class SaveSupport {
                     file.setAttribute(EA_NAME, name);
                 }
             } catch (Exception ex) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(ex, file.toString());
-        	err.notify(ErrorManager.INFORMATIONAL, ex);
+                Exceptions.attachLocalizedMessage(ex, file.toString());
+        	Logger.global.log(Level.WARNING, null, ex);
             }
         }
         

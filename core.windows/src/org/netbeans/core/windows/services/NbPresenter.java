@@ -14,40 +14,29 @@
 package org.netbeans.core.windows.services;
 
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.WizardDescriptor;
-import org.openide.awt.Mnemonics;
-import org.openide.modules.Dependency;
-import org.openide.modules.SpecificationVersion;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.DefaultKeyboardFocusManager;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.logging.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import org.openide.*;
+import org.openide.awt.Mnemonics;
+import org.openide.util.*;
 
 
 // XXX Before as org.netbeans.core.NbPresenter
@@ -1161,7 +1150,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
             try {
                 result = (Collection) markers.get(fm);
             } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }
 
             if (result == null || result.isEmpty()) {
@@ -1172,7 +1161,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
             try {
                 dequeue.invoke(fm, new Object[] { new Long(-1), NbPresenter.this });
             } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }
         }
     } // end of HackTypeAhead

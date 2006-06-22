@@ -13,10 +13,11 @@
 
 package org.openide.loaders;
 
+
 import java.io.*;
 import java.util.*;
-
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.cookies.ConnectionCookie;
 import org.openide.nodes.Node;
 
@@ -98,7 +99,7 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
                     //          System.out.println("  node:"+n); // NOI18N
                 } catch (IOException e) {
                     // node that cannot produce handle => remove it
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.global.log(Level.WARNING, null, e);
                     it.remove ();
                     // go on
                     continue;

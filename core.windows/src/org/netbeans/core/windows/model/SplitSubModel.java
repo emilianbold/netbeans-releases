@@ -14,10 +14,11 @@
 package org.netbeans.core.windows.model;
 
 
-import org.netbeans.core.windows.*;
-import org.openide.ErrorManager;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.core.windows.*;
 
 
 /**
@@ -87,9 +88,11 @@ class SplitSubModel {
     public boolean addMode(ModeImpl mode, SplitConstraint[] constraints) {
         // PENDING do we support empty constraints?
         if(mode == null || constraints == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalArgumentException("Mode=" + mode
-                    + " constraints=" + constraints));
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalArgumentException("Mode=" +
+                                                                     mode +
+                                                                     " constraints=" +
+                                                                     constraints));
             return false;
         }
 
@@ -111,8 +114,9 @@ class SplitSubModel {
     // XXX
     public boolean addModeToSide(ModeImpl mode, ModeImpl attachMode, String side) {
         if(mode == null || mode.getState() == Constants.MODE_STATE_SEPARATED) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalArgumentException("Mode=" + mode));
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalArgumentException("Mode=" +
+                                                                     mode));
             return false;
         }
 
@@ -134,8 +138,9 @@ class SplitSubModel {
     // XXX
     public boolean addModeAround(ModeImpl mode, String side) {
         if(mode == null || mode.getState() == Constants.MODE_STATE_SEPARATED) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalArgumentException("Mode=" + mode));
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalArgumentException("Mode=" +
+                                                                     mode));
             return false;
         }
 
@@ -155,8 +160,9 @@ class SplitSubModel {
     // XXX
     public boolean addModeAroundEditor(ModeImpl mode, String side) {
         if(mode == null || mode.getState() == Constants.MODE_STATE_SEPARATED) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalArgumentException("Mode=" + mode));
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalArgumentException("Mode=" +
+                                                                     mode));
             return false;
         }
 
@@ -468,11 +474,15 @@ class SplitSubModel {
                 Node child = (Node)it.next();
 
                 if(child.getParent() != splitNode) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                        new IllegalStateException("Node->"+child
-                            +" has wrong parent->"+child.getParent()
-                            + " is has to be->"+splitNode
-                            + " \nModel: " + toString()));
+                    Logger.global.log(Level.WARNING, null,
+                                      new java.lang.IllegalStateException("Node->" +
+                                                                          child +
+                                                                          " has wrong parent->" +
+                                                                          child.getParent() +
+                                                                          " is has to be->" +
+                                                                          splitNode +
+                                                                          " \nModel: " +
+                                                                          toString()));
                     // Repair model.
                     child.setParent(splitNode);
                 }
@@ -835,12 +845,14 @@ class SplitSubModel {
             for(Iterator it = index2child.values().iterator(); it.hasNext(); ) {
                 Node child = (Node)it.next();
                 if(child.getParent() != this) {
-                    ErrorManager.getDefault().notify(
-                        ErrorManager.INFORMATIONAL,
-                        new IllegalStateException("Node " + child // NOI18N
-                            + " is a child in split " + this // NOI18N
-                            + " but his parent is " + child.getParent()
-                            + ". Repairing")); // NOI18N
+                    Logger.global.log(Level.WARNING, null,
+                                      new java.lang.IllegalStateException("Node " +
+                                                                          child +
+                                                                          " is a child in split " +
+                                                                          this +
+                                                                          " but his parent is " +
+                                                                          child.getParent() +
+                                                                          ". Repairing")); // NOI18N
                     // Repair.
                     child.setParent(this);
                 }

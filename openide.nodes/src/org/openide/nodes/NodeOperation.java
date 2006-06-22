@@ -12,7 +12,6 @@
  */
 package org.openide.nodes;
 
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.UserCancelException;
 

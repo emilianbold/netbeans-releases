@@ -13,41 +13,18 @@
 
 package org.openide.awt;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.WeakHashMap;
-import javax.accessibility.Accessible;
-import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.UIManager;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import javax.accessibility.*;
+import javax.swing.*;
+import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.border.Border;
-import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderInstance;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.util.*;
 
 /**
  * This class keeps track of the current toolbars and their names.
@@ -508,39 +485,44 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
             for (int i = 0; i < length; i++) {
                 try {
-                    Object obj = cookies[i].instanceCreate();
+                    java.lang.Object obj = cookies[i].instanceCreate();
 
-                    if (obj instanceof Toolbar) {
-                        Toolbar toolbar = (Toolbar)obj;
+                    if (obj instanceof org.openide.awt.Toolbar) {
+                        org.openide.awt.Toolbar toolbar = (org.openide.awt.Toolbar) obj;
+
                         // should be done by ToolbarPanel in add method
-                        toolbar.removeMouseListener (listener);
-                        toolbar.addMouseListener (listener);
-                        toolbars.put (toolbar.getName (), toolbar);
+                        toolbar.removeMouseListener(listener);
+                        toolbar.addMouseListener(listener);
+                        toolbars.put(toolbar.getName(), toolbar);
                         continue;
                     }
+                    if (obj instanceof org.openide.awt.ToolbarPool.Configuration) {
+                        org.openide.awt.ToolbarPool.Configuration config = (org.openide.awt.ToolbarPool.Configuration) obj;
+                        java.lang.String name = config.getName();
 
-                    if (obj instanceof Configuration) {
-                        Configuration config = (Configuration)obj;
-                        String name = config.getName ();
                         if (name == null) {
-                            name = cookies[i].instanceName ();
+                            name = cookies[i].instanceName();
                         }
-                        conf.put (name, config);
+                        conf.put(name, config);
                         continue;
                     }
-                    if (obj instanceof Component) {
-                        Component comp = (Component)obj;
-                        String name = comp.getName ();
+                    if (obj instanceof java.awt.Component) {
+                        java.awt.Component comp = (java.awt.Component) obj;
+                        java.lang.String name = comp.getName();
+
                         if (name == null) {
-                            name = cookies[i].instanceName ();
+                            name = cookies[i].instanceName();
                         }
-                        conf.put (name, new ComponentConfiguration (comp));
+                        conf.put(name,
+                                 new org.openide.awt.ToolbarPool.ComponentConfiguration(comp));
                         continue;
                     }
-                } catch (java.io.IOException ex) {
-                    ErrorManager.getDefault ().notify (ex);
-                } catch (ClassNotFoundException ex) {
-                    ErrorManager.getDefault ().notify (ex);
+                }
+                catch (java.io.IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                catch (java.lang.ClassNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
             update (toolbars, conf);

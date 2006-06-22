@@ -14,10 +14,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.Point;
-import java.util.ResourceBundle;
-import org.openide.ErrorManager;
-
-import org.openide.NotifyDescriptor;
+import org.netbeans.core.UIException;
 import org.openide.util.NbBundle;
 
 /** A property editor for Point class.
@@ -45,8 +42,8 @@ public class PointEditor extends ArrayOfIntSupport {
                 "CTL_NegativeSize"); //NOI18N
             IllegalArgumentException iae = new IllegalArgumentException (
                 "Negative value"); //NOI18N
-            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, 
-                iae.getMessage(), msg, null, new java.util.Date());
+            UIException.annotateUser(iae, iae.getMessage(), msg, null,
+                                     new java.util.Date());
             throw iae;
         }
         else

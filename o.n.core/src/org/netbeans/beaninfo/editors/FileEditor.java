@@ -24,30 +24,21 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JScrollBar;
 import javax.swing.KeyStroke;
-import javax.swing.UIManager;
-import javax.swing.plaf.FileChooserUI;
-import javax.swing.plaf.metal.MetalFileChooserUI;
-
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.modules.Dependency;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * PropertyEditor for <code>java.io.File</code>.
@@ -430,7 +421,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 try {
                     hideShowButtons(jfc, Boolean.TRUE.equals(pce.getNewValue()));
                 } catch (Exception e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.global.log(Level.WARNING, null, e);
                 }
             }
         }

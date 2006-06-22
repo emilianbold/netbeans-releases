@@ -13,33 +13,13 @@
 
 package org.openide.loaders;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import java.lang.ref.*;
+import java.util.*;
+import java.util.logging.*;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakSet;
+import org.openide.filesystems.*;
+import org.openide.util.*;
 
 /** Registration of all data objects in the system.
 * Maps data objects to its handlers.
@@ -1203,7 +1183,7 @@ implements ChangeListener {
                     } catch (DataObjectExistsException ex) {
                         // this should be no problem here
                     } catch (java.io.IOException ioe) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        Logger.global.log(Level.WARNING, null, ioe);
                     } catch (ConcurrentModificationException cme) {
                         // not very nice but the only way I could come up to handle this:
                         // java.util.ConcurrentModificationException

@@ -12,12 +12,10 @@
  */
 package org.openide.filesystems;
 
-import org.openide.ErrorManager;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.NbObjectInputStream;
-import org.xml.sax.*;
 
 import java.io.*;
 
@@ -26,6 +24,7 @@ import java.lang.reflect.*;
 import java.net.URL;
 
 import java.util.*;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -539,7 +538,7 @@ final class XMLMapAttr implements Map {
                     }
                 }
             } catch (NumberFormatException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
 
                 return inStr;
             }

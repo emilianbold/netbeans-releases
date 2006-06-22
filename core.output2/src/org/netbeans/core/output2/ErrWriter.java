@@ -19,7 +19,6 @@
 package org.netbeans.core.output2;
 
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 

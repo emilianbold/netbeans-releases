@@ -30,7 +30,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;

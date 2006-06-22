@@ -13,8 +13,6 @@
 package org.openide.explorer.propertysheet;
 
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
-import org.openide.ErrorManager.Annotation;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -25,11 +23,14 @@ import java.awt.Window;
 import java.awt.event.*;
 
 import java.beans.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -561,7 +562,7 @@ final class PropertyDialogManager implements VetoableChangeListener {
             return;
         }
 
-        ErrorManager.getDefault().notify(ex);
+        Exceptions.printStackTrace(ex);
     }
 
     /** Notifies an exception to error manager or prints its it to stderr.
@@ -575,7 +576,7 @@ final class PropertyDialogManager implements VetoableChangeListener {
             return;
         }
 
-        ErrorManager.getDefault().notify(severity, ex);
+        Logger.global.log(Level.WARNING, null, ex);
     }
 
     /**
@@ -587,56 +588,17 @@ final class PropertyDialogManager implements VetoableChangeListener {
      * @param e exception to notify
      */
     private static void notifyUser(Exception e) {
-        Annotation ann = findAnnotation(e);
-        String userMessage = null;
-
-        if (ann != null) {
-            userMessage = (ann.getLocalizedMessage() == null) ? ann.getMessage() : ann.getLocalizedMessage();
-        }
-
-        ErrorManager em = ErrorManager.getDefault();
+        String userMessage = Exceptions.findLocalizedMessage(e);
 
         if (userMessage != null) {
             // attach annotation and notify exception with original severity
-            em.attachAnnotations(e, new Annotation[] { ann });
-            em.notify(e);
+            Exceptions.attachLocalizedMessage(e, userMessage);
+            Exceptions.printStackTrace(e);
         } else {
             // if there is not user message don't bother user, just log an
             // exception
-            em.notify(ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
-    }
-
-    /**
-     * Recursively tries to find an annotation with a localized or user message
-     * for a given exception and its <code>cause</code>s. Either first found is
-     * returned or null if none is found.
-     *
-     * @parm e exception to analyze
-     */
-    private static Annotation findAnnotation(Exception e) {
-        String userMessage = null;
-        ErrorManager.Annotation[] anns = ErrorManager.getDefault().findAnnotations(e);
-
-        if (anns != null) {
-            for (int i = 0; i < anns.length; i++) {
-                Annotation ann = anns[i];
-                String locMsg = ann.getLocalizedMessage();
-                userMessage = (locMsg == null) ? ann.getMessage() : locMsg;
-
-                if (userMessage != null) {
-                    return ann;
-                }
-            }
-        }
-
-        Throwable cause = e.getCause();
-
-        if (cause instanceof Exception) {
-            return findAnnotation((Exception) cause);
-        }
-
-        return null;
     }
 
     Component getComponent() {
@@ -649,12 +611,6 @@ final class PropertyDialogManager implements VetoableChangeListener {
 
     private static void notifyUser(Exception e, String txt) {
         notifyUser(e);
-    }
-
-    static Throwable annotate(
-        Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date
-    ) {
-        return ErrorManager.getDefault().annotate(t, severity, message, localizedMessage, stackTrace, date);
     }
 
     static class CreateDialogInvoker implements Runnable {

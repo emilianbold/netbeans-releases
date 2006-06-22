@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
 import org.openide.filesystems.*;
+import org.openide.util.Exceptions;
 
 /** Object that provides beaninfo for {@link FileSystem}s.
 *
@@ -54,7 +55,7 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
             desc[6].setHidden (true);
             return desc;
         } catch (IntrospectionException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             return super.getPropertyDescriptors();
         }
     }

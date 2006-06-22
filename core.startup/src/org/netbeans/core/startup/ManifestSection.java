@@ -22,10 +22,10 @@ import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.Util;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.SharedClassObject;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 
 // XXX synchronization?
@@ -114,7 +114,9 @@ public abstract class ManifestSection<T> {
                 }
                 return clazz;
             } catch (ClassNotFoundException cnfe) {
-                ErrorManager.getDefault().annotate(cnfe, ErrorManager.UNKNOWN, "Loader for ClassNotFoundException: " + getClassLoader(), null, null, null);
+                Exceptions.attachMessage(cnfe,
+                                         "Loader for ClassNotFoundException: " +
+                                         getClassLoader());
                 problem = cnfe;
                 throw problem;
             } catch (Exception e) {
@@ -155,7 +157,9 @@ public abstract class ManifestSection<T> {
                 }
                 return o;
             } catch (ClassNotFoundException cnfe) {
-                ErrorManager.getDefault().annotate(cnfe, ErrorManager.UNKNOWN, "Loader for ClassNotFoundException: " + getClassLoader(), null, null, null);
+                Exceptions.attachMessage(cnfe,
+                                         "Loader for ClassNotFoundException: " +
+                                         getClassLoader());
                 throw cnfe;
             } catch (LinkageError le) {
                 throw new ClassNotFoundException(le.toString(), le);

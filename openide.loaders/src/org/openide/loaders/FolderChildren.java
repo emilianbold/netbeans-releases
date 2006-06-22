@@ -13,18 +13,15 @@
 
 package org.openide.loaders;
 
+
 import java.beans.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.openide.ErrorManager;
+import javax.swing.event.*;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.*;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 
 /** Watches over a folder and represents its
 * child data objects by nodes.
@@ -140,7 +137,7 @@ implements PropertyChangeListener, ChangeListener {
                 return new Node[0];
             }
         } catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
             return new Node[0];
         }
     }
@@ -161,9 +158,8 @@ implements PropertyChangeListener, ChangeListener {
                 task.waitFinished();
                 err.fine("getNodes(true): waitFinished"); // NOI18N
             } else {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException("getNodes(true) called while holding the Children.MUTEX") // NOI18N
-                );
+                Logger.global.log(Level.WARNING, null,
+                                  new java.lang.IllegalStateException("getNodes(true) called while holding the Children.MUTEX"));
             }
         }
         res = getNodes();

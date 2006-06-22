@@ -12,7 +12,6 @@
  */
 package org.openide.actions;
 
-import org.openide.actions.ActionManager;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;

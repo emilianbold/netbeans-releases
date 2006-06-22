@@ -13,28 +13,17 @@
 
 package org.openide.loaders;
 
-import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+
 import java.awt.event.KeyEvent;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.lang.ref.*;
 import java.lang.reflect.Method;
-import java.util.Enumeration;
-
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.openide.ErrorManager;
-import org.openide.explorer.propertysheet.DefaultPropertyModel;
-import org.openide.explorer.propertysheet.PropertyPanel;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import javax.swing.*;
+import javax.swing.event.*;
+import org.openide.explorer.propertysheet.*;
+import org.openide.filesystems.*;
 import org.openide.util.*;
-import org.openide.util.Utilities;
 
 /** Dialog that can be used in create from template.
  *
@@ -84,9 +73,9 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
             setterMethod.setAccessible (true);
             pd = new PropertyDescriptor (PROP_LOCATION_FOLDER, getterMethod, setterMethod);
         } catch (java.beans.IntrospectionException ie) {
-            ErrorManager.getDefault ().notify (ie);
+            Exceptions.printStackTrace(ie);
         } catch (NoSuchMethodException nsme) {
-            ErrorManager.getDefault ().notify (nsme);
+            Exceptions.printStackTrace(nsme);
         } 
         locationFolderModel = new DefaultPropertyModel (this, pd);
     }

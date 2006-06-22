@@ -13,14 +13,12 @@
 
 package org.openide.loaders;
 
+
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.*;
-import org.openide.util.Utilities;
 
 /** Implementaion of WizardDescriptor.Panel that can be used in create from template.
  *
@@ -141,7 +139,7 @@ final class NewObjectWizardPanel implements WizardDescriptor.FinishablePanel {
         try {
             targetFolder = wizard.getTargetFolder();
         } catch (IOException x) {
-            ErrorManager.getDefault().notify(x);
+            Exceptions.printStackTrace(x);
         }
 
     }

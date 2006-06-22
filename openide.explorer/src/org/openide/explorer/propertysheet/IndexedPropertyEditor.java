@@ -12,7 +12,6 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -30,6 +29,7 @@ import java.util.*;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.openide.explorer.UIException;
 
 
 /**
@@ -249,10 +249,9 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
             setValue(a);
         } catch (Exception x) {
             IllegalArgumentException iae = new IllegalArgumentException();
-            ErrorManager.getDefault().annotate(
-                iae, ErrorManager.USER, getString("EXC_ErrorInIndexedSetter"), getString("EXC_ErrorInIndexedSetter"), x,
-                new java.util.Date()
-            );
+            UIException.annotateUser(iae, getString("EXC_ErrorInIndexedSetter"),
+                                     getString("EXC_ErrorInIndexedSetter"), x,
+                                     new Date());
             throw iae;
         }
     }

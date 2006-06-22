@@ -23,7 +23,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 
 /** Request processor that is capable to execute requests in dedicated threads.
  * You can create your own instance or use the shared one.
@@ -577,18 +576,17 @@ public final class RequestProcessor {
             if (delay == 0) { // Place it to pending queue immediatelly
                 enqueue(localItem);
             } else { // Post the starter
-                starterThread.schedule(
-                    new TimerTask() {
-                        public void run() { // enqueue the created
+                starterThread.schedule(new TimerTask() {
 
-                            try {
-                                enqueue(localItem); // it may be already neutralized
-                            } catch (RuntimeException e) {
-                                ErrorManager.getDefault().notify(e);
-                            }
-                        }
-                    }, delay
-                );
+                                           public void run() {
+                                               try {
+                                                   enqueue(localItem);
+                                               }
+                                               catch (RuntimeException e) {
+                                                   Exceptions.printStackTrace(e);
+                                               }
+                                           }
+                                       }, delay);
             }
         }
 

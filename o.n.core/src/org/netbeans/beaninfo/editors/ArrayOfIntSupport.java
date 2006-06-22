@@ -15,7 +15,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.util.StringTokenizer;
 import java.text.MessageFormat;
-import org.openide.ErrorManager;
+import org.netbeans.core.UIException;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
@@ -168,8 +168,9 @@ implements XMLPropertyEditor, ExPropertyEditor  {
         String msg = new MessageFormat(VALUE_FORMAT).format(new Object[] 
             { className , getHintFormat() } );
         IllegalArgumentException iae = new IllegalArgumentException(msg);
-        ErrorManager.getDefault().annotate(iae, ErrorManager.USER, e == null ? "" : e.getMessage(), 
-             msg, e, new java.util.Date()); //NOI18N
+        UIException.annotateUser(iae, e == null ? ""
+                                                : e.getMessage(), msg, e,
+                                 new java.util.Date()); //NOI18N
         throw iae;                                          
     }
 

@@ -18,7 +18,7 @@ import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** Support class for <code>Node.Property</code>.
@@ -299,9 +299,9 @@ public abstract class PropertySupport extends Node.Property {
                 try {
                     return (PropertyEditor) propertyEditorClass.newInstance();
                 } catch (InstantiationException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 } catch (IllegalAccessException iex) {
-                    ErrorManager.getDefault().notify(iex);
+                    Exceptions.printStackTrace(iex);
                 }
             }
 

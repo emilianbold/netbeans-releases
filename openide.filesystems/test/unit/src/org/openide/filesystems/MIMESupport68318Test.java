@@ -12,7 +12,6 @@
  */
 package org.openide.filesystems;
 import java.io.IOException;
-import java.lang.ref.*;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;

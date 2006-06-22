@@ -43,10 +43,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.openide.ErrorManager;
 import org.openide.actions.ToolsAction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileStateInvalidException;
@@ -60,6 +61,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
@@ -294,7 +296,7 @@ public final class SerialDataNode extends DataNode {
             }
         } catch (Exception e) {
             // Problem ==>> use default icon
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
 
         return beanInfoIcon;
@@ -375,22 +377,18 @@ public final class SerialDataNode extends DataNode {
                 resolvePropertyChange();
                 return;
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch (ClassNotFoundException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch (IllegalAccessException ex) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(ex, getDataObject().toString());
-                err.notify(ex);
+                Exceptions.attachLocalizedMessage(ex, getDataObject().toString());
+                Exceptions.printStackTrace(ex);
             } catch (IllegalArgumentException ex) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(ex, getDataObject().toString());
-                err.notify(ex);
+                Exceptions.attachLocalizedMessage(ex, getDataObject().toString());
+                Exceptions.printStackTrace(ex);
             } catch (InvocationTargetException ex) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(ex, ex.getTargetException());
-                err.annotate(ex, getDataObject().toString());
-                err.notify(ex);
+                Exceptions.attachLocalizedMessage(ex, getDataObject().toString());
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -469,11 +467,11 @@ public final class SerialDataNode extends DataNode {
                 }                
                 
             } catch (ClassNotFoundException ex) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             } catch (IOException ex) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             } catch (IntrospectionException ex) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }            
         }
 
@@ -920,7 +918,7 @@ public final class SerialDataNode extends DataNode {
                 }
             } catch (Exception ex) {
                 bean = null;
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
             if (bean != null) {
                 // attaches a listener to the bean

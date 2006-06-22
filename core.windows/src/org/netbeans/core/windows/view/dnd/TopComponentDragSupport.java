@@ -15,31 +15,29 @@
 package org.netbeans.core.windows.view.dnd;
 
 
-import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.view.ui.ModeComponent;
-import org.netbeans.core.windows.view.ui.Tabbed;
-import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
-import org.openide.ErrorManager;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
-import org.openide.util.WeakSet;
-import org.openide.windows.TopComponent;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
+import java.awt.AWTEvent;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dialog;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.*;
 import java.awt.dnd.*;
-import java.awt.event.AWTEventListener;
-import java.awt.event.MouseEvent;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.awt.event.*;
+import java.lang.ref.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
+import org.netbeans.core.windows.*;
+import org.netbeans.core.windows.view.ui.*;
+import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
+import org.openide.util.*;
+import org.openide.windows.TopComponent;
 
 
 
@@ -374,8 +372,7 @@ implements AWTEventListener, DragSourceListener {
                 this
             );
         } catch(InvalidDnDOperationException idoe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    idoe);
+            Logger.global.log(Level.WARNING, null, idoe);
             
             removeListening();
             windowDnDManager.resetDragSource();
@@ -651,9 +648,9 @@ implements AWTEventListener, DragSourceListener {
             }
         } else {
             // PENDING throw exception?
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException(
-                            "Invalid action type->"+dropAction)); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalStateException("Invalid action type->" +
+                                                                  dropAction)); // NOI18N
             return;
         }
 

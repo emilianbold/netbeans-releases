@@ -39,6 +39,8 @@ public class DataShadowSlowness39981Test extends NbTestCase implements Operation
     private long time;
     /** number of created objects */
     private int createdObjects;
+    /** created children */
+    private DataObject[] arr;
     
     public DataShadowSlowness39981Test (String name) {
         super(name);
@@ -62,13 +64,13 @@ public class DataShadowSlowness39981Test extends NbTestCase implements Operation
         
         int count = getTestNumber ();
         
-		shadows = createShadows (
+        shadows = createShadows (
             DataObject.find (lfs.findResource("folder/original.txt")), 
             DataFolder.findFolder (lfs.findResource ("shadows")),
             count
         );
         
-		brokenShadows = /*Collections.EMPTY_LIST; */createShadows (
+        brokenShadows = /*Collections.EMPTY_LIST; */createShadows (
             DataObject.find (lfs.findResource("folder/orig.txt")), 
             DataFolder.findFolder (lfs.findResource ("shadows")),
             count
@@ -110,13 +112,42 @@ public class DataShadowSlowness39981Test extends NbTestCase implements Operation
     
     protected void tearDown() throws Exception {
         Repository.getDefault ().removeFileSystem (lfs);
+        
+        ArrayList weaks = new ArrayList();
+        addWeakRefs(Arrays.asList(arr), weaks);
+        addWeakRefs(brokenShadows, weaks);
+        addWeakRefs(shadows, weaks);
+        addWeakRefs(Collections.singleton(lfs), weaks);
+        addWeakRefs(Collections.singleton(folder), weaks);
+        
+        arr = null;
+        brokenShadows = null;
+        shadows = null;
+        lfs = null;
+        folder = null;
+        
+        
+        WeakReference[] refArr = (WeakReference[])weaks.toArray(new WeakReference[0]);
+        for (int i = 0; i < refArr.length; i++) {
+            assertGC(i + " - gc(" + refArr[i] + "): ", refArr[i]);
+        }
+        
+        
+    }
+    
+    private static void addWeakRefs(Collection objects, List weakRefsToAdd) {
+        Iterator it = objects.iterator();
+        while (it.hasNext()) {
+            Object obj = it.next();
+            weakRefsToAdd.add(new WeakReference(obj));
+        }
     }
     
     private void createChildren () {
         DataLoaderPool pool = DataLoaderPool.getDefault ();
         pool.addOperationListener (this);
         
-        DataObject[] arr = folder.getChildren ();
+        arr = folder.getChildren ();
         
         pool.removeOperationListener (this);
         

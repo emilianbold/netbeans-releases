@@ -12,7 +12,6 @@
  */
 package org.openide.nodes;
 
-import org.openide.ErrorManager;
 
 import java.beans.IntrospectionException;
 import java.beans.beancontext.*;
@@ -20,6 +19,8 @@ import java.beans.beancontext.*;
 import java.lang.ref.*;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** Class that represents bean children of a JavaBeans context.
@@ -104,7 +105,7 @@ public class BeanChildren extends Children.Keys {
 
             return new Node[] { n };
         } catch (IntrospectionException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
 
             return new Node[0];
         }
@@ -219,7 +220,7 @@ public class BeanChildren extends Children.Keys {
                             // from this method, but in fact BeanContextSupport
                             // can throw IllegalStateException if either child or
                             // parent refuses the deletion. So better deal with it.
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, re);
+                            Logger.global.log(Level.WARNING, null, re);
                         }
                     }
                 }

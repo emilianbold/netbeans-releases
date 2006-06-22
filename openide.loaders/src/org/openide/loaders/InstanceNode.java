@@ -13,36 +13,19 @@
 
 package org.openide.loaders;
 
+
 import java.awt.Image;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyEditor;
-import java.beans.beancontext.BeanContext;
-import java.beans.beancontext.BeanContextMembershipEvent;
-import java.beans.beancontext.BeanContextMembershipListener;
-import java.beans.beancontext.BeanContextProxy;
+import java.beans.*;
+import java.beans.beancontext.*;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
-import org.openide.ErrorManager;
+import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.nodes.BeanChildren;
-import org.openide.nodes.BeanNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
+import org.openide.filesystems.*;
+import org.openide.nodes.*;
+import org.openide.util.*;
 
 /** Node to represent a .settings, .ser or .instance file.
  *
@@ -244,11 +227,11 @@ final class InstanceNode extends DataNode implements Runnable {
             }
         } catch (Exception e) {
             // Problem ==>> use default icon
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
         } catch (LinkageError e) {
             // #30650 - catch also LinkageError.
             // Problem ==>> use default icon
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
 
         return beanInfoIcon;
@@ -297,7 +280,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return;
         }
         } catch (Exception e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
             setDisplayName(getDataObject().getName());
             return;
         }
@@ -471,14 +454,14 @@ final class InstanceNode extends DataNode implements Runnable {
                 orig.put (p);
             }
         } catch (ClassNotFoundException ex) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
         } catch (IOException ex) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
         } catch (IntrospectionException ex) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
         } catch (LinkageError ex) {
             // #30650 - catch also LinkageError.
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
         }
     }
     
@@ -915,7 +898,7 @@ final class InstanceNode extends DataNode implements Runnable {
                 }
             } catch (Exception ex) {
                 bean = null;
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
             if (bean != null) {
                 // attaches a listener to the bean

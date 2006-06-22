@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import org.netbeans.api.javahelp.Help;
-import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 
 public class Installer extends ModuleInstall {

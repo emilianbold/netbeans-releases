@@ -41,12 +41,14 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Union2;
@@ -350,7 +352,7 @@ public class BinaryFS extends FileSystem {
                 topFO = (FileObject)attrAskedFileObject.get();
                 attrAskedFileObject.set(null);
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
 
             return topFO == null ? this : topFO;
@@ -464,9 +466,8 @@ public class BinaryFS extends FileSystem {
                         throw new IllegalStateException("Bad index: " + index); // NOI18N
                 }
             } catch (Exception exc) {
-                ErrorManager em = ErrorManager.getDefault();
-                em.annotate (exc, "value = "+value); //NOI18N
-                em.notify (ErrorManager.INFORMATIONAL, exc);
+                Exceptions.attachLocalizedMessage(exc, "value = " + value); //NOI18N
+                Logger.global.log(Level.WARNING, null, exc);
             }
             return null; // problem getting the value...
         }
@@ -745,7 +746,7 @@ public class BinaryFS extends FileSystem {
                         }
                     }
                 } catch (Exception e) {
-                    ErrorManager.getDefault().notify (ErrorManager.INFORMATIONAL, e);
+                    Logger.global.log(Level.WARNING, null, e);
                 }
             }
             return super.lastModified ();

@@ -13,60 +13,21 @@
 
 package org.openide.loaders;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
-import java.io.Writer;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.ErrorManager;
+
+import java.io.*;
+import java.lang.ref.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.logging.*;
 import org.openide.ServiceType;
 import org.openide.actions.DeleteAction;
-import org.openide.cookies.InstanceCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+import org.openide.cookies.*;
+import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.util.Enumerations;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
-import org.openide.util.WeakSet;
+import org.openide.nodes.*;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.*;
 
 /** A data object whose only purpose is to supply <code>InstanceCookie</code>.
 * The instances are created by default instantiation; the name of the class
@@ -1565,8 +1526,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             }
         }
         if (e != null) {
-            ErrorManager.getDefault().annotate(
-                e, "Problem with InstanceCookie.setInstance method: " + convertor.getClass()); // NOI18N
+            Exceptions.attachLocalizedMessage(e,
+                                              "Problem with InstanceCookie.setInstance method: " +
+                                              convertor.getClass()); // NOI18N
             err.log(Level.WARNING, null, e);
         }
     }

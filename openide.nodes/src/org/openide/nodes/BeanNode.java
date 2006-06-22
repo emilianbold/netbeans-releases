@@ -33,8 +33,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -546,10 +548,10 @@ public class BeanNode extends AbstractNode {
                 // during startup of the bean, so it is not good to swallow errors here
                 // (e.g. SharedClassObject.initialize throws RuntimeException -> it is
                 // caught here and probably someone wants to know).
-                ErrorManager.getDefault().annotate(
-                    e, ErrorManager.UNKNOWN,
-                    "Trying to invoke " + method + " where introspected class is " + clazz.getName(), null, null, null
-                ); // NOI18N
+                Exceptions.attachMessage(e,
+                                         "Trying to invoke " + method +
+                                         " where introspected class is " +
+                                         clazz.getName()); // NOI18N
                 NodeOp.warning(e);
             }
         }
@@ -650,12 +652,10 @@ public class BeanNode extends AbstractNode {
             // make sure this is cast to String too:
             String result = (String) nameGetter.invoke(bean, null);
         } catch (Exception e) {
-            ErrorManager em = ErrorManager.getDefault();
-            em.annotate(
-                e, ErrorManager.UNKNOWN, "Bad method: " + clazz.getName() + "." + nameGetter.getName(), //NOI18N
-                null, null, null
-            );
-            em.notify(ErrorManager.INFORMATIONAL, e);
+            Exceptions.attachMessage(e,
+                                     "Bad method: " + clazz.getName() + "." +
+                                     nameGetter.getName());
+            Logger.global.log(Level.WARNING, null, e);
 
             nameGetter = null;
 

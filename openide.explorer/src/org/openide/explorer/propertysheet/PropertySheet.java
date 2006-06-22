@@ -15,7 +15,6 @@ package org.openide.explorer.propertysheet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
@@ -40,6 +39,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -57,10 +57,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.NodeAdapter;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -323,7 +323,7 @@ public class PropertySheet extends JPanel {
         } catch (PropertyVetoException e) {
             //Should never happen unless someone manually modifies
             //backing storage
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
 
@@ -1002,7 +1002,7 @@ public class PropertySheet extends JPanel {
                 // ignore - maybe javahelp module is not installed, not so strange
             } catch (Exception ee) {
                 // potentially more serious
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ee);
+                Logger.global.log(Level.WARNING, null, ee);
             }
 
             // Did not work.
@@ -1180,13 +1180,9 @@ public class PropertySheet extends JPanel {
                     // instance
                     ((Node.Property) sheet.table.getSelection()).restoreDefaultValue();
                 } catch (IllegalAccessException iae) {
-                    IllegalStateException ise = new IllegalStateException("Error restoring default value"); //NOI18N
-                    ErrorManager.getDefault().annotate(ise, iae);
-                    throw ise;
+                    throw (IllegalStateException) new IllegalStateException("Error restoring default value").initCause(iae);
                 } catch (InvocationTargetException ite) {
-                    IllegalStateException ise = new IllegalStateException("Error restoring defaul value"); //NOI18N
-                    ErrorManager.getDefault().annotate(ise, ite);
-                    throw ise;
+                    throw (IllegalStateException) new IllegalStateException("Error restoring defaul value").initCause(ite);
                 }
 
                 break;

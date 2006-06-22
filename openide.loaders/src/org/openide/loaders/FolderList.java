@@ -13,33 +13,14 @@
 
 package org.openide.loaders;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+
+import java.beans.*;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TopologicalSortException;
-import org.openide.util.Utilities;
+import java.lang.ref.*;
+import java.util.*;
+import java.util.logging.*;
+import org.openide.filesystems.*;
+import org.openide.util.*;
 
 /** Watches a folder and its children.
  *
@@ -370,7 +351,7 @@ implements FileChangeListener, DataObject.Container {
             try {
                 REFRESH_TIME = Integer.parseInt(sysProp);
             } catch (NumberFormatException nfe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, nfe);
+                Logger.global.log(Level.WARNING, null, nfe);
             }
         }
         if (REFRESH_TIME < 0) {
@@ -415,7 +396,7 @@ implements FileChangeListener, DataObject.Container {
                         refresh();
                     }
                 } catch (DataObjectNotFoundException ex) {
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                    Logger.global.log(Level.WARNING, null, ex);
                     // file without data object => no changes
                 }
             }
@@ -626,51 +607,50 @@ implements FileChangeListener, DataObject.Container {
 
         List res = new ArrayList (size);
         for (int i = 0; i < size; i++) {
-            FileObject fo = (FileObject)it.next ();
+            org.openide.filesystems.FileObject fo = (org.openide.filesystems.FileObject) it.next();
 
             if (LOG) {
-                err.fine("  iterating" + fo); // NOI18N
+                err.fine("  iterating" + fo);
             }
-            if (!fo.isValid ()) {
+            if (!fo.isValid()) {
                 if (LOG) {
-                    err.fine("    not valid, continue"); // NOI18N
+                    err.fine("    not valid, continue");
                 }
                 continue;
             }
-
-            Reference ref = (Reference)map.get (fo);
-            DataObject obj = ref != null ? (DataObject)ref.get() : null;
+            java.lang.ref.Reference ref = (java.lang.ref.Reference) map.get(fo);
+            org.openide.loaders.DataObject obj = ref != null ? (org.openide.loaders.DataObject) ref.get()
+                                                             : null;
 
             if (obj == null) {
                 // try to find new data object
                 if (LOG) {
-                    err.fine("    reference is " + ref + " obj is " + obj); // NOI18N
+                    err.fine("    reference is " + ref + " obj is " + obj);
                 }
                 try {
-                    obj = DataObject.find (fo);
-                    ref = new SoftReference (obj);
+                    obj = org.openide.loaders.DataObject.find(fo);
+                    ref = new java.lang.ref.SoftReference(obj);
                     map.put(fo, ref);
-                } catch (DataObjectNotFoundException ex) {
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                }
+                catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                    Logger.global.log(Level.WARNING, null, ex);
                 }
             }
             // add if accepted
             if (obj != null) {
                 if (LOG) {
-                    err.fine("    deliver: ref is " + ref + " obj is " + obj); // NOI18N
+                    err.fine("    deliver: ref is " + ref + " obj is " + obj);
                 }
-
                 // JST: Cannot be avoided otherwise DataObject.files () can be unconsistent
                 // avoid to checkFiles(this)
-                //obj.recognizedByFolder();
-
+                // obj.recognizedByFolder();
                 if (f == null) {
                     // accept all objects
-                    res.add (obj);
+                    res.add(obj);
                 } else {
                     // allow the listener f to filter
                     // objects in the array res
-                    f.process (obj, res);
+                    f.process(obj, res);
                 }
             }
         }
@@ -744,7 +724,7 @@ implements FileChangeListener, DataObject.Container {
                 } catch (IOException ex) {
                     // data object not recognized or not found
                     obj = null;
-                    ErrorManager.getDefault ().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
 
                 if (obj != null) {

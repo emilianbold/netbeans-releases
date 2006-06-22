@@ -20,8 +20,6 @@ package org.netbeans.core.output2.ui;
 
 import java.awt.Rectangle;
 import javax.swing.plaf.TextUI;
-import org.netbeans.core.output2.Controller;
-import org.openide.ErrorManager;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -31,9 +29,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import org.openide.util.Lookup;
+import org.openide.util.Exceptions;
 
 /**
  * A scroll pane containing an editor pane, with special handling of the caret
@@ -317,7 +313,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
                         textView.scrollRectToVisible(r);
                     }
                 } catch (BadLocationException ble) {
-                    ErrorManager.getDefault().notify(ble);
+                    Exceptions.printStackTrace(ble);
                 }
             }
             inSendCaretToLine = false;

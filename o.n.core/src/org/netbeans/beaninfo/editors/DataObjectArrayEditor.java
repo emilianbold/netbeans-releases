@@ -15,7 +15,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
 import java.text.MessageFormat;
-import org.openide.ErrorManager;
+import org.netbeans.core.UIException;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -299,8 +299,8 @@ public class DataObjectArrayEditor extends PropertyEditorSupport implements ExPr
                     DataObjectArrayEditor.class, 
                     "FMT_EXC_GENERIC_BAD_VALUE"), new Object[] {text}); //NOI18N
             }
-            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, iae.getMessage(), 
-                msg, e, new java.util.Date());
+            UIException.annotateUser(iae, iae.getMessage(), msg, e,
+                                     new java.util.Date());
             throw iae;
         }
     }

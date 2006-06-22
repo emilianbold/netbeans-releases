@@ -26,6 +26,8 @@ import java.io.ObjectOutput;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** Provides a group of system options with this as the parent.
@@ -155,9 +157,9 @@ public abstract class ContextSystemOption extends SystemOption implements BeanCo
                 try {
                     c.add(m.get());
                 } catch (Exception e) {
-                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                    Logger.global.log(Level.WARNING, null, e);
                 } catch (LinkageError e) {
-                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                    Logger.global.log(Level.WARNING, null, e);
                 }
 
                 // read next

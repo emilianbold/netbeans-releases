@@ -13,14 +13,12 @@
 
 package org.openide.text;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.util.Arrays;
 import junit.framework.*;
-
 import org.netbeans.junit.*;
-
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.*;
 
@@ -244,7 +242,7 @@ implements CloneableEditorSupport.Env {
                     return notify;
                 }
             };
-            org.openide.ErrorManager.getDefault ().annotate (e, cannotBeModified);
+            Exceptions.attachLocalizedMessage(e, cannotBeModified);
             throw e;
         }
         

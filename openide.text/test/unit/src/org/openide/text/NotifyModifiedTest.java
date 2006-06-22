@@ -13,18 +13,14 @@
 
 package org.openide.text;
 
+
 import java.beans.PropertyChangeSupport;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.Arrays;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import junit.framework.*;
-
-import org.netbeans.junit.*;
-
+import javax.swing.text.*;
+import junit.framework.AssertionFailedError;
+import org.netbeans.junit.NbTestCase;
+import org.openide.ErrorManager.Annotation;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.*;
 
@@ -720,7 +716,8 @@ implements CloneableEditorSupport.Env {
         
         protected void notifyUnmodified () {
             notifyUnmodified++;
-            ErrManager.getDefault ().notify (new Exception ("notifyUnmodified: " + notifyUnmodified));
+            Exceptions.printStackTrace(new java.lang.Exception("notifyUnmodified: " +
+                                                               notifyUnmodified));
             
             super.notifyUnmodified();
         }
@@ -732,7 +729,8 @@ implements CloneableEditorSupport.Env {
                 return false;
             }
             
-            ErrManager.getDefault ().notify (new Exception ("notifyModified: " + notifyModified));
+            Exceptions.printStackTrace(new java.lang.Exception("notifyModified: " +
+                                                               notifyModified));
             
             boolean retValue;            
             retValue = super.notifyModified();

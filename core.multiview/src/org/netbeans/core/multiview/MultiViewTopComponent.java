@@ -38,7 +38,6 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;

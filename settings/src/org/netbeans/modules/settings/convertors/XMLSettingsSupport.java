@@ -19,10 +19,10 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 
@@ -176,7 +176,7 @@ final class XMLSettingsSupport {
                 return Class.forName(v.getName(), false, cl);
             } catch (ClassNotFoundException cnfe) {
                 String msg = "Offending classloader: " + cl; // NOI18N
-                ErrorManager.getDefault ().annotate(cnfe, ErrorManager.INFORMATIONAL, msg, null, null, null);
+                Exceptions.attachMessage(cnfe, msg);
                 throw cnfe;
             }
         }
@@ -466,10 +466,12 @@ final class XMLSettingsSupport {
                     try {
                         codeNameRelease = Integer.parseInt(codeName.substring(slash + 1));
                     } catch (NumberFormatException ex) {
-                        ErrorManager emgr = ErrorManager.getDefault();
-                        emgr.annotate(ex, "Content: \n" + getFileContent(source)); // NOI18N
-                        emgr.annotate(ex, "Source: " + source); // NOI18N
-                        emgr.notify(ErrorManager.INFORMATIONAL, ex);
+                        Exceptions.attachLocalizedMessage(ex,
+                                                          "Content: \n" +
+                                                          getFileContent(source)); // NOI18N
+                        Exceptions.attachLocalizedMessage(ex,
+                                                          "Source: " + source); // NOI18N
+                        Logger.global.log(Level.WARNING, null, ex);
                         codeNameRelease = -1;
                     }
                 }
@@ -489,9 +491,7 @@ final class XMLSettingsSupport {
                         chars2Bytes(baos, chaos.toCharArray(), 0, chaos.size());
                         serialdata = baos.toByteArray();
                     } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(
-                            ErrorManager.WARNING, ex
-                        );
+                        Logger.global.log(Level.WARNING, null, ex);
                     } finally {
                         chaos = null; // don't keep the info twice
                         try {
@@ -519,15 +519,19 @@ final class XMLSettingsSupport {
                     oi.close();
                 }
             } catch (IOException ex) {
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.annotate(ex, "Content: \n" + getFileContent(source)); // NOI18N
-                emgr.annotate(ex, "Source: " + source); // NOI18N
-                emgr.annotate(ex, "Cannot read class: " + instanceClass); // NOI18N
+                Exceptions.attachLocalizedMessage(ex,
+                                                  "Content: \n" +
+                                                  getFileContent(source)); // NOI18N
+                Exceptions.attachLocalizedMessage(ex, "Source: " + source); // NOI18N
+                Exceptions.attachLocalizedMessage(ex,
+                                                  "Cannot read class: " +
+                                                  instanceClass); // NOI18N
                 throw ex;
             } catch (ClassNotFoundException ex) {
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.annotate(ex, "Content: \n" + getFileContent(source)); // NOI18N
-                emgr.annotate(ex, "Source: " + source); // NOI18N
+                Exceptions.attachLocalizedMessage(ex,
+                                                  "Content: \n" +
+                                                  getFileContent(source)); // NOI18N
+                Exceptions.attachLocalizedMessage(ex, "Source: " + source); // NOI18N
                 throw ex;
             }
         }
@@ -559,7 +563,7 @@ final class XMLSettingsSupport {
                                 method.setAccessible(true);
                                 method.invoke(inst, new Object[0]);
                             } catch (Exception e) {
-                                ErrorManager.getDefault ().notify (e);
+                                Exceptions.printStackTrace(e);
                             }
                         } else {
                             inst = SharedClassObject.findObject(clazz, true);
@@ -569,11 +573,15 @@ final class XMLSettingsSupport {
                             inst = clazz.newInstance();
                         } catch (Exception ex) {
                             IOException ioe = new IOException();
-                            ErrorManager emgr = ErrorManager.getDefault();
-                            emgr.annotate(ioe, ex);
-                            emgr.annotate(ioe, "Content: \n" + getFileContent(source)); // NOI18N
-                            emgr.annotate(ioe, "Class: " + clazz); // NOI18N
-                            emgr.annotate(ioe, "Source: " + source); // NOI18N
+                            ioe.initCause(ex);
+                            Exceptions.attachMessage(ioe,
+                                                              "Content: \n" +
+                                                              getFileContent(source)); // NOI18N
+                            Exceptions.attachMessage(ioe,
+                                                              "Class: " + clazz); // NOI18N
+                            Exceptions.attachMessage(ioe,
+                                                              "Source: " +
+                                                              source); // NOI18N
                             throw ioe;
                         }
                     }
@@ -640,11 +648,12 @@ final class XMLSettingsSupport {
                 return instance;
             } catch (Exception ex) {
                 IOException ioe = new IOException("Error reading " + source + ": " + ex); // NOI18N
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.annotate(ioe, "Class: " + clazz);  // NOI18N
-                emgr.annotate(ioe, "Method: " + srcMethod);  // NOI18N
-                emgr.annotate(ioe, ex);
-                emgr.annotate(ioe, "Content:\n" + getFileContent(source)); // NOI18N
+                Exceptions.attachMessage(ioe, "Class: " + clazz);  // NOI18N
+                Exceptions.attachMessage(ioe, "Method: " + srcMethod);  // NOI18N
+                Exceptions.attachMessage(ioe,
+                                                  "Content:\n" +
+                                                  getFileContent(source)); // NOI18N
+                ioe.initCause(ex);
                 throw ioe;
             }
         }
@@ -757,13 +766,11 @@ final class XMLSettingsSupport {
                 // Ok, header is read
             } catch (SAXException ex) {
                 IOException ioe = new IOException(source.toString()); // NOI18N
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.annotate(ioe, ex);
-                if (ex.getException () != null) {
-                    emgr.annotate (ioe, ex.getException());
-                }
-                emgr.annotate(ioe, "Content: \n" + getFileContent(source)); // NOI18N
-                emgr.annotate(ioe, "Source: " + source); // NOI18N
+                ioe.initCause(ex);
+                Exceptions.attachMessage(ioe,
+                                                  "Content: \n" +
+                                                  getFileContent(source)); // NOI18N
+                Exceptions.attachMessage(ioe, "Source: " + source); // NOI18N
                 throw ioe;
             } finally {
                 stack = null;
@@ -791,11 +798,7 @@ final class XMLSettingsSupport {
                 // Ok, header is read
             } catch (SAXException ex) {
                 IOException ioe = new IOException(source.toString()); // NOI18N
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.annotate(ioe, ex);
-                if (ex.getException () != null) {
-                    emgr.annotate (ioe, ex.getException());
-                }
+                ioe.initCause(ex);
                 throw ioe;
             } finally {
                 stack = null;

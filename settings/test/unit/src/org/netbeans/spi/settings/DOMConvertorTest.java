@@ -14,8 +14,9 @@
 package org.netbeans.spi.settings;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileSystem;
@@ -25,17 +26,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.xml.EntityCatalog;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /**
  *
@@ -84,7 +77,7 @@ public class DOMConvertorTest extends NbTestCase {
             throw e;
         }
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            Logger.global.log(Level.WARNING, null, ex);
             throw ex;
         }
     }

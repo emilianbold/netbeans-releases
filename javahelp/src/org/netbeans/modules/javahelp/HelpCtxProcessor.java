@@ -24,7 +24,6 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
 
 import org.xml.sax.*;
 
@@ -124,9 +123,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
         try {
             parser.parse(new InputSource(xml.getPrimaryFile().getInputStream()));
         } catch (SAXException saxe) {
-            IOException ioe = new IOException(saxe.toString());
-            ErrorManager.getDefault().annotate(ioe, saxe);
-            throw ioe;
+            throw (IOException) new IOException(saxe.toString()).initCause(saxe);
         }
         
         if (p == null) {

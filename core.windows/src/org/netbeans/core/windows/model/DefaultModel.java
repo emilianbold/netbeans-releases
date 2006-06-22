@@ -15,14 +15,15 @@
 package org.netbeans.core.windows.model;
 
 
-import java.lang.ref.WeakReference;
-import org.netbeans.core.windows.*;
-import org.openide.ErrorManager;
-import org.openide.windows.TopComponent;
 
-import java.awt.*;
+import java.awt.Frame;
+import java.awt.Rectangle;
+import java.lang.ref.WeakReference;
 import java.util.*;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.core.windows.*;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -1060,8 +1061,8 @@ final class DefaultModel implements Model {
     /** Checks whether the mode isn't null.  */
     private static boolean validateAddingMode(ModeImpl mode) {
         if(mode == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new NullPointerException("Not allowed null mode")); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.NullPointerException("Not allowed null mode")); // NOI18N
             return false;
         }
         

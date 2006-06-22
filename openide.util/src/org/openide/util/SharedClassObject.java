@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 
 /** Shared object that allows different instances of the same class
 * to share common data.

@@ -13,16 +13,14 @@
 
 package org.openide.loaders;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
+
+import java.awt.datatransfer.*;
 import java.awt.dnd.DnDConstants;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
-import org.openide.util.datatransfer.ExTransferable;
-import org.openide.util.datatransfer.MultiTransferObject;
+import org.openide.util.datatransfer.*;
 
 /** Class that contains specific datatransfer flavors and methods to work with
  * transfered DataObjects. There are flavors to allow a DataObject
@@ -216,6 +214,6 @@ public abstract class LoaderTransfer {
     * @param e the exception
     */
     private static void maybeReportException (Exception e) {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        Logger.global.log(Level.WARNING, null, e);
     }
 }

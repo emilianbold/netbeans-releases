@@ -17,7 +17,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.api.javahelp.Help;

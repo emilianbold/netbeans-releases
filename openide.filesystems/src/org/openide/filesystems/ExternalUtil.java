@@ -12,8 +12,9 @@
  */
 package org.openide.filesystems;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 
@@ -38,7 +39,7 @@ final class ExternalUtil extends Object {
     /** Notifies an exception.
      */
     public static void exception(Exception ex) {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        Logger.global.log(Level.WARNING, null, ex);
     }
 
     /** Copies anotation.
@@ -53,13 +54,18 @@ final class ExternalUtil extends Object {
     /** Annotates the exception with a message.
      */
     public static void annotate(Throwable ex, String msg) {
-        ErrorManager.getDefault().annotate(ex, msg);
+        Exceptions.attachLocalizedMessage(ex, msg);
     }
 
     /** Annotates the exception with a message.
      */
     public static Throwable annotate(Throwable ex, Throwable stack) {
-        return ErrorManager.getDefault().annotate(ex, stack);
+        Throwable orig = ex;
+        while (ex.getCause() != null) {
+            ex = ex.getCause();
+        }
+        ex.initCause(stack);
+        return orig;
     }
 
     private static Logger LOG = Logger.getLogger("org.openide.filesystems"); // NOI18N

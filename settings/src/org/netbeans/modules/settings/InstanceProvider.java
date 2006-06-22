@@ -25,9 +25,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.InstanceCookie;
-import org.openide.ErrorManager;
 
 import org.netbeans.spi.settings.Convertor;
+import org.openide.util.Exceptions;
 
 /** Provides the Lookup content.
  *
@@ -277,11 +277,11 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
                     inst = getConvertor().read(r);
                 }
             } catch (IOException ex) {
-                throw (IOException) ErrorManager.getDefault().
-                    annotate(ex, InstanceProvider.this.toString());
+                throw (IOException) Exceptions.attachLocalizedMessage(ex,
+                                                  InstanceProvider.this.toString());
             } catch (ClassNotFoundException ex) {
-                throw (ClassNotFoundException) ErrorManager.getDefault().
-                    annotate(ex, InstanceProvider.this.toString());
+                throw (ClassNotFoundException) Exceptions.attachLocalizedMessage(ex,
+                                                  InstanceProvider.this.toString());
             }
             
             synchronized (this) {
@@ -308,9 +308,8 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
             }
             if (e != null && !wasReportedProblem) {
                 wasReportedProblem = true;
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, dobj.toString());
-                err.notify(ErrorManager.INFORMATIONAL, e);
+                Exceptions.attachLocalizedMessage(e, dobj.toString());
+                Logger.global.log(Level.WARNING, null, e);
             }
             return "Unknown"; // NOI18N
         }
@@ -337,9 +336,8 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
                 }
                 if (e != null && !wasReportedProblem) {
                     wasReportedProblem = true;
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, dobj.toString());
-                    err.notify(ErrorManager.INFORMATIONAL, e);
+                    Exceptions.attachLocalizedMessage(e, dobj.toString());
+                    Logger.global.log(Level.WARNING, null, e);
                 }
                 return false;
             } else {

@@ -15,22 +15,11 @@
 package org.openide.text;
 
 
-import java.io.File;
+
 import java.io.IOException;
 import javax.swing.text.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
-
-import junit.textui.TestRunner;
-
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.FilterDocument;
-import org.openide.text.NbDocument;
+import org.netbeans.junit.*;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -54,10 +43,6 @@ public class UndoRedoCooperationTest extends NbTestCase implements CloneableEdit
     /** Creates new TextTest */
     public UndoRedoCooperationTest (String s) {
         super(s);
-    }
-    
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(UndoRedoCooperationTest.class));
     }
     
     protected javax.swing.text.EditorKit createEditorKit() {
@@ -276,7 +261,7 @@ public class UndoRedoCooperationTest extends NbTestCase implements CloneableEdit
     public void markModified() throws java.io.IOException {
         if (cannotBeModified != null) {
             IOException e = new IOException ();
-            org.openide.ErrorManager.getDefault ().annotate (e, cannotBeModified);
+            Exceptions.attachLocalizedMessage(e, cannotBeModified);
             throw e;
         }
         

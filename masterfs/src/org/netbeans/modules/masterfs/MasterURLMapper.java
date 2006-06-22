@@ -18,12 +18,12 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
-import org.openide.ErrorManager;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URI;
+import org.openide.util.Exceptions;
 
 /**
  * Implements URLMapper for MasterFileSystem.
@@ -47,10 +47,10 @@ public final class MasterURLMapper extends URLMapper {
             sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append("]");//NOI18N
             IllegalArgumentException iax = new IllegalArgumentException(sb.toString());
             if (Utilities.isWindows() && url.getAuthority() != null) {
-                ErrorManager.getDefault().annotate(iax, 
-                        "; might be because your user directory is on a Windows UNC path (issue #46813)? If so, try using mapped drive letters.");//NOI18N                
+                Exceptions.attachLocalizedMessage(iax,
+                                                  "; might be because your user directory is on a Windows UNC path (issue #46813)? If so, try using mapped drive letters.");//NOI18N                
             }            
-            ErrorManager.getDefault().notify(iax);
+            Exceptions.printStackTrace(iax);
             return null;
         }
 

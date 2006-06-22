@@ -20,11 +20,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.ObjectStreamException;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
-
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -304,8 +304,9 @@ implements Runnable, ExplorerManager.Provider {
         if(DEFAULT == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("favorites"); // NOI18N
             if(DEFAULT == null) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
-                    "Can not find project component for its ID. Returned " + tc)); // NOI18N
+                Logger.global.log(Level.WARNING, null,
+                                  new IllegalStateException("Can not find project component for its ID. Returned " +
+                                                            tc)); // NOI18N
                 DEFAULT = new Tab();
                 // XXX Look into getDefault method.
                 DEFAULT.scheduleValidation();

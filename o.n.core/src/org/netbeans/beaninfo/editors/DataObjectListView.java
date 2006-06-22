@@ -18,18 +18,14 @@ import java.beans.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
-
-import org.openide.*;
-import org.openide.explorer.*;
+import org.netbeans.beaninfo.editors.DataObjectPanel.FilteredChildren;
 import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.explorer.propertysheet.editors.*;
-import org.openide.explorer.view.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
@@ -555,7 +551,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 try {
                     dObj.rename(dest.getName());
                 } catch (IOException exc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    Logger.global.log(Level.WARNING, null, exc);
                     return false;
                 }
                 return true;

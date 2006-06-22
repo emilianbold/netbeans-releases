@@ -26,13 +26,15 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Timer;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -511,7 +513,7 @@ final class ExplorerActionsImpl {
             try {
                 return copyCut ? node.clipboardCopy() : node.clipboardCut();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.global.log(Level.WARNING, null, e);
 
                 return null;
             }
@@ -602,8 +604,9 @@ final class ExplorerActionsImpl {
             for (int i = 0; i < sel.length; i++) {
                 try {
                     sel[i].destroy();
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                }
+                catch (IOException e) {
+                    Exceptions.printStackTrace(e);
                 }
             }
         }

@@ -19,6 +19,7 @@ import java.beans.*;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -35,7 +36,7 @@ public class DataLoaderPool {
             return new PropertyDescriptor[] { extensions };
         } 
         catch (IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }
@@ -51,7 +52,7 @@ public class DataLoaderPool {
                 // provided by UniFileLoaderBeanInfo.
                 return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
             } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             }
         }
@@ -80,7 +81,7 @@ public class DataLoaderPool {
                 // provided by UniFileLoaderBeanInfo.
                 return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
             } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             }
         }
@@ -105,7 +106,7 @@ public class DataLoaderPool {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
             } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             }
         }
@@ -125,7 +126,7 @@ public class DataLoaderPool {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
             } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             }
         }
@@ -138,10 +139,10 @@ public class DataLoaderPool {
                 actions.setHidden (true);
                 return new PropertyDescriptor[] { actions };
             } catch (ClassNotFoundException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             }
         }

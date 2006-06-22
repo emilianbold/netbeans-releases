@@ -12,7 +12,6 @@
  */
 package org.openide.options;
 
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
@@ -30,6 +29,9 @@ import java.lang.reflect.Method;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 
 
 /** Base class for all system options.
@@ -153,11 +155,11 @@ WHILE:
                         }
                     } catch (InvocationTargetException ex) {
                         // exception thrown
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        Logger.global.log(Level.WARNING, null, ex);
                     } catch (IllegalAccessException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        Logger.global.log(Level.WARNING, null, ex);
                     } catch (IntrospectionException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        Logger.global.log(Level.WARNING, null, ex);
                     }
                 } else {
                     putProperty(e.getKey(), (e.getValue() == NULL) ? null : e.getValue());
@@ -192,11 +194,9 @@ WHILE:
                     if (desc[i].getWriteMethod() == null) {
                         continue;
                     }
-
                     String propName = desc[i].getName();
                     Object value = getProperty(propName);
                     boolean fromRead;
-
                     // JST: this code handles the case when somebody needs to store
                     // different value then is the value of get/set method.
                     // in such case value (from getProperty) is not of the type
@@ -206,43 +206,34 @@ WHILE:
                     if (read == null) {
                         continue;
                     }
-
-                    if ((value == null) || isInstance(desc[i].getPropertyType(), value)) {
+                    if ((value == null) || isInstance(desc[i].getPropertyType(),
+                                                      value)) {
                         fromRead = true;
-
                         try {
                             value = read.invoke(this, param);
-                        } catch (InvocationTargetException ex) {
-                            // exception thrown
-                            IOException ne = new IOException(
-                                    NbBundle.getMessage(
-                                        SystemOption.class, "EXC_InGetter", getClass(), desc[i].getName()
-                                    )
-                                );
-                            ErrorManager.getDefault().annotate(ne, ex);
-                            throw ne;
-                        } catch (IllegalAccessException ex) {
-                            // exception thrown
-                            IOException ne = new IOException(
-                                    NbBundle.getMessage(
-                                        SystemOption.class, "EXC_InGetter", getClass(), desc[i].getName()
-                                    )
-                                );
-                            ErrorManager.getDefault().annotate(ne, ex);
-                            throw ne;
+                        }
+                        catch (InvocationTargetException ex) {
+                            throw (IOException) new IOException(NbBundle.getMessage(SystemOption.class,
+                                                                                    "EXC_InGetter",
+                                                                                    getClass(),
+                                                                                    desc[i].getName())).initCause(ex);
+                        }
+                        catch (IllegalAccessException ex) {
+                            throw (IOException) new IOException(NbBundle.getMessage(SystemOption.class,
+                                                                                    "EXC_InGetter",
+                                                                                    getClass(),
+                                                                                    desc[i].getName())).initCause(ex);
                         }
                     } else {
                         fromRead = false;
                     }
-
                     // writes name of the property
                     out.writeObject(propName);
-
                     // writes its value
                     out.writeObject(value);
-
                     // from getter or stored prop?
-                    out.writeObject(fromRead ? Boolean.TRUE : Boolean.FALSE);
+                    out.writeObject(fromRead ? Boolean.TRUE
+                                             : Boolean.FALSE);
                 }
             }
         } catch (IntrospectionException ex) {
@@ -302,7 +293,7 @@ WHILE:
                 } catch (IntrospectionException ex) {
                     // if we cannot found any info about properties
                     // leave the hashtable empty and only read stream till null is found
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.global.log(Level.WARNING, null, ex);
                 }
 
                 String preread = null;
@@ -352,8 +343,8 @@ WHILE:
                             } catch (Exception ex) {
                                 String msg = "Cannot call " + write + " for property " + getClass().getName() + "." +
                                     name; // NOI18N
-                                ErrorManager.getDefault().annotate(ex, ErrorManager.UNKNOWN, msg, null, null, null);
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                                Exceptions.attachMessage(ex, msg);
+                                Logger.global.log(Level.WARNING, null, ex);
                             }
                         }
                     } else {

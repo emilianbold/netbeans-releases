@@ -35,7 +35,9 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileAttributeEvent;
 import java.net.URL;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 
 
 /** 
@@ -59,8 +61,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
     private static final String ENTITY_PREFIX = "/xml/entities"; // NOI18N
     private static final String LOOKUP_PREFIX = "/xml/lookups"; // NOI18N
 
-    static final ErrorManager ERR = ErrorManager.getDefault().getInstance(FileEntityResolver.class.getName());
-    static final boolean LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+    static final Logger ERR = Logger.getLogger(FileEntityResolver.class.getName());
     
     /** Constructor
      */
@@ -115,10 +116,10 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 DocumentType domDTD = xml.getDocument ().getDoctype ();
                 if (domDTD != null) id = domDTD.getPublicId ();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify (ex);
+                Exceptions.printStackTrace(ex);
                 return null;
             } catch (org.xml.sax.SAXException ex) {
-                ErrorManager.getDefault().notify (ex);
+                Exceptions.printStackTrace(ex);
                 return null;
             }
 
@@ -179,9 +180,9 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
 
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault ().notify (ex);
+            Exceptions.printStackTrace(ex);
         } catch (ClassNotFoundException ex) {
-            ErrorManager.getDefault ().notify (ex);
+            Exceptions.printStackTrace(ex);
         }
         
         return null;
@@ -203,7 +204,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     m.setAccessible (true);
                     method = m;
                 } catch (Exception ex) {
-                    ErrorManager.getDefault ().notify (ex);
+                    Exceptions.printStackTrace(ex);
                     return null;
                 }
             }
@@ -211,7 +212,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         try {
             return (Lookup)method.invoke (null, new Object[] { obj, info });
         } catch (Exception ex) {
-            ErrorManager.getDefault ().notify (ex);
+            Exceptions.printStackTrace(ex);
             return null;
         }
     }
@@ -384,14 +385,14 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 try {
                     reader.setFeature("http://xml.org/sax/features/validation", false);  //NOI18N
                 } catch (SAXException sex) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                    "Warning: XML parser does not support validation feature."); //NOI18N
+                    ERR.warning(
+                    "XML parser does not support validation feature."); //NOI18N
                 }
                 try {
                     reader.setProperty("http://xml.org/sax/properties/lexical-handler", this);  //NOI18N
                 } catch (SAXException sex) {
-                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION,
-                    "Warning: XML parser does not support lexical-handler feature.");  //NOI18N
+                    ERR.warning(
+                    "XML parser does not support lexical-handler feature.");  //NOI18N
                 }
                 reader.parse(is);
             } catch (StopSaxException ex) {
@@ -405,7 +406,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     // #25082: do not notify an exception if the file comes
                     // from other filesystem than the system filesystem
                     if (src.getFileSystem() == Repository.getDefault().getDefaultFileSystem()) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        Logger.global.log(Level.WARNING, null, ex);
                     }
                 } catch (org.openide.filesystems.FileStateInvalidException fie) {
                     // ignore
@@ -416,7 +417,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                         in.close();
                     }
                 } catch (IOException exc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    Logger.global.log(Level.WARNING, null, exc);
                 }
             }
         }
@@ -468,8 +469,8 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         /** Check whether all necessary values are updated.
          */
         protected void beforeLookup (Template t) {
-            if (LOG) {
-                ERR.log("beforeLookup: " + t.getType() + " for " + xml); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("beforeLookup: " + t.getType() + " for " + xml); // NOI18N
             }
             
             if (folder == null && obj == null) {
@@ -480,31 +481,31 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         /** Updates current state of the lookup.
          */
         private void update () {
-            if (LOG) ERR.log("update: " + id + " for " + xml); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("update: " + id + " for " + xml); // NOI18N
             FileObject[] last = new FileObject[1];
             FileObject fo = findObject (id, last);
-            if (LOG) ERR.log("fo: " + fo + " for " + xml); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("fo: " + fo + " for " + xml); // NOI18N
             DataObject o = null;
             
             if (fo != null) {
                 try {
                     o = DataObject.find (fo);
-                    if (LOG) ERR.log("object found: " + o + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("object found: " + o + " for " + xml); // NOI18N
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                    ERR.notify (ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
         
             if (o == obj) {
-                if (LOG) ERR.log("same data object" + " for " + xml); // NOI18N
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("same data object" + " for " + xml); // NOI18N
                 // the data object is still the same as used to be
                 // 
                 Lookup l = findLookup (xml, o);
                 if (o != null && l != null) {
-                    if (LOG) ERR.log("updating lookups" + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("updating lookups" + " for " + xml); // NOI18N
                     // just update the lookups
                     setLookups (new Lookup[] { l });
-                    if (LOG) ERR.log("updating lookups done" + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("updating lookups done" + " for " + xml); // NOI18N
                     // and exit
                     return;
                 } 
@@ -513,25 +514,25 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 Lookup l = findLookup(xml, o);
                 
                 if (o != null && l != null) {
-                    if (LOG) ERR.log("change the lookup"); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("change the lookup"); // NOI18N
                     // add listener to changes of the data object
                     o.addPropertyChangeListener (
                         org.openide.util.WeakListeners.propertyChange (this, o)
                     );
                     // update the lookups
                     setLookups (new Lookup[] { l });
-                    if (LOG) ERR.log("change in lookup done" + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("change in lookup done" + " for " + xml); // NOI18N
                     // and exit
                     obj = o;
-                    if (LOG) ERR.log("data object updated to " + obj + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("data object updated to " + obj + " for " + xml); // NOI18N
                     return;
                 } else {
                     obj = o;
-                    if (LOG) ERR.log("data object updated to " + obj + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("data object updated to " + obj + " for " + xml); // NOI18N
                 }
             }
             
-            if (LOG) ERR.log("delegating to nobody for " + obj + " for " + xml); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("delegating to nobody for " + obj + " for " + xml); // NOI18N
             // object is null => there are no lookups
             setLookups (new Lookup[0]);
             

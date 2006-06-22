@@ -17,7 +17,6 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.nodes.Node.*;
 import org.openide.util.NbBundle;
@@ -37,9 +36,13 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.event.*;
+import org.netbeans.modules.openide.explorer.UIException;
+import org.openide.util.Exceptions;
 
 
 /** An implementation of PropertyDisplayer.EDITABLE which manages communication
@@ -249,7 +252,7 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
             } catch (Exception e) {
                 //IllegalAccessException, etc.
                 //                System.err.println("  caught an exception, aborting");
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.global.log(Level.WARNING, null, e);
 
                 try {
                     if (getProperty().canRead()) {
@@ -278,7 +281,7 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
                     if ((msg != null) && !PropertyEnv.STATE_VALID.equals(env.getState())) {
                         IllegalArgumentException iae = new IllegalArgumentException("Error setting value"); //NOI18N
 
-                        ErrorManager.getDefault().annotate(iae, ErrorManager.USER, null, msg, null, null);
+                        UIException.annotateUser(iae, null, msg, null, null);
 
                         //set the state to invalid
                         if (!env.STATE_INVALID.equals(env.getState())) {
@@ -312,11 +315,11 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
                     PropertyDialogManager.notify(exception);
 
                     IllegalArgumentException iae = new IllegalArgumentException("Error setting value"); //NOI18N
-                    ErrorManager.getDefault().annotate(
-                        iae, ErrorManager.USER, null,
-                        PropUtils.findLocalizedMessage(exception, entered, getProperty().getDisplayName()), exception,
-                        null
-                    );
+                    UIException.annotateUser(iae, null,
+                                             PropUtils.findLocalizedMessage(exception,
+                                                                            entered,
+                                                                            getProperty().getDisplayName()),
+                                             exception, null);
                     throw iae;
                 }
             }
@@ -440,7 +443,7 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
             getPropertyEditor().setValue(originalValue);
         } catch (Exception e) {
             //should not happen - the value came from the property
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
     }
 
@@ -911,7 +914,7 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
                 } catch (Exception e) {
                     //IllegalAccessException, etc.
                     //                System.err.println("  caught an exception, aborting");
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.global.log(Level.WARNING, null, e);
 
                     try {
                         if (prop.canRead()) {
@@ -936,7 +939,7 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
                         if ((msg != null) && !PropertyEnv.STATE_VALID.equals(env.getState())) {
                             IllegalArgumentException iae = new IllegalArgumentException("Error setting value"); //NOI18N
 
-                            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, null, msg, null, null);
+                            UIException.annotateUser(iae, null, msg, null, null);
 
                             //set the state to invalid
                             if (!env.STATE_INVALID.equals(env.getState())) {
@@ -969,11 +972,11 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
                         PropertyDialogManager.notify(exception);
 
                         IllegalArgumentException iae = new IllegalArgumentException("Error setting value"); //NOI18N
-                        ErrorManager.getDefault().annotate(
-                            iae, ErrorManager.USER, null,
-                            PropUtils.findLocalizedMessage(exception, entered, getProperty().getDisplayName()),
-                            exception, null
-                        );
+                        UIException.annotateUser(iae, null,
+                                                 PropUtils.findLocalizedMessage(exception,
+                                                                                entered,
+                                                                                getProperty().getDisplayName()),
+                                                 exception, null);
                         throw iae;
                     }
                 }
@@ -986,7 +989,7 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
 
                 return result;
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             } finally {
                 ignoreChanges = false;
             }

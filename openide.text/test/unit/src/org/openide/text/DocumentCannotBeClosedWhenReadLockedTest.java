@@ -15,22 +15,12 @@
 package org.openide.text;
 
 
-import java.io.File;
+
 import java.io.IOException;
 import javax.swing.text.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
-
 import junit.textui.TestRunner;
-
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.FilterDocument;
-import org.openide.text.NbDocument;
+import org.netbeans.junit.*;
+import org.openide.util.Exceptions;
 
 /**
  * Simulates issue 46981. Editor locks the document, but somebody else closes it
@@ -292,7 +282,7 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
     public void markModified() throws java.io.IOException {
         if (cannotBeModified != null) {
             IOException e = new IOException ();
-            org.openide.ErrorManager.getDefault ().annotate (e, cannotBeModified);
+            Exceptions.attachLocalizedMessage(e, cannotBeModified);
             throw e;
         }
         

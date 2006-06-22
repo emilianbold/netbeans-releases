@@ -13,14 +13,11 @@
 
 package org.openide.loaders;
 
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
+import java.util.*;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 
 /** Manages actions read and write for a given loader.
@@ -56,20 +53,23 @@ final class DataLdrActions extends FolderInstance {
                 HashMap nowToObj = new HashMap ();
                 LinkedList sepObjs = new LinkedList ();
                 for (int i = 0; i < now.length; i++) {
-                    InstanceCookie ic = (InstanceCookie)now[i].getCookie (InstanceCookie.class);
+                    org.openide.cookies.InstanceCookie ic = (org.openide.cookies.InstanceCookie) now[i].getCookie(org.openide.cookies.InstanceCookie.class);
+
                     if (ic != null) {
                         try {
-                            Object instance = ic.instanceCreate ();
+                            java.lang.Object instance = ic.instanceCreate();
+
                             if (instance instanceof javax.swing.Action) {
-                                nowToObj.put (instance, now[i]);
+                                nowToObj.put(instance, now[i]);
                                 continue;
                             }
                             if (instance instanceof javax.swing.JSeparator) {
-                                sepObjs.add (now[i]);
+                                sepObjs.add(now[i]);
                                 continue;
                             }
-                        } catch (ClassNotFoundException ex) {
-                            ErrorManager.getDefault ().notify (ex);
+                        }
+                        catch (java.lang.ClassNotFoundException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }
@@ -117,7 +117,7 @@ final class DataLdrActions extends FolderInstance {
                             break;
                     }
                 } catch (IOException ex) {
-                    ErrorManager.getDefault ().notify (ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }

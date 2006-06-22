@@ -27,7 +27,7 @@ import java.awt.event.WindowEvent;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -185,10 +185,10 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
         } catch (ThreadDeath ex) {
             throw ex;
         } catch (InterruptedException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
             return null;
         } catch (Throwable ex) {
-            org.openide.ErrorManager.getDefault ().notify (ex);
+            Exceptions.printStackTrace(ex);
             return null;
         }
     }

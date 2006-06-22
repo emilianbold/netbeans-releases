@@ -13,27 +13,19 @@
 
 package org.netbeans.core.windows;
 
-import java.awt.Frame;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+
+import java.awt.*;
+import java.beans.*;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.Action;
-import javax.swing.SwingUtilities;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.persistence.PersistenceManager;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponentGroup;
-import org.openide.windows.WindowManager;
-import org.openide.windows.Workspace;
+import org.openide.util.*;
+import org.openide.windows.*;
 
 /**
  * This class extends WindowManager to provide all window system functionality.
@@ -497,8 +489,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /*private*/ ModeImpl getDefaultEditorMode() {
         ModeImpl mode = findModeImpl("editor"); // NOI18N
         if(mode == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalStateException("Creating default editor mode. It shouldn't happen this way")); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalStateException("Creating default editor mode. It shouldn\'t happen this way")); // NOI18N
             // PENDING should be defined in winsys layer?
             ModeImpl newMode = createModeImpl("editor", Constants.MODE_KIND_EDITOR, true); // NOI18N
             addMode(newMode, new SplitConstraint[0]);
@@ -513,8 +505,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     ModeImpl getDefaultViewMode() {
         ModeImpl mode = findModeImpl("explorer"); // NOI18N
         if(mode == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalStateException("Creating default view mode. It shouldn't happen this way")); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalStateException("Creating default view mode. It shouldn\'t happen this way")); // NOI18N
             // PENDING should be defined in winsys layer?
             ModeImpl newMode = createModeImpl("explorer", Constants.MODE_KIND_VIEW, true); // NOI18N
             addMode(newMode, new SplitConstraint[] {
@@ -531,8 +523,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     ModeImpl getDefaultSlidingMode() {
         ModeImpl mode = findModeImpl("sliding"); // NOI18N
         if(mode == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalStateException("Creating default sliding mode. It shouldn't happen this way")); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalStateException("Creating default sliding mode. It shouldn\'t happen this way")); // NOI18N
             // PENDING should be defined in winsys layer?
             ModeImpl newMode = createModeImpl("sliding", Constants.MODE_KIND_SLIDING, true); // NOI18N
             addMode(newMode, new SplitConstraint[] {
@@ -1078,10 +1070,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         assertEventDispatchThreadWeak();
         
         if (preferredID == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalStateException("Assertion failed. " + tc.getClass().getName() + // NOI18N 
-                ".preferredID method shouldn't be overriden to return null. " + // NOI18N
-                "Please change your impl to return non-null string.")); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalStateException("Assertion failed. " +
+                                                                  tc.getClass().getName() +
+                                                                  ".preferredID method shouldn\'t be overriden to return null. " +
+                                                                  "Please change your impl to return non-null string.")); // NOI18N
         }
         
         return PersistenceManager.getDefault().getGlobalTopComponentID(tc, preferredID);
@@ -1140,8 +1133,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     // PENDING Just temporary until all 'bad' calls are really put into AWT thread.
     static void assertEventDispatchThreadWeak() {
         if(!SwingUtilities.isEventDispatchThread()) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new IllegalStateException("Assertion failed. " + ASSERTION_ERROR_MESSAGE)); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.IllegalStateException("Assertion failed. " +
+                                                                  ASSERTION_ERROR_MESSAGE)); // NOI18N
         }
     }
 

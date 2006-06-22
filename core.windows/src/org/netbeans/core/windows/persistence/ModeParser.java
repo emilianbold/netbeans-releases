@@ -17,7 +17,6 @@ import java.util.logging.Level;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.SplitConstraint;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -33,6 +32,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 
 /**
@@ -289,7 +289,7 @@ class ModeParser {
             } catch (IOException exc) {
                 //If reading of one tcRef fails we want to log message
                 //and continue.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                Logger.global.log(Level.WARNING, null, exc);
                 continue;
             }
             boolean tcRefAccepted = acceptTCRef(tcRefParser, tcRefCfg);
@@ -985,19 +985,18 @@ class ModeParser {
                     PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(is));
                 }
             } catch (SAXException exc) {
-                //Turn into annotated IOException
+                // Turn into annotated IOException
                 String msg = NbBundle.getMessage(ModeParser.class,
-                    "EXC_ModeParse", cfgFOInput);
-                IOException ioe = new IOException(msg);
-                ErrorManager.getDefault().annotate(ioe, exc);
-                throw ioe;
+                                                 "EXC_ModeParse", cfgFOInput);
+
+                throw (IOException) new IOException(msg).initCause(exc);
             } finally {
                 try {
                     if (is != null) {
                         is.close();
                     }
                 } catch (IOException exc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                    Logger.global.log(Level.WARNING, null, exc);
                 }
             }
             
@@ -1093,13 +1092,11 @@ class ModeParser {
             // #24844. Repair the wrongly saved "null" string
             // as release number.
             if("null".equals(internalConfig.moduleCodeNameRelease)) { // NOI18N
-                ErrorManager.getDefault().notify(
-                    ErrorManager.INFORMATIONAL,
-                    new IllegalStateException(
-                        "Module release code was saved as null string" // NOI18N
-                        + " for module "  + internalConfig.moduleCodeNameBase // NOI18N
-                        + "! Repairing.") // NOI18N
-                );
+                Logger.global.log(Level.WARNING, null,
+                                  new IllegalStateException("Module release code was saved as null string" +
+                                                            " for module " +
+                                                            internalConfig.moduleCodeNameBase +
+                                                            "! Repairing."));
                 internalConfig.moduleCodeNameRelease = null;
             }
         }
@@ -1420,7 +1417,7 @@ class ModeParser {
                             osw.close();
                         }
                     } catch (IOException exc) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                        Logger.global.log(Level.WARNING, null, exc);
                     }
                     if (lock != null) {
                         lock.releaseLock();

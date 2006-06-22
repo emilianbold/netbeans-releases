@@ -33,10 +33,10 @@ import org.netbeans.spi.options.OptionsPanelController;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -249,7 +249,7 @@ public class OptionsWindowAction extends AbstractAction {
                     );
                     a.performAction ();
                 } catch (Exception ex) {
-                    ErrorManager.getDefault ().notify (ex);
+                    Exceptions.printStackTrace(ex);
                 }
             } // classic
         }

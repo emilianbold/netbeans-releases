@@ -26,12 +26,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -320,8 +322,11 @@ public abstract class NodeAction extends CallableSystemAction implements Context
                 firePropertyChange(PROP_ENABLED, null, null);
             } catch (NullPointerException e) {
                 // Probably because of a JDK bug that AbstractButton$ButtonActionPropertyChangeListener.propertyChange does not grok null values for "enabled" prop:
-                ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "You cannot add " + getClass().getName() + " directly to a JMenu etc.; use org.openide.awt.Actions.connect instead", null, null, null); // NOI18N
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Exceptions.attachMessage(e,
+                                         "You cannot add " +
+                                         getClass().getName() +
+                                         " directly to a JMenu etc.; use org.openide.awt.Actions.connect instead"); // NOI18N
+                Logger.global.log(Level.WARNING, null, e);
             }
         }
     }

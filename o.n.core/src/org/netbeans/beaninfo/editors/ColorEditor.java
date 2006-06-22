@@ -42,8 +42,8 @@ import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import org.netbeans.core.UIException;
 
-import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.NbBundle;
 
@@ -264,8 +264,9 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                                                     new Color(red, green, blue)));
                             return;
                         } catch( IllegalArgumentException iaE ) {
-                            ErrorManager em = ErrorManager.getDefault();
-                            em.annotate(iaE, ErrorManager.USER, null, iaE.getLocalizedMessage(), null, null);
+                            UIException.annotateUser(iaE, null,
+                                                     iaE.getLocalizedMessage(),
+                                                     null, null);
                             throw iaE;
                         }
                     }
@@ -302,8 +303,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 NbBundle.getMessage (ColorEditor.class, "FMT_IllegalEntry"), 
                 new Object[]{text});
             IllegalArgumentException iae = new IllegalArgumentException (text);
-            ErrorManager em = ErrorManager.getDefault();
-            em.annotate(iae, ErrorManager.USER, text, msg, null, null);
+            UIException.annotateUser(iae, text, msg, null, null);
             throw iae;
         }
 

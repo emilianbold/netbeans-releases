@@ -591,7 +591,7 @@ public final class HtmlRenderer {
                 if (STRICT_HTML) {
                     throw aib;
                 } else {
-                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, aib);
+                    Logger.global.log(Level.WARNING, null, aib);
 
                     return renderPlainString(s, g, x, y, w, h, f, defaultColor, style, paint);
                 }

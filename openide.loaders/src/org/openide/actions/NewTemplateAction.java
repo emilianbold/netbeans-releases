@@ -13,53 +13,24 @@
 
 package org.openide.actions;
 
+
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.awt.event.*;
+import java.beans.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import org.openide.ErrorManager;
-import org.openide.awt.Actions;
-import org.openide.awt.JMenuPlus;
+import javax.swing.*;
+import org.openide.awt.*;
 import org.openide.explorer.view.MenuView;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFilter;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
-import org.openide.loaders.TemplateWizard;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.actions.NodeAction;
-import org.openide.util.actions.Presenter;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.nodes.*;
+import org.openide.util.*;
+import org.openide.util.actions.*;
+import org.openide.windows.*;
 
 /** Creates a new object from template in the selected folder.
 * @see DataObject#isTemplate
@@ -131,9 +102,10 @@ public class NewTemplateAction extends NodeAction {
             // instantiates
             instantiated = wizard.instantiate() != null;
         } catch (IOException e) {
-            ErrorManager em = ErrorManager.getDefault();
-            em.annotate(e, NbBundle.getMessage(DataObject.class, "EXC_TemplateFailed"));
-            em.notify(e);
+            Exceptions.attachLocalizedMessage(e,
+                                              org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class,
+                                                                                   "EXC_TemplateFailed"));
+            Exceptions.printStackTrace(e);
         }
         finally {
             if (wizard instanceof DefaultTemplateWizard) {
@@ -370,9 +342,10 @@ public class NewTemplateAction extends NodeAction {
                 }
             }
         } catch (IOException e) {
-            ErrorManager em = ErrorManager.getDefault();
-            em.annotate(e, NbBundle.getMessage(DataObject.class, "EXC_TemplateFailed"));
-            em.notify(e);
+            Exceptions.attachLocalizedMessage(e,
+                                              org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class,
+                                                                                   "EXC_TemplateFailed"));
+            Exceptions.printStackTrace(e);
         }
     }
     
@@ -440,8 +413,7 @@ public class NewTemplateAction extends NodeAction {
             newOrder[0] = template.createShadow (folder);
             folder.setOrder (newOrder);
         } catch (IOException ioe) {
-            ErrorManager em = ErrorManager.getDefault();
-            em.notify (ErrorManager.INFORMATIONAL, ioe);
+            Logger.global.log(Level.WARNING, null, ioe);
             // can't create shadow
             return false;
         }
@@ -469,8 +441,7 @@ public class NewTemplateAction extends NodeAction {
             template.delete ();
             return true;
         } catch (IOException ioe) {
-            ErrorManager em = ErrorManager.getDefault();
-            em.notify (ErrorManager.INFORMATIONAL, ioe);
+            Logger.global.log(Level.WARNING, null, ioe);
             // it couldn't be deleted
             return false;
         }
@@ -557,9 +528,10 @@ public class NewTemplateAction extends NodeAction {
                 wizard.setTargetName (null);
                 wizard.instantiate (obj, targetFolder);
             } catch (IOException e) {
-                ErrorManager em = ErrorManager.getDefault();
-                em.annotate(e, NbBundle.getMessage(DataObject.class, "EXC_TemplateFailed"));
-                em.notify(e);
+                Exceptions.attachLocalizedMessage(e,
+                                                  org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class,
+                                                                                       "EXC_TemplateFailed"));
+                Exceptions.printStackTrace(e);
             }
 
             // ok

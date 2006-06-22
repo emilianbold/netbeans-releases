@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 
 /** Read-many/write-one lock.
 * Allows control over resources that
@@ -539,7 +538,6 @@ public final class Mutex extends Object {
 
         for (;;) {
             loopc++;
-
             synchronized (LOCK) {
                 // does the thread reenter this mutex?
                 ThreadInfo info = getThreadInfo(t);
@@ -549,103 +547,77 @@ public final class Mutex extends Object {
                         // defensive
                         throw new IllegalStateException();
                     }
-
                     // reenters
                     // requested == S -> always succeeds
                     // info.mode == X -> always succeeds
-                    if (((info.mode == S) && (grantedMode == X)) || ((info.mode == X) && (grantedMode == S))) {
+                    if (((info.mode == S) && (grantedMode == X)) ||
+                        ((info.mode == X) && (grantedMode == S))) {
                         // defensive
                         throw new IllegalStateException();
                     }
-
-                    if ((info.mode == X) || (info.mode == requested)) { // X - X, X - S, S - S
-
+                    if ((info.mode == X) || (info.mode == requested)) {
                         if (info.forced) {
                             info.forced = false;
                         } else {
                             if ((requested == X) && (info.counts[S] > 0)) {
-                                IllegalStateException e = new IllegalStateException(
-                                        "WARNING: Going from readAccess to writeAccess, see #10778: http://www.netbeans.org/issues/show_bug.cgi?id=10778 "
-                                    ); // NOI18N
+                                IllegalStateException e = new IllegalStateException("WARNING: Going from readAccess to writeAccess, see #10778: http://www.netbeans.org/issues/show_bug.cgi?id=10778 ");
 
                                 if (beStrict) {
                                     throw e;
                                 }
-
-                                ErrorManager.getDefault().notify(e);
+                                Exceptions.printStackTrace(e);
                             }
-
                             info.counts[requested]++;
-
-                            if ((requested == S) && (info.counts[requested] == 1)) {
+                            if ((requested == S) &&
+                                (info.counts[requested] == 1)) {
                                 readersNo++;
                             }
                         }
-
                         return true;
-                    } else if (canUpgrade(info.mode, requested)) { // S - X and no holders
-
-                        IllegalStateException e = new IllegalStateException(
-                                "WARNING: Going from readAccess to writeAccess, see #10778: http://www.netbeans.org/issues/show_bug.cgi?id=10778 "
-                            ); // NOI18N
+                    } else if (canUpgrade(info.mode, requested)) {
+                        IllegalStateException e = new IllegalStateException("WARNING: Going from readAccess to writeAccess, see #10778: http://www.netbeans.org/issues/show_bug.cgi?id=10778 ");
 
                         if (beStrict) {
                             throw e;
                         }
-
-                        ErrorManager.getDefault().notify(e);
-
+                        Exceptions.printStackTrace(e);
                         info.mode = X;
                         info.counts[requested]++;
                         info.rsnapshot = info.counts[S];
-
                         if (grantedMode == S) {
                             setGrantedMode(X);
                         } else if (grantedMode == X) {
                             // defensive
                             throw new IllegalStateException();
                         }
-                         // else if grantedMode == CHAIN - let it be
-
+                        // else if grantedMode == CHAIN - let it be
                         return true;
-                    } else { // S - X and holders
-
-                        IllegalStateException e = new IllegalStateException(
-                                "WARNING: Going from readAccess to writeAccess through queue, see #10778: http://www.netbeans.org/issues/show_bug.cgi?id=10778 "
-                            ); // NOI18N
+                    } else {
+                        IllegalStateException e = new IllegalStateException("WARNING: Going from readAccess to writeAccess through queue, see #10778: http://www.netbeans.org/issues/show_bug.cgi?id=10778 ");
 
                         if (beStrict) {
                             throw e;
                         }
-
-                        ErrorManager.getDefault().notify(e);
-
-                        // chain follows
+                        Exceptions.printStackTrace(e);
                     }
-                } else { // first acquisition
-
-                    if (isCompatible(requested)) { // NONE -> S,X or S -> S
+                } else {
+                    if (isCompatible(requested)) {
                         setGrantedMode(requested);
-                        registeredThreads.put(t, info = new ThreadInfo(t, requested));
-
+                        registeredThreads.put(t,
+                                              info = new ThreadInfo(t, requested));
                         if (requested == S) {
                             readersNo++;
                         }
-
                         return true;
                     }
-                     // else {
                 }
-
                 if (!block) {
                     return false;
                 }
-
                 setGrantedMode(CHAIN);
                 cell = chain(requested, t, 0);
             }
-             // sync
-
+            // sync
             cell.sleep();
         }
          // for
@@ -829,19 +801,23 @@ public final class Mutex extends Object {
                 for (int i = 0; i < size; i++) {
                     try {
                         Runnable r = (Runnable) runnables.get(i);
+
                         r.run();
-                    } catch (Exception e) {
-                        ErrorManager.getDefault().notify(e);
-                    } catch (StackOverflowError e) {
+                    }
+                    catch (Exception e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                    catch (StackOverflowError e) {
                         // Try as hard as possible to get a real stack trace
                         e.printStackTrace();
-                        ErrorManager.getDefault().notify(e);
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Error e) { // #20467: LinkageError, AssertionError
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
-                     // try
+                    catch (ThreadDeath td) {
+                        throw td;
+                    }
+                    catch (Error e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
                  // for
 
@@ -1260,7 +1236,7 @@ public final class Mutex extends Object {
             throw (RuntimeException) arr[0];
         }
 
-        throw notifyException(ErrorManager.EXCEPTION, arr[0]);
+        throw notifyException(arr[0]);
     }
 
     /** @return true iff current thread is EventDispatchThread */
@@ -1277,7 +1253,7 @@ public final class Mutex extends Object {
     }
 
     /** Notify exception and returns new MutexException */
-    private static final MutexException notifyException(int severity, Throwable t) {
+    private static final MutexException notifyException(Throwable t) {
         if (t instanceof InvocationTargetException) {
             t = unfoldInvocationTargetException((InvocationTargetException) t);
         }
@@ -1293,13 +1269,13 @@ public final class Mutex extends Object {
         }
 
         MutexException exc = new MutexException((Exception) t);
-        ErrorManager.getDefault().annotate(exc, t);
+        exc.initCause(t);
 
         return exc;
     }
 
     private static final void annotateEventStack(Throwable t) {
-        ErrorManager.getDefault().annotate(t, new Exception("Caught here in mutex")); // NOI18N
+        //ErrorManager.getDefault().annotate(t, new Exception("Caught here in mutex")); // NOI18N
     }
 
     private static final Throwable unfoldInvocationTargetException(InvocationTargetException e) {
@@ -1466,7 +1442,7 @@ public final class Mutex extends Object {
 
                         return;
                     } catch (InterruptedException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Logger.global.log(Level.WARNING, null, e);
                     }
                 }
             } finally {

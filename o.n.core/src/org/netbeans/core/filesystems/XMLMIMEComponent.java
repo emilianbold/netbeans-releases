@@ -14,7 +14,8 @@
 package org.netbeans.core.filesystems;
 
 import java.lang.ref.WeakReference;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -248,10 +249,10 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
                 try {
                     parser.setProperty("http://xml.org/sax/properties/lexical-handler", this);  //NOI18N
                 } catch (SAXException sex) {
-                    ErrorManager.getDefault().log(NbBundle.getMessage(XMLMIMEComponent.class, "W-003"));  //NOI18N
+                    Logger.global.fine(NbBundle.getMessage(XMLMIMEComponent.class, "W-003"));  //NOI18N
                 }
             } catch (SAXException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }
             return parser;
         }
@@ -297,7 +298,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         
         public void error(SAXParseException exception) throws SAXException {            
             // we are not validating should not occure
-            ErrorManager.getDefault().log(ErrorManager.WARNING, exception.getMessage());
+            Logger.global.warning(exception.getMessage());
             this.state = ERROR;
             throw STOP;
         }
@@ -306,9 +307,9 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
 
             // it may be caused by wrong user XML documents, notify only in debug mode
             // also see #16484 if the error message makes no sense
-            ErrorManager emgr = ErrorManager.getDefault().getInstance("org.netbeans.core.filesystems.XMLMIMEComponent"); // NOI18N
-            if (emgr.isLoggable(ErrorManager.INFORMATIONAL)) {
-                emgr.log(ErrorManager.INFORMATIONAL, "[while parsing " + fo + "] " + exception.getSystemId() + ":" + exception.getLineNumber() + ":" + exception.getColumnNumber() + ": " + exception.getMessage()); // NOI18N
+            Logger emgr = Logger.getLogger("org.netbeans.core.filesystems.XMLMIMEComponent"); // NOI18N
+            if (emgr.isLoggable(Level.FINE)) {
+                emgr.fine("[while parsing " + fo + "] " + exception.getSystemId() + ":" + exception.getLineNumber() + ":" + exception.getColumnNumber() + ": " + exception.getMessage()); // NOI18N
             }
 
             this.state = ERROR;

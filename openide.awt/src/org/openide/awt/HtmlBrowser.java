@@ -40,7 +40,7 @@ import javax.swing.JToolBar;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -166,17 +166,17 @@ public class HtmlBrowser extends JPanel {
                     impl = fact.createHtmlBrowserImpl();
                     comp = impl.getComponent();
                 } catch (UnsupportedOperationException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                     impl = new SwingBrowserImpl();
                     comp = impl.getComponent();
                 }
             }
         } catch (RuntimeException e) {
-            ErrorManager em = ErrorManager.getDefault();
-
             // browser was uninstlled ?
-            em.annotate(e, NbBundle.getMessage(HtmlBrowser.class, "EXC_Module"));
-            em.notify(e);
+            Exceptions.attachLocalizedMessage(e,
+                                              NbBundle.getMessage(HtmlBrowser.class,
+                                                                  "EXC_Module"));
+            Exceptions.printStackTrace(e);
         }
 
         browserImpl = impl;
@@ -436,7 +436,7 @@ public class HtmlBrowser extends JPanel {
                         NbBundle.getMessage(SwingBrowserImpl.class, "FMT_InvalidURL", new Object[] { str })
                     );
                 } else {
-                    ErrorManager.getDefault().notify(ee);
+                    Exceptions.printStackTrace(ee);
                 }
 
                 return;

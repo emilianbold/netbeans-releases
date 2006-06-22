@@ -28,6 +28,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -92,7 +93,7 @@ public class NotifyExceptionTest extends NbTestCase {
         ErrorManager.getDefault().annotate(npe, ErrorManager.WARNING, null, null, null, null);
 
         DD.toReturn = new HiddenDialog();
-        ErrorManager.getDefault().notify(npe);
+        Exceptions.printStackTrace(npe);
 
         waitEQ();
         assertNotNull("We are going to display a warning", DD.lastDescriptor);

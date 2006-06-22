@@ -13,7 +13,6 @@
 package org.openide.actions;
 
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;

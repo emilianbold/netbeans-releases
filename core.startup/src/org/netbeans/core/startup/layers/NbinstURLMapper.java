@@ -18,10 +18,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 /**
  * URLMapper for the nbinst URL protocol.
@@ -78,12 +78,12 @@ public class NbinstURLMapper extends URLMapper {
                         }
                     }
                     catch (MalformedURLException mue) {
-                        ErrorManager.getDefault().notify(mue);
+                        Exceptions.printStackTrace(mue);
                     }
                 }
             }
         } catch (URISyntaxException use) {
-            ErrorManager.getDefault().notify(use);
+            Exceptions.printStackTrace(use);
         }
         return null;
     }

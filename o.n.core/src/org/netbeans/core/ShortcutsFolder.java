@@ -21,7 +21,6 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import org.netbeans.core.NbKeymap.KeymapAction;
-import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
@@ -30,6 +29,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -50,8 +50,7 @@ class ShortcutsFolder {
     private FileObject              profilesFileObject;
     private FileObject              shortcutsFileObject;
     private FileObject              currentFolder;
-    private ErrorManager            debug = ErrorManager.getDefault ().
-        getInstance (ShortcutsFolder.class.getName ());
+    private Logger debug = Logger.getLogger(ShortcutsFolder.class.getName ());
     
     
     static void initShortcuts () {
@@ -73,7 +72,7 @@ class ShortcutsFolder {
                 shortcutsFileObject = root.createFolder (SHORTCUTS_FOLDER);
             shortcutsFileObject.addFileChangeListener (listener);            
         } catch (IOException ex) {
-            ErrorManager.getDefault ().notify (ex);
+            Exceptions.printStackTrace(ex);
         }
         refresh ();
     }
@@ -104,7 +103,7 @@ class ShortcutsFolder {
             try {
                 currentFolder = profilesFileObject.createFolder(keymapName);
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
         if (currentFolder != null) {
@@ -116,7 +115,7 @@ class ShortcutsFolder {
     
     
     private void readShortcuts (NbKeymap keymap, FileObject fileObject) {
-        debug.log ("\nreadShortcuts " + fileObject);
+        debug.fine("\nreadShortcuts " + fileObject);
         DataFolder folder = DataFolder.findFolder (fileObject);
         Enumeration en = folder.children (false);
         while (en.hasMoreElements ()) {
@@ -128,19 +127,19 @@ class ShortcutsFolder {
             try {
                 Action action = (Action) ic.instanceCreate ();
                 String shortcuts = dataObject.getName ();
-                debug.log ("  " + shortcuts + " : " + action);
+                debug.fine("  " + shortcuts + " : " + action);
                 KeyStroke[] keyStrokes = Utilities.stringToKeys (shortcuts);
                 if (keyStrokes != null) {
                     addShortcut(keymap, action, keyStrokes);
                 } else { // see e.g. secondary exception in #74169
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Unrecognized shortcut name from " + dataObject.getPrimaryFile().getPath());
+                    debug.warning("Unrecognized shortcut name from " + dataObject.getPrimaryFile().getPath()); // NOI18N
                 }
             } catch (ClassNotFoundException x) {
                 Logger.getLogger(ShortcutsFolder.class.getName()).log(Level.WARNING,
                         "{0} ignored; cannot load class {1}",
                         new Object[] {dataObject.getPrimaryFile().getPath(), ic.instanceName()});
             } catch (Exception ex) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }
         }
     }

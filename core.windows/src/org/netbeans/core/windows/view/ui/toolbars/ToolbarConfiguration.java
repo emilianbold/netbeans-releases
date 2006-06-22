@@ -15,7 +15,6 @@ package org.netbeans.core.windows.view.ui.toolbars;
 
 import java.util.logging.Logger;
 import org.netbeans.core.NbPlaces;
-import org.openide.ErrorManager;
 import org.openide.awt.JPopupMenuPlus;
 import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
@@ -40,6 +39,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.*;
+import java.util.logging.Level;
 import org.netbeans.core.IDESettings;
 /** Toolbar configuration.
  * It can load configuration from DOM Document, store configuration int XML file. 
@@ -163,16 +163,14 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             is = xml.getPrimaryFile().getInputStream();
             parser.parse(new InputSource(is));
         } catch (Exception saxe) {
-            IOException ex = new IOException (saxe.toString());
-            ErrorManager.getDefault().annotate(ex, saxe);
-            throw ex;
+            throw (IOException) new IOException(saxe.toString()).initCause(saxe);
         } finally {
             try {
                 if (is != null) {
                     is.close();
                 }
             } catch (IOException exc) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                Logger.global.log(Level.WARNING, null, exc);
             }
         }
         checkToolbarRows();
@@ -987,25 +985,22 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         // toolbar pool has already new content)
         // needs architecture redesign IMO
         SwingUtilities.invokeLater(new Runnable() {
-            public void run () {
+
+            public void run() {
                 try {
-                    initInstance ();
+                    initInstance();
                     readConfig(xmlDataObject);
-                    checkConfigurationOver ();
-
-
-                    if (configName.equals (toolbarPool ().getConfiguration())) {
-                        ERR.fine("Activating the configuration"); // NOI18N
+                    checkConfigurationOver();
+                    if (configName.equals(toolbarPool().getConfiguration())) {
+                        ERR.fine("Activating the configuration");
                         // 1st argument is true because the change is important
                         // 2nd argument is false, because it should prevent the system
                         // to write anything do
-                        activate (true, false);
+                        activate(true, false);
                     }
-
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify (
-                        ErrorManager.INFORMATIONAL, ex
-                    );
+                }
+                catch (IOException ex) {
+                    Logger.global.log(Level.WARNING, null, ex);
                 }
             }
         });

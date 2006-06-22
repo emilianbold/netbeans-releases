@@ -34,6 +34,8 @@ import java.awt.event.HierarchyListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -45,7 +47,6 @@ import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
 import org.openide.awt.HtmlRenderer;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Utilities;
@@ -163,8 +164,7 @@ final class RendererFactory {
             }
         } catch (Exception e) {
             result = getExceptionRenderer(e);
-            ErrorManager.getDefault().annotate(e, ErrorManager.WARNING, null, null, null, null);
-            ErrorManager.getDefault().notify(e);
+            Logger.global.log(Level.WARNING, null, e);
         }
 
         result.setEnabled(prop.canWrite());

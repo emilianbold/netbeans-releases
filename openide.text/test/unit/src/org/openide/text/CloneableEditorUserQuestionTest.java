@@ -13,19 +13,13 @@
 
 package org.openide.text;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
-import junit.framework.*;
 
+import java.io.IOException;
+import javax.swing.SwingUtilities;
+import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.NotifyDescriptor;
-
-import org.openide.util.Lookup;
-import org.openide.util.UserQuestionException;
+import org.openide.util.*;
 import org.openide.util.lookup.*;
 
 
@@ -267,7 +261,7 @@ implements CloneableEditorSupport.Env {
                     return notify;
                 }
             };
-            org.openide.ErrorManager.getDefault ().annotate (e, cannotBeModified);
+            Exceptions.attachLocalizedMessage(e, cannotBeModified);
             throw e;
         }
         

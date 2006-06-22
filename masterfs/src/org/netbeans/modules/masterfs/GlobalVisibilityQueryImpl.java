@@ -14,7 +14,6 @@
 package org.netbeans.modules.masterfs;
 
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.options.SystemOption;
 import org.openide.util.Lookup;
@@ -27,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.openide.util.Exceptions;
 
 // XXX - one would expect this class in core but there is problem that 
 //core can't depened on project/queries at the moment 
@@ -131,7 +131,7 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
             ideSettings = null;
         } catch (Exception e) {
             ideSettings = null;
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return retVal;
     }

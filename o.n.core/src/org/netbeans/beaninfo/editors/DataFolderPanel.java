@@ -26,13 +26,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-
-import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.*;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
 /**
@@ -782,7 +781,7 @@ class DataFolderPanel extends TopComponent implements
             //user used the search popup in the target folder tree
             implSetDataFolder (newF);
         } catch (IOException ex) {
-             ErrorManager.getDefault().notify(ex);
+             Exceptions.printStackTrace(ex);
         }
     }
     
@@ -814,7 +813,7 @@ class DataFolderPanel extends TopComponent implements
                 df = getTargetFolder(true);
                 return df;
             } catch (IOException x) {
-                ErrorManager.getDefault().notify(x);
+                Exceptions.printStackTrace(x);
                 throw new IllegalStateException();
             }
         } else {

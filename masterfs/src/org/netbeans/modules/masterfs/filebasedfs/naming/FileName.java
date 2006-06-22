@@ -17,7 +17,7 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * @author Radek Matous
@@ -48,7 +48,7 @@ public class FileName implements FileNaming {
                     handler.handle();
                     retVal = true;
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             } else {
                 retVal = f.renameTo(newFile);

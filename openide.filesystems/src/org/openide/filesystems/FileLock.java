@@ -13,7 +13,8 @@
 package org.openide.filesystems;
 
 import java.io.ByteArrayOutputStream;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** Represents an acquired lock on a <code>FileObject</code>.
@@ -100,8 +101,10 @@ public class FileLock extends Object {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         if (lockedBy != null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                    new Exception("Not released lock for file: " + toString() + " (traped in finalizer)").initCause(lockedBy));//NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new Exception("Not released lock for file: " +
+                                            toString() +
+                                            " (traped in finalizer)").initCause(lockedBy));//NOI18N
         }
 
         releaseLock();

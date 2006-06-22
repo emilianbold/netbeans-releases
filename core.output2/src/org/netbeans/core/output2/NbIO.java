@@ -18,7 +18,6 @@
 
 package org.netbeans.core.output2;
 
-import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -26,8 +25,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import org.openide.util.Exceptions;
 
 /** Implementation of InputOutput.  Implements calls as a set of 
  * "commands" which are passed up to Dispatcher to be run on the event
@@ -271,7 +269,7 @@ class NbIO implements InputOutput {
                 try {
                     close();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         }
@@ -294,9 +292,8 @@ class NbIO implements InputOutput {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
-                        IOException ioe = new IOException ("Interrupted: " + e.getMessage());
-                        ErrorManager.getDefault().annotate(ioe, e);
-                        throw ioe;
+                        throw (IOException) new IOException("Interrupted: " +
+                                                            e.getMessage()).initCause(e);
                     }
                 }
                 if (inputClosed) {
@@ -318,9 +315,8 @@ class NbIO implements InputOutput {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
-                        IOException ioe = new IOException ("Interrupted: " + e.getMessage());
-                        ErrorManager.getDefault().annotate(ioe, e);
-                        throw ioe;
+                        throw (IOException) new IOException("Interrupted: " +
+                                                            e.getMessage()).initCause(e);
                     }
                 }
                 if (inputClosed) {
@@ -347,9 +343,8 @@ class NbIO implements InputOutput {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
-                        IOException ioe = new IOException ("Interrupted: " + e.getMessage());
-                        ErrorManager.getDefault().annotate(ioe, e);
-                        throw ioe;
+                        throw (IOException) new IOException("Interrupted: " +
+                                                            e.getMessage()).initCause(e);
                     }
                 }
                 if (inputClosed) {

@@ -13,41 +13,19 @@
 
 package org.openide.text;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
+
+import java.awt.*;
+import java.io.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import javax.swing.JEditorPane;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.text.Caret;
-import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
-import org.openide.ErrorManager;
+import javax.swing.text.*;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.Task;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
-import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.windows.Workspace;
+import org.openide.windows.*;
 
 /** Cloneable top component to hold the editor kit.
  */
@@ -505,12 +483,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     int lastPos = ((QuietEditorPane) p).getLastPosition();
 
                     if (lastPos == -1) {
-                        ErrorManager.getDefault().notify(
-                            ErrorManager.INFORMATIONAL,
-                            new IllegalStateException("Pane=" + p + "was not initialized yet!" // NOI18N
-                                
-                            )
-                        );
+                        Logger.global.log(Level.WARNING, null,
+                                          new java.lang.IllegalStateException("Pane=" +
+                                                                              p +
+                                                                              "was not initialized yet!"));
                     } else {
                         pos = lastPos;
                     }
@@ -519,15 +495,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
                     // Relevant only if document is non-null?!
                     if (doc != null) {
-                        ErrorManager.getDefault().notify(
-                            ErrorManager.INFORMATIONAL,
-                            new IllegalStateException(
-                                "Caret is null in editor pane=" + p // NOI18N
-                                 +"\nsupport=" + support // NOI18N
-                                 +"\ndoc=" + doc // NOI18N
-                                
-                            )
-                        );
+                        Logger.global.log(Level.WARNING, null,
+                                          new java.lang.IllegalStateException("Caret is null in editor pane=" +
+                                                                              p +
+                                                                              "\nsupport=" +
+                                                                              support +
+                                                                              "\ndoc=" +
+                                                                              doc));
                     }
                 }
             }

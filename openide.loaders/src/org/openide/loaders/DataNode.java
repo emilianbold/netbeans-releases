@@ -13,41 +13,16 @@
 
 package org.openide.loaders;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+
+import java.awt.datatransfer.*;
+import java.beans.*;
+import java.io.*;
+import java.util.*;
 import javax.swing.Action;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.RequestProcessor;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.openide.loaders.UIException;
+import org.openide.filesystems.*;
+import org.openide.nodes.*;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -177,7 +152,7 @@ public class DataNode extends AbstractNode {
             }
             
             RuntimeException e = new IllegalArgumentException();
-            ErrorManager.getDefault().annotate(e, ErrorManager.USER, null, msg, ex, null);
+            UIException.annotateUser(e, null, msg, ex, null);
             throw e;
         }
     }
@@ -594,52 +569,55 @@ public class DataNode extends AbstractNode {
     /** Creates a name property for given data object.
     */
     static Node.Property createNameProperty (final DataObject obj) {
-        Node.Property p = new PropertySupport.ReadWrite (
-                              DataObject.PROP_NAME,
-                              String.class,
-                              DataObject.getString("PROP_name"),
-                              DataObject.getString("HINT_name")
-                          ) {
-                              public Object getValue () {
-                                  return obj.getName();
-                              }
+        Node.Property p = new org.openide.nodes.PropertySupport.ReadWrite(org.openide.loaders.DataObject.PROP_NAME,
+                                                        java.lang.String.class,
+                                                        org.openide.loaders.DataObject.getString("PROP_name"),
+                                                        org.openide.loaders.DataObject.getString("HINT_name")) {
 
-                              public void setValue (Object val) throws IllegalAccessException,
-                                  IllegalArgumentException, InvocationTargetException {
-                                  if (!canWrite())
-                                      throw new IllegalAccessException();
-                                  if (!(val instanceof String))
-                                      throw new IllegalArgumentException();
+            public java.lang.Object getValue() {
+                return obj.getName();
+            }
 
-                                  try {
-                                      obj.rename ((String)val);
-                                  } catch (IOException ex) {
-                                      String msg = null;
-                                      if ((ex.getLocalizedMessage() == null) || 
-                                          (ex.getLocalizedMessage().equals(ex.getMessage()))) {
-                                          msg = NbBundle.getMessage (DataNode.class, "MSG_renameError", obj.getName(), val); // NOI18N
-                                      } else {
-                                          msg = ex.getLocalizedMessage();
-                                      }
-                                      ErrorManager.getDefault().annotate (ex, ErrorManager.USER, null, msg, null, null);
-                                      throw new InvocationTargetException(ex);
-                                  }
-                              }
+            public void setValue(java.lang.Object val) throws java.lang.IllegalAccessException,
+                                                              java.lang.IllegalArgumentException,
+                                                              java.lang.reflect.InvocationTargetException {
+                if (!canWrite())
+                    throw new java.lang.IllegalAccessException();
+                if (!(val instanceof java.lang.String))
+                    throw new java.lang.IllegalArgumentException();
+                try {
+                    obj.rename((java.lang.String) val);
+                }
+                catch (java.io.IOException ex) {
+                    java.lang.String msg = null;
 
-                              public boolean canWrite () {
-                                  return obj.isRenameAllowed();
-                              }
+                    if ((ex.getLocalizedMessage() == null) ||
+                        (ex.getLocalizedMessage().equals(ex.getMessage()))) {
+                        msg = org.openide.util.NbBundle.getMessage(org.openide.loaders.DataNode.class,
+                                                                   "MSG_renameError",
+                                                                   obj.getName(),
+                                                                   val);
+                    } else {
+                        msg = ex.getLocalizedMessage();
+                    }
+                    UIException.annotateUser(ex, null, msg, null, null);
+                    throw new java.lang.reflect.InvocationTargetException(ex);
+                }
+            }
 
-                              // #33296 - suppress custom editor
-                              public Object getValue(String key) {
-                                  if ("suppressCustomEditor".equals (key)) { //NOI18N
-                                      return Boolean.TRUE;
-                                  } else {
-                                      return super.getValue (key);
-                                  }
-                              }
+            public boolean canWrite() {
+                return obj.isRenameAllowed();
+            }
+            // #33296 - suppress custom editor
 
-                          };
+            public java.lang.Object getValue(java.lang.String key) {
+                if ("suppressCustomEditor".equals(key)) {
+                    return java.lang.Boolean.TRUE;
+                } else {
+                    return super.getValue(key);
+                }
+            }
+        };
 
         return p;
     }
@@ -751,7 +729,7 @@ public class DataNode extends AbstractNode {
             try {
                 defaultLookup = Class.forName("org.openide.nodes.NodeLookup", false, Node.class.getClassLoader());
             } catch (ClassNotFoundException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
                 return false;
             }
         }

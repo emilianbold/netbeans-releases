@@ -12,9 +12,6 @@
  */
 package org.openide.explorer.view;
 
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
@@ -62,6 +59,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.accessibility.AccessibleContext;
 
@@ -803,21 +802,23 @@ public abstract class TreeView extends JScrollPane {
         }
 
         showWaitCursor();
-        RequestProcessor.getDefault().post(
-            new Runnable() {
-                public void run() {
-                    try {
-                        node.getChildren().getNodes(true);
-                    } catch (Exception e) {
-                        // log a exception
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    } finally {
-                        // show normal cursor above all
-                        showNormalCursor();
-                    }
-                }
-            }
-        );
+        RequestProcessor.getDefault().post(new Runnable() {
+
+                                               public void run() {
+                                                   try {
+                                                       node.getChildren().getNodes(true);
+                                                   }
+                                                   catch (Exception e) {
+                                                       // log a exception
+                                                       Logger.global.log(Level.WARNING,
+                                                                         null, e);
+                                                   }
+                                                   finally {
+                                                       // show normal cursor above all
+                                                       showNormalCursor();
+                                                   }
+                                               }
+                                           });
     }
 
     /** Synchronize the selected nodes from the manager of this Explorer.

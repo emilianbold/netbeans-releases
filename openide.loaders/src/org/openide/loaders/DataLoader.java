@@ -13,24 +13,14 @@
 
 package org.openide.loaders;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import java.io.*;
+import java.util.*;
+import java.util.logging.*;
 import javax.swing.Action;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.*;
 import org.openide.nodes.NodeOp;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.SafeException;
 
@@ -164,10 +154,10 @@ public abstract class DataLoader extends SharedClassObject {
             try {
                 actions = mgr.instanceCreate ();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify (ex);
+                Exceptions.printStackTrace(ex);
                 actions = null;
             } catch (ClassNotFoundException ex) {
-                ErrorManager.getDefault().notify (ex);
+                Exceptions.printStackTrace(ex);
                 actions = null;
             }
             if (actions == null) {
@@ -492,14 +482,14 @@ public abstract class DataLoader extends SharedClassObject {
                     if ( version == 0 && isdefault && !defactions[i].equals(ac))
                         isdefault = false;
                 } catch (ClassNotFoundException ex) {
-                    ErrorManager.getDefault().annotate (
-                        ex, ErrorManager.INFORMATIONAL, 
-                        null, null, null, null
-                    );
                     if (main == null) {
                         main = ex;
                     } else {
-                        ErrorManager.getDefault().annotate (main, ex);
+                        Throwable t = main;
+                        while (t.getCause() != null) {
+                            t = t.getCause();
+                        }
+                        t.initCause(ex);
                     }
                 }
             }
@@ -519,7 +509,7 @@ public abstract class DataLoader extends SharedClassObject {
             SafeException se = new SafeException (main);
             // Provide a localized message explaining that there is no big problem.
             String message = NbBundle.getMessage (DataLoader.class, "EXC_missing_actions_in_loader", getDisplayName ());
-            ErrorManager.getDefault().annotate (se, message);
+            Exceptions.attachLocalizedMessage(se, message);
             throw se;
         }
     }

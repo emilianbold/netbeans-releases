@@ -46,8 +46,8 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
-import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -412,7 +412,7 @@ public class Controller { //XXX public only for debug access to logging code
                             writer.reset();
                             forceName(win, tab);
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
+                            Exceptions.printStackTrace(ioe);
                         }
                     } else if (log) {
                         log ("IO's NbWriter is null");
@@ -608,7 +608,7 @@ public class Controller { //XXX public only for debug access to logging code
                     out.getLines().saveAs(f.getPath());
                 }
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
     }
@@ -1328,8 +1328,8 @@ public class Controller { //XXX public only for debug access to logging code
                 }
             } catch (IOException ioe) {
                 IOException nue = new IOException ("Could not fetch line " + line + " on " + io.getName()); //NOI18N
-                ErrorManager.getDefault().annotate (nue, ioe);
-                ErrorManager.getDefault().notify(ioe);
+                nue.initCause(ioe);
+                Exceptions.printStackTrace(ioe);
             }
             return null;
         }

@@ -14,7 +14,6 @@
 package org.netbeans.spi.settings;
 
 import java.io.IOException;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
@@ -89,11 +88,7 @@ public abstract class DOMConvertor extends Convertor {
             return readElement(doc.getDocumentElement());
         } catch (SAXException ex) {
             IOException ioe = new IOException(ex.getLocalizedMessage());
-            ErrorManager emgr = ErrorManager.getDefault();
-            emgr.annotate(ioe, ex);
-            if (ex.getException () != null) {
-                emgr.annotate (ioe, ex.getException());
-            }
+            ioe.initCause(ex);
             throw ioe;
         } finally {
             if (doc != null) {
@@ -118,8 +113,9 @@ public abstract class DOMConvertor extends Convertor {
             XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
             w.write(baos.toString("UTF-8")); // NOI18N
         } catch (org.w3c.dom.DOMException ex) {
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException(ex.getLocalizedMessage()), ex);
+            IOException e = new IOException(ex.getLocalizedMessage());
+            e.initCause(ex);
+            throw e;
         } finally {
             if (doc != null) {
                 clearCashesForDocument(doc);

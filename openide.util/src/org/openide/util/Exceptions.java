@@ -120,7 +120,6 @@ public final class Exceptions extends Object {
         Logger.global.log(OwnLevel.UNKNOWN, null, t);
     }
 
-
     /** An exception that has a log record associated with itself, so
      * the NbErrorManager can extract info about the annotation.
      */

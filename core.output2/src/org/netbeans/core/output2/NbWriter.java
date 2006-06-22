@@ -15,10 +15,8 @@ package org.netbeans.core.output2;
 
 import org.openide.windows.OutputWriter;
 import org.openide.windows.OutputListener;
-import org.openide.ErrorManager;
-
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.io.IOException;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -104,7 +102,7 @@ class NbWriter extends OutputWriter {
                     if (Controller.log) Controller.log ( "Now closing OutWriter");
                     out.close();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify (ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         }

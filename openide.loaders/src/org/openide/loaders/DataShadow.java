@@ -13,54 +13,22 @@
 
 package org.openide.loaders;
 
-import java.awt.datatransfer.Transferable;
+
 import java.awt.Image;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.awt.datatransfer.Transferable;
+import java.beans.*;
+import java.io.*;
+import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.text.MessageFormat;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EventObject;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.URLMapper;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.nodes.Node.Property;
-import org.openide.nodes.Node.PropertySet;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.filesystems.*;
+import org.openide.nodes.*;
+import org.openide.nodes.Node.*;
+import org.openide.util.*;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.xml.XMLUtil;
 
@@ -862,7 +830,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                         Image i = Introspector.getBeanInfo(fs.getClass()).getIcon(type);
                         return fs.getStatus().annotateIcon(i, type, obj.original.files());
                     } catch (IntrospectionException ie) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
+                        Logger.global.log(Level.WARNING, null, ie);
                         // ignore
                     }
                 } catch (FileStateInvalidException fsie) {

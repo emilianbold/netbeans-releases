@@ -15,11 +15,12 @@ package org.netbeans.core;
 
 import java.awt.event.ActionEvent;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 
 import org.openide.actions.ActionManager;
 import org.openide.util.actions.SystemAction;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 
 import org.netbeans.core.startup.ManifestSection;
@@ -184,7 +185,7 @@ public class ModuleActions extends ActionManager
                 try {
                     arr.add (s.getInstance ());
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify (ErrorManager.INFORMATIONAL, ex);
+                    Logger.global.log(Level.WARNING, null, ex);
                 }
             }
             
@@ -200,7 +201,7 @@ public class ModuleActions extends ActionManager
     }
 
     
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.util.actions.MouseCursorUtils"); // NOI18N
+    private static final Logger err = Logger.getLogger("org.openide.util.actions.MouseCursorUtils"); // NOI18N
     
     /**
      * Running show/hide count for glass panes in use.
@@ -232,19 +233,13 @@ public class ModuleActions extends ActionManager
         assert !glassPaneUses.containsKey(key);
         java.awt.Component c = activeGlassPane();
         if (c == null) {
-            if (err.isLoggable(ErrorManager.WARNING)) {
-                err.log(ErrorManager.WARNING, "showWaitCursor could not find a suitable glass pane; key=" + key);
-            }
+            err.warning("showWaitCursor could not find a suitable glass pane; key=" + key);
             return;
         }
         if (glassPaneUses.values().contains(c)) {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("wait cursor already displayed on " + c);
-            }
+            err.fine("wait cursor already displayed on " + c);
         } else {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("wait cursor will be displayed on " + c);
-            }
+            err.fine("wait cursor will be displayed on " + c);
             c.setCursor(org.openide.util.Utilities.createProgressCursor(c));
             c.setVisible(true);
         }
@@ -263,13 +258,9 @@ public class ModuleActions extends ActionManager
         }
         glassPaneUses.remove(key);
         if (glassPaneUses.values().contains(c)) {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("wait cursor still displayed on " + c);
-            }
+            err.fine("wait cursor still displayed on " + c);
         } else {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("wait cursor will be hidden on " + c);
-            }
+            err.fine("wait cursor will be hidden on " + c);
             c.setVisible(false);
             c.setCursor(null);
         }

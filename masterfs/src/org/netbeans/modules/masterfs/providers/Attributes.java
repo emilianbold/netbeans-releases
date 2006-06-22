@@ -15,7 +15,6 @@
 package org.netbeans.modules.masterfs.providers;
 
 import org.netbeans.modules.masterfs.ExLocalFileSystem;
-import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.DefaultAttributes;
@@ -25,6 +24,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
+import org.openide.util.Exceptions;
 
 /**
  * Implementation of DefaultAttributes that should be shared by all
@@ -148,7 +148,7 @@ public class Attributes extends DefaultAttributes {
                 try {
                     getPreferedAttributes().writeAttribute(translatedName, attrName, value);
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
             super.deleteAttributes(name);
@@ -188,9 +188,9 @@ public class Attributes extends DefaultAttributes {
                 try {
                     exLFs = ExLocalFileSystem.getInstance(getRootForAttributes());                    
                 } catch (PropertyVetoException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
                 sharedUserAttributes = exLFs.getAttributes();
             }

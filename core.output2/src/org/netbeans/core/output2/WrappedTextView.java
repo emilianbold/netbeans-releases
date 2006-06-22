@@ -14,12 +14,11 @@ package org.netbeans.core.output2;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.text.DefaultCaret;
-import org.openide.ErrorManager;
 
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
+import org.openide.util.Exceptions;
 
 /**
  * A custom Swing text View which supports line wrapping.  The default Swing
@@ -390,7 +389,7 @@ public class WrappedTextView extends View {
                     }
                 }
             } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }

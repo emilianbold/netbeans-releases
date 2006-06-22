@@ -50,7 +50,7 @@ public class NbErrorManagerCyclicDepTest extends NbTestCase {
 
     public void testSendNotify() {
         ErrorManager e = ErrorManager.getDefault().getInstance("double");
-        e.notify(ErrorManager.WARNING, new Exception("Ahoj"));
+        Logger.global.log(Level.WARNING, null, new Exception("Ahoj"));
     }
 
     /** based on

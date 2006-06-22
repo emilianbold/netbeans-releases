@@ -17,8 +17,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /** Session manager.
  *
@@ -207,9 +207,10 @@ public final class SessionManager {
         java.beans.PropertyChangeEvent event = new java.beans.PropertyChangeEvent(this, name, null, null);
         for (int i = 0; i < list.size(); i++) {
             try {
-                ((java.beans.PropertyChangeListener)list.get(i)).propertyChange(event);
-            } catch (RuntimeException e) {
-                ErrorManager.getDefault().notify(e);
+                ((PropertyChangeListener) list.get(i)).propertyChange(event);
+            }
+            catch (RuntimeException e) {
+                Exceptions.printStackTrace(e);
             }
         }
     }

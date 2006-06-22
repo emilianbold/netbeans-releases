@@ -17,6 +17,7 @@ import java.awt.Image;
 
 import java.beans.*;
 import java.util.ResourceBundle;
+import org.openide.util.Exceptions;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -41,7 +42,7 @@ public class IndentEngineBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (org.openide.ServiceType.class) };
         } catch (IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

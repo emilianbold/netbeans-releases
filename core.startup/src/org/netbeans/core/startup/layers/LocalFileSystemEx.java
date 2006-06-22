@@ -20,8 +20,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.Iterator;
-
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.*;
 
 /** Extends LocalFileSystem by useful features. It is used as
@@ -112,10 +112,9 @@ public final class LocalFileSystemEx extends LocalFileSystem {
                         }
                     }
                 } else {
-                    ErrorManager.getDefault ().notify (
-                        ErrorManager.INFORMATIONAL,
-                        new Throwable ("Can't unlock file " + name + ", it's lock was not found or it wasn't locked.")
-                    );
+                    Logger.global.log(Level.WARNING, null,
+                                      new Throwable("Can\'t unlock file " + name +
+                                                    ", it\'s lock was not found or it wasn\'t locked."));
                 }
             }
         }

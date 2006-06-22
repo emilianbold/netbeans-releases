@@ -12,26 +12,11 @@
  */
 package org.openide.explorer;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.util.*;
-import org.openide.util.datatransfer.*;
-import org.openide.util.io.SafeException;
-
-import java.awt.Component;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.text.MessageFormat;
-
-import java.util.*;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.SwingUtilities;
-
 
 /**
  * Helper methods to embed <code>ExplorerManager</code>s and explorer views

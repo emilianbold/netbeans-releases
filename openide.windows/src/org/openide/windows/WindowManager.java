@@ -19,8 +19,9 @@ import java.awt.Window;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -231,8 +232,8 @@ public abstract class WindowManager extends Object implements Serializable {
                         "[Winsys] TopComponent " + activeComponent // NOI18N
                          +" throws runtime exception from its componentDeactivated() method. Repair it!"
                     ); // NOI18N
-                ErrorManager.getDefault().annotate(ise, re);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+                ise.initCause(re);
+                Logger.global.log(Level.WARNING, null, ise);
             }
         }
 
@@ -246,8 +247,8 @@ public abstract class WindowManager extends Object implements Serializable {
                         "[Winsys] TopComponent " + activeComponent // NOI18N
                          +" throws runtime exception from its componentActivated() method. Repair it!"
                     ); // NOI18N
-                ErrorManager.getDefault().annotate(ise, re);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+                ise.initCause(re);
+                Logger.global.log(Level.WARNING, null, ise);
             }
         }
     }
@@ -266,8 +267,8 @@ public abstract class WindowManager extends Object implements Serializable {
                     "[Winsys] TopComponent " + tc // NOI18N
                      +" throws runtime exception from its componentOpened() method. Repair it!"
                 ); // NOI18N
-            ErrorManager.getDefault().annotate(ise, re);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+            ise.initCause(re);
+            Logger.global.log(Level.WARNING, null, ise);
         }
     }
 
@@ -285,8 +286,8 @@ public abstract class WindowManager extends Object implements Serializable {
                     "[Winsys] TopComponent " + tc // NOI18N
                      +" throws runtime exception from its componentClosed() method. Repair it!"
                 ); // NOI18N
-            ErrorManager.getDefault().annotate(ise, re);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+            ise.initCause(re);
+            Logger.global.log(Level.WARNING, null, ise);
         }
 
         if (tc == activeComponent) {
@@ -306,8 +307,8 @@ public abstract class WindowManager extends Object implements Serializable {
                     "[Winsys] TopComponent " + tc // NOI18N
                      +" throws runtime exception from its componentShowing() method. Repair it!"
                 ); // NOI18N
-            ErrorManager.getDefault().annotate(ise, re);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+            ise.initCause(re);
+            Logger.global.log(Level.WARNING, null, ise);
         }
     }
 
@@ -323,8 +324,8 @@ public abstract class WindowManager extends Object implements Serializable {
                     "[Winsys] TopComponent " + tc // NOI18N
                      +" throws runtime exception from its componentHidden() method. Repair it!"
                 ); // NOI18N
-            ErrorManager.getDefault().annotate(ise, re);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+            ise.initCause(re);
+            Logger.global.log(Level.WARNING, null, ise);
         }
     }
 

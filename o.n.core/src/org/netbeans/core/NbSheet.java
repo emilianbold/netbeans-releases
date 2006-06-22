@@ -28,16 +28,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
-import org.netbeans.beaninfo.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeOp;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
@@ -137,7 +138,7 @@ public final class NbSheet extends TopComponent {
                     ("Incorrect settings file. Unexpected class returned." // NOI18N
                     + " Expected:" + NbSheet.class.getName() // NOI18N
                     + " Returned:" + tc.getClass().getName()); // NOI18N
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    Logger.global.log(Level.WARNING, null, exc);
                     //Fallback to accessor reserved for window system.
                     NbSheet.getDefault();
                 }
@@ -340,9 +341,9 @@ public final class NbSheet extends TopComponent {
                 try {
                     nodes = NodeOp.fromHandles (arr);
                 } catch (IOException ex) {
-                    ErrorManager errMgr = ErrorManager.getDefault ();
-                    errMgr.annotate (ex, NbBundle.getBundle(NbSheet.class).getString("EXC_CannotLoadNodes"));
-                    errMgr.notify (ErrorManager.INFORMATIONAL, ex);
+                    Exceptions.attachLocalizedMessage(ex,
+                                                      NbBundle.getBundle(NbSheet.class).getString("EXC_CannotLoadNodes"));
+                    Logger.global.log(Level.WARNING, null, ex);
                     nodes = new Node[0];
                 }
             }

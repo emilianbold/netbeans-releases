@@ -13,12 +13,12 @@
 package org.netbeans.core.output2;
 
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import org.openide.util.Exceptions;
 
 /**
  * An implementation of the Storage interface over a memory mapped file.
@@ -101,10 +101,10 @@ class FileMapStorage implements Storage {
                 //temporary directory
                 IllegalStateException ise = new IllegalStateException ("Cannot" + //NOI18N
                 " write to " + outdir); //NOI18N
-                ErrorManager.getDefault().annotate (ise,
-                    NbBundle.getMessage (OutWriter.class,
-                    "FMT_CannotWrite", //NOI18N
-                    outdir));
+                Exceptions.attachLocalizedMessage(ise,
+                                                  NbBundle.getMessage(OutWriter.class,
+                                                                      "FMT_CannotWrite",
+                                                                      outdir));
                 throw ise;
             }
             //#47196 - if user holds down F9, many threads can enter this method
@@ -225,7 +225,7 @@ class FileMapStorage implements Storage {
                 writeChannel.close();
                 writeChannel = null;
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         if (readChannel != null && readChannel.isOpen()) {
@@ -233,7 +233,7 @@ class FileMapStorage implements Storage {
                 readChannel.close();
                 readChannel = null;
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         if (outfile != null && outfile.exists()) {
@@ -241,7 +241,7 @@ class FileMapStorage implements Storage {
                 outfile.delete();
                 outfile = null;
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         buffer = null;
@@ -276,7 +276,7 @@ class FileMapStorage implements Storage {
                     } catch (IOException ioe) {
                         Logger.getAnonymousLogger().info("Failed to memory map output file for " + //NOI18N
                                 "reading.  Trying to read it normally."); //NOI18N
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
 
                         //If a lot of processes have crashed with mapped files (generally when testing),
                         //this exception may simply be that the memory cannot be allocated for mapping.

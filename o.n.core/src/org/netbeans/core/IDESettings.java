@@ -17,9 +17,10 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -28,6 +29,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.options.SystemOption;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -475,27 +477,27 @@ public class IDESettings extends SystemOption {
                     
                     DataFolder folder = DataFolder.findFolder (fo);
                     DataObject [] dobjs = folder.getChildren ();
-                    for (int i = 0; i<dobjs.length; i++) {
+                    for (int i = 0; i < dobjs.length; i++) {
                         Object o = null;
+
                         try {
-                            if (Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute ("hidden"))) // NOI18N see LookupNode.EA_HIDDEN
+                            if (Boolean.TRUE.equals(dobjs[i].getPrimaryFile().getAttribute("hidden")))
                                 continue;
-                            
-                            InstanceCookie cookie = (InstanceCookie)dobjs[i].getCookie (InstanceCookie.class);
+                            InstanceCookie cookie = (InstanceCookie) dobjs[i].getCookie(InstanceCookie.class);
+
                             if (cookie == null)
                                 continue;
-                            
-                            o = cookie.instanceCreate ();
-                            if (o != null 
-                            && o.equals (brow)) {
+                            o = cookie.instanceCreate();
+                            if (o != null && o.equals(brow)) {
                                 return brow;
                             }
                         }
-                        // exceptions are thrown if module is uninstalled 
+                        // exceptions are thrown if module is uninstalled
                         catch (java.io.IOException ex) {
-                            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-                        } catch (ClassNotFoundException ex) {
-                            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                            Logger.global.log(Level.WARNING, null, ex);
+                        }
+                        catch (ClassNotFoundException ex) {
+                            Logger.global.log(Level.WARNING, null, ex);
                         }
                     }
                     
@@ -504,7 +506,7 @@ public class IDESettings extends SystemOption {
             }
         }
         catch (Exception ex) {
-            ErrorManager.getDefault ().notify (ex);
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }
@@ -528,12 +530,12 @@ public class IDESettings extends SystemOption {
                 putProperty (PROP_WWWBROWSER, item.getId (), true);
             } else {
                 // strange
-                ErrorManager.getDefault().log ("IDESettings: Cannot find browser in lookup");// NOI18N
+                Logger.global.warning("IDESettings: Cannot find browser in lookup");// NOI18N
                 putProperty (PROP_WWWBROWSER, "", true);
             }
         }
         catch (Exception ex) {
-            ErrorManager.getDefault ().notify (ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -608,7 +610,8 @@ public class IDESettings extends SystemOption {
             } catch (PatternSyntaxException e) {
                 IllegalArgumentException iae = new IllegalArgumentException();
                 iae.initCause( e );
-                ErrorManager.getDefault().annotate( iae, ErrorManager.USER, e.getMessage(), e.getLocalizedMessage(), null, null );
+                UIException.annotateUser(iae, e.getMessage(),
+                                         e.getLocalizedMessage(), null, null);
                 throw iae;
             }
         }

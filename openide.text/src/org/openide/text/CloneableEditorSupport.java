@@ -16,12 +16,10 @@ import java.awt.Component;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
-import org.openide.text.EnhancedChangeEvent;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -34,7 +32,6 @@ import org.openide.windows.*;
 
 import java.awt.Font;
 import java.awt.Toolkit;
-import java.awt.event.*;
 import java.awt.print.PageFormat;
 import java.awt.print.Pageable;
 import java.awt.print.Printable;
@@ -62,6 +59,7 @@ import javax.swing.text.*;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+import org.openide.util.Exceptions;
 
 
 /** Support for associating an editor and a Swing {@link Document}.
@@ -350,7 +348,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 try {
                     e.confirmed();
                 } catch (IOException ex1) {
-                    ErrorManager.getDefault().notify(ex1);
+                    Exceptions.printStackTrace(ex1);
 
                     return;
                 }
@@ -503,80 +501,72 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             final StyledDocument docToLoad = doc;
 
             // The thread nume should be: "Loading document " + env; // NOI18N
-            prepareTask = RequestProcessor.getDefault().post(
-                    new Runnable() {
-                        private boolean runningInAtomicLock;
+            prepareTask = RequestProcessor.getDefault().post(new Runnable() {
+                                                   private boolean runningInAtomicLock;
 
-                        public void run() {
-                            // Run the operations under atomic lock primarily due
-                            // to reload which occurs in a widely published document instance
-                            // where another threads may operate already
-                            if (!runningInAtomicLock) {
-                                runningInAtomicLock = true;
-                                NbDocument.runAtomic(docToLoad, this);
+                                                   public void run() {
+                                                       // Run the operations under atomic lock primarily due
+                                                       // to reload which occurs in a widely published document instance
+                                                       // where another threads may operate already
+                                                       if (!runningInAtomicLock) {
+                                                           runningInAtomicLock = true;
+                                                           NbDocument.runAtomic(docToLoad,
+                                                                                this);
+                                                           return;
+                                                       }
+                                                       // Prevent operating on top of no longer active document
+                                                       synchronized (getLock()) {
+                                                           if (documentStatus ==
+                                                               DOCUMENT_NO) {
+                                                               return;
+                                                           }
+                                                           // Check whether the document to be loaded was not closed
+                                                           if (doc != docToLoad) {
+                                                               return;
+                                                           }
+                                                           prepareDocumentRuntimeException = null;
+                                                           int targetStatus = DOCUMENT_NO;
 
-                                return;
-                            }
-
-                            // Prevent operating on top of no longer active document
-                            synchronized (getLock()) {
-                                if (documentStatus == DOCUMENT_NO) { // closed in meanwhile
-
-                                    return; // do not continue reload for already closed document
-                                }
-
-                                // Check whether the document to be loaded was not closed
-                                if (doc != docToLoad) {
-                                    return; // do not load closed document
-                                }
-
-                                prepareDocumentRuntimeException = null;
-
-                                int targetStatus = DOCUMENT_NO; // be pesimistic initially
-
-                                try {
-                                    // uses the listener's run method to initialize whole document
-                                    getListener().run();
-
-                                    // assign before fireDocumentChange() as listener should be able to access getDocument()
-                                    documentStatus = DOCUMENT_READY;
-
-                                    fireDocumentChange(doc, false);
-
-                                    // Confirm that whole loading succeeded
-                                    targetStatus = DOCUMENT_READY;
-
-                                    // Add undoable listener when all work in
-                                    // atomic action has finished
-                                    // definitively sooner than leaving lock section
-                                    // and notifying al waiters, see #47022
-                                    doc.addUndoableEditListener(getUndoRedo());
-                                } catch (DelegateIOExc t) {
-                                    prepareDocumentRuntimeException = t;
-                                    prepareTask = null;
-
-                                    // throw t;
-                                } catch (RuntimeException t) {
-                                    prepareDocumentRuntimeException = t;
-                                    prepareTask = null;
-                                    ErrorManager.getDefault().notify(t);
-                                    throw t;
-                                } catch (Error t) {
-                                    prepareDocumentRuntimeException = t;
-                                    prepareTask = null;
-                                    ErrorManager.getDefault().notify(t);
-                                    throw t;
-                                } finally {
-                                    synchronized (getLock()) {
-                                        documentStatus = targetStatus;
-
-                                        getLock().notifyAll();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                );
+                                                           try {
+                                                               // uses the listener's run method to initialize whole document
+                                                               getListener().run();
+                                                               // assign before fireDocumentChange() as listener should be able to access getDocument()
+                                                               documentStatus = DOCUMENT_READY;
+                                                               fireDocumentChange(doc,
+                                                                                  false);
+                                                               // Confirm that whole loading succeeded
+                                                               targetStatus = DOCUMENT_READY;
+                                                               // Add undoable listener when all work in
+                                                               // atomic action has finished
+                                                               // definitively sooner than leaving lock section
+                                                               // and notifying al waiters, see #47022
+                                                               doc.addUndoableEditListener(getUndoRedo());
+                                                           }
+                                                           catch (DelegateIOExc t) {
+                                                               prepareDocumentRuntimeException = t;
+                                                               prepareTask = null;
+                                                           }
+                                                           catch (RuntimeException t) {
+                                                               prepareDocumentRuntimeException = t;
+                                                               prepareTask = null;
+                                                               Exceptions.printStackTrace(t);
+                                                               throw t;
+                                                           }
+                                                           catch (Error t) {
+                                                               prepareDocumentRuntimeException = t;
+                                                               prepareTask = null;
+                                                               Exceptions.printStackTrace(t);
+                                                               throw t;
+                                                           }
+                                                           finally {
+                                                               synchronized (getLock()) {
+                                                                   documentStatus = targetStatus;
+                                                                   getLock().notifyAll();
+                                                               }
+                                                           }
+                                                       }
+                                                   }
+                                               });
         } catch (RuntimeException ex) {
             synchronized (getLock()) {
                 prepareDocumentRuntimeException = ex;
@@ -790,7 +780,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         doMarkAsUnmodified = true;
                         ERR.fine("doMarkAsUnmodified"); // NOI18N
                     } catch (BadLocationException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        Exceptions.printStackTrace(ex);
                     } finally {
                         if (lastSaveTime == -1) { // restore for unsuccessful save
                             ERR.fine("restoring old save time"); // NOI18N
@@ -939,7 +929,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         } catch (FileNotFoundException e) {
             notifyProblem(e, "CTL_Bad_File"); // NOI18N
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         } catch (PrinterAbortException e) { // user exception
             notifyProblem(e, "CTL_Printer_Abort"); // NOI18N
         }catch (PrinterException e) {
@@ -953,8 +943,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     private static void notifyProblem(Exception e, String key) {
         String msg = NbBundle.getMessage(CloneableEditorSupport.class, key, e.getLocalizedMessage());
-        ErrorManager.getDefault().annotate(e, msg);
-        ErrorManager.getDefault().notify(ErrorManager.USER, e);
+        Exceptions.attachLocalizedMessage(e, msg);
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(e));
     }
 
     //
@@ -1073,7 +1063,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 try {
                     saveDocument();
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
 
                     return false;
                 }
@@ -1293,129 +1283,116 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         if (doc != null) {
             // acquire write access
-            NbDocument.runAtomic(
-                doc,
-                new Runnable() {
-                    public void run() {
-                        // UndoManager must be detached from document here because it will be attached in loadDocument()
-                        doc.removeUndoableEditListener(getUndoRedo());
+            NbDocument.runAtomic(doc,
+                                 new Runnable() {
 
-                        // Remember caret positions in all opened panes
-                        final JEditorPane[] panes = getOpenedPanes();
-                        final int[] carets;
+                                     public void run() {
+                                         // UndoManager must be detached from document here because it will be attached in loadDocument()
+                                         doc.removeUndoableEditListener(getUndoRedo());
+                                         // Remember caret positions in all opened panes
+                                         final JEditorPane[] panes = getOpenedPanes();
+                                         final int[] carets;
 
-                        if (panes != null) {
-                            carets = new int[panes.length];
+                                         if (panes != null) {
+                                             carets = new int[panes.length];
+                                             for (int i = 0; i < panes.length; i++) {
+                                                 carets[i] = panes[i].getCaretPosition();
+                                             }
+                                         } else {
+                                             carets = new int[0];
+                                         }
+                                         documentStatus = DOCUMENT_RELOADING;
+                                         prepareDocumentRuntimeException = null;
+                                         int targetStatus = DOCUMENT_NO;
 
-                            for (int i = 0; i < panes.length; i++) {
-                                carets[i] = panes[i].getCaretPosition();
-                            }
-                        } else {
-                            carets = new int[0];
-                        }
+                                         try {
+                                             // #24676. Reloading: Put positions into memory
+                                             // and fire document is closing (little trick
+                                             // to detach annotations).
+                                             getPositionManager().documentClosed();
+                                             updateLineSet(true);
+                                             fireDocumentChange(doc, true);
+                                             ERR.fine("clearDocument");
+                                             clearDocument();
+                                             // uses the listener's run method to initialize whole document
+                                             prepareTask = new Task(getListener());
+                                             ERR.fine("new prepare task: " +
+                                                      prepareTask);
+                                             prepareTask.run();
+                                             ERR.fine("prepareTask finished");
+                                             documentStatus = DOCUMENT_READY;
+                                             fireDocumentChange(doc, false);
+                                             // Confirm that whole loading succeeded
+                                             targetStatus = DOCUMENT_READY;
+                                         }
+                                         catch (RuntimeException t) {
+                                             prepareDocumentRuntimeException = t;
+                                             prepareTask = null;
+                                             Exceptions.printStackTrace(t);
+                                             throw t;
+                                         }
+                                         catch (Error t) {
+                                             prepareDocumentRuntimeException = t;
+                                             prepareTask = null;
+                                             Exceptions.printStackTrace(t);
+                                             throw t;
+                                         }
+                                         finally {
+                                             synchronized (getLock()) {
+                                                 documentStatus = targetStatus;
+                                                 getLock().notifyAll();
+                                             }
+                                         }
+                                         ERR.fine("post-reload task posting to AWT");
+                                         Runnable run = new Runnable() {
 
-                        documentStatus = DOCUMENT_RELOADING;
+                                             public void run() {
+                                                 if (doc == null) {
+                                                     return;
+                                                 }
+                                                 if (panes != null) {
+                                                     for (int i = 0; i <
+                                                                     panes.length; i++) {
+                                                         // #26407 Adjusts caret position,
+                                                         // (reloaded doc could be shorter).
+                                                         int textLength = panes[i].getDocument().getLength();
 
-                        prepareDocumentRuntimeException = null;
+                                                         if (carets[i] >
+                                                             textLength) {
+                                                             carets[i] = textLength;
+                                                         }
+                                                         panes[i].setCaretPosition(carets[i]);
+                                                     }
+                                                 }
+                                                 // XXX do this from AWT???
+                                                 ERR.fine("task-discardAllEdits");
+                                                 getUndoRedo().discardAllEdits();
+                                                 // Insert before-save undo event to enable unmodifying undo
+                                                 ERR.fine("task-undoableEditHappened");
+                                                 getUndoRedo().undoableEditHappened(new UndoableEditEvent(CloneableEditorSupport.this,
+                                                                                                          new BeforeSaveEdit(lastSaveTime)));
+                                                 ERR.fine("task-check already modified");
+                                                 // #57104 - if modified previously now it should become unmodified
+                                                 if (isAlreadyModified()) {
+                                                     ERR.fine("task-callNotifyUnmodified");
+                                                     callNotifyUnmodified();
+                                                 }
+                                                 updateLineSet(true);
+                                                 ERR.fine("task-addUndoableEditListener");
+                                                 // Add undoable listener after atomic change has finished
+                                                 doc.addUndoableEditListener(getUndoRedo());
+                                             }
+                                         };
 
-                        int targetStatus = DOCUMENT_NO; // be pesimistic initially
-
-                        try {
-                            // #24676. Reloading: Put positions into memory
-                            // and fire document is closing (little trick
-                            // to detach annotations).
-                            getPositionManager().documentClosed();
-                            updateLineSet(true);
-                            fireDocumentChange(doc, true);
-                            ERR.fine("clearDocument"); // NOI18N
-                            clearDocument();
-
-                            // uses the listener's run method to initialize whole document
-                            prepareTask = new Task(getListener());
-
-                            ERR.fine("new prepare task: " + prepareTask); // NOI18N
-
-                            prepareTask.run();
-                            ERR.fine("prepareTask finished"); // NOI18N
-
-                            documentStatus = DOCUMENT_READY;
-
-                            fireDocumentChange(doc, false);
-
-                            // Confirm that whole loading succeeded
-                            targetStatus = DOCUMENT_READY;
-                        } catch (RuntimeException t) {
-                            prepareDocumentRuntimeException = t;
-                            prepareTask = null;
-                            ErrorManager.getDefault().notify(t);
-                            throw t;
-                        } catch (Error t) {
-                            prepareDocumentRuntimeException = t;
-                            prepareTask = null;
-                            ErrorManager.getDefault().notify(t);
-                            throw t;
-                        } finally {
-                            synchronized (getLock()) {
-                                documentStatus = targetStatus;
-                                getLock().notifyAll();
-                            }
-                        }
-
-                        ERR.fine("post-reload task posting to AWT"); // NOI18N
-                        Runnable run = new Runnable() {
-                                public void run() {
-                                    if (doc == null) {
-                                        return;
-                                    }
-                                    if (panes != null) {
-                                        for (int i = 0; i < panes.length; i++) {
-                                            // #26407 Adjusts caret position,
-                                            // (reloaded doc could be shorter).
-                                            int textLength = panes[i].getDocument().getLength();
-
-                                            if (carets[i] > textLength) {
-                                                carets[i] = textLength;
-                                            }
-
-                                            panes[i].setCaretPosition(carets[i]);
-                                        }
-                                    }
-
-                                    // XXX do this from AWT???
-                                    ERR.fine("task-discardAllEdits"); // NOI18N
-                                    getUndoRedo().discardAllEdits(); // reset undo manager
-
-                                    // Insert before-save undo event to enable unmodifying undo
-                                    ERR.fine("task-undoableEditHappened"); // NOI18N
-                                    getUndoRedo().undoableEditHappened(
-                                        new UndoableEditEvent(
-                                            CloneableEditorSupport.this, new BeforeSaveEdit(lastSaveTime)
-                                        )
-                                    );
-
-                                    ERR.fine("task-check already modified"); // NOI18N
-
-                                    // #57104 - if modified previously now it should become unmodified
-                                    if (isAlreadyModified()) {
-                                        ERR.fine("task-callNotifyUnmodified"); // NOI18N
-                                        callNotifyUnmodified();
-                                    }
-
-                                    updateLineSet(true);
-                                    ERR.fine("task-addUndoableEditListener"); // NOI18N
-
-                                    // Add undoable listener after atomic change has finished
-                                    doc.addUndoableEditListener(getUndoRedo());
-                                }
-                            };
-                        if (doc != null) {
-                            ERR.fine("Posting the AWT runnable: " + run);
-                            SwingUtilities.invokeLater(run);
-                            ERR.fine("Posted in " + Thread.currentThread());
-                        }
-                    }
-                }
-            );
+                                         if (doc != null) {
+                                             ERR.fine("Posting the AWT runnable: " +
+                                                      run);
+                                             SwingUtilities.invokeLater(run);
+                                             ERR.fine("Posted in " +
+                                                      Thread.currentThread());
+                                         }
+                                     }
+                                 });
 
             return prepareTask;
         }
@@ -1546,28 +1523,26 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             synchronized (this) {
                 if (!this.inUserQuestionExceptionHandler) {
                     this.inUserQuestionExceptionHandler = true;
-                    RequestProcessor.getDefault().post(
-                        new Runnable() {
-                            public void run() {
-                                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                                        ex.getLocalizedMessage(), NotifyDescriptor.YES_NO_OPTION
-                                    );
-                                Object res = DialogDisplayer.getDefault().notify(nd);
+                    RequestProcessor.getDefault().post(new Runnable() {
 
-                                if (NotifyDescriptor.OK_OPTION.equals(res)) {
-                                    try {
-                                        ex.confirmed();
-                                    } catch (IOException ex1) {
-                                        ErrorManager.getDefault().notify(ex1);
-                                    }
-                                }
+                                                           public void run() {
+                                                               NotifyDescriptor nd = new NotifyDescriptor.Confirmation(ex.getLocalizedMessage(),
+                                                                                                                       NotifyDescriptor.YES_NO_OPTION);
+                                                               Object res = DialogDisplayer.getDefault().notify(nd);
 
-                                synchronized (CloneableEditorSupport.this) {
-                                    CloneableEditorSupport.this.inUserQuestionExceptionHandler = false;
-                                }
-                            }
-                        }
-                    );
+                                                               if (NotifyDescriptor.OK_OPTION.equals(res)) {
+                                                                   try {
+                                                                       ex.confirmed();
+                                                                   }
+                                                                   catch (IOException ex1) {
+                                                                       Exceptions.printStackTrace(ex1);
+                                                                   }
+                                                               }
+                                                               synchronized (CloneableEditorSupport.this) {
+                                                                   CloneableEditorSupport.this.inUserQuestionExceptionHandler = false;
+                                                               }
+                                                           }
+                                                       });
                 }
             }
 
@@ -1579,17 +1554,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if (e.getMessage() != e.getLocalizedMessage()) {
                 message = e.getLocalizedMessage();
             } else {
-                ErrorManager.Annotation[] arr = ErrorManager.getDefault().findAnnotations(e);
-
-                if (arr != null) {
-                    for (int i = 0; i < arr.length; i++) {
-                        if (arr[i].getLocalizedMessage() != null) {
-                            message = arr[i].getLocalizedMessage();
-
-                            break;
-                        }
-                    }
-                }
+                message = Exceptions.findLocalizedMessage(e);
             }
 
             if (message != null) {
@@ -1761,20 +1726,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         } finally {
             if (aProblem != null) {
                 final Throwable tmp = aProblem;
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                        public void run() {
-                            ErrorManager.getDefault().annotate(
-                                tmp,
-                                NbBundle.getMessage(
-                                    CloneableEditorSupport.class, "EXC_LoadDocument", // NOI18N
-                                    messageName()
-                                )
-                            );
-                            ErrorManager.getDefault().notify(tmp);
-                        }
-                    }
-                );
+                SwingUtilities.invokeLater(new Runnable() {
+
+                                               public void run() {
+                                                   Exceptions.attachLocalizedMessage(tmp,
+                                                                                     NbBundle.getMessage(CloneableEditorSupport.class,
+                                                                                                         "EXC_LoadDocument",
+                                                                                                         messageName()));
+                                                   Exceptions.printStackTrace(tmp);
+                                               }
+                                           });
             }
         }
     }

@@ -25,8 +25,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.queries.VisibilityQuery;
-
-import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -37,9 +35,9 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -87,7 +85,7 @@ final class Favorites extends FilterNode {
             DataFolder folder = DataFolder.findFolder(fo);
             return folder;
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify (ex);
+            Exceptions.printStackTrace(ex);
             return DataFolder.findFolder (
                 Repository.getDefault().getDefaultFileSystem().getRoot()
             );

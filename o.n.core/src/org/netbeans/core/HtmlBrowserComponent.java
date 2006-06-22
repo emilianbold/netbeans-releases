@@ -21,8 +21,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -277,7 +278,7 @@ public static final class BrowserReplacer implements java.io.Externalizable {
         }
         catch (java.lang.Exception exc) {
             // unknown exception - write log message & restore browser
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, exc);
+            Logger.global.log(Level.WARNING, null, exc);
         }
         
         bComp = new HtmlBrowserComponent(statLine, toolbar);

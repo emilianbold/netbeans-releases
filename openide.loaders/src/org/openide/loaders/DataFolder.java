@@ -13,63 +13,25 @@
 
 package org.openide.loaders;
 
+
 import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.datatransfer.*;
 import java.awt.image.BufferedImage;
-import java.beans.BeanInfo;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.io.File;
+import java.beans.*;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.InstanceCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
-import org.openide.nodes.NodeTransfer;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.datatransfer.ExClipboard;
-import org.openide.util.datatransfer.ExTransferable;
-import org.openide.util.datatransfer.NewType;
+import org.openide.*;
+import org.openide.cookies.*;
+import org.openide.filesystems.*;
+import org.openide.nodes.*;
+import org.openide.util.*;
+import org.openide.util.datatransfer.*;
 
 /** A folder containing data objects.
 * Is actually itself a data object, whose primary (and only) file object
@@ -567,7 +529,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                     );
                 }
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -580,20 +542,18 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
      */
     static void testNesting(DataFolder folder, DataFolder targetFolder) throws IOException {
         if (targetFolder.equals(folder)) {
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException("Error Copying File or Folder"), //NOI18N
-                ErrorManager.WARNING, null, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopyTheSame", folder.getName()) //NOI18N
-                , null, null);
+            IOException ioe = new IOException("Error Copying File or Folder"); //NOI18N
+            Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopyTheSame", folder.getName()));
+            throw ioe;
         } else {
             DataFolder testFolder = targetFolder.getFolder();
             while (testFolder != null) {
                 if (testFolder.equals(folder)) {
-                    throw (IOException) ErrorManager.getDefault().annotate(
-                        new IOException("Error copying file or folder: " + 
+                    IOException ioe = new IOException("Error copying file or folder: " + 
                         folder.getPrimaryFile() + " cannot be copied to its subfolder " +
-                        targetFolder.getPrimaryFile()), //NOI18N
-                        ErrorManager.WARNING, null, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopySubfolder", folder.getName()) //NOI18N
-                        , null, null);
+                        targetFolder.getPrimaryFile());
+                    Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopySubfolder", folder.getName()));
+                    throw ioe;
                 }
                 testFolder = testFolder.getFolder();
             }
@@ -618,7 +578,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             /** Annotates exception and throws again*/
             FileObject fo = getPrimaryFile();
             String message = NbBundle.getMessage(DataFolder.class, "EXC_CannotDelete2", FileUtil.getFileDisplayName(fo));
-            ErrorManager.getDefault().annotate(iex, message);
+            Exceptions.attachLocalizedMessage(iex, message);
             throw iex;
         } finally {
             if (lightWeightLock != null) {
@@ -750,7 +710,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                     }
                 } catch (IOException ex) {
                     keepAlive = true;
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
 
@@ -765,8 +725,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             try {
                 originalFolder.delete (lock);
             } catch (IOException e) {
-                Throwable t = ErrorManager.getDefault ().annotate (e, DataObject.getString ("EXC_folder_delete_failed")); // NOI18N
-                ErrorManager.getDefault ().notify (t);
+                Throwable t = Exceptions.attachLocalizedMessage(e,
+                                                  org.openide.loaders.DataObject.getString("EXC_folder_delete_failed")); // NOI18N
+                Exceptions.printStackTrace(t);
             }
 
             if (dispose) {
@@ -810,7 +771,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 DataObject obj = (DataObject)en.nextElement ();
                 obj.createFromTemplate (newFolder);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -955,8 +916,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             try {
                 df.setOrder(newObjs);
             } catch (IOException ex) {
-                ErrorManager.getDefault ().annotate (ex, DataObject.getString ("EXC_ReorderFailed")); // NOI18N
-                ErrorManager.getDefault ().notify (ex);
+                Exceptions.attachLocalizedMessage(ex,
+                                                  org.openide.loaders.DataObject.getString("EXC_ReorderFailed")); // NOI18N
+                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -1208,7 +1170,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         return new Index (DataFolder.this, this);
                     }
                 } catch (FileStateInvalidException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.global.log(Level.WARNING, null, ex);
                 }
             }
             return super.getCookie (clazz);
@@ -1349,7 +1311,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         }
                     }
                 } catch( IOException ioE ) {
-                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+                    Logger.global.log(Level.WARNING, null, ioE);
                 }
             }
             return result;
@@ -1366,9 +1328,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                     return textURIListToFileList( uriList );
                 }
             } catch( UnsupportedFlavorException ex ) {
-                ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex );
+                Logger.global.log(Level.WARNING, null, ex);
             } catch( IOException ex ) {
-                ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex );
+                Logger.global.log(Level.WARNING, null, ex);
             }
             return null;
         }

@@ -14,10 +14,12 @@
 package org.netbeans.modules.settings;
 
 import java.io.IOException;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.*;
 
@@ -76,7 +78,7 @@ public final class ScheduledRequest implements Runnable {
         try {
             if (lock == null) lock = fobj.lock();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            Logger.global.log(Level.WARNING, null, ex);
             return;
         }
         
@@ -141,9 +143,8 @@ public final class ScheduledRequest implements Runnable {
         try {
             performRequest();
         } catch (IOException ex) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(ex, fobj.toString());
-            err.notify(ErrorManager.INFORMATIONAL, ex);
+            Exceptions.attachLocalizedMessage(ex, fobj.toString());
+            Logger.global.log(Level.WARNING, null, ex);
         }
     }
     

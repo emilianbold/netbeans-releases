@@ -15,6 +15,7 @@ package org.netbeans.beaninfo;
 
 import java.beans.*;
 import java.util.ResourceBundle;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -48,7 +49,7 @@ public abstract class IndentEngine {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo (org.openide.text.IndentEngine.class) };
             } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             }
         }

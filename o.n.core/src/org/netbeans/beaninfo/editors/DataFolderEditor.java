@@ -16,7 +16,7 @@ package org.netbeans.beaninfo.editors;
 import java.beans.*;
 import java.io.File;
 import java.text.MessageFormat;
-import org.openide.ErrorManager;
+import org.netbeans.core.UIException;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -91,8 +91,8 @@ public class DataFolderEditor extends PropertyEditorSupport implements ExPropert
             String msg = MessageFormat.format(
                 NbBundle.getMessage(
                     DataFolderEditor.class, "FMT_DF_UNKNOWN"), new Object[] {text}); //NOI18N
-            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, iae.getMessage(), 
-                msg, null, new java.util.Date());
+            UIException.annotateUser(iae, iae.getMessage(), msg, null,
+                                     new java.util.Date());
             throw iae;
         }        
     }

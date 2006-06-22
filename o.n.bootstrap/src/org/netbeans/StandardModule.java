@@ -43,8 +43,9 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
-import org.openide.ErrorManager;
+import org.netbeans.Module.PackageExport;
 import org.openide.modules.Dependency;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Union2;
 
@@ -264,7 +265,9 @@ final class StandardModule extends Module {
             }
         } catch (IOException e) {
             if (jarBeingOpened != null) {
-                ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "While loading manifest from: " + jarBeingOpened, null, null, null); // NOI18N
+                Exceptions.attachMessage(e,
+                                         "While loading manifest from: " +
+                                         jarBeingOpened); // NOI18N
             }
             throw e;
         }

@@ -12,7 +12,8 @@
  */
 package org.openide.explorer.view;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.nodes.Children;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
@@ -534,7 +535,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
             }
         } catch (Exception e) {
             // Pending: add annotation or remove try/catch block
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
     }
 

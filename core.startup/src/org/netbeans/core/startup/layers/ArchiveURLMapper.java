@@ -26,7 +26,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -37,6 +36,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 public class ArchiveURLMapper extends URLMapper {
 
@@ -73,7 +73,7 @@ public class ArchiveURLMapper extends URLMapper {
                         }
                     }
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -112,7 +112,7 @@ public class ArchiveURLMapper extends URLMapper {
                     ModuleLayeredFileSystem.err.log(Level.WARNING, null, e);
                 }
                 catch (URISyntaxException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         }

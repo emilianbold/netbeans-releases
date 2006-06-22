@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -74,7 +74,7 @@ final class BrokenDataShadow extends MultiDataObject {
             try {
                 url = new URL("file",null,"/UNKNOWN"); //NOI18N
             } catch (MalformedURLException ex2) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex2);
+                Logger.global.log(Level.WARNING, null, ex2);
             }
         }
         enqueueBrokenDataShadow(this);

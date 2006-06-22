@@ -13,20 +13,12 @@
 
 package org.openide.loaders;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectStreamClass;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import org.openide.ErrorManager;
+
+import java.io.*;
+import java.lang.reflect.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.util.HelpCtx;
-import org.openide.util.SharedClassObject;
-import org.openide.util.Lookup;
+import org.openide.util.*;
 
 /** An instance cookie implementation that works with files or entries.
 *
@@ -127,23 +119,21 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
                 return clazz;
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault().annotate
-                (ex, ErrorManager.UNKNOWN, "From file: " + entry.getFile(), null, null, null); // NOI18N
+            Exceptions.attachMessage(ex, "From file: " + entry.getFile()); // NOI18N
             clazzException = ex;
             throw ex;
         } catch (ClassNotFoundException ex) {
-            ErrorManager.getDefault().annotate
-                (ex, ErrorManager.UNKNOWN, "From file: " + entry.getFile(), null, null, null); // NOI18N
+            Exceptions.attachMessage(ex, "From file: " + entry.getFile()); // NOI18N
             clazzException = ex;
             throw ex;
         } catch (RuntimeException re) {
             // turn other throwables into class not found ex.
             clazzException = new ClassNotFoundException("From file: " + entry.getFile() + " due to: " + re.toString());  // NOI18N
-            ErrorManager.getDefault ().annotate (clazzException, re);
+            clazzException.initCause(re);
             throw (ClassNotFoundException) clazzException;
         } catch (LinkageError le) {
             clazzException = new ClassNotFoundException("From file: " + entry.getFile() + " due to: " + le.toString());  // NOI18N
-            ErrorManager.getDefault ().annotate (clazzException, le);
+            clazzException.initCause(le);
             throw (ClassNotFoundException) clazzException;
         }
     }
@@ -203,7 +193,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
             }
         } catch (IOException ex) {
             // [PENDING] annotate with localized message
-            ErrorManager.getDefault ().annotate (ex, instanceName ());
+            Exceptions.attachLocalizedMessage(ex, instanceName());
             throw ex;
         } catch (ClassNotFoundException ex) {
             throw ex;

@@ -15,19 +15,18 @@ package org.netbeans.core.windows.persistence;
 
 import java.util.logging.Level;
 import org.netbeans.core.windows.Debug;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Handle loading/saving of Group configuration data.
@@ -176,7 +175,7 @@ class GroupParser {
                 // see #45497 - if something fails to load, remove it from local config..
                 toRemove.add(tcGroupParser);
                 deleteLocalTCGroup(tcGroupParser.getName());
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                Logger.global.log(Level.WARNING, null, exc);
                 continue;
             }
             boolean tcGroupAccepted = acceptTCGroup(tcGroupParser, tcGroupCfg);
@@ -465,19 +464,18 @@ class GroupParser {
                     PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(is));
                 }
             } catch (SAXException exc) {
-                //Turn into annotated IOException
+                // Turn into annotated IOException
                 String msg = NbBundle.getMessage(GroupParser.class,
-                    "EXC_GroupParse", cfgFOInput);
-                IOException ioe = new IOException(msg);
-                ErrorManager.getDefault().annotate(ioe, exc);
-                throw ioe;
+                                                 "EXC_GroupParse", cfgFOInput);
+
+                throw (IOException) new IOException(msg).initCause(exc);
             } finally {
                 try {
                     if (is != null) {
                         is.close();
                     }
                 } catch (IOException exc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                    Logger.global.log(Level.WARNING, null, exc);
                 }
             }
             
@@ -549,13 +547,11 @@ class GroupParser {
             // #24844. Repair the wrongly saved "null" string
             // as release number.
             if("null".equals(internalConfig.moduleCodeNameRelease)) { // NOI18N
-                ErrorManager.getDefault().notify(
-                    ErrorManager.INFORMATIONAL,
-                    new IllegalStateException(
-                        "Module release code was saved as null string" // NOI18N
-                        + " for module "  + internalConfig.moduleCodeNameBase // NOI18N
-                        + "! Repairing.") // NOI18N
-                );
+                Logger.global.log(Level.WARNING, null,
+                                  new IllegalStateException("Module release code was saved as null string" +
+                                                            " for module " +
+                                                            internalConfig.moduleCodeNameBase +
+                                                            "! Repairing."));
                 internalConfig.moduleCodeNameRelease = null;
             }
         }
@@ -623,7 +619,7 @@ class GroupParser {
                             osw.close();
                         }
                     } catch (IOException exc) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                        Logger.global.log(Level.WARNING, null, exc);
                     }
                     if (lock != null) {
                         lock.releaseLock();

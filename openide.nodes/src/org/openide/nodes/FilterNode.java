@@ -12,7 +12,6 @@
  */
 package org.openide.nodes;
 
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -30,9 +29,13 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.nodes.Node.PropertySet;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup.Item;
 
 
 /** A proxy for another node.
@@ -211,7 +214,7 @@ public class FilterNode extends Node {
                 return true;
             }
         } catch (NoSuchMethodException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
 
         return false;
@@ -556,7 +559,7 @@ public class FilterNode extends Node {
         try {
             super.destroy();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
         }
     }
 

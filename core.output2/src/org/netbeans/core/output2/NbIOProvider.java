@@ -15,7 +15,7 @@ package org.netbeans.core.output2;
 
 import java.io.IOException;
 import javax.swing.Action;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -45,7 +45,7 @@ public final class NbIOProvider extends IOProvider {
                 out.reset();
                 out = (NbWriter) stdout.getOut();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
                 stdout = getIO (STDOUT, true, null);
                 out = (NbWriter) stdout.getOut();
             }

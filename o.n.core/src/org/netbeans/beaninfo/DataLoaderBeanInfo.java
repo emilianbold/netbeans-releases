@@ -21,6 +21,7 @@ import org.openide.awt.Actions;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.loaders.DataLoader;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Utilities;
@@ -41,7 +42,7 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
             actions.setValue ("canEditAsText", Boolean.FALSE); // NOI18N
             return new PropertyDescriptor[] { actions, representationClass };
         } catch (IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

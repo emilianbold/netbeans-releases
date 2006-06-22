@@ -16,6 +16,7 @@ package org.netbeans.beaninfo;
 import java.beans.*;
 
 import org.openide.loaders.*;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** BeanInfo for {@link UniFileLoader}. */
@@ -25,7 +26,7 @@ public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
         } catch (IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }
@@ -37,7 +38,7 @@ public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
             extensions.setShortDescription (NbBundle.getBundle (UniFileLoaderBeanInfo.class).getString ("HINT_UniFileLoader_extensions"));
             return new PropertyDescriptor[] { extensions };
         } catch (IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

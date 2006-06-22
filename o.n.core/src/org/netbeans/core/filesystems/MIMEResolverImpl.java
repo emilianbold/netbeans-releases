@@ -15,7 +15,8 @@ package org.netbeans.core.filesystems;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -50,8 +51,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
     private static final long serialVersionUID = 18975L;
     
     // enable some tracing
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MIMEResolverImpl.class.getName());
-    private static final boolean DEBUG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger ERR = Logger.getLogger(MIMEResolverImpl.class.getName());
         
     private static final boolean CASE_INSENSITIVE =
         Utilities.isWindows() || Utilities.getOperatingSystem() == Utilities.OS_VMS;
@@ -81,7 +81,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         private short state = DescParser.INIT;
         
         Impl(FileObject obj) {
-            if (DEBUG) ERR.log("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
             data = obj;
         }
         
@@ -108,7 +108,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             for (int i = smell.length-1; i>=0; i--) {
                 String s = smell[i].resolve(fo);
                 if (s != null) {
-                    if (DEBUG) ERR.log("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
                     return s;
                 }
             }
@@ -122,15 +122,15 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             DescParser parser = new DescParser(data);
             parser.parse();
             smell = (parser.template != null) ? parser.template : smell;
-            if (DEBUG) {
+            if (ERR.isLoggable(Level.FINE)) {
                 if (parser.state == DescParser.ERROR) {
-                    ERR.log("MIMEResolverImpl.Impl parsing error!");
+                    ERR.fine("MIMEResolverImpl.Impl parsing error!");
                 } else {
                     StringBuffer buf = new StringBuffer();
                     buf.append("Parse: ");
                     for (int i = 0; i<smell.length; i++)
                         buf.append("\n" + smell[i]);
-                    ERR.log(buf.toString());
+                    ERR.fine(buf.toString());
                 }
             }
             return parser.state;
@@ -397,7 +397,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                     if (rule.acceptFileObject(file)) return mime;
                 }
             } catch (IOException io) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, io);
+                Logger.global.log(Level.WARNING, null, io);
             }
             return null;
         }

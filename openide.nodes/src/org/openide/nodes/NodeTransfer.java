@@ -19,6 +19,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
@@ -283,7 +285,7 @@ public abstract class NodeTransfer extends Object {
     * @param e the exception
     */
     private static void maybeReportException(Exception e) {
-        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+        Logger.global.log(Level.WARNING, null, e);
 
         // else do nothing
     }

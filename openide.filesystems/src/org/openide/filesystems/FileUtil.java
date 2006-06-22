@@ -37,11 +37,12 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileSystemView;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -1256,7 +1257,7 @@ public final class FileUtil extends Object {
                 return toFileObject(jarFile);
             }
         } catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
 
         return null;
@@ -1284,7 +1285,7 @@ public final class FileUtil extends Object {
                 try {
                     return new URL(path.substring(0, index));
                 } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify(mue);
+                    Exceptions.printStackTrace(mue);
                 }
             }
         }
@@ -1345,7 +1346,7 @@ public final class FileUtil extends Object {
                     in.close();
                 }
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                Logger.global.log(Level.WARNING, null, ioe);
             }
 
             if (b == null) {

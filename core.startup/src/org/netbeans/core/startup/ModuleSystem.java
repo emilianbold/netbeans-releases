@@ -36,9 +36,9 @@ import org.netbeans.Events;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.Util;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /** Controller of the IDE's whole module system.
  * Contains higher-level convenience methods to
@@ -197,7 +197,7 @@ public final class ModuleSystem {
                     is = manifestUrl.openStream();
                 } catch (IOException ioe) {
                     // Debugging for e.g. #32493 - which JAR was guilty?
-                    ErrorManager.getDefault().annotate(ioe, ErrorManager.UNKNOWN, "URL: " + manifestUrl, null, null, null); // NOI18N
+                    Exceptions.attachMessage(ioe, "URL: " + manifestUrl); // NOI18N
                     throw ioe;
                 }
                 try {

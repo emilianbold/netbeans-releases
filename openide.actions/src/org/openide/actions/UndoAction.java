@@ -12,11 +12,9 @@
  */
 package org.openide.actions;
 
-import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
@@ -28,6 +26,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.*;
 import javax.swing.undo.*;
+import org.openide.util.Exceptions;
 
 
 /** Undo an edit.
@@ -134,7 +133,7 @@ public class UndoAction extends CallableSystemAction {
                 undoRedo.undo();
             }
         } catch (CannotUndoException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
 
         updateStatus();

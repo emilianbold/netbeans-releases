@@ -22,7 +22,6 @@ import java.io.FilenameFilter;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;

@@ -13,9 +13,9 @@
 package org.openide.actions;
 
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.*;
@@ -68,28 +68,19 @@ public class RenameAction extends NodeAction {
                     n.setName(dlg.getInputText()); // NOI18N
                 }
             } catch (IllegalArgumentException e) {
-                ErrorManager em = ErrorManager.getDefault();
-                ErrorManager.Annotation[] ann = em.findAnnotations(e);
-
                 // determine if "printStackTrace"  and  "new annotation" of this exception is needed
-                boolean needToAnnotate = true;
-
-                if ((ann != null) && (ann.length > 0)) {
-                    for (int i = 0; i < ann.length; i++) {
-                        String glm = ann[i].getLocalizedMessage();
-
-                        if ((glm != null) && !glm.equals("")) { // NOI18N
-                            needToAnnotate = false;
-                        }
-                    }
-                }
+                boolean needToAnnotate = Exceptions.findLocalizedMessage(e) == null;
 
                 // annotate new localized message only if there is no localized message yet
                 if (needToAnnotate) {
-                    em.annotate(e, NbBundle.getMessage(RenameAction.class, "MSG_BadFormat", n.getName(), newname));
+                    Exceptions.attachLocalizedMessage(e,
+                                                      NbBundle.getMessage(RenameAction.class,
+                                                                          "MSG_BadFormat",
+                                                                          n.getName(),
+                                                                          newname));
                 }
 
-                em.notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }

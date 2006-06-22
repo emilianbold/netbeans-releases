@@ -13,7 +13,6 @@
 
 package org.netbeans.beaninfo.editors;
 
-import java.awt.Color;
 import java.beans.*;
 import java.awt.Component;
 import java.awt.Font;
@@ -28,17 +27,9 @@ import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.*;
-import org.openide.explorer.ExplorerManager;
-import org.netbeans.beaninfo.ExplorerPanel;
-import org.openide.explorer.view.BeanTreeView;
+import org.netbeans.core.UIException;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -180,8 +171,7 @@ implements ExPropertyEditor {
             NbBundle.getMessage(
                 ObjectEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"),  //NOI18N
                 new Object[] {str});
-        ErrorManager.getDefault().annotate(iae, ErrorManager.USER, str, 
-         msg, null, new java.util.Date());
+        UIException.annotateUser(iae, str, msg, null, new Date());
         throw iae;        
     }
     

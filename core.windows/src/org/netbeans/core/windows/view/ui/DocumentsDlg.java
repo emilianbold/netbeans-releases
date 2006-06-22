@@ -40,7 +40,6 @@ import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;

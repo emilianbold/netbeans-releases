@@ -13,7 +13,6 @@
 package org.openide.util;
 
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 
@@ -27,6 +26,7 @@ import java.lang.reflect.*;
 
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.logging.Level;
 
 import javax.swing.event.*;
 
@@ -144,7 +144,7 @@ public abstract class WeakListener implements java.util.EventListener {
                 ); //NOI18N
             }
         } catch (Exception ex) { // from invoke(), should not happen
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            Logger.global.log(Level.WARNING, null, ex);
         }
     }
 
@@ -956,10 +956,11 @@ public abstract class WeakListener implements java.util.EventListener {
             try {
                 remove.invoke(src, params);
             } catch (Exception ex) { // from invoke(), should not happen
-                ErrorManager.getDefault().annotate(
-                    ex, "Problem encountered while calling " + methodClass + "." + methodName + "(...) on " + src
-                ); // NOI18N
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Exceptions.attachLocalizedMessage(ex,
+                                                  "Problem encountered while calling " +
+                                                  methodClass + "." + methodName +
+                                                  "(...) on " + src); // NOI18N
+                Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
             }
         }
     }

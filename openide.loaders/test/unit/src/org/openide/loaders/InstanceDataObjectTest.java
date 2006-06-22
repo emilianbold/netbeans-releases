@@ -13,47 +13,21 @@
 
 package org.openide.loaders;
 
+
 import java.awt.Button;
 import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.beans.*;
 import java.beans.beancontext.BeanContextChildSupport;
-import java.io.Externalizable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.swing.JButton;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
+import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.options.SystemOption;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.lookup.AbstractLookup;
 
 /**
@@ -150,22 +124,25 @@ public class InstanceDataObjectTest extends NbTestCase {
             // XXX I don't know whether the firing of event should be 
             // synch or not. Anyway giving a chance to instance data object
             // that it needs not to be sych.
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        final FileObject primary = ido.getPrimaryFile();
-                        System.err.println("Deleting file=" + primary);
-                        primary.delete();
+            org.openide.util.RequestProcessor.getDefault().post(new java.lang.Runnable() {
 
-                        // XXX Testing the case event is fired.
-//                        l.propertyChange(new PropertyChangeEvent(
-//                            primary, DataObject.PROP_COOKIE, null, null));
-                    } catch(IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                        l.exception = ioe;
-                    }
-                };
-            });
+                                                                    public void run() {
+                                                                        try {
+                                                                            final org.openide.filesystems.FileObject primary = ido.getPrimaryFile();
+
+                                                                            java.lang.System.err.println("Deleting file=" +
+                                                                                                         primary);
+                                                                            primary.delete();
+                                                                        }
+                                                                        catch (java.io.IOException ioe) {
+                                                                            Exceptions.printStackTrace(ioe);
+                                                                            l.exception = ioe;
+                                                                        }
+                                                                    }
+
+                                                                    {
+                                                                    }
+                                                                });
         
             System.err.println("Waiting for the event with 30 sec timeout");
             ido.wait(30000);

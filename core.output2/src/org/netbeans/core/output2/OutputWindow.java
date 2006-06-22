@@ -21,10 +21,11 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.UIManager;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
 import org.netbeans.core.output2.ui.AbstractOutputWindow;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -87,7 +88,7 @@ public class OutputWindow extends AbstractOutputWindow {
                     ("Incorrect settings file. Unexpected class returned." // NOI18N
                     + " Expected:" + OutputWindow.class.getName() // NOI18N
                     + " Returned:" + tc.getClass().getName()); // NOI18N
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    Logger.global.log(Level.WARNING, null, exc);
                     //Fallback to accessor reserved for window system.
                     OutputWindow.getDefault();
                 }

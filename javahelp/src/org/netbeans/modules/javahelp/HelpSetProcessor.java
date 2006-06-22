@@ -18,7 +18,6 @@ import java.net.URL;
 import javax.swing.BoundedRangeModel;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.SwingUtilities;
-import org.openide.ErrorManager;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -123,13 +122,9 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
                 hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, merge ? Boolean.TRUE : Boolean.FALSE);
                 BPMChanger.invoke(BPMChanger.INC_VALUE);
             } catch (SAXException saxe) {
-                IOException ioe = new IOException(saxe.toString());
-                ErrorManager.getDefault().annotate(ioe, saxe);
-                throw ioe;
+                throw (IOException) new IOException(saxe.toString()).initCause(saxe);
             } catch (HelpSetException hse) {
-                IOException ioe = new IOException(hse.toString());
-                ErrorManager.getDefault().annotate(ioe, hse);
-                throw ioe;
+                throw (IOException) new IOException(hse.toString()).initCause(hse);
             }
         }
         return hs;

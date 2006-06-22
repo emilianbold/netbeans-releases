@@ -13,32 +13,16 @@
 
 package org.openide.loaders;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.OptionalDataException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+
+import java.io.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.event.*;
+import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.util.Enumerations;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
+import org.openide.nodes.*;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 
 /** Pool of data loaders.
@@ -495,7 +479,7 @@ implements java.io.Serializable {
                 );
                 return DataLoader.getLoader(loaderClass);
             } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }
         }
         return null;
@@ -710,7 +694,7 @@ private static class InstanceLoader extends UniFileLoader {
                     return null;
                 }
             } catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.global.log(Level.WARNING, null, e);
             }
         }
         return r;

@@ -17,13 +17,13 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 
 import java.beans.PropertyEditor;
 
 import javax.swing.SwingUtilities;
+import org.openide.util.Exceptions;
 
 
 /** A reconfigurable property model for use by the rendering
@@ -97,7 +97,7 @@ class ReusablePropertyModel implements ExPropertyModel {
         try {
             return getProperty().getValue();
         } catch (IllegalAccessException iae) {
-            ErrorManager.getDefault().notify(iae);
+            Exceptions.printStackTrace(iae);
         }
 
         return null;
@@ -111,7 +111,7 @@ class ReusablePropertyModel implements ExPropertyModel {
         try {
             getProperty().setValue(v);
         } catch (IllegalAccessException iae) {
-            ErrorManager.getDefault().notify(iae);
+            Exceptions.printStackTrace(iae);
         }
     }
 

@@ -87,7 +87,7 @@ class XMLEnvironmentProvider extends SharedClassObject {
         InstanceContent ic = createInstanceContent(obj);
         Lookup lookup = new AbstractLookup(ic);
         if (lookup.lookup(InstanceCookie.class) == null) {
-            ErrorManager.getDefault().notify(new IllegalStateException());  // instance cookie required
+            Exceptions.printStackTrace(new IllegalStateException());  // instance cookie required
         }
         return lookup;
     }

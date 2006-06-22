@@ -16,17 +16,15 @@ package org.netbeans.beaninfo.editors;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
-import java.util.ResourceBundle;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import org.openide.DialogDisplayer;
 
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
-import org.openide.util.HelpCtx;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -447,10 +445,10 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         if (font == null) {
             IllegalArgumentException iae = new IllegalArgumentException();
-            ErrorManager manager = ErrorManager.getDefault();
-            manager.annotate(iae, ErrorManager.EXCEPTION, null, 
-                NbBundle.getMessage(FontEditor.class, "MSG_FontIsNotInitialized"), null, null); // NOI18N
-            manager.notify(iae);
+            Exceptions.attachLocalizedMessage(iae,
+                                              NbBundle.getMessage(FontEditor.class,
+                                                                  "MSG_FontIsNotInitialized")); // NOI18N
+            Exceptions.printStackTrace(iae);
             return null;
         }
         

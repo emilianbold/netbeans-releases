@@ -14,8 +14,8 @@
 package org.netbeans.spi.settings;
 
 import java.io.IOException;
-
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 
@@ -46,7 +46,7 @@ final class ConvertorResolver {
             }
             return getConvertor(fo);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
             return null;
         }
     }
@@ -62,7 +62,7 @@ final class ConvertorResolver {
             Object attrib = fo.getAttribute(org.netbeans.modules.settings.Env.EA_PUBLICID);
             return (attrib == null || !(attrib instanceof String))? null: (String) attrib;
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
             return null;
         }
     }

@@ -17,8 +17,7 @@ import java.awt.Point;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import org.openide.ErrorManager;
+import org.netbeans.core.UIException;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -103,9 +102,10 @@ implements PropertyChangeListener {
             int y = Integer.parseInt (yField.getText ());
             if ((x < 0) || (y < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                ErrorManager.getDefault().annotate(
-                    ise, ErrorManager.USER, null, 
-                    NbBundle.getMessage(PointCustomEditor.class, "CTL_NegativeSize"), null, null);
+                UIException.annotateUser(ise, null,
+                                         NbBundle.getMessage(PointCustomEditor.class,
+                                                             "CTL_NegativeSize"),
+                                         null, null);
                 throw ise;
             }
             if ( dimensionMode )
@@ -114,9 +114,10 @@ implements PropertyChangeListener {
                 return new Point (x, y);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            ErrorManager.getDefault().annotate(
-                ise, ErrorManager.USER, null, 
-                NbBundle.getMessage(PointCustomEditor.class, "CTL_InvalidValue"), null, null);
+            UIException.annotateUser(ise, null,
+                                     NbBundle.getMessage(PointCustomEditor.class,
+                                                         "CTL_InvalidValue"),
+                                     null, null);
             throw ise;
         }
     }

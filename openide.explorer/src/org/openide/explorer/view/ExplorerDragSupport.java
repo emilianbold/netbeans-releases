@@ -12,22 +12,21 @@
  */
 package org.openide.explorer.view;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.openide.util.Utilities;
 
 import java.awt.Dialog;
-import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 
 import java.io.IOException;
 
 import java.util.TooManyListenersException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.*;
+import org.openide.util.Exceptions;
 
 
 /** Support for the drag operations in explorer.
@@ -120,12 +119,11 @@ abstract class ExplorerDragSupport implements DragSourceListener, DragGestureLis
             }
         } catch (InvalidDnDOperationException exc) {
             // cannot start the drag, notify as informational
-            ErrorManager em = ErrorManager.getDefault();
-            em.notify(ErrorManager.INFORMATIONAL, exc);
+            Logger.global.log(Level.WARNING, null, exc);
             exDnD.setDnDActive(false);
         } catch (IOException exc) {
             // cannot start the drag, notify user
-            ErrorManager.getDefault().notify(exc);
+            Exceptions.printStackTrace(exc);
             exDnD.setDnDActive(false);
         }
     }

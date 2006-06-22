@@ -17,7 +17,6 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.modules.*;
 
@@ -475,14 +474,7 @@ public abstract class Util {
     public static String findLocalizedMessage(Throwable t, boolean detailOK) {
         String locmsg = t.getLocalizedMessage();
         if (Utilities.compareObjects(locmsg, t.getMessage())) {
-            ErrorManager.Annotation[] anns = ErrorManager.getDefault().findAnnotations(t);
-            if (anns != null) {
-                for (int i = 0; i < anns.length; i++) {
-                    if (anns[i].getLocalizedMessage() != null) {
-                        return anns[i].getLocalizedMessage();
-                    }
-                }
-            }
+            locmsg = Exceptions.findLocalizedMessage(t);
             if (! detailOK) {
                 return null;
             }

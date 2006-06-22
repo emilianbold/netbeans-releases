@@ -15,16 +15,18 @@
 package org.netbeans.core.windows;
 
 
+
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.windows.persistence.*;
-import org.openide.ErrorManager;
 import org.openide.awt.ToolbarPool;
 import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-
-import java.awt.*;
-import java.util.*;
-import java.util.List;
+import org.openide.windows.*;
 
 
 /** 
@@ -85,9 +87,8 @@ final class PersistenceHandler implements PersistenceObserver {
 
         // In case of persistence problem fall back to predefined settings.
         if(wmc == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new NullPointerException("Cannot load window system persistent data." // NOI18N
-                    + " Using internally predefined configuration")); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.NullPointerException("Cannot load window system persistent data. Using internally predefined configuration")); // NOI18N
             wmc = ConfigFactory.createDefaultConfig();
         }
 
@@ -301,8 +302,10 @@ final class PersistenceHandler implements PersistenceObserver {
                 if (previous != null) {
                     WindowManagerImpl.getInstance().setPreviousModeForTopComponent(tcRefConfig.tc_id, mode, previous);
                 } else {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new NullPointerException("Cannot find previous mode named '" + tcRefConfig.previousMode + "'")); 
+                    Logger.global.log(Level.WARNING, null,
+                                      new java.lang.NullPointerException("Cannot find previous mode named \'" +
+                                                                         tcRefConfig.previousMode +
+                                                                         "\'")); 
 
                 }
             }
@@ -676,8 +679,10 @@ final class PersistenceHandler implements PersistenceObserver {
         if(mode != null) {
             WindowManagerImpl.getInstance().removeMode(mode);
         } else {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new NullPointerException("Mode for name="+modeName+" was not created")); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.NullPointerException("Mode for name=" +
+                                                                 modeName +
+                                                                 " was not created")); // NOI18N
         }
     }
     
@@ -750,8 +755,9 @@ final class PersistenceHandler implements PersistenceObserver {
         if(group != null) {
             WindowManagerImpl.getInstance().removeTopComponentGroup(group);
         } else {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new NullPointerException("Null group for name="+groupName)); 
+            Logger.global.log(Level.WARNING, null,
+                              new java.lang.NullPointerException("Null group for name=" +
+                                                                 groupName)); 
         }
     }
     

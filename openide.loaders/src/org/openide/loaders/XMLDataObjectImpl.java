@@ -13,20 +13,15 @@
 
 package org.openide.loaders;
 
+
 import java.io.IOException;
 import java.util.Iterator;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.*;
 import org.netbeans.modules.openide.loaders.RuntimeCatalog;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.xml.EntityCatalog;
-import org.openide.xml.XMLUtil;
-import org.xml.sax.Parser;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.openide.xml.*;
+import org.xml.sax.*;
 
 /**
  * Class that hide implementations details of deprecated utility
@@ -58,9 +53,9 @@ class XMLDataObjectImpl extends Object {
             builder = factory.newDocumentBuilder();                
         } catch (ParserConfigurationException ex) {
             SAXException sex = new SAXException("Configuration exception."); // NOI18N
-            ErrorManager emgr = ErrorManager.getDefault();
-            emgr.annotate(sex, ex);
-            emgr.annotate(sex, "Can not create a DOM builder!\nCheck javax.xml.parsers.DocumentBuilderFactory property and the builder library presence on classpath."); // NOI18N
+            sex.initCause(ex);
+            Exceptions.attachLocalizedMessage(sex,
+                                              "Can not create a DOM builder!\nCheck javax.xml.parsers.DocumentBuilderFactory property and the builder library presence on classpath."); // NOI18N
             throw sex;
         }
         
@@ -92,16 +87,18 @@ class XMLDataObjectImpl extends Object {
     
     /** Annotate & notify the exception. */
     private static void notifyNewSAXParserEx (Exception ex) {
-        ErrorManager emgr = ErrorManager.getDefault();
-        emgr.annotate(ex, "Can not create a SAX parser!\nCheck javax.xml.parsers.SAXParserFactory property features and the parser library presence on classpath."); // NOI18N
-        emgr.notify(ex);
+        Exceptions.attachLocalizedMessage(ex,
+                                          "Can not create a SAX parser!\nCheck javax.xml.parsers.SAXParserFactory property features and the parser library presence on classpath."); // NOI18N
+        Exceptions.printStackTrace(ex);
     }
 
     /** Annotate & notify the error. */
     private static void notifyFactoryErr(Error err, String property) {
-        ErrorManager emgr = ErrorManager.getDefault();
-        emgr.annotate(err, "Can not create a factory!\nCheck " + property + "  property and the factory library presence on classpath."); // NOI18N
-        emgr.notify(err);
+        Exceptions.attachLocalizedMessage(err,
+                                          "Can not create a factory!\nCheck " +
+                                          property +
+                                          "  property and the factory library presence on classpath."); // NOI18N
+        Exceptions.printStackTrace(err);
     }
 
     // warning back compatability code!!!    

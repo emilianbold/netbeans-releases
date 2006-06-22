@@ -13,26 +13,16 @@
 
 package org.openide.loaders;
 
-import java.awt.datatransfer.*;
-import java.awt.*;
+
 import java.beans.*;
 import java.io.*;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-
-import org.openide.*;
-import org.openide.util.datatransfer.*;
+import javax.swing.event.*;
 import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
-import org.openide.util.*;
 import org.openide.nodes.*;
+import org.openide.util.*;
 
 /** Object that represents one or more file objects, with added behavior.
 *
@@ -244,7 +234,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     public final Node getNodeDelegate () {
         if (! isValid()) {
             Exception e = new IllegalStateException("The data object " + getPrimaryFile() + " is invalid; you may not call getNodeDelegate on it any more; see #17020 and please fix your code"); // NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
         if (nodeDelegate == null) {
             // synchronize on something private, so only one delegate can be created
@@ -570,7 +560,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             IllegalArgumentException iae = new IllegalArgumentException (this.getName ());
             String msg = NbBundle.getMessage (DataObject.class,
                                   "MSG_NotValidName", getName ()); // NOI18N
-            ErrorManager.getDefault ().annotate (iae, ErrorManager.INFORMATIONAL, null, msg, null, null);
+            Exceptions.attachLocalizedMessage(iae, msg);
             throw iae;
         }
         

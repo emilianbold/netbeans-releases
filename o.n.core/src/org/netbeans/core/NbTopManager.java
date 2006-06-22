@@ -25,6 +25,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -34,12 +36,12 @@ import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ModuleSystem;
 import org.netbeans.core.startup.layers.SessionManager;
 import org.netbeans.core.ui.SwingBrowser;
-import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -176,7 +178,7 @@ public abstract class NbTopManager {
             // ignore - maybe javahelp module is not installed, not so strange
         } catch (Exception e) {
             // potentially more serious
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
         // Did not work.
         Toolkit.getDefaultToolkit().beep();
@@ -251,19 +253,21 @@ public abstract class NbTopManager {
         for (int i = 0; i < modifs.length; i++) {
             try {
                 dobj = modifs[i];
-                SaveCookie sc = (SaveCookie)dobj.getCookie(SaveCookie.class);
+                SaveCookie sc = (SaveCookie) dobj.getCookie(SaveCookie.class);
+
                 if (sc != null) {
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText (
-                        java.text.MessageFormat.format (
-                            NbBundle.getBundle (NbTopManager.class).getString ("CTL_FMT_SavingMessage"),
-                            new Object[] { dobj.getName () }
-                        )
-                    );
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                        MessageFormat.format(
+                            NbBundle.getBundle(NbTopManager.class).getString(
+                                "CTL_FMT_SavingMessage"
+                            ), new Object[]{dobj.getName()}
+                    ));
                     sc.save();
                 }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                bad.add (dobj);
+            }
+            catch (IOException ex) {
+                Logger.global.log(Level.WARNING, null, ex);
+                bad.add(dobj);
             }
         }
         NotifyDescriptor descriptor;
@@ -373,7 +377,7 @@ public abstract class NbTopManager {
                         try {
                             LoaderPoolNode.store();
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                            Logger.global.log(Level.WARNING, null, ioe);
                         }
 //#46940 -saving just once..                        
 //                        // save window system, [PENDING] remove this after the winsys will
@@ -384,7 +388,7 @@ public abstract class NbTopManager {
                         try {
                             ((MainLookup)Lookup.getDefault()).storeCache();
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                            Logger.global.log(Level.WARNING, null, ioe);
                         }
                         SessionManager.getDefault().close();
                     } catch (ThreadDeath td) {
@@ -392,7 +396,7 @@ public abstract class NbTopManager {
                     } catch (Throwable t) {
                         // Do not let problems here prevent system shutdown. The module
                         // system is down; the IDE cannot be used further.
-                        ErrorManager.getDefault().notify(t);
+                        Exceptions.printStackTrace(t);
                     }
                     // #37231 Someone (e.g. Jemmy) can install its own EventQueue and then
                     // exit is dispatched through that proprietary queue and it
@@ -534,7 +538,7 @@ public abstract class NbTopManager {
                 (IDESettings.findObject(IDESettings.class, true)).addPropertyChangeListener(idePCL);
             }
             catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }

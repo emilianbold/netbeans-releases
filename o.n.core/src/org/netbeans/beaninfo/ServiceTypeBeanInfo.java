@@ -16,6 +16,7 @@ package org.netbeans.beaninfo;
 import java.beans.*;
 
 import org.openide.ServiceType;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** BeanInfo for ServiceType. Has name property.
@@ -33,7 +34,7 @@ public class ServiceTypeBeanInfo extends SimpleBeanInfo {
             helpCtx.setHidden (true);
             return new PropertyDescriptor[] { name, helpCtx };
         } catch (IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

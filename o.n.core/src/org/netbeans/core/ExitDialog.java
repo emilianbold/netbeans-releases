@@ -31,12 +31,12 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** Dialog which lets the user select which open files to close.
@@ -161,13 +161,11 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             listModel.removeElement(dataObject);
         } catch (java.io.IOException exc) {
             Throwable t = exc;
-            ErrorManager em = ErrorManager.getDefault();
-            if (em.findAnnotations(exc) == null) {
-                t = em.annotate(
-                    exc, ErrorManager.EXCEPTION, null, NbBundle.getBundle(ExitDialog.class).getString("EXC_Save"), null, null
-                );
+            if (Exceptions.findLocalizedMessage(exc) == null) {
+                t = Exceptions.attachLocalizedMessage(exc,
+                                                  NbBundle.getBundle(ExitDialog.class).getString("EXC_Save"));
             }
-            em.notify(t);
+            Exceptions.printStackTrace(t);
         }
     }
  

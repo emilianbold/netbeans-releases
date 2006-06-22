@@ -13,48 +13,24 @@
 
 package org.openide.awt;
 
+
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragGestureRecognizer;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceContext;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceListener;
-import java.awt.dnd.DragSourceMotionListener;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.dnd.InvalidDnDOperationException;
+import java.awt.datatransfer.*;
+import java.awt.dnd.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EventObject;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TooManyListenersException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.border.*;
+import javax.swing.event.*;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-
-import org.openide.*;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
+import org.openide.loaders.*;
 import org.openide.nodes.Node;
+import org.openide.util.*;
 import org.openide.util.actions.Presenter;
-import org.openide.util.Task;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
 
 
@@ -242,21 +218,25 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                 ((DataObject) o).delete();
                 repaint();
                 if( backingFolder.getChildren().length == 0 ) {
-                    SwingUtilities.invokeLater( new Runnable() {
-                        public void run() {
-                            try {
-                                backingFolder.delete();
-                            } catch( IOException e ) {
-                                ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-                            }
-                        }
-                    });
+                    javax.swing.SwingUtilities.invokeLater(new java.lang.Runnable() {
+
+                                                               public void run() {
+                                                                   try {
+                                                                       backingFolder.delete();
+                                                                   }
+                                                                   catch (java.io.IOException e) {
+                                                                       Logger.global.log(Level.WARNING,
+                                                                                         null,
+                                                                                         e);
+                                                                   }
+                                                               }
+                                                           });
                 }
             }
         } catch( UnsupportedFlavorException ex ) {
-            ErrorManager.getDefault().notify( ex );
+            Exceptions.printStackTrace(ex);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify( ioe );
+            Exceptions.printStackTrace(ioe);
         }
     }
     
@@ -281,9 +261,9 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                 }
             }
         } catch (UnsupportedFlavorException e) {
-            ErrorManager.getDefault().notify (e);
+            Exceptions.printStackTrace(e);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return false;
     }
@@ -393,7 +373,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                  }
                 
               } catch ( InvalidDnDOperationException idoe ) {
-                    ErrorManager.getDefault().notify(idoe);
+                    Exceptions.printStackTrace(idoe);
               }
         }
 
@@ -972,51 +952,63 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             Toolbar.this.removeAll();
             for (int i = 0; i < cookies.length; i++) {
                 try {
-                    Object obj = cookies[i].instanceCreate();
-                    Object file = cookiesToObjects.get(obj);
-                    if (obj instanceof Presenter.Toolbar) {
-                        obj = ((Presenter.Toolbar)obj).getToolbarPresenter();
-                        // go on to get thru next condition
+                    java.lang.Object obj = cookies[i].instanceCreate();
+                    java.lang.Object file = cookiesToObjects.get(obj);
+
+                    if (obj instanceof org.openide.util.actions.Presenter.Toolbar) {
+                        obj = ((org.openide.util.actions.Presenter.Toolbar) obj).getToolbarPresenter();
                     }
-                    if (obj instanceof Component) {
+                    if (obj instanceof java.awt.Component) {
                         // remove border and grip if requested. "Fixed" toolbar
                         // item has to live alone in toolbar now
-                        if ((obj instanceof JComponent) &&
-                            "Fixed".equals(((JComponent)obj).getClientProperty("Toolbar"))) { // NOI18N
+                        if ((obj instanceof javax.swing.JComponent) &&
+                            "Fixed".equals(((javax.swing.JComponent) obj).getClientProperty("Toolbar"))) {
                             floatable = false;
-                            Toolbar.this.removeAll();
+                            org.openide.awt.Toolbar.this.removeAll();
                             setBorder(null);
                         }
-                        if (obj instanceof JComponent) {
-                            if (ToolbarPool.getDefault().getPreferredIconSize() == 24) {
-                                ((JComponent) obj).putClientProperty("PreferredIconSize",new Integer(24)); //NOI18N
+                        if (obj instanceof javax.swing.JComponent) {
+                            if (org.openide.awt.ToolbarPool.getDefault().getPreferredIconSize() ==
+                                24) {
+                                ((javax.swing.JComponent) obj).putClientProperty("PreferredIconSize",
+                                                                                 new java.lang.Integer(24));
                             }
-                            ((JComponent) obj).putClientProperty("file", file);
+                            ((javax.swing.JComponent) obj).putClientProperty("file",
+                                                                             file);
                         }
-                        Toolbar.this.add ((Component)obj);
+                        org.openide.awt.Toolbar.this.add((java.awt.Component) obj);
                         continue;
                     }
-                    if (obj instanceof Action) {
-                        Action a = (Action)obj;
-                        JButton b = new DefaultIconButton();
-                        if (ToolbarPool.getDefault().getPreferredIconSize() == 24) {
-                            b.putClientProperty("PreferredIconSize",new Integer(24)); //NOI18N
+                    if (obj instanceof javax.swing.Action) {
+                        javax.swing.Action a = (javax.swing.Action) obj;
+                        javax.swing.JButton b = new org.openide.awt.Toolbar.DefaultIconButton();
+
+                        if (org.openide.awt.ToolbarPool.getDefault().getPreferredIconSize() ==
+                            24) {
+                            b.putClientProperty("PreferredIconSize",
+                                                new java.lang.Integer(24));
                         }
-                        if( null == a.getValue( Action.SMALL_ICON ) 
-                            && (null == a.getValue( Action.NAME) || a.getValue( Action.NAME ).toString().length() == 0) ) {
-                            a.putValue( Action.SMALL_ICON, getUnknownIcon() );
+                        if (null == a.getValue(javax.swing.Action.SMALL_ICON) &&
+                            (null == a.getValue(javax.swing.Action.NAME) ||
+                             a.getValue(javax.swing.Action.NAME).toString().length() ==
+                             0)) {
+                            a.putValue(javax.swing.Action.SMALL_ICON,
+                                       getUnknownIcon());
                         }
-                        Actions.connect (b, a);
-                        b.putClientProperty ("file", file);
-                        Toolbar.this.add (b);
+                        org.openide.awt.Actions.connect(b, a);
+                        b.putClientProperty("file", file);
+                        org.openide.awt.Toolbar.this.add(b);
                         continue;
                     }
-                } catch (java.io.IOException ex) {
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-                } catch (ClassNotFoundException ex) {
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-                } finally {
-                   cookiesToObjects.clear();
+                }
+                catch (java.io.IOException ex) {
+                    Logger.global.log(Level.WARNING, null, ex);
+                }
+                catch (java.lang.ClassNotFoundException ex) {
+                    Logger.global.log(Level.WARNING, null, ex);
+                }
+                finally {
+                    cookiesToObjects.clear();
                 }
             }
 

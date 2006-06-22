@@ -20,7 +20,6 @@ package org.netbeans.core.output2;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.openide.ErrorManager;
 
 import javax.swing.*;
 import javax.swing.text.*;

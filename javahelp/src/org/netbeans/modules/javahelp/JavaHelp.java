@@ -31,8 +31,6 @@ import javax.help.HelpSetException;
 import javax.help.JHelp;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-
-import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.windows.WindowManager;
 

@@ -18,8 +18,8 @@ import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PermissionCollection;
 import java.lang.reflect.Field;
-
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Tries to get an IOProtectionDomain from an AccessControlContext.
 *
@@ -76,11 +76,11 @@ class AccController {
             }
             return null;
         } catch (final Exception e) {
-                javax.swing.SwingUtilities.invokeLater(new Runnable () {
-                                                           public void run () {
-                                                               ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                                                           }
-                                                       });
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    Logger.global.log(Level.WARNING, null, e);
+                }
+            });
             return null;
         }
     }

@@ -14,21 +14,12 @@
 package org.netbeans.core.windows.model;
 
 
-import org.openide.windows.TopComponent;
 
 import java.awt.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.HashMap;
 
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.SplitConstraint;
-import org.netbeans.core.windows.WindowManagerImpl;
-
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 

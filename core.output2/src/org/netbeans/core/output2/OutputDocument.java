@@ -20,8 +20,6 @@ package org.netbeans.core.output2;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
-import org.openide.windows.OutputListener;
 import org.openide.util.Mutex;
 
 import javax.swing.*;
@@ -32,7 +30,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TooManyListenersException;
+import org.openide.util.Exceptions;
 
 
 /** An implementation of Document directly over a memory mapped file such that
@@ -522,7 +520,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                 return OutputDocument.this.getText(getStartOffset(), getEndOffset() 
                     - getStartOffset());
             } catch (BadLocationException ble) {
-                ErrorManager.getDefault().notify(ble);
+                Exceptions.printStackTrace(ble);
                 return "";
             }
         }

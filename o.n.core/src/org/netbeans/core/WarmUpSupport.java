@@ -13,9 +13,9 @@
 
 package org.netbeans.core;
 
-import javax.swing.UIManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.startup.StartLog;
-import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
@@ -39,7 +39,7 @@ class WarmUpSupport implements Runnable {
     
     static boolean finished = false;    // usefull for testability
 
-    private ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.core.WarmUpSupport");
+    private Logger err = Logger.getLogger("org.netbeans.core.WarmUpSupport");
 
     static void warmUp() {
         RequestProcessor.getDefault().post(new WarmUpSupport(), WARMUP_DELAY);
@@ -48,9 +48,9 @@ class WarmUpSupport implements Runnable {
     // -------
 
     public void run() {
-        boolean willLog = err.isLoggable(ErrorManager.INFORMATIONAL) || StartLog.willLog();
+        boolean willLog = err.isLoggable(Level.FINE) || StartLog.willLog();
         if (willLog){
-            err.log("Warmup starting..."); // NOI18N
+            err.fine("Warmup starting..."); // NOI18N
             StartLog.logStart("Warmup"); // NOI18N
         }
 
@@ -61,29 +61,31 @@ class WarmUpSupport implements Runnable {
 
         if (warmObjects.length == 0) {
             if (willLog) {
-                err.log("no warmp up task"); // NOI18N
+                err.fine("no warmp up task"); // NOI18N
             }
         }
         else {
-            for (int i=0; i < warmObjects.length; i++) {
+            for (int i = 0; i < warmObjects.length; i++) {
                 try {
-                    InstanceCookie ic = (InstanceCookie)
-                        warmObjects[i].getCookie(InstanceCookie.class);
+                    InstanceCookie ic = (InstanceCookie) warmObjects[i].getCookie(InstanceCookie.class);
+
                     if (willLog) {
-                        StartLog.logProgress("Warmup running " + ic.instanceName()); // NOI18N
+                        StartLog.logProgress("Warmup running " +
+                                             ic.instanceName());
                     }
-                    
                     Object warmer = ic.instanceCreate();
+
                     if (warmer instanceof Runnable) {
-                        ((Runnable)warmer).run();
+                        ((Runnable) warmer).run();
                     }
-                } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+                catch (Exception ex) {
+                    Logger.global.log(Level.WARNING, null, ex);
                 }
             }
         }
         if (willLog){
-            err.log("Warmup done."); // NOI18N
+            err.fine("Warmup done."); // NOI18N
             StartLog.logEnd("Warmup"); // NOI18N
         }
         

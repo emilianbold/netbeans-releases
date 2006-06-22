@@ -12,7 +12,6 @@
  */
 package org.openide.awt;
 
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 import java.awt.*;
@@ -27,12 +26,15 @@ import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 
 import javax.swing.*;
+import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.border.*;
 
 
@@ -207,7 +209,7 @@ public class SplittedPanel extends JComponent implements Accessible {
         init();
 
         RuntimeException rte = new RuntimeException("SplittedPanel is deprecated.  Please use JSplitPane instead"); //NOI18N
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, rte);
+        Logger.global.log(Level.WARNING, null, rte);
     }
 
     /** Initializes the SplittedPanel */

@@ -31,6 +31,7 @@ import javax.swing.JFrame;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.explorer.UIException;
 import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -353,7 +354,9 @@ public class FocusAfterBadEditTest extends NbTestCase {
         
         public void setAsText(String txt) {
             IllegalArgumentException iae = new IllegalArgumentException("Bad, bad, bad");
-            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, "bad, bad, bad",  "I can't be nice, I'm the evil property editor.", null, null);
+            UIException.annotateUser(iae, "bad, bad, bad",
+                                     "I can\'t be nice, I\'m the evil property editor.",
+                                     null, null);
             throw iae;
         }
     }

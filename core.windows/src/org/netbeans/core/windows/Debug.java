@@ -17,7 +17,6 @@ package org.netbeans.core.windows;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

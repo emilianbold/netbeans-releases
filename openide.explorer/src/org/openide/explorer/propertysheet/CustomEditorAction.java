@@ -17,7 +17,6 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.nodes.Node.*;
 import org.openide.util.NbBundle;
@@ -36,6 +35,7 @@ import java.text.MessageFormat;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
+import org.openide.util.Exceptions;
 
 
 /** Action to invoke the custom editor.
@@ -301,7 +301,7 @@ class CustomEditorAction extends AbstractAction {
             w.setVisible(true);
             PropUtils.removeExternallyEdited(p);
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         
         } finally { //#64007 end - reset cursor in case of a runtime exception

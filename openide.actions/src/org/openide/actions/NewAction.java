@@ -20,6 +20,7 @@ import javax.swing.event.EventListenerList;
 import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -71,7 +72,7 @@ public final class NewAction extends NodeAction {
 
             type.create();
         } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         } finally {
             if (sel != null) {
                 sel.select();

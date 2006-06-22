@@ -17,7 +17,6 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 
@@ -34,12 +33,11 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 
-import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-
 import java.text.MessageFormat;
 
 import java.util.EventObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -52,6 +50,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.openide.explorer.UIException;
 
 
 /** Extends EditorPropertyDisplayer to implement editor logic, listening for
@@ -169,7 +168,7 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
                 //something vetoed the change
                 if ((msg != null) && !PropertyEnv.STATE_VALID.equals(env.getState())) {
                     IllegalArgumentException exc = new IllegalArgumentException("Error setting value"); //NOI18N
-                    ErrorManager.getDefault().annotate(exc, ErrorManager.USER, msg, null, null, null);
+                    UIException.annotateUser(exc, msg, null, null, null);
                     committing = false;
                     throw exc;
                 }
@@ -201,9 +200,9 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
                     String msg = PropUtils.findLocalizedMessage(e, getEnteredValue(), getProperty().getDisplayName());
 
                     iae = new IllegalArgumentException(msg);
-                    ErrorManager.getDefault().annotate(
-                        iae, ErrorManager.USER, "Cannot set value to " + getEnteredValue(), msg, e, null
-                    ); //NOI18N
+                    UIException.annotateUser(iae,
+                                             "Cannot set value to " +
+                                             getEnteredValue(), msg, e, null); //NOI18N
 
                     /*                    if (e instanceof InvocationTargetException || e instanceof IllegalAccessException) {
                                             ErrorManager.getDefault().notify(e);
@@ -349,7 +348,7 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
                     editor.setValue(getProperty().getValue());
                 } catch (Exception e) {
                     //well, we can't solve everything
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                    Logger.global.log(Level.WARNING, null, e);
                 }
 
                 //Now attach the env back to the property editor, so it will
@@ -920,11 +919,7 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
                     }
                 }
             } catch (Exception e) {
-                IllegalStateException ise = new IllegalStateException(
-                        "Problem setting entered value from custom editor"
-                    );
-                ErrorManager.getDefault().annotate(ise, e);
-                throw ise;
+                throw (IllegalStateException) new IllegalStateException("Problem setting entered value from custom editor").initCause(e);
             }
         }
 

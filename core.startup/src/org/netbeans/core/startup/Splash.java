@@ -35,6 +35,8 @@ import java.lang.ref.WeakReference;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -46,7 +48,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.netbeans.Util;
-import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -231,7 +232,7 @@ public final class Splash  implements SwingConstants {
                     //IZ 37515 - NbBundle.DEBUG causes startup to fail - provide some useless values
                     Util.err.warning("Number format exception " + //NOI18N
                         "loading splash screen parameters."); //NOI18N
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, nfe);
+                    Logger.global.log(Level.WARNING, null, nfe);
                     color_text = Color.BLACK;
                     color_bar = Color.ORANGE;
                     color_edge = Color.BLUE;

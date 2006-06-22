@@ -16,13 +16,12 @@ package org.netbeans.modules.javahelp;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import org.openide.ErrorManager;
 
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /** Handler & connection cribbed from NbResourceStreamHandler.
  * @author Jesse Glick
@@ -129,8 +128,11 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                         target = f.toURI().toURL();
                     } else {
                         IOException ioe = new IOException("cannot connect to " + url + ": " + mre);
-                        ErrorManager.getDefault().annotate(ioe, NbBundle.getMessage(NbDocsStreamHandler.class, "EXC_nbdocs_cannot_connect", url));
-                        ErrorManager.getDefault().annotate(ioe, mre);
+                        Exceptions.attachLocalizedMessage(ioe,
+                                                          NbBundle.getMessage(NbDocsStreamHandler.class,
+                                                                              "EXC_nbdocs_cannot_connect",
+                                                                              url));
+                        ioe.initCause(mre);
                         throw ioe;
                     }
                 }

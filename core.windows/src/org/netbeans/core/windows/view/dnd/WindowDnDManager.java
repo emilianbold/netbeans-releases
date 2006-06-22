@@ -15,27 +15,21 @@
 package org.netbeans.core.windows.view.dnd;
 
 
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.*;
-import org.netbeans.core.windows.view.ui.MainWindow;
-import org.netbeans.core.windows.view.ui.ModeComponent;
-import org.openide.ErrorManager;
-import org.openide.util.WeakSet;
-import org.openide.windows.TopComponent;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.lang.ref.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
+import org.netbeans.core.windows.*;
+import org.netbeans.core.windows.view.*;
+import org.netbeans.core.windows.view.ui.*;
+import org.openide.util.WeakSet;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -669,11 +663,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
                 return new TopComponent[] {tc};
             } catch(UnsupportedFlavorException ufe) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.INFORMATIONAL, ufe);
+                Logger.global.log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.INFORMATIONAL, ioe);
+                Logger.global.log(Level.WARNING, null, ioe);
             }
         }
     
@@ -682,11 +674,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             try {
                 return (TopComponent[])tr.getTransferData(df);
             } catch(UnsupportedFlavorException ufe) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.INFORMATIONAL, ufe);
+                Logger.global.log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.INFORMATIONAL, ioe);
+                Logger.global.log(Level.WARNING, null, ioe);
             }
         }
         

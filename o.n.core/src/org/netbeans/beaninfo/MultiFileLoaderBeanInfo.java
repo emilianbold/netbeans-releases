@@ -16,6 +16,7 @@ package org.netbeans.beaninfo;
 import java.beans.*;
 
 import org.openide.loaders.DataLoader;
+import org.openide.util.Exceptions;
 
 public class MultiFileLoaderBeanInfo extends SimpleBeanInfo {
 
@@ -23,7 +24,7 @@ public class MultiFileLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
         } catch (IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

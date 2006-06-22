@@ -13,29 +13,21 @@
 
 package org.netbeans.core.windows.services;
 
+
+import java.awt.datatransfer.Transferable;
+import java.util.*;
 import javax.swing.JSeparator;
 import org.netbeans.core.NbPlaces;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.*;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.InstanceDataObject;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.datatransfer.NewType;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.cookies.InstanceCookie;
-
-import java.util.ResourceBundle;
-import java.util.List;
-import java.awt.datatransfer.Transferable;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.*;
+import org.openide.nodes.*;
+import org.openide.nodes.FilterNode.Children;
+import org.openide.util.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.*;
 
 /** The node for the menu folder representation.
 * Delegates most of its functionality to the original data folder node.
@@ -141,7 +133,7 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
                         }
                     }
                 } catch (java.io.IOException e) {
-                    ErrorManager.getDefault ().notify (e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -171,7 +163,7 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
                 );
             }
         } catch (java.io.IOException e) {
-            ErrorManager.getDefault ().notify (e);
+            Exceptions.printStackTrace(e);
         }
     }
     //End

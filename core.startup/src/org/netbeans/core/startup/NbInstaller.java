@@ -48,7 +48,6 @@ import org.netbeans.ModuleInstaller;
 import org.netbeans.ModuleManager;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -56,6 +55,7 @@ import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.InstanceContent;
@@ -1323,7 +1323,7 @@ final class NbInstaller extends ModuleInstaller {
             try {
                 mani = new Manifest(new ByteArrayInputStream(data, pos, end - pos));
             } catch (IOException ioe) {
-                ErrorManager.getDefault().annotate(ioe, ErrorManager.UNKNOWN, "While in entry for " + jar, null, null, null);
+                Exceptions.attachMessage(ioe, "While in entry for " + jar);
                 throw ioe;
             }
             m.put(jar, new Object[] {new Date(time), mani});

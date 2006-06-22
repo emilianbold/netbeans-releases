@@ -22,6 +22,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -33,7 +35,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.services.ToolbarFolderNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.awt.ToolbarPool;
 import org.openide.cookies.InstanceCookie;
@@ -48,9 +49,11 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.NewType;
+
 /**
  * Toolbar Customizer showing a tree of all available actions. Users can drag actions
  * to toolbars to add new toolbar buttons.
@@ -141,11 +144,13 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             final DataFolder subFolder = (DataFolder)children[i].getCookie( DataFolder.class );
             if( null != subFolder && subFolder.getChildren().length == 0 ) {
                 SwingUtilities.invokeLater( new Runnable() {
+
                     public void run() {
                         try {
                             subFolder.delete();
-                        } catch( IOException e ) {
-                            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                        }
+                        catch (IOException e) {
+                            Logger.global.log(Level.WARNING, null, e);
                         }
                     }
                 });
@@ -265,7 +270,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             try {
                 newTypes[0].create();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify( e );
+                Exceptions.printStackTrace(e);
             }
         }
     }//GEN-LAST:event_newToolbar
@@ -373,7 +378,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                         }
                     }
                 } catch( Throwable e ) {
-                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                    Logger.global.log(Level.WARNING, null, e);
                 }
                 return true;
             } else {

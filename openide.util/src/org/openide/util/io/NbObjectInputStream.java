@@ -12,7 +12,6 @@
  */
 package org.openide.util.io;
 
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -24,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 
 import java.lang.reflect.InvocationTargetException;
+import org.openide.util.Exceptions;
 
 
 // note: keep method resolveObject consistent with NbObjectOutputStream.replaceObject
@@ -61,7 +61,7 @@ public class NbObjectInputStream extends ObjectInputStream {
             return Class.forName(v.getName(), false, cl);
         } catch (ClassNotFoundException cnfe) {
             String msg = "Offending classloader: " + cl; // NOI18N
-            ErrorManager.getDefault().annotate(cnfe, ErrorManager.INFORMATIONAL, msg, null, null, null);
+            Exceptions.attachMessage(cnfe, msg);
             throw cnfe;
         }
     }

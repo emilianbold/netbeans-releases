@@ -12,37 +12,17 @@
  */
 package org.openide.text;
 
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
+
+import java.awt.*;
+import java.awt.font.*;
+import java.awt.geom.*;
+import java.awt.print.*;
+import java.text.*;
+import java.util.*;
+import javax.swing.text.*;
+import org.openide.*;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-
-import java.awt.Color;
-import java.awt.Dialog;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.font.FontRenderContext;
-import java.awt.font.LineBreakMeasurer;
-import java.awt.font.TextLayout;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterAbortException;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterGraphics;
-import java.awt.print.PrinterJob;
-
-import java.text.AttributedCharacterIterator;
-import java.text.MessageFormat;
-
-import java.util.ArrayList;
-import java.util.Date;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 
 
 /** The class creates from an instance of AttributedCharacterIterator
@@ -644,7 +624,7 @@ final class DefaultPrintable extends Object implements Printable {
                 }
             }
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
 
         AttributedCharacterIterator[] iters = new AttributedCharacterIterator[iterators.size()];

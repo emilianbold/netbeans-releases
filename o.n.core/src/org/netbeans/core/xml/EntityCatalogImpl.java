@@ -16,13 +16,11 @@ package org.netbeans.core.xml;
 import java.io.*;
 import java.util.*;
 import java.beans.*;
-
-import javax.swing.event.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
-
-import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.*;
@@ -125,10 +123,10 @@ public final class EntityCatalogImpl extends EntityCatalog {
                 reader.parse(src);
             } catch (SAXException ex) {
                 // ignore
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             } catch (IOException ex) {
                 // ignore
-        	ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        	Logger.global.log(Level.WARNING, null, ex);
     	    }
         }
 

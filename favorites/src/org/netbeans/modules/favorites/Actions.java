@@ -27,7 +27,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -37,6 +36,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -208,12 +208,14 @@ public final class Actions extends Object {
         */
         protected void performAction (Node[] arr) {
             for (int i = 0; i < arr.length; i++) {
-                DataObject shad = (DataObject) arr[i].getCookie (DataObject.class);
+                DataObject shad = (DataObject) arr[i].getCookie(DataObject.class);
+
                 if (shad != null && shad.getFolder() == Favorites.getFolder()) {
                     try {
                         shad.delete();
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                    }
+                    catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
@@ -347,7 +349,7 @@ public final class Actions extends Object {
                 reorderAfterAddition(f, arr, listAdd);
                 selectAfterAddition(createdDO);               
             } catch (DataObjectNotFoundException e) {
-                ErrorManager.getDefault().notify(e);  
+                Exceptions.printStackTrace(e);  
             }
         }
         
@@ -428,18 +430,20 @@ public final class Actions extends Object {
         private static DataObject createShadows(final DataFolder favourities, final Node[] activatedNodes, final List listAdd) {
             DataObject createdDO = null;
             for (int i = 0; i < activatedNodes.length; i++) {
-                DataObject obj = (DataObject)activatedNodes[i].getCookie (DataObject.class);
+                DataObject obj = (DataObject) activatedNodes[i].getCookie(DataObject.class);
+
                 if (obj != null) {
                     try {
                         if (createdDO == null) {
-                            //Select only first node in array added to favorites
+                            // Select only first node in array added to favorites
                             createdDO = obj.createShadow(favourities);
                             listAdd.add(createdDO);
                         } else {
                             listAdd.add(obj.createShadow(favourities));
                         }
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                    }
+                    catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
@@ -478,7 +482,7 @@ public final class Actions extends Object {
                 try {
                     favourities.setOrder(newOrder);
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }

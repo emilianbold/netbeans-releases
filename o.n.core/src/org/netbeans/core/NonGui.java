@@ -20,6 +20,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.TopSecurityManager;
@@ -27,7 +29,6 @@ import org.netbeans.core.startup.InstalledFileLocatorImpl;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.ModuleSystem;
 import org.netbeans.core.startup.StartLog;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -63,7 +64,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         try {
             LoaderPoolNode.load();
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.global.log(Level.WARNING, null, ioe);
         }
         StartLog.logProgress ("LoaderPool loaded"); // NOI18N
         Main.incrementSplashProgressBar(10);
@@ -162,44 +163,44 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
 
         // Access winsys from AWT thread only. In this case main thread wouldn't harm, just to be kosher.
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                StartLog.logProgress ("Window system initialization"); // NOI18N
-                if (System.getProperty("netbeans.warmup.skip") == null // NOI18N
-                        && System.getProperty("netbeans.close") == null) // NOI18N
-                {
-                    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-                    mainWindow.addComponentListener(new ComponentAdapter() {
-                        public void componentShown(ComponentEvent evt) {
-                            mainWindow.removeComponentListener(this);
-                            WarmUpSupport.warmUp();
-                        }
-                    });
-                }
 
-                NbTopManager.WindowSystem windowSystem = (NbTopManager.WindowSystem)
-                        org.openide.util.Lookup.getDefault().lookup(NbTopManager.WindowSystem.class);
-                if(windowSystem != null) {
-                    windowSystem.load();
-                    StartLog.logProgress ("Window system loaded"); // NOI18N
-                    if (StartLog.willLog()) {
-                        waitForMainWindowPaint();
-                    }
-                    windowSystem.show();
-                } else {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                        new NullPointerException("\n\n\nWindowSystem is not supplied!!!\\n\n")); // NOI18N
-                }
+                                       public void run() {
+                                           StartLog.logProgress("Window system initialization");
+                                           if (System.getProperty("netbeans.warmup.skip") ==
+                                               null &&
+                                               System.getProperty("netbeans.close") ==
+                                               null) {
+                                               final Frame mainWindow = WindowManager.getDefault().getMainWindow();
 
-                StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+                                               mainWindow.addComponentListener(new ComponentAdapter() {
 
-                StartLog.logProgress ("Window system shown"); // NOI18N
-                if (!StartLog.willLog()) {
-                    maybeDie(null);
-                    // note that if we ARE logging and measuring startup,
-                    // the IDE is killed through wairForMainWindowPaint() called above
-                }
-            }
-        });
+                                                                                   public void componentShown(ComponentEvent evt) {
+                                                                                       mainWindow.removeComponentListener(this);
+                                                                                       WarmUpSupport.warmUp();
+                                                                                   }
+                                                                               });
+                                           }
+                                           NbTopManager.WindowSystem windowSystem = (NbTopManager.WindowSystem) Lookup.getDefault().lookup(NbTopManager.WindowSystem.class);
+
+                                           if (windowSystem != null) {
+                                               windowSystem.load();
+                                               StartLog.logProgress("Window system loaded");
+                                               if (StartLog.willLog()) {
+                                                   waitForMainWindowPaint();
+                                               }
+                                               windowSystem.show();
+                                           } else {
+                                               Logger.global.log(Level.WARNING,
+                                                                 null,
+                                                                 new NullPointerException("\n\n\nWindowSystem is not supplied!!!\\n\n"));
+                                           }
+                                           StatusDisplayer.getDefault().setStatusText("");
+                                           StartLog.logProgress("Window system shown");
+                                           if (!StartLog.willLog()) {
+                                               maybeDie(null);
+                                           }
+                                       }
+                                   });
         StartLog.logEnd ("Main window initialization"); //NOI18N
     }
   

@@ -14,9 +14,8 @@
 package org.netbeans.beaninfo.editors;
 
 import java.util.*;
-import java.awt.event.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
 
 import org.openide.*;
 import org.openide.explorer.*;
@@ -137,7 +136,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
                                                         nodes[i]
                                                     });
         } catch (java.beans.PropertyVetoException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
         }
 
         firePropertyChange ();
@@ -195,11 +194,11 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
                     services.add (service);
                 }
             } catch (java.beans.IntrospectionException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             } catch (InstantiationException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             } catch (IllegalAccessException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }
         }
         try {
@@ -208,7 +207,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
                 services.add (none);
             }
         } catch (java.beans.IntrospectionException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.global.log(Level.WARNING, null, ex);
         }
         return l;
     }

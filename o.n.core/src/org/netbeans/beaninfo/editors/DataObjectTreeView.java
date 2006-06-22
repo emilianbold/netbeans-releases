@@ -15,21 +15,19 @@ package org.netbeans.beaninfo.editors;
 
 import java.awt.*;
 import java.beans.*;
-import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
 import javax.swing.tree.*;
-
-import org.openide.*;
 import org.openide.explorer.*;
 import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.explorer.propertysheet.editors.*;
 import org.openide.explorer.view.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.netbeans.beaninfo.ExplorerPanel;
+import org.netbeans.beaninfo.editors.DataObjectPanel.FilteredChildren;
 
 /**
  * Component that displays an explorer that displays only certain
@@ -152,11 +150,9 @@ public class DataObjectTreeView extends DataObjectPanel {
                 expPanel.getExplorerManager().setSelectedNodes
                 (new Node [] { theNode });
             } catch (PropertyVetoException pve) {
-                ErrorManager.getDefault().notify(
-                ErrorManager.INFORMATIONAL, pve);
+                Logger.global.log(Level.WARNING, null, pve);
             } catch (IllegalArgumentException iae) {
-                ErrorManager.getDefault().notify(
-                ErrorManager.INFORMATIONAL, iae);
+                Logger.global.log(Level.WARNING, null, iae);
             }
         }
         

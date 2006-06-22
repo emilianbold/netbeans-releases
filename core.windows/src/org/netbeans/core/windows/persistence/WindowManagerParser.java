@@ -17,14 +17,12 @@ import java.util.logging.Level;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.SplitConstraint;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -32,6 +30,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Handle loading/saving of WindowManager configuration data.
@@ -400,7 +399,7 @@ public class WindowManagerParser {
             } catch (IOException exc) {
                 //If reading of one Mode fails we want to log message
                 //and continue.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                Logger.global.log(Level.WARNING, null, exc);
                 continue;
             }
             boolean modeAccepted = acceptMode(modeParser, modeCfg);
@@ -522,7 +521,7 @@ public class WindowManagerParser {
             } catch (IOException exc) {
                 //If reading of one group fails we want to log message
                 //and continue.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                Logger.global.log(Level.WARNING, null, exc);
                 continue;
             }
             boolean groupAccepted = acceptGroup(groupParser, groupCfg);
@@ -819,19 +818,19 @@ public class WindowManagerParser {
 //                    System.out.println("WindowManagerParser.readData "+(System.currentTimeMillis()-time));
                 }
             } catch (SAXException exc) {
-                //Turn into annotated IOException
+                // Turn into annotated IOException
                 String msg = NbBundle.getMessage(WindowManagerParser.class,
-                        "EXC_WindowManagerParse", cfgFOInput);
-                IOException ioe = new IOException(msg);
-                ErrorManager.getDefault().annotate(ioe, exc);
-                throw ioe;
+                                                 "EXC_WindowManagerParse",
+                                                 cfgFOInput);
+
+                throw (IOException) new IOException(msg).initCause(exc);
             } finally {
                 try {
                     if (is != null) {
                         is.close();
                     }
                 } catch (IOException exc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                    Logger.global.log(Level.WARNING, null, exc);
                 }
             }
             
@@ -1679,7 +1678,7 @@ public class WindowManagerParser {
                             osw.close();
                         }
                     } catch (IOException exc) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,exc);
+                        Logger.global.log(Level.WARNING, null, exc);
                     }
                     if (lock != null) {
                         lock.releaseLock();

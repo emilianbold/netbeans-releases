@@ -17,6 +17,7 @@ import java.awt.Image;
 import java.beans.*;
 
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class XMLDataObject {
@@ -27,7 +28,7 @@ public class XMLDataObject {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
             } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             }
         }

@@ -13,18 +13,13 @@
 
 package org.openide.text;
 
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import junit.framework.*;
-
 import org.netbeans.junit.*;
-
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.lookup.*;
 import org.openide.windows.CloneableTopComponent;
 
@@ -164,7 +159,7 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
     public void markModified() throws java.io.IOException {
         if (cannotBeModified != null) {
             IOException e = new IOException ();
-            org.openide.ErrorManager.getDefault ().annotate (e, cannotBeModified);
+            Exceptions.attachLocalizedMessage(e, cannotBeModified);
             throw e;
         }
         

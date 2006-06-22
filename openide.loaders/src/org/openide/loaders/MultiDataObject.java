@@ -13,22 +13,16 @@
 
 package org.openide.loaders;
 
-import java.lang.ref.WeakReference;
-import java.io.*;
-import java.util.*;
+
 import java.beans.PropertyVetoException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-
-import org.openide.*;
+import java.io.*;
+import java.lang.ref.WeakReference;
+import java.util.*;
+import java.util.logging.*;
+import javax.swing.event.*;
 import org.openide.filesystems.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
-import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
+import org.openide.nodes.*;
+import org.openide.util.*;
 
 /** Provides support for handling of data objects with multiple files.
 * One file is represented by one {@link Entry}. Each handler
@@ -1120,7 +1114,7 @@ public class MultiDataObject extends DataObject {
                 MultiDataObject.this.markInvalid0 ();
             } catch (PropertyVetoException ex) {
                 // silently ignore?
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }
         }
     }

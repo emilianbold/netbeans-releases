@@ -13,43 +13,19 @@
 
 package org.openide.actions;
 
+
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenuItem;
-import org.openide.ErrorManager;
+import java.beans.*;
+import java.util.*;
+import javax.swing.*;
 import org.openide.awt.JInlineMenu;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
 import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Enumerations;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.TopComponent.Registry;
+import org.openide.util.*;
+import org.openide.util.actions.*;
+import org.openide.util.lookup.*;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /** Action that presents standard file system-related actions.
@@ -173,10 +149,10 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
             try {
                 enabled = a.isEnabled();
             } catch (RuntimeException e) {
-                ErrorManager em = ErrorManager.getDefault();
-                em.annotate(e, ErrorManager.UNKNOWN, 
-                    "Guilty action: " + a.getClass().getName(), null, null, null); // NOI18N
-                em.notify(e);
+                Exceptions.attachMessage(e,
+                                         "Guilty action: " +
+                                         a.getClass().getName()); // NOI18N
+                Exceptions.printStackTrace(e);
             }
             if (enabled) {
                 JMenuItem item = null;
@@ -254,7 +230,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
 
             if (lookup == null) {
                 // listen only when nodes not provided
-                Registry r = WindowManager.getDefault ().getRegistry ();
+                TopComponent.Registry r = WindowManager.getDefault ().getRegistry ();
 
                 r.addPropertyChangeListener (
                     WeakListeners.propertyChange (this, r)
@@ -313,7 +289,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
             if (
                 name == null ||
                 name.equals (SystemAction.PROP_ENABLED) ||
-                name.equals (Registry.PROP_ACTIVATED_NODES)
+                name.equals (TopComponent.Registry.PROP_ACTIVATED_NODES)
             ) {
                 // change items later
                 needsChange = true;

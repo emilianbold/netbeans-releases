@@ -17,7 +17,6 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
@@ -32,6 +31,9 @@ import java.beans.PropertyEditor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 
 
 /** Wraps a legacy PropertyModel object in an instance of Node.Property.
@@ -78,7 +80,7 @@ class ModelProperty extends Property {
 
                 return (PropertyEditor) c.newInstance(new Object[0]);
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
 
                 return new PropUtils.NoPropertyEditorEditor();
             }
@@ -114,7 +116,7 @@ class ModelProperty extends Property {
                     "ExPropertyModel if you only need to wrap a Node.Property " +
                     "object.  PropertyModel will be deprecated soon."
                 ); //NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, uoe);
+            Logger.global.log(Level.WARNING, null, uoe);
 
             return (Property) ((ExPropertyModel) mdl).getFeatureDescriptor();
         } else if (mdl != null) {

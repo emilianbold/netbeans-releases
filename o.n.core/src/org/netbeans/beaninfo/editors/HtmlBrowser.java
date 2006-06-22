@@ -16,14 +16,14 @@ package org.netbeans.beaninfo.editors;
 import java.beans.PropertyEditorSupport;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
-import org.openide.ErrorManager;
+import org.netbeans.core.UIException;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -56,7 +56,7 @@ public class HtmlBrowser extends Object {
                     return i.getDisplayName();
             }
             catch (Exception ex) {
-                ErrorManager.getDefault ().notify (ex);
+                Exceptions.printStackTrace(ex);
             }
             return NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser"); //NOI18N
         }
@@ -89,8 +89,7 @@ public class HtmlBrowser extends Object {
                     HtmlBrowser.class, "FMT_EXC_GENERIC_BAD_VALUE"), //NOI18N
                     new Object[] {str}); 
             }
-            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, str, 
-                msg, e, new java.util.Date());
+            UIException.annotateUser(iae, str, msg, e, new java.util.Date());
             throw iae;
             }
         }

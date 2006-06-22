@@ -51,7 +51,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.Keymap;
-import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;

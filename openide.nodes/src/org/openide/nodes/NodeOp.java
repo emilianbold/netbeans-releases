@@ -14,7 +14,6 @@ package org.openide.nodes;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
@@ -454,13 +453,13 @@ public final class NodeOp extends Object {
      * @param ex exception to notify
      */
     static void exception(Throwable ex) {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        Logger.global.log(Level.WARNING, null, ex);
     }
 
     /** Notifies an exception to error manager or prints its it to stderr.
      * @param ex exception to notify
      */
     static void warning(Throwable ex) {
-        ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+        Logger.global.log(Level.WARNING, null, ex);
     }
 }

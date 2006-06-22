@@ -13,8 +13,10 @@
 
 package org.netbeans.core.execution;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.execution.ExecutorTask;
+import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
 /** Support for Executor beans and for their SysProcess subclasses.
@@ -54,7 +56,7 @@ final class DefaultSysProcess extends ExecutorTask {
             group.stop();
             group.getRunClassThread().waitForEnd();
         } catch (InterruptedException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
         ExecutionEngine.closeGroup(group);
         group.kill();  // force RunClass thread get out - end of exec is fired
@@ -92,17 +94,21 @@ final class DefaultSysProcess extends ExecutorTask {
      * as it seems, since the ThreadGroup can't be destroyed from inside.
      */
     void destroyThreadGroup(ThreadGroup base) {
-        new Thread(base, new Runnable() {
-            public void run() {
-                try {
-                    while (group.activeCount() > 0) {
-                        Thread.sleep(1000);
-                    }
-                } catch (InterruptedException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
-                if (!group.isDestroyed()) group.destroy();
-            }
-        }).start();
+        new Thread(base,
+                   new Runnable() {
+
+                       public void run() {
+                           try {
+                               while (group.activeCount() > 0) {
+                                   Thread.sleep(1000);
+                               }
+                           }
+                           catch (InterruptedException e) {
+                               Exceptions.printStackTrace(e);
+                           }
+                           if (!group.isDestroyed())
+                               group.destroy();
+                       }
+                   }).start();
     }
 }

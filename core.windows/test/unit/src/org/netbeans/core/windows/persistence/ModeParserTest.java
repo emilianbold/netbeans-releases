@@ -14,7 +14,6 @@
 package org.netbeans.core.windows.persistence;
 
 import java.awt.Frame;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -26,12 +25,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.persistence.ModeConfig;
 import org.netbeans.core.windows.SplitConstraint;
-
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /** Functionality tests for saving and loading Mode configuration data

@@ -17,9 +17,9 @@
  */
 
 package org.netbeans.beaninfo.editors;
-import java.beans.*;
 import java.util.Arrays;
-import org.openide.ErrorManager;
+import org.netbeans.beaninfo.editors.ExPropertyEditorSupport.EnvException;
+import org.netbeans.core.UIException;
 import org.openide.explorer.propertysheet.*;
 import org.openide.util.NbBundle;
 /** An editor for primitive integer types which allows hinting of tag
@@ -169,8 +169,7 @@ public class IntEditor extends ExPropertyEditorSupport {
             String msg = NbBundle.getMessage(
                 IntEditor.class, "EXC_ILLEGAL_VALUE_TEXT") + s; //NOI18N
             RuntimeException iae = new IllegalArgumentException(msg); //NOI18N
-            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, msg,
-            msg, nfe, new java.util.Date());
+            UIException.annotateUser(iae, msg, msg, nfe, new java.util.Date());
             throw iae;
         }
     }
@@ -192,8 +191,8 @@ public class IntEditor extends ExPropertyEditorSupport {
                 msg.append(arrToStr(keys));
                 String message = msg.toString();
                 RuntimeException iae = new IllegalArgumentException(message);
-                ErrorManager.getDefault().annotate(iae, ErrorManager.USER,
-                message, message, iae, new java.util.Date());
+                UIException.annotateUser(iae, message, message, iae,
+                                         new java.util.Date());
                 throw iae;
             } else {
                 setValue(new Integer(idx));

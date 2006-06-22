@@ -15,15 +15,8 @@ package org.netbeans.core.windows.view;
 
 
 import java.awt.Dimension;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.core.windows.*;
-import org.netbeans.core.windows.model.ModelElement;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.openide.awt.ToolbarPool;
-import org.openide.util.WeakSet;
-import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,10 +24,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
 import org.openide.awt.ToolbarPool; // Why is this in open API?
@@ -44,15 +33,11 @@ import org.openide.windows.TopComponent;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.ModeStructureSnapshot;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.netbeans.core.windows.view.ui.MainWindow;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.WindowSystemSnapshot;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
-import org.openide.ErrorManager;
-
 
 /**
  * Class which handles view requests, i.e. updates GUI accordingly (ViewHierarchy)

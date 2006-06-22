@@ -13,28 +13,17 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
+
 import java.awt.Cursor;
 import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceContext;
-import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.*;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-import org.openide.ErrorManager;
-import org.openide.explorer.view.NodeRenderer;
-import org.openide.explorer.view.NodeTreeModel;
-import org.openide.explorer.view.Visualizer;
+import javax.swing.tree.*;
+import org.openide.explorer.view.*;
 import org.openide.nodes.Node;
-import org.openide.util.Utilities;
 
 /**
  * A tree displaying a hierarchy of Node in a similar fashion as the TreeView does
@@ -85,7 +74,7 @@ public class ActionsTree extends JTree implements DragGestureListener, DragSourc
                     dge.getDragSource().addDragSourceListener( this );
                     dge.startDrag( dragNoDropCursor, t );
                 } catch( IOException e ) {
-                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                    Logger.global.log(Level.WARNING, null, e);
                 }
             }
         }

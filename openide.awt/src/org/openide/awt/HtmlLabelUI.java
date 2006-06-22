@@ -13,7 +13,6 @@
 
 package org.openide.awt;
 
-import org.openide.ErrorManager;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -33,6 +32,7 @@ import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.LabelUI;
+import org.openide.util.Exceptions;
 
 /**
  * A LabelUI which uses the lightweight HTML renderer. Stateless - only one
@@ -270,12 +270,10 @@ class HtmlLabelUI extends LabelUI {
                 //is the culprit
                 icon.paintIcon(r, g, iconX, iconY);
             } catch (NullPointerException npe) {
-                ErrorManager.getDefault().annotate(
-                    npe, ErrorManager.EXCEPTION,
-                    "Probably an ImageIcon with a null source image: " + icon + " - " + //NOI18N
-                    r.getText(), null, null, null
-                ); //NOI18N
-                ErrorManager.getDefault().notify(npe);
+                Exceptions.attachMessage(npe,
+                                         "Probably an ImageIcon with a null source image: " +
+                                         icon + " - " + r.getText()); //NOI18N
+                Exceptions.printStackTrace(npe);
             }
 
             txtX = iconX + icon.getIconWidth() + r.getIconTextGap();

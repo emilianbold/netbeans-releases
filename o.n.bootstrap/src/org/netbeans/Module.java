@@ -25,10 +25,10 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import org.openide.ErrorManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Union2;
 
@@ -250,7 +250,10 @@ public abstract class Module extends ModuleInfo {
         if (codeName == null) {
             InvalidException e = new InvalidException("Not a module: no OpenIDE-Module tag in manifest of " + /* #17629: important! */this); // NOI18N
             // #29393: plausible user mistake, deal with it politely.
-            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(Module.class, "EXC_not_a_module", this.toString()));
+            Exceptions.attachLocalizedMessage(e,
+                                              NbBundle.getMessage(Module.class,
+                                                                  "EXC_not_a_module",
+                                                                  this.toString()));
             throw e;
         }
         try {

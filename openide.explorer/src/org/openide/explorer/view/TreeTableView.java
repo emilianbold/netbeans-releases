@@ -13,7 +13,6 @@
 package org.openide.explorer.view;
 
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
@@ -29,12 +28,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Level;
 
 import javax.accessibility.AccessibleContext;
 
@@ -44,6 +42,9 @@ import javax.swing.event.*;
 import javax.swing.plaf.metal.MetalScrollBarUI;
 import javax.swing.table.*;
 import javax.swing.tree.*;
+import org.openide.explorer.view.TreeView.PopupAdapter;
+import org.openide.explorer.view.TreeView.PopupSupport;
+import org.openide.explorer.view.TreeView.TreePropertyListener;
 
 
 /** Explorer view. Allows to view tree of nodes on the left
@@ -1302,92 +1303,85 @@ public class TreeTableView extends BeanTreeView {
         synchronized Comparator getRowComparator() {
             if (rowComparator == null) {
                 rowComparator = new Comparator() {
-                            public int compare(Object o1, Object o2) {
-                                if (o1 == o2) {
+
+                    public int compare(Object o1, Object o2) {
+                        if (o1 == o2) {
+                            return 0;
+                        }
+                        Node n1 = ((VisualizerNode) o1).node;
+                        Node n2 = ((VisualizerNode) o2).node;
+
+                        if ((n1 == null) && (n2 == null)) {
+                            return 0;
+                        }
+                        if (n1 == null) {
+                            return 1;
+                        }
+                        if (n2 == null) {
+                            return -1;
+                        }
+                        if ((n1.getParentNode() == null) ||
+                            (n2.getParentNode() == null)) {
+                            // PENDING: throw Exception
+                            Logger.getAnonymousLogger().warning("TTV.compare: Node " +
+                                                                n1 + " or " + n2 +
+                                                                " has no parent!");
+                            return 0;
+                        }
+                        if (!(n1.getParentNode().equals(n2.getParentNode()))) {
+                            // PENDING: throw Exception
+                            Logger.getAnonymousLogger().warning("TTV.compare: Nodes " +
+                                                                n1 + " and " +
+                                                                n2 +
+                                                                " has different parent!");
+                            return 0;
+                        }
+                        int res = 0;
+
+                        if (sortedByName) {
+                            res = n1.getDisplayName().compareTo(n2.getDisplayName());
+                            return sortAscending ? res
+                                                 : (-res);
+                        }
+                        Property p1 = getNodeProperty(n1, sortedByProperty);
+                        Property p2 = getNodeProperty(n2, sortedByProperty);
+
+                        if ((p1 == null) && (p2 == null)) {
+                            return 0;
+                        }
+                        try {
+                            if (p1 == null) {
+                                res = -1;
+                            } else if (p2 == null) {
+                                res = 1;
+                            } else {
+                                Object v1 = p1.getValue();
+                                Object v2 = p2.getValue();
+
+                                if ((v1 == null) && (v2 == null)) {
                                     return 0;
-                                }
-
-                                Node n1 = ((VisualizerNode) o1).node;
-                                Node n2 = ((VisualizerNode) o2).node;
-
-                                if ((n1 == null) && (n2 == null)) {
-                                    return 0;
-                                }
-
-                                if (n1 == null) {
-                                    return 1;
-                                }
-
-                                if (n2 == null) {
-                                    return -1;
-                                }
-
-                                if ((n1.getParentNode() == null) || (n2.getParentNode() == null)) {
-                                    // PENDING: throw Exception
-                                    Logger.getAnonymousLogger().warning(
-                                        "TTV.compare: Node " + n1 + " or " + n2 + " has no parent!"
-                                    ); // NOI18N
-
-                                    return 0;
-                                }
-
-                                if (!(n1.getParentNode().equals(n2.getParentNode()))) {
-                                    // PENDING: throw Exception
-                                    Logger.getAnonymousLogger().warning(
-                                        "TTV.compare: Nodes " + n1 + " and " + n2 + " has different parent!"
-                                    ); // NOI18N
-
-                                    return 0;
-                                }
-
-                                int res = 0;
-
-                                if (sortedByName) {
-                                    res = n1.getDisplayName().compareTo(n2.getDisplayName());
-
-                                    return sortAscending ? res : (-res);
-                                }
-
-                                Node.Property p1 = getNodeProperty(n1, sortedByProperty);
-                                Node.Property p2 = getNodeProperty(n2, sortedByProperty);
-
-                                if ((p1 == null) && (p2 == null)) {
-                                    return 0;
-                                }
-
-                                try {
-                                    if (p1 == null) {
-                                        res = -1;
-                                    } else if (p2 == null) {
-                                        res = 1;
-                                    } else {
-                                        Object v1 = p1.getValue();
-                                        Object v2 = p2.getValue();
-
-                                        if ((v1 == null) && (v2 == null)) {
-                                            return 0;
-                                        } else if (v1 == null) {
-                                            res = -1;
-                                        } else if (v2 == null) {
-                                            res = 1;
-                                        } else {
-                                            if ((v1.getClass() != v2.getClass()) || !(v1 instanceof Comparable)) {
-                                                v1 = v1.toString();
-                                                v2 = v2.toString();
-                                            }
-
-                                            res = ((Comparable) v1).compareTo(v2);
-                                        }
+                                } else if (v1 == null) {
+                                    res = -1;
+                                } else if (v2 == null) {
+                                    res = 1;
+                                } else {
+                                    if ((v1.getClass() != v2.getClass()) ||
+                                        !(v1 instanceof Comparable)) {
+                                        v1 = v1.toString();
+                                        v2 = v2.toString();
                                     }
-
-                                    return sortAscending ? res : (-res);
-                                } catch (Exception ex) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-
-                                    return 0;
+                                    res = ((Comparable) v1).compareTo(v2);
                                 }
                             }
-                        };
+                            return sortAscending ? res
+                                                 : (-res);
+                        }
+                        catch (Exception ex) {
+                            Logger.global.log(Level.WARNING, null, ex);
+                            return 0;
+                        }
+                    }
+                };
             }
 
             return rowComparator;

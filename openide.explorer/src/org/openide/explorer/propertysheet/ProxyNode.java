@@ -12,14 +12,15 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.util.*;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.nodes.Node.PropertySet;
 
 
 /**
@@ -378,23 +379,27 @@ final class ProxyNode extends AbstractNode {
 
             for (int i = 1; i < original.length; i++) {
                 if (Boolean.FALSE.equals(original[i])) {
-                    //issue 38319, see comment above
+                    // issue 38319, see comment above
                     return original[i];
                 }
-
                 if (!o.equals(original[i].getValue(attributeName))) {
-                    //Optionally log it and return null
-                    if (Boolean.getBoolean("netbeans.ps.logDifferentValues")) { //NOI18N
-                        ErrorManager.getDefault().notify(
-                            ErrorManager.INFORMATIONAL,
-                            new DifferentValuesException(
-                                "Different values in attribute " + attributeName + " for proxy property " +
-                                getDisplayName() + "(" + this + ") first value=" + o + " property " + i + "(" +
-                                original[i].getClass().getName() + " returns " + original[i].getValue(attributeName)
-                            )
-                        ); // NOI18N
+                    // Optionally log it and return null
+                    if (Boolean.getBoolean("netbeans.ps.logDifferentValues")) {
+                        Logger.global.log(Level.WARNING, null,
+                                          new DifferentValuesException("Different values in attribute " +
+                                                                       attributeName +
+                                                                       " for proxy property " +
+                                                                       getDisplayName() +
+                                                                       "(" +
+                                                                       this +
+                                                                       ") first value=" +
+                                                                       o +
+                                                                       " property " +
+                                                                       i + "(" +
+                                                                       original[i].getClass().getName() +
+                                                                       " returns " +
+                                                                       original[i].getValue(attributeName)));
                     }
-
                     return null;
                 }
             }

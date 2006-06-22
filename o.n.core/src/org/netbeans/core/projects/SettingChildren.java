@@ -13,7 +13,6 @@
 
 package org.netbeans.core.projects;
 
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataObject;
@@ -38,6 +37,7 @@ import org.openide.actions.ToolsAction;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 
 /** Filters nodes under the session node (displayed in Options dialog), adds special
@@ -211,7 +211,7 @@ public final class SettingChildren extends FilterNode.Children {
                         throw new IllegalArgumentException ("Required file state change isn't allowed. Action=" + action); // NOI18N
                 }
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault ().notify (e);
+                Exceptions.printStackTrace(e);
             }
         }
 

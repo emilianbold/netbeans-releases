@@ -63,6 +63,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -1606,29 +1607,30 @@ public class WizardDescriptor extends DialogDescriptor {
             if (ev.getSource() == nextButton) {
                 final Dimension previousSize = panels.current().getComponent().getSize();
                 Runnable onValidPerformer = new Runnable() {
-                    public void run() {
-                        err.log (Level.FINE, "onValidPerformer on next button entry."); // NOI18N
-                        panels.nextPanel();
 
+                    public void run() {
+                        err.log(Level.FINE,
+                                "onValidPerformer on next button entry.");
+                        panels.nextPanel();
                         try {
                             // change UI to show next step, show wait cursor during
                             // the change
                             goToNextStep(previousSize);
-                        } catch (IllegalStateException ise) {
+                        }
+                        catch (IllegalStateException ise) {
                             panels.previousPanel();
-
                             if (ise.getMessage() != null) {
                                 // this is only for backward compatitility
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
                             } else {
                                 // this should be used (it checks for exception
                                 // annotations and severity)
-                                org.openide.ErrorManager.getDefault().notify(ise);
+                                Exceptions.printStackTrace(ise);
                             }
-
                             updateState();
                         }
-                        err.log (Level.FINE, "onValidPerformer on next button exit."); // NOI18N
+                        err.log(Level.FINE,
+                                "onValidPerformer on next button exit.");
                     }
                 };
                 lazyValidate(panels.current(), onValidPerformer);

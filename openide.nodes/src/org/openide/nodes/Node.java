@@ -895,14 +895,14 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                     String clazz = getClass().getName();
 
                     if (warnedBadProperties.add(clazz + "." + name)) {
-                        org.openide.ErrorManager.getDefault().notify(
-                            org.openide.ErrorManager.INFORMATIONAL,
-                            new IllegalStateException(
-                                "Warning - the node \"" + getDisplayName() + "\" [" + clazz +
-                                "] is trying to fire the property " + name +
-                                " which is not included in its property sets. This is illegal. See IZ #31413 for details."
-                            )
-                        ); // NOI18N
+                        Logger.global.log(Level.WARNING, null,
+                                          new IllegalStateException("Warning - the node \"" +
+                                                                    getDisplayName() +
+                                                                    "\" [" +
+                                                                    clazz +
+                                                                    "] is trying to fire the property " +
+                                                                    name +
+                                                                    " which is not included in its property sets. This is illegal. See IZ #31413 for details.")); // NOI18N
                     }
                 }
             }

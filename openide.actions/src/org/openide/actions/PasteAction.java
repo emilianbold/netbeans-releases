@@ -25,10 +25,11 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.event.EventListenerList;
-import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -36,6 +37,7 @@ import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -157,10 +159,8 @@ public final class PasteAction extends CallbackSystemAction {
             // posts the action in RP thread
             new ActionPT(t, ev.getActionCommand());
         } else {
-            ErrorManager.getDefault().notify(
-                ErrorManager.INFORMATIONAL,
-                new IllegalStateException("No paste types available when performing paste action")
-            ); // NOI18N
+            Logger.global.log(Level.WARNING, null,
+                              new IllegalStateException("No paste types available when performing paste action")); // NOI18N
         }
     }
 
@@ -280,7 +280,7 @@ public final class PasteAction extends CallbackSystemAction {
         }
 
         if (t != null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            Logger.global.log(Level.WARNING, null, t);
         }
 
         return null;
@@ -641,9 +641,9 @@ bigloop:
             try {
                 em.setSelectedNodes(arr);
             } catch (PropertyVetoException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             } catch (IllegalStateException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.global.log(Level.WARNING, null, ex);
             }
         }
 
@@ -780,7 +780,7 @@ bigloop:
             } catch (UserCancelException exc) {
                 // ignore - user just pressed cancel in some dialog....
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             } finally {
                 javax.swing.SwingUtilities.invokeLater(this);
             }

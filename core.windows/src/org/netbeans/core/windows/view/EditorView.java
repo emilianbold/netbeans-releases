@@ -15,33 +15,19 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.openide.ErrorManager;
-import org.openide.cookies.OpenCookie;
-import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
 
-import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.*;
 import java.util.Arrays;
-import org.openide.util.Lookup;
-import org.openide.util.datatransfer.ExClipboard;
-import org.openide.windows.ExternalDropHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
+import javax.swing.border.Border;
+import org.netbeans.core.windows.*;
+import org.netbeans.core.windows.view.dnd.*;
+import org.openide.util.*;
+import org.openide.windows.*;
 
 
 /**
@@ -208,8 +194,9 @@ public class EditorView extends ViewElement {
                     label.setMinimumSize(new Dimension(0, 0)); // XXX To be able shrink the area.
                     add(label, BorderLayout.CENTER);
                 } else {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new NullPointerException("Image not found at " + imageSource)); // NOI18N
+                    Logger.global.log(Level.WARNING, null,
+                                      new java.lang.NullPointerException("Image not found at " +
+                                                                         imageSource)); // NOI18N
                 }
             }
             //listen to files being dragged over the editor area

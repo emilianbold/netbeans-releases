@@ -364,15 +364,15 @@ public final class Utilities {
         try {
             bi = java.beans.Introspector.getBeanInfo(clazz);
         } catch (java.beans.IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().annotate(
-                ie, org.openide.ErrorManager.UNKNOWN, "Encountered while introspecting " + clazz.getName(), null, null, null
-            ); // NOI18N
+            Exceptions.attachMessage(ie,
+                                     "Encountered while introspecting " +
+                                     clazz.getName()); // NOI18N
             throw ie;
         } catch (Error e) {
             // Could be a bug in Introspector triggered by NB code.
-            org.openide.ErrorManager.getDefault().annotate(
-                e, org.openide.ErrorManager.UNKNOWN, "Encountered while introspecting " + clazz.getName(), null, null, null
-            ); // NOI18N
+            Exceptions.attachMessage(e,
+                                     "Encountered while introspecting " +
+                                     clazz.getName()); // NOI18N
             throw e;
         }
 

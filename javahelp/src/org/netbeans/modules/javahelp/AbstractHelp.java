@@ -21,7 +21,6 @@ import javax.swing.event.ChangeListener;
 
 import javax.help.HelpSet;
 
-import org.openide.ErrorManager;
 import org.openide.util.*;
 
 import org.netbeans.api.javahelp.Help;

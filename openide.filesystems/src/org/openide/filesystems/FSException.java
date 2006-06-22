@@ -12,9 +12,8 @@
  */
 package org.openide.filesystems;
 
-import org.openide.ErrorManager;
-
 import java.io.IOException;
+import org.openide.util.Exceptions;
 
 
 /** Localized IOException for filesystems.
@@ -60,42 +59,42 @@ final class FSException extends IOException {
     */
     public static void io(String resource) throws IOException {
         FSException fsExc = new FSException(resource, null);
-        ErrorManager.getDefault().annotate(fsExc, ErrorManager.WARNING, null, fsExc.getLocalizedMessage(), null, null);
+        Exceptions.attachLocalizedMessage(fsExc, fsExc.getLocalizedMessage());
         throw fsExc;
     }
 
     public static void io(String resource, Object[] args)
     throws IOException {
         FSException fsExc = new FSException(resource, args);
-        ErrorManager.getDefault().annotate(fsExc, ErrorManager.WARNING, null, fsExc.getLocalizedMessage(), null, null);
+        Exceptions.attachLocalizedMessage(fsExc, fsExc.getLocalizedMessage());
         throw fsExc;
     }
 
     public static void io(String resource, Object arg1)
     throws IOException {
         FSException fsExc = new FSException(resource, new Object[] { arg1 });
-        ErrorManager.getDefault().annotate(fsExc, ErrorManager.WARNING, null, fsExc.getLocalizedMessage(), null, null);
+        Exceptions.attachLocalizedMessage(fsExc, fsExc.getLocalizedMessage());
         throw fsExc;
     }
 
     public static void io(String resource, Object arg1, Object arg2)
     throws IOException {
         FSException fsExc = new FSException(resource, new Object[] { arg1, arg2 });
-        ErrorManager.getDefault().annotate(fsExc, ErrorManager.WARNING, null, fsExc.getLocalizedMessage(), null, null);
+        Exceptions.attachLocalizedMessage(fsExc, fsExc.getLocalizedMessage());
         throw fsExc;
     }
 
     public static void io(String resource, Object arg1, Object arg2, Object arg3)
     throws IOException {
         FSException fsExc = new FSException(resource, new Object[] { arg1, arg2, arg3 });
-        ErrorManager.getDefault().annotate(fsExc, ErrorManager.WARNING, null, fsExc.getLocalizedMessage(), null, null);
+        Exceptions.attachLocalizedMessage(fsExc, fsExc.getLocalizedMessage());
         throw fsExc;
     }
 
     public static void io(String resource, Object arg1, Object arg2, Object arg3, Object arg4)
     throws IOException {
         FSException fsExc = new FSException(resource, new Object[] { arg1, arg2, arg3, arg4 });
-        ErrorManager.getDefault().annotate(fsExc, ErrorManager.WARNING, null, fsExc.getLocalizedMessage(), null, null);
+        Exceptions.attachLocalizedMessage(fsExc, fsExc.getLocalizedMessage());
         throw fsExc;
     }
 }

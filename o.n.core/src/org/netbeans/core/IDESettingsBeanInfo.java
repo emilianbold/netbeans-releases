@@ -16,11 +16,10 @@ package org.netbeans.core;
 import java.awt.Image;
 import java.beans.*;
 import java.util.ResourceBundle;
+import org.openide.util.Exceptions;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
-import org.openide.ErrorManager;
 
 /** A BeanInfo for global IDE settings.
  *
@@ -112,7 +111,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             
             return desc;
         } catch (IntrospectionException ex) {
-	    ErrorManager.getDefault().notify(ex);
+	    Exceptions.printStackTrace(ex);
 	    return null;
         }
 

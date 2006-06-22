@@ -17,7 +17,8 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
 import java.awt.BorderLayout;
@@ -224,9 +225,7 @@ class WrapperInplaceEditor extends JPanel implements InplaceEditor, ActionListen
             //What we are doing here is dangerous and may fail depending on 
             //the implementation of the legacy editor, so log the exception
             //but don't notify the user
-            ErrorManager.getDefault().annotate(
-                e, ErrorManager.WARNING, "Failure resetting legacy editor", null, null, null
-            ); //NOI18N
+            Logger.global.log(Level.WARNING, "Failure resetting legacy editor", e); //NOI18N
         } finally {
             suspendEvents = false;
         }
@@ -255,9 +254,7 @@ class WrapperInplaceEditor extends JPanel implements InplaceEditor, ActionListen
             //What we are doing here is dangerous and may fail depending on 
             //the implementation of the legacy editor, so log the exception
             //but don't notify the user
-            ErrorManager.getDefault().annotate(
-                e, ErrorManager.WARNING, "Failure resetting legacy editor", null, null, null
-            ); //NOI18N
+            Logger.global.log(Level.WARNING, "Failure resetting legacy editor", e); //NOI18N
         } finally {
             suspendEvents = false;
         }

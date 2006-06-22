@@ -43,6 +43,8 @@ import java.awt.event.ActionListener;
 import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -59,7 +61,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -593,7 +594,7 @@ public final class IndexedCustomizer extends JDialog implements Customizer {
                 // remember the gesture
                 this.dge = dge;
             } catch (InvalidDnDOperationException exc) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                Logger.global.log(Level.WARNING, null, exc);
 
                 // PENDING notify user - cannot start the drag
             }

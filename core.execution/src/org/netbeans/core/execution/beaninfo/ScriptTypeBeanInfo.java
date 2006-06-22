@@ -15,8 +15,9 @@ package org.netbeans.core.execution.beaninfo;
 
 import java.awt.Image;
 import java.beans.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.openide.*;
 import org.openide.execution.ScriptType;
 import org.openide.util.Utilities;
 
@@ -33,7 +34,7 @@ public class ScriptTypeBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (org.openide.ServiceType.class) };
         } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
+            Logger.global.log(Level.WARNING, null, ie);
             return null;
         }
     }

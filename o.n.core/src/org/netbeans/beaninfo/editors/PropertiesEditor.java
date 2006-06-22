@@ -18,10 +18,10 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.beans.PropertyEditorSupport;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
-
-import org.openide.ErrorManager;
+import org.netbeans.core.UIException;
 import org.openide.util.NbBundle;
 
 
@@ -77,8 +77,7 @@ public class PropertiesEditor extends PropertyEditorSupport {
                 NbBundle.getMessage(
                     PropertiesEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"), new Object[] {text}); //NOI18N
             }
-            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, iae.getMessage(), 
-             msg, ioe, new java.util.Date());
+            UIException.annotateUser(iae, iae.getMessage(), msg, ioe, new Date());
             throw iae;
         }
     }

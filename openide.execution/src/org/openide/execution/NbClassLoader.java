@@ -24,11 +24,11 @@ import java.security.PermissionCollection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.jar.Manifest;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
@@ -124,34 +124,41 @@ public class NbClassLoader extends URLClassLoader {
                 String resource = name.replace ('.', '/') + ".class"; // NOI18N
                 URL[] urls = getURLs ();
                 for (int i = 0; i < urls.length; i++) {
-                    //System.err.println (urls[i].toString ());
+                    // System.err.println (urls[i].toString ());
                     FileObject root = URLMapper.findFileObject(urls[i]);
+
                     if (root == null) {
-                        continue; // pretty normal, e.g. non-nbfs: URL
+                        continue;
                     }
                     try {
                         FileObject fo = root.getFileObject(resource);
+
                         if (fo != null) {
                             // Got it. If there is an associated manifest, load it.
-                            FileObject manifo = root.getFileObject("META-INF/MANIFEST.MF"); // NOI18N
-                            if (manifo == null) manifo = root.getFileObject("meta-inf/manifest.mf"); // NOI18N
+                            FileObject manifo = root.getFileObject("META-INF/MANIFEST.MF");
+
+                            if (manifo == null)
+                                manifo = root.getFileObject("meta-inf/manifest.mf");
                             if (manifo != null) {
-                                //System.err.println (manifo.toString () + " " + manifo.getClass ().getName () + " " + manifo.isValid ());
-                                Manifest mani = new Manifest ();
-                                InputStream is = manifo.getInputStream ();
+                                // System.err.println (manifo.toString () + " " + manifo.getClass ().getName () + " " + manifo.isValid ());
+                                Manifest mani = new Manifest();
+                                InputStream is = manifo.getInputStream();
+
                                 try {
-                                    mani.read (is);
-                                } finally {
-                                    is.close ();
+                                    mani.read(is);
                                 }
-                                definePackage (pkg, mani, urls[i]);
+                                finally {
+                                    is.close();
+                                }
+                                definePackage(pkg, mani, urls[i]);
                             }
                             break;
                         }
-                    } catch (IOException ioe) {
-                        ErrorManager err = ErrorManager.getDefault();
-                        err.annotate (ioe, urls[i].toString ());
-                        err.notify (ErrorManager.INFORMATIONAL, ioe);
+                    }
+                    catch (IOException ioe) {
+                        Exceptions.attachLocalizedMessage(ioe,
+                                                          urls[i].toString());
+                        Exceptions.printStackTrace(ioe);
                         continue;
                     }
                 }

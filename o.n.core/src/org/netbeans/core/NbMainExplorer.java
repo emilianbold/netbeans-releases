@@ -19,23 +19,19 @@ import java.io.ObjectInput;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import org.netbeans.core.IDESettings;
-
-import org.openide.*;
-import org.openide.actions.*;
-import org.openide.loaders.*;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
-import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeListener;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
 import org.openide.windows.CloneableTopComponent;
@@ -332,7 +328,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
                         ("Incorrect settings file. Unexpected class returned." // NOI18N
                         + " Expected:" + MainTab.class.getName() // NOI18N
                         + " Returned:" + tc.getClass().getName()); // NOI18N
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                        Logger.global.log(Level.WARNING, null, exc);
                         panel = MainTab.getDefaultMainTab();
                     }
                 } else {
@@ -692,7 +688,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             try {
                 nue.getExplorerManager().setSelectedNodes(getExplorerManager().getSelectedNodes());
             } catch (PropertyVetoException pve) {
-                ErrorManager.getDefault().notify(pve);
+                Exceptions.printStackTrace(pve);
             }
             return nue;
         }

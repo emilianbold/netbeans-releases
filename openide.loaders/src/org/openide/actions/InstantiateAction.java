@@ -13,18 +13,12 @@
 
 package org.openide.actions;
 
+
 import java.io.IOException;
-import java.awt.*;
-
-import javax.swing.*;
-
-import org.openide.*;
-import org.openide.loaders.*;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.actions.NodeAction;
-import org.openide.util.UserCancelException;
 
 /** Instantiate a template.
 * Enabled only when there is one selected node and
@@ -53,7 +47,7 @@ public class InstantiateAction extends NodeAction {
                 // canceled by user
                 // do not notify the exception
             } catch (IOException ex) {
-                ErrorManager.getDefault ().notify (ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }

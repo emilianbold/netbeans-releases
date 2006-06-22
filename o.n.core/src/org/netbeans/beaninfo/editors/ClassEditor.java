@@ -14,7 +14,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.text.MessageFormat;
-import org.openide.ErrorManager;
+import org.netbeans.core.UIException;
 
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -70,8 +70,8 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
             String msg = MessageFormat.format(
                 NbBundle.getMessage(
                     ClassEditor.class, "FMT_EXC_CANT_LOAD_CLASS"), new Object[] {text}); //NOI18N
-            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, e.getMessage(), 
-             msg, e, new java.util.Date());
+            UIException.annotateUser(iae, e.getMessage(), msg, e,
+                                     new java.util.Date());
             throw iae;
         }
     }

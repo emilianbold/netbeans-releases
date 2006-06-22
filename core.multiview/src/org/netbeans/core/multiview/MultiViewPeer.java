@@ -35,7 +35,6 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport.Pane;

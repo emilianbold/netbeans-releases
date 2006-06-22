@@ -19,17 +19,15 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JFileChooser;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
-import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -45,7 +43,6 @@ import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
@@ -378,7 +375,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             manager.setSelectedNodes (new Node [] { newSubfolder });
             view.invokeInplaceEditing ();
         } catch (PropertyVetoException pve) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, pve);
+            Logger.global.log(Level.WARNING, null, pve);
         }
         
     }//GEN-LAST:event_newFolderButtonActionPerformed
@@ -387,9 +384,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         Node [] nodes = manager.getSelectedNodes (); 
         for (int i = 0; i < nodes.length; i++) {
             try {
-                nodes [i].destroy ();
-            } catch (IOException ioe) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+                nodes[i].destroy();
+            }
+            catch (IOException ioe) {
+                Logger.global.log(Level.WARNING, null, ioe);
             }
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
@@ -552,7 +550,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         try {
             sourceDO = DataObject.find (sourceFO);
         } catch (DataObjectNotFoundException donfe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, donfe);
+            Logger.global.log(Level.WARNING, null, donfe);
         }
         assert sourceDO != null : "DataObject found for FileObject " + sourceFO;
         DataFolder folder = preferred == null ? DataFolder.findFolder (getTemplatesRoot ()) : preferred;
@@ -561,7 +559,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             template = sourceDO.copy (folder);
             template.setTemplate (true);
         } catch (IOException ioe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+            Logger.global.log(Level.WARNING, null, ioe);
         }
         return template;
     }
@@ -594,7 +592,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             df = DataFolder.create (pref, NbBundle.getBundle(TemplatesPanel.class).getString("TXT_TemplatesPanel_NewFolderName")); // NOI18N
             assert df != null : "New subfolder found in folder " + pref;
         } catch (IOException ioe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+            Logger.global.log(Level.WARNING, null, ioe);
         }
         
         return df;
@@ -605,7 +603,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         try {
             return source.copy (source.getFolder ());
         } catch (IOException ioe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+            Logger.global.log(Level.WARNING, null, ioe);
         }
         return null;
     }

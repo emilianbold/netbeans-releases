@@ -12,7 +12,6 @@
  */
 package org.openide.actions;
 
-import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -20,6 +19,7 @@ import org.openide.util.actions.CallableSystemAction;
 
 import javax.swing.UIManager;
 import javax.swing.undo.CannotRedoException;
+import org.openide.util.Exceptions;
 
 
 /** Redo an edit.
@@ -65,7 +65,7 @@ public class RedoAction extends CallableSystemAction {
                 undoRedo.redo();
             }
         } catch (CannotRedoException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
 
         UndoAction.updateStatus();

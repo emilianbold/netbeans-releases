@@ -39,6 +39,8 @@ import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.StringReader;
 import java.util.EventObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -61,11 +63,11 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-import org.openide.ErrorManager;
 import org.openide.awt.HtmlRenderer;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -816,7 +818,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             //displaying "Error fetching property value" in the value area of
             //the propertysheet.  No point in distracting the user with a 
             //stack trace - it's not our bug.
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ise);
+            Logger.global.log(Level.WARNING, null, ise);
         }
 
         return false;
@@ -1144,7 +1146,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
                     return true;
                 } catch (Exception ex) {
                     //Something wrong, log it
-                    org.openide.ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }

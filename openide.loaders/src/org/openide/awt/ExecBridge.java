@@ -13,15 +13,13 @@
 
 package org.openide.awt;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
+import java.awt.event.*;
 import java.beans.*;
 import java.lang.reflect.Method;
-
 import javax.swing.*;
-import org.openide.ErrorManager;
-
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /** Menu item associated with data object. When
@@ -75,7 +73,7 @@ class ExecBridge extends Object implements ActionListener, PropertyChangeListene
                 Method m = getExecCookieClass().getMethod("start", new Class[] {});
                 m.invoke(ec, new Object[] {});
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }

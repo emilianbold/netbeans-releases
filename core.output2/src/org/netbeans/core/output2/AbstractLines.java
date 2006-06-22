@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.windows.OutputListener;
 
@@ -793,7 +793,7 @@ abstract class AbstractLines implements Lines, Runnable {
                 return pat.matcher(data);
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -822,7 +822,7 @@ abstract class AbstractLines implements Lines, Runnable {
                 return matcher;
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return null;
     }

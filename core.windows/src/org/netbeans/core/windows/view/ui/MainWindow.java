@@ -13,9 +13,9 @@
 
 package org.netbeans.core.windows.view.ui;
 
+
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -23,50 +23,20 @@ import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.event.PaintEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.lang.reflect.Method;
-import java.text.Format;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.JSeparator;
-import javax.swing.MenuElement;
-import javax.swing.MenuSelectionManager;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.openide.awt.StatusLineElementProvider;
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.openide.ErrorManager;
+import java.text.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.event.*;
+import org.netbeans.core.windows.*;
 import org.openide.LifecycleManager;
-import org.openide.awt.MenuBar;
-import org.openide.awt.ToolbarPool;
+import org.openide.awt.*;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 
 /** The MainWindow of IDE. Holds toolbars, main menu and also entire desktop
  * if in MDI user interface. Singleton.
@@ -357,7 +327,7 @@ public final class MainWindow extends JFrame {
                  }
              }
          } catch (Exception e) {
-             ErrorManager.getDefault().notify(e);
+             Exceptions.printStackTrace(e);
          }
          return null;
      }
@@ -384,7 +354,7 @@ public final class MainWindow extends JFrame {
                  }
              }
          } catch (Exception e) {
-             ErrorManager.getDefault().notify(e);
+             Exceptions.printStackTrace(e);
          }
          return null;
      }

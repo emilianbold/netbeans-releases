@@ -13,37 +13,26 @@
 
 package org.netbeans.core.windows.services;
 
+
+import java.awt.datatransfer.Transferable;
+import java.beans.*;
+import java.io.IOException;
 import java.text.MessageFormat;
-import javax.swing.Action;
-import javax.swing.JSeparator;
+import java.util.*;
+import javax.swing.*;
 import org.netbeans.core.NbPlaces;
 import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.*;
-import org.openide.awt.Toolbar;
-import org.openide.awt.ToolbarPool;
+import org.openide.awt.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.InstanceDataObject;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.loaders.*;
+import org.openide.nodes.*;
+import org.openide.nodes.FilterNode.Children;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.datatransfer.NewType;
-import org.openide.util.datatransfer.PasteType;
-import java.awt.datatransfer.Transferable;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.*;
-import java.util.List;
-import org.openide.loaders.LoaderTransfer;
+import org.openide.util.datatransfer.*;
 
 
 /** The node for the toolbar folder representation.
@@ -133,7 +122,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                         org.openide.DialogDisplayer.getDefault().notify( msg );
                     }
                 } catch (IOException e) {
-                    ErrorManager.getDefault ().notify (e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -469,7 +458,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                     );
                 }
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault ().notify (e);
+                Exceptions.printStackTrace(e);
             }
         }
         //End
@@ -589,9 +578,9 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                                 return tc;
                         }
                     } catch (java.io.IOException ex) {
-                        ErrorManager.getDefault ().notify (ex);
+                        Exceptions.printStackTrace(ex);
                     } catch (ClassNotFoundException ex) {
-                        ErrorManager.getDefault ().notify (ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }

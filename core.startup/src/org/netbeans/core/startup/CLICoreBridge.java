@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.CLIHandler;
 import org.netbeans.Module;
-import org.openide.ErrorManager;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -69,14 +69,13 @@ public class CLICoreBridge extends CLIHandler {
         
         
         ArrayList<URL> urls = new ArrayList<URL>();
-        {
-            for (Module m: moduleSystem.getManager().getModules()) {
-                for (File f : m.getAllJars()) {
-                    try {
-                        urls.add(f.toURI().toURL());
-                    } catch (MalformedURLException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
+        for (Module m : moduleSystem.getManager().getModules()) {
+            for (File f : m.getAllJars()) {
+                try {
+                    urls.add(f.toURI().toURL());
+                }
+                catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }

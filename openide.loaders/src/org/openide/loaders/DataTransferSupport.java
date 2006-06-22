@@ -18,24 +18,16 @@
 
 package org.openide.loaders;
 
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.awt.Mnemonics;
-import org.openide.cookies.InstanceCookie;
-import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
-import org.openide.NotifyDescriptor;
-import org.openide.ErrorManager;
-import org.openide.util.datatransfer.*;
-import org.openide.filesystems.*;
 
-import java.awt.datatransfer.*;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import org.openide.DialogDisplayer;
+import java.awt.datatransfer.Transferable;
+import java.io.*;
+import java.util.Arrays;
+import java.util.logging.*;
+import org.openide.*;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.*;
+import org.openide.util.*;
+import org.openide.util.datatransfer.*;
 
 /** Support for data transfer Paste operation.
  * @author  Vita Stejskal
@@ -122,21 +114,25 @@ abstract class DataTransferSupport {
         /** Paste all DataObjects */
         public final Transferable paste() throws IOException {
             if (javax.swing.SwingUtilities.isEventDispatchThread()) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        String n = org.openide.awt.Actions.cutAmpersand(getName());
-                        ProgressHandle h = ProgressHandleFactory.createHandle(n);
-                        h.start();
-                        h.switchToIndeterminate();
-                        try {
-                            doPaste();
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
-                        } finally {
-                            h.finish();
-                        }
-                    }
-                });
+                org.openide.util.RequestProcessor.getDefault().post(new java.lang.Runnable() {
+
+                                                                        public void run() {
+                                                                            java.lang.String n = org.openide.awt.Actions.cutAmpersand(getName());
+                                                                            org.netbeans.api.progress.ProgressHandle h = org.netbeans.api.progress.ProgressHandleFactory.createHandle(n);
+
+                                                                            h.start();
+                                                                            h.switchToIndeterminate();
+                                                                            try {
+                                                                                doPaste();
+                                                                            }
+                                                                            catch (java.io.IOException ioe) {
+                                                                                Exceptions.printStackTrace(ioe);
+                                                                            }
+                                                                            finally {
+                                                                                h.finish();
+                                                                            }
+                                                                        }
+                                                                    });
             } else {
                 doPaste();
             }

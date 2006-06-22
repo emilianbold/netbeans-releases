@@ -27,7 +27,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * A simple editor kit which provides instances of ExtPlainView/ExtWrappedPlainView as its views.
@@ -134,7 +134,7 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
             comp.repaint (r);
         } catch (BadLocationException e) {
             comp.repaint();
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
 }

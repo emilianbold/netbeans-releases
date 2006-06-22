@@ -40,6 +40,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.explorer.UIException;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -789,7 +790,8 @@ public class PropertyPanelInDialogTest extends NbTestCase {
                 myVal = val;
             } else {
                 IllegalArgumentException iae = new IllegalArgumentException("No!");
-                ErrorManager.getDefault().annotate(iae, ErrorManager.USER, "NoNo!", "Localized message",null, null);
+                UIException.annotateUser(iae, "NoNo!", "Localized message", null,
+                                         null);
                 throw iae;
             }
         }
@@ -915,7 +917,8 @@ public class PropertyPanelInDialogTest extends NbTestCase {
                 }
             }
             IllegalArgumentException iae = new IllegalArgumentException(txt);
-            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, txt, txt + " is not a valid value", null, null);
+            UIException.annotateUser(iae, txt, txt + " is not a valid value",
+                                     null, null);
         }
         
         public Object getValue() {

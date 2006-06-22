@@ -13,24 +13,16 @@
 
 package org.openide.text;
 
-import java.beans.PropertyChangeListener;
-import java.beans.VetoableChangeListener;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+
+import java.beans.*;
+import java.io.*;
+import java.util.*;
 import javax.swing.JEditorPane;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
-import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.CloneableTopComponent;
+import org.openide.util.io.NbMarshalledObject;
+import org.openide.windows.*;
 
 public class CloneableEditorTest extends NbTestCase 
 implements CloneableEditorSupport.Env {
@@ -159,7 +151,7 @@ implements CloneableEditorSupport.Env {
                     return notify;
                 }
             };
-            ErrorManager.getDefault ().annotate (e, cannotBeModified);
+            Exceptions.attachLocalizedMessage(e, cannotBeModified);
             throw e;
         }
         

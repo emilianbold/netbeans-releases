@@ -12,11 +12,12 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
 
 import java.beans.*;
 
 import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** The default implementation of PropertyModel interface.
@@ -121,7 +122,7 @@ public class DefaultPropertyModel extends Object implements ExPropertyModel, Pro
                 }
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
         }
     }
 
@@ -146,9 +147,7 @@ public class DefaultPropertyModel extends Object implements ExPropertyModel, Pro
             throw new IllegalArgumentException("No property named " + name + " in class " + bean.getClass() // NOI18N
             );
         } catch (IntrospectionException e) {
-            IllegalArgumentException newEx = new IllegalArgumentException();
-            ErrorManager.getDefault().annotate(newEx, e);
-            throw newEx;
+            throw (IllegalArgumentException) new IllegalArgumentException(e.toString()).initCause(e);
         }
     }
 
@@ -165,7 +164,7 @@ public class DefaultPropertyModel extends Object implements ExPropertyModel, Pro
         try {
             return (readMethod == null) ? null : readMethod.invoke(bean, new Object[] {  });
         } catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
             throw new InvocationTargetException(e);
         }
     }
@@ -182,7 +181,7 @@ public class DefaultPropertyModel extends Object implements ExPropertyModel, Pro
                 donotfire = false;
             }
         } catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
             throw new InvocationTargetException(e);
         }
     }

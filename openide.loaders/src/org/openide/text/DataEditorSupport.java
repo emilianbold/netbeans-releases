@@ -13,37 +13,21 @@
 
 package org.openide.text;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.OutputStream;
+
+import java.beans.*;
+import java.io.*;
 import java.lang.ref.Reference;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.EditorKit;
-import javax.swing.text.StyledDocument;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.OpenSupport;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeListener;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import javax.swing.text.*;
+import org.netbeans.modules.openide.loaders.UIException;
+import org.openide.*;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.nodes.*;
+import org.openide.util.*;
+import org.openide.util.lookup.*;
 import org.openide.windows.CloneableOpenSupport;
 
 /**
@@ -288,11 +272,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
     public void saveDocument() throws IOException {
         if(desEnv().isModified() && isEnvReadOnly()) {
             IOException e = new IOException("File is read-only: " + ((Env)env).getFileImpl()); // NOI18N
-            ErrorManager.getDefault().annotate(e, ErrorManager.USER, null, NbBundle.getMessage(DataObject.class,
-                "MSG_FileReadOnlySaving", 
-                new Object[] {((Env)env).getFileImpl().getNameExt()}),
-                null, null
-            );
+            UIException.annotateUser(e, null,
+                                     org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class,
+                                                                          "MSG_FileReadOnlySaving",
+                                                                          new java.lang.Object[]{((org.openide.text.DataEditorSupport.Env) env).getFileImpl().getNameExt()}),
+                                     null, null);
             throw e;
         }
         super.saveDocument();
@@ -419,8 +403,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
                     fileLock = takeLock ();
                     ERR.fine("changeFile takeLock: " + fileLock + " for " + fileObject); // NOI18N
                 } catch (IOException e) {
-                    ErrorManager.getDefault ().notify (
-                	    ErrorManager.INFORMATIONAL, e);
+                    Logger.global.log(Level.WARNING, null, e);
                 }
             }
             

@@ -33,6 +33,7 @@ import java.util.*;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.util.Exceptions;
 
 
 /** A basic implementation of a node.
@@ -534,7 +535,7 @@ public class AbstractNode extends Node {
                 return true;
             }
         } catch (NoSuchMethodException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
 
         return false;

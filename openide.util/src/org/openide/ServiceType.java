@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -63,7 +64,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
             return Introspector.getBeanInfo(getClass()).getBeanDescriptor().getDisplayName();
         } catch (Exception e) {
             // Catching IntrospectionException, but also maybe NullPointerException...?
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.global.log(Level.WARNING, null, e);
 
             return getClass().getName();
         }
@@ -106,9 +107,8 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
         // moreover it should never happen that this code is executed
         IllegalStateException ex = new IllegalStateException();
 
-        ErrorManager err = ErrorManager.getDefault();
-        err.copyAnnotation(ex, anEx);
-        err.annotate(ex, "Cannot createClone for " + this); // NOI18N
+        ex.initCause(anEx);
+        Exceptions.attachLocalizedMessage(ex, "Cannot createClone for " + this); // NOI18N
 
         throw ex;
     }

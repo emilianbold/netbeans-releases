@@ -33,7 +33,8 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.jar.Attributes;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Convenience class permitting easy loading of localized resources of various sorts.
 * Extends the functionality of the default Java resource support, and interacts
@@ -411,13 +412,10 @@ public class NbBundle extends Object {
             MissingResourceException e = new MissingResourceException("No such bundle " + baseName, baseName, null); // NOI18N
 
             if (Lookup.getDefault().lookup(ClassLoader.class) == null) {
-                ErrorManager.getDefault().annotate(
-                    e, ErrorManager.UNKNOWN, "Class loader not yet initialized in lookup", null, null, null
-                ); // NOI18N
+                Exceptions.attachMessage(e,
+                                         "Class loader not yet initialized in lookup"); // NOI18N
             } else {
-                ErrorManager.getDefault().annotate(
-                    e, ErrorManager.UNKNOWN, "Offending classloader: " + loader, null, null, null
-                ); // NOI18N
+                Exceptions.attachMessage(e, "Offending classloader: " + loader); // NOI18N
             }
 
             throw e;
@@ -532,10 +530,8 @@ public class NbBundle extends Object {
                         is.close();
                     }
                 } catch (IOException e) {
-                    ErrorManager.getDefault().annotate(
-                        e, ErrorManager.UNKNOWN, "While loading: " + res, null, null, null
-                    ); // NOI18N
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                    Exceptions.attachMessage(e, "While loading: " + res); // NOI18N
+                    Logger.global.log(Level.WARNING, null, e);
 
                     return null;
                 }
@@ -582,9 +578,9 @@ public class NbBundle extends Object {
             } catch (ClassNotFoundException cnfe) {
                 // fine - ignore
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                Logger.global.log(Level.WARNING, null, e);
             } catch (LinkageError e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                Logger.global.log(Level.WARNING, null, e);
             }
         }
 
@@ -748,13 +744,10 @@ public class NbBundle extends Object {
                 an = new Attributes.Name(k);
             } catch (IllegalArgumentException iae) {
                 // Robustness, and workaround for reported MRJ locale bug:
-                ErrorManager em = ErrorManager.getDefault();
-                em.annotate(
-                    iae, ErrorManager.WARNING, k,
-                    getMessage(NbBundle.class, "EXC_bad_attributes_name", k, Locale.getDefault().toString()), null,
-                    null
+                Exceptions.attachLocalizedMessage(iae, 
+                    getMessage(NbBundle.class, "EXC_bad_attributes_name", k, Locale.getDefault().toString()) 
                 );
-                em.notify(iae);
+                Exceptions.printStackTrace(iae);
 
                 return null;
             }

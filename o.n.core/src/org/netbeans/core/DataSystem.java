@@ -24,8 +24,9 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -244,7 +245,7 @@ implements RepositoryListener {
                     root = DataObject.find(fsystem.getRoot());
                 }
                 catch (DataObjectNotFoundException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.global.log(Level.WARNING, null, e);
                     // root will remain null and will be accepted
                     // (as that seems safer than not accepting it)
                 }
@@ -262,23 +263,25 @@ implements RepositoryListener {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 FileObject fo = fetchFileObject(file, mapper);
+
                 if (fo != null) {
                     try {
                         fo = fo.getFileSystem().getRoot();
-                    } catch (FileStateInvalidException e) {
+                    }
+                    catch (FileStateInvalidException e) {
                         continue;
                     }
-
                     DataObject root = null;
+
                     try {
                         root = DataObject.find(fo);
-                    } catch (DataObjectNotFoundException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                        // root will remain null and will be accepted
-                        // (as that seems safer than not accepting it)
                     }
-                    if ((root instanceof DataFolder) && getDS().filter.acceptDataObject(root)) {
-                        rootSet.add((DataFolder)root);
+                    catch (DataObjectNotFoundException e) {
+                        Logger.global.log(Level.WARNING, null, e);
+                    }
+                    if ((root instanceof DataFolder) &&
+                        getDS().filter.acceptDataObject(root)) {
+                        rootSet.add((DataFolder) root);
                     }
                 }
             }

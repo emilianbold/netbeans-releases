@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 
 import javax.swing.*;

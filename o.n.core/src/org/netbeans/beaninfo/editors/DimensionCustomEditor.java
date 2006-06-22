@@ -17,16 +17,10 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ResourceBundle;
+import org.netbeans.core.UIException;
 
-import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
-
-/*
- * DimensionCustomEditorX.java
- *
- * Created on March 7, 2001, 6:44 PM
- */
 
 /**
  *
@@ -73,17 +67,15 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Propert
             int height = Integer.parseInt (heightField.getText ());
             if ((width < 0) || (height < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                ErrorManager.getDefault().annotate(
-                    ise, ErrorManager.ERROR, null, 
+                UIException.annotateUser(ise, null, 
                     NbBundle.getMessage(DimensionCustomEditor.class, "CTL_NegativeSize"), null, null);
                 throw ise;
             }
             return new Dimension (width, height);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            ErrorManager.getDefault().annotate(
-                ise, ErrorManager.ERROR, null, 
-                NbBundle.getMessage(DimensionCustomEditor.class, "CTL_InvalidValue"), null, null);
+            UIException.annotateUser(ise, null, 
+                NbBundle.getMessage(DimensionCustomEditor.class, "CTL_NegativeSize"), null, null);
             throw ise;
         }
     }

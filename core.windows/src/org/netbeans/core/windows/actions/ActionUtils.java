@@ -14,41 +14,20 @@
 
 package org.netbeans.core.windows.actions;
 
+
 import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.KeyStroke;
-
-import org.openide.util.actions.Presenter;
-import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponent;
-
+import java.awt.event.*;
+import java.beans.*;
 import java.io.IOException;
 import java.util.*;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
+import javax.swing.*;
+import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.view.ui.slides.SlideController;
-import org.openide.ErrorManager;
 import org.openide.actions.SaveAction;
 import org.openide.cookies.SaveCookie;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.*;
+import org.openide.util.*;
+import org.openide.util.actions.Presenter;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -243,7 +222,7 @@ public abstract class ActionUtils {
             try {
                 sc.save();
             } catch(IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
     }

@@ -19,9 +19,7 @@
 package org.netbeans.core.output2;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * Sparse array integer keyed map.  Similar to a standard Collections map,
@@ -98,7 +96,7 @@ final class IntMap {
                 "AIOOBE in IntMap.getKeys() - last = " + last + " keys: " + 
                 i2s(keys) + " vals: " + Arrays.asList(vals) + " result length "
                 + result.length);
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return new int[0];
         }
     }

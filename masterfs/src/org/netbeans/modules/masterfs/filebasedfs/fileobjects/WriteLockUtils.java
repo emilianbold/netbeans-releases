@@ -13,17 +13,12 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
-import org.openide.filesystems.FileLock;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.HashSet;
-import java.util.Set;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 
 /** 
@@ -57,7 +52,7 @@ public class WriteLockUtils {
         try {
             file = file.getCanonicalFile();
         } catch (IOException iex) {
-            ErrorManager.getDefault().notify(iex);            
+            Exceptions.printStackTrace(iex);            
         }
         
         final File parentFile = file.getParentFile();

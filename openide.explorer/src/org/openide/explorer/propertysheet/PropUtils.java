@@ -10,11 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * PropUtils.java
- *
- * Created on January 4, 2003, 7:31 PM
- */
 package org.openide.explorer.propertysheet;
 
 import java.util.logging.Level;
@@ -43,7 +38,6 @@ import java.util.*;
 import javax.accessibility.AccessibleRole;
 
 import javax.swing.*;
-import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.border.Border;
 import javax.swing.plaf.SplitPaneUI;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
@@ -51,6 +45,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.plaf.metal.*;
 
 import org.netbeans.modules.openide.explorer.PsSettings;
+import org.netbeans.modules.openide.explorer.UIException;
 
 
 /** A few utility methods useful to implementors of Inplace Editors.
@@ -641,29 +636,27 @@ final class PropUtils {
             throw (ThreadDeath) throwable;
         }
 
-        ErrorManager em = ErrorManager.getDefault();
-        ErrorManager.Annotation[] anns = em.findAnnotations(throwable);
+        String locMsg = Exceptions.findLocalizedMessage(throwable);
 
-        if (((anns == null) || (anns.length == 0)) && (throwable.getLocalizedMessage() != throwable.getMessage())) { //XXX See issue 34569
+        if (locMsg != null
+            && (throwable.getLocalizedMessage() != throwable.getMessage())) { //XXX See issue 34569
 
             String msg = MessageFormat.format(
                     NbBundle.getMessage(PropUtils.class, "FMT_ErrorSettingProperty"), new Object[] { newValue, title }
                 ); //NOI18N
-            em.annotate(
-                throwable, ErrorManager.USER, msg, throwable.getLocalizedMessage(), throwable, new java.util.Date()
-            );
+            UIException.annotateUser(throwable, msg,
+                                     throwable.getLocalizedMessage(), throwable,
+                                     new Date());
         } else if (throwable instanceof NumberFormatException) {
             //Handle NFE's from the core sun.beans property editors w/o raising stack traces
-            em.annotate(
-                throwable, ErrorManager.USER, throwable.getMessage(),
-                MessageFormat.format(
-                    NbBundle.getMessage(PropUtils.class, "FMT_BAD_NUMBER_FORMAT"), //NOI18N
-                    new Object[] { newValue }
-                ), null, null
-            );
+            UIException.annotateUser(throwable, throwable.getMessage(),
+                                     MessageFormat.format(NbBundle.getMessage(PropUtils.class,
+                                                                              "FMT_BAD_NUMBER_FORMAT"),
+                                                          new Object[]{newValue}),
+                                     null, null);
         }
 
-        em.notify(throwable);
+        Exceptions.printStackTrace(throwable);
     }
 
     /** Fetches a localized message for an exception that may be displayed to
@@ -679,13 +672,14 @@ final class PropUtils {
                 return null;
             }
 
-            ErrorManager em = ErrorManager.getDefault();
-
             if (throwable.getLocalizedMessage() != throwable.getMessage()) {
                 return throwable.getLocalizedMessage();
             }
 
-            ErrorManager.Annotation[] anns = em.findAnnotations(throwable);
+            String msg = Exceptions.findLocalizedMessage(throwable);
+            if (msg != null) {
+                return msg;
+            }
 
             if (throwable instanceof NumberFormatException) {
                 //Handle NFE's from the core sun.beans property editors w/o raising stack traces
@@ -693,18 +687,9 @@ final class PropUtils {
                     NbBundle.getMessage(PropUtils.class, "FMT_BAD_NUMBER_FORMAT"), //NOI18N
                     new Object[] { newValue }
                 );
-            } else if ( /* #34596 */
-                anns != null
-            ) {
-                for (int i = 0; i < anns.length; i++) {
-                    if ((anns[i].getLocalizedMessage() != null) && (anns[i].getSeverity() == ErrorManager.USER)) {
-                        return anns[i].getLocalizedMessage();
-                    }
-                }
-            }
-
+            } 
             //No localized message could be found, log the exception
-            ErrorManager.getDefault().annotate(throwable, ErrorManager.WARNING, null, null, null, null);
+            //ErrorManager.getDefault().annotate(throwable, ErrorManager.WARNING, null, null, null, null);
 
             //punt
             return MessageFormat.format(
@@ -713,7 +698,7 @@ final class PropUtils {
         } catch (Exception e) {
             //We ABSOLUTELY cannot let this method throw exceptions or it will
             //quietly endlessly 
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
 
             return null;
         }
@@ -857,14 +842,10 @@ final class PropUtils {
                         }
                     }
                 } catch (IllegalAccessException iae) {
-                    IllegalStateException ise = new IllegalStateException("Error getting property value"); //NOI18N
-                    ErrorManager.getDefault().annotate(ise, iae);
-                    throw ise;
+                    throw (IllegalStateException) new IllegalStateException("Error getting property value").initCause(iae);
                 }
             } catch (InvocationTargetException ite) {
-                IllegalStateException ise = new IllegalStateException("Error getting property value"); //NOI18N
-                ErrorManager.getDefault().annotate(ise, ite);
-                throw ise;
+                throw (IllegalStateException) new IllegalStateException("Error getting property value").initCause(ite);
             }
         }
 

@@ -15,18 +15,10 @@
 package org.openide.text;
 
 
-import java.io.File;
 import java.io.IOException;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
-
-import junit.textui.TestRunner;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -54,10 +46,6 @@ implements CloneableEditorSupport.Env {
         super(s);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(Starvation37045Test.class));
-    }
-
     protected void setUp () {
         support = new CES (this, org.openide.util.Lookup.EMPTY);
     }
@@ -149,7 +137,7 @@ implements CloneableEditorSupport.Env {
     public void markModified() throws java.io.IOException {
         if (cannotBeModified != null) {
             IOException e = new IOException ();
-            org.openide.ErrorManager.getDefault ().annotate (e, cannotBeModified);
+            Exceptions.attachLocalizedMessage(e, cannotBeModified);
             throw e;
         }
         
