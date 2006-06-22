@@ -19,6 +19,7 @@ import java.io.StringWriter;
 import javax.swing.*;
 
 import org.netbeans.modules.form.fakepeer.*;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -153,6 +154,7 @@ class ComponentLayer extends JPanel
                 FormLAF.setUseDesignerDefaults(true);
                 super.paint(g);
             } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 // Issue 68776
                 String msg = NbBundle.getMessage(ComponentLayer.class, "MSG_Paiting_Exception"); // NOI18N
                 msg = "<html><b>" + msg + "</b><br><br>"; // NOI18N
