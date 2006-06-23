@@ -382,6 +382,10 @@ public class Widget {
         scene.revalidateWidget (this);
     }
 
+    public boolean isValidated () {
+        return ! requiresPartValidation;
+    }
+
     public final void revalidate () {
         requiresFullValidation = true;
         revalidateUptoRoot ();

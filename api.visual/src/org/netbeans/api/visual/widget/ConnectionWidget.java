@@ -14,6 +14,7 @@ package org.netbeans.api.visual.widget;
 
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorShape;
+import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.router.DirectRouter;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.model.ObjectState;
@@ -22,6 +23,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,6 +41,8 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
     private Anchor targetAnchor;
     private AnchorShape sourceAnchorShape;
     private AnchorShape targetAnchorShape;
+    private PointShape controlPointShape;
+    private PointShape endPointShape;
     private Router router;
     private boolean routingRequired;
     private List<Point> controlPoints;
@@ -48,6 +52,8 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         super (scene);
         sourceAnchorShape = AnchorShape.NONE;
         targetAnchorShape = AnchorShape.NONE;
+        controlPointShape = PointShape.NONE;
+        endPointShape = PointShape.NONE;
         router = DirectRouter.DEFAULT;
         routingRequired = true;
     }
@@ -102,8 +108,36 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void setTargetAnchorShape (AnchorShape targetAnchorShape) {
         assert targetAnchorShape != null;
-        boolean repaint = this.sourceAnchorShape.getRadius () == sourceAnchorShape.getRadius ();
+        boolean repaint = this.targetAnchorShape.getRadius () == targetAnchorShape.getRadius ();
         this.targetAnchorShape = targetAnchorShape;
+        if (repaint)
+            repaint ();
+        else
+            revalidate ();
+    }
+
+    public PointShape getControlPointShape () {
+        return controlPointShape;
+    }
+
+    public void setControlPointShape (PointShape controlPointShape) {
+        assert controlPointShape != null;
+        boolean repaint = this.controlPointShape.getRadius () == controlPointShape.getRadius ();
+        this.controlPointShape = controlPointShape;
+        if (repaint)
+            repaint ();
+        else
+            revalidate ();
+    }
+
+    public PointShape getEndPointShape () {
+        return endPointShape;
+    }
+
+    public void setEndPointShape (PointShape endPointShape) {
+        assert endPointShape != null;
+        boolean repaint = this.endPointShape.getRadius () == endPointShape.getRadius ();
+        this.endPointShape = endPointShape;
         if (repaint)
             repaint ();
         else
@@ -133,6 +167,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         } else
             this.controlPoints = new ArrayList<Point> (controlPoints);
         this.controlPointsUm = Collections.unmodifiableList (this.controlPoints);
+        routingRequired = false;
         revalidate ();
     }
 
@@ -141,37 +176,50 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
     }
 
     protected Rectangle calculateClientArea () {
-        if (routingRequired) {
+        if (routingRequired)
             setControlPoints (router.routeConnection (this), true);
-            routingRequired = false;
-        }
+        int controlPointShapeRadius = controlPointShape.getRadius ();
+        int controlPointShapeRadius2 = controlPointShapeRadius + controlPointShapeRadius;
+        int endPointShapeRadius = endPointShape.getRadius ();
+
         Rectangle rect = null;
         for (Point point : controlPoints) {
+            Rectangle addRect = new Rectangle (point.x - controlPointShapeRadius, point.y - controlPointShapeRadius, controlPointShapeRadius2, controlPointShapeRadius2);
             if (rect == null)
-                rect = new Rectangle (point);
+                rect = addRect;
             else
-                rect.add (point);
+                rect.add (addRect);
         }
 
         Point firstPoint = getFirstControlPoint ();
         if (firstPoint != null) {
-            int radius = sourceAnchorShape.getRadius ();
+            int radius = Math.max (sourceAnchorShape.getRadius (), endPointShapeRadius);
+            int radius2 = radius + radius;
             if (rect == null)
-                rect = new Rectangle (firstPoint.x - radius / 2, firstPoint.y - radius / 2, radius, radius);
+                rect = new Rectangle (firstPoint.x - radius, firstPoint.y - radius, radius2, radius2);
             else
-                rect.add (new Rectangle (firstPoint.x - radius / 2, firstPoint.y - radius / 2, radius, radius));
+                rect.add (new Rectangle (firstPoint.x - radius, firstPoint.y - radius, radius2, radius2));
         }
 
         Point lastPoint = getLastControlPoint ();
         if (lastPoint != null) {
-            int radius = targetAnchorShape.getRadius ();
+            int radius = Math.max (targetAnchorShape.getRadius (), endPointShapeRadius);
+            int radius2 = radius + radius;
             if (rect == null)
-                rect = new Rectangle (lastPoint.x - radius / 2, lastPoint.y - radius / 2, radius, radius);
+                rect = new Rectangle (lastPoint.x - radius, lastPoint.y - radius, radius2, radius2);
             else
-                rect.add (new Rectangle (lastPoint.x - radius / 2, lastPoint.y - radius / 2, radius, radius));
+                rect.add (new Rectangle (lastPoint.x - radius, lastPoint.y - radius, radius2, radius2));
         }
 
         return rect != null ? rect : new Rectangle ();
+    }
+
+    public boolean isValidated () {
+        return super.isValidated ()  &&  isRouted ();
+    }
+
+    public final boolean isRouted () {
+        return ! routingRequired;
     }
 
     public final void reroute () {
@@ -212,6 +260,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
     public boolean isHitAt (Point localLocation) {
         if (! super.isHitAt (localLocation))
                 return false;
+
         List<Point> controlPoints = getControlPoints ();
         for (int i = 0; i < controlPoints.size () - 1; i++) {
             Point point1 = controlPoints.get (i);
@@ -220,6 +269,22 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
             if (dist < HIT_DISTANCE_SQUARE)
                 return true;
         }
+
+        int controlRadius = endPointShape.getRadius ();
+        for (Point point : controlPoints)
+            if (Point2D.distanceSq (point.x, point.y, localLocation.x, localLocation.y) <= controlRadius)
+                return true;
+
+        int endRadius = controlPointShape.getRadius ();
+        Point firstPoint = getFirstControlPoint ();
+        if (firstPoint != null)
+            if (Point2D.distanceSq (firstPoint.x, firstPoint.y, localLocation.x, localLocation.y) <= endRadius)
+                return true;
+        Point lastPoint = getLastControlPoint ();
+        if (lastPoint != null)
+            if (Point2D.distanceSq (lastPoint.x, lastPoint.y, localLocation.x, localLocation.y) <= endRadius)
+                return true;
+
         return false;
     }
     
@@ -259,6 +324,21 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
                 gr.rotate (getTargetAnchorShapeRotation ());
             targetAnchorShape.paint (gr, false);
             gr.setTransform (previousTransform);
+        }
+
+        ObjectState state = getState ();
+        if (state.isSelected ()  ||  state.isFocused ()) {
+            int last = controlPoints.size () - 1;
+            for (int index = 0; index <= last; index ++) {
+                Point point = controlPoints.get (index);
+                previousTransform = gr.getTransform ();
+                gr.translate (point.x, point.y);
+                if (index == 0  ||  index == last)
+                    endPointShape.paint (gr);
+                else
+                    controlPointShape.paint (gr);
+                gr.setTransform (previousTransform);
+            }
         }
     }
 
