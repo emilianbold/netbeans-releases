@@ -104,8 +104,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             // invoked asynchronously becase treeView.getSelection() may not be ready yet
             Runnable runnable = new Runnable() {
                 public void run() {
-                    SearchHistoryPanel.ResultsContainer container1 = nodes[0].getLookup().lookup(SearchHistoryPanel.ResultsContainer.class);
-                    SearchHistoryPanel.DispRevision r1 = nodes[0].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
+                    SearchHistoryPanel.ResultsContainer container1 = (SearchHistoryPanel.ResultsContainer) nodes[0].getLookup().lookup(SearchHistoryPanel.ResultsContainer.class);
+                    SearchHistoryPanel.DispRevision r1 = (SearchHistoryPanel.DispRevision) nodes[0].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
                     try {
                         currentIndex = treeView.getSelection()[0];
                         if (nodes.length == 1) {
@@ -116,7 +116,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                                 showRevisionDiff(r1, onSelectionshowLastDifference);
                             }
                         } else if (nodes.length == 2) {
-                            SearchHistoryPanel.DispRevision r2 = nodes[1].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
+                            SearchHistoryPanel.DispRevision r2 = (SearchHistoryPanel.DispRevision) nodes[1].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
                             if (r2.getRevision().getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
                                 throw new Exception();
                             }

@@ -185,7 +185,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             ann2editorPermutation[i] = i+1;
         }
 
-        DiffProvider diff = Lookup.getDefault().lookup(DiffProvider.class);
+        DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         if (diff != null) {
             Reader r = new LinesReader(lines);
             InputSource is = new DocumentInputSource(doc);
