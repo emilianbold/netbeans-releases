@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- Copy NetBeans files to temporary dir where jars will be packed. Use native cp to preserve file attributes. -->
   <target name="copy-netbeans">
     <mkdir dir="${nb.dir.tmp}"/>
-    <exec os="Linux SunOS" executable="./copy-nbdir">
+    <exec os="Linux SunOS" executable="${basedir}/copy-nbdir">
       <arg line="${nb.dir}/* ${nb.dir.tmp}"/>
     </exec>
   </target>
