@@ -139,7 +139,11 @@ public final class ManifestManager {
             }
             JarFile jf = new JarFile(jar, false);
             try {
-                return ManifestManager.getInstance(jf.getManifest(), true);
+                Manifest m = jf.getManifest();
+                if (m == null) {
+                    throw new IOException("No manifest in " + jar); // NOI18N
+                }
+                return ManifestManager.getInstance(m, true);
             } finally {
                 jf.close();
             }
