@@ -70,7 +70,8 @@ public class Subversion {
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+            // TODO: #78951 hotfix
+//            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
         }
 
         fileStatusCache = new FileStatusCache();
