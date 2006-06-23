@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Enumeration;
 import javax.swing.text.AttributeSet;
@@ -45,48 +44,31 @@ import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Syntax;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtKit;
 
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.FormatterIndentEngine;
 import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.SimpleIndentEngine;
 
-import org.openide.options.SystemOption;
-//import org.openide.util.HelpCtx;
 import org.openide.text.IndentEngine;
-import org.openide.ServiceType;
 import java.beans.IntrospectionException;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import java.io.ObjectOutput;
-import org.openide.nodes.FilterNode;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.editor.NbEditorSettingsInitializer;
 import javax.swing.KeyStroke;
 import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Template;
-import org.openide.util.Lookup.Item;
 import java.util.StringTokenizer;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import java.util.Set;
 import java.util.HashSet;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileChangeAdapter;
-import java.io.File;
-import java.awt.Dimension;
 import java.awt.RenderingHints;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -189,10 +171,6 @@ public class BaseOptions extends OptionSupport {
     //private static final String HELP_ID = "editing.global"; // !!! NOI18N
     private static final String NO_INDENT_ENGINE = "NO_INDENT_ENGINE"; // NOI18N
     
-    /** Whether formatting debug messages should be displayed */
-    private static final boolean debugFormat
-    = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
-        
     private transient Settings.Initializer coloringMapInitializer;
     
     /** Version of the options. It's used for patching the options. */
@@ -233,7 +211,6 @@ public class BaseOptions extends OptionSupport {
         kitClass2Options.put(kitClass, this);
         if (!BASE.equals(typeName)){
             BaseKit kit = BaseKit.getKit(kitClass);
-            String name = kit.getContentType();
             FontColorSettings fcs = getFontColorSettings();
             usingNewOptions = false;
             if (fcs != null){
@@ -444,7 +421,7 @@ public class BaseOptions extends OptionSupport {
     private static Object gaspConst = RenderingHints.VALUE_TEXT_ANTIALIAS_OFF; 
     
     private boolean isGasp( Object systemSetting ) {
-            
+        // RenderingHints.VALUE_TEXT_ANTIALIAS_GASP is available on JDK 1.6+ only
         if ( gaspConst == RenderingHints.VALUE_TEXT_ANTIALIAS_OFF ) {
             try {
                 Field aaConst = RenderingHints.class.getField( "VALUE_TEXT_ANTIALIAS_GASP" ); // NOI18N
@@ -1147,7 +1124,7 @@ public class BaseOptions extends OptionSupport {
             String key = (String)i.next();
             if (!(diff.get(key) instanceof String)) continue;
             String action = (String) diff.get(key);
-            String kbActionName = new String(BaseKit.macroActionPrefix+key);
+            String kbActionName = BaseKit.macroActionPrefix+key;
 
             if (action.length()!=0){
                 // process restored macros
