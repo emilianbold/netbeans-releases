@@ -3,6 +3,7 @@
 <map version="2.0">
     <mapID target="org.netbeans.bluej.about" url="bluej-about.html"/>
     <mapID target="bluej-about-help" url="bluej-about-help.html"/>
+    <mapID target="bluej-ide-differences" url="bluej-ide-differences.html"/>
     <mapID target="bluej-proj-import" url="bluej-proj-import.html"/>
     <mapID target="bluej-proj-new" url="bluej-proj-new.html"/>
     <mapID target="bluej-projectwindows" url="bluej-projectwindows.html"/>
