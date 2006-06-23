@@ -145,7 +145,12 @@ public final class Exceptions extends Object {
             }
             if (t.getCause() == null) {
                 if (create) {
-                    t.initCause(new AnnException());
+                    try {
+                        t.initCause(new AnnException());
+                    } catch (IllegalStateException x) {
+                        Logger.getLogger(Exceptions.class.getName()).log(Level.WARNING, "getCause was null yet initCause failed for " + t, x);
+                        return new AnnException();
+                    }
                 }
                 return (AnnException)t.getCause();
             }
