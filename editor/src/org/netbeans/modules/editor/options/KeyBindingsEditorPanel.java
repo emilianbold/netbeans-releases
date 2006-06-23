@@ -491,7 +491,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         KeySequence getKeySequence() {
             dial = org.openide.DialogDisplayer.getDefault().createDialog(dd);
             input.requestFocus();  // Place caret in it, hopefully
-            dial.show(); // let the user tell us their wish, result will be stored in retVal
+            dial.setVisible(true); // let the user tell us their wish, result will be stored in retVal
             return retVal;
         }
 
