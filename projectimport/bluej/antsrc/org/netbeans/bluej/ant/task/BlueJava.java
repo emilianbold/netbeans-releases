@@ -20,6 +20,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.ExecuteStreamHandler;
@@ -53,6 +56,14 @@ public class BlueJava extends Java  {
     }
     
     private static final RequestProcessor PROCESSOR = new RequestProcessor("Netbeans-Bluej Run IO redirection", 5);
+    /**
+     * All tabs which were used for some process which has now ended.
+     * These are closed when you start a fresh process.
+     * Map from tab to tab display name.
+     * @see "#43001"
+     */
+    private static final Map freeTabs = new WeakHashMap();
+    
     
     private static class NbOutputStreamHandler implements ExecuteStreamHandler {
         private InputOutput io;
@@ -60,8 +71,38 @@ public class BlueJava extends Java  {
         private RequestProcessor.Task errTask;
         private RequestProcessor.Task inTask;
         private Input input;
+        private String displayName;
         public NbOutputStreamHandler(String name) {
-            io = IOProvider.getDefault().getIO("Run " + name, true);
+            displayName = "Run " + name;
+                // OutputWindow
+//                if (AntSettings.getDefault().getAutoCloseTabs()) { // #47753
+                synchronized (freeTabs) {
+                    Iterator it = freeTabs.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry entry = (Map.Entry)it.next();
+                        InputOutput free = (InputOutput)entry.getKey();
+                        String freeName = (String)entry.getValue();
+                        if (io == null && freeName.equals(displayName)) {
+                            // Reuse it.
+                            io = free;
+                            try {
+                                io.getOut().reset();
+                                io.getErr().reset();
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                                // useless: io.flushReader();
+                        } else {
+                                // Discard it.
+                            free.closeInputOutput();
+                        }
+                    }
+                    freeTabs.clear();
+                }
+//                }
+                if (io == null) {
+                    io = IOProvider.getDefault().getIO(displayName, true);
+                }
             
         }
         public void stop() {
@@ -76,6 +117,9 @@ public class BlueJava extends Java  {
             }
             if (outTask != null) {
                 outTask.waitFinished();
+            }
+            synchronized (freeTabs) {
+                freeTabs.put(io, displayName);
             }
         }
 
