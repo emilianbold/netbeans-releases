@@ -18,6 +18,7 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -422,7 +423,8 @@ public class BaseOptions extends OptionSupport {
             Object systemSetting = defaultHints.get( RenderingHints.KEY_TEXT_ANTIALIASING );
                         
             if ( systemSetting == RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT || 
-                 systemSetting == RenderingHints.VALUE_TEXT_ANTIALIAS_OFF ) {
+                 systemSetting == RenderingHints.VALUE_TEXT_ANTIALIAS_OFF || 
+                 isGasp( systemSetting ) ) {
                 result = new HashMap();
                 result.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
             }
@@ -437,6 +439,26 @@ public class BaseOptions extends OptionSupport {
         }
         
         return result;        
+    }
+    
+    private static Object gaspConst = RenderingHints.VALUE_TEXT_ANTIALIAS_OFF; 
+    
+    private boolean isGasp( Object systemSetting ) {
+            
+        if ( gaspConst == RenderingHints.VALUE_TEXT_ANTIALIAS_OFF ) {
+            try {
+                Field aaConst = RenderingHints.class.getField( "VALUE_TEXT_ANTIALIAS_GASP" ); // NOI18N
+                gaspConst = aaConst.get( null );
+            }
+            catch ( NoSuchFieldException e ) {
+                gaspConst = null;
+            }
+            catch ( IllegalAccessException e ) {
+                gaspConst = null;
+            }
+        }
+        
+        return systemSetting == gaspConst;
     }
     
     /* #54893
