@@ -20,6 +20,7 @@ import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.router.OrthogonalSearchRouter;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.LayerWidget;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,10 +33,10 @@ public class VMDGraphScene extends GraphPinScene<String, String, String, VMDNode
     private static final Color COLOR_HOVER = new Color (0xABC7DE);
     public static final String PIN_ID_DEFAULT = "#default"; // NOI18N
 
-    private Widget backgroundLayer = new Widget (this);
-    private Widget mainLayer = new Widget (this);
-    private Widget connectionLayer = new Widget (this);
-    private Widget upperLayer = new Widget (this);
+    private LayerWidget backgroundLayer = new LayerWidget (this);
+    private LayerWidget mainLayer = new LayerWidget (this);
+    private LayerWidget connectionLayer = new LayerWidget (this);
+    private LayerWidget upperLayer = new LayerWidget (this);
 
     private OrthogonalSearchRouter.CollisionsCollector collisionsCollector;
 

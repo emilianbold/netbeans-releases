@@ -32,9 +32,6 @@ import java.util.List;
 // TODO - clipping does not count with view zoom factor
 public class Widget {
 
-    private static final Color COLOR_BACKGROUND = Color.WHITE;
-    private static final Color COLOR_FOREGROUND = Color.BLACK;
-
     private Scene scene;
     private Widget parentWidget;
 
@@ -367,17 +364,22 @@ public class Widget {
         return getBounds ().contains (localLocation);
     }
 
-    protected final void repaint () {
+    public final void repaint () {
         scene.revalidateWidget (this);
     }
 
     public final void revalidate () {
-        repaint ();
         requiresFullValidation = true;
         revalidateUptoRoot ();
     }
 
+    protected boolean isRepaintRequiredForRevalidating () {
+        return true;
+    }
+
     private void revalidateUptoRoot () {
+        if (isRepaintRequiredForRevalidating ())
+            repaint ();
         calculatedPreferredBounds = null;
         requiresPartValidation = true;
         if (parentWidget != null)
@@ -389,13 +391,12 @@ public class Widget {
         for (Widget widget : children)
             widget.layout (childFullValidation);
 
-        if (requiresPartValidation)
+        if (childFullValidation  ||  requiresPartValidation) {
             layout.layout (this);
-
-        if (childFullValidation  ||  requiresPartValidation)
             if (dependencies != null)
                 for (Dependency dependency : dependencies)
                     dependency.revalidate ();
+        }
 
         requiresFullValidation = false;
         requiresPartValidation = false;

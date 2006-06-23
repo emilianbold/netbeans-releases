@@ -27,4 +27,8 @@ public class LayerWidget extends Widget {
         return false;
     }
 
+    protected boolean isRepaintRequiredForRevalidating () {
+        return false;
+    }
+
 }
