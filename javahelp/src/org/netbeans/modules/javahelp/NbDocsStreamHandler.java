@@ -128,11 +128,11 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                         target = f.toURI().toURL();
                     } else {
                         IOException ioe = new IOException("cannot connect to " + url + ": " + mre);
+                        ioe.initCause(mre);
                         Exceptions.attachLocalizedMessage(ioe,
                                                           NbBundle.getMessage(NbDocsStreamHandler.class,
                                                                               "EXC_nbdocs_cannot_connect",
                                                                               url));
-                        ioe.initCause(mre);
                         throw ioe;
                     }
                 }
