@@ -26,7 +26,7 @@ import org.openide.util.lookup.ProxyLookup;
 public class GlobalVisibilityQueryImplTest extends TestCase {
     private static GlobalVisibilityQueryImpl vq = new GlobalVisibilityQueryImpl() {
         protected String getIgnoredFiles() {
-            return "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$";
+            return "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|^\\.[#_]|~$";
         }
     };
     
@@ -48,6 +48,8 @@ public class GlobalVisibilityQueryImplTest extends TestCase {
         assertFalse(vq.isVisible(".#_telnetrc"));
         assertFalse(vq.isVisible(".cvsignore"));
         assertFalse(vq.isVisible("CVS"));                
+        assertFalse(vq.isVisible(".svn"));
+        assertFalse(vq.isVisible("_svn"));
         
         //#68590 suggests to make also these files "^\\..*$" invisible as default
         assertTrue(vq.isVisible(".telnetrc"));                        

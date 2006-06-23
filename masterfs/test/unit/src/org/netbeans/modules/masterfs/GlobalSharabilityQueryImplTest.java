@@ -31,7 +31,7 @@ public class GlobalSharabilityQueryImplTest extends TestCase {
     private static SharabilityQueryImplementation sq = new GlobalSharabilityQueryImpl();
     private static GlobalVisibilityQueryImpl vq = new GlobalVisibilityQueryImpl() {
         protected String getIgnoredFiles() {
-            return "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$";
+            return "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|^\\.[#_]|~$";
         }
     };
     
@@ -57,7 +57,9 @@ public class GlobalSharabilityQueryImplTest extends TestCase {
                     new File("/myroot/mydirectory/myfile.xml"),
                     new File("/myroot/mydirectory/.cvsignore"),
                     new File("/myroot/mydirectory/CVS"),
-                    new File("/myroot/mydirectory/.DS_Store")
+                    new File("/myroot/mydirectory/.DS_Store"),
+                    new File("/myroot/mydirectory/.svn"),
+                    new File("/myroot/mydirectory/_svn")
         };
         
         for (int i = 0; i < all.length; i++) {
