@@ -8,9 +8,8 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
-
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
@@ -290,7 +289,9 @@
    		<TD>
    		<xsl:if test="@name">    		    
    		    <A HREF="suites/TEST-{@name}.html">
-   		    <xsl:value-of select="@name"/>
+                        <xsl:call-template name="make-FQN-breakable">
+                            <xsl:with-param name="val" select="@name"/>
+                        </xsl:call-template>
    		    </A>
    		</xsl:if>
    		<xsl:if test="not(@name)">
@@ -308,5 +309,20 @@
    	</TR>
 </xsl:template>
 
+<xsl:template name="make-FQN-breakable">
+    <xsl:param name="val"/>
+    <xsl:choose>
+        <xsl:when test="contains($val, '.')">
+            <xsl:value-of select="substring-before($val, '.')"/>
+            <xsl:text>.&#8203;</xsl:text><!-- ZWSP -->
+            <xsl:call-template name="make-FQN-breakable">
+                <xsl:with-param name="val" select="substring-after($val, '.')"/>
+            </xsl:call-template>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:value-of select="$val"/>
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
 
 </xsl:stylesheet>

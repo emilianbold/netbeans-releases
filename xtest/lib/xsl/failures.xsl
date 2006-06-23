@@ -8,9 +8,8 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
-
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
@@ -117,6 +116,7 @@
 	<xsl:variable name="ParentTestRun" select="parent::*/parent::*/parent::*"/>
 	<xsl:variable name="SuiteName"><xsl:value-of select="parent::*/@name"/></xsl:variable>
         <xsl:variable name="SuiteNameShort">
+            <!-- XXX could instead use library.xsl#make-FQN-breakable -->
             <xsl:call-template name="strip-package">
                 <xsl:with-param name="val" select="$SuiteName"/>
             </xsl:call-template>
