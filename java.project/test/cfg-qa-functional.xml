@@ -18,22 +18,12 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="projects/TestCreateProject.class"/>
-                <exclude name="projects/TestFreeformProject.class"/>
-                <exclude name="projects/TestCreateProject.class/testCreateProject_6"/>
+                <include name="projects/TestFreeformProject.class"/>
+                <include name="projects/TestLibraries.class"/>
             </patternset>
         </testset>
     </testbag>
-    
-    <testbag testattribs="test" name="Test" executor="ide">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="projects/TestCreateProject.class/testCreateProject_6"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <!-- For validation run exclude TestLibraries.testDefaultLibraries test, 
-         was intended only between Beta2 and FCS of 4.0 -->
+
     <testbag testattribs="libraries" name="Libraries" executor="ide">
         <testset dir="qa-functional/src">
             <patternset>
@@ -45,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="platforms" name="Platforms" executor="ide">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="projects/TestCreatePlatforms.class"/>
+                <include name="projects/TestPlatforms.class"/>
             </patternset>
         </testset>
     </testbag>
