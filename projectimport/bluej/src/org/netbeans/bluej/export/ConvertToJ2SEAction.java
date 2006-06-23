@@ -17,6 +17,8 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -33,10 +35,13 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.bluej.BluejProject;
+import org.netbeans.bluej.UpdateHelper;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.openide.DialogDescriptor;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -176,6 +181,50 @@ public final class ConvertToJ2SEAction extends AbstractAction {
                 }
             }
         }
+        // if main class selected, add the main.class property to prop file.
+        UpdateHelper updateHelper = project.getUpdateHelper();
+        EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String mainClass = (String)ep.get ("main.class"); // NOI18N
+        
+        if (mainClass != null) {
+            FileObject fo = j2seproject.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            EditableProperties eds = new EditableProperties();
+            InputStream instr = null;
+            OutputStream outstr = null;
+            FileLock lock = null;
+            try {
+                instr = fo.getInputStream();
+                eds.load(instr);
+                instr.close();
+                instr = null;
+                eds.setProperty("main.class", mainClass);
+                if (ep.getProperty("application.args") != null) {
+                    eds.setProperty("application.args", ep.getProperty("application.args"));
+                }
+                if (ep.getProperty("work.dir") != null) {
+                    eds.setProperty("work.dir", ep.getProperty("work.dir"));
+                }
+                if (ep.getProperty("run.jvmargs") != null) {
+                    eds.setProperty("run.jvmargs", ep.getProperty("run.jvmargs"));
+                }
+                lock = fo.lock();
+                outstr = fo.getOutputStream(lock);
+                eds.store(outstr);
+            } catch (IOException ex) {
+                
+            } finally {
+                if (instr != null) {
+                    instr.close();
+                }
+                if (outstr != null) {
+                    outstr.close();
+                }
+                if (lock != null) {
+                    lock.releaseLock();
+                }
+            }
+        }
+        
         handle.progress(9);
         OpenProjects.getDefault().open(new Project[] { j2seproject }, false);
         SwingUtilities.invokeLater(new Runnable() {

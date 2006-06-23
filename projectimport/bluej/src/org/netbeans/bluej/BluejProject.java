@@ -166,7 +166,7 @@ public final class BluejProject implements Project, AntProjectListener {
         return this.refHelper;
     }
 
-    UpdateHelper getUpdateHelper() {
+    public UpdateHelper getUpdateHelper() {
         return this.updateHelper;
     }
     
