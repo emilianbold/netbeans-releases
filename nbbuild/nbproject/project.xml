@@ -315,6 +315,9 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../serverplugins/sun/sunddapi</project>
                 <project>../serverplugins/sun/sunddui</project>
                 <project>../serverplugins/weblogic9</project>
+                <project>../subversion/client</project>
+                <project>../subversion/ini4j</project>
+                <project>../subversion/main</project>
                 <project>../tasklist/api</project>
                 <project>../tasklist/core</project>
                 <project>../tasklist/docscan</project>
