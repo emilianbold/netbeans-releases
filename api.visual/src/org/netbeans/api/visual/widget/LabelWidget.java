@@ -47,6 +47,8 @@ public class LabelWidget extends Widget {
     }
 
     public void setLabel (String label) {
+        if (GeomUtil.equals (this.label, label))
+            return;
         this.label = label;
         revalidate ();
     }
@@ -57,7 +59,7 @@ public class LabelWidget extends Widget {
 
     public void setAligment (Alignment aligment) {
         this.aligment = aligment;
-        revalidate ();
+        repaint ();
     }
 
     protected Rectangle calculateClientArea () {

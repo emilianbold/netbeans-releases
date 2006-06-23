@@ -37,10 +37,19 @@ public class ImageWidget extends Widget {
     }
 
     public void setImage (Image image) {
+        if (this.image == image)
+            return;
+        int oldWidth = width;
+        int oldHeight = height;
+
         this.image = image;
         width = image != null ? image.getWidth (null) : 0;
         height = image != null ? image.getHeight (null) : 0;
-        revalidate ();
+
+        if (oldWidth == width  &&  oldHeight == height)
+            repaint ();
+        else
+            revalidate ();
     }
 
     protected Rectangle calculateClientArea () {

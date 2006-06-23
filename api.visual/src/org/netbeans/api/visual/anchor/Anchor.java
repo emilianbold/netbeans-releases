@@ -70,10 +70,10 @@ public abstract class Anchor implements Widget.Dependency {
             relatedWidget.removeDependency (this);
     }
     
-    public void revalidate () {
+    public void revalidateDependency () {
         if (dependencies != null)
             for (Widget.Dependency dependency : dependencies)
-                dependency.revalidate();
+                dependency.revalidateDependency ();
     }
     
     public Widget getRelatedWidget () {

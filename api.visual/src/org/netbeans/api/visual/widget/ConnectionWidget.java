@@ -40,6 +40,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
     private AnchorShape sourceAnchorShape;
     private AnchorShape targetAnchorShape;
     private Router router;
+    private boolean routingRequired;
     private List<Point> controlPoints;
     private List<Point> controlPointsUm;
 
@@ -48,10 +49,10 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         sourceAnchorShape = AnchorShape.NONE;
         targetAnchorShape = AnchorShape.NONE;
         router = DirectRouter.DEFAULT;
+        routingRequired = true;
     }
 
-    public void setState (ObjectState state) {
-        super.setState (state);
+    public void notifyStateChanged (ObjectState state) {
         setForeground (getScene ().getLookFeel ().getLineColor (state));
     }
 
@@ -65,7 +66,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         this.sourceAnchor = sourceAnchor;
         if (this.sourceAnchor != null)
             sourceAnchor.addDependency (this);
-        revalidate ();
+        reroute ();
     }
 
     public final Anchor getTargetAnchor () {
@@ -78,7 +79,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         this.targetAnchor = targetAnchor;
         if (targetAnchor != null)
             targetAnchor.addDependency (this);
-        revalidate ();
+        reroute ();
     }
 
     public AnchorShape getSourceAnchorShape () {
@@ -87,8 +88,12 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void setSourceAnchorShape (AnchorShape sourceAnchorShape) {
         assert sourceAnchorShape != null;
+        boolean repaint = this.sourceAnchorShape.getRadius () == sourceAnchorShape.getRadius ();
         this.sourceAnchorShape = sourceAnchorShape;
-        revalidate ();
+        if (repaint)
+            repaint ();
+        else
+            revalidate ();
     }
 
     public AnchorShape getTargetAnchorShape () {
@@ -97,8 +102,12 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void setTargetAnchorShape (AnchorShape targetAnchorShape) {
         assert targetAnchorShape != null;
+        boolean repaint = this.sourceAnchorShape.getRadius () == sourceAnchorShape.getRadius ();
         this.targetAnchorShape = targetAnchorShape;
-        revalidate ();
+        if (repaint)
+            repaint ();
+        else
+            revalidate ();
     }
 
     public final Router getRouter () {
@@ -107,7 +116,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public final void setRouter (Router router) {
         this.router = router;
-        revalidate ();
+        reroute ();
     }
 
     public List<Point> getControlPoints () {
@@ -127,9 +136,15 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         revalidate ();
     }
 
+    public void revalidateDependency () {
+        reroute ();
+    }
+
     protected Rectangle calculateClientArea () {
-        if (router != null)
+        if (routingRequired) {
             setControlPoints (router.routeConnection (this), true);
+            routingRequired = false;
+        }
         Rectangle rect = null;
         for (Point point : controlPoints) {
             if (rect == null)
@@ -157,6 +172,11 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         }
 
         return rect != null ? rect : new Rectangle ();
+    }
+
+    public final void reroute () {
+        routingRequired = true;
+        revalidate ();
     }
 
     private Point getFirstControlPoint () {

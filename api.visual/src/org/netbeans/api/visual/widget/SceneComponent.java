@@ -13,7 +13,6 @@
 package org.netbeans.api.visual.widget;
 
 import org.netbeans.api.visual.action.WidgetAction;
-import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +20,6 @@ import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
-import java.util.TooManyListenersException;
 
 /**
  * @author David Kaspar
@@ -51,6 +49,11 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
     public void addNotify () {
         super.addNotify ();
         scene.setGraphics ((Graphics2D) getGraphics ());
+        scene.validate ();
+    }
+
+    public void setSize (int width, int height) {
+        super.setSize (width, height);
         scene.validate ();
     }
 

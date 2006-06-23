@@ -34,8 +34,7 @@ public class IconNodeWidget extends Widget {
         setState (ObjectState.NORMAL);
     }
 
-    public void setState (ObjectState state) {
-        super.setState (state);
+    public void notifyStateChanged (ObjectState state) {
         LookFeel lookFeel = getScene ().getLookFeel ();
         labelWidget.setBorder (lookFeel.getBorder (state));
         labelWidget.setForeground (lookFeel.getForeground (state));

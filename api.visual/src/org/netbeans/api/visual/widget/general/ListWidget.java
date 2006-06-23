@@ -51,8 +51,7 @@ public class ListWidget extends Widget {
         setState (ObjectState.NORMAL);
     }
 
-    public void setState (ObjectState state) {
-        super.setState (state);
+    public void notifyStateChanged (ObjectState state) {
         LookFeel lookFeel = getScene ().getLookFeel ();
         header.setBorder (new CompositeBorder (new EmptyBorder (2), lookFeel.getBorder (state)));
         labelWidget.setForeground (lookFeel.getForeground (state));

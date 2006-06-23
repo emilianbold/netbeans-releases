@@ -18,6 +18,7 @@ import org.netbeans.api.visual.border.EmptyBorder;
 import org.netbeans.api.visual.layout.AbsoluteLayout;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.util.GeomUtil;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -211,8 +212,13 @@ public class Widget {
     }
 
     public final void setBorder (Border border) {
+        assert border != null;
+        boolean repaint = this.border.getInsets ().equals (border.getInsets ());
         this.border = border;
-        revalidate ();
+        if (repaint)
+            repaint ();
+        else
+            revalidate ();
     }
 
     public final Layout getLayout () {
@@ -229,6 +235,8 @@ public class Widget {
     }
 
     public final void setPreferredLocation (Point preferredLocation) {
+        if (GeomUtil.equals (this.preferredLocation, preferredLocation))
+            return;
         this.preferredLocation = preferredLocation;
         revalidate ();
     }
@@ -266,6 +274,8 @@ public class Widget {
     }
 
     public final void setPreferredBounds (Rectangle preferredBounds) {
+        if (GeomUtil.equals (this.preferredBounds, preferredBounds))
+            return;
         this.preferredBounds = preferredBounds;
         revalidate ();
     }
@@ -299,8 +309,12 @@ public class Widget {
         return state;
     }
 
-    public void setState (ObjectState state) {
+    public final void setState (ObjectState state) {
         this.state = state;
+        notifyStateChanged (state);
+    }
+
+    protected void notifyStateChanged (ObjectState state) {
     }
 
     public final Point convertLocalToScene (Point localLocation) {
@@ -378,6 +392,8 @@ public class Widget {
     }
 
     private void revalidateUptoRoot () {
+        if (requiresPartValidation)
+            return;
         if (isRepaintRequiredForRevalidating ())
             repaint ();
         calculatedPreferredBounds = null;
@@ -395,7 +411,7 @@ public class Widget {
             layout.layout (this);
             if (dependencies != null)
                 for (Dependency dependency : dependencies)
-                    dependency.revalidate ();
+                    dependency.revalidateDependency ();
         }
 
         requiresFullValidation = false;
@@ -440,7 +456,7 @@ public class Widget {
 
     public interface Dependency {
         
-        public void revalidate ();
+        public void revalidateDependency ();
         
     }
 

@@ -30,7 +30,7 @@ public class ListItemWidget extends LabelWidget {
         setState (ObjectState.NORMAL);
     }
 
-    public void setState (ObjectState state) {
+    public void notifyStateChanged (ObjectState state) {
         super.setState (state);
         LookFeel lookFeel = getScene ().getLookFeel ();
         setBorder (new CompositeBorder (new EmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
