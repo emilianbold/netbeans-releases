@@ -15,15 +15,11 @@ package org.netbeans.upgrade;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.openide.util.*;
-import java.util.jar.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
-import org.openide.xml.XMLUtil;
 
 import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
-
 
 /** Does copy of objects on filesystems.
  *
@@ -90,6 +86,70 @@ final class Copy extends Object {
         
         
     }
+    
+    public static void appendSelectedLines(File sourceFile, File targetFolder, String[] regexForSelection)
+    throws IOException {        
+        assert sourceFile.exists();
+        Pattern[] linePattern = new Pattern[regexForSelection.length];
+        for (int i = 0; i < linePattern.length; i++) {
+            linePattern[i] = Pattern.compile(regexForSelection[i]);
+        }
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();        
+        File targetFile = new File(targetFolder,sourceFile.getName());
+        if (!targetFolder.exists()) {
+            targetFolder.mkdirs();
+        }
+        assert targetFolder.exists();
+        
+        if (!targetFile.exists()) {
+            targetFile.createNewFile();
+        } else {
+            //read original content into  ByteArrayOutputStream
+            FileInputStream targetIS = new FileInputStream(targetFile);
+            try {
+                byte[] bytes = new byte[targetIS.available()];
+                targetIS.read(bytes);
+                bos.write(bytes);
+            } finally {
+                targetIS.close();
+            }            
+        }
+        assert targetFile.exists();
+
+        
+        //append lines into ByteArrayOutputStream
+        String line = null;        
+        BufferedReader sourceReader = new BufferedReader(new FileReader(sourceFile));
+        try {
+            while ((line = sourceReader.readLine()) != null) {
+                if (linePattern != null) {
+                    for (int i = 0; i < linePattern.length; i++) {
+                        Matcher m = linePattern[i].matcher(line);
+                        if (m.matches()) {
+                            bos.write(line.getBytes());
+                            bos.write('\n');
+                            break;
+                        }                        
+                    }                    
+                } else {
+                    bos.write(line.getBytes());
+                    bos.write('\n');
+                }
+            }
+        } finally {
+            sourceReader.close();
+        }
+
+        ByteArrayInputStream bin = new ByteArrayInputStream(bos.toByteArray());
+        FileOutputStream targetOS = new FileOutputStream(targetFile);
+        try {
+            FileUtil.copy(bin, targetOS);        
+        } finally {
+            bin.close();
+            targetOS.close();
+        }
+    }
+    
     
     
 

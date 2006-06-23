@@ -53,6 +53,27 @@ public final class AutoUpgrade {
                 throw new org.openide.util.UserCancelException ();
             }
             doUpgrade (sourceFolder, version[0]);
+            //#75324 NBplatform settings are not imported
+            upgradeBuildProperties(sourceFolder, version);
+        }
+    }
+
+    //#75324 NBplatform settings are not imported
+    private static void upgradeBuildProperties(final File sourceFolder, final String[] version) throws  IOException {
+        try {
+            float f = Float.parseFloat(version[0]);
+            if (f >= 5.0) {
+                File userdir = new File(System.getProperty("netbeans.user", ""));//NOI18N
+                String[] regexForSelection = new String[] {
+                    "^nbplatform[.].*[.]netbeans[.]dest[.]dir=.*$",//NOI18N
+                    "^nbplatform[.].*[.]label=.*$",//NOI18N
+                    "^nbplatform[.].*[.]harness[.]dir=.*$"//NOI18N
+                };
+                Copy.appendSelectedLines(new File(sourceFolder,"build.properties"), //NOI18N
+                        userdir,regexForSelection);
+            }            
+        } catch(NumberFormatException nex) {
+            return;
         }
     }
     
