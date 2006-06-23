@@ -89,7 +89,9 @@ final class Copy extends Object {
     
     public static void appendSelectedLines(File sourceFile, File targetFolder, String[] regexForSelection)
     throws IOException {        
-        assert sourceFile.exists();
+        if (!sourceFile.exists()) {
+            return;
+        }
         Pattern[] linePattern = new Pattern[regexForSelection.length];
         for (int i = 0; i < linePattern.length; i++) {
             linePattern[i] = Pattern.compile(regexForSelection[i]);
