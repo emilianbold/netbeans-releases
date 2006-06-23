@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,7 +45,6 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
     private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
 
     private DataFolder folder;
-    private static final ResourceBundle bundle = NbBundle.getBundle (MenuFolderNode.class);
 
     public MenuFolderNode () {
         this (NbPlaces.getDefault().menus ());
@@ -57,9 +56,9 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
         folder.super(new MenuFolderChildren(folder));
         this.folder = folder;
         //JST: it displays only Menu as name!    super.setDisplayName(NbBundle.getBundle (MenuFolderNode.class).getString("CTL_Menu_name"));
-        super.setShortDescription(bundle.getString("CTL_Menu_hint"));
+        setShortDescription(NbBundle.getMessage(MenuFolderNode.class, "CTL_Menu_hint"));
 
-        super.setIconBase ("org/netbeans/core/resources/menu"); // NOI18N
+        setIconBaseWithExtension ("org/netbeans/core/resources/menu.gif"); // NOI18N
     }
 
     public HelpCtx getHelpCtx () {
@@ -80,7 +79,7 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
     public NewType[] getNewTypes () {
         NewType newMenu = new NewType() {
             public String getName () {
-                return bundle.getString ("CTL_newMenuName");
+                return NbBundle.getMessage(MenuFolderNode.class, "CTL_newMenuName");
             }
             public void create () throws java.io.IOException {
                 newMenu();
@@ -93,7 +92,7 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
                 //Fixed bug #5610 Added support for adding new separator through popup menu
                 new NewType () {
                     public String getName () {
-                        return bundle.getString ("CTL_newMenuSeparator");
+                        return NbBundle.getMessage(MenuFolderNode.class, "CTL_newMenuSeparator");
                     }
                     public void create () throws java.io.IOException {
                         newSeparator();
@@ -108,9 +107,9 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
 
     void newMenu () {
         NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine
-                                        (bundle.getString ("CTL_newMenuLabel"),
-                                         bundle.getString ("CTL_newMenuDialog"));
-        il.setInputText (bundle.getString ("CTL_newMenu"));
+                                        (NbBundle.getMessage(MenuFolderNode.class, "CTL_newMenuLabel"),
+                                         NbBundle.getMessage(MenuFolderNode.class, "CTL_newMenuDialog"));
+        il.setInputText (NbBundle.getMessage(MenuFolderNode.class, "CTL_newMenu"));
 
         Object ok = org.openide.DialogDisplayer.getDefault ().notify (il);
         if (ok == NotifyDescriptor.OK_OPTION) {
@@ -238,8 +237,8 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
             sheet.get(Sheet.PROPERTIES).put(
                 new PropertySupport.Name(
                     this,
-                    bundle.getString("PROP_MenuName"),
-                    bundle.getString("HINT_MenuName")
+                    NbBundle.getMessage(MenuFolderNode.class, "PROP_MenuName"),
+                    NbBundle.getMessage(MenuFolderNode.class, "HINT_MenuName")
                 )
             );
             return sheet.toArray();
