@@ -7,13 +7,21 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javahelp;
 
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
 import java.lang.ref.Reference;
@@ -21,17 +29,32 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 import java.util.logging.Level;
-import javax.swing.*;
-
 import javax.help.HelpSet;
 import javax.help.HelpSetException;
 import javax.help.JHelp;
+import javax.swing.BorderFactory;
+import javax.swing.BoundedRangeModel;
+import javax.swing.DefaultBoundedRangeModel;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.util.*;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
+import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 // [PENDING] should event dispatch thread be used thruout?
@@ -273,7 +296,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             Installer.log.fine("\talready visible, just repainting");
             dialogViewer.repaint();
         } else {
-            dialogViewer.show();
+            dialogViewer.setVisible(true);
         }
         lastJH = jh;
     }
@@ -341,7 +364,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             // itself and control will return to event thread.
             Installer.log.fine("showing progress dialog...");
             progressHandle = ProgressHandleFactory.createHandle("");
-            createProgressDialog(run, currentModalDialog()).show();
+            createProgressDialog(run, currentModalDialog()).setVisible(true);
             progressHandle.finish();
             Installer.log.fine("dialog done.");
         } else {
@@ -354,7 +377,9 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             return;
         }
         JHelp jh = createJHelp(hs);
-        if (jh == null) throw new IllegalStateException();
+        if (jh == null) {
+            return;
+        }
 
         if (isModalExcludedSupported()) {
             displayHelpInFrame(jh);
@@ -641,20 +666,20 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             Dimension me = getSize();
             setLocation((screen.width - me.width) / 2, (screen.height - me.height) / 2);
         }
-        public void show() {
-            if (run != null) {
+        public void setVisible(boolean show) {
+            if (show && run != null) {
                 Installer.log.fine("posting request from progress dialog...");
                 getHelpLoader().post(run).addTaskListener(this);
                 run = null;
             }
-            super.show();
+            super.setVisible(show);
         }
         public void taskFinished(Task task) {
             Installer.log.fine("posting request from progress dialog...request finished.");
             SwingUtilities.invokeLater(this);
         }
         public void run() {
-            hide();
+            setVisible(false);
             dispose();
         }
     }
@@ -774,7 +799,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             jh = new JHelp(hs);
         } catch (RuntimeException e) {
             Installer.log.log(Level.WARNING, "While trying to display: " + title, e); // NOI18N
-            return new JHelp();
+            return null;
         }
         synchronized (availableJHelps) {
             availableJHelps.put(hs, new SoftReference(jh));
