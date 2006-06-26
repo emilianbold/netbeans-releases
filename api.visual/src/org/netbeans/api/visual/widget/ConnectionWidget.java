@@ -211,6 +211,9 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
                 rect.add (new Rectangle (lastPoint.x - radius, lastPoint.y - radius, radius2, radius2));
         }
 
+        if (rect != null)
+            rect.grow (2, 2);
+
         return rect != null ? rect : new Rectangle ();
     }
 
