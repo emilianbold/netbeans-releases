@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -54,6 +54,12 @@ public class NewFileWizardOperator extends WizardOperator {
         super(Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_NewFileWizard_Subtitle"));
     }
 
+    /** Waits for wizard with given title.
+     * @param title title of wizard
+     */
+    public NewFileWizardOperator(String title) {
+        super(title);
+    }
     
     /** Invokes new wizard and returns instance of NewFileWizardOperator.
      * @return  instance of NewFileWizardOperator
@@ -61,6 +67,15 @@ public class NewFileWizardOperator extends WizardOperator {
     public static NewFileWizardOperator invoke() {
         new NewFileAction().perform();
         return new NewFileWizardOperator();
+    }
+
+    /** Invokes new wizard and returns instance of NewFileWizardOperator.
+     * @param initial wizard title
+     * @return  instance of NewFileWizardOperator
+     */
+    public static NewFileWizardOperator invoke(String title) {
+        new NewFileAction().perform();
+        return new NewFileWizardOperator(title);
     }
 
     /** Selects specified node and invokes new file wizard by default action.
@@ -74,7 +89,9 @@ public class NewFileWizardOperator extends WizardOperator {
      */
     public static NewFileWizardOperator invoke(Node node, String category, String filetype) {
         new NewFileAction().perform(node);
-        NewFileWizardOperator nfwo = new NewFileWizardOperator();
+        String wizardTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle",
+                                              "LBL_NewFileWizard_Title");
+        NewFileWizardOperator nfwo = new NewFileWizardOperator(wizardTitle);
         nfwo.selectCategory(category);
         nfwo.selectFileType(filetype);
         nfwo.next();
@@ -92,7 +109,9 @@ public class NewFileWizardOperator extends WizardOperator {
      * @param name name of created object
      */
     public static void create(String projectName, String category, String fileType, String packageName, String name) {
-        NewFileWizardOperator nfwo = invoke();
+        String wizardTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle",
+                                              "LBL_NewFileWizard_Title");
+        NewFileWizardOperator nfwo = invoke(wizardTitle);
         nfwo.selectProject(projectName);
         nfwo.selectCategory(category);
         nfwo.selectFileType(fileType);

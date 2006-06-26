@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -51,6 +51,9 @@ public class NewProjectWizardOperator extends WizardOperator {
         super(Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_NewProjectWizard_Subtitle"));
     }
 
+    /** Waits for wizard with given title.
+     * @param title title of wizard
+     */
     public NewProjectWizardOperator(String title) {
         super(title);
     }
@@ -63,7 +66,15 @@ public class NewProjectWizardOperator extends WizardOperator {
         return new NewProjectWizardOperator();
     }
 
-    
+    /** Invokes new wizard and returns instance of NewProjectWizardOperator.
+     * @param title initial title of New Project Wizard
+     * @return  instance of NewProjectWizardOperator
+     */
+    public static NewProjectWizardOperator invoke(String title) {
+        new NewProjectAction().perform();
+        return new NewProjectWizardOperator(title);
+    }
+
     /** Selects given project category
      * @param category name of the category to select
      */
