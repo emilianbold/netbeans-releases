@@ -483,12 +483,12 @@ public class OptionUtilities {
     }
     
     /** Provides ordering of folder items in accordance with folder attributes */
-    public static List arrangeMergedFolderObjects(Set items, Set attribs){
+    public static List arrangeMergedFolderObjects(Set/*<DataObject>*/ items, Set/*<String>*/ attribs){
         // init returnList with unsorted collection
-        List retList = new ArrayList(items);
+        List/*<DataObject>*/ retList = new ArrayList/*<DataObject>*/(items);
         
         // prepare name list of instance files
-        List nameList = new ArrayList();
+        List/*<String>*/ nameList = new ArrayList/*<String>*/();
         for (int i = 0; i<retList.size(); i++){
             DataObject dob = (DataObject) retList.get(i);
             nameList.add(dob.getPrimaryFile().getNameExt());
@@ -499,8 +499,9 @@ public class OptionUtilities {
             Iterator j = attribs.iterator();
             while (j.hasNext()){
                 String attr = (String) j.next();
-                String firstItem = attr.substring(0,attr.indexOf('/'));
-                String secondItem = attr.substring(attr.indexOf('/')+1);
+                int idx = attr.indexOf('/');
+                String firstItem = attr.substring(0,idx);
+                String secondItem = attr.substring(idx+1);
                 int first = nameList.indexOf(firstItem);
                 int second = nameList.indexOf(secondItem);
                 if ( (first>second) && (second>-1)){
