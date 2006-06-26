@@ -132,7 +132,6 @@ public class PostInstallFixupAction extends ProductAction {
                 if (index < 0) {
                     return;
                 }
-                //Update only when cnd cluster path is found and removed from netbeans_extraclusters
                 String [] update = new String[content.length - 1];
                 for (int i = 0, j = 0; i < content.length; i++) {
                     if (i != index) {

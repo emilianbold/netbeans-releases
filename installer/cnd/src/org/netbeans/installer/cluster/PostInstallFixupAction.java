@@ -100,8 +100,8 @@ public class PostInstallFixupAction extends ProductAction {
                 return;
             }
             if (add) {
-                //Add profiler cluster to netbeans.clusters
-                //First check if profiler cluster is present if yes then do not add it again
+                //Add cnd cluster to netbeans.clusters
+                //First check if cnd cluster is present if yes then do not add it again
                 for (int i = 0; i < content.length; i++) {
                     //If line starts with "#" it is comment.
                     if (!content[i].startsWith("#")) {
@@ -116,8 +116,8 @@ public class PostInstallFixupAction extends ProductAction {
                 fileService.appendToAsciiFile(fname, new String[] {clusterName});
                 logEvent(this, Log.DBG, "Append line: '" + clusterName + "'");
             } else {
-                //Remove profiler cluster from netbeans.clusters
-                //First check if profiler cluster is present if yes then remove it
+                //Remove cnd cluster from netbeans.clusters
+                //First check if cnd cluster is present if yes then remove it
                 int index = -1;
                 for (int i = 0; i < content.length; i++) {
                     //If line starts with "#" it is comment.
@@ -132,7 +132,6 @@ public class PostInstallFixupAction extends ProductAction {
                 if (index < 0) {
                     return;
                 }
-                //Update only when cnd cluster path is found and removed from netbeans_extraclusters
                 String [] update = new String[content.length - 1];
                 for (int i = 0, j = 0; i < content.length; i++) {
                     if (i != index) {
