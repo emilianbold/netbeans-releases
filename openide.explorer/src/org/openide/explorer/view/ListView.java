@@ -903,7 +903,6 @@ public class ListView extends JScrollPane implements Externalizable {
                 add(searchpanel);
                 revalidate();
                 repaint();
-                System.err.println("Displayed search field");
 
                 // bugfix #28501, avoid the chars duplicated on jdk1.3
                 SwingUtilities.invokeLater(
@@ -913,8 +912,6 @@ public class ListView extends JScrollPane implements Externalizable {
                         }
                     }
                 );
-            } else {
-                System.err.println("Not setting up search: " + searchTextField.isDisplayable());
             }
         }
 
