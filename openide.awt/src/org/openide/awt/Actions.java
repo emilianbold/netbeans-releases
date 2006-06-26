@@ -12,18 +12,24 @@
  */
 package org.openide.awt;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageProducer;
+import java.awt.image.RGBImageFilter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.actions.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
-
-import java.beans.*;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -33,11 +39,21 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.WeakHashMap;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.Icon;
 
-import javax.swing.*;
 import javax.swing.ImageIcon;
-import javax.swing.event.*;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
+import org.openide.util.actions.BooleanStateAction;
+import org.openide.util.actions.SystemAction;
 
 
 /** Supporting class for manipulation with menu and toolbar presenters.
@@ -46,7 +62,7 @@ import javax.swing.text.Keymap;
 */
 public class Actions extends Object {
     private static Icon BLANK_ICON = null;
-    private static Map menuActionCache;
+    private static Map/*<Action, Reference<JMenuItem>>*/ menuActionCache;
     private static Object menuActionLock = new Object();
 
     /** Shared instance of filter for disabled icons */
@@ -356,7 +372,7 @@ public class Actions extends Object {
     private static Icon createDisabledIcon(Image img) {
         ImageProducer prod = new FilteredImageSource(img.getSource(), disabledButtonFilter());
 
-        return new ImageIcon(Toolkit.getDefaultToolkit().createImage(prod));
+        return new ImageIcon(Toolkit.getDefaultToolkit().createImage(prod), "");
     }
 
     private static RGBImageFilter disabledButtonFilter() {
