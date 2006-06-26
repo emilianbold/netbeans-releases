@@ -611,15 +611,17 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             }
             if (commonText != null) {
                 int caretOffset = c.getCaret().getDot();
-                if (anchorOffset > -1)
+                if (anchorOffset > -1  && caretOffset - anchorOffset < commonText.length()) {
                     commonText = commonText.subSequence(caretOffset - anchorOffset, commonText.length());
-                BaseDocument doc = (BaseDocument)getActiveDocument();
-                doc.atomicLock();
-                try {
-                    doc.insertString(caretOffset, commonText.toString(), null);
-                } catch (BadLocationException e) {
-                } finally {
-                    doc.atomicUnlock();
+                    // Insert the missing end part of the prefix
+                    BaseDocument doc = (BaseDocument)getActiveDocument();
+                    doc.atomicLock();
+                    try {
+                        doc.insertString(caretOffset, commonText.toString(), null);
+                    } catch (BadLocationException e) {
+                    } finally {
+                        doc.atomicUnlock();
+                    }
                 }
             }
         }
