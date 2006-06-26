@@ -250,7 +250,7 @@ public class ProxyClassLoader extends ClassLoader {
                 retVal = owner.getResource(name); // know nothing about this loader and his structure
             }
             if (retVal != null) {
-                String p = new String(pkg).intern();
+                String p = new String(pkg).intern(); // NOPMD
                 domainsByPackage.put(p, owner);
 		if (owner instanceof ProxyClassLoader) {
                     ((ProxyClassLoader)owner).domainsByPackage.put(p, owner);
@@ -262,7 +262,7 @@ public class ProxyClassLoader extends ClassLoader {
         // try it ourself
         retVal = findResource(name);
         if (retVal != null) {
-            domainsByPackage.put(new String(pkg).intern(), this);
+            domainsByPackage.put(new String(pkg).intern(), this); // NOPMD
         }
         return retVal;
     }
@@ -537,7 +537,7 @@ public class ProxyClassLoader extends ClassLoader {
 
         if (c != null) {
             final ClassLoader owner2 = getClassClassLoader(c); // who got it?
-            domainsByPackage.put(new String(pkg).intern(), owner2);
+            domainsByPackage.put(new String(pkg).intern(), owner2); // NOPMD
         }
         return c;
     }
@@ -603,7 +603,7 @@ public class ProxyClassLoader extends ClassLoader {
         if (c == null) {
             c = simpleFindClass(name, fileName, pkg);
             if (c != null) {
-                domainsByPackage.put(new String(pkg).intern(), this);
+                domainsByPackage.put(new String(pkg).intern(), this); // NOPMD
             }
         }
 	return c;
