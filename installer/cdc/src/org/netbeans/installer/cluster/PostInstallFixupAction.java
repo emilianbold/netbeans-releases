@@ -31,6 +31,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PostInstallFixupAction extends ProductAction {
+    private static final String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
+    private static final String CLUSTERS_CONF_FILE_NAME = "netbeans.clusters";
+    
     public void build(ProductBuilderSupport support) {
     }
     
