@@ -2607,9 +2607,10 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
 
-                if (addedComponent != null) { // NOI18N
+                if (addedComponent != null) {
                     java.beans.BeanDescriptor bDesc = addedComponent.getBeanInfo().getBeanDescriptor();
-                    if ((bDesc != null) && (bDesc.getValue("customizeOnCreation") != null)) {
+                    if ((bDesc != null) && (bDesc.getValue("customizeOnCreation") != null)) { // NOI18N
+                        modifiers &= ~InputEvent.SHIFT_MASK;
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
                                 RADComponentNode node = addedComponent.getNodeReference();
@@ -2620,7 +2621,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         });
                     }
                 }
-                else if ((modifiers & InputEvent.SHIFT_MASK) != 0) {
+                if ((modifiers & InputEvent.SHIFT_MASK) != 0) {
 //                    init();
                     return false;
                 }
