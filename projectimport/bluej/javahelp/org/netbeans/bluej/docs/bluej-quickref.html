@@ -1,0 +1,153 @@
+<html>
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <!--
+    * Copyright © 2006 Sun Microsystems, Inc.
+    * All rights reserved. 
+    * Use is subject to license terms.
+    -->
+    <head>
+        <title>Basic IDE Tasks: Quick Reference</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+        <h2>Basic IDE Tasks: Quick Reference</h2>
+        <p> This topic describes common tasks you can perform when building a project. 
+        For more detailed information, click the links in the right column. </p>
+
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+            task name. The right column lists the steps to perform.">
+            <tr valign="top"> 
+                <th scope="col" align="left">To perform this task</th>
+                <th scope="col" align="left">Follow these steps</th>
+            </tr>
+            <tr valign="top"> 
+                <td>Compile a file.</td>
+                <td> 
+                    <ol>
+                        <li>Right-click the file or the file's node and choose Compile File 
+                        (or select the file and press F9).</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Run a file.</td>
+                <td> 
+                    <ol>
+                        <li>Make sure the file has a <tt>main</tt> method.
+                        <p>You can quickly add a main method by typing <tt>psvm</tt> and pressing
+                        Shift-Space.</p></li>
+                        <li>Right-click the file and choose Run File (or select the file and press Shift-F6).</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Add a JAR file to a project's classpath.</td>
+                <td> 
+                    <ol>
+                        <li>Open the Project Properties dialog box by 
+                        right-clicking the  project node and choosing Properties from the Project
+                        window.        	</li>
+                        <li>Select the Libraries node in the Categories pane. Then click the
+                        Compile tab.</li>
+                        <li>Click Add JAR and select the JAR file in the file chooser.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Add an IDE project to a project's classpath.</td>
+                <td> 
+                    <ol>
+                        <li>Open the Project Properties dialog box by right-clicking the project
+                        node and choosing Properties from the Project window. </li>
+                        <li>Select the Libraries node in the
+                        Categories pane. Then click the Compile tab.</li>
+                        <li>Click <a href="comp_dependencies.html">Add Project</a> and select
+                        the project directory for the  project you want to add. </li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Build a project.</td>
+                <td> 
+                    <ol>
+                        <li>Select the node of the project  you want to build. </li>
+                        <li>Choose Build  &gt; Build
+                        Main Project (F11) or right-click any project in the Projects window
+                        and choose Build Project. </li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Stop building a project.</td>
+                <td><ul>
+                    <li>Choose Build  &gt;  Stop Build/Run from the main menu.</li>
+                </ul>
+                </td>
+            </tr>
+
+
+            <tr valign="top"> 
+                <td>Compile a single file.</td>
+                <td> 
+                    <ol>
+                        <li>Select the node of the file you want to build. </li>
+                        <li>Choose Build  &gt; Compile
+                        File (F9).</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Clean a project.</td>
+                <td> 
+                    <ul>
+                        <li>In the Projects window, right-click the project node and choose Clean 
+                        Project.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Clean and build the main project.</td>
+                <td> 
+                    <ol>
+                        <li>Select the node of the project you want to clean and build. </li>
+                        <li>Choose Build  &gt; Clean
+                        and Build Main Project (Shift-F11).</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>View build output.</td>
+                <td> 
+                    <ol>
+                        <li>In the Files window, expand the project folder node. </li>
+                        <li>Expand the <tt>build</tt> folder to view compiled classes. </li>
+                        <li>Expand the <tt>dist</tt> folder to view Javadoc
+                        files and built libraries, such as  JAR files and WAR files.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Correct compilation errors.</td>
+                <td> 
+                    <ul>
+                        <li>In the <a href="comp_output.html">Output window</a>, double-click 
+                        any Java syntax error to jump to the location in the source code where 
+                        the error occurred.</li>
+                        <li>In the <a href="comp_output.html">Output window</a>, double-click 
+                        any Ant error to open the Ant script in the target that failed. </li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+
+        <hr>
+        <small><a href="href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table> 
+    </body>
+</html>
+
