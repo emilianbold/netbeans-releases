@@ -20,7 +20,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -88,26 +90,43 @@ public final class Exceptions extends Object {
      */
     public static String findLocalizedMessage(Throwable t) {
         while (t != null) {
-            if (t instanceof Callable) {
-                Object res = null;
-                try {
-                    res = ((Callable) t).call();
-                } catch (Exception ex) {
-                    Logger.global.log(Level.WARNING, null, t);
-                }
-                if (res instanceof LogRecord[]) {
-                    for (LogRecord r : (LogRecord[])res) {
-                        ResourceBundle b = r.getResourceBundle();
-                        if (b != null) {
-                            String msg = b.getString(r.getMessage());
-                            return msg;
-                        }
-                    }
-                }
+            String msg;
+            AnnException extra = AnnException.extras.get(t);
+            if (extra != null) {
+                msg = extractLocalizedMessage(extra);
+            } else {
+                msg = extractLocalizedMessage(t);
             }
+            
+            if (msg != null) {
+                return msg;
+            }
+            
             t = t.getCause();
         }
         return null;
+    }
+
+    private static String extractLocalizedMessage(final Throwable t) {
+        String msg = null;
+        if (t instanceof Callable) {
+            Object res = null;
+            try {
+                res = ((Callable) t).call();
+            } catch (Exception ex) {
+                Logger.global.log(Level.WARNING, null, t);
+            }
+            if (res instanceof LogRecord[]) {
+                for (LogRecord r : (LogRecord[])res) {
+                    ResourceBundle b = r.getResourceBundle();
+                    if (b != null) {
+                        msg = b.getString(r.getMessage());
+                        break;
+                    }
+                }
+            }
+        }
+        return msg;
     }
     
     /** Notifies an exception with a severe level. Such exception is going
@@ -117,6 +136,11 @@ public final class Exceptions extends Object {
      * @param t the exception to notify
      */
     public static void printStackTrace(Throwable t) {
+        AnnException extra = AnnException.extras.get(t);
+        if (extra != null) {
+            assert t == extra.getCause();
+            t = extra;
+        }
         Logger.global.log(OwnLevel.UNKNOWN, null, t);
     }
 
@@ -125,6 +149,14 @@ public final class Exceptions extends Object {
      */
     private static final class AnnException extends Exception implements Callable<LogRecord[]> {
         private List<LogRecord> records;
+        
+        private AnnException() {
+            super();
+        }
+        
+        private AnnException(String msg) {
+            super(msg);
+        }
 
         public String getMessage() {
             StringBuilder sb = new StringBuilder();
@@ -138,6 +170,10 @@ public final class Exceptions extends Object {
             }
             return sb.toString();
         }
+        
+        
+        /** additional mapping from throwables that refuse initCause call */
+        private static Map<Throwable, AnnException> extras = new WeakHashMap<Throwable, AnnException>();
 
         static AnnException findOrCreate(Throwable t, boolean create) {
             if (t instanceof AnnException) {
@@ -148,16 +184,19 @@ public final class Exceptions extends Object {
                     try {
                         t.initCause(new AnnException());
                     } catch (IllegalStateException x) {
-                        Logger.getLogger(Exceptions.class.getName()).log(Level.WARNING, "getCause was null yet initCause failed for " + t, x);
-                        return new AnnException();
+                        AnnException ann = extras.get(t);
+                        if (ann == null) {
+                            ann = new AnnException(t.getMessage());
+                            ann.initCause(t);
+                            Logger.getLogger(Exceptions.class.getName()).log(Level.FINE, "getCause was null yet initCause failed for " + t, x);
+                            extras.put(t, ann);
+                        }
+                        return ann;
                     }
                 }
                 return (AnnException)t.getCause();
             }
             return findOrCreate(t.getCause(), create);
-        }
-
-        private AnnException() {
         }
 
         public synchronized void addRecord(LogRecord rec) {
