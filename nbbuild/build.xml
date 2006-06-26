@@ -909,7 +909,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </exec>
   </target>
   
-  <target name="l10n-kit" depends="init">
+  <target name="l10n-kit" depends="init" description="Builds the L10N kit">
     <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"
              classpath="nbantext.jar"/>
     <delete dir="${l10n.dist.dir}"/>
