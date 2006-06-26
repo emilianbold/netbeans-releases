@@ -26,9 +26,10 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.subversion</friend>
                 <package>org.ini4j</package>                
-            </public-packages>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/ini4j.jar</runtime-relative-path>
                 <binary-origin>../external/ini4j.jar</binary-origin>

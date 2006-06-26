@@ -26,10 +26,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.subversion</friend>
                 <package>org.tigris.subversion.svnclientadapter</package>
                 <package>org.tigris.subversion.svnclientadapter.commandline</package>
-            </public-packages>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/svnClientAdapter.jar</runtime-relative-path>
                 <binary-origin>../external/svnClientAdapter.jar</binary-origin>
