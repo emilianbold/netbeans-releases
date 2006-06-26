@@ -14,6 +14,23 @@
 
 <h2>Importing a BlueJ Project</h2>
 <p> <small><a href="#seealso">See Also</a></small></p>
+<p>You can work with existing BlueJ projects in the following two ways in the 
+NetBeans IDE BlueJ Edition:</p>
+<ul>
+    <li>By opening the project in the IDE and keeping the same BlueJ
+    project structure.
+    <p>The advantage of this approach is that you can continue working much as you 
+    have in BlueJ, but with the benefit of features in the NetBeans IDE editor.</li>
+    <li>By opening the project in the IDE and then converting the project 
+        into a standard NetBeans IDE J2SE project.
+        <p>The advantage of this approach is that the NetBeans IDE project system 
+        is more suitable for large projects. For example, you have more features in 
+        the IDE for managing the classpath and the way the application is built and 
+        packaged.</p>
+    </li>
+</ul>
+
+
 <p>To import an existing BlueJ project into NetBeans IDE BlueJ Edition:</p>
 <ol>
     <li>In NetBeans IDE BlueJ Edition, choose File &gt; Open Project.</li>
@@ -23,11 +40,30 @@
 
 <p>The project opens up in the IDE. You can view the project in either the BlueJ View 
 window or the IDE's standard Projects window.</p>
-<!--TODO finish this topic-->
+
+<p>To convert a BlueJ project into a NetBeans IDE project:</p>
+<ol>
+    <li>Open the BlueJ project in NetBeans IDE, as described in the procedure above.</li>
+    <li>In the Projects window, right-click the project's node and choose 
+    Convert to J2SE Project.</li>
+</ol>
+    <p>When you convert a BlueJ project into a standard J2SE project, 
+    the IDE copies the sources from your existing project and places them 
+    into a new project, where sources and compiled classes are separated into 
+    different folders. Your BlueJ project remains, but is separate from the 
+    newly created project. The converted project is not visible in the BlueJ view. </p> 
+<p>In the converted project, you can easily manage the classpath through 
+ the Libraries node. You can manage the way the application is built and packaged 
+through the Project Properties dialog box, which you can open by right-clicking the project's node and choosing 
+Properties.
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_about.html">About Projects</a></dd>
+            <dd><a href="href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_process.html">Working With Projects</a></dd>
+            <dd><a href="href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_quickref.html">Project Tasks: Quick Reference</a></dd>
         </dl>
+
 
 <hr>
 

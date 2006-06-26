@@ -4,9 +4,9 @@
     <tocitem text="NetBeans IDE BlueJ Edition Help">
         <tocitem text="About Using NetBeans IDE BlueJ Edition" target="org.netbeans.bluej.about"/>
         <tocitem text="About the Help in NetBeans IDE BlueJ Edition" target="bluej-about-help"/>
+        <tocitem text="Differences in the BlueJ Edition of the IDE" target="bluej-ide-differences"/>
         <tocitem text="Importing a BlueJ Project" target="bluej-proj-import"/>
         <tocitem text="Creating a New Project" target="bluej-proj-new"/>
-        <tocitem text="Project Window and BlueJ View" target="bluej-projectwindows"/>
-        <tocitem text="Differences in the BlueJ Edition of the IDE" target="bluej-ide-differences"/>
+        <tocitem text="Basic IDE Tasks: Quick Reference" target="bluej-quickref"/>
     </tocitem>
 </toc>
