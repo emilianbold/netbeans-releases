@@ -150,7 +150,7 @@ public abstract class FileObject extends Object implements Serializable {
      * @since 3.7
      */
     public String getPath() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         constructName(sb, '/');
 
         return sb.toString();
@@ -171,7 +171,7 @@ public abstract class FileObject extends Object implements Serializable {
     public String getPackageNameExt(char separatorChar, char extSepChar) {
         assert FileUtil.assertDeprecatedMethod();
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         if (isRoot() || getParent().isRoot()) {
             return getNameExt();
@@ -200,7 +200,7 @@ public abstract class FileObject extends Object implements Serializable {
     public String getPackageName(char separatorChar) {
         assert FileUtil.assertDeprecatedMethod();
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         if (isRoot() || getParent().isRoot()) {
             return (isFolder()) ? getNameExt() : getName();
@@ -229,7 +229,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @param sb string buffer
     * @param sepChar separator character
     */
-    private void constructName(StringBuffer sb, char sepChar) {
+    private void constructName(StringBuilder sb, char sepChar) {
         FileObject parent = getParent();
 
         if ((parent != null) && !parent.isRoot()) {
@@ -891,7 +891,7 @@ public abstract class FileObject extends Object implements Serializable {
         }
 
         public FileObject process(FileObject obj, Collection<FileObject> coll) {
-            FileObject fo = (FileObject) obj;
+            FileObject fo = obj;
 
             if (folders) {
                 return fo.isFolder() ? fo : null;
