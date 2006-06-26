@@ -150,6 +150,8 @@ final class RootNode extends AbstractNode {
     private void updateDisplayName() {
         assert EventQueue.isDispatchThread();
         
+        /* Called from the EventDispatch thread */
+        
         final Class bundleRefClass = getClass();
         String msg;
 

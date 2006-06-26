@@ -7,12 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit.output;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,6 +60,9 @@ final class Report {
     /**
      */
     void reportTest(Testcase test) {
+        
+        /* Called from the AntLogger thread */
+        
         //PENDING - should be synchronized
         tests.add(test);
         
@@ -70,6 +74,11 @@ final class Report {
     /**
      */
     void update(Report report) {
+        
+        /* Called from the AntLogger thread */
+        
+        //PENDING - should be synchronized
+        
         //this.antScript = report.antScript;    - KEEP DISABLED!!!
         this.resultsDir = report.resultsDir;
         this.suiteClassName = report.suiteClassName;
@@ -86,6 +95,10 @@ final class Report {
     /**
      */
     Collection getTests() {
+        assert EventQueue.isDispatchThread();
+        
+        /* Called from the EventDispatch thread */
+        
         //PENDING - should be synchronized
         if (tests.isEmpty()) {
             return Collections.EMPTY_LIST;
@@ -97,6 +110,10 @@ final class Report {
     /**
      */
     boolean containsFailed() {
+        assert EventQueue.isDispatchThread();
+        
+        /* Called from the EventDispatch thread */
+        
         return (failures + errors) != 0;
     }
     

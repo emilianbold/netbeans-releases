@@ -371,6 +371,7 @@ final class ResultDisplayHandler {
     /**
      */
     void setTreePanel(final ResultPanelTree treePanel) {
+        assert EventQueue.isDispatchThread();
         
         /* Called from the EventDispatch thread */
         
