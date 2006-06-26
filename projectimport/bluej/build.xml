@@ -7,9 +7,7 @@
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.4" debug="true" deprecation="true">
             <classpath>
-                <path refid="cp"/>
-                <pathelement location="${ant.home}/lib/ant.jar"/>
-                <pathelement location="${tools.jar}"/>
+                <pathelement path="${antsrc.cp}"/>
             </classpath>
         </javac>
         <copy todir="build/antclasses">
