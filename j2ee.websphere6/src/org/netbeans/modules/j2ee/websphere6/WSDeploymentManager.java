@@ -670,6 +670,9 @@ public class WSDeploymentManager implements DeploymentManager {
                     method = targetModuleID[0].getClass().
                             getMethod("setWebURL", new Class[] {String.class});  // NOI18N
                     method.invoke(targetModuleID[0], new Object[] {webUrl});
+                    System.out.println(
+                            NbBundle.getMessage(WSDeploymentManager.class,
+                            "ERR_wrongContextRoot"));
                 }
                 try { // stop running web modules
                     TargetModuleID [] modules = getRunningModules(

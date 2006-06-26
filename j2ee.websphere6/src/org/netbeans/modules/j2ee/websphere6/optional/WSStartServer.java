@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -31,9 +31,9 @@ import org.netbeans.modules.j2ee.websphere6.util.*;
 
 /**
  * This class provides functionality used to start and stop a particular server
- * instance. It also supports starting the server in debug mode, so that 
+ * instance. It also supports starting the server in debug mode, so that
  * NetBeans can connect to it using its built-in JPDA debugger.
- * 
+ *
  * @author Kirill Sorokin
  */
 public class WSStartServer extends StartServer {
@@ -44,14 +44,14 @@ public class WSStartServer extends StartServer {
     private WSDeploymentManager dm;
     
     /**
-     * Current server's state. Can be either started, starting, stopping or 
+     * Current server's state. Can be either started, starting, stopping or
      * stopped
      */
     private int state;
     
     /**
      * Creates a new instance of WSStartServer
-     * 
+     *
      * @param the server's deployment manager
      */
     public WSStartServer(DeploymentManager dm) {
@@ -62,14 +62,19 @@ public class WSStartServer extends StartServer {
         this.state = isRunning() ? STATE_STARTED : STATE_STOPPED;
     }
     
+    // overrides default StartServer method
+    public boolean supportsStartDebugging(Target target) {
+        return true;
+    }
+    
     /**
-     * Starts the server (or even a particular target supplied by admin server) 
+     * Starts the server (or even a particular target supplied by admin server)
      * in debug mode. We do not support this completely thus always start the
-     * server instance defined in the deployment maanger supplied during 
+     * server instance defined in the deployment maanger supplied during
      * WSStartServer construction.
-     * 
+     *
      * @param target target thst should be started
-     * 
+     *
      * @return a progress object that describes the startup process
      */
     public ProgressObject startDebugging(Target target) {
@@ -102,7 +107,7 @@ public class WSStartServer extends StartServer {
         
         // if the server is started or starting
         if (state == STATE_STARTING || state == STATE_STARTED) {
-            // notify the progress object that the process is already 
+            // notify the progress object that the process is already
             // completed and return
             serverProgress.notifyStart(StateType.COMPLETED, "");
             return serverProgress;
@@ -125,15 +130,15 @@ public class WSStartServer extends StartServer {
     /**
      * Marker describing whether the server is started in debug mode
      */
-    private boolean isDebuggable;
+    private boolean isDebuggable = false;
     
     /**
-     * Specifies whether the server instance is started in debug mode. The 
-     * detalization can go as deep as an individual target, but we do not 
+     * Specifies whether the server instance is started in debug mode. The
+     * detalization can go as deep as an individual target, but we do not
      * support this
-     * 
+     *
      * @param target target to be checked
-     * 
+     *
      * @return whether the instance is started in debug mode
      */
     public boolean isDebuggable(Target target) {
@@ -142,7 +147,7 @@ public class WSStartServer extends StartServer {
     
     /**
      * Tells whether the target is also the target server
-     * 
+     *
      * @return true
      */
     public boolean isAlsoTargetServer(Target target) {
@@ -150,12 +155,12 @@ public class WSStartServer extends StartServer {
     }
     
     /**
-     * Returns the information for attaching the JPDA debugger to the server 
-     * (host and port). The detalization can be down to a specific target, but 
+     * Returns the information for attaching the JPDA debugger to the server
+     * (host and port). The detalization can be down to a specific target, but
      * we do not support this
-     * 
+     *
      * @param target target for which the information is requested
-     * 
+     *
      * @return the debug information
      */
     public ServerDebugInfo getDebugInfo(Target target) {
@@ -166,7 +171,7 @@ public class WSStartServer extends StartServer {
     
     /**
      * Tells whether the normal startup of the server is supported.
-     * 
+     *
      * @return if the server is local, its true, false otherwise
      */
     public boolean supportsStartDeploymentManager() {
@@ -181,7 +186,7 @@ public class WSStartServer extends StartServer {
     
     /**
      * Stops the server instance identified by the deployment manager.
-     * 
+     *
      * @return the progress object describing the shutdown process
      */
     public ProgressObject stopDeploymentManager() {
@@ -214,14 +219,14 @@ public class WSStartServer extends StartServer {
         
         // if the server is stopped or stopping
         if (state == STATE_STOPPING || state == STATE_STOPPED) {
-            // notify the progress object that the process is already 
+            // notify the progress object that the process is already
             // completed and return
             serverProgress.notifyStop(StateType.COMPLETED, "");
             return serverProgress;
         }
         
         // run the shutdown process in a separate thread
-        RequestProcessor.getDefault().post(new WSStopRunnable(serverProgress), 
+        RequestProcessor.getDefault().post(new WSStopRunnable(serverProgress),
                 0, Thread.NORM_PRIORITY);
         
         // set the debugguable marker to false as the server is stopped
@@ -236,7 +241,7 @@ public class WSStartServer extends StartServer {
     
     /**
      * Starts a server instance identified by the deployment manager.
-     * 
+     *
      * @return a progress object describing the server startup process
      */
     public ProgressObject startDeploymentManager() {
@@ -269,7 +274,7 @@ public class WSStartServer extends StartServer {
         
         // if the server is started or starting
         if (state == STATE_STARTING || state == STATE_STARTED) {
-            // notify the progress object that the process is already 
+            // notify the progress object that the process is already
             // completed and return
             serverProgress.notifyStart(StateType.COMPLETED, "");
             return serverProgress;
@@ -279,7 +284,7 @@ public class WSStartServer extends StartServer {
         RequestProcessor.getDefault().post(new WSStartRunnable(serverProgress),
                 0, Thread.NORM_PRIORITY);
         
-        // set the debuggble marker to false as we do not start the server in 
+        // set the debuggble marker to false as we do not start the server in
         // debug mode
         isDebuggable = false;
         
@@ -291,9 +296,9 @@ public class WSStartServer extends StartServer {
     }
     
     /**
-     * Tells whether we need to start the server instance in order to get a 
+     * Tells whether we need to start the server instance in order to get a
      * list of deployment targets.
-     * 
+     *
      * @return true
      */
     public boolean needsStartForTargetList() {
@@ -303,7 +308,7 @@ public class WSStartServer extends StartServer {
     /**
      * Tells whether we need to start the server instance in order to configure
      * an application
-     * 
+     *
      * @return false
      */
     public boolean needsStartForConfigure() {
@@ -313,7 +318,7 @@ public class WSStartServer extends StartServer {
     /**
      * Tells whether we need to start the server instance in order to configure
      * the admin server
-     * 
+     *
      * @return true
      */
     public boolean needsStartForAdminConfig() {
@@ -323,7 +328,7 @@ public class WSStartServer extends StartServer {
     /**
      * Tells whether the server instance identified by the deployment manager is
      * currently started
-     * 
+     *
      * @return true is the server is running, false otherwise
      */
     public boolean isRunning() {
@@ -336,7 +341,7 @@ public class WSStartServer extends StartServer {
         } catch (UnknownHostException e) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
         } catch (IOException e) {
-            // do nothing this exception means that the server is 
+            // do nothing this exception means that the server is
             // not started
         }
         
@@ -346,11 +351,11 @@ public class WSStartServer extends StartServer {
     
     /**
      * An utility method that transforms a Properties object to an array of
-     * Strings each containing a property in the form of 
+     * Strings each containing a property in the form of
      * <i>'&lt;name&gt;=&lt;value&gt;'</i>
-     * 
+     *
      * @param properties properties to be converted
-     * 
+     *
      * @return an array of strings with the converted properties
      */
     private static String[] properties2StringArray(Properties properties) {
@@ -375,7 +380,7 @@ public class WSStartServer extends StartServer {
     
     /**
      * Turns on/off the debugging mode of the server.
-     * 
+     *
      * @param degubEnabled whether the server should be started in debug mode
      * @param debuggerPort which port the debugger should listen to
      */
@@ -403,35 +408,35 @@ public class WSStartServer extends StartServer {
     }
     
     /**
-     * Runnable that starts the server in normal mode. It is used to start the 
+     * Runnable that starts the server in normal mode. It is used to start the
      * server in a separate thread, so that the IDE does not hang up during the
      * startup process.
-     * 
+     *
      * @author Kirill Sorokin
      */
     private class WSStartRunnable implements Runnable {
         
         /**
          * Root directory for the selected profile
-         */ 
+         */
         private String domainHome;
         
         /**
-         * Name of the selected server instance, it will be used as the 
+         * Name of the selected server instance, it will be used as the
          * parameter for the startup script
          */
         private String serverName;
         
         /**
-         * Progress object that describes the startup process. It will be 
+         * Progress object that describes the startup process. It will be
          * notified of the progress and the success/failure of the process
          */
         private WSServerProgress serverProgress;
         
-        /** 
+        /**
          * Creates a new instance of WSStartRunnable.
-         * 
-         * @param serverProgress the prgress object that the thread should 
+         *
+         * @param serverProgress the prgress object that the thread should
          *      notify of anything that happens with the startup process
          */
         public WSStartRunnable(WSServerProgress serverProgress) {
@@ -461,32 +466,32 @@ public class WSStartServer extends StartServer {
                 // create the startup process
                 Process serverProcess = Runtime.getRuntime().
                         exec(new String[]{domainHome + "/bin/" +       // NOI18N
-                        (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), 
-                        serverName}); 
+                                (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH),
+                        serverName});
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
                 new WSTailer(serverProcess.getInputStream(), NbBundle.
-                        getMessage(WSStartServer.class, 
+                        getMessage(WSStartServer.class,
                         "TXT_ioWindowTitle")).start();                 // NOI18N
                 
                 // show the server's log
-                new WSTailer(new File(dm.getLogFilePath()), 
-                        NbBundle.getMessage(ShowServerLogAction.class, 
+                new WSTailer(new File(dm.getLogFilePath()),
+                        NbBundle.getMessage(ShowServerLogAction.class,
                         "LBL_LogWindowTitle", dm.getInstanceProperties(). // NOI18N
                         getProperty(WSDeploymentFactory.SERVER_NAME_ATTR))).
-                        start(); 
+                        start();
                 
-                // wait till the timeout happens, or if the server starts before 
+                // wait till the timeout happens, or if the server starts before
                 // send the completed event to j2eeserver
                 while (System.currentTimeMillis() - start < TIMEOUT) {
                     // is the server is not yet running send the 'progressing'
                     // event, else send trhe 'completed' event and return
                     if (!isRunning()) {
-                        serverProgress.notifyStart(StateType.RUNNING, 
+                        serverProgress.notifyStart(StateType.RUNNING,
                                 "");                                   // NOI18N
                     } else {
-                        serverProgress.notifyStart(StateType.COMPLETED, 
+                        serverProgress.notifyStart(StateType.COMPLETED,
                                 "");                                   // NOI18N
                         
                         // set the state to started
@@ -525,7 +530,7 @@ public class WSStartServer extends StartServer {
          */
         private static final int DELAY = 5000;
         
-        /** 
+        /**
          * Name of the startup script for windows
          */
         private static final String STARTUP_SH = "startServer.sh";     // NOI18N
@@ -537,49 +542,49 @@ public class WSStartServer extends StartServer {
     }
     
     /**
-     * Runnable that starts the server in debug mode. It is used to start the 
+     * Runnable that starts the server in debug mode. It is used to start the
      * server in a separate thread, so that the IDE does not hang up during the
      * startup process.
-     * 
+     *
      * @author Kirill Sorokin
      */
     private class WSStartDebugRunnable implements Runnable {
         
         /**
          * Root directory for the selected profile
-         */ 
+         */
         private String domainHome;
         
         /**
-         * Name of the selected server instance, it will be used as the 
+         * Name of the selected server instance, it will be used as the
          * parameter for the startup script
          */
         private String serverName;
         
         /**
          * The debugger port that the JPDA debugger should connect to, basically
-         * this integer will be added to the server's startup command line, to 
+         * this integer will be added to the server's startup command line, to
          * make the JVM listen for debugger connection on this port
          */
         private String debuggerPort;
         
         /**
-         * Progress object that describes the startup process. It will be 
+         * Progress object that describes the startup process. It will be
          * notified of the progress and the success/failure of the process
          */
         private WSServerProgress serverProgress;
         
-        /** 
+        /**
          * Creates a new instance of WSStartDebugRunnable.
-         * 
-         * @param serverProgress the prgress object that the thread should 
+         *
+         * @param serverProgress the prgress object that the thread should
          *      notify of anything that happens with the startup process
          */
         public WSStartDebugRunnable(WSServerProgress serverProgress) {
             // save the progress object
             this.serverProgress = serverProgress;
             
-            // get the profile root directory, the debugger port and the 
+            // get the profile root directory, the debugger port and the
             // instance name from the deployment manager
             domainHome = dm.getInstanceProperties().getProperty(
                     WSDeploymentFactory.DOMAIN_ROOT_ATTR);
@@ -604,32 +609,32 @@ public class WSStartServer extends StartServer {
                 // create the startup process
                 Process serverProcess = Runtime.getRuntime().
                         exec(new String[]{domainHome + "/bin/" +       // NOI18N
-                        (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), 
-                        serverName}); 
-                        
+                                (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH),
+                        serverName});
+                
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                new WSTailer(serverProcess.getInputStream(), 
-                        NbBundle.getMessage(WSStartServer.class, 
+                new WSTailer(serverProcess.getInputStream(),
+                        NbBundle.getMessage(WSStartServer.class,
                         "TXT_ioWindowTitle")).start();                 // NOI18N
                 
                 // show the server's log
-                new WSTailer(new File(dm.getLogFilePath()), 
-                        NbBundle.getMessage(ShowServerLogAction.class, 
+                new WSTailer(new File(dm.getLogFilePath()),
+                        NbBundle.getMessage(ShowServerLogAction.class,
                         "LBL_LogWindowTitle", dm.getInstanceProperties(). // NOI18N
                         getProperty(WSDeploymentFactory.SERVER_NAME_ATTR))).
-                        start(); 
+                        start();
                 
-                // wait till the timeout happens, or if the server starts before 
+                // wait till the timeout happens, or if the server starts before
                 // send the completed event to j2eeserver
                 while (System.currentTimeMillis() - start < TIMEOUT) {
                     // is the server is not yet running send the 'progressing'
                     // event, else send trhe 'completed' event and return
                     if (!isRunning()) {
-                        serverProgress.notifyStart(StateType.RUNNING, 
+                        serverProgress.notifyStart(StateType.RUNNING,
                                 "");                                   // NOI18N
                     } else {
-                        serverProgress.notifyStart(StateType.COMPLETED, 
+                        serverProgress.notifyStart(StateType.COMPLETED,
                                 "");                                   // NOI18N
                         
                         // set the state to started
@@ -644,7 +649,7 @@ public class WSStartServer extends StartServer {
                         Thread.sleep(DELAY);
                     } catch (InterruptedException e) {}
                 }
-
+                
                 // if the server did not start in the designated time limits
                 // we consider the startup as failed and kill the process
                 serverProgress.notifyStart(StateType.FAILED, "");      // NOI18N
@@ -662,13 +667,13 @@ public class WSStartServer extends StartServer {
          * start
          */
         private static final int TIMEOUT = 120000;
-
+        
         /**
          * The amount of time in milliseconds that we should wait between checks
          */
         private static final int DELAY = 5000;
         
-        /** 
+        /**
          * Name of the startup script for windows
          */
         private static final String STARTUP_SH = "startServer.sh";     // NOI18N
@@ -680,35 +685,35 @@ public class WSStartServer extends StartServer {
     }
     
     /**
-     * Runnable that stops the server. It is used to stop the server in a 
-     * separate thread, so that the IDE does not hang up during the stop 
+     * Runnable that stops the server. It is used to stop the server in a
+     * separate thread, so that the IDE does not hang up during the stop
      * process.
-     * 
+     *
      * @author Kirill Sorokin
      */
     private class WSStopRunnable implements Runnable {
         
         /**
          * Root directory for the selected profile
-         */ 
+         */
         private String domainHome;
         
         /**
-         * Name of the selected server instance, it will be used as the 
+         * Name of the selected server instance, it will be used as the
          * parameter for the stop script
          */
         private String serverName;
         
         /**
-         * Progress object that describes the stop process. It will be 
+         * Progress object that describes the stop process. It will be
          * notified of the progress and the success/failure of the process
          */
         private WSServerProgress serverProgress;
         
-        /** 
+        /**
          * Creates a new instance of WSStopRunnable.
-         * 
-         * @param serverProgress the prgress object that the thread should 
+         *
+         * @param serverProgress the prgress object that the thread should
          *      notify of anything that happens with the stop process
          */
         public WSStopRunnable(WSServerProgress serverProgress) {
@@ -735,23 +740,23 @@ public class WSStartServer extends StartServer {
                 // create the stop process
                 Process serverProcess = Runtime.getRuntime().exec(
                         new String[]{domainHome + "/bin/" +            // NOI18N
-                        (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH), 
-                        serverName}); 
+                                (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH),
+                        serverName});
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                new WSTailer(serverProcess.getInputStream(), 
-                        NbBundle.getMessage(WSStartServer.class, 
+                new WSTailer(serverProcess.getInputStream(),
+                        NbBundle.getMessage(WSStartServer.class,
                         "TXT_ioWindowTitle")).start();                 // NOI18N
                 
                 // show the server's log
-                new WSTailer(new File(dm.getLogFilePath()), 
-                        NbBundle.getMessage(ShowServerLogAction.class, 
+                new WSTailer(new File(dm.getLogFilePath()),
+                        NbBundle.getMessage(ShowServerLogAction.class,
                         "LBL_LogWindowTitle", dm.getInstanceProperties(). // NOI18N
                         getProperty(WSDeploymentFactory.SERVER_NAME_ATTR))).
-                        start(); 
+                        start();
                 
-                // wait till the timeout happens, or if the server starts before 
+                // wait till the timeout happens, or if the server starts before
                 // send the completed event to j2eeserver
                 while (System.currentTimeMillis() - start < TIMEOUT) {
                     if (isRunning()) {
@@ -761,17 +766,17 @@ public class WSStartServer extends StartServer {
                         
                         // set the state to stopped
                         state = STATE_STOPPED;
-
+                        
                         return;
                     }
-
+                    
                     // sleep for a little so that we do not make our checks too
                     // often
                     try {
                         Thread.sleep(DELAY);
                     } catch (InterruptedException e) {}
                 }
-                    
+                
                 // if the server did not stop in the designated time limits
                 // we consider the stop process as failed and kill the process
                 serverProgress.notifyStop(StateType.FAILED, ""); // NOI18N
@@ -795,21 +800,21 @@ public class WSStartServer extends StartServer {
          */
         private static final int DELAY = 5000;
         
-        /** 
+        /**
          * Name of the shutdown script for windows
          */
         private static final String SHUTDOWN_SH = "stopServer.sh";     // NOI18N
         
-        /** 
+        /**
          * Name of the shutdown script for unices
          */
         private static final String SHUTDOWN_BAT = "stopServer.bat";   // NOI18N
     }
     
     /**
-     * An implementation of the ProgressObject interface targeted at tracking 
+     * An implementation of the ProgressObject interface targeted at tracking
      * the server instance's startup/shutdown progress
-     * 
+     *
      * @author Kirill Sorokin
      */
     private static class WSServerProgress implements ProgressObject {
@@ -833,7 +838,7 @@ public class WSStartServer extends StartServer {
          * Creates a new instance of WSServerProgress. The source supplied will
          * be used as the source for all the events. Ususally it is the parent
          * WSStartServerObject
-         * 
+         *
          * @param source the events' source
          */
         public WSServerProgress(Object source) {
@@ -842,32 +847,32 @@ public class WSStartServer extends StartServer {
         
         /**
          * Sends a startup event to the listeners.
-         * 
+         *
          * @param state the new state of the startup process
          * @param message the attached string message
          */
         public void notifyStart(StateType state, String message) {
-            // call the general notify method with the specific startup event 
+            // call the general notify method with the specific startup event
             // parameters set
             notify(new WSDeploymentStatus(ActionType.EXECUTE, CommandType.START, state, message));
         }
         
         /**
          * Sends a shutdown event to the listeners.
-         * 
+         *
          * @param state the new state of the shutdown process
          * @param message the attached string message
          */
         public void notifyStop(StateType state, String message) {
-            // call the general notify method with the specific shutdown event 
+            // call the general notify method with the specific shutdown event
             // parameters set
             notify(new WSDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, state, message));
         }
         
         /**
          * Notifies the listeners of the new process status
-         * 
-         * @param deploymentStatus the new status of the startup/shutdown 
+         *
+         * @param deploymentStatus the new status of the startup/shutdown
          *      process
          */
         public void notify(DeploymentStatus deploymentStatus) {
@@ -878,7 +883,7 @@ public class WSStartServer extends StartServer {
             // update the saved process status
             this.deploymentStatus = deploymentStatus;
             
-            // get a copy of the listeners vector so that we do not get any 
+            // get a copy of the listeners vector so that we do not get any
             // conflicts when multithreading
             java.util.Vector targets = null;
             synchronized (this) {
@@ -900,7 +905,7 @@ public class WSStartServer extends StartServer {
         // ProgressObject implementation
         ////////////////////////////////////////////////////////////////////////////
         /**
-         * A dummy implementation of the ProgressObject method, since this 
+         * A dummy implementation of the ProgressObject method, since this
          * method is not used anywhere, we omit the reasonable implementation
          */
         public ClientConfiguration getClientConfiguration(TargetModuleID targetModuleID) {
@@ -909,7 +914,7 @@ public class WSStartServer extends StartServer {
         
         /**
          * Removes the registered listener
-         * 
+         *
          * @param progressListener the listener to be removed
          */
         public void removeProgressListener(ProgressListener progressListener) {
@@ -918,7 +923,7 @@ public class WSStartServer extends StartServer {
         
         /**
          * Adds a new listener
-         * 
+         *
          * @param progressListener the listener to be added
          */
         public void addProgressListener(ProgressListener progressListener) {
@@ -927,7 +932,7 @@ public class WSStartServer extends StartServer {
         
         /**
          * Returns the current state of the startup/shutdown process
-         * 
+         *
          * @return current state of the process
          */
         public DeploymentStatus getDeploymentStatus() {
@@ -935,7 +940,7 @@ public class WSStartServer extends StartServer {
         }
         
         /**
-         * A dummy implementation of the ProgressObject method, since this 
+         * A dummy implementation of the ProgressObject method, since this
          * method is not used anywhere, we omit the reasonable implementation
          */
         public TargetModuleID[] getResultTargetModuleIDs() {
@@ -943,15 +948,15 @@ public class WSStartServer extends StartServer {
         }
         
         /**
-         * A dummy implementation of the ProgressObject method, since this 
+         * A dummy implementation of the ProgressObject method, since this
          * method is not used anywhere, we omit the reasonable implementation
          */
-        public boolean isStopSupported() { 
-            return false; 
+        public boolean isStopSupported() {
+            return false;
         }
         
         /**
-         * A dummy implementation of the ProgressObject method, since this 
+         * A dummy implementation of the ProgressObject method, since this
          * method is not used anywhere, we omit the reasonable implementation
          */
         public void stop() throws OperationUnsupportedException {
@@ -959,15 +964,15 @@ public class WSStartServer extends StartServer {
         }
         
         /**
-         * A dummy implementation of the ProgressObject method, since this 
+         * A dummy implementation of the ProgressObject method, since this
          * method is not used anywhere, we omit the reasonable implementation
          */
-        public boolean isCancelSupported() { 
-            return false; 
+        public boolean isCancelSupported() {
+            return false;
         }
         
         /**
-         * A dummy implementation of the ProgressObject method, since this 
+         * A dummy implementation of the ProgressObject method, since this
          * method is not used anywhere, we omit the reasonable implementation
          */
         public void cancel() throws OperationUnsupportedException {
@@ -976,7 +981,7 @@ public class WSStartServer extends StartServer {
     }
     
     /**
-     * A class that describes the startup/shutdown process state. It is an 
+     * A class that describes the startup/shutdown process state. It is an
      * implementation of the DeploymentStatus interface.
      */
     private static class WSDeploymentStatus implements DeploymentStatus {
@@ -1002,7 +1007,7 @@ public class WSStartServer extends StartServer {
         
         /**
          * Creates a new WSDeploymentStatus object.
-         * 
+         *
          * @param action current action
          * @param command current command
          * @param state current state
@@ -1015,77 +1020,77 @@ public class WSStartServer extends StartServer {
             this.state = state;
             this.message = message;
         }
-
+        
         /**
          * Returns the current action
-         *  
+         *
          * @return current action
          */
-        public ActionType getAction() { 
-            return action; 
+        public ActionType getAction() {
+            return action;
         }
         
         /**
          * Returns the current command
-         *  
+         *
          * @return current command
          */
-        public CommandType getCommand() { 
-            return command; 
+        public CommandType getCommand() {
+            return command;
         }
         
         /**
          * Returns the current message
-         *  
+         *
          * @return current message
          */
-        public String getMessage() { 
-            return message; 
+        public String getMessage() {
+            return message;
         }
         
         /**
          * Returns the current state
-         *  
+         *
          * @return current state
          */
-        public StateType getState() { 
-            return state; 
+        public StateType getState() {
+            return state;
         }
         
         /**
          * Tells whether the current action has completed successfully
-         *  
-         * @return true if the action has completed successfully, false 
+         *
+         * @return true if the action has completed successfully, false
          *      otherwise
          */
-        public boolean isCompleted() { 
-            return StateType.COMPLETED.equals(state); 
+        public boolean isCompleted() {
+            return StateType.COMPLETED.equals(state);
         }
         
         /**
          * Tells whether the current action has failed
-         *  
+         *
          * @return true if the action has failed, false otherwise
          */
-        public boolean isFailed() { 
-            return StateType.FAILED.equals(state); 
+        public boolean isFailed() {
+            return StateType.FAILED.equals(state);
         }
         
         /**
          * Tells whether the current action is still running
-         *  
+         *
          * @return true if the action is still running, false otherwise
          */
-        public boolean isRunning() { 
-            return StateType.RUNNING.equals(state); 
+        public boolean isRunning() {
+            return StateType.RUNNING.equals(state);
         }
     };
     
     ////////////////////////////////////////////////////////////////////////////
     // Constants section
     ////////////////////////////////////////////////////////////////////////////
-    // These constants introduce two additional states to the instance - 
-    // starting and stopping son that we can filter sunsequent requests. 
+    // These constants introduce two additional states to the instance -
+    // starting and stopping son that we can filter sunsequent requests.
     private static final int STATE_STOPPED  = 0;
     private static final int STATE_STARTING = 1;
     private static final int STATE_STARTED  = 2;
