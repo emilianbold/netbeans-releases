@@ -235,15 +235,15 @@ public class Property {
             table.makeComponentVisible();
             table.requestFocus();
             table.waitHasFocus();
-            // need to select property first
-            ((javax.swing.JTable)table.getSource()).changeSelection(getRow(), 0, false, false);
-            // find action
-            final Action customEditorAction = ((JComponent)table.getSource()).getActionMap().get("invokeCustomEditor");  // NOI18N
-            // run action in a separate thread (no block)
+            // run action in a separate thread in AWT (no block)
             new Thread(new Runnable() {
                 public void run() {
                     new QueueTool().invokeSmoothly(new Runnable() {
                         public void run() {
+                            // need to select property first
+                            ((javax.swing.JTable)table.getSource()).changeSelection(getRow(), 0, false, false);
+                            // find action
+                            Action customEditorAction = ((JComponent)table.getSource()).getActionMap().get("invokeCustomEditor");  // NOI18N
                             customEditorAction.actionPerformed(new ActionEvent(table.getSource(), 0, null));
                         }
                     });
