@@ -12,25 +12,27 @@
  */
 package org.netbeans.api.visual.vmd;
 
-import org.netbeans.api.visual.action.*;
+import org.netbeans.api.visual.action.PanAction;
+import org.netbeans.api.visual.action.PopupMenuAction;
+import org.netbeans.api.visual.action.ZoomAction;
+import org.netbeans.api.visual.action.MoveControlPointAction;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.DirectionalAnchor;
+import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.graph.EdgeController;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.router.OrthogonalSearchRouter;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LayerWidget;
+import org.netbeans.api.visual.widget.Widget;
 
 import javax.swing.*;
-import java.awt.*;
 
 /**
  * @author David Kaspar
  */
 public class VMDGraphScene extends GraphPinScene<String, String, String, VMDNodeController, EdgeController.StringEdge, VMDPinController> {
 
-    private static final Color COLOR_HOVER = new Color (0xABC7DE);
     public static final String PIN_ID_DEFAULT = "#default"; // NOI18N
 
     private LayerWidget backgroundLayer = new LayerWidget (this);
@@ -40,8 +42,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String, VMDNode
 
     private OrthogonalSearchRouter.CollisionsCollector collisionsCollector;
 
-    private MoveAction moveAction = new MoveAction ();
-    private MouseHoverAction mouseHoverAction = new MyMouseHoverAction ();
+    private MoveControlPointAction moveControlPointAction = new MoveControlPointAction.OrthogonalMoveAction ();
     private PopupMenuAction popupMenuAction = new MyPopupMenuAction ();
 
     public VMDGraphScene () {
@@ -50,19 +51,20 @@ public class VMDGraphScene extends GraphPinScene<String, String, String, VMDNode
         addChild (connectionLayer);
         addChild (upperLayer);
 
-        collisionsCollector = new OrthogonalSearchRouter.WidgetsCollisionCollector (mainLayer);
+        collisionsCollector = new OrthogonalSearchRouter.WidgetsCollisionCollector (mainLayer, connectionLayer);
 
-        getActions ().addAction (mouseHoverAction);
         getActions ().addAction(new ZoomAction ());
         getActions ().addAction(new PanAction ());
     }
 
     protected VMDNodeController attachNodeController (String node) {
-        VMDNodeWidget widget = new VMDNodeWidget (this, mouseHoverAction);
+        VMDNodeWidget widget = new VMDNodeWidget (this);
         mainLayer.addChild (widget);
 
-        widget.getActions ().addAction (moveAction);
+        widget.getActions ().addAction (createHoverAction ());
+        widget.getActions ().addAction (createSelectAction ());
         widget.getActions ().addAction (popupMenuAction);
+        widget.getActions ().addAction (createMoveAction ());
 
         return new VMDNodeController (node, widget);
     }
@@ -72,7 +74,14 @@ public class VMDGraphScene extends GraphPinScene<String, String, String, VMDNode
         connectionWidget.setRouter (new OrthogonalSearchRouter (collisionsCollector));
         connectionWidget.setSourceAnchorShape (AnchorShape.TRIANGLE_OUT);
         connectionWidget.setTargetAnchorShape (AnchorShape.TRIANGLE_FILLED);
+        connectionWidget.setControlPointShape (PointShape.SQUARE_FILLED_SMALL);
+        connectionWidget.setEndPointShape (PointShape.SQUARE_FILLED_BIG);
         connectionLayer.addChild (connectionWidget);
+
+        connectionWidget.getActions ().addAction (createHoverAction ());
+        connectionWidget.getActions ().addAction (createSelectAction ());
+        connectionWidget.getActions ().addAction (moveControlPointAction);
+
         return new EdgeController.StringEdge (edge, connectionWidget);
     }
 
@@ -80,8 +89,11 @@ public class VMDGraphScene extends GraphPinScene<String, String, String, VMDNode
         if (PIN_ID_DEFAULT.equals (pin)) {
             return new VMDPinController (pin, null);
         } else {
-            VMDPinWidget widget = new VMDPinWidget (this, mouseHoverAction);
+            VMDPinWidget widget = new VMDPinWidget (this);
             nodeController.getNodeWidget ().addPin (widget);
+            widget.getActions ().addAction (createHoverAction ());
+            widget.getActions ().addAction (createSelectAction ());
+
             return new VMDPinController (pin, widget);
         }
     }
@@ -92,25 +104,6 @@ public class VMDGraphScene extends GraphPinScene<String, String, String, VMDNode
 
     protected void attachEdgeTarget (EdgeController.StringEdge edgeController, VMDPinController targetPinController) {
         ((ConnectionWidget) edgeController.getMainWidget ()).setTargetAnchor (getPinNode (targetPinController).getNodeWidget().getNodeAnchor ());
-    }
-
-    private static class MyMouseHoverAction extends MouseHoverAction.TwoStated {
-
-        private Paint lastBackground;
-        private boolean lastOpaque;
-
-        protected void unsetHovering (Widget widget) {
-            widget.setBackground (lastBackground);
-            widget.setOpaque (lastOpaque);
-        }
-
-        protected void setHovering (Widget widget) {
-            lastBackground = widget.getBackground ();
-            lastOpaque = widget.isOpaque ();
-            widget.setBackground (COLOR_HOVER);
-            widget.setOpaque (true);
-        }
-
     }
 
     private static class MyPopupMenuAction extends PopupMenuAction {

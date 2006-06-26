@@ -12,7 +12,6 @@
  */
 package org.netbeans.api.visual.vmd;
 
-import org.netbeans.api.visual.action.MouseHoverAction;
 import org.netbeans.api.visual.layout.SerialLayout;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -30,13 +29,12 @@ public class VMDPinWidget extends Widget {
     private LabelWidget nameWidget;
     private LabelWidget typeWidget;
 
-    public VMDPinWidget (Scene scene, MouseHoverAction hoverAction) {
+    public VMDPinWidget (Scene scene) {
         super (scene);
 
         setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL, SerialLayout.Alignment.JUSTIFY, 4));
 
 //        setBorder (new LineBorder (1, Color.GRAY));
-        getActions ().addAction (hoverAction);
 
 //        Widget innerWidget = new Widget (scene);
 //        innerWidget.setBorder (new EmptyBorder (4));

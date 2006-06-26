@@ -12,14 +12,16 @@
  */
 package org.netbeans.api.visual.vmd;
 
-import org.netbeans.api.visual.action.MouseHoverAction;
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.anchor.DirectionalAnchor;
 import org.netbeans.api.visual.anchor.ProxyAnchor;
-import org.netbeans.api.visual.anchor.RectangularAnchor;
+import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.EmptyBorder;
-import org.netbeans.api.visual.border.LineBorder;
+import org.netbeans.api.visual.border.ImageBorder;
 import org.netbeans.api.visual.layout.SerialLayout;
 import org.netbeans.api.visual.widget.*;
+import org.netbeans.api.visual.model.ObjectState;
+import org.openide.util.Utilities;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -30,22 +32,25 @@ import java.util.List;
  */
 public class VMDNodeWidget extends Widget {
 
+    private static Border BORDER_SHADOW_NORMAL = new ImageBorder (new Insets (6, 6, 6, 6), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
+    private static Border BORDER_SHADOW_HOVERED = new ImageBorder (new Insets (6, 6, 6, 6), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
+    private static Border BORDER_SHADOW_SELECTED = new ImageBorder (new Insets (6, 6, 6, 6), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_selected.png")); // NOI18N
+
     private ImageWidget imageWidget;
     private LabelWidget nameWidget;
     private LabelWidget typeWidget;
     private Widget pinsWidget;
     private VMDGlyphSetWidget glyphSetWidget;
     private VMDMinimizeWidget minimizeWidget;
-    private RectangularAnchor nodeAnchor = new RectangularAnchor (this);
+    private Anchor nodeAnchor = new DirectionalAnchor (this, DirectionalAnchor.Kind.VERTICAL);
 
-    public VMDNodeWidget (Scene scene, MouseHoverAction hoverAction) {
+    public VMDNodeWidget (Scene scene) {
         super (scene);
 
+        setBackground (Color.WHITE);
         setOpaque (true);
-        setBorder (new LineBorder (1));
+        setBorder (BORDER_SHADOW_NORMAL);
         setCursor (new Cursor (Cursor.MOVE_CURSOR));
-        getActions ().addAction (hoverAction);
-
 
         final Widget mainLayer = new Widget (scene);
         mainLayer.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL));
@@ -104,6 +109,15 @@ public class VMDNodeWidget extends Widget {
 
         minimizeWidget = new VMDMinimizeWidget (scene, mainLayer, Arrays.asList (pinsSeparator, pinsWidget));
         topLayer.addChild (minimizeWidget);
+    }
+
+    protected void notifyStateChanged (ObjectState state) {
+        if (state.isHovered ())
+            setBorder (BORDER_SHADOW_HOVERED);
+        else if (state.isSelected ())
+            setBorder (BORDER_SHADOW_SELECTED);
+        else
+            setBorder (BORDER_SHADOW_NORMAL);
     }
 
     public void setNodeImage (Image image) {
