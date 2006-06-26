@@ -28,22 +28,16 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="code" name="testbag_1">
         <testset dir="unit/src">
             <patternset>
-                <include name="**/**Test.class"/>
+                <include name="**/*Test.class"/>
+                <exclude name="**/*MemoryTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
 
-		<!-- Some of the original tests had already been failing before the MimePath change. -->
-		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupPerformanceTest.class" />
-		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupPopupItemsChangeTest.class" />
-		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupTest.class/testRegisteredClassLookup" />
-		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupTest.class/testRegisteredTemplatesLookup" />
-		<exclude name="org/netbeans/modules/editor/mimelookup/Depr_MimeLookupWeakRefTest.class/testWeakListenersAddingToResult" />
-		<exclude name="org/netbeans/modules/editor/mimelookup/IssuesTest.class/testForChangeInLayer" />
-
-		<!-- These are the cloned original tests updated to use MimePath. They are still failing. -->
-		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupPerformanceTest.class" />
-		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupPopupItemsChangeTest.class" />
-		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupTest.class/testRegisteredClassLookup" />
-		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupTest.class/testRegisteredTemplatesLookup" />
-		<exclude name="org/netbeans/modules/editor/mimelookup/MimeLookupWeakRefTest.class/testWeakListenersAddingToResult" />
+    <testbag testattribs="stable,memory" executor="memory" name="testbag_2">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/*MemoryTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -84,7 +78,8 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="code" antfile="build-unit.xml" target="runcodetest" default="true"/>
+    <executor name="memory" antfile="build-unit.xml" target="runmemorytest" />
     
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
     

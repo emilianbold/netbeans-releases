@@ -17,29 +17,33 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Lookup;
 
 /**
- *  Provides an initialization of data in MimeLookup for the requested mime-paths.
- *  <br>
- *  The implementations of this class should be registed to default lookup by 
- *  <a href="http://openide.netbeans.org/lookup/index.html"> META-INF/services registration</a>.
+ * Provides a <code>Lookup</code> for the specific <code>MimePath</code>.
  *  
- *  @author Miloslav Metelka
+ * <p>The implementations of this interface should be registered among the services
+ * in the default lookup, for details look at
+ * <a href="http://openide.netbeans.org/lookup/index.html"> META-INF/services registration</a>.
+ *  
+ *  @author Miloslav Metelka, Vita Stejskal
  */
 public interface MimeDataProvider {
 
     /**
-     * Retrieve lookup for the given mime-path to be used by MimeLookup.
-     * <br/>
-     * The returned lookup will be cached by a soft reference.
-     * <br>
-     * The returned lookup is allowed to hardly reference the given mime-path
-     * as the resulting proxy-lookup is soft-referenced so the mime-path
-     * will not be strongly referenced statically.
+     * Retrieves a <code>Lookup</code> for the given <code>MimePath</code>.
+     * 
+     * <p>The <code>Lookup</code> returned by this method should hold a reference
+     * to the <code>MimePath</code> it was created for.
      *
-     * @param mimePath non-null mime-path for which the lookup should be retrieved.
-     *   <br>
-     *   It may be {@link MimePath.EMPTY} for global settings.
-     * @return lookup for the given mime-path or null if there is no lookup
-     *   for the given mime-path in this mime data provider.
+     * <p>The implementors should consider caching of the <code>Lookup</code> instances
+     * returned by this method for performance reasons. The <code>MimePath</code>
+     * object can be used as a stable key for such a cache, because it implements
+     * its <code>equals</code> and <code>hashCode</code> method in the suitable way.
+     *
+     * @param mimePath The mime path to get the <code>Lookup</code> for. The mime
+     * path passed in can't be <code>null</code>, but it can be the 
+     * {@link MimePath.EMPTY} mime path.
+     *
+     * @return The <code>Lookup</code> for the given <code>MimePath</code> or
+     * <code>null</code> if there is no lookup available for this mime path.
      */
     public Lookup getLookup(MimePath mimePath);
 

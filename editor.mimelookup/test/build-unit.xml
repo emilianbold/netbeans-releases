@@ -77,5 +77,11 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
     </target>
 
+    <target name="runmemorytest" depends="init">
+        <executeTests  pluginName="jvm">
+            <classpath refid="codetest.classpath"/>
+            <property name="xtest.jvm.args" value="-Xms1m -Xmx1m"/>
+        </executeTests>
+    </target>
     
 </project>

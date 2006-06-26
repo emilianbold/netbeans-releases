@@ -15,100 +15,138 @@ package org.netbeans.api.editor.mimelookup;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.editor.mimelookup.MimePathLookup;
 
 /**
- * Mime path is in fact a string path consisting of a root mime-type
- * and zero or more embedded mime-types.
- * <br/>
- * For example "text/x-jsp/text/x-java" represents java scriplet
- * embedded in jsp root document. As the mime-type specification
- * requires that a mime-type should contain one and only one '/'
- * character there should be no ambiguity introduced.
+ * The mime path is a concatenation of one or more mime types. The purpose of
+ * a mime path is to describe the fact that a document of a certain mime type
+ * can contain fragments of another document with a different mime type. The fragment
+ * and its mime type is refered to as an embedded document and an embedded mime
+ * type respectively. 
  *
- * <p>
- * <b>Identity:</b> Two mime path instances having the same string path
- * are the same object. The mim path is suitable for usage in maps.
+ * <p>In order to fully understand the scale of the problem the mime path
+ * is trying to describe you should consider two things. First a document can
+ * contain several different embedded fragments each of a different
+ * mime type. Second, each embeded fragment itself can possibly contain one or
+ * more other embedded fragments and this nesting can in theory go indefinitely
+ * deep.
  *
- * <p>
- * <b>Lifetime:</b>
- * Once a particular mime-path is obtained (for the particular mime-type)
- * it is held by a soft reference from the <code>MimePath.EMPTY</code>.
- * <br/>
- * Mime-paths for embedded mime-types are softly referenced from enclosing
- * mime-paths.
- * <br/>
- * The mime path should be hardly referenced
- * by an object of the corresponding mime-type (or mime-path).
- * For example java document should hold the mime-path
- * of "text/x-java" during its whole lifetime.
- * <br/>
- * Settings providers should hold the mime paths
- * weakly (e.g. in a WeakHashMap) to allow for a reasonable settings caching.
- * <br/>
- * Note: Weak hashmaps hold their values strongly so if the values of the weak
- * hashmap would reference the mime-path then the values should be softly held
- * in the particular weak hashmap.
+ * <p>In reality the nesting probably will not be very deep. As an example of a
+ * document containing an embedded fragment of another document of the different
+ * mime type you could imagine a JSP page containing a Java scriplet. The main
+ * document is the JSP page of the 'text/x-jsp' mime type, which includes a fragment
+ * of Java source code of the 'text/x-java' mime type.
  *
- *  @author Miloslav Metelka
+ * <p>The mime path comes handy when we want to distinguish between the ordinary
+ * 'text/x-java' mime type and the 'text/x-java' mime type embedded in the JSP
+ * page, because both of those 'text/x-java' mime types will have a different
+ * mime path. The ordinary 'text/x-java' mime type has a mime path consisting
+ * of just one mime type - 'text/x-java'. The 'text/x-java' mime type embeded in
+ * the JSP page, however, has a mime path comprised from two mime types
+ * 'text/x-jsp' and 'text/x-java'. The order of mime types in a mime path is
+ * obviously very important, because it describes how the mime types are embedded.
+ *
+ * <p>The mime path can be represented as a <code>String</code> simply by
+ * concatenating all its mime types separated by the '/' character. Since
+ * mime types always contain one and only one '/' character it is clear which
+ * '/' character belongs to a mime type and which is the mime path separator.
+ *
+ * <p>In the above example the mime path of the 'text/x-java' mime type embedded
+ * in the 'text/x-jsp' mime type can be represented as 'text/x-jsp/text/x-java'.
+ *
+ * <p><b>Identity:</b> By definition two <code>MimePath</code> instances are equal
+ * if they represent the same string mime path. The implementation guarantees
+ * that by caching and reusing instances of the <code>MimePath</code> that it
+ * creates. The <code>MimePath</code> instances can be used as keys in maps.
+ *
+ * <p><b>Lifecycle:</b> Although the instances of <code>MimePath</code> are
+ * internally cached and should survive for certain time without being referenced
+ * from outside of the MimePath API, clients are strongly encouraged to hold
+ * a reference to the <code>MimePath</code> they obtained throughout the whole
+ * lifecycle of their component. For example an opened java editor with a document
+ * should keep its instance of the 'text/x-java' <code>MimePath</code> for the
+ * whole time the editor is open.
+ *
+ * @author Miloslav Metelka, Vita Stejskal
+ * @see MimeLookup
  */
 public final class MimePath {
     
     /**
-     * Empty mime path containing "" path and has zero size.
-     * <br>
-     * Useful for global settings being base for all the mime-types and mime-paths.
+     * The root of all mime paths. The empty mime path does not refer to any
+     * mime type.
      */
     public static final MimePath EMPTY = new MimePath();
 
     /** Internal lock to manage the cache maps. */
     private static final Object LOCK = new Object();
 
+    /** The List of Recently Used mime paths. */
+    private static final ArrayList LRU = new ArrayList();
+    
+    /** The maximum size of the List of Recently Used mime paths.
+    /* package */ static final int MAX_LRU_SIZE = 3;
+    
     /**
-     * Get root mime-path for the given mime-type.
-     * <br>
-     * This method delegates to {@link #get(MimePath, String)}.
+     * Gets the mime path for the given mime type. The returned <code>MimePath</code>
+     * will contain exactly one element and it will be the mime type passed in
+     * as the parameter.
      *
-     * @param mimeType non-null and non-empty root mime-type e.g. "text/x-java".
-     * @return non-null mime path.
+     * @param mimeType The mime type to get the mime path for. If <code>null</code>
+     * or empty string is passed in the <code>EMPTY</code> mime path will be
+     * returned.
+     *
+     * @return The <code>MimePath</code> for the given mime type or
+     * <code>MimePath.EMPTY</code> if the mime type is <code>null</code> or empty
+     * string.
      */
     public static MimePath get(String mimeType) {
-        if ("".equals(mimeType)){
+        if (mimeType == null || mimeType.length() == 0){
             return EMPTY;
+        } else {
+            return get(EMPTY, mimeType);
         }
-        return get(EMPTY, mimeType);
     }
     
     /**
-     * Get mime-path corresponding to the mime-type used in the given context
-     * mime-path.
-     * <br>
-     * For example for java scriplet embedded in jsp the prefix would 
-     * be a mime-path for "text/x-jsp" and mimeType would be "text/x-java".
+     * Gets the mime path corresponding to a mime type embedded in another
+     * mime type. The embedding mime type is described in form of a mime path
+     * passed in as the <code>prefix</code> parameter.
      *
-     * @param prefix non-null prefix mime-path determining the context in which
-     *   the mime-type is used.
-     *   <br>
-     *   It can be {@link #EMPTY} in case of constructing the root mime-path.
-     * @param mimeType non-null and non-empty mime-type string representation,
-     *   e.g. "text/x-java".
-     * @return non-null mime path.
+     * <p>For example for a java scriplet embedded in a jsp page the <code>prefix</code> would 
+     * be the mime path 'text/x-jsp' and <code>mimeType</code> would be 'text/x-java'.
+     * The method will return the 'text/x-jsp/text/x-java' mime path.
+     *
+     *
+     * @param prefix The mime path determining the mime type that embedds the mime
+     * type passed in in the second parameter. It can be {@link #EMPTY} in which
+     * case the call will be equivalent to calling <code>get(mimeType)</code> method.
+     * @param mimeType The mime type that is embedded in the mime type determined
+     * by the <code>prefix</code> mime path.
+     *
+     * @return The mime path representing the embedded mime type.
      */
     public static MimePath get(MimePath prefix, String mimeType) {
         return prefix.getEmbedded(mimeType);
     }
     
     /**
-     * Parse the given mime-path string
-     * e.g. "text/x-jsp/text/x-java" and get the corresponding mime-path.
+     * Parses a mime path string and returns its <code>MimePath</code> representation.
      *
-     * @param path string mime-path representation with an arbitrary number
-     *  of mime-type components.
-     *  <br>
-     *  It must contain an odd number of slashes.
-     *  <br>
-     *  It may be an empty string "" in which case the {@link #EMPTY} is returned.
+     * <p>The format of a mime path string representation is a string of mime
+     * type components comprising the mime path separated by the '/' character.
+     * For example a mime path representing the 'text/x-java' mime type embedded
+     * in the 'text/x-jsp' mime type can be represented as the following string -
+     * 'text/x-jsp/text/x-java'.
+     *
+     * <p>The mime path string can be an empty string, which represents the
+     * {@link #EMPTY} mime path. By definition all valid mime paths except of
+     * the empty one have to contain odd number of '/' characters.
+     *
+     * @param path The mime path string representation. 
      *
      * @return non-null mime-path corresponding to the given string path.
      */
@@ -137,7 +175,16 @@ public final class MimePath {
      * Mapping of embedded mimeType to a weak reference to mimePath.
      */
     private Map mimeType2mimePathRef;
+
+    /**
+     * The lookup with objects registered for this mime path.
+     */
+    private MimePathLookup lookup;
     
+    /**
+     * Synchronization lock for creation of the mime path lookup.
+     */
+    private final String LOOKUP_LOCK = new String("MimePath.LOOKUP_LOCK"); //NOI18N
     
     private MimePath(MimePath prefix, String mimeType) {
         int prefixSize = prefix.size();
@@ -146,7 +193,7 @@ public final class MimePath {
         this.mimePaths[prefixSize] = this;
         String prefixPath = prefix.path;
         this.path = (prefixPath != null && prefixPath.length() > 0 ) ? 
-            (prefixPath + '/' + mimeType).intern() :
+            (prefixPath + '/' + mimeType).intern() : //NOI18N
             mimeType.intern();
         this.mimeType = mimeType;
     }
@@ -154,8 +201,8 @@ public final class MimePath {
     /** Build EMPTY mimePath */
     private MimePath() {
         this.mimePaths = new MimePath[0];
-        this.path = "";
-        this.mimeType = "";
+        this.path = ""; //NOI18N
+        this.mimeType = ""; //NOI18N
     }
     
     /**
@@ -231,19 +278,25 @@ public final class MimePath {
             MimePath mimePath;
             if (mpRef == null || (mimePath = (MimePath)mpRef.get()) == null) {
                 // Check mimeType correctness
-                int slashIndex = mimeType.indexOf('/');
+                int slashIndex = mimeType.indexOf('/'); //NOI18N
                 if (slashIndex == -1) { // no slash
                     throw new IllegalArgumentException("mimeType=\"" + mimeType // NOI18N
-                            + "\" does not contain '/' character");
+                            + "\" does not contain '/' character"); //NOI18N
                 }
                 if (mimeType.indexOf('/', slashIndex + 1) != -1) { // more than one slash
                     throw new IllegalArgumentException("mimeType=\"" + mimeType // NOI18N"
-                            + "\" contains more than one '/' character");
+                            + "\" contains more than one '/' character"); //NOI18N
                 }
 
                 // Construct the mimePath
                 mimePath = new MimePath(this, mimeType);
                 mimeType2mimePathRef.put(mimeType, new SoftReference(mimePath));
+
+                // Hard reference the last few MimePaths created.
+                LRU.add(0, mimePath);
+                if (LRU.size() > MAX_LRU_SIZE) {
+                    LRU.remove(LRU.size() - 1);
+                }
             }
         
             return mimePath;
@@ -262,7 +315,7 @@ public final class MimePath {
             int slashIndex = -1;
             // Search for first slash
             while (index < pathLen) {
-                if (path.charAt(index) == '/') {
+                if (path.charAt(index) == '/') { //NOI18N
                     slashIndex = index;
                     break; // first slash found
                 }
@@ -278,7 +331,7 @@ public final class MimePath {
             }
             index++; // move after slash
             while (index < pathLen) {
-                if (path.charAt(index) == '/') {
+                if (path.charAt(index) == '/') { //NOI18N
                     if (index == slashIndex + 1) { // empty second part of mimeType
                         throw new IllegalArgumentException("Two successive slashes in '" // NOI18N
                                 + path.substring(startIndex) + "'"); // NOI18N
@@ -301,4 +354,21 @@ public final class MimePath {
         return mimePath;
     }
 
+    /**
+     * Gets the <code>MimePathLookup</code> for the given mime path. The lookups
+     * are cached and reused.
+     *
+     * @param The mime path to get the lookup for.
+     *
+     * @return The mime path specific lookup.
+     */
+    /* package */ MimePathLookup getLookup() {
+        synchronized (LOOKUP_LOCK) {
+            if (lookup == null) {
+                lookup = new MimePathLookup(this);
+            }
+            return lookup;
+        }
+    }
+    
 }

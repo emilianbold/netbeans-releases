@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,19 +18,17 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import junit.framework.Assert;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.Status;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -55,101 +53,91 @@ public class EditorTestLookup extends ProxyLookup {
         DEFAULT_LOOKUP = this;
     }
     
-    public static void setLookup(Object[] instances, ClassLoader cl) {
+    public static void setLookup(Object[] instances, ClassLoader cl, FileObject servicesFolder, Class [] exclude) {
+        Lookup metaInfServices = Lookups.metaInfServices(cl);
+        if (exclude != null && exclude.length > 0) {
+            metaInfServices = Lookups.exclude(metaInfServices, exclude);
+        }
+        
         DEFAULT_LOOKUP.setLookups(new Lookup[] {
             Lookups.fixed(instances),
-            Lookups.metaInfServices(cl),
+            metaInfServices,
             Lookups.singleton(cl),
         });
+        
+        if (servicesFolder != null) {
+            // DataSystems need default repository, which is read from the default lookup.
+            // That's why the lookup is set first without the services lookup and then again
+            // here with the FolderLookup over the Services folder.
+            Lookup services = new FolderLookup(DataFolder.findFolder(servicesFolder)).getLookup();
+            if (exclude != null && exclude.length > 0) {
+                services = Lookups.exclude(services, exclude);
+            }
+            
+            DEFAULT_LOOKUP.setLookups(new Lookup[] {
+                Lookups.fixed(instances),
+                metaInfServices,
+                Lookups.singleton(cl),
+                services
+            });
+        }
     }
     
     public static void setLookup(String[] files, File workDir, Object[] instances, ClassLoader cl)
     throws IOException, PropertyVetoException {
-
-        FileSystem system = createLocalFileSystem(workDir, files);
+        setLookup(files, workDir, instances, cl, null);
+    }
+    
+    public static void setLookup(String[] files, File workDir, Object[] instances, ClassLoader cl, Class [] exclude)
+    throws IOException, PropertyVetoException {
+        FileSystem fs = createLocalFileSystem(workDir, files);
+        setLookup(new FileSystem [] { fs }, instances, cl, exclude);
+    }
+    
+    public static void setLookup(URL[] layers, File workDir, Object[] instances, ClassLoader cl)
+    throws IOException, PropertyVetoException {
+        setLookup(layers, workDir, instances, cl, null);
+    }
+    
+    public static void setLookup(URL[] layers, File workDir, Object[] instances, ClassLoader cl, Class [] exclude)
+    throws IOException, PropertyVetoException {
+        FileSystem writeableFs = createLocalFileSystem(workDir, new String[0]);
+        XMLFileSystem layersFs = new XMLFileSystem();
+        layersFs.setXmlUrls(layers);
         
-        Repository repository = new Repository(system);
+        setLookup(new FileSystem [] { writeableFs, layersFs }, instances, cl, exclude);
+    }
+    
+    private static void setLookup(FileSystem [] fs, Object[] instances, ClassLoader cl, Class [] exclude)
+    throws IOException, PropertyVetoException {
 
+        // Remember the tests run in the same VM and repository is singleton.
+        // Once it is created for the first time it will stick around forever.
+        Repository repository = (Repository) Lookup.getDefault().lookup(Repository.class);
+        if (repository == null) {
+            repository = new Repository(new SystemFileSystem(fs));
+        } else {
+            ((SystemFileSystem) repository.getDefaultFileSystem()).setOrig(fs);
+        }
+        
         Object[] lookupContent = new Object[instances.length + 1];
         lookupContent[0] = repository;
         System.arraycopy(instances, 0, lookupContent, 1, instances.length);
+
+        // Create the Services folder (if needed}
+        FileObject services = repository.getDefaultFileSystem().findResource("Services");
+        if (services == null) {
+            services = repository.getDefaultFileSystem().getRoot().createFolder("Services");
+        }
         
-        DEFAULT_LOOKUP.setLookup(lookupContent, cl);
+        DEFAULT_LOOKUP.setLookup(lookupContent, cl, services, exclude);
     }
 
-    private static synchronized void deleteFileImpl(File workDir, String path) throws IOException{
-        FileObject fo = FileUtil.toFileObject(new File(workDir, path));
-        if (fo == null) {
-            fo = Repository.getDefault().getDefaultFileSystem().findResource(path); // NOI18N
-            if (fo == null){
-                return;
-            }
-        }
-        FileObject parent = fo.getParent();
-        fo.delete();        
-        FileObject[] list = parent.getChildren();
-        int len = (list == null ? 0 : list.length);
-
-        while (parent!= null && len==0){
-            parent.delete();            
-            parent = parent.getParent();
-            list = parent.getChildren();
-            len = (list == null ? 0 : list.length);
-        }
-    }
-    
-    public static void deleteFile(final File workDir, final String path) throws IOException{
-        // delete a file from a different thread
-        RequestProcessor.getDefault().post(new Runnable(){
-            public void run(){
-                try {
-                    deleteFileImpl(workDir, path);
-                } catch (IOException ioe){
-                    ioe.printStackTrace();
-                }
-            }
-        });
-    }
-
-    private static synchronized void createFileImpl(File file) throws IOException{
-        List parents = new ArrayList();
-        String name = file.getName();
-        File parent = file.getParentFile();
-        while (!parent.exists()){
-            parents.add(parent.getName());
-            parent = parent.getParentFile();
-        }
-        
-        FileObject dir = FileUtil.toFileObject(parent);
-        
-        for (int i = parents.size() - 1; i>=0; i--){
-            String folderName = (String)parents.get(i);
-            dir = dir.createFolder(folderName);
-            dir.refresh();
-        }
-        
-        FileObject fileObj =  dir.createData(name);
-        fileObj.refresh();
-    }
-    
-    public static void createFile(final File file) throws IOException{
-        // create a file from a different thread
-        RequestProcessor.getDefault().post(new Runnable(){
-            public void run(){
-                try {
-                    createFileImpl(file);
-                } catch (IOException ioe){
-                    ioe.printStackTrace();
-                }
-            }
-        });
-    }
-    
     private static FileSystem createLocalFileSystem(File mountPoint, String[] resources) throws IOException {
         mountPoint.mkdir();
         
         for (int i = 0; i < resources.length; i++) {
-            createFile(mountPoint, resources[i]);
+            createFileOnPath(mountPoint, resources[i]);
         }
         
         LocalFileSystem lfs = new StatusFileSystem();
@@ -160,7 +148,7 @@ public class EditorTestLookup extends ProxyLookup {
         return lfs;
     }
 
-    private static void createFile(File mountPoint, String path) throws IOException{
+    private static void createFileOnPath(File mountPoint, String path) throws IOException{
         mountPoint.mkdir();
         
         File f = new File (mountPoint, path);
@@ -177,7 +165,7 @@ public class EditorTestLookup extends ProxyLookup {
         }
     }
     
-    static class StatusFileSystem extends LocalFileSystem {
+    private static class StatusFileSystem extends LocalFileSystem {
         Status status = new Status () {
             public String annotateName (String name, java.util.Set files) {
                 return name;
@@ -194,6 +182,13 @@ public class EditorTestLookup extends ProxyLookup {
         
     }
     
-    
-    
+    private static class SystemFileSystem extends MultiFileSystem {
+        public SystemFileSystem(FileSystem [] orig) {
+            super(orig);
+        }
+        
+        public void setOrig(FileSystem [] orig) {
+            setDelegates(orig);
+        }
+    }
 }
