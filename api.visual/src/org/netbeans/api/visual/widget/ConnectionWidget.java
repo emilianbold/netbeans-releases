@@ -270,24 +270,34 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
                 return true;
         }
 
-        int controlRadius = endPointShape.getRadius ();
-        for (Point point : controlPoints)
-            if (Point2D.distanceSq (point.x, point.y, localLocation.x, localLocation.y) <= controlRadius)
-                return true;
+        return getControlPointHitAt (localLocation) >= 0;
+    }
 
-        int endRadius = controlPointShape.getRadius ();
+    public int getControlPointHitAt (Point localLocation) {
+        int controlRadius = controlPointShape.getRadius ();
+        int endRadius = endPointShape.getRadius ();
+        controlRadius *= controlRadius;
+        endRadius *= endRadius;
+
         Point firstPoint = getFirstControlPoint ();
         if (firstPoint != null)
             if (Point2D.distanceSq (firstPoint.x, firstPoint.y, localLocation.x, localLocation.y) <= endRadius)
-                return true;
+                return 0;
+
         Point lastPoint = getLastControlPoint ();
         if (lastPoint != null)
             if (Point2D.distanceSq (lastPoint.x, lastPoint.y, localLocation.x, localLocation.y) <= endRadius)
-                return true;
+                return controlPoints.size () - 1;
 
-        return false;
+        for (int i = 0; i < controlPoints.size (); i ++) {
+            Point point = controlPoints.get (i);
+            if (Point2D.distanceSq (point.x, point.y, localLocation.x, localLocation.y) <= controlRadius)
+                return i;
+        }
+
+        return -1;
     }
-    
+
     protected void paintWidget () {
         Graphics2D gr = getGraphics ();
         gr.setColor (getForeground ());

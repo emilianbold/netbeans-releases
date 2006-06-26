@@ -31,6 +31,7 @@ import java.util.List;
  * @author David Kaspar
  */
 // TODO - clipping does not count with view zoom factor
+// TODO - Should Widget be an abstract class?
 public class Widget {
 
     private Scene scene;
@@ -77,8 +78,8 @@ public class Widget {
 
         opaque = false;
         font = null;
-        background = null;
-        foreground = null;
+        background = Color.WHITE;
+        foreground = Color.BLACK;
         border = EmptyBorder.ZERO;
         layout = AbsoluteLayout.getDefault ();
         preferredLocation = null;
