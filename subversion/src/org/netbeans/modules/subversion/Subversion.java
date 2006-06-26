@@ -332,7 +332,7 @@ public class Subversion {
                     if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
                         List<String> patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
                         if (patterns.contains(file.getName()) == false) {
-                            patterns.add(escapeRegExp(file.getName()));
+                            patterns.add(file.getName());
                             Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
                         } else {
                             assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName(); // NOI18N
@@ -358,11 +358,7 @@ public class Subversion {
         exp = exp.replaceAll("\\.", "\\\\."); // NOI18N
         exp = exp.replaceAll("\\*", ".*"); // NOI18N
         exp = exp.replaceAll("\\?", "."); // NOI18N
-        return exp;
-    }
-
-    private String escapeRegExp(String exp) {
-        exp = exp.replaceAll("\\.", "\\\\."); // NOI18N
+        
         exp = exp.replaceAll("\\$", "\\\\\\$"); // NOI18N
         exp = exp.replaceAll("\\^", "\\\\^"); // NOI18N
         exp = exp.replaceAll("\\<", "\\\\<"); // NOI18N
@@ -375,8 +371,9 @@ public class Subversion {
         exp = exp.replaceAll("\\)", "\\\\)"); // NOI18N
         exp = exp.replaceAll("\\+", "\\\\+"); // NOI18N
         exp = exp.replaceAll("\\|", "\\\\|"); // NOI18N
+        
         return exp;
-    }   
+    }
 
     /**
      * Serializes all SVN requests (moves them out of AWT).
