@@ -138,6 +138,9 @@ public class HtmlBrowser extends JPanel {
 
     /**
     * Creates new html browser.
+     *
+     * @param toolbar visibility of toolbar
+     * @param statusLine visibility of statusLine
     */
     public HtmlBrowser(boolean toolbar, boolean statusLine) {
         this(null, toolbar, statusLine);
@@ -146,7 +149,8 @@ public class HtmlBrowser extends JPanel {
     /**
     * Creates new html browser.
      *
-     * @param fact Factory that is used for creation. Default factory is used if null is passed
+     * @param fact Factory that is used for creation. If null is passed it searches for 
+     *             a factory providing displayable component.
      * @param toolbar visibility of toolbar
      * @param statusLine visibility of statusLine
     */
