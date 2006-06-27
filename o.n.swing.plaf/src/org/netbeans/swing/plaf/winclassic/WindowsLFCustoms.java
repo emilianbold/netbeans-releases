@@ -146,25 +146,32 @@ public final class WindowsLFCustoms extends LFCustoms {
                 new GuaranteedValue("TabbedPane.highlight", Color.WHITE) ,
              
             "Button.dashedRectGapX",
-               new GuaranteedValue("Button.dashedRectGapX", new Integer(5)),
+               new GuaranteedValue("Button.dashedRectGapX", Integer.valueOf(5)),
                
             "Button.dashedRectGapY",
-               new GuaranteedValue("Button.dashedRectGapY", new Integer(4)),
+               new GuaranteedValue("Button.dashedRectGapY", Integer.valueOf(4)),
                
             "Button.dashedRectGapWidth",
-               new GuaranteedValue("Button.dashedRectGapWidth", new Integer(10)),
+               new GuaranteedValue("Button.dashedRectGapWidth", Integer.valueOf(10)),
                
             "Button.dashedRectGapHeight",
-               new GuaranteedValue("Button.dashedRectGapHeight", new Integer(8)),
+               new GuaranteedValue("Button.dashedRectGapHeight", Integer.valueOf(8)),
                      
-            "Tree.expandedIcon", new ExpandedIcon(),
-            "Tree.collapsedIcon", new CollapsedIcon()
+            "Tree.expandedIcon", new TreeIcon(false),
+            "Tree.collapsedIcon", new TreeIcon(true)
         };
     }
 
-    private static class ExpandedIcon implements Icon {
-        protected static final int HALF_SIZE = 4;
-        protected static final int SIZE = 9;
+    private static class TreeIcon implements Icon {
+        private static final int HALF_SIZE = 4;
+        private static final int SIZE = 9;
+
+        private boolean collapsed;
+        
+        public TreeIcon (boolean collapsed) {
+            this.collapsed = collapsed;
+        }
+        
         public void paintIcon(Component c, Graphics g, int x, int y) {
             g.setColor(Color.WHITE);
             g.fillRect(x, y, SIZE-1, SIZE-1);
@@ -172,16 +179,12 @@ public final class WindowsLFCustoms extends LFCustoms {
             g.drawRect(x, y, SIZE-1, SIZE-1);
             g.setColor(Color.BLACK);
             g.drawLine(x + 2, y + HALF_SIZE, x + (SIZE - 3), y + HALF_SIZE);
+            if (collapsed) {
+                g.drawLine(x + HALF_SIZE, y + 2, x + HALF_SIZE, y + (SIZE - 3));
+            }
         }
         public int getIconWidth() { return SIZE; }
         public int getIconHeight() { return SIZE; }
-    }
-
-    private final static class CollapsedIcon extends ExpandedIcon {
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            super.paintIcon(c, g, x, y);
-            g.drawLine(x + HALF_SIZE, y + 2, x + HALF_SIZE, y + (SIZE - 3));
-        }
     }
 
     protected Object[] additionalKeys() {
