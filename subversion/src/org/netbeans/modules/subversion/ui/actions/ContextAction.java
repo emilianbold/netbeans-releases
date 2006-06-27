@@ -326,9 +326,9 @@ public abstract class ContextAction extends NodeAction {
             }
 
             if (isCanceled() == false) {
-                getLogger().logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + runningName + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Finished")); // NOI18N
+                getLogger().logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + runningName + " " + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Finished")); // NOI18N
             } else {
-                getLogger().logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + runningName + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Canceled")); // NOI18N
+                getLogger().logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + runningName + " " + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Canceled")); // NOI18N
             }
             
         }
