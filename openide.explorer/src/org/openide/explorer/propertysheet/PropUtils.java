@@ -1074,49 +1074,26 @@ final class PropUtils {
             noAltBg = Boolean.FALSE;
         }
 
-        collapsedIcon = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
-
-        if (collapsedIcon == null) {
-            collapsedIcon = new Icon() {
-                        public int getIconHeight() {
-                            return 7;
-                        }
-
-                        public int getIconWidth() {
-                            return 7;
-                        }
-
-                        public void paintIcon(Component c, Graphics g, int x, int y) {
-                            //do nothing
-                        }
-                    };
+        if (!"GTK".equals(UIManager.getLookAndFeel().getID())) {
+            collapsedIcon = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
+            expandedIcon = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
         }
-
-        expandedIcon = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
-
-        if (expandedIcon == null) {
-            //Hack for jdk 1.4.2 beta GTK L&F
-            expandedIcon = collapsedIcon;
+        else {
+            collapsedIcon = new GTKCollapsedIcon();
+            expandedIcon = new GTKExpandedIcon();
         }
+        assert collapsedIcon != null: "no Tree.collapsedIcon found";
+        assert expandedIcon != null: "no Tree.expandedIcon found";
 
-        //GTK absurdly provides a 0 width icons which will figure out its size
-        //the first time it paints
-        if (((expandedIcon != null) && (expandedIcon.getIconHeight() <= 0)) || (expandedIcon.getIconHeight() <= 0)) {
-            expandedIcon = new WrapperSizeIcon(expandedIcon);
-        }
-
-        if (((collapsedIcon != null) && (collapsedIcon.getIconHeight() <= 0)) || (collapsedIcon.getIconHeight() <= 0)) {
-            collapsedIcon = new WrapperSizeIcon(collapsedIcon);
-        }
-
+            
+        int iconSize = collapsedIcon.getIconWidth();
         if (collapsedIcon != null) {
-            marginWidth = Math.max(14, collapsedIcon.getIconWidth() - 2);
+            marginWidth = Math.max(14, iconSize - 2);
         } else {
             //on the off chance a L&F doesn't provide this
             marginWidth = 13;
         }
 
-        //        System.err.println("Collapsed icon height " + (collapsedIcon == null ? " null " : Integer.toString (collapsedIcon.getIconHeight())));
         Integer i = (Integer) UIManager.get(KEY_ICONMARGIN); //NOI18N
 
         if (i != null) {
@@ -1138,7 +1115,7 @@ final class PropUtils {
         if (i != null) {
             spinnerHeight = i.intValue();
         } else {
-            spinnerHeight = expandedIcon.getIconHeight();
+            spinnerHeight = iconSize;
         }
     }
 
@@ -1150,6 +1127,125 @@ final class PropUtils {
         }
 
         return expandedIcon;
+    }
+    
+    /** Temporary workaround for GTK L&F */
+    private static abstract class GTKIcon implements Icon {
+        private static final int SIZE = 11;
+        public int getIconWidth() {
+            return GTKIcon.SIZE;
+        }
+        
+        public int getIconHeight() {
+            return GTKIcon.SIZE;
+        }
+    }
+
+    /**
+     * Temporary workaround for GTK L&F - they provide an icon which does not
+     * know its width or height until it has been painted.  So for it to work
+     * correctly, we have this silliness.
+     */
+    private static final class GTKCollapsedIcon extends GTKIcon {
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.translate(x, y);
+            int mid, height, thick, i, j, up, down;
+            int size = Math.min(getIconWidth(),getIconHeight());
+            mid = (size / 2);
+            height = size / 2 + 1;
+            thick = Math.max(1, size / 7);
+            
+            i = size / 2 - height / 2 - 1;
+            
+            // Fill in the background of the expander icon.
+            g.setColor((Color) UIManager.get("Button.background"));
+            for (j = height - 1; j > 0; j--) {
+                g.drawLine(i, mid - j + 1, i, mid + j - 1);
+                i++;
+            }
+            
+            g.setColor((Color) UIManager.get("Button.foreground"));
+            i = size / 2 - height / 2 - 1;
+            down = thick - 1;
+            // Draw the base of the triangle.
+            for (up = 0; up < thick; up++) {
+                g.drawLine(i + up, 0 - down, i + up, size + down);
+                down--;
+            }
+            i++;
+            
+            // Paint sides of triangle.
+            for (j = height - 1; j > 0; j--) {
+                for (up = 0; up < thick; up++) {
+                    g.drawLine(i, mid - j + 1 - up, i, mid - j + 1 - up);
+                    g.drawLine(i, mid + j - 1 + up, i, mid + j - 1 + up);
+                }
+                i++;
+            }
+            
+            // Paint remainder of tip if necessary.
+            if (thick > 1) {
+                for (up = thick - 2; up >= 0; up--) {
+                    g.drawLine(i, mid - up, i, mid + up);
+                    i++;
+                }
+            }
+            
+            g.translate(-x, -y);
+        }
+    }
+
+    /**
+     * Temporary workaround for GTK L&F - they provide an icon which does not
+     * know its width or height until it has been painted.  So for it to work
+     * correctly, we have this silliness.
+     */
+    private static final class GTKExpandedIcon extends GTKIcon {
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.translate(x, y);
+            int mid, height, thick, i, j, up, down;
+            int size = Math.min(getIconWidth(),getIconHeight());
+            mid = (size / 2);
+            height = size / 2 + 1;
+            thick = Math.max(1, size / 7);
+ 
+            j = size / 2 - height / 2 - 1;
+            // Fill in the background of the expander icon.
+            g.setColor((Color) UIManager.get("Button.background"));
+            for (i = height - 1; i > 0; i--) {
+                g.drawLine(mid - i + 1, j, mid + i - 1, j);
+                j++;
+            }
+
+            g.setColor((Color) UIManager.get("Button.foreground"));
+            j = size / 2 - height / 2 - 1;
+            down = thick - 1;
+            // Draw the base of the triangle.
+            for (up = 0; up < thick; up++) {
+                g.drawLine(0 - down, j + up, size + down, j + up);
+                down--;
+            }
+            j++;
+
+            // Paint sides of triangle.
+            for (i = height - 1; i > 0; i--) {
+                for (up = 0; up < thick; up++ ) {
+                    g.drawLine(mid - i + 1 - up, j, mid - i + 1 - up, j);
+                    g.drawLine(mid + i - 1 + up, j, mid + i - 1 + up, j);
+                }
+                j++;
+            }
+
+            // Paint remainder of tip if necessary.
+            if (thick > 1) {
+                for (up = thick - 2; up >= 0; up--) {
+                    g.drawLine(mid - up, j, mid + up, j);
+                    j++;
+                }
+            }
+             
+            g.translate(-x, -y);
+        }
     }
 
     /** Get the icon displayed by a collapsed set. Typically this is just the
@@ -1836,40 +1932,4 @@ final class PropUtils {
         }
     }
 
-    /**
-     * Workaround for GTK L&F - they provide an icon which does not know its
-     * width or height until it has been painted.  So for it to work correctly,
-     * we have this silliness.
-     */
-    private static final class WrapperSizeIcon implements Icon {
-        private Icon wrapped;
-
-        public WrapperSizeIcon(Icon wrapped) {
-            this.wrapped = wrapped;
-        }
-
-        public int getIconWidth() {
-            int result = wrapped.getIconWidth();
-
-            if (result <= 0) {
-                result = 11;
-            }
-
-            return result;
-        }
-
-        public int getIconHeight() {
-            int result = wrapped.getIconHeight();
-
-            if (result <= 0) {
-                result = 11;
-            }
-
-            return result;
-        }
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            wrapped.paintIcon(c, g, x, y);
-        }
-    }
 }
