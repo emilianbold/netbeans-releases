@@ -101,8 +101,7 @@ public class IgnoreAction extends ContextAction {
     private boolean canBeUnignored(File file) {
         File parent = file.getParentFile();
         try {
-            SvnClient client = Subversion.getInstance().getClient();
-            client.removeNotifyListener(Subversion.getInstance().getLogger(null));
+            SvnClient client = Subversion.getInstance().getClient(false);
             List patterns = client.getIgnoredPatterns(parent);
             return patterns.contains(file.getName());
         } catch (SVNClientException ex) {
@@ -122,7 +121,7 @@ public class IgnoreAction extends ContextAction {
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
 
-                SvnClient client = Subversion.getInstance().getClient();               
+                SvnClient client = Subversion.getInstance().getClient(true);               
                 for (int i = 0; i<files.length; i++) {
                     if(isCanceled()) {
                         return;
@@ -139,7 +138,7 @@ public class IgnoreAction extends ContextAction {
                         }
                     } else if (actionStatus == UNIGNORING) {
                         try {
-                            List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
+                            List patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
                             patterns.remove(file.getName());
                             client.setIgnoredPatterns(parent, patterns);
                             Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);

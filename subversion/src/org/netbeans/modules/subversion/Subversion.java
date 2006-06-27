@@ -52,6 +52,9 @@ public class Subversion {
     private Annotator                           annotator;
     private HashMap<String, RequestProcessor>   processorsToUrl;
 
+    private SvnClient noUrlClientWithoutListeners;
+    private SvnClient noUrlClientWithListeners;
+
     public static synchronized Subversion getInstance() {
         if (instance == null) {
             instance = new Subversion();
@@ -225,10 +228,22 @@ public class Subversion {
      *
      * <p>It hanldes cancellability
      */
-    public SvnClient getClient() {        
-        SvnClient client = SvnClientFactory.getInstance().createSvnClient();
-        attachListeners(client, false);
-        return client;
+    public SvnClient getClient(boolean attachListeners) {        
+//        SvnClient  client = SvnClientFactory.getInstance().createSvnClient();
+//        attachListeners(client, false);
+//        return client;        
+        if(attachListeners) {            
+            if(noUrlClientWithListeners == null) {
+                noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();
+            }                   
+            attachListeners(noUrlClientWithListeners, false);
+            return noUrlClientWithListeners;
+        } else {
+            if(noUrlClientWithoutListeners == null) {
+                noUrlClientWithoutListeners = SvnClientFactory.getInstance().createSvnClient();
+            }                              
+            return noUrlClientWithoutListeners;
+        }        
     }            
     
     public InterceptionListener getFileSystemHandler() {
@@ -292,8 +307,7 @@ public class Subversion {
             int pstatus = cache.getStatus(parent).getStatus();
             if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient();
-                    client.removeNotifyListener(getLogger(null));
+                    SvnClient client = Subversion.getInstance().getClient(false);
 
                     // XXX property can contain shell patterns (almost identical to RegExp)
                     List<String> patterns = client.getIgnoredPatterns(parent);
@@ -330,10 +344,10 @@ public class Subversion {
                 if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
                     FileStatusCache cache = Subversion.getInstance().getStatusCache();
                     if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                        List<String> patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
+                        List<String> patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
                         if (patterns.contains(file.getName()) == false) {
                             patterns.add(file.getName());
-                            Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
+                            Subversion.getInstance().getClient(true).setIgnoredPatterns(parent, patterns);
                         } else {
                             assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName(); // NOI18N
                         }

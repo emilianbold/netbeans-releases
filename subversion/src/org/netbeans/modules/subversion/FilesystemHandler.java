@@ -184,7 +184,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
                     int status = cache.getStatus(file).getStatus();
                     if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                         try {
-                            SvnClient client = Subversion.getInstance().getClient();
+                            SvnClient client = Subversion.getInstance().getClient(true);
                             client.revert(file, false);
                             file.delete();
                         } catch (SVNClientException ex) {
@@ -391,8 +391,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     private void fileDeletedImpl(File file) {
         if (file == null) return;
         try {
-            ISVNClientAdapter client = Subversion.getInstance().getClient();
-            client.removeNotifyListener(Subversion.getInstance().getLogger(null));
+            ISVNClientAdapter client = Subversion.getInstance().getClient(false);
             client.remove(new File [] { file }, true);
 
             // fire event explicitly because the file is already gone
@@ -478,9 +477,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     public  void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         try {                        
             boolean force = true; // file with local changes must be forced
-            ISVNClientAdapter client = Subversion.getInstance().getClient();
-            client.removeNotifyListener(cache);  // do not fire events before MFS
-
+            ISVNClientAdapter client = Subversion.getInstance().getClient(false);
             
             File tmpMetadata = null;
             try {
@@ -572,8 +569,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
             if ((FileInformation.STATUS_VERSIONED & status) == 0) {
                 addDirectories(parent);  // RECURSION
             }
-            ISVNClientAdapter client = Subversion.getInstance().getClient();
-            client.removeNotifyListener(cache);  // do not fire events before MFS
+            ISVNClientAdapter client = Subversion.getInstance().getClient(false);
             client.addDirectory(dir, false);
             cache.refresh(dir, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         } else {
