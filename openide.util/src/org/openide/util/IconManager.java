@@ -286,7 +286,7 @@ final class IconManager extends Object {
      */
     static final Image toBufferedImage(Image img) {
         // load the image
-        new javax.swing.ImageIcon(img);
+        new javax.swing.ImageIcon(img, "");
 
         if (img.getHeight(null)*img.getWidth(null) > 24*24) {
             return img;
