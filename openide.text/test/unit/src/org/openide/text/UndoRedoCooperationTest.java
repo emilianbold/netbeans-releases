@@ -179,6 +179,24 @@ public class UndoRedoCooperationTest extends NbTestCase implements CloneableEdit
         assertEquals ("Contains the original content", content, s);
     }
     
+    public void testClearTheMap() throws Exception {
+        support.plain = false;
+        
+        final StyledDocument d = support.openDocument ();
+        
+        support.getUndoRedo().discardAllEdits();
+
+        assertTrue ("Document is not empty", d.getLength () > 0);
+        
+        cannotBeModified = "Cannot";
+        try {
+            d.remove (0, d.getLength ());
+        } catch (BadLocationException be) { /* expected */ }
+        
+        String s = d.getText (0, d.getLength ());
+        assertEquals ("The document is the same", "Hello", s);
+    }
+    
     public void testEmptyRunAtomic() throws Exception {
         content = "";
         final StyledDocument d = support.openDocument ();

@@ -1590,6 +1590,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     edit.delegate = null;
                     ur.undoableEditHappened(new UndoableEditEvent(getDocument(), edit));
 
+                    if (edit.delegate == null) break; // no previous edit
+                    
                     if (edit.delegate instanceof BeforeModificationEdit) {
                         if (edit.delegate != null) {
                             // undo anyway
