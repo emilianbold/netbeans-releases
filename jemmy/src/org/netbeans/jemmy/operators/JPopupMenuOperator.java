@@ -286,7 +286,7 @@ implements Outputable, Timeoutable {
     public static JPopupMenu callPopup(final ComponentOperator oper, int x, int y, int mouseButton) {
 	oper.makeComponentVisible();
         //1.5 workaround
-        if(System.getProperty("java.version").startsWith("1.5")) {
+        if(System.getProperty("java.specification.version").compareTo("1.4") > 0) {
             QueueTool qt = new QueueTool();
             qt.setOutput(oper.getOutput().createErrorOutput());
             qt.waitEmpty(10);

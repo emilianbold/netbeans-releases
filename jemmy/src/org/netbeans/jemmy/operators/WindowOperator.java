@@ -474,8 +474,7 @@ implements Outputable{
     /**Maps <code>Window.isFocused()</code> through queue. 
        @return result of the mapped method */
     public boolean isFocused() {
-        if(System.getProperty("java.version").startsWith("1.4") ||
-           System.getProperty("java.version").startsWith("1.5")) {
+        if(System.getProperty("java.specification.version").compareTo("1.3") > 0) {
             return(runMapping(new MapBooleanAction("isFocused") {
                     public boolean map() {
                         try {
@@ -497,8 +496,7 @@ implements Outputable{
     /**Maps <code>Window.isActive()</code> through queue. 
        @return result of the mapped method */
     public boolean isActive() {
-        if(System.getProperty("java.version").startsWith("1.4") ||
-           System.getProperty("java.version").startsWith("1.5")) {
+        if(System.getProperty("java.specification.version").compareTo("1.3") > 0) {
             return(runMapping(new MapBooleanAction("isActive") {
                     public boolean map() {
                         try {

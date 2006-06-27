@@ -87,7 +87,7 @@ public class JTreeMouseDriver extends LightSupportiveDriver implements TreeDrive
                 });
         }
         //1.5 workaround
-        if(System.getProperty("java.version").startsWith("1.5")) {
+        if(System.getProperty("java.specification.version").compareTo("1.4") > 0) {
             if(!QueueTool.isDispatchThread()) {
                 queueTool.setOutput(oper.getOutput().createErrorOutput());
                 queueTool.waitEmpty(10);

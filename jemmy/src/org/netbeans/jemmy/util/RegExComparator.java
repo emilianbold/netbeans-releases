@@ -39,8 +39,7 @@ public class RegExComparator implements StringComparator {
         if(caption == null) {
             return(false);
         }
-        if(System.getProperty("java.version").startsWith("1.4") || 
-           System.getProperty("java.version").startsWith("1.5")) {
+        if(System.getProperty("java.specification.version").compareTo("1.3") > 0) {
             try {
                 Object result = new ClassReference("java.util.regex.Pattern").
                     invokeMethod("matches", 
