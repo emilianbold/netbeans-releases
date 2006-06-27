@@ -540,14 +540,21 @@ final class PropUtils {
         try {
             try {
                 Object oldValue = mdl.getValue();
+                
+                int selBeans = 0;
+                if( mdl instanceof NodePropertyModel ) {
+                    Object[] beans = ((NodePropertyModel)mdl).getBeans();
+                    if( null != beans )
+                        selBeans = beans.length;
+                }
 
-                //                System.err.println("Model old value is " + oldValue + " newValue is " + newValue);
                 // test if newValue is not equal to oldValue
-                if (((newValue != null) && !newValue.equals(oldValue)) || ((newValue == null) && (oldValue != null))) {
+                if (((newValue != null) && !newValue.equals(oldValue)) 
+                        || ((newValue == null) && (oldValue != null || selBeans > 1))) {
                     mdl.setValue(newValue);
                     result = Boolean.TRUE;
                 } else {
-                    //                    System.err.println(" New value equals old value - not trying to update");
+                    //do nothing
                 }
             } catch (ProxyNode.DifferentValuesException dve) {
                 //issue 34982, failure setting value of JSP breakpoint,
@@ -559,7 +566,6 @@ final class PropUtils {
             result = e;
         }
 
-        //        System.err.println("NoDlgUpdateProp returning " + result);
         return result;
     }
 

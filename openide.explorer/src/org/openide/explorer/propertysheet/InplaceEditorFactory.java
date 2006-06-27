@@ -228,7 +228,7 @@ final class InplaceEditorFactory {
         }
 
         result.clear(); //XXX shouldn't need to do this!
-        result.setPropertyModel(new NodePropertyModel(p, null));
+        result.setPropertyModel(new NodePropertyModel(p, env.getBeans()));
         result.connect(ped, env);
 
         //XXX?
