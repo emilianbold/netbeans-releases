@@ -153,6 +153,10 @@ public class FormModel
         return formLoaded;
     }
 
+    public final boolean wasCorrected() {
+        return formLoaded && layoutModel != null && layoutModel.wasCorrected();
+    }
+
 //    public final FormDesigner getFormDesigner() {
 //        return FormEditorSupport.getFormDesigner(this);
 //    }

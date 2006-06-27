@@ -372,7 +372,7 @@ class LayoutOperations implements LayoutConstants {
                 }
             }
             boolean compatible;
-            if (subResizing) {
+            if (subResizing && (sameAlign || group.getGroupAlignment() != BASELINE)) {
                 compatible = false;
                 if (LayoutInterval.canResize(group) || !LayoutInterval.canResize(parent)) {
                     it = parent.getSubIntervals();

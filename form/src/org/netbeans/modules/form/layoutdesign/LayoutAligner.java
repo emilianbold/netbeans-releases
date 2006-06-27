@@ -1128,7 +1128,8 @@ class LayoutAligner implements LayoutConstants {
             int post = Math.max(0, parRegion.positions[dimension][TRAILING] - region.positions[dimension][TRAILING]);
             if (((pre != 0) || (post != 0)) && !interval.isSequential()) {
                 LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
-                layoutModel.setIntervalAlignment(seq, interval.getAlignment());
+                if (interval.getAlignment() != BASELINE)
+                    layoutModel.setIntervalAlignment(seq, interval.getAlignment());
                 layoutModel.setIntervalAlignment(interval, DEFAULT);
                 layoutModel.addInterval(interval, seq, -1);
                 interval = seq;

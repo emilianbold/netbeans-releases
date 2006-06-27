@@ -254,6 +254,8 @@ public class FormEditor {
 	
         getCodeGenerator().initialize(formModel);
         formModel.fireFormLoaded();
+        if (formModel.wasCorrected()) // model repaired or upgraded
+            formModel.fireFormChanged(false);
 
         // create form nodes hierarchy and add it to SourceChildren
         formRootNode = new FormRootNode(formModel);

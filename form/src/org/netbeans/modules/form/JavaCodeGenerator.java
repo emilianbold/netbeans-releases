@@ -2937,7 +2937,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (formModel.getSettings().getListenerGenerationStyle() == CEDL_MAINCLASS)
                         listenersInMainClass_lastSet =
                             formModel.getFormEvents().getCEDLTypes();
-                    return;
+                    continue;
                 }
 
                 if (ev.isModifying())

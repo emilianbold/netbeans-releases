@@ -48,8 +48,11 @@ public class LayoutModel implements LayoutConstants {
     private Map redoMap = new HashMap(100);
     private LayoutUndoableEdit lastUndoableEdit;
 
+    // remembers whether the model was corrected/upgraded during loading
+    private boolean corrected;
+
     // -----
-    
+
     /**
      * Basic mapping method. Returns LayoutComponent for given Id.
      * @return LayoutComponent of given Id, null if there is no such component
@@ -1006,7 +1009,78 @@ public class LayoutModel implements LayoutConstants {
     {
         new LayoutPersistenceManager(this).loadModel(rootId, dimLayoutList, nameToIdMap);
     }
-    
+
+    /**
+     * Returns whether the model was repaired (because of some error found) or
+     * upgraded automatically during loading. After loading, it might be a good
+     * idea to save the corrected state, so to mark the loaded layout as modified.
+     * @return whether the model was changed during loading or saving
+     */
+    public boolean wasCorrected() {
+        return corrected;
+    }
+
+    /**
+     * This method is used during loading to check the alignment validity of
+     * given group and its subintervals. It checks use of BASELINE alignment of
+     * the group and the subintervals. Some invalid combinations were allowed by
+     * GroupLayout in version 1.0. See issue 78035 for details. This method also
+     * fixes the invalid combinations and sets the 'corrected' flag. This is
+     * needed for loading because wrong layouts still might exist from the past
+     * (and we still can't quite exclude it can't be created even now).
+     * BASELINE group can only contain BASELINE intervals, and vice versa,
+     * BASELINE interval can only be placed in BASELINE group.
+     * BASELINE can be set only on individual components.
+     * LEADING, TRAILING and CENTER alignments can be combined freely.
+     */
+    void checkAndFixGroup(LayoutInterval group) {
+        if (group.isParallel()) {
+            int groupAlign = group.getGroupAlignment();
+            int baselineCount = 0;
+
+            Iterator iter = group.getSubIntervals();
+            while (iter.hasNext()) {
+                LayoutInterval subInterval = (LayoutInterval)iter.next();
+                if (subInterval.getAlignment() == BASELINE) {
+                    if (!subInterval.isComponent()) {
+                        subInterval.setAlignment(groupAlign == BASELINE ? LEADING : DEFAULT);
+                        corrected = true;
+                    }
+                    else baselineCount++;
+                }
+            }
+
+            if (baselineCount > 0) {
+                if (baselineCount < group.getSubIntervalCount()) {
+                    // separate baseline intervals to a subgroup
+                    LayoutInterval subGroup = new LayoutInterval(PARALLEL);
+                    subGroup.setGroupAlignment(BASELINE);
+                    for (int i=0; i < group.getSubIntervalCount(); ) {
+                        LayoutInterval subInterval = group.getSubInterval(i);
+                        if (subInterval.getAlignment() == BASELINE) {
+                            group.remove(i);
+                            subGroup.add(subInterval, -1);
+                        }
+                        else i++;
+                    }
+                    if (groupAlign == BASELINE) {
+                        group.setGroupAlignment(LEADING);
+                    }
+                    group.add(subGroup, -1);
+                    corrected = true;
+                }
+                else if (groupAlign != BASELINE) {
+                    group.setGroupAlignment(BASELINE);
+                    corrected = true;
+                }
+            }
+            else if (groupAlign == BASELINE && group.getSubIntervalCount() > 0) {
+                group.setGroupAlignment(LEADING);
+                corrected = true;
+            }
+        }
+    }
+
     /* 
      * LINKSIZE 
      */

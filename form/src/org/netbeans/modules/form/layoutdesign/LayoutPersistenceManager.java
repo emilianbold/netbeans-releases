@@ -311,7 +311,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
             }
         }
     }
-    
+
     /**
      * Loads layout of the given group.
      *
@@ -358,8 +358,10 @@ public class LayoutPersistenceManager implements LayoutConstants {
                 loadComponent(group, subNode, dimension);
             }
         }
+        if (dimension == VERTICAL)
+            layoutModel.checkAndFixGroup(group);
     }
-    
+
     /**
      * Loads information about empty space.
      *

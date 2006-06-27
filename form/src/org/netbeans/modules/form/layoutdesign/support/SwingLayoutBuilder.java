@@ -179,15 +179,14 @@ public class SwingLayoutBuilder {
     
     private void fillGroup(GroupLayout layout, GroupLayout.Group group, LayoutInterval interval,
                            boolean first, boolean last) {
+        int alignment = getIntervalAlignment(interval);
         if (interval.isGroup()) {
             if (group instanceof GroupLayout.SequentialGroup) {
-                if (interval.getAlignment() != LayoutConstants.DEFAULT) {
-                    System.err.println("WARNING: Ignoring non-default alignment of interval in sequential group."); // NOI18N
-                }
                 ((GroupLayout.SequentialGroup)group).add(composeGroup(layout, interval, first, last));
             } else {
-                int alignment = convertAlignment(interval.getAlignment());
-                ((GroupLayout.ParallelGroup)group).add(alignment, composeGroup(layout, interval, first, last));
+                ((GroupLayout.ParallelGroup)group).add(
+                        convertAlignment(alignment),
+                        composeGroup(layout, interval, first, last));
             }
         } else {
             int minimum = interval.getMinimumSize(designMode);
@@ -196,7 +195,6 @@ public class SwingLayoutBuilder {
             int pref = convertSize(preferred, interval);
             int max = convertSize(interval.getMaximumSize(designMode), interval);
             if (interval.isComponent()) {
-                int alignment = interval.getAlignment();
                 LayoutComponent layoutComp = interval.getComponent();
                 Component comp = (Component)componentIDMap.get(layoutComp.getId());
                 assert (comp != null);
@@ -213,14 +211,10 @@ public class SwingLayoutBuilder {
                     }
                 }
                 if (group instanceof GroupLayout.SequentialGroup) {
-                    if (alignment != LayoutConstants.DEFAULT) {
-                        System.err.println("WARNING: Ignoring non-default alignment of interval in sequential group."); // NOI18N
-                    }
                     ((GroupLayout.SequentialGroup)group).add(comp, min, pref, max);
                 } else {
                     GroupLayout.ParallelGroup pGroup = (GroupLayout.ParallelGroup)group;
-                    int groupAlignment = convertAlignment(alignment);
-                    pGroup.add(groupAlignment, comp, min, pref, max);
+                    pGroup.add(convertAlignment(alignment), comp, min, pref, max);
                 }
             } else {
                 assert interval.isEmptySpace();
@@ -244,6 +238,32 @@ public class SwingLayoutBuilder {
                 }
             }
         }
+    }
+
+    /**
+     * Filters out invalid use of BASELINE alignment (see issue 78035).
+     * This method is a last resort to avoid failure in building the view.
+     * See also LayoutModel.checkAndFixGroup method.
+     */
+    private static int getIntervalAlignment(LayoutInterval interval) {
+        int alignment = interval.getAlignment();
+        LayoutInterval group = interval.getParent();
+        if (group.isParallel()) {
+            int groupAlignment = group.getGroupAlignment();
+            if ((alignment == LayoutConstants.BASELINE && groupAlignment != LayoutConstants.BASELINE)
+                || (alignment != LayoutConstants.BASELINE && groupAlignment == LayoutConstants.BASELINE))
+            {   // illegal combination, follow the group alignment
+                alignment = groupAlignment;
+                System.err.println("WARNING: Illegal use of baseline alignment, ignoring interval's alignment."); // NOI18N
+//                assert false;
+            }
+        }
+        else if (alignment != LayoutConstants.DEFAULT) {
+            System.err.println("WARNING: Ignoring non-default alignment of interval in sequential group."); // NOI18N
+//            assert false;
+        }
+
+        return alignment;
     }
 
     private static int convertAlignment(int alignment) {

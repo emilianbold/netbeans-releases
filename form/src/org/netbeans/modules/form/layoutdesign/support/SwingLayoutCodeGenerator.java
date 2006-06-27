@@ -174,7 +174,8 @@ public class SwingLayoutCodeGenerator {
         if (interval.isGroup()) {
             layout.append(getAddGroupStr());
             int alignment = interval.getAlignment();
-            if ((alignment != LayoutConstants.DEFAULT) && interval.getParent().isParallel() && alignment != groupAlignment) {
+            if ((alignment != LayoutConstants.DEFAULT) && interval.getParent().isParallel() && alignment != groupAlignment
+                    && alignment != LayoutConstants.BASELINE && groupAlignment != LayoutConstants.BASELINE) {
                 String alignmentStr = convertAlignment(alignment);
                 layout.append(alignmentStr).append(", "); // NOI18N
             }
@@ -200,7 +201,8 @@ public class SwingLayoutCodeGenerator {
                     }
                 }
                 assert (info.variableName != null);
-                if (interval.getParent().isSequential() || (alignment == LayoutConstants.DEFAULT) || (alignment == groupAlignment)) {
+                if (interval.getParent().isSequential() || (alignment == LayoutConstants.DEFAULT) || (alignment == groupAlignment)
+                        || alignment == LayoutConstants.BASELINE || groupAlignment == LayoutConstants.BASELINE) {
                     layout.append(info.variableName);
                 } else {
                     String alignmentStr = convertAlignment(alignment);
