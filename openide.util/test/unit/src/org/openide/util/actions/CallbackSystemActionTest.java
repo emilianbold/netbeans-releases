@@ -22,6 +22,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -47,7 +48,14 @@ public class CallbackSystemActionTest extends NbTestCase {
         super.tearDown();
         SimpleCallbackAction.waitInstancesZero();
     }
-    
+
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    protected int timeOut() {
+        return 5000;
+    }
     
     protected boolean runInEQ() {
         return true;
