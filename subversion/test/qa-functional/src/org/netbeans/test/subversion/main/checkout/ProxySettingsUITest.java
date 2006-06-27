@@ -123,19 +123,6 @@ public class ProxySettingsUITest extends JellyTestCase {
             //e.printStackTrace();
         }
         assertNotNull(tee);     
-        
-        co1so.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH + "localhost");
-        ProxyConfigurationOperator pco;
-        tee = null;
-        try {
-            pco = co1so.invokeProxy();
-            pco.verify();
-            pco.cancel();
-        } catch (Exception e) {
-            tee = (TimeoutExpiredException) e;
-            //e.printStackTrace();
-        }
-        assertNull(tee);     
         co.btCancel().pushNoBlock();
     }
 }

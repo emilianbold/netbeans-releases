@@ -72,7 +72,7 @@ public class CopyTest extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new CopyTest("testCreateNewCopySwitch"));
+        suite.addTest(new CopyTest("testCreateNewCopySwitch"));
         suite.addTest(new CopyTest("testCreateNewCopy"));
         return suite;
     }
@@ -83,9 +83,7 @@ public class CopyTest extends JellyTestCase {
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
-        
+                
         //create repository... 
         new File(TMP_PATH).mkdirs();
         new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
@@ -96,6 +94,8 @@ public class CopyTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
@@ -108,7 +108,7 @@ public class CopyTest extends JellyTestCase {
         open.push();
         ProjectSupport.waitScanFinished();
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
         CopyToOperator cto = CopyToOperator.invoke(projNode);
@@ -142,8 +142,6 @@ public class CopyTest extends JellyTestCase {
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
         
         //create repository... 
         new File(TMP_PATH).mkdirs();
@@ -155,6 +153,8 @@ public class CopyTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
@@ -167,7 +167,7 @@ public class CopyTest extends JellyTestCase {
         open.push();
         ProjectSupport.waitScanFinished();
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
         CopyToOperator cto = CopyToOperator.invoke(projNode);
@@ -192,7 +192,7 @@ public class CopyTest extends JellyTestCase {
         //to do 
         
         //switch to branch
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
         SwitchOperator so = SwitchOperator.invoke(projNode);
@@ -213,7 +213,7 @@ public class CopyTest extends JellyTestCase {
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", "[release01]", status);
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
         so = SwitchOperator.invoke(projNode);

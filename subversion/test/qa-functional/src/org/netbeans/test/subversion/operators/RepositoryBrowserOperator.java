@@ -48,7 +48,7 @@ public class RepositoryBrowserOperator extends NbDialogOperator {
      */
     public JLabelOperator lblSpecifyFolderToCheckout() {
         if (_lblSpecifyFolderToCheckout==null) {
-            _lblSpecifyFolderToCheckout = new JLabelOperator(this, "Repository Folders:");
+            _lblSpecifyFolderToCheckout = new JLabelOperator(this, "Repository Folders");
         }
         return _lblSpecifyFolderToCheckout;
     }

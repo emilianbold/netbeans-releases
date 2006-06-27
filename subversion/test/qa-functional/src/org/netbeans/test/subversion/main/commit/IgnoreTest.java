@@ -85,9 +85,6 @@ public class IgnoreTest extends JellyTestCase {
         RepositoryStepOperator rso = new RepositoryStepOperator();       
         VersioningOperator vo = VersioningOperator.invoke();
         
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
-        
         //create repository... 
         new File(TMP_PATH).mkdirs();
         new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
@@ -98,6 +95,8 @@ public class IgnoreTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
@@ -110,12 +109,11 @@ public class IgnoreTest extends JellyTestCase {
         open.push();
         ProjectSupport.waitScanFinished();
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         TestKit.createNewElement("JavaApp", "javaapp", "NewClass");
         Node node = new Node(new SourcePackagesNode("JavaApp"), "javaapp|NewClass");
         node.performPopupAction("Subversion|Ignore");
-        System.out.println("Issue #77562 should be fixed - reverted logic!!!");
         oto.waitText("finished.");
         
         node = new Node(new SourcePackagesNode("JavaApp"), "javaapp|NewClass");
@@ -135,11 +133,10 @@ public class IgnoreTest extends JellyTestCase {
         assertNotNull("Ingnore action should be disabled!!!", tee);
         
         //unignore file
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         node = new Node(new SourcePackagesNode("JavaApp"), "javaapp|NewClass");
         node.performPopupAction("Subversion|Unignore");
-        System.out.println("Issue #77562 should be fixed - reverted logic!!!");
         oto.waitText("finished.");
         node = new Node(new SourcePackagesNode("JavaApp"), "javaapp|NewClass");
         nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();        
@@ -149,7 +146,7 @@ public class IgnoreTest extends JellyTestCase {
         assertEquals("Wrong annotation of node - file status should be new!!!", TestKit.NEW_STATUS, status);
         
         //verify content of Versioning view
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         node = new Node(new SourcePackagesNode("JavaApp"), "javaapp|NewClass");
         node.performPopupAction("Subversion|Show Changes");
@@ -173,9 +170,6 @@ public class IgnoreTest extends JellyTestCase {
         RepositoryStepOperator rso = new RepositoryStepOperator();       
         VersioningOperator vo = VersioningOperator.invoke();
         
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
-        
         //create repository... 
         new File(TMP_PATH).mkdirs();
         new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
@@ -186,6 +180,8 @@ public class IgnoreTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();  
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
@@ -198,12 +194,11 @@ public class IgnoreTest extends JellyTestCase {
         open.push();
         ProjectSupport.waitScanFinished();
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         TestKit.createNewPackage("JavaApp", "xx");
         Node node = new Node(new SourcePackagesNode("JavaApp"), "xx");
         node.performPopupAction("Subversion|Ignore");
-        System.out.println("Issue #77562 should be fixed - reverted logic!!!");
         oto.waitText("finished.");
         
         node = new Node(new SourcePackagesNode("JavaApp"), "xx");
@@ -214,7 +209,7 @@ public class IgnoreTest extends JellyTestCase {
         assertEquals("Wrong annotation of node - package status should be ignored!!!", TestKit.IGNORED_STATUS, status);
         
         /*verify content of Versioning view
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         node = new Node(new SourcePackagesNode("JavaApp"), "javaapp|NewClass");
         node.performPopupAction("Subversion|Show Changes");
@@ -234,11 +229,10 @@ public class IgnoreTest extends JellyTestCase {
         assertNotNull("Ingnore action should be disabled!!!", tee);
         
         //unignore file
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         node = new Node(new SourcePackagesNode("JavaApp"), "xx");
         node.performPopupAction("Subversion|Unignore");
-        System.out.println("Issue #77562 should be fixed - reverted logic!!!");
         oto.waitText("finished.");
         node = new Node(new SourcePackagesNode("JavaApp"), "xx");
         nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();        
@@ -248,7 +242,7 @@ public class IgnoreTest extends JellyTestCase {
         assertEquals("Wrong annotation of node - package status should be new!!!", TestKit.NEW_STATUS, status);
         
         //verify content of Versioning view
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         node = new Node(new SourcePackagesNode("JavaApp"), "xx");
         node.performPopupAction("Subversion|Show Changes");
@@ -271,10 +265,7 @@ public class IgnoreTest extends JellyTestCase {
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
         VersioningOperator vo = VersioningOperator.invoke();
-        
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
-        
+       
         //create repository... 
         new File(TMP_PATH).mkdirs();
         new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
@@ -285,6 +276,8 @@ public class IgnoreTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
@@ -297,14 +290,13 @@ public class IgnoreTest extends JellyTestCase {
         open.push();
         ProjectSupport.waitScanFinished();
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         TestKit.createNewElements("JavaApp", "xx", "NewClass");
         
         Node node = new Node(new SourcePackagesNode("JavaApp"), "xx");
         Node node2 = new Node(new SourcePackagesNode("JavaApp"), "xx|NewClass");
         node.performPopupAction("Subversion|Ignore");
-        System.out.println("Issue #77562 should be fixed - reverted logic!!!");
         oto.waitText("finished.");
         
         node = new Node(new SourcePackagesNode("JavaApp"), "xx");
@@ -319,11 +311,10 @@ public class IgnoreTest extends JellyTestCase {
         assertEquals("Wrong annotation of file - package status should be ignored!!!", TestKit.IGNORED_STATUS, status2);
         
         //unignore file
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         node = new Node(new SourcePackagesNode("JavaApp"), "xx");
         node.performPopupAction("Subversion|Unignore");
-        System.out.println("Issue #77562 should be fixed - reverted logic!!!");
         oto.waitText("finished.");
         node = new Node(new SourcePackagesNode("JavaApp"), "xx");
         node2 = new Node(new SourcePackagesNode("JavaApp"), "xx|NewClass");
@@ -337,7 +328,7 @@ public class IgnoreTest extends JellyTestCase {
         assertEquals("Wrong annotation of node - file status should be new!!!", TestKit.NEW_STATUS, status2);
         
         //verify content of Versioning view
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         node = new Node(new SourcePackagesNode("JavaApp"), "xx");
         node.performPopupAction("Subversion|Show Changes");

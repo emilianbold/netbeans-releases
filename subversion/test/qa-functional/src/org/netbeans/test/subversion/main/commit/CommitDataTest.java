@@ -91,8 +91,6 @@ public class CommitDataTest extends JellyTestCase {
         TableModel model;
         VersioningOperator vo;
         
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
@@ -108,13 +106,15 @@ public class CommitDataTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
         //open project
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.waitText("Checking out... finished.");
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
@@ -151,14 +151,14 @@ public class CommitDataTest extends JellyTestCase {
         assertEquals("Expected file is missing.", "NewClass.java", table.getModel().getValueAt(0, 0).toString());
         assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
         cmo = CommitOperator.invoke(nodeFile);
         cmo.selectCommitAction("NewClass.java", "Add As Text");
         start = System.currentTimeMillis();
         cmo.commit();
-        oto.waitText("Comitting... finished.");
+        oto.waitText("Committing... finished.");
         end = System.currentTimeMillis();
         
         nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
@@ -185,8 +185,6 @@ public class CommitDataTest extends JellyTestCase {
         long end;
         String color;
         String status;
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
         VersioningOperator vo = VersioningOperator.invoke();
         
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
@@ -204,6 +202,8 @@ public class CommitDataTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
@@ -245,14 +245,14 @@ public class CommitDataTest extends JellyTestCase {
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong status of node!!!", TestKit.NEW_STATUS, status);
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
         cmo = CommitOperator.invoke(nodePack);
         cmo.selectCommitAction("xx", "Add Directory");
         start = System.currentTimeMillis();
         cmo.commit();
-        oto.waitText("Comitting... finished.");
+        oto.waitText("Committing... finished.");
         end = System.currentTimeMillis();
         
         nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
@@ -281,8 +281,6 @@ public class CommitDataTest extends JellyTestCase {
         String status;
         String[] expected = {"pp.bmp", "pp.dib", "pp.GIF", "pp.JFIF", "pp.JPE", "pp.JPEG", "pp.JPG", "pp.PNG", "pp.TIF", "pp.TIFF", "pp.zip", "text.txt", "test.jar"};
         
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
         VersioningOperator vo = VersioningOperator.invoke();
         
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
@@ -300,6 +298,8 @@ public class CommitDataTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
@@ -320,7 +320,7 @@ public class CommitDataTest extends JellyTestCase {
             TestKit.copyTo(src + expected[i], dest + expected[i]);
         }
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         Node nodeSrc = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
         nodeSrc.performPopupAction("Subversion|Show Changes");
@@ -345,7 +345,7 @@ public class CommitDataTest extends JellyTestCase {
         int result = TestKit.compareThem(expected, actual, false);
         assertEquals("Not All files listed in Commit dialog", expected.length, result);
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         nodeSrc = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
         CommitOperator cmo = CommitOperator.invoke(nodeSrc);
@@ -355,10 +355,10 @@ public class CommitDataTest extends JellyTestCase {
         for (int i = 0; i < actual.length; i++) {
             actual[i] = model.getValueAt(i, 0).toString();
             if (actual[i].endsWith(".txt")) {
-                assertEquals("Expected text file.", "Add As Text ", model.getValueAt(i, 2).toString());
-                System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=77046!!!");
+                assertEquals("Expected text file.", "Add as Text", model.getValueAt(i, 2).toString());
+                //System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=77046!!!");
             } else {
-                assertEquals("Expected text file.", "Add As Binary", model.getValueAt(i, 2).toString());
+                assertEquals("Expected text file.", "Add as Binary", model.getValueAt(i, 2).toString());
             }
         }
         result = TestKit.compareThem(expected, actual, false);
@@ -368,8 +368,8 @@ public class CommitDataTest extends JellyTestCase {
             oto.waitText("Adding");
             oto.waitText(expected[i]);
         }
-        oto.waitText("Comitting... finished.");
-        System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=77060!!!");
+        oto.waitText("Committing... finished.");
+        //System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=77060!!!");
         
         //files have been committed, 
         //verify explorer node

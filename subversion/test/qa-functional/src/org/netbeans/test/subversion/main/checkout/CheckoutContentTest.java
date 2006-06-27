@@ -78,8 +78,6 @@ public class CheckoutContentTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
         
         //create repository... 
         new File(TMP_PATH).mkdirs();
@@ -91,6 +89,8 @@ public class CheckoutContentTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
@@ -113,8 +113,6 @@ public class CheckoutContentTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
         
         //create repository... 
         new File(TMP_PATH).mkdirs();
@@ -126,6 +124,8 @@ public class CheckoutContentTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp/src");
         wdso.checkCheckoutContentOnly(true);

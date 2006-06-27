@@ -80,8 +80,6 @@ public class SearchHistoryUITest extends JellyTestCase{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-        OutputTabOperator oto = new OutputTabOperator("SVN Output");
-        oto.clear();
         VersioningOperator vo = VersioningOperator.invoke();
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
@@ -100,6 +98,8 @@ public class SearchHistoryUITest extends JellyTestCase{
         wdso.setRepositoryFolder("trunk/JavaApp");
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
         wdso.checkCheckoutContentOnly(false);
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        oto.clear();
         wdso.finish();
         //open project
         oto.waitText("Checking out... finished.");
@@ -108,20 +108,20 @@ public class SearchHistoryUITest extends JellyTestCase{
         open.push();
         ProjectSupport.waitScanFinished();
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         Node node = new Node(new SourcePackagesNode("JavaApp"), "javaapp|Main.java");
         SearchHistoryOperator sho = SearchHistoryOperator.invoke(node);
         oto.waitText("Searching History... finished.");
         sho.verify();
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         SearchRevisionsOperator sro = sho.getRevisionFrom();
         oto.waitText("Searching revisions finished.");
         sro.verify();
         sro.cancel();
         
-        oto = new OutputTabOperator("SVN Output");
+        oto = new OutputTabOperator("file:///tmp");
         oto.clear();
         sro = sho.getRevisionTo();
         oto.waitText("Searching revisions finished.");

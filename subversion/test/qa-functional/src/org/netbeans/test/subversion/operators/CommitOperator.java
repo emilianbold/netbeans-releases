@@ -101,7 +101,7 @@ public class CommitOperator extends NbDialogOperator {
      */
     public JLabelOperator lblFilesToCommit() {
         if (_lblFilesToCommit==null) {
-            _lblFilesToCommit = new JLabelOperator(this, "Commit Files");
+            _lblFilesToCommit = new JLabelOperator(this, "Files to Commit");
         }
         return _lblFilesToCommit;
     }

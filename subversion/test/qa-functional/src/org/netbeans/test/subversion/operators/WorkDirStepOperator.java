@@ -156,7 +156,7 @@ public class WorkDirStepOperator extends WizardOperator {
      */
     public JLabelOperator lblLocalSubversionWorkingCopy() {
         if (_lblLocalSubversionWorkingCopy==null) {
-            _lblLocalSubversionWorkingCopy = new JLabelOperator(this, "(local Subversion working copy) ");
+            _lblLocalSubversionWorkingCopy = new JLabelOperator(this, "(local Subversion working copy)");
         }
         return _lblLocalSubversionWorkingCopy;
     }
