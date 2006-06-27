@@ -97,7 +97,7 @@ public class ExTransferable extends Object implements Transferable {
      * @return the flavors
     */
     public DataFlavor[] getTransferDataFlavors() {
-        return (DataFlavor[]) map.keySet().toArray(new DataFlavor[0]);
+        return map.keySet().toArray(new DataFlavor[0]);
     }
 
     /* Is this flavor supported?
@@ -115,7 +115,7 @@ public class ExTransferable extends Object implements Transferable {
      * @throws UnsupportedFlavorException if that flavor is not supported
     */
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        Single o = (Single) map.get(flavor);
+        Single o = map.get(flavor);
 
         if (o == null) {
             throw new UnsupportedFlavorException(flavor);

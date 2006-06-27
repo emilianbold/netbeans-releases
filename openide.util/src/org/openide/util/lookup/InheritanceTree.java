@@ -141,7 +141,7 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
         interfaces = new WeakHashMap<Class,Object>();
 
         String clazz;
-        ClassLoader l = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
 
         while ((clazz = (String) ois.readObject()) != null) {
             Object o = ois.readObject();
@@ -979,13 +979,13 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
         lookup(clazz);
 
         // newRef will be the new head of the list
-        return (ReferenceToResult) reg.put(clazz, newRef);
+        return reg.put(clazz, newRef);
     }
 
     public ReferenceToResult cleanUpResult(Lookup.Template templ) {
         collectListeners(null, templ.getType());
 
-        return (reg == null) ? null : (ReferenceToResult) reg.get(templ.getType());
+        return (reg == null) ? null : reg.get(templ.getType());
     }
 
     public ArrayList<Class> beginTransaction(int ensure) {
@@ -995,7 +995,7 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
     public void endTransaction(ArrayList<Class> list, Set<AbstractLookup.R> allAffectedResults) {
         if (list.size() == 1) {
             // probably the most common case
-            collectListeners(allAffectedResults, (Class) list.get(0));
+            collectListeners(allAffectedResults, list.get(0));
         } else {
             Iterator it = list.iterator();
 
@@ -1016,7 +1016,7 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
         }
 
         while (c != null) {
-            ReferenceToResult first = (ReferenceToResult) reg.get(c);
+            ReferenceToResult first = reg.get(c);
             ReferenceIterator it = new ReferenceIterator(first);
 
             while (it.next()) {
@@ -1135,7 +1135,7 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
 
             if (items.contains(item)) {
                 int i = items.indexOf(item);
-                AbstractLookup.Pair old = (AbstractLookup.Pair) items.get(i);
+                AbstractLookup.Pair old = items.get(i);
 
                 if (old != item) {
                     // replace the items there
@@ -1187,7 +1187,7 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
             ois.defaultReadObject();
 
             if (l == null) {
-                l = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+                l = Lookup.getDefault().lookup(ClassLoader.class);
             }
 
             clazz = Class.forName(clazzName, false, l);

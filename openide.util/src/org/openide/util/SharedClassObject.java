@@ -117,7 +117,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
     */
     protected SharedClassObject() {
         synchronized (getLock()) {
-            DataEntry de = (DataEntry) values.get(getClass());
+            DataEntry de = values.get(getClass());
 
             //System.err.println("SCO create: " + this + " de=" + de);
             if (de == null) {
@@ -473,7 +473,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
     public static <T extends SharedClassObject> T findObject(Class<T> clazz, boolean create) {
         // synchronizing on the same object as returned from getLock()
         synchronized (clazz.getName().intern()) {
-            DataEntry de = (DataEntry) values.get(clazz);
+            DataEntry de = values.get(clazz);
 
             // either null or the object
             SharedClassObject obj = (de == null) ? null : de.get();
@@ -495,7 +495,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
                 created = true;
             }
 
-            de = (DataEntry) values.get(clazz);
+            de = values.get(clazz);
 
             if (de != null) {
                 SharedClassObject obj2 = de.get();
@@ -605,7 +605,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
         assert instancesBeingCreated != null;
 
         synchronized (instancesBeingCreated) {
-            Integer i = (Integer) instancesBeingCreated.get(name);
+            Integer i =  instancesBeingCreated.get(name);
             instancesBeingCreated.put(name, (i == null) ? new Integer(1) : new Integer(i.intValue() + 1));
         }
 
@@ -613,7 +613,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
             return c.newInstance(new Object[0]);
         } finally {
             synchronized (instancesBeingCreated) {
-                Integer i = (Integer) instancesBeingCreated.get(name);
+                Integer i = instancesBeingCreated.get(name);
 
                 if (i.intValue() == 1) {
                     instancesBeingCreated.remove(name);
@@ -929,7 +929,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
         * @return the an object of this type
         */
         SharedClassObject first(SharedClassObject obj) {
-            SharedClassObject s = (SharedClassObject) ref.get();
+            SharedClassObject s = ref.get();
 
             if (s == null) {
                 ref = new WeakReference<SharedClassObject>(obj);
@@ -943,7 +943,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
         /** @return shared object or null
         */
         public SharedClassObject get() {
-            return (SharedClassObject) ref.get();
+            return ref.get();
         }
 
         /** Reset map of values. */

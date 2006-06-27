@@ -158,7 +158,7 @@ public final class TopologicalSortException extends Exception {
         ArrayList<Set> sets = new ArrayList<Set>();
 
         while (!dualGraph.isEmpty()) {
-            Vertex v = (Vertex) dualGraph.pop();
+            Vertex v = dualGraph.pop();
 
             if (!v.visited) {
                 Set<Object> set = new HashSet<Object>();
@@ -236,7 +236,7 @@ public final class TopologicalSortException extends Exception {
      * @param vertexInfo the info
      */
     private Vertex constructDualGraph(int counter, Object vertex, HashMap<Object,Vertex> vertexInfo) {
-        Vertex info = (Vertex) vertexInfo.get(vertex);
+        Vertex info = vertexInfo.get(vertex);
 
         if (info == null) {
             info = new Vertex(vertex, counter++);

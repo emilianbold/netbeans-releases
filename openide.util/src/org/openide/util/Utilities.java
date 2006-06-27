@@ -534,7 +534,7 @@ widthcheck:  {
 
         String[] s = new String[lines.size()];
 
-        return (String[]) lines.toArray(s);
+        return lines.toArray(s);
     }
 
     /** trims String
@@ -2246,7 +2246,7 @@ widthcheck:  {
         Map<T,Boolean> finished,
         List<T> r
     ) {
-        Boolean b = (Boolean) finished.get(node);
+        Boolean b = finished.get(node);
 
         //System.err.println("node=" + node + " color=" + b);
         if (b != null) {
@@ -2380,7 +2380,7 @@ widthcheck:  {
             return;
         }
 
-        ClassLoader current = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader current = Lookup.getDefault().lookup(ClassLoader.class);
 
         if (current == null) {
             current = ClassLoader.getSystemClassLoader();
@@ -2703,7 +2703,7 @@ widthcheck:  {
             }
         }
 
-        ContextGlobalProvider p = (ContextGlobalProvider) Lookup.getDefault().lookup(ContextGlobalProvider.class);
+        ContextGlobalProvider p = Lookup.getDefault().lookup(ContextGlobalProvider.class);
         Lookup l = (p == null) ? Lookup.EMPTY : p.createGlobalContext();
 
         synchronized (ContextGlobalProvider.class) {

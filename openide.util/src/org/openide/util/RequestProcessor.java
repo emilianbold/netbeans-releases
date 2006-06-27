@@ -443,12 +443,12 @@ public final class RequestProcessor {
             item.enqueued = true;
 
             return;
-        } else if (iprio <= ((Item) queue.get(queue.size() - 1)).getPriority()) {
+        } else if (iprio <= queue.get(queue.size() - 1).getPriority()) {
             queue.add(item);
             item.enqueued = true;
         } else {
             for (ListIterator<Item> it = queue.listIterator(); it.hasNext();) {
-                Item next = (Item) it.next();
+                Item next = it.next();
 
                 if (iprio > next.getPriority()) {
                     it.set(item);
@@ -472,7 +472,7 @@ public final class RequestProcessor {
             return null;
         } else { // we have some work for the worker, pass it
 
-            Item i = (Item) queue.remove(0);
+            Item i = queue.remove(0);
             Task t = i.getTask();
             i.clear(worker);
 
@@ -848,7 +848,7 @@ public final class RequestProcessor {
 
                     return proc;
                 } else {
-                    Processor proc = (Processor) pool.pop();
+                    Processor proc = pool.pop();
                     proc.idle = false;
 
                     return proc;

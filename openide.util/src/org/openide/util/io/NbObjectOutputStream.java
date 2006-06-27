@@ -172,7 +172,7 @@ public class NbObjectOutputStream extends ObjectOutputStream {
 
     private static boolean isSerialVersionUIDDeclared(Class clazz) {
         String classname = clazz.getName();
-        Boolean okay = (Boolean) examinedClasses.get(classname);
+        Boolean okay = examinedClasses.get(classname);
 
         if (okay == null) {
             if (classname.equals("java.util.HashSet") || classname.equals("java.util.ArrayList")) { // NOI18N

@@ -68,7 +68,7 @@ public class NbObjectInputStream extends ObjectInputStream {
 
     /** Lazy create default NB classloader for use during deserialization. */
     private static ClassLoader getNBClassLoader() {
-        ClassLoader c = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader c = Lookup.getDefault().lookup(ClassLoader.class);
 
         return (c != null) ? c : ClassLoader.getSystemClassLoader();
     }

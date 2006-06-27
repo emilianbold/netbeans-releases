@@ -77,7 +77,7 @@ public class ProxyLookup extends Lookup {
         } else {
             Lookup[] arr = (Lookup[])l;
             if (clone) {
-                arr = (Lookup[])arr.clone();
+                arr = arr.clone();
             }
             return arr;
         }

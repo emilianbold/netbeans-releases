@@ -289,7 +289,7 @@ public final class XMLUtil extends Object {
     ) throws IOException, SAXException {
         
         int index = (validate ? 0 : 1) + (namespaceAware ? 0 : 2);
-        DocumentBuilder builder = (DocumentBuilder) builderTL[index].get();
+        DocumentBuilder builder = builderTL[index].get();
         if (builder == null) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(validate);
@@ -352,7 +352,7 @@ public final class XMLUtil extends Object {
         // XXX should try to use org.w3c.dom.ls.LSSerializer if it exists...
         // XXX #66563 workaround
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        ClassLoader global = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader global = Lookup.getDefault().lookup(ClassLoader.class);
         ClassLoader target = XMLUtil.class.getClassLoader();
         if (global == null) {
             global = target;
@@ -639,7 +639,7 @@ public final class XMLUtil extends Object {
      * @see "#62006"
      */
     private static Document normalize(Document orig) throws IOException {
-        DocumentBuilder builder = (DocumentBuilder) builderTL[0].get();
+        DocumentBuilder builder = builderTL[0].get();
         if (builder == null) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(false);
