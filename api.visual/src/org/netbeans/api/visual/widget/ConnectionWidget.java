@@ -18,15 +18,14 @@ import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.router.DirectRouter;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.layout.ConnectionWidgetLayout;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -36,7 +35,7 @@ import java.util.List;
 public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     private static final double HIT_DISTANCE_SQUARE = 16.0;
-    
+
     private Anchor sourceAnchor;
     private Anchor targetAnchor;
     private AnchorShape sourceAnchorShape;
@@ -47,6 +46,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
     private boolean routingRequired;
     private List<Point> controlPoints;
     private List<Point> controlPointsUm;
+    private ConnectionWidgetLayout connectionWidgetLayout;
 
     public ConnectionWidget (Scene scene) {
         super (scene);
@@ -56,6 +56,8 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         endPointShape = PointShape.NONE;
         router = DirectRouter.DEFAULT;
         routingRequired = true;
+        connectionWidgetLayout = new ConnectionWidgetLayout (this);
+        setLayout (connectionWidgetLayout);
     }
 
     public void notifyStateChanged (ObjectState state) {
@@ -171,13 +173,29 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         revalidate ();
     }
 
+    public void setConstraint (Widget childWidget, ConnectionWidgetLayout.Alignment alignment, float placementInPercentage) {
+        connectionWidgetLayout.setConstraint (childWidget, alignment, placementInPercentage);
+    }
+
+    public void setConstraint (Widget childWidget, ConnectionWidgetLayout.Alignment alignment, int placementAtDistance) {
+        connectionWidgetLayout.setConstraint (childWidget, alignment, placementAtDistance);
+    }
+
+    public void removeConstraint (Widget childWidget) {
+        connectionWidgetLayout.removeConstraint (childWidget);
+    }
+
     public void revalidateDependency () {
         reroute ();
     }
 
-    protected Rectangle calculateClientArea () {
+    public void calculateRouting () {
         if (routingRequired)
             setControlPoints (router.routeConnection (this), true);
+    }
+
+    protected Rectangle calculateClientArea () {
+        calculateRouting ();
         int controlPointShapeRadius = controlPointShape.getRadius ();
         int controlPointShapeRadius2 = controlPointShapeRadius + controlPointShapeRadius;
         int endPointShapeRadius = endPointShape.getRadius ();
@@ -230,13 +248,13 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         revalidate ();
     }
 
-    private Point getFirstControlPoint () {
+    public final Point getFirstControlPoint () {
         if (controlPoints.size () <= 0)
             return null;
         return new Point (controlPoints.get (0));
     }
 
-    private Point getLastControlPoint () {
+    public final Point getLastControlPoint () {
         int size = controlPoints.size ();
         if (size <= 0)
             return null;
