@@ -392,7 +392,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             folder.super(new ToolbarFolderChildren(folder));
             this.folder = folder;
             //JST: it displays only Toolbar as name!    super.setDisplayName(NbBundle.getBundle (ToolbarFolderNode.class).getString("CTL_Toolbars_name"));
-            super.setName( getDisplayName() );
+            super.setName( folder.getName() );
             super.setShortDescription(NbBundle.getBundle (ToolbarFolderNode.class).getString("CTL_Toolbars_hint"));
             super.setIconBase ("org/netbeans/core/resources/toolbars"); // NOI18N
 
