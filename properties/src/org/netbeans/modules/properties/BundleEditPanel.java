@@ -170,11 +170,16 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         } else if (column == 0) {
             Element.ItemElem elem = structure.getItem(0, row);
             value = structure.keyAt(row);
-            comment = elem.getComment();
+            comment = (elem != null) ? elem.getComment() : "";          //NOI18N
         } else {
             Element.ItemElem elem = structure.getItem(column-1, row);
-            value = elem.getValue();
-            comment = elem.getComment();
+            if (elem != null) {
+                value = elem.getValue();
+                comment = elem.getComment();
+            } else {
+                value = "";                                             //NOI18N
+                comment = "";                                           //NOI18N
+            }
         }
         textValue.getDocument().removeDocumentListener(listener);
         textComment.getDocument().removeDocumentListener(listener);
