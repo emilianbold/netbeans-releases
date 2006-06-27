@@ -73,6 +73,13 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         Color.black, Color.red, Color.pink, Color.orange, Color.yellow,
         Color.green, Color.magenta, Color.cyan, Color.blue };
 
+    /** Names of system colors. <em>Note:</em> not localizable,
+     * those names corresponds to programatical names. */
+    private static final String awtGenerate[] = {
+        "white", "lightGray", "gray", "darkGray", // NOI18N
+        "black", "red", "pink", "orange", "yellow", // NOI18N
+        "green", "magenta", "cyan", "blue" }; // NOI18N
+    
     /** Localized names of system colors. */
     private static String systemColorNames[];
 
@@ -321,7 +328,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         switch (superColor.getPalette()) {
         default:
         case AWT_PALETTE:
-            return "java.awt.Color." + superColor.getID(); // NOI18N
+            return "java.awt.Color." + awtGenerate [getIndex (getAWTColorNames(), superColor.getID())]; // NOI18N
         case SYSTEM_PALETTE:
             return "java.awt.SystemColor." + systemGenerate [getIndex (getSystemColorNames(), superColor.getID())]; // NOI18N
         case SWING_PALETTE:
