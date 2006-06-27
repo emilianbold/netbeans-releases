@@ -16,9 +16,7 @@ import org.netbeans.api.visual.action.PanAction;
 import org.netbeans.api.visual.action.PopupMenuAction;
 import org.netbeans.api.visual.action.ZoomAction;
 import org.netbeans.api.visual.action.MoveControlPointAction;
-import org.netbeans.api.visual.anchor.AnchorShape;
-import org.netbeans.api.visual.anchor.DirectionalAnchor;
-import org.netbeans.api.visual.anchor.PointShape;
+import org.netbeans.api.visual.anchor.*;
 import org.netbeans.api.visual.graph.EdgeController;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.router.OrthogonalSearchRouter;
@@ -99,11 +97,23 @@ public class VMDGraphScene extends GraphPinScene<String, String, String, VMDNode
     }
 
     protected void attachEdgeSource (EdgeController.StringEdge edgeController, VMDPinController sourcePinController) {
-        ((ConnectionWidget) edgeController.getMainWidget ()).setSourceAnchor (getPinNode (sourcePinController).getNodeWidget().createAnchorPin(new DirectionalAnchor (sourcePinController.getMainWidget (), DirectionalAnchor.Kind.HORIZONTAL)));
+        ((ConnectionWidget) edgeController.getMainWidget ()).setSourceAnchor (getPinAnchor (sourcePinController));
     }
 
     protected void attachEdgeTarget (EdgeController.StringEdge edgeController, VMDPinController targetPinController) {
-        ((ConnectionWidget) edgeController.getMainWidget ()).setTargetAnchor (getPinNode (targetPinController).getNodeWidget().getNodeAnchor ());
+        ((ConnectionWidget) edgeController.getMainWidget ()).setTargetAnchor (getPinAnchor (targetPinController));
+    }
+
+    private Anchor getPinAnchor (VMDPinController pinController) {
+        VMDNodeWidget nodeMainWidget = getPinNode (pinController).getNodeWidget ();
+        Widget pinMainWidget = pinController.getMainWidget ();
+        Anchor anchor;
+        if (pinMainWidget != null) {
+            anchor = new DirectionalAnchor (pinMainWidget, DirectionalAnchor.Kind.HORIZONTAL);
+            anchor = nodeMainWidget.createAnchorPin (anchor);
+        } else
+            anchor = nodeMainWidget.getNodeAnchor ();
+        return anchor;
     }
 
     private static class MyPopupMenuAction extends PopupMenuAction {
