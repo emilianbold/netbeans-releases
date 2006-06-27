@@ -583,14 +583,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @throws IOException if any problem has occured during deleting files/directories
      */
     public void clearWorkDir() throws IOException {;
-    File workdir = getWorkDir();
-    deleteSubFiles(workdir);
-    //boolean result = workdir.delete();
-        /*
-        if (result == false) {
-            throw new IOException("Workdir cannot be erased, workdir = "+path);
+        synchronized (logStreamTable) {
+            File workdir = getWorkDir();
+            closeAllStreams();
+            deleteSubFiles(workdir);
         }
-         */
     }
     
     
@@ -654,28 +651,36 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     // hashtable holding all already used logs and correspondig printstreams
-    private Map<String,PrintStream> logStreamTable = null;
+    private Map<String,PrintStream> logStreamTable = new HashMap<String,PrintStream>();
     
     private PrintStream getFileLog(String logName) throws IOException {
         OutputStream outputStream;
         FileOutputStream fileOutputStream;
-        
-        if ((logStreamTable == null)|(hasTestMethodChanged())) {
-            // we haven't used logging capability - create hashtables
-            logStreamTable = new HashMap<String,PrintStream>();
-            //System.out.println("Created new hashtable");
-        } else {
-            if (logStreamTable.containsKey(logName)) {
-                //System.out.println("Getting stream from cache:"+logName);
-                return (PrintStream)logStreamTable.get(logName);
+
+        synchronized (logStreamTable) {
+            if (hasTestMethodChanged()) {
+                // we haven't used logging capability - create hashtables
+                closeAllStreams();
+            } else {
+                if (logStreamTable.containsKey(logName)) {
+                    //System.out.println("Getting stream from cache:"+logName);
+                    return (PrintStream)logStreamTable.get(logName);
+                }
             }
+            // we didn't used this log, so let's create it
+            OutputStream fileLog = new WFOS(new File(getWorkDir(),logName));
+            PrintStream printStreamLog = new PrintStream(fileLog,true);
+            logStreamTable.put(logName,printStreamLog);
+            //System.out.println("Created new stream:"+logName);
+            return printStreamLog;
         }
-        // we didn't used this log, so let's create it
-        OutputStream fileLog = new WFOS(new File(getWorkDir(),logName));
-        PrintStream printStreamLog = new PrintStream(fileLog,true);
-        logStreamTable.put(logName,printStreamLog);
-        //System.out.println("Created new stream:"+logName);
-        return printStreamLog;
+    }
+    
+    private void closeAllStreams() {
+        for (PrintStream ps : logStreamTable.values()) {
+            ps.close();
+        }
+        logStreamTable.clear();
     }
     
     private static class WFOS extends FilterOutputStream {

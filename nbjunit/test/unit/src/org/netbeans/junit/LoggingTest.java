@@ -93,8 +93,23 @@ public class LoggingTest extends NbTestCase {
     }
 
     public void testLoggingUtil() throws Exception {
+        doLoggingUtil(false);
+    }
+
+    public void testLoggingUtilWithCleanOfUserDir() throws Exception {
+        doLoggingUtil(true);
+    }
+    
+    private void doLoggingUtil(boolean clean) throws Exception {
         Logger log = Logger.getLogger(getName());
+        
         log.log(Level.SEVERE, "Ahoj");
+
+        if (clean) {
+            clearWorkDir();
+            log.log(Level.SEVERE, "Ahojky");
+        }
+        
         log.log(Level.FINE, "Jardo");
  
         File f = new File(getWorkDir(), getName() + ".log");
