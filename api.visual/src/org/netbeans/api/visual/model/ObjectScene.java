@@ -30,9 +30,9 @@ public class ObjectScene extends Scene {
     private HashMap<Widget, ObjectController> widgets2controllers = new HashMap<Widget, ObjectController> ();
     private Set<ObjectController> objectsUm = Collections.unmodifiableSet (objects);
     private HashSet<ObjectController> selectedObjects = new HashSet<ObjectController> ();
-    private Set<ObjectController> selectedObjectsUm = Collections.unmodifiableSet (objects);
+    private Set<ObjectController> selectedObjectsUm = Collections.unmodifiableSet (selectedObjects);
     private HashSet<ObjectController> highlightedObjects = new HashSet<ObjectController> ();
-    private Set<ObjectController> highlightedObjectsUm = Collections.unmodifiableSet (objects);
+    private Set<ObjectController> highlightedObjectsUm = Collections.unmodifiableSet (highlightedObjects);
     private ObjectController focusedObject = null;
     private ObjectController hoveredObject = null;
 
@@ -173,7 +173,7 @@ public class ObjectScene extends Scene {
         return findObjectController (widget.getParentWidget ());
     }
 
-    protected void userSelectionSuggested (Set<ObjectController> objectControllers) {
+    public void userSelectionSuggested (Set<ObjectController> objectControllers) {
         setSelectedObjects (objectControllers);
     }
 
@@ -182,9 +182,11 @@ public class ObjectScene extends Scene {
             ObjectController objectController = findObjectController (widget);
             Set<ObjectController> set;
 
-            if (objectController != null)
+            if (objectController != null) {
+                if (getSelectedObjects ().contains (objectController))
+                    return;
                 set = Collections.singleton (objectController);
-            else
+            } else
                 set = Collections.emptySet ();
             userSelectionSuggested (set);
         }
