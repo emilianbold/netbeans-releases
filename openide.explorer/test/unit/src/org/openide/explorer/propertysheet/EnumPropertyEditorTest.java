@@ -41,7 +41,7 @@ public class EnumPropertyEditorTest extends NbTestCase {
         assertEquals("VANILLA", ed.getAsText());
         ed.setAsText("STRAWBERRY");
         assertEquals(E.STRAWBERRY, ed.getValue());
-        assertEquals(E.class.getName() + ".STRAWBERRY", ed.getJavaInitializationString());
+        assertEquals(E.class.getName().replace('$', '.') + ".STRAWBERRY", ed.getJavaInitializationString());
     }
 
     public void testNulls() throws Exception {

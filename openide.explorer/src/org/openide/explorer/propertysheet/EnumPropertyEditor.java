@@ -56,7 +56,7 @@ final class EnumPropertyEditor extends PropertyEditorSupport {
 
     public String getJavaInitializationString() {
         Enum e = (Enum) getValue();
-        return e != null ? c.getName() + '.' + e.name() : "null"; // NOI18N
+        return e != null ? c.getName().replace('$', '.') + '.' + e.name() : "null"; // NOI18N
     }
 
 }
