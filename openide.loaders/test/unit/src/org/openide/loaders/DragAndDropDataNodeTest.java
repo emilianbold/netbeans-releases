@@ -25,12 +25,6 @@ import org.openide.nodes.Children;
 import org.netbeans.junit.*;
 import org.openide.filesystems.LocalFileSystem;
 
-/** Test things about node delegates.
- * Note: if you mess with file status changes in this test, you may effectively
- * break the testLeakAfterStatusChange test.
- *
- * @author Jesse Glick
- */
 public class DragAndDropDataNodeTest extends NbTestCase {
     
     private LocalFileSystem testFileSystem;

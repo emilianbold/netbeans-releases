@@ -27,10 +27,6 @@ import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.util.datatransfer.PasteType;
 
-/** Does a change in order on folder fire the right properties?
- *
- * @author  Jaroslav Tulach
- */
 public class DataFolderPasteTypesTest extends NbTestCase {
 
     private File dir;
