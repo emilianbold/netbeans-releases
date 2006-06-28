@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,7 +85,8 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
         } catch( UnsupportedFlavorException ex ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex );
         } catch( IOException ex ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex );
+            // Ignore. Can be just "Owner timed out" from sun.awt.X11.XSelection.getData.
+            Logger.getLogger(DefaultExternalDropHandler.class.getName()).log(Level.FINE, null, ex);
         }
         return null;
     }

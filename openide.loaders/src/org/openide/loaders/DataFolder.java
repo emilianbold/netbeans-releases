@@ -1330,7 +1330,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             } catch( UnsupportedFlavorException ex ) {
                 Logger.global.log(Level.WARNING, null, ex);
             } catch( IOException ex ) {
-                Logger.global.log(Level.WARNING, null, ex);
+                // Ignore. Can be just "Owner timed out" from sun.awt.X11.XSelection.getData.
+                Logger.getLogger(DataFlavor.class.getName()).log(Level.FINE, null, ex);
             }
             return null;
         }
