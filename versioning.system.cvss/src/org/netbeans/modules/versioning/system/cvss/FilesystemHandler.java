@@ -14,7 +14,6 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
-import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
@@ -36,8 +35,9 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         
     private static final RequestProcessor  eventProcessor = new RequestProcessor("CVS-Event", 1); // NOI18N
 
+    private static final String METADATA_PATTERN = File.separator + CvsVersioningSystem.FILENAME_CVS;
+    
     private final FileStatusCache   cache;
-    private final Map savedMetadata = new HashMap();
     private static Thread ignoredThread;
 
     public FilesystemHandler(CvsVersioningSystem cvs) {
@@ -78,32 +78,32 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     
     public void fileFolderCreated(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
-        if (notManaged(fe)) return;
+        if (!shouldHandle(fe)) return;
         eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
     }
 
     public void fileDataCreated(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
-        if (notManaged(fe)) return;
+        if (!shouldHandle(fe)) return;
         eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
     }
     
     public void fileChanged(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
-        if (notManaged(fe)) return;
+        if (!shouldHandle(fe)) return;
         eventProcessor.post(new FileChangedTask(FileUtil.toFile(fe.getFile())));
     }
 
     public void fileDeleted(FileEvent fe) {
         // needed for external deletes; othewise, beforeDelete is quicker
         if (Thread.currentThread() == ignoredThread) return;
-        if (notManaged(fe)) return;
+        if (!shouldHandle(fe)) return;
         eventProcessor.post(new FileDeletedTask(FileUtil.toFile(fe.getFile())));
     }
 
     public void fileRenamed(FileRenameEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
-        if (notManaged(fe)) return;
+        if (!shouldHandle(fe)) return;
         eventProcessor.post(new FileRenamedTask(fe));
     }
 
@@ -115,7 +115,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     
     public void createSuccess(FileObject fo) {
         if (ignoringEvents()) return;
-        if (notManaged(fo)) return;
+        if (!shouldHandle(fo)) return;
         if (fo.isFolder() && fo.getNameExt().equals(CvsVersioningSystem.FILENAME_CVS)) {
             File f = new File(FileUtil.toFile(fo), CvsLiteAdminHandler.INVALID_METADATA_MARKER);
             try {
@@ -142,7 +142,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      */ 
     public void beforeDelete(FileObject fo) {
         if (ignoringEvents()) return;
-        if (notManaged(fo)) return;
+        if (!shouldHandle(fo)) return;
         if (fo.isFolder()) {
             saveRecursively(FileUtil.toFile(fo));
         } else {
@@ -172,17 +172,9 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
 
     public void deleteSuccess(FileObject fo) {
         if (ignoringEvents()) return;
-        if (notManaged(fo)) return;
+        if (!shouldHandle(fo)) return;
         File deleted = FileUtil.toFile(fo);
         if (fo.isFolder()) {
-            for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
-                File dir = (File) i.next();
-                if (Utils.isParentOrEqual(deleted, dir)) {
-                    CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
-                    MetadataAttic.setMetadata(dir, metadata);
-                    i.remove();
-                }
-            }
             refreshRecursively(deleted);
         }
         fileDeletedImpl(deleted);
@@ -206,19 +198,11 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
 
     public void deleteFailure(FileObject fo) {
         if (ignoringEvents()) return;
-        if (notManaged(fo)) return;
+        if (!shouldHandle(fo)) return;
         if (fo.isFolder()) {
             File notDeleted = FileUtil.toFile(fo);
-            for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
-                File dir = (File) i.next();
-                if (Utils.isParentOrEqual(notDeleted, dir)) {
-                    if (!dir.exists()) {
-                        CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
-                        MetadataAttic.setMetadata(dir, metadata);
-                    }
-                    i.remove();
-                }
-            }
+            CvsMetadata data = MetadataAttic.getMetadata(notDeleted);
+            flushMetadata(notDeleted, data);
             refreshRecursively(notDeleted);
         }
     }
@@ -265,14 +249,51 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     
     // private methods ---------------------------
 
-    private boolean notManaged(FileEvent fe) {
-        return notManaged(fe.getFile());
+    
+    /**
+     * Determines whether a filesystem event should be handled.
+     * 
+     * @param fe event in question
+     * @return true if this event should be handled by this versioning module, false otherwise
+     */ 
+    private boolean shouldHandle(FileEvent fe) {
+        return shouldHandle(fe.getFile());
     }
 
-    private boolean notManaged(FileObject fo) {
+    /**
+     * Determines whether changes to a given FileObject should be handled.
+     * 
+     * @param fo FileObject that changed somehow
+     * @return true if events coming from the given FileObject should be handled by this versioning module, false otherwise
+     */ 
+    private boolean shouldHandle(FileObject fo) {
         File file = FileUtil.toFile(fo);
+        
+        // IMPLEMENTATION NOTE: 
+        // Strictly speaking, we should NOT rely on FileStatusCache in this method because call to this method PRECEDES 
+        // updates to the cache and thus in this moment status of files in the cache, particulary status of this file is 
+        // most probably wrong and will be updated only once this call returns TRUE.
+        // But since the cache is fast, we will use it for all files except those that do not exist.
+
+        // also process events from CVS/ metadata dir, which would otherwise be reported as NOT_MANAGED by the cache
+        String path = file.getAbsolutePath();
+
+        int idx = path.lastIndexOf(METADATA_PATTERN);
+        if (idx != -1) {
+            if (idx == path.length() - 4) return true;
+            if (path.charAt(idx + 4) == File.separatorChar) {
+                return path.indexOf(File.separatorChar, idx + 5) == -1;
+            }
+        }
+
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        return (cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) == 0;
+        for (;;) {
+            if (file.exists()) break;
+            file = file.getParentFile();
+            if (file == null) return true;  // be on the safe side
+        }
+        int status = cache.getStatus(file).getStatus();
+        return (status & FileInformation.STATUS_MANAGED) != 0;
     }
 
     private void fileCreatedImpl(File file) {
@@ -281,18 +302,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
 
         if (file.isDirectory()) {
             CvsMetadata data = MetadataAttic.getMetadata(file);
-            if (data != null) {
-                try {
-                    // do not overwrite existing metadata on disk
-                    File metadataDir = new File(file, CvsVersioningSystem.FILENAME_CVS);
-                    if (!metadataDir.exists()) {
-                        data.save(metadataDir);
-                    }
-                    MetadataAttic.setMetadata(file, null);
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
+            flushMetadata(file, data);
         }
 
         if ((status & FileInformation.STATUS_MANAGED) == 0) return;
@@ -311,6 +321,20 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         }
         if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
         if (file.isDirectory()) cache.directoryContentChanged(file);
+    }
+
+    private void flushMetadata(File dir, CvsMetadata data) {
+        if (data == null) return;
+        try {
+            // do not overwrite existing metadata on disk
+            File metadataDir = new File(dir, CvsVersioningSystem.FILENAME_CVS);
+            if (!metadataDir.exists()) {
+                data.save(metadataDir);
+            }
+            MetadataAttic.setMetadata(dir, null);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
     }
 
     /**
@@ -374,11 +398,11 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      */ 
     private void saveMetadata(File dir) {
         dir = FileUtil.normalizeFile(dir);
+        if (MetadataAttic.getMetadata(dir) != null) return;
         MetadataAttic.setMetadata(dir, null);
-        if (savedMetadata.get(dir) != null) return;
         try {
             CvsMetadata data = CvsMetadata.readAndRemove(dir);
-            savedMetadata.put(dir, data);
+            MetadataAttic.setMetadata(dir, data);
         } catch (IOException e) {
             // cannot read folder metadata, the folder is most probably not versioned
             return;

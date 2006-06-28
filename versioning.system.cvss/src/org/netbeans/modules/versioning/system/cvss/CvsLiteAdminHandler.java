@@ -58,11 +58,11 @@ class CvsLiteAdminHandler implements AdminHandler {
 
     public Entry getEntry(File file) throws IOException {
         checkForInvalidMetadata(file.getParentFile());
-        if (file.exists()) return stdHandler.getEntry(file);
         File parent = file.getParentFile();
-        if (parent.exists()) return stdHandler.getEntry(file);
         CvsMetadata data = MetadataAttic.getMetadata(parent);
-        if (data == null) return stdHandler.getEntry(file);
+        if (new File(parent, CvsVersioningSystem.FILENAME_CVS).isDirectory() || data == null) {
+            return stdHandler.getEntry(file);
+        }
         String [] se = data.getEntries();
         for (int i = 0; i < se.length; i++) {
             Entry entry = new Entry(se[i]);
@@ -73,20 +73,21 @@ class CvsLiteAdminHandler implements AdminHandler {
 
     public boolean exists(File file) {
         if (file.exists()) return true;
-        if ("CVS".equals(file.getName())) file = file.getParentFile(); // NOI18N
+        if (CvsVersioningSystem.FILENAME_CVS.equals(file.getName())) file = file.getParentFile(); // NOI18N
         return MetadataAttic.getMetadata(file) != null;
     }
 
     public Iterator getEntries(File directory) throws IOException {
         checkForInvalidMetadata(directory);
-        if (directory.exists()) {
+        if (new File(directory, CvsVersioningSystem.FILENAME_CVS).isDirectory()) {
             return stdHandler.getEntries(directory);
-        } else {
-            directory = FileUtil.normalizeFile(directory);
-            CvsMetadata data = MetadataAttic.getMetadata(directory);
-            if (data == null) return Collections.EMPTY_LIST.iterator();
-            return new CvsMetadataIterator(data);
         }
+        directory = FileUtil.normalizeFile(directory);
+        CvsMetadata data = MetadataAttic.getMetadata(directory);
+        if (data == null) {             
+            return stdHandler.getEntries(directory);
+        }
+        return new CvsMetadataIterator(data);
     }
     
     public Entry[] getEntriesAsArray(File directory)
