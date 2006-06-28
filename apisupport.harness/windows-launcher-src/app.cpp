@@ -194,7 +194,8 @@ int WINAPI
                         NULL, NULL,
                         &start,
                         &pi)) {
-        MessageBox(NULL, "Cannot start the IDE", "Error", MB_ICONSTOP | MB_OK);   // TODO: Should not say 'IDE'
+        sprintf(buf, "Cannot start %s", appname);
+        MessageBox(NULL, buf, "Error", MB_ICONSTOP | MB_OK);
         exit(1);
     } else {
         // Wait until child process exits.
