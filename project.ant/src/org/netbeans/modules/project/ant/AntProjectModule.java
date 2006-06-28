@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.project.ant;
 
 import java.awt.Frame;
@@ -17,6 +18,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.CharArrayWriter;
 import java.io.StringReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
@@ -27,7 +30,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.ModuleInstall;
@@ -38,8 +40,9 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
 /**
- *
+ * Checks for buggy versions of Xalan.
  * @author Jan Lahoda
+ * @see "issue #70130"
  */
 public class AntProjectModule extends ModuleInstall {
     
@@ -52,10 +55,7 @@ public class AntProjectModule extends ModuleInstall {
         long start = System.currentTimeMillis();
         boolean isBuggyXalan = checkForXalan();
         long end = System.currentTimeMillis();
-        
-        if (ErrorManager.getDefault().isLoggable(ErrorManager.INFORMATIONAL)) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "check for buggy xalan took: " + (end - start)); // NOI18N
-        }
+        Logger.getLogger(AntProjectModule.class.getName()).log(Level.FINE, "check for buggy xalan took %d", new Long(end - start)); // NOI18N
         
         if (isBuggyXalan) {
             showWarning();
@@ -66,20 +66,24 @@ public class AntProjectModule extends ModuleInstall {
         //check for a buggy xalan on the classpath and warn if necessary:
         //try to load org.apache.xalan.Version class, OK if it does not exist:
         try {
-            Class version = XMLUtil.class.getClassLoader().loadClass("org.apache.xalan.Version"); // NOI18N
-            
+            try {
+                XMLUtil.class.getClassLoader().loadClass("org.apache.xalan.Version"); // NOI18N
+            } catch (ClassNotFoundException ex) {
+                //ok, no xalan, everything is OK.
+                return false;
+            }
             return !verifyWriterCorrect();
-        } catch (ClassNotFoundException ex) {
-            //ok, no xalan, everything is OK.
         } catch (Exception ex) {
             //should not happen, but probably OK:
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger(AntProjectModule.class.getName()).log(Level.INFO, "Cannot run JAXP", ex);
+        } catch (Error e) {
+            Logger.getLogger(AntProjectModule.class.getName()).log(Level.SEVERE, "Cannot run JAXP", e);
         }
         
         return false;
     }
     
-    private boolean verifyPlainAccess() throws Exception {
+    private boolean verifyWriterCorrect() throws Exception {
         final String IDENTITY_XSLT_WITH_INDENT =
                 "<xsl:stylesheet version='1.0' " + // NOI18N
                 "xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " + // NOI18N
@@ -108,11 +112,7 @@ public class AntProjectModule extends ModuleInstall {
         
         return text.indexOf("\"child\"") != (-1) || text.indexOf("'child'") != (-1); // NOI18N
     }
-    
-    private boolean verifyWriterCorrect() throws Exception {
-        return verifyPlainAccess();
-    }
-    
+
     private void showWarning() {
         NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AntProjectModule.class, "LBL_Incompatible_Xalan")); // NOI18N
         
