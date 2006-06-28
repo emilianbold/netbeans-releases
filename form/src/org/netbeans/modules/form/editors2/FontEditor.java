@@ -95,7 +95,7 @@ public class FontEditor implements ExPropertyEditor, XMLPropertyEditor,
     }
 
     public Object getValue() {
-        return propertyValue;
+        return propertyValue.absolute ? propertyValue.font : propertyValue;
     }
 
     public boolean isPaintable() {
