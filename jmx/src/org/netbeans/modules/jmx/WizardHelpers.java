@@ -1263,7 +1263,7 @@ public class WizardHelpers
         SourceGroup[] sources = getSourceGroups(project);
         Set results = new HashSet();
         for (int i = 0; i < sources.length; i++) {
-            Enumeration<FileObject> files = 
+            Enumeration<? extends FileObject> files = 
                     sources[i].getRootFolder().getChildren(true);
             while (files.hasMoreElements()) {
                 FileObject file = files.nextElement();
