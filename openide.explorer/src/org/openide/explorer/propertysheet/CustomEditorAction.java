@@ -10,11 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * CustomEditorAction.java
- *
- * Created on 26 September 2003, 22:57
- */
+
 package org.openide.explorer.propertysheet;
 
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
@@ -31,8 +27,6 @@ import java.beans.*;
 
 import java.lang.ref.WeakReference;
 
-import java.text.MessageFormat;
-
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import org.openide.util.Exceptions;
@@ -44,7 +38,7 @@ import org.openide.util.Exceptions;
  */
 class CustomEditorAction extends AbstractAction {
     private Invoker invoker;
-    private WeakReference modelRef = null;
+    private WeakReference<PropertyModel> modelRef = null;
 
     /** Creates a new instance of CustomEditorAction */
     public CustomEditorAction(Invoker invoker) {
@@ -57,7 +51,7 @@ class CustomEditorAction extends AbstractAction {
 
         if (mdl != null) {
             //            System.err.println("Creating custom editor action for model " + mdl);
-            modelRef = new WeakReference(mdl);
+            modelRef = new WeakReference<PropertyModel>(mdl);
         }
     }
 
@@ -77,7 +71,7 @@ class CustomEditorAction extends AbstractAction {
             return;
         }
 
-        PropertyModel refd = (modelRef != null) ? (PropertyModel) modelRef.get() : null;
+        PropertyModel refd = (modelRef != null) ? modelRef.get() : null;
 
         //get the feature descriptor in question
         FeatureDescriptor fd = invoker.getSelection();
@@ -184,18 +178,16 @@ class CustomEditorAction extends AbstractAction {
         final String title = (suppliedTitle == null)
             ? ((fd.getDisplayName() == null)
             ? //XXX does this ever happen??
-            MessageFormat.format(
-                NbBundle.getMessage(SheetTable.class, "FMT_CUSTOM_DLG_NOPROPNAME_TITLE"),
-                new Object[] { (fdName == null) ? invoker.getBeanName() : fdName }
+                NbBundle.getMessage(CustomEditorAction.class, "FMT_CUSTOM_DLG_NOPROPNAME_TITLE",
+                fdName == null ? invoker.getBeanName() : fdName
             )
-            : MessageFormat.format(
-                NbBundle.getMessage(SheetTable.class, "FMT_CUSTOM_DLG_TITLE"),
-                new Object[] { invoker.getBeanName(), fd.getDisplayName() }
+            : NbBundle.getMessage(CustomEditorAction.class, "FMT_CUSTOM_DLG_TITLE",
+                invoker.getBeanName(), fd.getDisplayName()
             )) : suppliedTitle; //NOI18N
 
         final PropertyDialogManager pdm = new PropertyDialogManager(
                 NbBundle.getMessage(
-                    SheetTableModel.class, "PS_EditorTitle", //NOI18N
+                    CustomEditorAction.class, "PS_EditorTitle", //NOI18N
                     (title == null) ? "" : title, // NOI18N
                     p.getValueType()
                 ), true, editor, mdl, env

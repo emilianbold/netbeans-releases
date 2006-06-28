@@ -56,7 +56,7 @@ class WrapperInplaceEditor extends JPanel implements InplaceEditor, ActionListen
     private Component legacy = null;
 
     /** Listener list */
-    private transient List actionListenerList;
+    private transient List<ActionListener> actionListenerList;
 
     /** True if adding an ActionListener to the legacy component using
      * reflection succeeded */
@@ -113,7 +113,7 @@ class WrapperInplaceEditor extends JPanel implements InplaceEditor, ActionListen
             Method m = comp.getClass().getMethod("addActionListener", new Class[] { ActionListener.class }); //NOI18N
 
             if (m != null) {
-                m.invoke(comp, new ActionListener[] { this });
+                m.invoke(comp, this);
 
                 return true;
             }
@@ -131,7 +131,7 @@ class WrapperInplaceEditor extends JPanel implements InplaceEditor, ActionListen
             Method m = comp.getClass().getMethod("removeActionListener", new Class[] { ActionListener.class }); //NOI18N
 
             if (m != null) {
-                m.invoke(comp, new ActionListener[] { this });
+                m.invoke(comp, this);
 
                 return true;
             }
@@ -284,7 +284,7 @@ class WrapperInplaceEditor extends JPanel implements InplaceEditor, ActionListen
 
     public synchronized void addActionListener(ActionListener listener) {
         if (actionListenerList == null) {
-            actionListenerList = new ArrayList();
+            actionListenerList = new ArrayList<ActionListener>();
         }
 
         actionListenerList.add(listener);

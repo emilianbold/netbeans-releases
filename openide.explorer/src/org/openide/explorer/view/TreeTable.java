@@ -127,8 +127,8 @@ class TreeTable extends JTable implements Runnable {
     }
 
     private void initKeysAndActions() {
-        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
-        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
+        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.<AWTKeyStroke>emptySet());
+        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.<AWTKeyStroke>emptySet());
 
         //Next two lines do not work using inputmap/actionmap, but do work
         //using the older API.  We will process ENTER to skip to next row,
@@ -909,6 +909,7 @@ class TreeTable extends JTable implements Runnable {
 
         /* Fire width property change so that we can revalidate horizontal scrollbar in TreeTableView.
          */
+        @SuppressWarnings("deprecation")
         public void reshape(int x, int y, int w, int h) {
             int oldWidth = getWidth();
             super.reshape(x, y, w, h);
@@ -1300,6 +1301,7 @@ class TreeTable extends JTable implements Runnable {
     static class TreeTableTextField extends JTextField {
         public int offset;
 
+        @SuppressWarnings("deprecation")
         public void reshape(int x, int y, int w, int h) {
             int newX = Math.max(x, offset);
             super.reshape(newX, y, w - (newX - x), h);
@@ -1389,11 +1391,11 @@ class TreeTable extends JTable implements Runnable {
 
                         tree.setSelectionRows(rows);
                     } else {
-                        List list = new ArrayList(11);
+                        List<Integer> list = new ArrayList<Integer>(11);
 
                         for (int i = min; i <= max; i++) {
                             if (listSelectionModel.isSelectedIndex(i)) {
-                                list.add(new Integer(i));
+                                list.add(Integer.valueOf(i));
                             }
                         }
 
@@ -1401,7 +1403,7 @@ class TreeTable extends JTable implements Runnable {
                             clearSelection();
                         } else {
                             int[] rows = (int[]) Utilities.toPrimitiveArray(
-                                    (Integer[]) list.toArray(new Integer[list.size()])
+                                    list.toArray(new Integer[list.size()])
                                 );
                             tree.setSelectionRows(rows);
                         }

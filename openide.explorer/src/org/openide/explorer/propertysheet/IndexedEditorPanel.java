@@ -452,7 +452,7 @@ class IndexedEditorPanel extends javax.swing.JPanel implements ExplorerManager.P
      * @return true or false
      */
     private static boolean isInstanceOfTopComponent(Object obj) {
-        ClassLoader l = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader l = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
 
         if (l == null) {
             l = IndexedEditorPanel.class.getClassLoader();

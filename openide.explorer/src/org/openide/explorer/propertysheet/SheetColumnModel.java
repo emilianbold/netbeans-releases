@@ -107,8 +107,8 @@ final class SheetColumnModel implements TableColumnModel {
         return false;
     }
 
-    public Enumeration getColumns() {
-        return new Enumeration() {
+    public Enumeration<TableColumn> getColumns() {
+        return new Enumeration<TableColumn>() {
                 private boolean done = false;
                 private boolean doneOne = false;
 
@@ -116,7 +116,7 @@ final class SheetColumnModel implements TableColumnModel {
                     return !done;
                 }
 
-                public Object nextElement() {
+                public TableColumn nextElement() {
                     if (done) {
                         return null;
                     }

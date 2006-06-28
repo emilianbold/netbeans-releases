@@ -10,18 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * TTVEnvBridge.java
- *
- * Created on January 28, 2004, 1:46 PM
- */
 
 package org.netbeans.modules.openide.explorer;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
 
 
@@ -64,14 +56,14 @@ import java.util.WeakHashMap;
  * @author  Tim Boudreau
  */
 public class TTVEnvBridge {
-    private static Map bridges = new WeakHashMap();
+    private static Map<Object, TTVEnvBridge> bridges = new WeakHashMap<Object, TTVEnvBridge>();
     Object[] beans = null;
     /** Creates a new instance of TTVEnvBridge */
     private TTVEnvBridge() {
     }
     
     public static TTVEnvBridge getInstance(Object identifier) {
-        TTVEnvBridge result = (TTVEnvBridge) bridges.get(identifier);
+        TTVEnvBridge result = bridges.get(identifier);
         if (result == null) {
             result = new TTVEnvBridge();
             bridges.put (identifier, result);
@@ -80,7 +72,7 @@ public class TTVEnvBridge {
     }
     
     public static TTVEnvBridge findInstance(Object identifier) {
-        return (TTVEnvBridge) bridges.get(identifier);
+        return bridges.get(identifier);
     }
     
     public void setCurrentBeans (Object[] o) {

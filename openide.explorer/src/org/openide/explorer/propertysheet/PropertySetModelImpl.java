@@ -50,16 +50,16 @@ class PropertySetModelImpl implements PropertySetModel, Runnable {
     /** Retains the persistent list of sets the user has explicitly
      *  closed, so they remain closed for other similar nodes
      */
-    static Set closedSets = new HashSet(5);
+    static Set<String> closedSets = new HashSet<String>(5);
 
     static {
         closedSets.addAll(Arrays.asList(PropUtils.getSavedClosedSetNames()));
     }
 
     private boolean[] expanded = null;
-    private List fds = new ArrayList();
-    private Comparator comparator = null;
-    private transient List listenerList;
+    private List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
+    private Comparator<Node.Property> comparator = null;
+    private transient List<PropertySetModelListener> listenerList;
     private PropertySet[] sets = null;
     private transient int setCount = 0;
 
@@ -97,7 +97,7 @@ class PropertySetModelImpl implements PropertySetModel, Runnable {
         return getFeatureDescriptor(index) instanceof Node.Property;
     }
 
-    public void setComparator(Comparator c) {
+    public void setComparator(Comparator<Node.Property> c) {
         if (c != comparator) {
             firePendingChange(true);
             comparator = c;
@@ -218,11 +218,11 @@ class PropertySetModelImpl implements PropertySetModel, Runnable {
         }
     }
 
-    private List propsToList(Property[] p) {
-        List result;
+    private List<Property> propsToList(Property[] p) {
+        List<Property> result;
 
         if (filterHiddenProperties) {
-            result = new ArrayList();
+            result = new ArrayList<Property>();
 
             for (int i = 0; i < p.length; i++) {
                 if (!p[i].isHidden()) {
@@ -303,7 +303,7 @@ class PropertySetModelImpl implements PropertySetModel, Runnable {
 
     public final void addPropertySetModelListener(PropertySetModelListener listener) {
         if (listenerList == null) {
-            listenerList = new java.util.ArrayList();
+            listenerList = new java.util.ArrayList<PropertySetModelListener>();
         }
 
         listenerList.add(listener);

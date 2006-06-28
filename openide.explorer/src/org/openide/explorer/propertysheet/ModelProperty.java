@@ -75,7 +75,7 @@ class ModelProperty extends Property {
             try {
                 //System.err.println("ModelProperty creating a " 
                 //+ mdl.getPropertyEditorClass());
-                Constructor c = mdl.getPropertyEditorClass().getConstructor(null);
+                Constructor c = mdl.getPropertyEditorClass().getConstructor();
                 c.setAccessible(true);
 
                 return (PropertyEditor) c.newInstance(new Object[0]);

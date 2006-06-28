@@ -1200,7 +1200,7 @@ public class TreeTableView extends BeanTreeView {
     private class SortedNodeTreeModel extends NodeTreeModel {
         private Node.Property sortedByProperty;
         private boolean sortAscending = true;
-        private Comparator rowComparator;
+        private Comparator<VisualizerNode> rowComparator;
         private boolean sortedByName = false;
         private SortingTask sortingTask = null;
 
@@ -1300,16 +1300,16 @@ public class TreeTableView extends BeanTreeView {
             return null;
         }
 
-        synchronized Comparator getRowComparator() {
+        synchronized Comparator<VisualizerNode> getRowComparator() {
             if (rowComparator == null) {
-                rowComparator = new Comparator() {
+                rowComparator = new Comparator<VisualizerNode>() {
 
-                    public int compare(Object o1, Object o2) {
+                    public int compare(VisualizerNode o1, VisualizerNode o2) {
                         if (o1 == o2) {
                             return 0;
                         }
-                        Node n1 = ((VisualizerNode) o1).node;
-                        Node n2 = ((VisualizerNode) o2).node;
+                        Node n1 = o1.node;
+                        Node n2 = o2.node;
 
                         if ((n1 == null) && (n2 == null)) {
                             return 0;
@@ -1418,7 +1418,7 @@ public class TreeTableView extends BeanTreeView {
 
         void doSortChildren(VisualizerNode parent) {
             if (isSortingActive()) {
-                final Comparator comparator = getRowComparator();
+                final Comparator<VisualizerNode> comparator = getRowComparator();
 
                 if ((comparator != null) || (parent != null)) {
                     parent.reorderChildren(comparator);
@@ -1432,11 +1432,11 @@ public class TreeTableView extends BeanTreeView {
             // PENDING: remember the last sorting to avoid multiple sorting
             // remenber expanded folders
             TreeNode tn = (TreeNode) (this.getRoot());
-            java.util.List list = new ArrayList();
-            Enumeration en = TreeTableView.this.tree.getExpandedDescendants(new TreePath(tn));
+            java.util.List<TreePath> list = new ArrayList<TreePath>();
+            Enumeration<TreePath> en = TreeTableView.this.tree.getExpandedDescendants(new TreePath(tn));
 
             while ((en != null) && en.hasMoreElements()) {
-                TreePath path = (TreePath) en.nextElement();
+                TreePath path = en.nextElement();
 
                 // bugfix #32328, don't sort whole subtree but only expanded folders
                 sortChildren((VisualizerNode) path.getLastPathComponent(), true);
@@ -1445,7 +1445,7 @@ public class TreeTableView extends BeanTreeView {
 
             // expand again folders
             for (int i = 0; i < list.size(); i++) {
-                TreeTableView.this.tree.expandPath((TreePath) list.get(i));
+                TreeTableView.this.tree.expandPath(list.get(i));
             }
         }
 
@@ -1489,7 +1489,7 @@ public class TreeTableView extends BeanTreeView {
         }
 
         private class SortingTask implements Runnable {
-            private HashSet toSort = new HashSet();
+            private HashSet<VisualizerNode> toSort = new HashSet<VisualizerNode>();
 
             public synchronized void add(VisualizerNode parent) {
                 toSort.add(parent);
@@ -1508,8 +1508,8 @@ public class TreeTableView extends BeanTreeView {
                     SortedNodeTreeModel.this.sortingTask = null;
                 }
 
-                for (Iterator i = toSort.iterator(); i.hasNext();) {
-                    VisualizerNode curr = (VisualizerNode) i.next();
+                for (Iterator<VisualizerNode> i = toSort.iterator(); i.hasNext();) {
+                    VisualizerNode curr = i.next();
                     SortedNodeTreeModel.this.doSortChildren(curr);
                 }
             }

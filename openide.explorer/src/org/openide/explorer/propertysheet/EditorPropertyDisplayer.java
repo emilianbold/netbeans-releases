@@ -34,8 +34,6 @@ import java.beans.PropertyEditor;
 
 import java.lang.ref.WeakReference;
 
-import java.util.Arrays;
-
 import javax.swing.*;
 
 
@@ -57,7 +55,7 @@ class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_In
     private boolean useLabels = true;
     private PropertyEnv env = null;
     private boolean radioBoolean = false;
-    protected WeakReference modelRef = null;
+    protected WeakReference<PropertyModel> modelRef = null;
     protected boolean inReplaceInner = false;
     private InplaceEditorFactory factory1 = null;
     private InplaceEditorFactory factory2 = null;
@@ -76,7 +74,7 @@ class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_In
         this.prop = p;
 
         if (mdl != null) {
-            modelRef = new WeakReference(mdl);
+            modelRef = new WeakReference<PropertyModel>(mdl);
         }
     }
 
@@ -249,10 +247,6 @@ class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_In
     private final void installInner(JComponent c) {
         synchronized (getTreeLock()) {
             if (inner != null) {
-                if (c != null) {
-                    //                    System.err.println("REPLACING INNER COMPONENT");
-                }
-
                 remove(inner);
             }
 
@@ -401,6 +395,7 @@ class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_In
         comp.setEnabled(isEnabled() && PropUtils.checkEnabled(this, inplace.getPropertyEditor(), getPropertyEnv()));
     }
 
+    @SuppressWarnings("deprecation")
     public void reshape(int x, int y, int w, int h) {
         if (inner != null) {
             inner.setBounds(0, 0, w, h);
@@ -436,7 +431,7 @@ class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_In
             EditorPropertyDisplayer epd = (EditorPropertyDisplayer) pd;
 
             if (epd.modelRef != null) {
-                PropertyModel pm = (PropertyModel) epd.modelRef.get();
+                PropertyModel pm = epd.modelRef.get();
 
                 if (pm instanceof ExPropertyModel) {
                     FeatureDescriptor fd = ((ExPropertyModel) pm).getFeatureDescriptor();
@@ -574,7 +569,7 @@ class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_In
             EditorPropertyDisplayer epd = (EditorPropertyDisplayer) pd;
 
             if (epd.modelRef != null) {
-                PropertyModel pm = (PropertyModel) epd.modelRef.get();
+                PropertyModel pm = epd.modelRef.get();
 
                 if (pm instanceof ExPropertyModel) {
                     result = ((ExPropertyModel) pm).getBeans();

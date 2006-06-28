@@ -761,7 +761,7 @@ class PSheet extends JPanel implements MouseListener {
     }
 
     private static JComponent getTabbedContainerInnerComponent(JComponent c) {
-        JComponent result = (JComponent) TabbedContainerBridge.getDefault().getInnerComponent((JComponent) c);
+        JComponent result = TabbedContainerBridge.getDefault().getInnerComponent(c);
 
         return result;
     }

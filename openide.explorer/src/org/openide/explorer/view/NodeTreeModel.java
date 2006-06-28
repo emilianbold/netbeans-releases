@@ -111,18 +111,18 @@ public class NodeTreeModel extends DefaultTreeModel {
     /** The listener */
     private static final class Listener implements NodeModel {
         /** weak reference to the model */
-        private Reference model;
+        private Reference<NodeTreeModel> model;
 
         /** Constructor.
         */
         public Listener(NodeTreeModel m) {
-            model = new WeakReference(m);
+            model = new WeakReference<NodeTreeModel>(m);
         }
 
         /** Getter for the model or null.
         */
         private NodeTreeModel get(VisualizerEvent ev) {
-            NodeTreeModel m = (NodeTreeModel) model.get();
+            NodeTreeModel m = model.get();
 
             if ((m == null) && (ev != null)) {
                 ev.getVisualizer().removeNodeModel(this);

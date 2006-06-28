@@ -95,43 +95,43 @@ public class PropertySheet extends JPanel {
     /** Deprecated - no code outside the property sheet should be interested
      *  in how items are sorted.
      *@deprecated Relic of the original property sheet implementation, will never be fired. */
-    public static final String PROPERTY_SORTING_MODE = "sortingMode"; // NOI18N
+    public @Deprecated static final String PROPERTY_SORTING_MODE = "sortingMode"; // NOI18N
 
     /** Property giving current value color.
      *@deprecated Relic of the original property sheet implementation, will never be fired. */
-    public static final String PROPERTY_VALUE_COLOR = "valueColor"; // NOI18N
+    public @Deprecated static final String PROPERTY_VALUE_COLOR = "valueColor"; // NOI18N
 
     /** Property giving current disabled property color.
      *@deprecated Relic of the original property sheet implementation, , will never be fired. */
-    public static final String PROPERTY_DISABLED_PROPERTY_COLOR = "disabledPropertyColor"; // NOI18N
+    public @Deprecated static final String PROPERTY_DISABLED_PROPERTY_COLOR = "disabledPropertyColor"; // NOI18N
 
     /** Property with the current page index.
      *@deprecated Relic of the original property sheet implementation, , will never be fired.*/
-    public static final String PROPERTY_CURRENT_PAGE = "currentPage"; // NOI18N
+    public @Deprecated static final String PROPERTY_CURRENT_PAGE = "currentPage"; // NOI18N
 
     /** Property for plastic mode.
      *@deprecated Relic of the original property sheet implementation, , will never be fired.   */
-    public static final String PROPERTY_PLASTIC = "plastic"; // NOI18N
+    public @Deprecated static final String PROPERTY_PLASTIC = "plastic"; // NOI18N
 
     /** Property for the painting style.
      *@deprecated Relic of the original property sheet implementation, will never be fired. */
-    public static final String PROPERTY_PROPERTY_PAINTING_STYLE = "propertyPaintingStyle"; // NOI18N
+    public @Deprecated static final String PROPERTY_PROPERTY_PAINTING_STYLE = "propertyPaintingStyle"; // NOI18N
 
     /** Property for whether only writable properties should be displayed.
      *@deprecated Relic of the original property sheet implementation, will never be fired.*/
-    public static final String PROPERTY_DISPLAY_WRITABLE_ONLY = "displayWritableOnly"; // NOI18N
+    public @Deprecated static final String PROPERTY_DISPLAY_WRITABLE_ONLY = "displayWritableOnly"; // NOI18N
 
     /** Constant for showing properties as a string always.
      *@deprecated Relic of the original property sheet implementation, useless.  */
-    public static final int ALWAYS_AS_STRING = 1;
+    public @Deprecated static final int ALWAYS_AS_STRING = 1;
 
     /** Constant for preferably showing properties as string.
      *@deprecated Relic of the original property sheet implementation, does useless.    */
-    public static final int STRING_PREFERRED = 2;
+    public @Deprecated static final int STRING_PREFERRED = 2;
 
     /** Constant for preferably painting property values.
      *@deprecated Relic of the original property sheet implementation, does useless.   */
-    public static final int PAINTING_PREFERRED = 3;
+    public @Deprecated static final int PAINTING_PREFERRED = 3;
 
     /** Constant for unsorted sorting mode. */
     public static final int UNSORTED = 0;
@@ -142,42 +142,42 @@ public class PropertySheet extends JPanel {
     /** Constant for by-type sorting mode.
      * @deprecated Not supported since NetBeans 3.6
      **/
-    public static final int SORTED_BY_TYPES = 2;
+    public @Deprecated static final int SORTED_BY_TYPES = 2;
 
     /** Icon for the toolbar.
      * @deprecated Presumably noone uses this variable. If you want to customize
      *  the property sheet look you can change the image files directly (or use your
      *  own).
      */
-    static protected Icon iNoSort;
+    static @Deprecated protected Icon iNoSort;
 
     /** Icon for the toolbar.
      * @deprecated Presumably noone uses this variable. If you want to customize
      *  the property sheet look you can change the image files directly (or use your
      *  own).
      */
-    static protected Icon iAlphaSort;
+    static @Deprecated protected Icon iAlphaSort;
 
     /** Icon for the toolbar.
      * @deprecated Presumably noone uses this variable. If you want to customize
      *  the property sheet look you can change the image files directly (or use your
      *  own).
      */
-    static protected Icon iTypeSort;
+    static @Deprecated protected Icon iTypeSort;
 
     /** Icon for the toolbar.
      * @deprecated Presumably noone uses this variable. If you want to customize
      *  the property sheet look you can change the image files directly (or use your
      *  own).
      */
-    static protected Icon iDisplayWritableOnly;
+    static @Deprecated protected Icon iDisplayWritableOnly;
 
     /** Icon for the toolbar.
      * @deprecated Presumably noone uses this variable. If you want to customize
      *  the property sheet look you can change the image files directly (or use your
      *  own).
      */
-    static protected Icon iCustomize;
+    static @Deprecated protected Icon iCustomize;
 
     /** Action command/input map key for popup menu invocation action */
     private static final String ACTION_INVOKE_POPUP = "invokePopup"; //NOI18N
@@ -203,7 +203,7 @@ public class PropertySheet extends JPanel {
 
     /** Temporary storage for the last selected node in the case the property
      * sheet was removed temporarily from a container (winsys DnD) */
-    private Reference storedNode;
+    private Reference<Node> storedNode;
 
     //Package private for unit tests
     SheetTable table = new SheetTable();
@@ -246,7 +246,7 @@ public class PropertySheet extends JPanel {
         Node oldSelection = null;
 
         if (storedNode != null) {
-            oldSelection = (Node) storedNode.get();
+            oldSelection = storedNode.get();
         }
 
         if (oldSelection != null) {
@@ -275,7 +275,7 @@ public class PropertySheet extends JPanel {
 
         if (lastSel != null) {
             //Save the selected node in case we're re-added to a container
-            storedNode = new WeakReference(lastSel);
+            storedNode = new WeakReference<Node>(lastSel);
         }
 
         super.removeNotify();
@@ -419,8 +419,8 @@ public class PropertySheet extends JPanel {
                             Arrays.asList(currNodes) + " requested " + Arrays.asList(nodes)
                         );
 
-                        HashSet currs = new HashSet(Arrays.asList(currNodes));
-                        HashSet reqs = new HashSet(Arrays.asList(nodes));
+                        HashSet<Node> currs = new HashSet<Node>(Arrays.asList(currNodes));
+                        HashSet<Node> reqs = new HashSet<Node>(Arrays.asList(nodes));
 
                         if (currs.size() != currNodes.length) {
                             PropUtils.log(
@@ -635,14 +635,14 @@ public class PropertySheet extends JPanel {
     /**Deprecated, does nothing.
      * @param style Irrelevant
      * @deprecated Relic of the original property sheet implementation.  Does nothing.*/
-    public void setPropertyPaintingStyle(int style) {
+    public @Deprecated void setPropertyPaintingStyle(int style) {
     }
 
     /**Deprecated, returns no meaningful value.
      * @return the mode
      * @see #setPropertyPaintingStyle
      * @deprecated Relic of the original property sheet implementation.  Does nothing. */
-    public int getPropertyPaintingStyle() {
+    public @Deprecated int getPropertyPaintingStyle() {
         return 0;
     }
 
@@ -677,7 +677,7 @@ public class PropertySheet extends JPanel {
      * @param index index of the page to select
      * @deprecated Relic of the original property sheet implementation.  Does nothing.
      */
-    public void setCurrentPage(int index) {
+    public @Deprecated void setCurrentPage(int index) {
     }
 
     /**
@@ -686,14 +686,14 @@ public class PropertySheet extends JPanel {
      * @param str name of the tab to select
      * @return always returns false
      */
-    public boolean setCurrentPage(String str) {
+    public @Deprecated boolean setCurrentPage(String str) {
         return false;
     }
 
     /**Deprecated.  Does nothing.
      * @return index of currently selected page
      * @deprecated Relic of the original property sheet implementation.  Does nothing. */
-    public int getCurrentPage() {
+    public @Deprecated int getCurrentPage() {
         //        return pages.getSelectedIndex ();
         return 0;
     }
@@ -703,13 +703,13 @@ public class PropertySheet extends JPanel {
      * @deprecated Relic of the original property sheet implementation.  Display of properties
      * is handled by the look and feel.
      */
-    public void setPlastic(boolean plastic) {
+    public @Deprecated void setPlastic(boolean plastic) {
     }
 
     /**Test whether buttons in sheet are plastic.
      * @return <code>true</code> if so
      * @deprecated Relic of the original property sheet implementation.  Does nothing.*/
-    public boolean getPlastic() {
+    public @Deprecated boolean getPlastic() {
         return false;
     }
 
@@ -717,41 +717,41 @@ public class PropertySheet extends JPanel {
      * @param color the new color
      * @deprecated Relic of the original property sheet implementation.  Display of properties
      * is handled by the look and feel.  */
-    public void setValueColor(Color color) {
+    public @Deprecated void setValueColor(Color color) {
     }
 
     /**Deprecated.  Does nothing.
      * @deprecated Relic of the original property sheet implementation.  Display of properties
      * is handled by the look and feel.
      * @return the color */
-    public Color getValueColor() {
+    public @Deprecated Color getValueColor() {
         return Color.BLACK;
     }
 
     /**Deprecated.  Does nothing.
      * @deprecated Relic of the original property sheet implementation.  Does nothing.
      * @param color the new color  */
-    public void setDisabledPropertyColor(Color color) {
+    public @Deprecated void setDisabledPropertyColor(Color color) {
     }
 
     /**Deprecated.  Does not return a meaningful value.
      * @deprecated Relic of the original property sheet implementation.  Display of properties
      * is handled by the look and feel.
      * @return the color */
-    public Color getDisabledPropertyColor() {
+    public @Deprecated Color getDisabledPropertyColor() {
         return Color.GRAY;
     }
 
     /**Deprecated.  Does nothing.
      * @param b <code>true</code> if this is desired
      * @deprecated Relic of the original property sheet implementation.  Does nothing.*/
-    public void setDisplayWritableOnly(boolean b) {
+    public @Deprecated void setDisplayWritableOnly(boolean b) {
     }
 
     /**Deprecated.  Does not return a meaningful value.
      * @deprecated Relic of the original property sheet implementation.  Does nothing.
      * @return <code>true</code> if so */
-    public boolean getDisplayWritableOnly() {
+    public @Deprecated boolean getDisplayWritableOnly() {
         return false;
     }
 
@@ -835,8 +835,8 @@ public class PropertySheet extends JPanel {
     }
 
     private static final TabInfo getTabItems(Node n) {
-        Map titlesToContents = new HashMap();
-        ArrayList order = new ArrayList();
+        Map<String, List<PropertySet>> titlesToContents = new HashMap<String, List<PropertySet>>();
+        ArrayList<String> order = new ArrayList<String>();
 
         PropertySet[] sets = n.getPropertySets();
 
@@ -847,10 +847,10 @@ public class PropertySheet extends JPanel {
                 currTab = PropUtils.basicPropsTabName();
             }
 
-            List l = (List) titlesToContents.get(currTab);
+            List<PropertySet> l = titlesToContents.get(currTab);
 
             if (l == null) {
-                l = new ArrayList();
+                l = new ArrayList<PropertySet>();
                 l.add(sets[i]);
                 titlesToContents.put(currTab, l);
             } else {
@@ -866,12 +866,12 @@ public class PropertySheet extends JPanel {
         Object[] setSets = new Object[order.size()];
         int count = 0;
 
-        for (Iterator i = order.iterator(); i.hasNext();) {
-            titles[count] = (String) i.next();
+        for (Iterator<String> i = order.iterator(); i.hasNext();) {
+            titles[count] = i.next();
 
-            List currSets = (List) titlesToContents.get(titles[count]);
+            List<PropertySet> currSets = titlesToContents.get(titles[count]);
             setSets[count] = new PropertySet[currSets.size()];
-            setSets[count] = (PropertySet[]) currSets.toArray((PropertySet[]) setSets[count]);
+            setSets[count] = currSets.toArray((PropertySet[]) setSets[count]);
             count++;
         }
 
@@ -981,7 +981,7 @@ public class PropertySheet extends JPanel {
 
             try {
                 //Copied from original property sheet implementation
-                Class c = ((ClassLoader) Lookup.getDefault().lookup(ClassLoader.class)).loadClass(
+                Class<?> c = Lookup.getDefault().lookup(ClassLoader.class).loadClass(
                         "org.netbeans.api.javahelp.Help"
                     ); // NOI18N
 

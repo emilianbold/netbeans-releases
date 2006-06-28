@@ -41,7 +41,7 @@ final class Boolean3WayEditor implements ExPropertyEditor, InplaceEditor.Factory
     Boolean v = null;
 
     /** Utility field holding list of PropertyChangeListeners. */
-    private transient List propertyChangeListenerList;
+    private transient List<PropertyChangeListener> propertyChangeListenerList;
     private Boolean3Inplace renderer = null;
 
     public Boolean3WayEditor() {
@@ -126,7 +126,7 @@ final class Boolean3WayEditor implements ExPropertyEditor, InplaceEditor.Factory
      */
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         if (propertyChangeListenerList == null) {
-            propertyChangeListenerList = new java.util.ArrayList();
+            propertyChangeListenerList = new java.util.ArrayList<PropertyChangeListener>();
         }
 
         propertyChangeListenerList.add(listener);

@@ -831,8 +831,8 @@ public class ListView extends JScrollPane implements Externalizable {
             searchTextField.getDocument().addDocumentListener(searchFieldListener);
         }
 
-        private List doSearch(String prefix) {
-            List results = new ArrayList();
+        private List<Integer> doSearch(String prefix) {
+            List<Integer> results = new ArrayList<Integer>();
 
             // do search forward the selected index
             int startIndex = (getSelectedIndex() == -1) ? 0 : getSelectedIndex();
@@ -844,7 +844,7 @@ public class ListView extends JScrollPane implements Externalizable {
                 startIndex = getNextMatch(prefix, startIndex, Position.Bias.Forward);
 
                 if ((startIndex != -1) && !results.contains(new Integer(startIndex))) {
-                    results.add(new Integer(startIndex));
+                    results.add(Integer.valueOf(startIndex));
 
                     String elementName = getModel().getElementAt(startIndex).toString();
 
@@ -1178,7 +1178,7 @@ public class ListView extends JScrollPane implements Externalizable {
             int[] indices = list.getSelectedIndices();
 
             // bugfix #24193, check if the nodes in selection are in the view's root context
-            List ll = new ArrayList(indices.length);
+            List<Node> ll = new ArrayList<Node>(indices.length);
 
             for (int i = 0; i < indices.length; i++) {
                 if (indices[i] < curSize) {
@@ -1195,7 +1195,7 @@ public class ListView extends JScrollPane implements Externalizable {
                 }
             }
 
-            Node[] nodes = (Node[]) ll.toArray(new Node[ll.size()]);
+            Node[] nodes = ll.toArray(new Node[ll.size()]);
 
             // forwarding TO E.M., so we won't listen to its cries for a while
             manager.removePropertyChangeListener(wlpc);

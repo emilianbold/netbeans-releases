@@ -55,7 +55,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
      * anymore.  NodeRenderer will automatically detect if the view it's
      * rendering for is an instance of IconView.
      */
-    public NodeRenderer(boolean bigIcons) {
+    public @Deprecated NodeRenderer(boolean bigIcons) {
         this.bigIcons = bigIcons;
     }
 
@@ -67,7 +67,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
      *  state by a different view.   Views should create their own instance of
      *  NodeRenderer instead.
      */
-    public static NodeRenderer sharedInstance() {
+    public static @Deprecated NodeRenderer sharedInstance() {
         if (instance == null) {
             instance = new NodeRenderer();
         }

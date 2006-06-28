@@ -131,7 +131,7 @@ final class ExplorerActionsImpl {
         if (c instanceof ExClipboard) {
             ExClipboard clip = (ExClipboard) c;
             clip.addClipboardListener(
-                (ClipboardListener) WeakListeners.create(
+                WeakListeners.create(
                     ClipboardListener.class, actionStateUpdater, clip
                 )
             );
@@ -152,14 +152,6 @@ final class ExplorerActionsImpl {
         stopActions();
 
         manager = null;
-    }
-
-    /** Access method for use from ExplorerPanel, and also
-     * via reflection (!) from RegistryImpl in core.
-     * @deprecated Kill me later; see #18137 for explanation.
-     */
-    ExplorerManager getAttachedManager() {
-        return manager;
     }
 
     /** Stops listening on all actions */
@@ -194,7 +186,7 @@ final class ExplorerActionsImpl {
                 // copy (#13418), cut (#13426). If one node is a parent of another,
                 // assume that the situation is sketchy and prevent it.
                 // For k==1 it is impossible so do not waste time on it.
-                HashMap allNodes = new HashMap(101);
+                HashMap<Node, Object> allNodes = new HashMap<Node, Object>(101);
 
                 for (i = 0; i < k; i++) {
                     if (!checkParents(path[i], allNodes)) {
@@ -257,7 +249,7 @@ final class ExplorerActionsImpl {
      * @param node the node to check
      * @return false if one of the nodes is parent of another
      */
-    private boolean checkParents(Node node, HashMap set) {
+    private boolean checkParents(Node node, HashMap<Node, Object> set) {
         if (set.get(node) != null) {
             return false;
         }
@@ -366,9 +358,7 @@ final class ExplorerActionsImpl {
 
     /** If our clipboard is not found return the default system clipboard. */
     private static Clipboard getClipboard() {
-        Clipboard c = (Clipboard) Lookup.getDefault().lookup(
-                Clipboard.class
-            );
+        Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
 
         if (c == null) {
             c = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -590,7 +580,7 @@ final class ExplorerActionsImpl {
                 title = NbBundle.getMessage(ExplorerActionsImpl.class, "MSG_ConfirmDeleteObjectTitle");
             } else {
                 message = NbBundle.getMessage(
-                        ExplorerActionsImpl.class, "MSG_ConfirmDeleteObjects", new Integer(sel.length)
+                        ExplorerActionsImpl.class, "MSG_ConfirmDeleteObjects", Integer.valueOf(sel.length)
                     );
                 title = NbBundle.getMessage(ExplorerActionsImpl.class, "MSG_ConfirmDeleteObjectsTitle");
             }

@@ -55,14 +55,14 @@ import javax.swing.border.TitledBorder;
  * @author  Tim Boudreau
  */
 class RadioInplaceEditor extends JPanel implements InplaceEditor, ActionListener {
-    private transient List actionListenerList;
+    private transient List<ActionListener> actionListenerList;
     protected transient PropertyEditor editor = null;
     protected transient PropertyEnv env = null;
     protected transient PropertyModel mdl = null;
     protected transient ButtonGroup group = null;
     private boolean tableUI = false;
     boolean isFirstEvent = false;
-    private WeakSet buttonCache = new WeakSet();
+    private WeakSet<InvRadioButton> buttonCache = new WeakSet<InvRadioButton>();
     private boolean useTitle = false;
 
     public RadioInplaceEditor(boolean tableUI) {
@@ -106,11 +106,11 @@ class RadioInplaceEditor extends JPanel implements InplaceEditor, ActionListener
     private InvRadioButton[] getButtons(int count) {
         InvRadioButton[] result = new InvRadioButton[count];
 
-        Iterator i = buttonCache.iterator();
+        Iterator<InvRadioButton> i = buttonCache.iterator();
         int idx = 0;
 
         while (i.hasNext() && (idx < count)) {
-            result[idx] = (InvRadioButton) i.next();
+            result[idx] = i.next();
 
             if (result[idx] != null) {
                 result[idx].setEnabled(true);
@@ -355,7 +355,7 @@ class RadioInplaceEditor extends JPanel implements InplaceEditor, ActionListener
 
     public synchronized void addActionListener(java.awt.event.ActionListener listener) {
         if (actionListenerList == null) {
-            actionListenerList = new java.util.ArrayList();
+            actionListenerList = new java.util.ArrayList<ActionListener>();
         }
 
         actionListenerList.add(listener);

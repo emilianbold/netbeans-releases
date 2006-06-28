@@ -35,7 +35,7 @@ import java.awt.Component;
  * @see org.openide.explorer.propertysheet.InplaceEditor.Factory
  * @see org.openide.explorer.propertysheet.PropertyEnv
  */
-public interface EnhancedPropertyEditor extends java.beans.PropertyEditor {
+public @Deprecated interface EnhancedPropertyEditor extends java.beans.PropertyEditor {
     /** Get an in-place editor.
     * @return a custom property editor to be shown inside the property
     *         sheet

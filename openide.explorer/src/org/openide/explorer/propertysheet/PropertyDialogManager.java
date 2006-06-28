@@ -39,7 +39,7 @@ import org.openide.util.Exceptions;
  * @author Jan Jancura, Dafe Simonek, David Strupl
  */
 final class PropertyDialogManager implements VetoableChangeListener {
-    private static ThreadLocal caller = new ThreadLocal();
+    private static ThreadLocal<PropertyDialogManager> caller = new ThreadLocal<PropertyDialogManager>();
 
     /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_DESCRIPTION = "description"; // NOI18N
@@ -615,7 +615,7 @@ final class PropertyDialogManager implements VetoableChangeListener {
 
     static class CreateDialogInvoker implements Runnable {
         public void run() {
-            final PropertyDialogManager pdm = (PropertyDialogManager) caller.get();
+            final PropertyDialogManager pdm = caller.get();
             caller.set(null);
 
             if (pdm == null) {

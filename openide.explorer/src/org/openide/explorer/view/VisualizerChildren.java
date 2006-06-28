@@ -27,7 +27,7 @@ final class VisualizerChildren extends Object {
     public final VisualizerNode parent;
 
     /** list of all objects here (VisualizerNode) */
-    public final List list = new LinkedList();
+    public final List<VisualizerNode> list = new LinkedList<VisualizerNode>();
 
     /** Creates new VisualizerChildren.
     * Can be called only from EventQueue.
@@ -47,7 +47,7 @@ final class VisualizerChildren extends Object {
     * and fires info to all listeners.
     */
     public void added(VisualizerEvent.Added ev) {
-        ListIterator it = list.listIterator();
+        ListIterator<VisualizerNode> it = list.listIterator();
         boolean empty = !it.hasNext();
 
         int[] indxs = ev.getArray();
@@ -151,8 +151,8 @@ final class VisualizerChildren extends Object {
      * rather than expecting it to match the current children of the node,
      * which may be in an inconsistent state.
      */
-    private int[] reorderByComparator(Comparator c) {
-        Object[] old = list.toArray();
+    private int[] reorderByComparator(Comparator<VisualizerNode> c) {
+        VisualizerNode[] old = list.toArray(new VisualizerNode[list.size()]);
         Arrays.sort(old, c);
 
         int[] idxs = new int[old.length];
@@ -176,15 +176,15 @@ final class VisualizerChildren extends Object {
             ev.array = reorderByComparator(ev.getComparator());
         } else {
             int[] indxs = ev.getArray();
-            Object[] old = list.toArray();
-            Object[] arr = new Object[old.length];
+            VisualizerNode[] old = list.toArray(new VisualizerNode[list.size()]);
+            VisualizerNode[] arr = new VisualizerNode[old.length];
 
             int s = indxs.length;
 
             try {
                 for (int i = 0; i < s; i++) {
                     // arr[indxs[i]] = old[i];
-                    Object old_i = old[i];
+                    VisualizerNode old_i = old[i];
                     int indxs_i = indxs[i];
 
                     if (arr[indxs_i] != null) {

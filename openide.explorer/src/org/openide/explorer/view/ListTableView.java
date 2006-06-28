@@ -38,7 +38,7 @@ import javax.swing.event.ListDataListener;
  * @author  jrojcek
  * @since 1.7
  */
-public class ListTableView extends ListView {
+public @Deprecated class ListTableView extends ListView {
     /** flag that allows group more requests into one */
     private boolean tableChanging = false;
 

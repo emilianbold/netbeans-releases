@@ -10,19 +10,12 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * CheckboxInplaceEditor.java
- *
- * Created on January 4, 2003, 4:28 PM
- */
+
 package org.openide.explorer.propertysheet;
 
-import org.openide.explorer.propertysheet.*;
 import org.openide.nodes.Node.*;
 import org.openide.util.NbBundle;
 
-import java.awt.AWTEvent;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;

@@ -94,13 +94,6 @@ interface PropertyDisplayer_Editable extends PropertyDisplayer {
     /** Remove a change listener */
     public void removeChangeListener(ChangeListener cl);
 
-    /** Dispose of any state or references held by this editor.  Since it
-     * is common to use inline property editors in tables and trees, it is
-     * not possible to determine when the data referenced by a component
-     * can safely be disposed of;  client code knows better when it will
-     * no longer try to commit a value held in an instance */
-    public void dispose();
-
     //XXX remove the propertyEnv method if this interface is to be made public -
     //it's just needed to support PropertyPanel.getPropertyEnv - it can be
     //done by reflection instead.

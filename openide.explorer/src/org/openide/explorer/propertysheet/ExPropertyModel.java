@@ -22,7 +22,7 @@ import java.beans.FeatureDescriptor;
  *  expose bean properties
  * @author David Strupl
  */
-public interface ExPropertyModel extends PropertyModel {
+public @Deprecated interface ExPropertyModel extends PropertyModel {
     /**
      * Returns an array of beans/nodes that this property belongs
      * to.

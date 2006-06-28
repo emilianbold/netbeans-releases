@@ -268,6 +268,7 @@ class ButtonPanel extends javax.swing.JComponent implements InplaceEditor {
     /** Overridden to flag that a layout needs to be performed.  This is
      * needed since the component may be painted without a parent, so
      * invalidate will not do anything */
+    @SuppressWarnings("deprecation")
     public void reshape(int x, int y, int w, int h) {
         super.reshape(x, y, w, h);
         needLayout = true;
@@ -489,7 +490,6 @@ class ButtonPanel extends javax.swing.JComponent implements InplaceEditor {
                 }
 
                 Graphics g = snapshot.getGraphics();
-                Point loc = getLocation();
                 super.paint(g);
             }
 

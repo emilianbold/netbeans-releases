@@ -662,7 +662,7 @@ public abstract class TreeView extends JScrollPane {
             return false;
         }
 
-        ArrayList toBeExpaned = new ArrayList(3);
+        ArrayList<Node> toBeExpaned = new ArrayList<Node>(3);
 
         for (int i = 0; i < nodes.length; i++) {
             toBeExpaned.clear();
@@ -938,7 +938,7 @@ public abstract class TreeView extends JScrollPane {
         // bugfix #42843, use ContextAwareAction if possible
         if (action instanceof ContextAwareAction) {
             Lookup contextLookup = node.getLookup();
-            Lookup.Result res = contextLookup.lookup(new Lookup.Template(Node.class));
+            Lookup.Result<Node> res = contextLookup.lookup(new Lookup.Template<Node>(Node.class));
 
             // #55826, don't added the node twice
             Iterator it = res.allInstances().iterator();
@@ -1239,7 +1239,7 @@ public abstract class TreeView extends JScrollPane {
             // last selected Node (RADComponentNode) was held ---> FormManager2 was held, etc.
             readAccessPaths = null;
 
-            java.util.List ll = new java.util.ArrayList(paths.length);
+            java.util.List<Node> ll = new java.util.ArrayList<Node>(paths.length);
 
             for (int i = 0; i < paths.length; i++) {
                 Node n = Visualizer.findNode(paths[i].getLastPathComponent());
@@ -1248,7 +1248,7 @@ public abstract class TreeView extends JScrollPane {
                     ll.add(n);
                 }
             }
-            callSelectionChanged((Node[]) ll.toArray(new Node[ll.size()]));
+            callSelectionChanged(ll.toArray(new Node[ll.size()]));
         }
         
         /** Checks whether given Node is a subnode of rootContext.
@@ -1617,7 +1617,7 @@ public abstract class TreeView extends JScrollPane {
 
         private void setupSearch() {
             // Remove the default key listeners
-            KeyListener[] keyListeners = (KeyListener[]) (getListeners(KeyListener.class));
+            KeyListener[] keyListeners = getListeners(KeyListener.class);
 
             for (int i = 0; i < keyListeners.length; i++) {
                 removeKeyListener(keyListeners[i]);
@@ -1661,8 +1661,8 @@ public abstract class TreeView extends JScrollPane {
             searchTextField.getDocument().addDocumentListener(searchFieldListener);
         }
 
-        private List doSearch(String prefix) {
-            List results = new ArrayList();
+        private List<TreePath> doSearch(String prefix) {
+            List<TreePath> results = new ArrayList<TreePath>();
 
             // do search forward the selected index
             int[] rows = getSelectionRows();
@@ -1804,7 +1804,7 @@ public abstract class TreeView extends JScrollPane {
             return accessibleContext;
         }
 
-        private class GuardedActions implements Mutex.Action {
+        private class GuardedActions implements Mutex.Action<Void> {
             private int type;
             private Object p1;
 
@@ -1814,7 +1814,7 @@ public abstract class TreeView extends JScrollPane {
                 Children.MUTEX.readAccess(this);
             }
 
-            public Object run() {
+            public Void run() {
                 switch (type) {
                 case 0:
                     guardedPaint((Graphics) p1);
@@ -1846,7 +1846,7 @@ public abstract class TreeView extends JScrollPane {
 
         private class SearchFieldListener extends KeyAdapter implements DocumentListener, FocusListener {
             /** The last search results */
-            private List results = new ArrayList();
+            private List<TreePath> results = new ArrayList<TreePath>();
 
             /** The last selected index from the search results. */
             private int currentSelectionIndex;
@@ -1943,7 +1943,7 @@ public abstract class TreeView extends JScrollPane {
                         currentSelectionIndex = 0;
                     }
 
-                    TreePath path = (TreePath) results.get(currentSelectionIndex);
+                    TreePath path = results.get(currentSelectionIndex);
                     setSelectionPath(path);
                     scrollPathToVisible(path);
                 } else {

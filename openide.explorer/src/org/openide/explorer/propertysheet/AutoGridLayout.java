@@ -59,7 +59,7 @@ class AutoGridLayout implements LayoutManager {
         //Do nothing
     }
 
-    private Comparator comparator() {
+    private Comparator<Component> comparator() {
         return new PreferredSizeComparator(pack);
     }
 
@@ -147,7 +147,6 @@ class AutoGridLayout implements LayoutManager {
 
                 //will we fit at all?
                 if (d.width <= w) {
-                    int colspan = 1;
 
                     //loop until we know how many columns we need
                     while (currColWidth <= d.width) {
@@ -159,13 +158,11 @@ class AutoGridLayout implements LayoutManager {
                             curry += (d.height + gapY);
                             currx = insets.left;
                             currColWidth = 0;
-                            colspan = 1;
                         }
 
                         //note the combined column width - it will be the
                         //next iteration's starting x position
                         currColWidth += c[currCol].getWidth();
-                        colspan++;
                     }
 
                     c[i].setBounds(currx, curry, d.width, d.height);
@@ -301,16 +298,14 @@ class AutoGridLayout implements LayoutManager {
         return result;
     }
 
-    private static final class PreferredSizeComparator implements Comparator {
+    private static final class PreferredSizeComparator implements Comparator<Component> {
         boolean smallFirst;
 
         public PreferredSizeComparator(boolean smallFirst) {
             this.smallFirst = smallFirst;
         }
 
-        public int compare(Object o1, Object o2) {
-            Component c1 = (Component) o1;
-            Component c2 = (Component) o2;
+        public int compare(Component c1, Component c2) {
             Dimension d1 = c1.getPreferredSize();
             Dimension d2 = c2.getPreferredSize();
 

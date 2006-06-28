@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 * @deprecated Use org.openide.nodes.PropertySupport.Reflection instead
 * @author Jaroslav Tulach, Petr Hamernik
 */
-public class DefaultPropertyModel extends Object implements ExPropertyModel, PropertyChangeListener {
+public @Deprecated class DefaultPropertyModel extends Object implements ExPropertyModel, PropertyChangeListener {
     /** The Java Bean */
     Object bean;
 

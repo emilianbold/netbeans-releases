@@ -21,8 +21,8 @@ import java.util.Map;
  * sheet.
  */
 class SelectionAndScrollPositionManager {
-    private static Map groupsToNodes = new HashMap();
-    private static Map namesToPositions = new HashMap();
+    private static Map<String, String> groupsToNodes = new HashMap<String, String>();
+    private static Map<String, Integer> namesToPositions = new HashMap<String, Integer>();
     private static final Integer zero = new Integer(0);
     private String lastSelectedGroup = "";
     private String nodeName = null;
@@ -53,7 +53,7 @@ class SelectionAndScrollPositionManager {
     public void storeScrollPosition(int pos, String name) {
         if (pos >= 0) {
             synchronized (namesToPositions) {
-                namesToPositions.put(name, new Integer(pos));
+                namesToPositions.put(name, Integer.valueOf(pos));
             }
         }
     }
@@ -93,7 +93,7 @@ class SelectionAndScrollPositionManager {
         String result = null;
 
         synchronized (groupsToNodes) {
-            result = (String) groupsToNodes.get(name);
+            result = groupsToNodes.get(name);
         }
 
         if (result == null) {
@@ -105,7 +105,7 @@ class SelectionAndScrollPositionManager {
 
     public int getScrollPositionForNodeName(String name) {
         Integer result = zero;
-        Integer found = (Integer) namesToPositions.get(name);
+        Integer found = namesToPositions.get(name);
 
         if (found != null) {
             result = found;

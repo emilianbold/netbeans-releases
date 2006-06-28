@@ -14,9 +14,7 @@ package org.openide.explorer.view;
 
 import org.openide.awt.ListPane;
 import org.openide.explorer.*;
-import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.nodes.*;
-import org.openide.nodes.Node.Property;
 
 import java.awt.*;
 import java.awt.event.*;

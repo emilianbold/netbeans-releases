@@ -171,13 +171,13 @@ public class MenuView extends JPanel {
      * so it is redundant and obsoleted. Use {@link NodeAcceptor}
      * interface instead.
      */
-    public static interface Acceptor {
+    public static @Deprecated interface Acceptor {
         /** Test whether to accept the node or not. Can also perform some actions (such as opening the node, etc.).
          * @param n the node
          * @return true if the <code>menu</code> should close
          * @deprecated whole interface is obsoleted, use {@link NodeAcceptor#acceptNodes} instead.
          */
-        public boolean accept(Node n);
+        public @Deprecated boolean accept(Node n);
     }
 
     /** Listener that opens the menu and listens to its actions
@@ -299,13 +299,13 @@ public class MenuView extends JPanel {
 
         /** @deprecated use {@link MenuView.Menu#MenuView.Menu(Node, NodeAcceptor)}
          */
-        public Menu(Node node, Acceptor action) {
+        public @Deprecated Menu(Node node, Acceptor action) {
             this(node, new AcceptorProxy(action), true);
         }
 
         /** @deprecated use {@link MenuView.Menu#MenuView.Menu(Node, NodeAcceptor, boolean)}
          */
-        public Menu(Node node, Acceptor action, boolean setName) {
+        public @Deprecated Menu(Node node, Acceptor action, boolean setName) {
             this(node, new AcceptorProxy(action), setName);
         }
 
@@ -465,12 +465,12 @@ public class MenuView extends JPanel {
         }
 
         /** @deprecated Use proper constructor with (@link NodeAcceptor). */
-        public MenuItem(Node node, Acceptor action) {
+        public @Deprecated MenuItem(Node node, Acceptor action) {
             this(node, new AcceptorProxy(action), true);
         }
 
         /** @deprecated Use proper constructor with (@link NodeAcceptor). */
-        public MenuItem(Node node, Acceptor action, boolean setName) {
+        public @Deprecated MenuItem(Node node, Acceptor action, boolean setName) {
             this(node, new AcceptorProxy(action), setName);
         }
 

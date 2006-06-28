@@ -203,23 +203,15 @@ final class PropUtils {
     private static Boolean useOptimizedCustomButtonPainting = null;
     static boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     private static Graphics scratchGraphics = null;
-    private static final String CAN_COMPARE_STRING = "Can compare only Node.Property instances.";
 
     //Comparators copied from original propertysheet implementation
 
     /** Comparator which compares types */
-    private final static Comparator SORTER_TYPE = new Comparator() {
-            public int compare(Object l, Object r) {
-                if (!(l instanceof Node.Property)) {
-                    throw new IllegalArgumentException(CAN_COMPARE_STRING); // NOI18N
-                }
+    private final static Comparator<Node.Property> SORTER_TYPE = new Comparator<Node.Property>() {
+            public int compare(Node.Property l, Node.Property r) {
 
-                if (!(r instanceof Node.Property)) {
-                    throw new IllegalArgumentException(CAN_COMPARE_STRING); // NOI18N
-                }
-
-                Class t1 = ((Node.Property) l).getValueType();
-                Class t2 = ((Node.Property) r).getValueType();
+                Class t1 = l.getValueType();
+                Class t2 = r.getValueType();
                 String s1 = (t1 != null) ? t1.getName() : ""; //NOI18N
                 String s2 = (t2 != null) ? t2.getName() : ""; //NOI18N
 
@@ -229,8 +221,8 @@ final class PropUtils {
                     return s;
                 }
 
-                s1 = ((Node.Property) l).getDisplayName();
-                s2 = ((Node.Property) r).getDisplayName();
+                s1 = l.getDisplayName();
+                s2 = r.getDisplayName();
 
                 return s1.compareToIgnoreCase(s2);
             }
@@ -241,18 +233,10 @@ final class PropUtils {
         };
 
     /** Comparator which compares PropertyDetils names */
-    private final static Comparator SORTER_NAME = new Comparator() {
-            public int compare(Object l, Object r) {
-                if (!(l instanceof Node.Property)) {
-                    throw new IllegalArgumentException(CAN_COMPARE_STRING);
-                }
-
-                if (!(r instanceof Node.Property)) {
-                    throw new IllegalArgumentException(CAN_COMPARE_STRING);
-                }
-
-                String s1 = ((Node.Property) l).getDisplayName();
-                String s2 = ((Node.Property) r).getDisplayName();
+    private final static Comparator<Node.Property> SORTER_NAME = new Comparator<Node.Property>() {
+            public int compare(Node.Property l, Node.Property r) {
+                String s1 = l.getDisplayName();
+                String s2 = r.getDisplayName();
 
                 return String.CASE_INSENSITIVE_ORDER.compare(s1, s2);
             }
@@ -262,12 +246,12 @@ final class PropUtils {
             }
         };
 
-    private static java.util.List/*<String>*/ missing = null;
+    private static java.util.List<String> missing = null;
 
     // #52179 don't affect just edited properties or their current
     // changes will be lost due to the firing PropertyChangeEvents to
     // theirs UI counterpart
-    private static Set externallyEdited = new HashSet(3);
+    private static Set<Property> externallyEdited = new HashSet<Property>(3);
 
     /** Private constructor to hide from API */
     private PropUtils() {
@@ -315,13 +299,7 @@ final class PropUtils {
     }
 
     static boolean isLoggable(Class clazz) {
-        if (System.getProperty(clazz.getName()) == null) {
-            return false;
-        }
-
-        boolean result = Logger.getLogger(clazz.getName()).isLoggable(Level.FINE);
-
-        return result;
+        return Logger.getLogger(clazz.getName()).isLoggable(Level.FINE);
     }
 
     static void logFocusOwner(Class clazz, String where) {
@@ -712,7 +690,7 @@ final class PropUtils {
 
     /** Utility method to fetch a comparator for properties
      *  based on sorting mode defined in PropertySheet.  */
-    static Comparator getComparator(int sortingMode) {
+    static Comparator<Property> getComparator(int sortingMode) {
         switch (sortingMode) {
         case PropertySheet.UNSORTED:
             return null;
@@ -743,9 +721,9 @@ final class PropUtils {
     /** A convenience map for missing property editor classes, so users
      *  are only notified once, not every time a table cell is drawn.
      */
-    private static java.util.List getMissing() {
+    private static java.util.List<String> getMissing() {
         if (missing == null) {
-            missing = new ArrayList();
+            missing = new ArrayList<String>();
         }
 
         return missing;
@@ -756,7 +734,7 @@ final class PropUtils {
      * First checks {@link PropertyEditorManager}.
      * Also handles enum types, and has a fallback dummy editor.
      */
-    static PropertyEditor getPropertyEditor(Class c) {
+    static PropertyEditor getPropertyEditor(Class<?> c) {
         PropertyEditor result = PropertyEditorManager.findEditor(c);
         
         if (result == null && Enum.class.isAssignableFrom(c)) {
@@ -813,7 +791,7 @@ final class PropUtils {
 
         //handle a type with no registered property editor here
         if (result == null) {
-            java.util.List missing = getMissing();
+            java.util.List<String> missing = getMissing();
             String type = p.getValueType().getName();
 
             if (!(missing.contains(type))) {
@@ -1646,7 +1624,7 @@ final class PropUtils {
         }
 
         try {
-            if (property.getClass().getMethod("isDefaultValue", null).getDeclaringClass() == Node.Property.class) {
+            if (property.getClass().getMethod("isDefaultValue").getDeclaringClass() == Node.Property.class) {
                 // if the given property didn't override isDefaultValue method
                 // but override supportsDefaultValue the RDV should be always
                 // enabled

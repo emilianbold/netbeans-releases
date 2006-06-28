@@ -69,7 +69,6 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
     private Object cachedInitialValue = NO_VALUE;
     private Action customEditorAction = null;
     boolean customEditorIsOpening = false;
-    private boolean committing = false;
     private PropertyEditor editor = null;
     private PropertyEnv attachedEnv = null;
     private Object lastKnownState = null;
@@ -115,7 +114,6 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
 
     private boolean _commit() throws IllegalArgumentException {
         //        System.err.println("Commit on " + getProperty().getDisplayName() + " value will be " + getInplaceEditor().getValue());
-        committing = true;
 
         //Hold the reference and don't call getInplaceEditor() again during this
         //method - it can trigger a vetoable property change from the property
@@ -169,7 +167,6 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
                 if ((msg != null) && !PropertyEnv.STATE_VALID.equals(env.getState())) {
                     IllegalArgumentException exc = new IllegalArgumentException("Error setting value"); //NOI18N
                     UIException.annotateUser(exc, msg, null, null, null);
-                    committing = false;
                     throw exc;
                 }
             }
@@ -218,7 +215,6 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
                     //do nothing
                 }
 
-                committing = false;
                 throw iae;
             }
 
@@ -238,7 +234,6 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
 
             return success;
         } finally {
-            committing = false;
 
             if ((env != null) && (editor != null)) {
                 attachToEnv(env);
@@ -724,10 +719,9 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
     Action getCustomEditorAction() {
         if (customEditorAction == null) {
             PropertyModel mdl = null;
-            ;
 
             if (modelRef != null) {
-                mdl = (PropertyModel) modelRef.get();
+                mdl = modelRef.get();
             }
 
             customEditorAction = new CustomEditorAction(new Invoker(), mdl);
@@ -900,7 +894,7 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
                 } else {
                     //Handle case where our parent PropertyPanel is no longer showing, but
                     //the custom editor we invoked still is.  Issue 38004
-                    PropertyModel mdl = (modelRef != null) ? (PropertyModel) modelRef.get() : null;
+                    PropertyModel mdl = (modelRef != null) ? modelRef.get() : null;
 
                     if (mdl != null) {
                         FeatureDescriptor fd = null;

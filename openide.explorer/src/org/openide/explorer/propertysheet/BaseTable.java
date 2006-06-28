@@ -17,6 +17,7 @@
  */
 package org.openide.explorer.propertysheet;
 
+import java.awt.AWTKeyStroke;
 import org.openide.util.NbBundle;
 
 import java.awt.AWTEvent;
@@ -138,7 +139,7 @@ abstract class BaseTable extends JTable implements FocusListener {
     private transient final ChangeEvent chEvent = new ChangeEvent(this);
 
     /** The list of change listeners */
-    private transient List changeListenerList;
+    private transient List<ChangeListener> changeListenerList;
 
     /** Flag which, if true, means that the next call to paint() should trigger
      * calculating the fixed row height based on the font size */
@@ -199,8 +200,8 @@ abstract class BaseTable extends JTable implements FocusListener {
         //Kill off the focus traversal keys.  NavigationAction will find the
         //next/previous components if the keyboard moves the position beyond
         //the ends of the table, and manage the focus thus.
-        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
-        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
+        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.<AWTKeyStroke>emptySet());
+        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.<AWTKeyStroke>emptySet());
 
         //Next two lines do not work using inputmap/actionmap, but do work
         //using the older API.  We will process ENTER to skip to next row,
@@ -480,13 +481,6 @@ abstract class BaseTable extends JTable implements FocusListener {
             //keyboard
             if (editorComp != null) {
                 Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-
-                //If we don't know what has focus, then it's not the editor,
-                //so grab focus
-                if (!isKnownComponent(c)) {
-                    //                    System.out.println("Requesting focus for component");
-                    //                    editorComp.requestFocusInWindow();
-                }
 
                 //Add ourselves as a focus listener to the component
                 editorComp.addFocusListener(this);
@@ -977,7 +971,7 @@ abstract class BaseTable extends JTable implements FocusListener {
      * @param listener The listener to register.  */
     public final synchronized void addChangeListener(ChangeListener listener) {
         if (changeListenerList == null) {
-            changeListenerList = new ArrayList();
+            changeListenerList = new ArrayList<ChangeListener>();
         }
 
         changeListenerList.add(listener);

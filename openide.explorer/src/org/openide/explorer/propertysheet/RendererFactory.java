@@ -421,6 +421,7 @@ final class RendererFactory {
             // label doesn't interpret tab correctly
             case '\t':
                 buf.append("        "); // NOI18N
+                break;
 
             case '\n':
                 break;

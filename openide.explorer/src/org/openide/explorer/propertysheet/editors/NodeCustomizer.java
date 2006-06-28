@@ -23,7 +23,7 @@ import java.beans.Customizer;
 * @author Jaroslav Tulach
 * @deprecated Use PropertyEnv instead.
 */
-public interface NodeCustomizer extends Customizer {
+public @Deprecated interface NodeCustomizer extends Customizer {
     /** Informs this customizer, that it has been connected
     * to a node.
     *

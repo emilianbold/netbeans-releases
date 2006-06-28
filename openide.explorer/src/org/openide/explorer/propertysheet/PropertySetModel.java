@@ -74,7 +74,7 @@ interface PropertySetModel {
     int indexOf(FeatureDescriptor fd);
 
     /** Set the comparator the model will use for sorting properties */
-    void setComparator(Comparator c);
+    void setComparator(Comparator<Property> c);
 
     int getSetCount();
 

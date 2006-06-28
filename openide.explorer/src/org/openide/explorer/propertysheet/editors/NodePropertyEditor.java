@@ -24,7 +24,7 @@ import java.beans.PropertyEditor;
 * @author Jaroslav Tulach
 * @deprecated Use PropertyEnv instead.
 */
-public interface NodePropertyEditor extends PropertyEditor {
+public @Deprecated interface NodePropertyEditor extends PropertyEditor {
     /** Informs the editor that the property that it
     * is displaying belongs to following nodes.
     *

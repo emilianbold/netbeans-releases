@@ -52,10 +52,11 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     static final Logger LOG = Logger.getLogger(VisualizerNode.class.getName());
 
     /** constant holding empty reference to children */
-    private static final Reference NO_REF = new WeakReference(null);
+    private static final Reference<VisualizerChildren> NO_REF = new WeakReference<VisualizerChildren>(null);
 
-    /** cache of visializers (VisualizerNode, Reference (VisualizerNode)) */
-    private static WeakHashMap cache = new WeakHashMap();
+    /** cache of visualizers */
+    private static WeakHashMap<VisualizerNode, Reference<VisualizerNode>> cache = 
+            new WeakHashMap<VisualizerNode, Reference<VisualizerNode>>();
 
     /** empty visualizer */
     public static final VisualizerNode EMPTY = getVisualizer(null, Node.EMPTY);
@@ -84,7 +85,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     private int hashCode;
 
     /** visualizer children attached thru weak references Reference (VisualizerChildren) */
-    private Reference children = NO_REF;
+    private Reference<VisualizerChildren> children = NO_REF;
 
     /** the VisualizerChildren that contains this VisualizerNode or null */
     private VisualizerChildren parent;
@@ -145,12 +146,12 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         TEMPLATE.hashCode = System.identityHashCode(n);
         TEMPLATE.node = n;
 
-        Reference r = (Reference) cache.get(TEMPLATE);
+        Reference<VisualizerNode> r = cache.get(TEMPLATE);
 
         TEMPLATE.hashCode = 0;
         TEMPLATE.node = null;
 
-        VisualizerNode v = (r == null) ? null : (VisualizerNode) r.get();
+        VisualizerNode v = (r == null) ? null : r.get();
 
         if (v == null) {
             if (!create) {
@@ -158,7 +159,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             }
 
             v = new VisualizerNode(n);
-            cache.put(v, new WeakReference(v));
+            cache.put(v, new WeakReference<VisualizerNode>(v));
         }
 
         if (ch != null) {
@@ -206,8 +207,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     /** Getter for list of children of this visualizer.
     * @return list of VisualizerNode objects
     */
-    public List getChildren() {
-        VisualizerChildren ch = (VisualizerChildren) children.get();
+    public List<VisualizerNode> getChildren() {
+        VisualizerChildren ch = children.get();
 
         if ((ch == null) && !node.isLeaf()) {
             // initialize the nodes children before we enter
@@ -217,9 +218,9 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             // go into lock to ensure that no childrenAdded, childrenRemoved,
             // childrenReordered notifications occures and that is why we do
             // not loose any changes
-            ch = (VisualizerChildren) Children.MUTEX.readAccess(
-                    new Mutex.Action() {
-                        public Object run() {
+            ch = Children.MUTEX.readAccess(
+                    new Mutex.Action<VisualizerChildren>() {
+                        public VisualizerChildren run() {
                             Node[] nodes = node.getChildren().getNodes();
                             VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, nodes);
                             notifyVisualizerChildrenChange(nodes.length, vc);
@@ -232,7 +233,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
         assert (ch == null) || !ch.list.contains(null) : ch.list + " from " + node;
 
-        return (ch == null) ? Collections.EMPTY_LIST : ch.list;
+        return (ch == null) ? Collections.<VisualizerNode>emptyList() : ch.list;
     }
 
     //
@@ -258,8 +259,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         return getChildren().size();
     }
 
-    public java.util.Enumeration children() {
-        List l = getChildren();
+    public java.util.Enumeration<VisualizerNode> children() {
+        List<VisualizerNode> l = getChildren();
         assert !l.contains(null) : "Null child in " + l + " from " + node;
 
         return java.util.Collections.enumeration(l);
@@ -283,7 +284,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * @param ev event describing the action
     */
     public void childrenAdded(NodeMemberEvent ev) {
-        VisualizerChildren ch = (VisualizerChildren) children.get();
+        VisualizerChildren ch = children.get();
 
         LOG.log(Level.FINER, "childrenAdded {0}", ev); // NOI18N
         if (ch == null) {
@@ -299,7 +300,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * @param ev event describing the action
     */
     public void childrenRemoved(NodeMemberEvent ev) {
-        VisualizerChildren ch = (VisualizerChildren) children.get();
+        VisualizerChildren ch = children.get();
 
         LOG.log(Level.FINER, "childrenRemoved {0}", ev); // NOI18N
         if (ch == null) {
@@ -320,7 +321,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     // helper method (called from TreeTableView.sort)
     void doChildrenReordered(int[] perm) {
-        VisualizerChildren ch = (VisualizerChildren) children.get();
+        VisualizerChildren ch = children.get();
 
         LOG.log(Level.FINER, "childrenReordered {0}", perm); // NOI18N
         if (ch == null) {
@@ -332,10 +333,10 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         LOG.log(Level.FINER, "childrenReordered - end"); // NOI18N
     }
 
-    void reorderChildren(Comparator c) {
+    void reorderChildren(Comparator<VisualizerNode> c) {
         assert SwingUtilities.isEventDispatchThread();
 
-        VisualizerChildren ch = (VisualizerChildren) children.get();
+        VisualizerChildren ch = children.get();
 
         if (ch == null) {
             return;
@@ -351,8 +352,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
         //sort the children list with a dummy comparator to throw events needed
         reorderChildren(
-            new Comparator() {
-                public int compare(Object o1, Object o2) {
+            new Comparator<VisualizerNode>() {
+                public int compare(VisualizerNode o1, VisualizerNode o2) {
                     return 0;
                 }
             }
@@ -470,9 +471,9 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     void notifyVisualizerChildrenChange(int size, VisualizerChildren ch) {
         if (size == 0) {
             // hold the children hard
-            children = new StrongReference(ch);
+            children = new StrongReference<VisualizerChildren>(ch);
         } else {
-            children = new WeakReference(ch);
+            children = new WeakReference<VisualizerChildren>(ch);
         }
     }
 
@@ -577,15 +578,15 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** Strong reference.
     */
-    private static final class StrongReference extends WeakReference {
-        private Object o;
+    private static final class StrongReference<T> extends WeakReference<T> {
+        private T o;
 
-        public StrongReference(Object o) {
+        public StrongReference(T o) {
             super(null);
             this.o = o;
         }
 
-        public Object get() {
+        public T get() {
             return o;
         }
     }
@@ -598,7 +599,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         /** queue of all requests (Runnable) that should be processed
          * AWT-Event queue.
          */
-        private LinkedList queue = null;
+        private LinkedList<Runnable> queue = null;
 
         QP() {
         }
@@ -612,7 +613,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             synchronized (this) {
                 // access to queue variable is synchronized
                 if (queue == null) {
-                    queue = new LinkedList();
+                    queue = new LinkedList<Runnable>();
                     isNew = true;
                 }
 
@@ -630,7 +631,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         /** Processes the queue.
          */
         public void run() {
-            Enumeration en;
+            Enumeration<Runnable> en;
 
             synchronized (this) {
                 // access to queue variable is synchronized
@@ -645,7 +646,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             }
 
             while (en.hasMoreElements()) {
-                Runnable r = (Runnable) en.nextElement();
+                Runnable r = en.nextElement();
                 LOG.log(Level.FINER, "Running {0}", r); // NOI18N
                 Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
                 LOG.log(Level.FINER, "Finished {0}", r); // NOI18N

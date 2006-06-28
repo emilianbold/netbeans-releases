@@ -30,7 +30,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 *  and
 *   <a href="http://core.netbeans.org/source/browse/core/execution/src/org/netbeans/core/execution/beaninfo/editors/NbProcessDescriptorCustomEditor.java?r1=1.3&r2=1.5">NbProcessDescriptorCustomEditor</a>.
 */
-public interface EnhancedCustomPropertyEditor {
+public @Deprecated interface EnhancedCustomPropertyEditor {
     /** Get the customized property value.
     * @return the property value
     * @exception IllegalStateException when the custom property editor does not contain a valid property value

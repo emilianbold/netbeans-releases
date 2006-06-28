@@ -12,6 +12,7 @@
  */
 package org.openide.explorer.view;
 
+import java.lang.ref.Reference;
 import org.openide.explorer.propertysheet.*;
 import org.openide.nodes.Node;
 
@@ -469,6 +470,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
                 buf.append("&nbsp;&nbsp;&nbsp;&nbsp;" + // NOI18N
                     "&nbsp;&nbsp;&nbsp;&nbsp;"
                 ); // NOI18N
+                break;
 
             case '\n':
                 break;
@@ -533,15 +535,15 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
     }
 
     private static class NullPanel extends JPanel {
-        private WeakReference weakNode;
+        private Reference<Node> weakNode;
         private boolean focused = false;
 
         NullPanel(Node node) {
-            this.weakNode = new WeakReference(node);
+            this.weakNode = new WeakReference<Node>(node);
         }
 
         void setNode(Node node) {
-            this.weakNode = new WeakReference(node);
+            this.weakNode = new WeakReference<Node>(node);
         }
 
         public AccessibleContext getAccessibleContext() {

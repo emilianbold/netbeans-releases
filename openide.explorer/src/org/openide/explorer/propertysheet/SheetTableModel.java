@@ -40,7 +40,7 @@ import javax.swing.table.*;
  */
 final class SheetTableModel implements TableModel, PropertyChangeListener, PropertySetModelListener {
     /** Utility field holding list of TableModelListeners. */
-    private transient List tableModelListenerList;
+    private transient List<TableModelListener> tableModelListenerList;
 
     /** Container variable for property set model.  */
     PropertySetModel model = null;
@@ -239,7 +239,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
     //**************Table model listener support *************************
     public synchronized void addTableModelListener(TableModelListener listener) {
         if (tableModelListenerList == null) {
-            tableModelListenerList = new java.util.ArrayList();
+            tableModelListenerList = new java.util.ArrayList<TableModelListener>();
         }
 
         tableModelListenerList.add(listener);

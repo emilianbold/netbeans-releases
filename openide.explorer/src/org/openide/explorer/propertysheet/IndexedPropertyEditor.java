@@ -237,7 +237,7 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
             text = text.substring(i1, i2);
 
             StringTokenizer tok = new StringTokenizer(text, ","); // NOI18N
-            java.util.List list = new LinkedList();
+            java.util.List<Object> list = new LinkedList<Object>();
 
             while (tok.hasMoreTokens()) {
                 String s = tok.nextToken();

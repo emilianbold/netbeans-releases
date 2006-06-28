@@ -15,14 +15,11 @@ package org.netbeans.modules.openide.explorer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.*;
 
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.*;
-import org.openide.util.Lookup;
 import org.openide.util.UserCancelException;
 
 /** 

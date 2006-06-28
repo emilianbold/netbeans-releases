@@ -86,9 +86,9 @@ final class ProxyNode extends AbstractNode {
                         int idx = Arrays.asList(ProxyNode.this.original).indexOf((Node) ev.getSource());
 
                         if (idx != -1) {
-                            HashSet set = new HashSet(Arrays.asList(ProxyNode.this.original));
+                            HashSet<Node> set = new HashSet<Node>(Arrays.asList(ProxyNode.this.original));
                             set.remove(ev.getSource());
-                            ProxyNode.this.original = (Node[]) set.toArray(new Node[0]);
+                            ProxyNode.this.original = set.toArray(new Node[0]);
 
                             if (set.size() == 0) {
                                 ProxyNode.this.fireNodeDestroyed();
@@ -100,7 +100,7 @@ final class ProxyNode extends AbstractNode {
         for (int i = 0; i < original.length; i++) {
             original[i].addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(pcl, original[i]));
             original[i].addNodeListener(
-                (NodeListener) org.openide.util.WeakListeners.create(NodeListener.class, pcl, original[i])
+                org.openide.util.WeakListeners.create(NodeListener.class, pcl, original[i])
             );
         }
     }
@@ -185,14 +185,14 @@ final class ProxyNode extends AbstractNode {
     private Sheet.Set[] computePropertySets() {
         if (original.length > 0) {
             Node.PropertySet[] firstSet = original[0].getPropertySets();
-            java.util.Set sheets = new HashSet(Arrays.asList(firstSet));
+            java.util.Set<Node.PropertySet> sheets = new HashSet<Node.PropertySet>(Arrays.asList(firstSet));
 
             // compute intersection of all Node.PropertySets for given nodes
             for (int i = 1; i < original.length; i++) {
-                sheets.retainAll(new HashSet(Arrays.asList(original[i].getPropertySets())));
+                sheets.retainAll(new HashSet<Node.PropertySet>(Arrays.asList(original[i].getPropertySets())));
             }
 
-            ArrayList resultSheets = new ArrayList(sheets.size());
+            ArrayList<Sheet.Set> resultSheets = new ArrayList<Sheet.Set>(sheets.size());
 
             // now for all resulting sheets take common properties
             for (int i = 0; i < firstSet.length; i++) {
@@ -214,7 +214,7 @@ final class ProxyNode extends AbstractNode {
                     res.setValue("tabName", tabName); //NOI18N
                 }
 
-                java.util.Set props = new HashSet(Arrays.asList(current.getProperties()));
+                java.util.Set<Property> props = new HashSet<Property>(Arrays.asList(current.getProperties()));
 
                 String propsHelpID = null;
 
@@ -224,7 +224,7 @@ final class ProxyNode extends AbstractNode {
 
                     for (int k = 0; k < p.length; k++) {
                         if (current.getName().equals(p[k].getName())) {
-                            props.retainAll(new HashSet(Arrays.asList(p[k].getProperties())));
+                            props.retainAll(new HashSet<Property>(Arrays.asList(p[k].getProperties())));
                         }
                     }
                 }
@@ -247,7 +247,7 @@ final class ProxyNode extends AbstractNode {
                 resultSheets.add(res);
             }
 
-            return (Sheet.Set[]) resultSheets.toArray(new Sheet.Set[resultSheets.size()]);
+            return resultSheets.toArray(new Sheet.Set[resultSheets.size()]);
         }
 
         return new Sheet.Set[0];

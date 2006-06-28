@@ -129,7 +129,7 @@ public class NodeTableModel extends AbstractTableModel {
         int visibleCount = 0;
         existsComparableColumn = false;
 
-        TreeMap sort = new TreeMap();
+        TreeMap<Double, Integer> sort = new TreeMap<Double, Integer>();
         int i = 0;
         int ia = 0;
 
@@ -144,7 +144,7 @@ public class NodeTableModel extends AbstractTableModel {
                     Object o = props[i].getValue(ATTR_ORDER_NUMBER);
 
                     if ((o != null) && o instanceof Integer) {
-                        sort.put(new Double(((Integer) o).doubleValue()), new Integer(ia));
+                        sort.put(new Double(((Integer) o).doubleValue()), Integer.valueOf(ia));
                     } else {
                         sort.put(new Double(ia + 0.1), new Integer(ia));
                     }
@@ -193,23 +193,23 @@ public class NodeTableModel extends AbstractTableModel {
     private void computeVisiblePorperties(int visCount) {
         propertyColumns = new int[visCount];
 
-        TreeMap sort = new TreeMap();
+        TreeMap<Double, Integer> sort = new TreeMap<Double, Integer>();
 
         for (int i = 0; i < allPropertyColumns.length; i++) {
             int vi = allPropertyColumns[i].getVisibleIndex();
 
             if (vi == -1) {
-                sort.put(new Double(i - 0.1), new Integer(i));
+                sort.put(new Double(i - 0.1), Integer.valueOf(i));
             } else {
-                sort.put(new Double(vi), new Integer(i));
+                sort.put(new Double(vi), Integer.valueOf(i));
             }
         }
 
         int j = 0;
-        Iterator it = sort.values().iterator();
+        Iterator<Integer> it = sort.values().iterator();
 
         while (it.hasNext()) {
-            int i = ((Integer) it.next()).intValue();
+            int i = it.next().intValue();
             Property p = allPropertyColumns[i].getProperty();
 
             if (isVisible(p)) {
@@ -611,7 +611,7 @@ public class NodeTableModel extends AbstractTableModel {
         panel.getAccessibleContext().setAccessibleDescription( 
                 NbBundle.getBundle(NodeTableModel.class).getString("ACSD_ColumnDialog") );
 
-        ArrayList boxes = new ArrayList(allPropertyColumns.length);
+        ArrayList<JCheckBox> boxes = new ArrayList<JCheckBox>(allPropertyColumns.length);
         boolean[] oldvalues = new boolean[allPropertyColumns.length];
         int[] sortpointer = new int[allPropertyColumns.length];
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -643,22 +643,22 @@ public class NodeTableModel extends AbstractTableModel {
         panel.add(first, firstConstraints);
 
         String boxtext;
-        TreeMap sort = new TreeMap();
+        TreeMap<String, Integer> sort = new TreeMap<String, Integer>();
 
         for (int i = 0; i < allPropertyColumns.length; i++) {
             oldvalues[i] = isVisible(allPropertyColumns[i].getProperty());
             boxtext = allPropertyColumns[i].getProperty().getDisplayName() + ": " +
                 allPropertyColumns[i].getProperty().getShortDescription(); // NOI18N
-            sort.put(boxtext, new Integer(i));
+            sort.put(boxtext, Integer.valueOf(i));
         }
 
-        Iterator it = sort.keySet().iterator();
+        Iterator<String> it = sort.keySet().iterator();
         int j = 0;
 
         while (it.hasNext()) {
-            boxtext = ((String) it.next());
+            boxtext = it.next();
 
-            int i = ((Integer) sort.get(boxtext)).intValue();
+            int i = sort.get(boxtext).intValue();
             JCheckBox b = new JCheckBox(boxtext, oldvalues[i]);
             makeAccessibleCheckBox(b, allPropertyColumns[i].getProperty());
             sortpointer[j] = i;
@@ -667,7 +667,7 @@ public class NodeTableModel extends AbstractTableModel {
             j++;
         }
 
-        String title = NbBundle.getBundle(NodeTableModel.class).getString("LBL_ColumnDialogTitle");
+        String title = NbBundle.getMessage(NodeTableModel.class, "LBL_ColumnDialogTitle");
 
         if ((viewName != null) && (viewName.length() > 0)) {
             title = viewName + " - " + title; // NOI18N
@@ -686,7 +686,7 @@ public class NodeTableModel extends AbstractTableModel {
             int nv = 0;
 
             for (int i = 0; i < num; i++) {
-                JCheckBox b = (JCheckBox) boxes.get(i);
+                JCheckBox b = boxes.get(i);
 
                 j = sortpointer[i];
 

@@ -129,12 +129,12 @@ public final class UIException {
 
                 for (LogRecord log : r) {
                     if (log.getMessage() != null) {
-                        a.append(log.getMessage()).append("\n");;
+                        a.append(log.getMessage()).append('\n');
                     }
                     if (log.getThrown() != null) {
                         StringWriter w = new StringWriter();
                         log.getThrown().printStackTrace(new PrintWriter(w));
-                        a.append(w.toString()).append("\n");
+                        a.append(w.toString()).append('\n');
                     }
                 }
             } catch (IOException ex) {

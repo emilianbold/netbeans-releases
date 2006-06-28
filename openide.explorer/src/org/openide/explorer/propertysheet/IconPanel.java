@@ -10,11 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * IconValuePanel.java
- *
- * Created on 16 October 2003, 09:06
- */
+
 package org.openide.explorer.propertysheet;
 
 import org.openide.util.Utilities;
@@ -26,7 +22,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.awt.LayoutManager;
 import java.awt.event.FocusListener;
 
 import java.beans.FeatureDescriptor;
@@ -272,6 +267,7 @@ class IconPanel extends JComponent implements InplaceEditor {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public void layout() {
         Insets ins = getInsets();
 

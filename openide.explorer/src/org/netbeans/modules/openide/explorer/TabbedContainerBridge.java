@@ -10,11 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * TabbedContainerBridge.java
- *
- * Created on June 1, 2004, 6:35 PM
- */
 
 package org.netbeans.modules.openide.explorer;
 
@@ -38,8 +33,7 @@ public abstract class TabbedContainerBridge {
     protected TabbedContainerBridge(){};
     
     public static TabbedContainerBridge getDefault() {
-        TabbedContainerBridge result = (TabbedContainerBridge)
-            Lookup.getDefault().lookup (TabbedContainerBridge.class);
+        TabbedContainerBridge result = Lookup.getDefault().lookup (TabbedContainerBridge.class);
         if (result == null) {
             //unit test or standalone library operation
             return new TrivialTabbedContainerBridgeImpl();

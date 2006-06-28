@@ -256,20 +256,20 @@ final class DragDropUtilities extends Object {
             Node[] postNodes = targetFolder.getChildren().getNodes(true);
 
             // calculate new nodes
-            List pre = Arrays.asList(preNodes);
-            List post = Arrays.asList(postNodes);
-            Iterator it = post.iterator();
-            List diff = new ArrayList();
+            List<Node> pre = Arrays.asList(preNodes);
+            List<Node> post = Arrays.asList(postNodes);
+            Iterator<Node> it = post.iterator();
+            List<Node> diff = new ArrayList<Node>();
 
             while (it.hasNext()) {
-                Node n = (Node) it.next();
+                Node n = it.next();
 
                 if (!pre.contains(n)) {
                     diff.add(n);
                 }
             }
 
-            return (Node[]) diff.toArray(new Node[diff.size()]);
+            return diff.toArray(new Node[diff.size()]);
 
             /*Clipboard clipboard = T opManager.getDefault().getClipboard();
             if (trans != null) {

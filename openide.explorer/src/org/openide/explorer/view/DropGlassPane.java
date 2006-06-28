@@ -34,7 +34,7 @@ import javax.swing.UIManager;
  * @see org.openide.explorer.view.TreeViewDropSupport
  */
 final class DropGlassPane extends JPanel {
-    static private HashMap map = new HashMap();
+    private static HashMap<Integer, DropGlassPane> map = new HashMap<Integer, DropGlassPane>();
     final static private int MIN_X = 5;
     final static private int MIN_Y = 3;
     final static private int MIN_WIDTH = 10;
@@ -60,7 +60,7 @@ final class DropGlassPane extends JPanel {
             map.put(id, dgp);
         }
 
-        return (DropGlassPane) map.get(id);
+        return map.get(id);
     }
 
     /** Stores the original glass pane on given tree.

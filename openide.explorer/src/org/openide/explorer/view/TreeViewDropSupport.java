@@ -668,20 +668,11 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
                     );
             }
 
-            TreeSet setPasteTypes = new TreeSet(
-                    new Comparator() {
-                        public int compare(Object obj1, Object obj2) {
-                            return ((PasteType) obj1).getName().compareTo(((PasteType) obj2).getName());
+            TreeSet<PasteType> setPasteTypes = new TreeSet<PasteType>(
+                    new Comparator<PasteType>() {
+                        public int compare(PasteType obj1, PasteType obj2) {
+                            return obj1.getName().compareTo(obj2.getName());
 
-                            // have to fix: the different actions can have same name!!!
-
-                            /*int res = ((PasteType)obj1).getName ().compareTo (((PasteType)obj2).getName ());
-                            System.out.println("res1: "+res);
-                            if (res == 0) {
-                                res = System.identityHashCode(obj1)-System.identityHashCode(obj2);
-                            }
-                            System.out.println("res2: "+res);
-                            return res;*/
                         }
                     }
                 );

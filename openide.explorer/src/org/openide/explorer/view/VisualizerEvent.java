@@ -90,7 +90,7 @@ abstract class VisualizerEvent extends EventObject {
 
         /** linked list of removed nodes, that is filled in getChildren ().removed () method
         */
-        public LinkedList removed = new LinkedList();
+        public LinkedList<VisualizerNode> removed = new LinkedList<VisualizerNode>();
         private Node[] removedNodes;
 
         /** Constructor for add of nodes notification.
@@ -123,7 +123,7 @@ abstract class VisualizerEvent extends EventObject {
     */
     static final class Reordered extends VisualizerEvent implements Runnable {
         static final long serialVersionUID = -4572356079752325870L;
-        private Comparator comparator = null;
+        private Comparator<VisualizerNode> comparator = null;
 
         /** Constructor for add of nodes notification.
         * @param ch children
@@ -136,12 +136,12 @@ abstract class VisualizerEvent extends EventObject {
 
         //#37802 - provide a way to just send a comparator along to do the 
         //sorting
-        Reordered(VisualizerChildren ch, Comparator comparator) {
+        Reordered(VisualizerChildren ch, Comparator<VisualizerNode> comparator) {
             this(ch, new int[0]);
             this.comparator = comparator;
         }
 
-        public Comparator getComparator() {
+        public Comparator<VisualizerNode> getComparator() {
             return comparator;
         }
 

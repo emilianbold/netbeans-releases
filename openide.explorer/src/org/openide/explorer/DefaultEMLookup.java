@@ -17,7 +17,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -42,7 +41,7 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
     private LookupListener listener;
 
     /** Map of (Node -> node Lookup.Result) the above lookup listener is attached to */
-    private Map attachedTo;
+    private Map<Lookup, Lookup.Result> attachedTo;
 
     /** action map for the top component */
     private Lookup actionMap;
@@ -55,7 +54,7 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
         super();
 
         this.tc = tc;
-        this.listener = (LookupListener) WeakListeners.create(LookupListener.class, this, null);
+        this.listener = WeakListeners.create(LookupListener.class, this, null);
         this.actionMap = Lookups.singleton(map);
 
         tc.addPropertyChangeListener(WeakListeners.propertyChange(this, tc));
@@ -73,13 +72,13 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
 
         Lookup[] lookups = new Lookup[arr.length];
 
-        Map copy;
+        Map<Lookup, Lookup.Result> copy;
 
         synchronized (this) {
             if (attachedTo == null) {
-                copy = Collections.EMPTY_MAP;
+                copy = Collections.<Lookup, Lookup.Result>emptyMap();
             } else {
-                copy = new HashMap(attachedTo);
+                copy = new HashMap<Lookup, Lookup.Result>(attachedTo);
             }
         }
 
@@ -92,8 +91,8 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
             }
         }
 
-        for (Iterator it = copy.values().iterator(); it.hasNext();) {
-            Lookup.Result res = (Lookup.Result) it.next();
+        for (Iterator<Lookup.Result> it = copy.values().iterator(); it.hasNext();) {
+            Lookup.Result res = it.next();
             res.removeLookupListener(listener);
         }
 
@@ -113,15 +112,15 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
      * by a state of the "nodes" lookup and whether we should
      * initialize listening
      */
-    private static boolean isNodeQuery(Class c) {
+    private static boolean isNodeQuery(Class<?> c) {
         return Node.class.isAssignableFrom(c) || c.isAssignableFrom(Node.class);
     }
 
-    protected synchronized void beforeLookup(Template t) {
+    protected synchronized void beforeLookup(Template<?> t) {
         if ((attachedTo == null) && isNodeQuery(t.getType())) {
             Lookup[] arr = getLookups();
 
-            attachedTo = new WeakHashMap(arr.length * 2);
+            attachedTo = new WeakHashMap<Lookup, Lookup.Result>(arr.length * 2);
 
             for (int i = 0; i < (arr.length - 2); i++) {
                 Lookup.Result res = arr[i].lookup(t);
@@ -143,28 +142,28 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
      */
     private static final class NoNodeLookup extends Lookup {
         private final Lookup delegate;
-        private final Map verboten;
+        private final Map<Node, Object> verboten;
 
-        public NoNodeLookup(Lookup del, Object[] exclude) {
+        public NoNodeLookup(Lookup del, Node[] exclude) {
             delegate = del;
-            verboten = new IdentityHashMap();
+            verboten = new IdentityHashMap<Node, Object>();
 
             for (int i = 0; i < exclude.length; verboten.put(exclude[i++], PRESENT))
                 ;
         }
 
-        public Object lookup(Class clazz) {
+        public <T> T lookup(Class<T> clazz) {
             if (clazz == Node.class) {
                 return null;
             } else {
-                Object o = delegate.lookup(clazz);
+                T o = delegate.lookup(clazz);
 
                 if (verboten.containsKey(o)) {
                     // There might be another one of the same class.
-                    Iterator it = lookup(new Lookup.Template(clazz)).allInstances().iterator();
+                    Iterator<? extends T> it = lookup(new Lookup.Template<T>(clazz)).allInstances().iterator();
 
                     while (it.hasNext()) {
-                        Object o2 = it.next();
+                        T o2 = it.next();
 
                         if (!verboten.containsKey(o2)) {
                             // OK, use this one.
@@ -180,34 +179,33 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
             }
         }
 
-        public Lookup.Result lookup(Lookup.Template template) {
-            if (template.getType() == Node.class) {
-                return Lookup.EMPTY.lookup(new Lookup.Template(Node.class));
+        public <T> Lookup.Result<T> lookup(Lookup.Template<T> template) {
+            Class<T> clz = template.getType();
+            if (clz == Node.class) {
+                return Lookup.EMPTY.lookup(new Lookup.Template<T>(clz));
             } else {
-                return new ExclusionResult(delegate.lookup(template), verboten);
+                return new ExclusionResult<T>(delegate.lookup(template), verboten);
             }
         }
 
         /**
          * A lookup result excluding some instances.
          */
-        private static final class ExclusionResult extends Lookup.Result implements LookupListener {
-            private final Lookup.Result delegate;
-            private final Map verboten;
-            private final List listeners = new ArrayList(); // List<LookupListener>
+        private static final class ExclusionResult<T> extends Lookup.Result<T> implements LookupListener {
+            private final Lookup.Result<T> delegate;
+            private final Map<Node, Object> verboten;
+            private final List<LookupListener> listeners = new ArrayList<LookupListener>();
 
-            public ExclusionResult(Lookup.Result delegate, Map verboten) {
+            public ExclusionResult(Lookup.Result<T> delegate, Map<Node, Object> verboten) {
                 this.delegate = delegate;
                 this.verboten = verboten;
             }
 
-            public Collection allInstances() {
-                Collection c = delegate.allInstances();
-                List ret = new ArrayList(c.size()); // upper bound
+            public Collection<? extends T> allInstances() {
+                Collection<? extends T> c = delegate.allInstances();
+                List<T> ret = new ArrayList<T>(c.size()); // upper bound
 
-                for (Iterator it = c.iterator(); it.hasNext();) {
-                    Object o = it.next();
-
+                for (T o: c) {
                     if (!verboten.containsKey(o)) {
                         ret.add(o);
                     }
@@ -216,16 +214,15 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
                 return ret;
             }
 
-            public Set allClasses() {
+            public Set<Class<? extends T>> allClasses() {
                 return delegate.allClasses(); // close enough
             }
 
-            public Collection allItems() {
-                Collection c = delegate.allItems();
-                List ret = new ArrayList(c.size()); // upper bound
+            public Collection<? extends Item<T>> allItems() {
+                Collection<? extends Item<T>> c = delegate.allItems();
+                List<Item<T>> ret = new ArrayList<Item<T>>(c.size()); // upper bound
 
-                for (Iterator it = c.iterator(); it.hasNext();) {
-                    Lookup.Item i = (Lookup.Item) it.next();
+                for (Lookup.Item<T> i : c) {
 
                     if (!verboten.containsKey(i.getInstance())) {
                         ret.add(i);
@@ -260,7 +257,7 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
                 LookupListener[] ls;
 
                 synchronized (listeners) {
-                    ls = (LookupListener[]) listeners.toArray(new LookupListener[listeners.size()]);
+                    ls = listeners.toArray(new LookupListener[listeners.size()]);
                 }
 
                 for (int i = 0; i < ls.length; i++) {

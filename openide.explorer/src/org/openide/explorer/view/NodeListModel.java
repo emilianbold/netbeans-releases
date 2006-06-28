@@ -50,9 +50,9 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     private int depth = 1;
 
     /** map that assignes to each visualizer number of its children till
-    * the specified depth. (VisualizerNode, Info)
+    * the specified depth.
     */
-    private Map childrenCount;
+    private Map<VisualizerNode, Info> childrenCount;
 
     /** Creates new NodeTreeModel
     */
@@ -159,7 +159,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     public int getIndex(Object o) {
         getSize();
 
-        Info i = (Info) childrenCount.get(o);
+        Info i = childrenCount.get(o);
 
         return (i == null) ? (-1) : i.index;
     }
@@ -181,7 +181,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     // modification of the counting model
     //
     private void clearChildrenCount() {
-        childrenCount = new HashMap(17);
+        childrenCount = new HashMap<VisualizerNode, Info>(17);
     }
 
     /** Finds size of sub children excluding vis node.
@@ -192,7 +192,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     * @return number of children
     */
     private int findSize(VisualizerNode vis, int index, int depth) {
-        Info info = (Info) childrenCount.get(vis);
+        Info info = childrenCount.get(vis);
 
         if (info != null) {
             return info.childrenCount;
@@ -270,7 +270,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     static int findVisualizerDepth(ListModel m, VisualizerNode o) {
         if (m instanceof NodeListModel) {
             NodeListModel n = (NodeListModel) m;
-            Info i = (Info) n.childrenCount.get(o);
+            Info i = n.childrenCount.get(o);
 
             if (i != null) {
                 return n.depth - i.depth - 1;
@@ -344,7 +344,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
         // ensure the model is computed
         getSize();
 
-        Info i = (Info) childrenCount.get(v);
+        Info i = childrenCount.get(v);
 
         if (i != null) {
             fireContentsChanged(this, i.index, i.index);
@@ -354,7 +354,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     private int cachedDepth(VisualizerNode v) {
         getSize();
 
-        Info i = (Info) childrenCount.get(v);
+        Info i = childrenCount.get(v);
 
         if (i != null) {
             return i.depth;
@@ -367,18 +367,18 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     /** The listener */
     private static final class Listener implements NodeModel {
         /** weak reference to the model */
-        private Reference model;
+        private Reference<NodeListModel> model;
 
         /** Constructor.
         */
         public Listener(NodeListModel m) {
-            model = new WeakReference(m);
+            model = new WeakReference<NodeListModel>(m);
         }
 
         /** Getter for the model or null.
         */
         private NodeListModel get(VisualizerEvent ev) {
-            NodeListModel m = (NodeListModel) model.get();
+            NodeListModel m = model.get();
 
             if ((m == null) && (ev != null)) {
                 ev.getVisualizer().removeNodeModel(this);

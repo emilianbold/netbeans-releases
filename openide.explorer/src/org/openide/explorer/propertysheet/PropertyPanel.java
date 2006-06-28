@@ -114,7 +114,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
      * property object as needed.  It is up to the property object to
      * cache or not cache the property editor.  This property will no longer
      * be fired. */
-    public static final String PROP_PROPERTY_EDITOR = "propertyEditor"; // NOI18N
+    public static final @Deprecated String PROP_PROPERTY_EDITOR = "propertyEditor"; // NOI18N
 
     /** Name of property 'state' that describes the state of the embeded PropertyEditor.
     * @see PropertyEnv#getState
@@ -493,6 +493,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         layout();
     }
 
+    @SuppressWarnings("deprecation")
     public void layout() {
         if (inner != null) {
             inner.setBounds(0, 0, getWidth(), getHeight());
@@ -565,10 +566,6 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
 
         if (displayer instanceof EditablePropertyDisplayer) {
             ((EditablePropertyDisplayer) displayer).setRemoteEnvVetoListener(null);
-        }
-
-        if (displayer instanceof PropertyDisplayer_Editable) {
-            ((PropertyDisplayer_Editable) displayer).dispose();
         }
     }
 
@@ -976,7 +973,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
      * so in the future.
      * @return the property editor or <CODE>null</CODE>
      */
-    public PropertyEditor getPropertyEditor() {
+    public @Deprecated PropertyEditor getPropertyEditor() {
         return propertyEditor();
     }
 
