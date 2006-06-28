@@ -12,10 +12,15 @@
  */
 
 package org.netbeans.upgrade;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.openide.filesystems.FileObject;
 
@@ -39,6 +44,59 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         
         clearWorkDir();
     }    
+   
+    public void testAppendSelectedLines() throws Exception {
+        //setup
+        List expectedLines = new ArrayList();
+        File wDir = getWorkDir();
+        File sFile = new File(wDir,this.getName()+".file");
+        assertTrue(sFile.createNewFile());
+        File tFolder = new File(wDir,this.getName());
+        assertTrue(tFolder.mkdir());
+        File tFile = new File(tFolder,this.getName()+".file");
+        assertTrue(tFile.createNewFile());
+        FileOutputStream fos = new FileOutputStream(tFile);
+        try {
+            String line = "nbplatform.default.harness.dir=${nbplatform.default.netbeans.dest.dir}/harness \n";
+            fos.write(line.getBytes());
+            expectedLines.add(line);                        
+        } finally {
+            fos.close();
+        }
+        
+        fos = new FileOutputStream(sFile);
+        try {
+            String line = "nbplatform.id.netbeans.dest.dir=/work/nball/nbbuild/netbeans \n";
+            fos.write(line.getBytes());
+            expectedLines.add(line);
+            
+            line = "nbplatform.id.netbeans.dest.dir=/work/nbide/netbeans \n";
+            fos.write(line.getBytes());
+            expectedLines.add(line);
+            
+            line = "nbplatform.default.netbeans.dest.dir=/work/nbide/netbeans \n";
+            fos.write(line.getBytes());
+            //lines.add(line); -- should be excluded
+        } finally {
+            fos.close();
+        }
+        String[] regexForSelection = new String[] {
+            "^nbplatform[.](?![dD]efault).+[.](netbeans[.]dest[.]dir|label|harness[.]dir)=.+$"//NOI18N
+        };
+        
+        Copy.appendSelectedLines(sFile, tFolder, regexForSelection);
+        String line = null;
+        List resultLines = new ArrayList();
+        BufferedReader reader = new BufferedReader(new FileReader(tFile));
+        try {
+            while ((line = reader.readLine()) != null) {
+                resultLines.add(line+"\n");
+            }
+        } finally {
+            reader.close();
+        }
+        assertEquals(expectedLines,resultLines);
+    }
     
     public void testDoesSomeCopy () throws Exception {
         FileSystem fs = createLocalFileSystem (new String[] {

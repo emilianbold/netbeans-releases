@@ -65,9 +65,7 @@ public final class AutoUpgrade {
             if (f >= 5.0) {
                 File userdir = new File(System.getProperty("netbeans.user", ""));//NOI18N
                 String[] regexForSelection = new String[] {
-                    "^nbplatform[.](?![dD]efault).+[.]netbeans[.]dest[.]dir=.+$",//NOI18N
-                    "^nbplatform[.](?![dD]efault).+[.]label=.+$",//NOI18N
-                    "^nbplatform[.](?![dD]efault).+[.]harness[.]dir=.+$"//NOI18N
+                    "^nbplatform[.](?![dD]efault).+[.](netbeans[.]dest[.]dir|label|harness[.]dir)=.+$"
                 };
                 Copy.appendSelectedLines(new File(sourceFolder,"build.properties"), //NOI18N
                         userdir,regexForSelection);
