@@ -58,7 +58,7 @@ class ProjectClassLoader extends ClassLoader {
     protected Class findClass(String name) throws ClassNotFoundException {
         if (name.startsWith("org.apache.commons.logging.")) { // NOI18N HACK: Issue 50642
             try {
-                return Thread.currentThread().getContextClassLoader().loadClass(name);
+                return systemClassLoader.loadClass(name);
             } catch (ClassNotFoundException cnfex) {
                 // The logging classes are not in the IDE, we can use ProjectClassLoader
             }
