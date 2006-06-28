@@ -7,6 +7,7 @@
         <tocitem text="Importing a BlueJ Project" target="bluej-proj-import"/>
         <tocitem text="Creating a New Project" target="bluej-proj-new"/>
         <tocitem text="Basic NetBeans IDE Tasks: Quick Reference" target="bluej-quickref"/>
+        <tocitem text="Source Editor Tips" target="bluej-editor-quickref"/>
         <tocitem text="Differences in the BlueJ Edition of the IDE" target="bluej-ide-differences"/>
     </tocitem>
 </toc>
