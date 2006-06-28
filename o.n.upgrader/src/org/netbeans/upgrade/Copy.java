@@ -109,9 +109,7 @@ final class Copy extends Object {
             //read original content into  ByteArrayOutputStream
             FileInputStream targetIS = new FileInputStream(targetFile);
             try {
-                byte[] bytes = new byte[targetIS.available()];
-                targetIS.read(bytes);
-                bos.write(bytes);
+                FileUtil.copy(targetIS, bos);
             } finally {
                 targetIS.close();
             }            
