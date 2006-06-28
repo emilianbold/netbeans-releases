@@ -1786,7 +1786,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             JComponent comp = (JComponent) getVisualComponent(componentId, true, true);
             // [hack - vertically resizable components cannot be baseline aligned]
             // [this should be either solved or filtered in LayoutDragger according to vertical resizability of the component]
-            if (comp instanceof JScrollPane || comp instanceof JPanel || comp instanceof JTabbedPane) {
+            if (comp != null && (comp instanceof JScrollPane
+                                 || comp.getClass().equals(JPanel.class)
+                                 || comp instanceof JTabbedPane)) {
 //                    || comp instanceof JTextArea
 //                    || comp instanceof JTree || comp instanceof JTable || comp instanceof JList
                 baseLinePos = 0;
