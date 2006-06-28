@@ -17,7 +17,8 @@
                 xmlns:p="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
                 xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1"
-                xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/2"
+                xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/3"
+                xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/3"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 exclude-result-prefixes="xalan p j2se projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -36,9 +37,13 @@ is divided into following sections:
 ]]></xsl:comment>
          <xsl:variable name="name">
           <xsl:choose>
-            <!-- 4.1 -->
+            <!-- 5.0 -->
             <xsl:when test="/p:project/p:configuration/j2seproject:data/j2seproject:name">
                 <xsl:value-of select="/p:project/p:configuration/j2seproject:data/j2seproject:name"/>
+            </xsl:when>
+            <!-- 4.1 -->
+            <xsl:when test="/p:project/p:configuration/j2seproject2:data/j2seproject2:name">
+                <xsl:value-of select="/p:project/p:configuration/j2seproject2:data/j2seproject2:name"/>
             </xsl:when>
             <!-- 4.0 -->
             <xsl:when test="/p:project/p:configuration/j2seproject1:data/j2seproject1:name">
@@ -192,12 +197,21 @@ is divided into following sections:
     MANAGEMENT SECTION
     ==================
     </xsl:comment>
+        <target name="-mgt-init-platform">
+            <condition property="platform.home" value="${{jdk.home}}">
+                <isfalse value="${{platform.home}}"/>
+            </condition> 
+            <condition property="platform.java" value="${{jdk.home}}/bin/java">
+                <isfalse value="${{platform.java}}"/>
+            </condition>  
+        </target>
+    
         <target name="-init-macrodef-management">
           <macrodef name="management">
             <attribute name="classname" default="${{main.class}}"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <java fork="true" classname="@{{classname}}" dir="${{work.dir}}">
+                <java fork="true" classname="@{{classname}}" dir="${{work.dir}}" jvm="${{platform.java}}">
                     <jvmarg line="${{management.jvmargs}} ${{run.jvmargs}}"/>
                     <classpath>
                         <path path="${{run.classpath}}"/>
@@ -212,19 +226,20 @@ is divided into following sections:
            </macrodef>
         </target>
         
-        <target name="-connect-jconsole" depends="init">
+        <target name="-connect-jconsole">
+            <xsl:attribute name="depends">init,-mgt-init-platform</xsl:attribute>
          <echo message="jconsole ${{jconsole.settings.vmoptions}} -interval=${{jconsole.settings.polling}} ${{jconsole.settings.notile}} ${{jconsole.managed.process.url}}"/>
-        <java fork="true" classname="sun.tools.jconsole.JConsole">
+        <java fork="true" classname="sun.tools.jconsole.JConsole" jvm="${{platform.java}}">
             <jvmarg line="${{jconsole.settings.vmoptions}}"/>
             <arg line="-interval=${{jconsole.settings.polling}} ${{jconsole.settings.notile}} ${{jconsole.managed.process.url}}"/>
             <classpath>
-                <path path="${{run.classpath}}:${{jdk.home}}/lib/jconsole.jar:${{jdk.home}}/lib/tools.jar"/>
+                <path path="${{run.classpath}}:${{platform.home}}/lib/jconsole.jar:${{platform.home}}/lib/tools.jar"/>
             </classpath>          
         </java>
 </target>
             <target name="run-management" >
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-init-macrodef-management</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-mgt-init-platform,-init-macrodef-management</xsl:attribute>
                 <xsl:attribute name="description">Enable local mgt for a project in the IDE.</xsl:attribute>
                 <echo message="${{connecting.jconsole.msg}} ${{jconsole.managed.process.url}}"/>
                  <management>
@@ -254,7 +269,7 @@ is divided into following sections:
             <attribute name="classpath" default="${{debug.classpath}}"/>
             <attribute name="args" default="${{application.args}}"/>
             <sequential>
-                <java fork="true" classname="@{{classname}}" dir="${{work.dir}}">
+                <java fork="true" classname="@{{classname}}" dir="${{work.dir}}" jvm="${{platform.java}}">
                     <jvmarg value="-Xdebug"/>
                     <jvmarg value="-Xnoagent"/>
                     <jvmarg value="-Djava.compiler=none"/>
@@ -276,7 +291,7 @@ is divided into following sections:
         <j2seproject1:nbjpdastart name="${{debug.class}}"/>
     </target>
     <target name="-debug-start-managed-debuggee"> 
-        <xsl:attribute name="depends">init,compile,-init-macrodef-management-debug</xsl:attribute>
+        <xsl:attribute name="depends">init,compile,-mgt-init-platform,-init-macrodef-management-debug</xsl:attribute>
         <debug-management/>
     </target>
     <target name="debug-management">

@@ -46,14 +46,14 @@ public class AddRegistIntfGenerator
       "any exception is raised, the MBean will not be registered in the\n" + // NOI18N
       "MBean server.\n" + // NOI18N
       "@param server The MBean server in which the MBean will be registered.\n" + // NOI18N
-      "@name name The object name of the MBean. This name is null if the\n" + // NOI18N
+      "@param name The object name of the MBean. This name is null if the\n" + // NOI18N
       "name parameter to one of the createMBean or registerMBean methods in\n" + // NOI18N
       "the MBeanServer interface is null. In that case, this method must\n" + // NOI18N
       "return a non-null ObjectName for the new MBean.\n" + // NOI18N
       "@return The name under which the MBean is to be registered. This value\n" + // NOI18N
       "must not be null. If the name parameter is not null, it will usually\n" + // NOI18N
       "but not necessarily be the returned value.\n" + // NOI18N
-      "@trow Exception This exception will be caught by the MBean server and\n" + // NOI18N
+      "@throws Exception This exception will be caught by the MBean server and\n" + // NOI18N
       "re-thrown as an MBeanRegistrationException."; // NOI18N
     
     private static final String POST_REGISTER_JAVADOC = 
@@ -67,7 +67,7 @@ public class AddRegistIntfGenerator
     private static final String PRE_DEREGISTER_JAVADOC = 
       "Allows the MBean to perform any operations it needs before being\n" + // NOI18N
       "unregistered by the MBean server.\n" + // NOI18N
-      "@trow Exception This exception will be caught by the MBean server and\n" + // NOI18N
+      "@throws Exception This exception will be caught by the MBean server and\n" + // NOI18N
       "re-thrown as an MBeanRegistrationException."; // NOI18N
     
     private static final String POST_DEREGISTER_JAVADOC = 
