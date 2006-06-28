@@ -13,8 +13,7 @@
 
 package org.netbeans.modules.projectimport.j2seimport;
 
-import java.util.Collection;
-//import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 
 /**
@@ -25,7 +24,7 @@ public interface ImportProcess {
         int getNumberOfSteps();
         int getCurrentStep();
         String getCurrentStatus();
-        //ProgressHandle getProgressHandle();
+        ProgressHandle getProgressHandle();
         
         void startImport(boolean asynchronous);
         boolean isFinished();

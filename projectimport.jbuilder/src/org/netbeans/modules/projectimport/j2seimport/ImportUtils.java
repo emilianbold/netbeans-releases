@@ -18,17 +18,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
-//import org.netbeans.api.progress.ProgressHandle;
-//import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -75,12 +73,7 @@ public final class ImportUtils {
         return new ImportUtils();
     }
     
-    
-    public final void importAllProjects(final FileObject projectDirectory,
-            final Collection allPrjDefs, WarningContainer warnings) throws IOException {
-        importAllProjects(projectDirectory,allPrjDefs,warnings,true);
-    }
-    
+        
     public final void importAllProjects(final FileObject projectDirectory,
             final Collection allPrjDefs, WarningContainer warnings, boolean includeDependencies) throws IOException {
         for (Iterator it = allPrjDefs.iterator(); it.hasNext();) {
@@ -492,9 +485,9 @@ public final class ImportUtils {
         final FileObject projectDirectory;
         final Collection allPrjDefs;
         final WarningContainer warnings;
-        ImportUtils importer;
+        final ImportUtils importer;
         Collection projectsToOpen;
-        //final ProgressHandle ph;
+        final ProgressHandle ph;
         boolean includeDependencies;
         static final String[] PROGRESS_MESSAGES = new String[] {"PRGS_ProjectImportStarted",
                 "PRGS_ImportSourceRoots",
@@ -513,7 +506,8 @@ public final class ImportUtils {
             this.numberOfSteps = allPrjDefs.size()*PROGRESS_MESSAGES.length;
             projectsToOpen = new ArrayList();
             this.includeDependencies = includeDependencies;
-            //this.ph = ProgressHandleFactory.createHandle(projectDirectory.getPath());//NOI18N
+            this.ph = ProgressHandleFactory.createHandle(projectDirectory.getPath());//NOI18N
+            assert this.ph != null;
         }
         
         public synchronized int getNumberOfSteps() {
@@ -538,11 +532,7 @@ public final class ImportUtils {
                 throw new IllegalStateException();
             }
 
-            /*if (ph != null) {
-                //currentStep = 0;
-                ph.start(getNumberOfSteps());
-            }*/
-            
+            ph.start(getNumberOfSteps());            
             if (asynchronous) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -555,20 +545,23 @@ public final class ImportUtils {
                 });
                 
             } else {
-                startImport();
-            }          
+                ProjectManager.mutex().writeAccess(new Runnable() {
+                    public void run() {
+                        startImport();
+                    }});
+            }
         }
         
         private void startImport() {
-            increase();            
+            increase();
             try {
-                this.importer.importAllProjects(projectDirectory, allPrjDefs, 
+                importer.importAllProjects(projectDirectory, allPrjDefs,
                         warnings, includeDependencies);
             } catch(IOException iex) {
                 //warnings.add(iex.getLocalizedMessage());
                 addWarning(warnings, iex.getLocalizedMessage());
             } finally {
-                setFinished();            
+                setFinished();
             }
         }
         
@@ -580,15 +573,11 @@ public final class ImportUtils {
             assert currentStep <= numberOfSteps;
                         
             this.currentStep = this.currentStep+1;
-            /*if (ph != null) {
-                ph.progress(getCurrentStatus(),this.currentStep);                
-            } */           
+            ph.progress(getCurrentStatus(),this.currentStep);
         }
         
         private synchronized void setFinished() {
-            /*if (ph != null) {
-                ph.finish();
-            }*/
+            ph.finish();
             currentStep = numberOfSteps;
             isFinished = true;
         }
@@ -616,8 +605,8 @@ public final class ImportUtils {
             return (Project[])projectsToOpen.toArray(new Project[projectsToOpen.size()]);
         }
 
-        /*public ProgressHandle getProgressHandle() {
+        public ProgressHandle getProgressHandle() {
             return ph;
-        }*/
+        }
     }
 }
