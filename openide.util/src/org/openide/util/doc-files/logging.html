@@ -126,7 +126,7 @@ show blinking
 icon to the user in bottom right corner of main window):
 </p>
 <pre>
-private static <a href="@JDK@/java/util/logging/Logger.html">Logger</a> logger = <a href="@JDK@/java/util/logging/Logger.html#getLogger(java.lang.String)">Logger.getLogger</a>("name.of.your.Logger");
+private static final <a href="@JDK@/java/util/logging/Logger.html">Logger</a> logger = <a href="@JDK@/java/util/logging/Logger.html#getLogger(java.lang.String)">Logger.getLogger</a>(ThisClass.class.getName());
 try {
     foo.doSomething();
 } catch (IOException ioe) {
