@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.apisupport.feedreader;
@@ -63,8 +63,11 @@ public class FeedReaderWizardIterator implements WizardDescriptor.InstantiatingI
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
         InputStream is = template.getInputStream();
-        FileUtil.extractJar(dir, is);
-        is.close();
+        try {
+            FileUtil.extractJar(dir, is);
+        } finally {
+            is.close();
+        }
         //unZipFile(template.getInputStream(), dir);
         
         // Always open top dir as a project:
