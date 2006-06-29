@@ -123,7 +123,8 @@ public class IDESettings extends SystemOption {
     /**
      * GlobalVisibilityQueryImpl in module org.netbeans.modules.masterfs reads this property (hidden dependency).   
      */ 
-    private static String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|^\\.[#_]|~$"; //NOI18N    
+    private static String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"; //NOI18N    
+     
     
     // do NOT use constructore for setting default values
     protected void initialize () {
