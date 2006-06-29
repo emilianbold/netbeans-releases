@@ -69,6 +69,7 @@ final class JavaHelpPanel extends BasicWizardIterator.Panel {
     }
     
     private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_JavaHelpPanel"));//NOI18N
         projectNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ProjectName"));//NOI18N
         createdFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CreatedFilesValue"));//NOI18N
         modifiedFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModifiedFilesValue"));//NOI18N
