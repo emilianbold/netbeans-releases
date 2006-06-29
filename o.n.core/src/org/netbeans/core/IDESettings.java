@@ -17,6 +17,9 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -33,6 +36,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Global IDE settings.
  *
@@ -115,8 +119,9 @@ public class IDESettings extends SystemOption {
     private static int proxyType = -1; // not initialized
     private static String userProxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String userProxyPort = System.getProperty(KEY_PROXY_PORT, "");
-    private static String userNonProxyHosts;
-    private static String defaultNonProxyHosts;
+    private static String presetNonProxyHosts = System.getProperty (KEY_NON_PROXY_HOSTS, "");
+    private String userNonProxyHosts = "";
+     
     
     private static int uiMode = 2; // MDI default
     
@@ -124,14 +129,12 @@ public class IDESettings extends SystemOption {
      * GlobalVisibilityQueryImpl in module org.netbeans.modules.masterfs reads this property (hidden dependency).   
      */ 
     private static String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"; //NOI18N    
-     
-    
+
     // do NOT use constructore for setting default values
     protected void initialize () {
         // Set default values of properties        
         super.initialize ();
-        this.defaultNonProxyHosts = getDefaultNonProxyHosts ();
-        this.userNonProxyHosts = this.defaultNonProxyHosts;
+        userNonProxyHosts = getModifiedNonProxyHosts (getSystemNonProxyHosts ());
         setProxy ();
         putProperty(PROP_WWWBROWSER, "", false);
     }
@@ -560,9 +563,13 @@ public class IDESettings extends SystemOption {
      *  PENDING: should be a user settable property
      * @return sensible default for non-proxy hosts, including 'localhost'
      */
-    private static String getDefaultNonProxyHosts() {
-        String userPreset = System.getProperty (KEY_NON_PROXY_HOSTS);
-        String nonProxy = (userPreset == null ? "" : userPreset + "|") + "localhost|127.0.0.1"; // NOI18N
+    private static String getModifiedNonProxyHosts (String systemPreset) {
+        String fromSystem = systemPreset.replaceAll (";", "|").replaceAll (",", "|"); //NOI18N
+        String fromUser = presetNonProxyHosts == null ? "" : presetNonProxyHosts.replaceAll (";", "|").replaceAll (",", "|"); //NOI18N
+        if (Utilities.isWindows ()) {
+            fromSystem = addReguralToNonProxyHosts (fromSystem);
+        }
+        String nonProxy = fromUser + (fromUser.length () == 0 ? "" : "|") + fromSystem + (fromSystem.length () == 0 ? "" : "|") + "localhost|127.0.0.1"; // NOI18N
         String localhost = ""; // NOI18N
         try {
             localhost = InetAddress.getLocalHost().getHostName();
@@ -594,7 +601,7 @@ public class IDESettings extends SystemOption {
             // name for itself which can't actually be resolved. Normally
             // "localhost" is aliased to 127.0.0.1 anyway.
         }
-        return nonProxy;
+        return compactNonProxyHosts (nonProxy);
     }
 
     public String getIgnoredFiles() {
@@ -636,6 +643,12 @@ public class IDESettings extends SystemOption {
         return systemProxy.substring (0, i);
     }
     
+    private String getSystemNonProxyHosts () {
+        String systemProxy = System.getProperty ("netbeans.system_http_non_proxy_hosts"); // NOI18N
+        
+        return systemProxy == null ? "" : systemProxy;
+    }
+    
     private static String normalizeProxyHost (String proxyHost) {
         if (proxyHost.toLowerCase ().startsWith ("http://")) { // NOI18N
             return proxyHost.substring (7, proxyHost.length ());
@@ -643,6 +656,35 @@ public class IDESettings extends SystemOption {
             return proxyHost;
         }
     }
+    
+    // avoid duplicate hosts
+    private static String compactNonProxyHosts (String nonProxyHost) {
+        StringTokenizer st = new StringTokenizer (nonProxyHost, "|"); //NOI18N
+        Set<String> s = new HashSet<String> (); 
+        String compactedProxyHosts = "";
+        while (st.hasMoreTokens ()) {
+            String t = st.nextToken ();
+            if (s.add (t)) {
+                compactedProxyHosts = compactedProxyHosts + (compactedProxyHosts.length () > 0 ? "|" : "") + t; //NOI18N
+            }
+        }
+        return compactedProxyHosts;
+    }
+    
+    private static String addReguralToNonProxyHosts (String nonProxyHost) {
+        StringTokenizer st = new StringTokenizer (nonProxyHost, "|");
+        String reguralProxyHosts = "";
+        while (st.hasMoreTokens ()) {
+            String t = st.nextToken ();
+            if (! t.endsWith ("*")) { //NOI18N
+                t = t + '*'; //NOI18N
+            }
+            reguralProxyHosts = reguralProxyHosts + (reguralProxyHosts.length () > 0 ? "|" : "") + t; //NOI18N
+        }
+        
+        return reguralProxyHosts;
+    }
+    
    
     private String getSystemProxyPort () {
         String systemProxy = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
@@ -661,15 +703,14 @@ public class IDESettings extends SystemOption {
     public String getNonProxyHosts () {
         switch (getProxyType ()) {
             case AUTO_DETECT_PROXY :
-                return this.defaultNonProxyHosts;
+                return getModifiedNonProxyHosts (getSystemNonProxyHosts ());
             case MANUAL_SET_PROXY :
                 return getUserNonProxyHosts ();
             case DIRECT_CONNECTION :
                 return ""; // NOI18N
+            default:
+                throw new AssertionError("Unknown proxy type " + getProxyType()); //NOI18N
         }
-        
-        assert false : "Unknown proxy type " + getProxyType ();
-        return null;
     }
     
 }
