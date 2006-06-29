@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jdesktop.layout.GroupLayout;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
@@ -63,7 +64,7 @@ import org.w3c.dom.NodeList;
  * It provides also a capability to store such object in XML form.
  * <B>Note: </B>This class should be named FormI18nStringEditor, but due to forward compatibility 
  * remains that name.
- *
+ * 
  * @author  Petr Jiricka
  * @see FormI18nString
  * @see org.netbeans.modules.form.RADComponent
@@ -183,8 +184,17 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
             formI18nString = createFormI18nString();
             if (value instanceof String)
                 formI18nString.setValue((String)value);
-            if(I18nUtil.getOptions().getLastResource2() != null)
-                formI18nString.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+            DataObject lastResource = I18nUtil.getOptions().getLastResource2();
+            if (lastResource != null) {
+                FileObject sourceFile = sourceDataObject.getPrimaryFile();
+                FileObject bundleFile = lastResource.getPrimaryFile();
+                ClassPath sourceClassPath = ClassPath.getClassPath(
+                                                sourceFile, ClassPath.SOURCE);
+                if (sourceClassPath.contains(bundleFile)) {
+                    formI18nString.getSupport().getResourceHolder().setResource(
+                            lastResource);
+                }
+            }
             noI18n = false;
         }
         return new CustomEditor(formI18nString, getProject(), sourceDataObject.getPrimaryFile(), noI18n);
