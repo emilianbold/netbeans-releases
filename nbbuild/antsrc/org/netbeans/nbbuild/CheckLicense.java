@@ -232,12 +232,10 @@ public class CheckLicense extends Task {
         String[] all = repl.split("\n");
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < all.length; i++) {
-            if (all[i].length() > 0) {
-                if (startWithPrefix) {
-                    sb.append(prefix);
-                }
-                sb.append(all[i]);
+            if (startWithPrefix) {
+                sb.append(prefix);
             }
+            sb.append(all[i]);
             if (i < all.length - 1) {
                 sb.append('\n');
             }
