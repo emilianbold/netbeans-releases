@@ -109,6 +109,9 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     }
     
     private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_OptionsPanel0"));
+        advancedButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_Advanced"));
+        optionsCategoryButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_OptionsCategory"));
         titleField.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Title"));
         tooltipField1.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Tooltip"));
         displayNameField1.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayName"));
