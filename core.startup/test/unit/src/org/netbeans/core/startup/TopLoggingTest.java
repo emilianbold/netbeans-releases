@@ -219,7 +219,9 @@ public class TopLoggingTest extends NbTestCase {
 
         String disk = readLog(true);
 
-        int ah = disk.indexOf("Ahoj");
+        Matcher m = Pattern.compile("^Ahoj", Pattern.MULTILINE).matcher(disk);
+        assertTrue(disk, m.find());
+        int ah = m.start();
         if (ah == -1) {
             char next = disk.charAt(ah + 4);
             if (next != 10 && next != 13) {
