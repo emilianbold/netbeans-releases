@@ -42,8 +42,15 @@ final class SelectLibraryPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+        initAccessibility();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
         
+    }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_SelectLibraryPanel"));
+        manageLibrariessButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ManageLibraries"));
+        librariesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_Library"));
     }
     
     private void checkValidity() {

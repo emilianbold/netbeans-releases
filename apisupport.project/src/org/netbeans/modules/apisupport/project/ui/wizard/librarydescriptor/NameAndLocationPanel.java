@@ -38,6 +38,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+        initAccessibility();
         putClientProperty("NewFileWizard_Title",// NOI18N
                 NbBundle.getMessage(NameAndLocationPanel.class,"LBL_LibraryWizardTitle")); // NOI18N
         
@@ -50,6 +51,19 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         };
         libraryNameVale.getDocument().addDocumentListener(dListener);
         libraryDisplayNameValue.getDocument().addDocumentListener(dListener);        
+    }
+    
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(NameAndLocationPanel.class, key);
+    }
+    
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_NameIconLocationPanel"));
+        createdFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_CreatedFiles"));
+        modifiedFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_ModifiedFiles"));
+        libraryDisplayNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_DisplayName"));
+        libraryNameVale.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_Name"));
+        projectNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_ProjectName"));
     }
     
     protected void storeToDataModel() {
