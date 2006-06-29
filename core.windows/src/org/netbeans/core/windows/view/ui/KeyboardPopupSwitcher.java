@@ -19,6 +19,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import javax.swing.AbstractAction;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
@@ -41,7 +43,7 @@ import org.openide.windows.WindowManager;
  *
  * @author mkrauskopf
  */
-public final class KeyboardPopupSwitcher {
+public final class KeyboardPopupSwitcher implements WindowFocusListener {
     
     /** Number of milliseconds to show popup if interruption didn't happen. */
     private static final int TIME_TO_SHOW = 200;
@@ -235,6 +237,7 @@ public final class KeyboardPopupSwitcher {
         if (!isShown()) {
             popup = PopupFactory.getSharedInstance().getPopup(
                     WindowManager.getDefault().getMainWindow(), pTable, x, y);
+            WindowManager.getDefault().getMainWindow().addWindowFocusListener( this );
             popup.show();
             shown = true;
         }
@@ -365,6 +368,16 @@ public final class KeyboardPopupSwitcher {
             // hidden
             SwingUtilities.invokeLater(new PopupHider(popup));
         }
+    }
+
+    public void windowGainedFocus(WindowEvent e) {
+    }
+
+    public void windowLostFocus(WindowEvent e) {
+        //remove the switcher when the main window is deactivated, 
+        //e.g. user pressed Ctrl+Esc on MS Windows which opens the Start menu
+        cancelSwiching();
+        WindowManager.getDefault().getMainWindow().removeWindowFocusListener( this );
     }
     
     /**
