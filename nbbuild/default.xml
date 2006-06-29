@@ -67,6 +67,9 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="verifyclasslinkage"
          classname="org.netbeans.nbbuild.VerifyClassLinkage"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="checklicense"
+         classname="org.netbeans.nbbuild.CheckLicense"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
   
