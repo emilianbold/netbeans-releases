@@ -18,6 +18,7 @@ import org.openide.loaders.*;
 import java.beans.*;
 import junit.textui.TestRunner;
 import org.netbeans.junit.*;
+import org.openide.nodes.Node;
 
 /* 
  * This class tests the basic functionality of standard DataObjects - Instance,
@@ -75,6 +76,37 @@ public class BasicDataObjectTest extends NbTestCase {
             // this is what should be thrown
         }
     }
+
+    public void testRenameFiresProperly () throws Exception {
+        
+        class L implements PropertyChangeListener{
+            boolean name;
+            boolean files;
+            boolean dname;
+            
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals(DataObject.PROP_NAME)) name = true;
+                if(evt.getPropertyName().equals(DataObject.PROP_FILES)) files = true;
+                if(evt.getPropertyName().equals(Node.PROP_DISPLAY_NAME)) dname = true;
+            }
+        }
+        
+        FileObject fo = dir.createData ("file.txt");
+        DataObject data = DataObject.find(fo);
+        L dol = new L();
+        L dnl = new L();
+        data.addPropertyChangeListener(dol);
+        data.getNodeDelegate().addPropertyChangeListener(dnl);
+
+        data.getNodeDelegate ().setName ("file2.txt");
+        
+        assertTrue("DataObject fired PROP_NAME on rename.", dol.name);
+        assertTrue("DataObject fired PROP_FILES on rename.", dol.files);
+        assertTrue("DataNode fired PROP_NAME on rename.", dnl.name);
+        assertTrue("DataNode fired PROP_FILES on rename.", dnl.files);
+        // assertTrue("DataNode fired PROP_DISPLAY_NAME on rename.", dnl.dname);
+    }
+
     
     // Test basic functionality of a DataFolder
     public void testBasicDataFolder() throws Exception {        

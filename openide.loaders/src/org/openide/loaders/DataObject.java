@@ -597,6 +597,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             firePropertyChange (PROP_PRIMARY_FILE, op.oldPf, op.newPf);
         }
         firePropertyChange (PROP_NAME, op.oldName, op.newName);
+        firePropertyChange (PROP_FILES, null, null);
         
         fireOperationEvent (new OperationEvent.Rename (this, op.oldName), OperationEvent.RENAME);
     }

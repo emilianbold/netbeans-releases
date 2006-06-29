@@ -448,27 +448,21 @@ public class DataNode extends AbstractNode {
             super(DataObject.PROP_FILES, String[].class,
                   DataObject.getString("PROP_files"), DataObject.getString("HINT_files"));
         }
-        
+       
         public Object getValue() {
             Set files = obj.files();
-            final String pfilename = name(obj.getPrimaryFile());
-            TreeSet set = new TreeSet(new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    String fname1 = (String) o1;
-                    String fname2 = (String) o2;
-                    if (fname1.equals(pfilename))
-                        return -1;
-                    else if (fname2.equals(pfilename))
-                        return 1;
-                    else
-                        return fname1.compareTo(fname2);
-                }
-            });
-            
+            FileObject primary = obj.getPrimaryFile();
+            String[] res = new String[files.size()];
+            assert files.contains(primary);
+
+            int i=1;
             for (Iterator it = files.iterator(); it.hasNext(); ) {
-                set.add(name((FileObject)it.next()));
+                FileObject next = (FileObject)it.next();
+                res[next == primary ? 0 : i++] = name(next);
             }
-            return (String[])set.toArray(new String[0]);
+            
+            Arrays.sort(res, 1, res.length);
+            return res;
         }
         
         private String name(FileObject fo) {
@@ -644,7 +638,6 @@ public class DataNode extends AbstractNode {
                 if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
                     DataNode.super.setName(obj.getName());
                     updateDisplayName();
-                    return;
                 }
                 if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
                     fireCookieChange();
@@ -665,7 +658,7 @@ public class DataNode extends AbstractNode {
                 List transmitProperties = Arrays.asList(new String[] {
                     DataObject.PROP_NAME, DataObject.PROP_FILES, DataObject.PROP_TEMPLATE});
                 if (transmitProperties.contains(ev.getPropertyName())) {
-                    firePropertyChange(ev.getPropertyName(), ev.getOldValue(), ev.getNewValue());   
+                    firePropertyChange(ev.getPropertyName(), ev.getOldValue(), ev.getNewValue());
                 }                
             }
         });
