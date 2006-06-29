@@ -493,6 +493,7 @@ public class AntDebugger extends ActionsProviderSupport {
             int i, k = breakpoints.length;
             for (i = 0; i < k; i++)
                 if ( breakpoints [i] instanceof AntBreakpoint &&
+                     breakpoints [i].isEnabled() &&
                      Utils.contains (
                          line,
                          ((AntBreakpoint) breakpoints [i]).getLine ()
