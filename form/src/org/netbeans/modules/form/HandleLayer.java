@@ -2575,16 +2575,20 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 if (movingComponents != null) { // there is a precreated visual component
                     addedComponent = movingComponents[0];
                     LayoutComponent layoutComponent = getComponentCreator().getPrecreatedLayoutComponent();
-                    getComponentCreator().addPrecreatedComponent(targetContainer, constraints);
+                    boolean added = getComponentCreator().addPrecreatedComponent(targetContainer, constraints);
                     if (getLayoutModel() != null) { // Some beans don't have layout
                         createLayoutUndoableEdit();
                         boolean autoUndo = true;
                         try {
-                            formDesigner.getLayoutDesigner().endMoving(newLayout);
-                            if (layoutComponent.isLayoutContainer()) {
-                                if (!newLayout) { // always add layout container to the model 
-                                    getLayoutModel().addRootComponent(layoutComponent);
+                            formDesigner.getLayoutDesigner().endMoving(added && newLayout);
+                            if (added) {
+                                if (layoutComponent.isLayoutContainer()) {
+                                    if (!newLayout) { // always add layout container to the model 
+                                        getLayoutModel().addRootComponent(layoutComponent);
+                                    }
                                 }
+                            } else {
+                                repaint();
                             }
                             autoUndo = false;
                         } finally {

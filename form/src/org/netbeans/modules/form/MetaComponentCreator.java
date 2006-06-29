@@ -228,11 +228,11 @@ public class MetaComponentCreator {
                && ((RADVisualContainer)metacomp).getLayoutSupport() == null;
     }
 
-    void addPrecreatedComponent(RADComponent targetComp,
+    boolean addPrecreatedComponent(RADComponent targetComp,
                                 Object constraints)
     {
         if (preMetaComp == null)
-            return;
+            return false;
         if (checkFormClass(preMetaComp.getBeanClass())) {
             addVisualComponent2(preMetaComp,
                                 targetComp,
@@ -240,8 +240,11 @@ public class MetaComponentCreator {
 
             preMetaComp = null;
             preLayoutComp = null;
+            return true;
+        } else {
+            releasePrecreatedComponent();
+            return false;
         }
-        else releasePrecreatedComponent();
     }
 
     void releasePrecreatedComponent() {
