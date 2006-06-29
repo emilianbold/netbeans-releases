@@ -35,7 +35,7 @@ public class CheckoutContentTest extends JellyTestCase {
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    public static final String PROJECT_NAME = "SVNApplication";
+    public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     String os_name;
     
@@ -78,6 +78,7 @@ public class CheckoutContentTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
+        TestKit.closeProject(PROJECT_NAME);
         
         //create repository... 
         new File(TMP_PATH).mkdirs();
@@ -89,10 +90,10 @@ public class CheckoutContentTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/JavaApp");
+        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
@@ -102,8 +103,9 @@ public class CheckoutContentTest extends JellyTestCase {
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
         ProjectSupport.waitScanFinished();
-        Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
-        TestKit.removeAllData("JavaApp"); 
+        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+        
+        TestKit.removeAllData(PROJECT_NAME); 
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
     }
@@ -113,6 +115,7 @@ public class CheckoutContentTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();
+        TestKit.closeProject(PROJECT_NAME);
         
         //create repository... 
         new File(TMP_PATH).mkdirs();
@@ -124,7 +127,7 @@ public class CheckoutContentTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp/src");

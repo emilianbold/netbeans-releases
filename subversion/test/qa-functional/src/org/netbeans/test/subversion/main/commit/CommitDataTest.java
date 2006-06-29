@@ -9,6 +9,7 @@
 
 package org.netbeans.test.subversion.main.commit;
 
+import com.sun.corba.se.impl.util.Version;
 import java.io.File;
 import java.io.PrintStream;
 import javax.swing.table.TableModel;
@@ -41,7 +42,7 @@ public class CommitDataTest extends JellyTestCase {
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    public static final String PROJECT_NAME = "SVNApplication";
+    public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     public PrintStream stream;
     String os_name;
@@ -74,14 +75,15 @@ public class CommitDataTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CommitDataTest("testCommitFile"));      
-        suite.addTest(new CommitDataTest("testCommitPackage"));      
-        suite.addTest(new CommitDataTest("testRecognizeMimeType"));   
+        //suite.addTest(new CommitDataTest("testCommitPackage"));      
+        //suite.addTest(new CommitDataTest("testRecognizeMimeType"));   
         return suite;
     }
     
     public void testCommitFile() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
+        TestKit.closeProject(PROJECT_NAME);
         org.openide.nodes.Node nodeIDE;
         long start;
         long end;
@@ -106,15 +108,15 @@ public class CommitDataTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/JavaApp");
+        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
         //open project
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.waitText("Checking out... finished.");
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
@@ -122,8 +124,8 @@ public class CommitDataTest extends JellyTestCase {
         ProjectSupport.waitScanFinished();
         //Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
         
-        TestKit.createNewElement("JavaApp", "javaapp", "NewClass");
-        Node nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
+        TestKit.createNewElement(PROJECT_NAME, "javaapp", "NewClass");
+        Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
         nodeFile.performPopupAction("Subversion|Show Changes");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
@@ -134,7 +136,7 @@ public class CommitDataTest extends JellyTestCase {
         
         //invoke commit action but exlude the file from commit
         start = System.currentTimeMillis();
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
         CommitOperator cmo = CommitOperator.invoke(nodeFile);
         end = System.currentTimeMillis();
         //System.out.println("Duration of invoking Commit dialog: " + (end - start));
@@ -142,7 +144,7 @@ public class CommitDataTest extends JellyTestCase {
         TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
         cmo.selectCommitAction("NewClass.java", "Exclude from Commit");
         cmo.commit();
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         table = vo.tabFiles();
@@ -151,22 +153,23 @@ public class CommitDataTest extends JellyTestCase {
         assertEquals("Expected file is missing.", "NewClass.java", table.getModel().getValueAt(0, 0).toString());
         assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
         
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
         cmo = CommitOperator.invoke(nodeFile);
-        cmo.selectCommitAction("NewClass.java", "Add As Text");
+        cmo.selectCommitAction("NewClass.java", "Add as Text");
         start = System.currentTimeMillis();
         cmo.commit();
         oto.waitText("Committing... finished.");
         end = System.currentTimeMillis();
         
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|NewClass.java");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //System.out.println("Duration of invoking Commit dialog: " + (end - start));
         TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
         //color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         Thread.sleep(1000);
+        vo = VersioningOperator.invoke();
         table = vo.tabFiles();
         assertEquals("Wrong row count of table.", 0, table.getRowCount());
         assertNull("Wrong color of node!!!", nodeIDE.getHtmlDisplayName());
@@ -179,6 +182,7 @@ public class CommitDataTest extends JellyTestCase {
     public void testCommitPackage() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
+        TestKit.closeProject(PROJECT_NAME);
         org.openide.nodes.Node nodeIDE;
         JTableOperator table;
         long start;
@@ -202,10 +206,10 @@ public class CommitDataTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/JavaApp");
+        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
@@ -215,10 +219,10 @@ public class CommitDataTest extends JellyTestCase {
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
         ProjectSupport.waitScanFinished();
-        Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
+        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         
-        TestKit.createNewPackage("JavaApp", "xx");
-        Node nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
+        TestKit.createNewPackage(PROJECT_NAME, "xx");
+        Node nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
         nodePack.performPopupAction("Subversion|Show Changes");
         nodeIDE = (org.openide.nodes.Node) nodePack.getOpenideNode();
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
@@ -232,7 +236,7 @@ public class CommitDataTest extends JellyTestCase {
         
         //invoke commit action but exlude the file from commit
         start = System.currentTimeMillis();
-        nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
+        nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
         CommitOperator cmo = CommitOperator.invoke(nodePack);
         end = System.currentTimeMillis();
         //System.out.println("Duration of invoking Commit dialog: " + (end - start));
@@ -240,14 +244,14 @@ public class CommitDataTest extends JellyTestCase {
         TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
         cmo.selectCommitAction("xx", "Exclude from Commit");
         cmo.commit();
-        nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
+        nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
         nodeIDE = (org.openide.nodes.Node) nodePack.getOpenideNode();
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong status of node!!!", TestKit.NEW_STATUS, status);
         
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
+        nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
         cmo = CommitOperator.invoke(nodePack);
         cmo.selectCommitAction("xx", "Add Directory");
         start = System.currentTimeMillis();
@@ -255,7 +259,7 @@ public class CommitDataTest extends JellyTestCase {
         oto.waitText("Committing... finished.");
         end = System.currentTimeMillis();
         
-        nodePack = new Node(new SourcePackagesNode("JavaApp"), "xx");
+        nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
         nodeIDE = (org.openide.nodes.Node) nodePack.getOpenideNode();
         //System.out.println("Duration of committing file: " + (end - start));
         TestKit.printLogStream(stream, "Duration of committing folder: " + (end - start));
@@ -265,7 +269,7 @@ public class CommitDataTest extends JellyTestCase {
         table = vo.tabFiles();
         assertEquals("Wrong row count of table.", 0, table.getRowCount());
         
-        TestKit.removeAllData("JavaApp");
+        TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
     }
@@ -273,6 +277,7 @@ public class CommitDataTest extends JellyTestCase {
     public void testRecognizeMimeType() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
+        TestKit.closeProject(PROJECT_NAME);
         org.openide.nodes.Node nodeIDE;
         JTableOperator table;
         long start;
@@ -298,10 +303,10 @@ public class CommitDataTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/JavaApp");
+        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
@@ -314,21 +319,21 @@ public class CommitDataTest extends JellyTestCase {
         
         //create various types of files
         String src = getDataDir().getCanonicalPath() + File.separator + "files" + File.separator;
-        String dest = TMP_PATH + File.separator + WORK_PATH + File.separator + "JavaApp" + File.separator + "src" + File.separator + "javaapp" + File.separator;
+        String dest = TMP_PATH + File.separator + WORK_PATH + File.separator + PROJECT_NAME + File.separator + "src" + File.separator + "javaapp" + File.separator;
         
         for (int i = 0; i < expected.length; i++) {
             TestKit.copyTo(src + expected[i], dest + expected[i]);
         }
         
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        Node nodeSrc = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
+        Node nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         nodeSrc.performPopupAction("Subversion|Show Changes");
         oto.waitText("Refreshing... finished.");
         
         Node nodeTest;
         for (int i = 0; i < expected.length; i++) {
-            nodeTest = new Node(new SourcePackagesNode("JavaApp"), "javaapp|" + expected[i]);
+            nodeTest = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|" + expected[i]);
             nodeIDE = (org.openide.nodes.Node) nodeTest.getOpenideNode();
             status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
@@ -345,9 +350,9 @@ public class CommitDataTest extends JellyTestCase {
         int result = TestKit.compareThem(expected, actual, false);
         assertEquals("Not All files listed in Commit dialog", expected.length, result);
         
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        nodeSrc = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
+        nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         CommitOperator cmo = CommitOperator.invoke(nodeSrc);
         table = cmo.tabFiles();
         model = table.getModel();       
@@ -374,7 +379,7 @@ public class CommitDataTest extends JellyTestCase {
         //files have been committed, 
         //verify explorer node
         for (int i = 0; i < expected.length; i++) {
-            nodeTest = new Node(new SourcePackagesNode("JavaApp"), "javaapp|" + expected[i]);
+            nodeTest = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|" + expected[i]);
             nodeIDE = (org.openide.nodes.Node) nodeTest.getOpenideNode();
             assertNull("Wrong status or color of node!!!", nodeIDE.getHtmlDisplayName());
         }
@@ -384,7 +389,7 @@ public class CommitDataTest extends JellyTestCase {
         
         assertEquals("Not All files listed in Commit dialog", 0, model.getRowCount());
                
-        TestKit.removeAllData("JavaApp");
+        TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
     }

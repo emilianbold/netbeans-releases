@@ -77,6 +77,7 @@ public class ImportUITest extends JellyTestCase {
     public void testInvoke() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        TestKit.closeProject(PROJECT_NAME);
         
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
@@ -92,6 +93,7 @@ public class ImportUITest extends JellyTestCase {
     public void testWarningMessage() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        TestKit.closeProject(PROJECT_NAME);
         
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
@@ -136,6 +138,7 @@ public class ImportUITest extends JellyTestCase {
     public void testRepositoryFolderLoad() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        TestKit.closeProject(PROJECT_NAME);
         
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
@@ -202,6 +205,7 @@ public class ImportUITest extends JellyTestCase {
     public void testCommitStep() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        TestKit.closeProject(PROJECT_NAME);
         
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
@@ -247,6 +251,7 @@ public class ImportUITest extends JellyTestCase {
     public void testStopProcess() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        TestKit.closeProject(PROJECT_NAME);
         
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));

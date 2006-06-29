@@ -88,7 +88,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtStartRevision() {
         if (_txtStartRevision==null) {
-            _txtStartRevision = new JTextFieldOperator(this);
+            _txtStartRevision = new JTextFieldOperator(this, 1);
         }
         return _txtStartRevision;
     }
@@ -98,7 +98,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtEndRevision() {
         if (_txtEndRevision==null) {
-            _txtEndRevision = new JTextFieldOperator(this, 1);
+            _txtEndRevision = new JTextFieldOperator(this);
         }
         return _txtEndRevision;
     }

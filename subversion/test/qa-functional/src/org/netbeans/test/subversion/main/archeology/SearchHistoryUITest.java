@@ -22,13 +22,14 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.SearchHistoryOperator;
-import org.netbeans.test.subversion.operators.SearchRevisionsOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 import org.netbeans.junit.ide.ProjectSupport;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 
 /**
  *
@@ -39,7 +40,7 @@ public class SearchHistoryUITest extends JellyTestCase{
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    public static final String PROJECT_NAME = "SVNApplication";
+    public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     public PrintStream stream;
     String os_name;
@@ -79,6 +80,8 @@ public class SearchHistoryUITest extends JellyTestCase{
     public void testInvokeSearch() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        TestKit.closeProject(PROJECT_NAME);
+        
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         VersioningOperator vo = VersioningOperator.invoke();
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
@@ -95,10 +98,10 @@ public class SearchHistoryUITest extends JellyTestCase{
         
         rso.next();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/JavaApp");
+        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
         wdso.checkCheckoutContentOnly(false);
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         wdso.finish();
         //open project
@@ -108,32 +111,31 @@ public class SearchHistoryUITest extends JellyTestCase{
         open.push();
         ProjectSupport.waitScanFinished();
         
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        Node node = new Node(new SourcePackagesNode("JavaApp"), "javaapp|Main.java");
+        Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
         SearchHistoryOperator sho = SearchHistoryOperator.invoke(node);
-        oto.waitText("Searching History... finished.");
         sho.verify();
-        oto = new OutputTabOperator("file:///tmp");
+        oto.waitText("Searching History... finished.");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        SearchRevisionsOperator sro = sho.getRevisionFrom();
-        oto.waitText("Searching revisions finished.");
-        sro.verify();
-        sro.cancel();
+        RepositoryBrowserOperator rbo = sho.getRevisionFrom();
+        oto.waitText("Loading... finished.");
+        rbo.verify();
+        rbo.cancel();
         
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        sro = sho.getRevisionTo();
-        oto.waitText("Searching revisions finished.");
-        sro.verify();
-        sro.cancel();
+        rbo = sho.getRevisionTo();
+        oto.waitText("Loading... finished.");
+        rbo.verify();
+        rbo.cancel();
         
         sho.setUsername("test");
         sho.setFrom("1");
         sho.setTo("2");
-        //sho.btSearch().push();
         
-        TestKit.removeAllData("JavaApp");
+        TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
     }

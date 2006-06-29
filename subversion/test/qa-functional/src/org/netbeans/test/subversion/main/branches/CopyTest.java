@@ -39,7 +39,7 @@ public class CopyTest extends JellyTestCase {
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    public static final String PROJECT_NAME = "SVNApplication";
+    public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     public PrintStream stream;
     
@@ -80,6 +80,8 @@ public class CopyTest extends JellyTestCase {
     public void testCreateNewCopySwitch() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        TestKit.closeProject(PROJECT_NAME);
+        
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
@@ -94,10 +96,10 @@ public class CopyTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/JavaApp");
+        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
@@ -108,24 +110,24 @@ public class CopyTest extends JellyTestCase {
         open.push();
         ProjectSupport.waitScanFinished();
         
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
+        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         CopyToOperator cto = CopyToOperator.invoke(projNode);
-        cto.setRepositoryFolder("branches/release01/JavaApp");
+        cto.setRepositoryFolder("branches/release01/" + PROJECT_NAME);
         cto.setCopyPurpose("New branch for project.");
         cto.checkSwitchToCopy(true);
         cto.copy();
         oto.waitText("Copy");
         oto.waitText("finished.");
         
-        Node nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|Main.java");
+        Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
         org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", "[release01]", status);
         
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
@@ -139,6 +141,8 @@ public class CopyTest extends JellyTestCase {
     public void testCreateNewCopy() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        TestKit.closeProject(PROJECT_NAME);
+        
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
@@ -153,10 +157,10 @@ public class CopyTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp");
+        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/JavaApp");
+        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
         wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
@@ -167,24 +171,24 @@ public class CopyTest extends JellyTestCase {
         open.push();
         ProjectSupport.waitScanFinished();
         
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
+        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         CopyToOperator cto = CopyToOperator.invoke(projNode);
-        cto.setRepositoryFolder("branches/release01/JavaApp");
+        cto.setRepositoryFolder("branches/release01/" + PROJECT_NAME);
         cto.setCopyPurpose("New branch for project.");
         cto.checkSwitchToCopy(false);
         cto.copy();
         oto.waitText("Copy");
         oto.waitText("finished.");
         
-        Node nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|Main.java");
+        Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
         org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
         
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
@@ -192,50 +196,50 @@ public class CopyTest extends JellyTestCase {
         //to do 
         
         //switch to branch
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
+        projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         SwitchOperator so = SwitchOperator.invoke(projNode);
-        so.setRepositoryFolder("branches/release01/JavaApp");
+        so.setRepositoryFolder("branches/release01/" + PROJECT_NAME);
         so.switchBt();
         oto.waitText("Switch");
         oto.waitText("finished.");
         
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|Main.java");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", "[release01]", status);
         
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", "[release01]", status);
         
-        oto = new OutputTabOperator("file:///tmp");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
+        projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         so = SwitchOperator.invoke(projNode);
-        so.setRepositoryFolder("trunk/JavaApp");
+        so.setRepositoryFolder("trunk/" + PROJECT_NAME);
         so.switchBt();
         oto.waitText("Switch");
         oto.waitText("finished.");
         Thread.sleep(2000);
         
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp" + "|Main.java");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
         
-        nodeFile = new Node(new SourcePackagesNode("JavaApp"), "javaapp");
+        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
         
-        TestKit.removeAllData("JavaApp");
+        TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
     }

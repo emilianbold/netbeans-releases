@@ -344,14 +344,14 @@ public class SearchHistoryOperator extends TopComponentOperator {
         btPrevious().push();
     }
     
-    public SearchRevisionsOperator getRevisionFrom() {
+    public RepositoryBrowserOperator getRevisionFrom() {
         btBrowseFrom().pushNoBlock();
-        return new SearchRevisionsOperator();
+        return new RepositoryBrowserOperator();
     }
     
-    public SearchRevisionsOperator getRevisionTo() {
+    public RepositoryBrowserOperator getRevisionTo() {
         btBrowseTo().pushNoBlock();
-        return new SearchRevisionsOperator();
+        return new RepositoryBrowserOperator();
     }
     
     /** Performs popup menu on specified row in history list.

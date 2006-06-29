@@ -76,6 +76,8 @@ public class CopyUiTest extends JellyTestCase{
     public void testInvokeClose() throws Exception{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        TestKit.closeProject(PROJECT_NAME);
+        
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
