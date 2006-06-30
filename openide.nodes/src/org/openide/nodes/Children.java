@@ -548,7 +548,7 @@ public abstract class Children extends Object {
         } else {
             // otherwise, if not initialize yet (arr.children) wait 
             // for the initialization to finish, but only if we can wait
-            if (MUTEX.isReadAccess() || (initThread == Thread.currentThread())) {
+            if (MUTEX.isReadAccess() || MUTEX.isWriteAccess() || (initThread == Thread.currentThread())) {
                 // fail, we are in read access
                 if (IS_LOG_GET_ARRAY) {
                     LOG_GET_ARRAY.log(Level.FINE,

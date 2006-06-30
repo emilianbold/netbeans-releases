@@ -104,7 +104,63 @@ public class ChildrenKeysTest extends NbTestCase {
             fail(w.toString());;
         }
     }
-    
+
+    /**
+     * See #78519
+     * T1 has write access and gets preempted just before call to
+     * getNodes() by another thread callig getNodes.
+     * Other thread
+     */
+    public void testGetNodesFromWriteAccess() throws Exception {
+        final String[] keys = { "Nenik", "Tulach" };
+        Keys o = new Keys (keys);
+        Node orig = new AbstractNode(o);
+        Node filter = new FilterNode(orig);
+        final Children k = filter.getChildren();
+        
+        final Ticker t1 = new Ticker();
+        final boolean[] done = new boolean[2];
+        
+        // Try to get nodes from writeAccess
+        Thread t = new Thread("preempted") {
+            public void run() {
+                Children.PR.enterWriteAccess();
+                try {
+                    t1.tick(); // I do have the write access ...
+                    t1.waitOn(); // ... so wait till I'm preempted                    
+                    k.getNodes();
+                } finally {
+                    Children.PR.exitWriteAccess();
+                }
+                done[0] = true;
+            }
+        };
+        t.start();
+        t1.waitOn();
+        
+        // and also from another thread
+        Thread t2 = new Thread("other") {
+            public void run() {
+                k.getNodes(); // will block in getNodes
+                done[1] = true;
+            }
+        };
+        t2.start();
+        
+        Thread.sleep(2000); // give T2 some time ...
+        t1.tick(); // and unfuse T
+        
+        // wait for other thread
+        t.join(2000);
+        t2.join(2000);
+
+        t.stop();
+        t2.stop();
+
+        assertTrue ("Preempted thread finished correctly", done[0]);
+        assertTrue ("Other thread finished correctly", done[1]);
+    }
+
     /**
      * See issue #76614
      */
