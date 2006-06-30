@@ -1,12 +1,18 @@
 /*
- *                 Sun Public License Notice
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- * The Original Code is NetBeans.
- * The Initial Developer of the Original Code is Sun Microsystems, Inc.
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * The Original Software is NetBeans.
+ * The Initial Developer of the Original Software is Sun Microsystems, Inc.
  * Portions created by Sun Microsystems, Inc. are Copyright (C) 2003
  * All Rights Reserved.
  *
@@ -24,7 +30,7 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 
 public class Utilities {
-    
+
     public static String windowMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
     public static String runMenu = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
     public static String debugMenu = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
