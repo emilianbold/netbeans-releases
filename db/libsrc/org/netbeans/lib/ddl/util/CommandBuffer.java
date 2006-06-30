@@ -1,13 +1,19 @@
 /*
- *                 Sun Public License Notice
- * 
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- * 
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,9 +28,9 @@ import org.netbeans.lib.ddl.*;
 /**
 * Command buffer used to execute a bunch of commands. Main advantages of using
 * buffer is:
-* - Optimized connection handling. Buffer opens JDBC connection before executing 
-* of first command and closes it after a last one. It's safely then manually 
-* handling connection and better then leaving commands open and close connection 
+* - Optimized connection handling. Buffer opens JDBC connection before executing
+* of first command and closes it after a last one. It's safely then manually
+* handling connection and better then leaving commands open and close connection
 * for each comand separately.
 * - Exception handler. You can assign an exception handler to buffer. When any 
 * error occures during the execution, this handler catches it and lets user to 
