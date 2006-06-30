@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -39,14 +40,25 @@ import org.openide.util.lookup.Lookups;
  * @author Jesse Glick
  */
 public class CallbackSystemActionTest extends NbTestCase {
+    private Logger LOG;
+    
     
     public CallbackSystemActionTest(String name) {
         super(name);
     }
     
+    protected void setUp() throws Exception {
+        LOG = Logger.getLogger("TEST-" + getName());
+        
+        LOG.info("setUp");
+    }
+    
     protected void tearDown() throws Exception {
+        LOG.info("tearDown");
         super.tearDown();
-        SimpleCallbackAction.waitInstancesZero();
+        LOG.info("tearDown super finished");
+        SimpleCallbackAction.waitInstancesZero(LOG);
+        LOG.info("waiting for zero instances done");
     }
 
     protected Level logLevel() {
@@ -173,7 +185,7 @@ public class CallbackSystemActionTest extends NbTestCase {
         // GC will not complete, so if the GC assert here starts to fail, it is
         // OK to comment out the GC, its assert, and the second call to
         // helperTestFocusChanges().
-        SimpleCallbackAction.waitInstancesZero();
+        SimpleCallbackAction.waitInstancesZero(LOG);
         helperTestFocusChanges();
     }
     private void helperTestFocusChanges() throws Exception {
@@ -181,29 +193,42 @@ public class CallbackSystemActionTest extends NbTestCase {
         ActionMap t2 = new ActionMap();
         ActionsInfraHid.setActionMap(t1);
         try {
+            LOG.info("helperTestFocusChanges1");
             CallbackSystemAction a1 = (CallbackSystemAction)SystemAction.get(SurviveFocusChgCallbackAction.class);
             assertTrue(a1.getSurviveFocusChange());
+            LOG.info("helperTestFocusChanges2");
             CallbackSystemAction a2 = (CallbackSystemAction)SystemAction.get(SimpleCallbackAction.class);
             assertFalse(a2.getSurviveFocusChange());
+            LOG.info("helperTestFocusChanges3");
             CallbackSystemAction a3 = (CallbackSystemAction)SystemAction.get(DoesNotSurviveFocusChgCallbackAction.class);
             assertFalse(a3.getSurviveFocusChange());
             Performer p = new Performer();
+            LOG.info("helperTestFocusChanges4");
             a1.setActionPerformer(p);
             a2.setActionPerformer(p);
             a3.setActionPerformer(p);
+            LOG.info("helperTestFocusChanges5");
             assertTrue(a1.isEnabled());
             assertTrue(a2.isEnabled());
             assertTrue(a3.isEnabled());
+            LOG.info("helperTestFocusChanges6");
             ActionsInfraHid.setActionMap(t2);
+            LOG.info("helperTestFocusChanges7");
             assertTrue(a1.isEnabled());
+            LOG.info("helperTestFocusChanges8");
             assertEquals(p, a1.getActionPerformer());
             assertFalse(a2.isEnabled());
+            LOG.info("helperTestFocusChanges9");
             assertEquals(null, a2.getActionPerformer());
             assertFalse(a3.isEnabled());
+            LOG.info("helperTestFocusChanges10");
             assertEquals(null, a3.getActionPerformer());
         } finally {
+            LOG.info("helperTestFocusChanges - finally");
             ActionsInfraHid.setActionMap(null);
+            LOG.info("helperTestFocusChanges - done");
         }
+        LOG.info("helperTestFocusChanges - done successfully");
     }
     
     public void testGlobalChanges() throws Exception {
@@ -272,14 +297,17 @@ public class CallbackSystemActionTest extends NbTestCase {
         private static Object INSTANCES_LOCK = new Object();
         public static int INSTANCES = 0;
         
-        public static void waitInstancesZero() throws InterruptedException {
+        public static void waitInstancesZero(Logger l) throws InterruptedException {
             synchronized (INSTANCES_LOCK) {
                 for (int i = 0; i < 10; i++) {
                     if (INSTANCES == 0) return;
                     
+                    l.warning("instances still there: " + INSTANCES);
                     ActionsInfraHid.doGC();
+                    l.warning("after GC, do wait");
                     
                     INSTANCES_LOCK.wait(1000);
+                    l.warning("after waiting");
                 }
                 failInstances("Instances are not zero");
             }
