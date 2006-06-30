@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <process.h>
 #include <commdlg.h>
+#include <tchar.h>
 
 static char* getUserHomeFromRegistry(char* userhome);
 static char* GetStringValue(HKEY key, const char *name);
@@ -26,6 +27,7 @@ static void parseConfigFile(const char* path);
 static void parseArgs(int argc, char *argv[]);
 static int readClusterFile(const char* path);
 static int dirExists(const char* path);
+static void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction);
 
 static char userdir[MAX_PATH] = "c:\\nbuser";
 static char options[4098] = "";
@@ -53,6 +55,7 @@ int WINAPI
 #endif    
 
     char topdir[MAX_PATH];
+    char *appname = NULL;
     char buf[MAX_PATH * 10], *pc;
   
     GetModuleFileName(0, buf, sizeof buf);
@@ -60,6 +63,7 @@ int WINAPI
     pc = strrchr(buf, '\\');
     if (pc != NULL) {             // always holds
         strlwr(pc + 1);
+        appname = strdup(pc + 1);
         *pc = '\0';	// remove .exe filename
     }
 
@@ -73,8 +77,7 @@ int WINAPI
 
     if (!readClusterFile(clusterFileName)) {
         sprintf(msg, "Cannot read cluster file: %s", clusterFileName);
-        MessageBox(NULL, msg, "Error", MB_ICONSTOP | MB_OK);
-	exit(1);
+        ErrorExit(msg, NULL);
     }
 
     sprintf(buf, "%s\\etc\\netbeans.conf", topdir);
@@ -111,15 +114,14 @@ int WINAPI
     }
 
     if (*platformDir == '\0') {
-        MessageBox(NULL, "Undefined platform cluster!", "Error", MB_ICONSTOP | MB_OK);
-        exit(1);
+        ErrorExit("Undefined platform cluster!", NULL);
     }
 
     sprintf(nbexec, "%s\\%s", topdir, platformDir);
 
     if (!dirExists(nbexec)) {
         sprintf(msg, "Could not find platform cluster:\n\n%s", nbexec);
-        MessageBox(NULL, msg, "Error", MB_ICONSTOP | MB_OK);
+        ErrorExit(msg, NULL);
         exit(1);
     }        
 
@@ -144,13 +146,15 @@ int WINAPI
     start.wShowWindow = SW_HIDE;
 #endif
     
+    // printf("Cmdline: >%s<\ncwd >%s<\n", cmdline2, topdir);
     if (!CreateProcess (NULL, cmdline2,
                         NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS,
-                        NULL, NULL,
+                        NULL, 
+                        _T(topdir), // lpCurrentDirectory
                         &start,
                         &pi)) {
-        MessageBox(NULL, "Cannot start the IDE", "Error", MB_ICONSTOP | MB_OK);
-        exit(1);
+        sprintf (buf, "Cannot start the %s", appname);
+        ErrorExit(buf, "CreateProcess");
     } else {
         // Wait until child process exits.
         WaitForSingleObject( pi.hProcess, INFINITE );
@@ -492,4 +496,44 @@ int dirExists(const char* path) {
     }
 }
 
+// Show error dialog and exits the program
+// lpszMessage - error message to be printed
+// lpszFunction - name of last called method that return fail status
+//                can be NULL
+void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction) 
+{ 
+    LPVOID lpMsgBuf;
+    LPVOID lpDisplayBuf;
+    DWORD dw = GetLastError(); 
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+        FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL,
+        dw,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR) &lpMsgBuf,
+        0, NULL );
+
+    if (lpszFunction != NULL ) {
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, 
+            (lstrlen((LPCTSTR)lpMsgBuf)+lstrlen((LPCTSTR)lpszFunction)+40)*sizeof(TCHAR)); 
+        wsprintf((LPTSTR)lpDisplayBuf, 
+            TEXT("%s\n%s failed with error %d: %s"), 
+            lpszMessage, lpszFunction, dw, lpMsgBuf); 
+    }
+    else {
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, 
+            lstrlen((LPCTSTR)lpMsgBuf)); 
+        wsprintf((LPTSTR)lpDisplayBuf, 
+            TEXT("%s"), 
+            lpszMessage); 
+    }
+    	
+    MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_ICONSTOP | MB_OK); 
+
+    LocalFree(lpMsgBuf);
+    LocalFree(lpDisplayBuf);
+    ExitProcess( (dw != 0)? dw: 1); 
+}
     
