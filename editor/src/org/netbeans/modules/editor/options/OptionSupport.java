@@ -140,9 +140,9 @@ public class OptionSupport extends SystemOption {
 
         Settings.setValue(kitClass, settingName, newValue);
 
-        if (propertyName != null) {
+//        if (propertyName != null) {
             //firePropertyChange(propertyName, oldValue, newValue);[PENDING]
-        }
+//        }
     }
 
     

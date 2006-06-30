@@ -1002,7 +1002,7 @@ public class BaseOptions extends OptionSupport {
     public void setColoringMap(final Map coloringMap, boolean saveToXML){
         Map diffMap = null;
         if (coloringMap != null) {
-            if (inReadExternal) {
+//            if (inReadExternal) {
                 /* Fix of #11115
                  * The better place would be in upgradeOptions()
                  * which was attempted originally. However the normal
@@ -1015,7 +1015,7 @@ public class BaseOptions extends OptionSupport {
                  * Therefore the patch appears here.
                  */
                 //coloringMap = UpgradeOptions.patchColorings(getKitClass(), coloringMap);
-            }
+//            }
             
             if (!usingNewOptions && saveToXML){
                 diffMap = OptionUtilities.getMapDiff(getColoringMap(),coloringMap,false);

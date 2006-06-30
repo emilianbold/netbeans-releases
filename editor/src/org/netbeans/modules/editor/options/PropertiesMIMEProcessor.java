@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,19 +25,6 @@ public class PropertiesMIMEProcessor extends MIMEProcessor{
     /** Public ID of catalog. */
     public static final String PUBLIC_ID = "-//NetBeans//DTD Editor Properties settings 1.0//EN"; // NOI18N
     public static final String SYSTEM_ID = "http://www.netbeans.org/dtds/EditorProperties-1_0.dtd"; // NOI18N
-    
-    private static XMLDataObject.Info xmlInfo;
-    
-    /** Initilializes <code>MIME specific processor</code>. */
-    /*
-    public static synchronized void init() {
-        if (xmlInfo == null){
-            xmlInfo = new XMLDataObject.Info();
-            xmlInfo.addProcessorClass(PropertiesMIMEProcessor.class);
-            XMLDataObject.registerInfo(PUBLIC_ID, xmlInfo);
-        }
-    }
-     */
     
     /** Gets DTD's PUBLIC_ID */
     public String getPublicID(){

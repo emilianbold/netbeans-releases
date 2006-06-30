@@ -558,8 +558,6 @@ public class NbEditorKit extends ExtKit {
     /** Switch visibility of line numbers in editor */
     public class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
 
-        // no options for the kit, bugfix of #27568
-        private boolean lineNumbersVisible = false;
         
         public NbToggleLineNumbersAction() {
         }
@@ -728,8 +726,6 @@ public class NbEditorKit extends ExtKit {
 
     
     private static class LayerSubFolderMenu extends JMenu {
-
-        private boolean addSeparatorBeforeNextAction;
 
         public LayerSubFolderMenu(JTextComponent target, String text, List items) {
             super(text);
