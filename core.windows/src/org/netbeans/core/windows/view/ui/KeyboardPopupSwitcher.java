@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -172,7 +172,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         invokerTimerRunning = true;
     }
     
-    /** Stop invoker timer and dettach interrupter listener. */
+    /** Stop invoker timer and detach interrupter listener. */
     private static void cleanupInterrupter() {
         invokerTimerRunning = false;
         if (invokerTimer != null) {
@@ -321,7 +321,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
                         changeTableSelection(row, col);
                     }
                 } else if (code == KeyEvent.VK_ESCAPE) { // XXX see above
-                    cancelSwiching();
+                    cancelSwitching();
                 } else if (code == releaseKey) {
                     performSwitching();
                 }
@@ -348,7 +348,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
      * Cancels the popup if present, causing it to close without the active
      * document being changed.
      */
-    private void cancelSwiching() {
+    private void cancelSwitching() {
         hideCurrentPopup();
         StatusDisplayer.getDefault().setStatusText("");
     }
@@ -358,7 +358,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         if (popup != null) {
             pTable.getSelectedItem().activate();
         }
-        cancelSwiching();
+        cancelSwitching();
     }
     
     private synchronized void hideCurrentPopup() {
@@ -376,7 +376,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     public void windowLostFocus(WindowEvent e) {
         //remove the switcher when the main window is deactivated, 
         //e.g. user pressed Ctrl+Esc on MS Windows which opens the Start menu
-        cancelSwiching();
+        cancelSwitching();
         WindowManager.getDefault().getMainWindow().removeWindowFocusListener( this );
     }
     
