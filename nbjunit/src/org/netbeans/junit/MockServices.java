@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLConnection;
@@ -82,9 +82,9 @@ public class MockServices {
         // Need to also reset global lookup since it caches the singleton and we need to change it.
         try {
             Class lookup = Class.forName("org.openide.util.Lookup");
-            Field defaultLookup = lookup.getDeclaredField("defaultLookup");
+            Method defaultLookup = lookup.getDeclaredMethod("resetDefaultLookup");
             defaultLookup.setAccessible(true);
-            defaultLookup.set(null, null);
+            defaultLookup.invoke(null);
         } catch (ClassNotFoundException x) {
             // Fine, not using org-openide-lookup.jar.
         } catch (Exception x) {

@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -56,10 +57,6 @@ public class TopLoggingLookupTest extends NbTestCase {
 
         // initialize logging
         TopLogging.initialize();
-
-        MockServices.setServices(MyHandler.class);
-        handler = Lookup.getDefault().lookup(MyHandler.class);
-        assertNotNull("Handler found", handler);
     }
 
 
@@ -67,13 +64,27 @@ public class TopLoggingLookupTest extends NbTestCase {
     }
 
     public void testLogOneLine() throws Exception {
+        MockServices.setServices(MyHandler.class);
+        handler = Lookup.getDefault().lookup(MyHandler.class);
+        assertNotNull("Handler found", handler);
+
+        
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
 
         assertEquals("[First visible message]", handler.logs.toString());
-
     }
 
-    public static final class MyHandler extends Handler {
+    public void testDeadlock78865() throws Exception {
+        MockServices.setServices(AnotherThreadLoggingHandler.class);
+        handler = Lookup.getDefault().lookup(MyHandler.class);
+        assertNotNull("Handler found", handler);
+
+        Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
+
+        assertEquals("[First visible message]", handler.logs.toString());
+    }
+
+    public static class MyHandler extends Handler {
         public List<String> logs = new ArrayList<String>();
 
         public void publish(LogRecord record) {
@@ -86,6 +97,18 @@ public class TopLoggingLookupTest extends NbTestCase {
 
         public void close() throws SecurityException {
             logs.add("close");
+        }
+
+    }
+    public static final class AnotherThreadLoggingHandler extends MyHandler
+    implements Runnable {
+        public AnotherThreadLoggingHandler() {
+            Logger.global.info("in constructor before");
+            RequestProcessor.getDefault().post(this).waitFinished();
+            Logger.global.info("in constructor after");
+        }
+        public void run() {
+            Logger.global.warning("running in parael");
         }
 
     }

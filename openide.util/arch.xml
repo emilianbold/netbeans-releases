@@ -518,6 +518,11 @@ org.my.netbeans.extramodule.ExtraTip
     provided by <code>org-openide-actions</code> module
     when looking for <a href="@org-openide-actions@/org/openide/actions/ActionManager.html">org.openide.actions.ActionManager</a> implementation.
     </api>.
+   <api category="friend" group="java" name="Lookup.resetDefaultLookup" type="export">
+    There is a static private method <code>Lookup.resetDefaultLookup</code> that 
+    is called by NbJUnit's <code>MockServices</code> to properly reset default
+    lookup and fire changes to all registred listeners.
+   </api>. 
 
   </p>
  </answer>

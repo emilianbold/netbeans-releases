@@ -13,6 +13,7 @@
 
 package org.openide.util;
 
+import com.sun.org.apache.bcel.internal.generic.LOOKUPSWITCH;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -118,13 +119,33 @@ public abstract class Lookup {
             return defaultLookup;
         }
 
-        // Had no such line, use simple impl.
-        // It does however need to have ClassLoader available or many things will break.
-        // Use the thread context classloader in effect now.
-        Lookup clLookup = Lookups.singleton(l);
-        defaultLookup = new ProxyLookup(new Lookup[] { misl, clLookup });
-
-        return defaultLookup;
+        DefLookup def = new DefLookup();
+        def.init(l, misl);
+        return defaultLookup = def;
+    }
+    
+    private static final class DefLookup extends ProxyLookup {
+        public DefLookup() {
+            super(new Lookup[0]);
+        }
+        
+        public void init(ClassLoader loader, Lookup metaInfLookup) {
+            // Had no such line, use simple impl.
+            // It does however need to have ClassLoader available or many things will break.
+            // Use the thread context classloader in effect now.
+            Lookup clLookup = Lookups.singleton(loader);
+            setLookups(new Lookup[] { metaInfLookup, clLookup });
+        }
+    }
+    
+    /** Called from MockServices to reset default lookup in case services change
+     */
+    private static void resetDefaultLookup() {
+        if (defaultLookup instanceof DefLookup) {
+            DefLookup def = (DefLookup)defaultLookup;
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            def.init(l, Lookups.metaInfServices(l));
+        }
     }
 
     /** Look up an object matching a given interface.

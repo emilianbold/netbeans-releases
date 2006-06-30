@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,6 +42,8 @@ import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.SAXParseException;
@@ -580,23 +583,39 @@ public final class TopLogging {
         }
     } // end of LgStream
 
-    private static final class LookupDel extends Handler {
+    private static final class LookupDel extends Handler 
+    implements LookupListener {
+        private Lookup.Result<Handler> handlers;
+        private Collection<? extends Handler> instances;
+        
+        
+        public LookupDel() {
+            handlers = Lookup.getDefault().lookupResult(Handler.class);
+            instances = handlers.allInstances();
+            handlers.addLookupListener(this);
+        }
+        
+        
         public void publish(LogRecord record) {
-            for (Handler h : Lookup.getDefault().lookupAll(Handler.class)) {
+            for (Handler h : instances) {
                 h.publish(record);
             }
         }
 
         public void flush() {
-            for (Handler h : Lookup.getDefault().lookupAll(Handler.class)) {
+            for (Handler h : instances) {
                 h.flush();
             }
         }
 
         public void close() throws SecurityException {
-            for (Handler h : Lookup.getDefault().lookupAll(Handler.class)) {
+            for (Handler h : instances) {
                 h.close();
             }
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            instances = handlers.allInstances();
         }
     } // end of LookupDel
 

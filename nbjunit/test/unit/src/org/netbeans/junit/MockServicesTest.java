@@ -21,6 +21,8 @@ import java.util.concurrent.Executors;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 public abstract class MockServicesTest extends TestCase {
 
@@ -40,6 +42,7 @@ public abstract class MockServicesTest extends TestCase {
     }
 
     protected abstract <T> Iterator<? extends T> lookup(Class<T> clazz);
+    protected abstract void assertChangesFired(int countOfChanges);
 
     private String getChoice() {
         Iterator<? extends Choice> it = lookup(Choice.class);
@@ -59,12 +62,16 @@ public abstract class MockServicesTest extends TestCase {
      */
     public void testGetChoice() {
         MockServices.setServices();
+        assertChangesFired(1);
         assertEquals("initial value", "default", getChoice());
         MockServices.setServices(MockChoice1.class);
         assertEquals("registered value", "mock1", getChoice());
+        assertChangesFired(1);
         MockServices.setServices(MockChoice2.class);
         assertEquals("registered value", "mock2", getChoice());
+        assertChangesFired(1);
         MockServices.setServices(MockChoice1.class, MockChoice2.class);
+        assertChangesFired(1);
         try {
             getChoice();
             fail("Should not work on >1 choice");
@@ -223,16 +230,38 @@ public abstract class MockServicesTest extends TestCase {
             }
         }
 
+        protected void assertChangesFired(int countOfChanges) {
+            // no changes listening supported
+        }
+
     }
 
-    public static class LookupTest extends MockServicesTest {
-
+    public static class LookupTest extends MockServicesTest 
+    implements LookupListener {
+        private Lookup.Result<?> res;
+        private int cnt;
+        
         public LookupTest(String s) {
             super(s);
+            res = Lookup.getDefault().lookupResult(Object.class);
+            res.addLookupListener(this);
+            res.allInstances();
         }
 
         protected <T> Iterator<? extends T> lookup(Class<T> clazz) {
             return Lookup.getDefault().lookupAll(clazz).iterator();
+        }
+
+        protected void assertChangesFired(int countOfChanges) {
+            if (countOfChanges <= cnt) {
+                cnt = 0;
+            } else {
+                fail("Not enough changes fired: " + cnt + " expected: " + countOfChanges);
+            }
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            cnt++;
         }
 
     }

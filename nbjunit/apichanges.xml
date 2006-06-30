@@ -26,6 +26,23 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="MockServicesAndLookup">
+        <api name="nbjunit"/>
+        <summary>Added class <code>MockServices</code></summary>
+        <version major="1" minor="33"/>
+        <date day="30" month="6" year="2006"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                The MockServices class now supports closer cooperation
+                with <code>Lookup</code>. By default, clients listening to
+                <code>Lookup.Result</code> changes will be notified about
+                change in its content whenever one calls <code>MockServices.setServices</code>.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="MockServices"/>
+    </change>
     
     <change id="MockServices">
         <api name="nbjunit"/>
