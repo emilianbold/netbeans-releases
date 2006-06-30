@@ -1,14 +1,20 @@
 <?xml version="1.0"?>
 <!--
-                Sun Public License Notice
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
 
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
 
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -16,12 +22,12 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- location for workdir for the harness -->
     <property name="xtest.workdir" location="work"/>
-    <!-- Directory where test are unpacked before their execution. 
+    <!-- Directory where test are unpacked before their execution.
          Used in prepare-tests target and MTestExecutor. -->
     <property name="xtest.tests.dir" location="${xtest.workdir}/sys/tests"/>
     <!-- location for results from the harness -->
     <property name="xtest.results" location="results"/>
-    <!-- XTest data directory. It corresponds with test/${xtest.testtype}/data 
+    <!-- XTest data directory. It corresponds with test/${xtest.testtype}/data
         directory where test developer can store golden files, sample files 
         or additional resources needed for tests.
     -->
