@@ -35,3 +35,5 @@
 
 1.9:	Another attempt to fix #71965 - don't forcibly unlock, better line
 	number tracking, perform update as an atomic edit.
+
+1.10:   Prevents NPE when strange TC is opened, #78904.
