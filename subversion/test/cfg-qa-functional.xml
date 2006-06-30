@@ -15,14 +15,29 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Subversion functional test config">
     
-    <testbag testattribs="tag,validation" executor="ide" name="versioning">
+    <testbag testattribs="validation" executor="ide" name="versioning">
 	<testset dir="qa-functional/src">
             <patternset>
+                <!-- checkout -->
                 <include name="org/netbeans/test/subversion/main/checkout/CheckoutUITest.class"/>
+                <include name="org/netbeans/test/subversion/main/checkout/CheckoutContentTest.class"/>
+                <include name="org/netbeans/test/subversion/main/checkout/ImportUITest.class"/>
+                <include name="org/netbeans/test/subversion/main/checkout/ProxySettingsUITest.class"/>
+                <!-- archeology -->
+                <include name="org/netbeans/test/subversion/main/archeology/SearchHistoryUITest.class"/>
+                <!-- branches -->
+                <include name="org/netbeans/test/subversion/main/branches/CopyTest.class"/>
+                <include name="org/netbeans/test/subversion/main/branches/CopyUiTest.class"/>
+                <include name="org/netbeans/test/subversion/main/branches/MergeUiTest.class"/>
+                <include name="org/netbeans/test/subversion/main/branches/RevertUiTest.class"/>
+                <include name="org/netbeans/test/subversion/main/branches/SwitchUiTest.class"/>
+                <!-- commit -->
+                <include name="org/netbeans/test/subversion/main/commit/CommitDataTest.class"/>
+                <include name="org/netbeans/test/subversion/main/commit/CommitUiTest.class"/>
+                <include name="org/netbeans/test/subversion/main/commit/IgnoreTest.class"/>
             </patternset>
         </testset>
     </testbag>	
-    
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <compiler name="functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>

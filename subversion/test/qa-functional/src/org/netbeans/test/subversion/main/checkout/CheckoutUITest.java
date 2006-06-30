@@ -24,6 +24,7 @@ package org.netbeans.test.subversion.main.checkout;
 import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -86,6 +87,7 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testInvokeClose() throws Exception {
+        OutputOperator oo = OutputOperator.invoke();
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();   
         co.btCancel().pushNoBlock();
     }
@@ -93,6 +95,7 @@ public class CheckoutUITest extends JellyTestCase{
     public void testChangeAccessTypes() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);

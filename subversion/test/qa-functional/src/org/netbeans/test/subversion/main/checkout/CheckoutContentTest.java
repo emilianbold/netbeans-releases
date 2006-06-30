@@ -13,6 +13,7 @@ import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -76,6 +77,8 @@ public class CheckoutContentTest extends JellyTestCase {
     public void testCheckoutProject() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        OutputTabOperator oto;
+        OutputOperator oo = OutputOperator.invoke();
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
         TestKit.closeProject(PROJECT_NAME);
@@ -90,7 +93,7 @@ public class CheckoutContentTest extends JellyTestCase {
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+        oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
