@@ -1,5 +1,5 @@
 10c10
-<  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+<  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 ---
 >  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 14a15
@@ -7,9 +7,9 @@
 27a29
 > import org.netbeans.api.debugger.DebuggerManager;
 54c56
-<     private static final boolean ssverbose = 
+<     private static final boolean ssverbose =
 ---
->     private static boolean ssverbose = 
+>     private static boolean ssverbose =
 59c61,62
 <     private String position;
 ---
