@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -135,9 +135,9 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         if (fm.getHeight() > rectangle.height) {
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 // don't use deriveFont() - see #49973 for details
-                paintFont = new Font(font.getName(), font.getStyle(), 12);
+                paintFont = new Font(paintFont.getName(), paintFont.getStyle(), 12);
             } else {
-                paintFont = font.deriveFont(12f);
+                paintFont = paintFont.deriveFont(12f);
             }
             fm = g.getFontMetrics (paintFont);
         }
