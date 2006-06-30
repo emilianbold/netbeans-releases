@@ -1,32 +1,38 @@
 <?xml version="1.0"?>
 <!--
-                Sun Public License Notice
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
 
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
 
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="serverplugins/sun/appsrv81/test/qa-functional" basedir="." default="all">
-    
+
     <import file="../../../../nbbuild/templates/xtest-qa-functional.xml"/>
 
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
-    
+
     <target name="set-environment">
         <condition property="sjsas.server.path" value="e:\space\optional\sjsas">
             <os family="windows"/>
         </condition>
         <condition property="sjsas.server.path" value="/space/optional/sjsas">
             <os family="unix"/>
-        </condition>        
+        </condition>
         <property name="xtest.ide.commandline.suffix" value="-J-Dsjsas.server.path=${sjsas.server.path} -J-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
         <!--<property name="xtest.ide.commandline.suffix" value="-J-Dsjsas.server.path=${sjsas.server.path} -J-Dnetbeans.dest.dir=${netbeans.dest.dir} -J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8765"/>-->
         <property name="test.classpath" value=""/>
