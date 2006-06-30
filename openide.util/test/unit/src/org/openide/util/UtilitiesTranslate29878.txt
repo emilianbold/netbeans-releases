@@ -10,15 +10,21 @@ org.openide.util.actions.SystemAction=org.openide.util.actions.SystemAction
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/autoload/core-output.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+# The contents of this file are subject to the terms of the Common Development
+# and Distribution License (the License). You may not use this file except in
+# compliance with the License.
+#
+# You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+# or http://www.netbeans.org/cddl.txt.
+#
+# When distributing Covered Code, include this CDDL Header Notice in each file
+# and include the License file at http://www.netbeans.org/cddl.txt.
+# If applicable, add the following below the CDDL Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyrighted [year] [name of copyright owner]"
+#
+# The Original Software is NetBeans. The Initial Developer of the Original
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 # Microsystems, Inc. All Rights Reserved.
 
 org.netbeans.core.actions.NextOutJumpAction=org.netbeans.core.output.NextOutJumpAction
@@ -32,16 +38,6 @@ org.netbeans.core.actions.StopCompileAction=org.netbeans.core.compiler.StopCompi
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/autoload/core-execution.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 org.netbeans.core.actions.ExecutionViewAction=org.netbeans.core.execution.ExecutionViewAction
 org.netbeans.core.actions.SetArgumentsAction=org.netbeans.core.execution.SetArgumentsAction
@@ -49,16 +45,6 @@ org.netbeans.core.actions.SetArgumentsAction=org.netbeans.core.execution.SetArgu
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/autoload/core-deprecated.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 org.netbeans.core.actions.AddFSAction=org.netbeans.core.deprecated.AddFSAction
 org.netbeans.core.actions.AddJarAction=org.netbeans.core.deprecated.AddJarAction
@@ -72,16 +58,6 @@ org.netbeans.core.NbProject=org.netbeans.core.deprecated.NbProject
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/autoload/javahelp-api.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 # Moved to a separate module (and deprecated).
 org.netbeans.core.JavaHelp$HelpComponent=org.netbeans.modules.javahelp.JavaHelp$HelpComponent
@@ -89,16 +65,6 @@ org.netbeans.core.JavaHelp$HelpComponent=org.netbeans.modules.javahelp.JavaHelp$
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/autoload/vcscore.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-#
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-#
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 
 # the following packages changed their names
@@ -112,16 +78,6 @@ org.netbeans.modules.vcs.cmdline.UserCommand                       org.netbeans.
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/vcsgen.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 
 # the following packages changed their names
@@ -132,16 +88,6 @@ com.netbeans.enterprise.modules.vcs.cmdline                        org.netbeans.
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/apisupport.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 org.netbeans.modules.apisupport.BeanTester=org.netbeans.modules.apisupport.testers.BeanTester
 org.netbeans.modules.apisupport.CompilerTypeTester=org.netbeans.modules.apisupport.testers.CompilerTypeTester
@@ -161,16 +107,6 @@ org.netbeans.modules.apisupport.ManifestEditorSupport$ManifestEnv=org.netbeans.m
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/ant.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 # Old repackaging.
 org.apache.tools.ant.module.IntrospectedInfo=org.apache.tools.ant.module.api.IntrospectedInfo
@@ -281,16 +217,6 @@ org.netbeans.modules.xml.editor.coloring                    org.netbeans.modules
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/utilities.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 
 org.netbeans.modules.pdf.PDFSettings=org.netbeans.modules.pdf.Settings
@@ -309,16 +235,6 @@ org.netbeans.modules.xml.XMLNormalizeElementAction                 org.netbeans.
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/image.jar!/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 
 # the following class has corrupted serialVersionUID
@@ -365,17 +281,6 @@ org.netbeans.modules.xml.css.javacc.TokenMgrError                  org.netbeans.
 
 
 # jar:file:/home.local/jarda/work/nbbuild/netbeans/modules/text.jar!/META-INF/netbeans/translate.names
-
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 
 # the following class has corrupted serialVersionUID
@@ -437,16 +342,6 @@ org.netbeans.modules.xml.lib.StreamEnvironment                     org.netbeans.
 
 # nbfs:MountQBjavaQBorg-netbeans-modules-apisupport-javahelp-api.xml/META-INF/netbeans/translate.names
 
-#                 Sun Public License Notice
-# 
-# The contents of this file are subject to the Sun Public License
-# Version 1.0 (the "License"). You may not use this file except in
-# compliance with the License. A copy of the License is available at
-# http://www.sun.com/
-# 
-# The Original Code is NetBeans. The Initial Developer of the Original
-# Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
-# Microsystems, Inc. All Rights Reserved.
 
 # Moved to a separate module (and deprecated).
 org.netbeans.core.JavaHelp$HelpComponent=org.netbeans.modules.javahelp.JavaHelp$HelpComponent
