@@ -1,13 +1,19 @@
 /*
- *                 Sun Public License Notice
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
  *
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,16 +22,16 @@ package org.netbeans.modules.j2ee.ddloaders.ejb;
 import org.openide.loaders.DataObject;
 
 /** DDChangeEvent describes the change that affects deployment of web application.
- *  Deployment descriptor object can listen to these changes 
+ *  Deployment descriptor object can listen to these changes
  *  and update its configuration according to change.
  *
  * @author  Ludovic Champenois
  */
 public class DDChangeEvent extends java.util.EventObject {
-    
+
     /** Event fired when new ejb is added or copied from another location */
     public static final int EJB_ADDED = 1;
-    
+
     /** Event fired when ejb is renamed or moved within one web module */
     public static final int EJB_CHANGED = 2;
     
