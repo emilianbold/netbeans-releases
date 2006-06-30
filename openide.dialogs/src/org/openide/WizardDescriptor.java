@@ -277,6 +277,8 @@ public class WizardDescriptor extends DialogDescriptor {
     
     private RequestProcessor.Task backgroundValidationTask;
 
+    private boolean validationRuns;
+
     {
         // button init
         ResourceBundle b = NbBundle.getBundle("org.openide.Bundle"); // NOI18N
@@ -736,12 +738,17 @@ public class WizardDescriptor extends DialogDescriptor {
             wizardPanel.requestFocus();
         }
     }
+    
+    // for xtesting usage only
+    boolean isForwardEnabled () {
+        return panels.current ().isValid () && !validationRuns;
+    }
 
     private void updateStateInAWT () {
         Panel p = panels.current ();        
         boolean next = panels.hasNext ();
         boolean prev = panels.hasPrevious ();
-        boolean valid = p.isValid ();
+        boolean valid = p.isValid () && !validationRuns;
 
         nextButton.setEnabled (next && valid);
         previousButton.setEnabled (prev);
@@ -1099,23 +1106,25 @@ public class WizardDescriptor extends DialogDescriptor {
                 try {
                     // try validation current panel
                     v.validate();
+                    validationRuns = false;
 
                     // validation succesfull
                     if (SwingUtilities.isEventDispatchThread ()) {
-                        setValid(true);
                         err.log (Level.FINE, "Runs onValidPerformer directly in EDT."); // NOI18N
                         onValidPerformer.run();
                     } else {
                         err.log (Level.FINE, "invokeLater onValidPerformer."); // NOI18N
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
-                                setValid(true);
                                 err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
                                 onValidPerformer.run();
                             } 
                         });
                     }
                 } catch (WizardValidationException wve) {
+                    validationRuns = false;
+                    updateState ();
+                    
                     // cannot continue, notify user
                     if (wizardPanel != null) {
                         wizardPanel.setErrorMessage(wve.getLocalizedMessage(), Boolean.FALSE);
@@ -1129,7 +1138,6 @@ public class WizardDescriptor extends DialogDescriptor {
                             comp.requestFocus();
                         }
                     }
-
                 }
 
             }
@@ -1137,11 +1145,13 @@ public class WizardDescriptor extends DialogDescriptor {
 
         if (panel instanceof AsynchronousValidatingPanel) {
             AsynchronousValidatingPanel p = (AsynchronousValidatingPanel) panel;
-            setValid(false);  // disable Next> Finish buttons
+            validationRuns = true;  // disable Next> Finish buttons
             p.prepareValidation();
             err.log (Level.FINE, "Do ASYNCHRONOUS_JOBS_RP.post(validationPeformer)."); // NOI18N
+            updateStateWithFeedback ();
             backgroundValidationTask = ASYNCHRONOUS_JOBS_RP.post(validationPeformer);
         } else if (panel instanceof ValidatingPanel) {
+            validationRuns = true;
             err.log (Level.FINE, "Runs validationPeformer."); // NOI18N
             validationPeformer.run();
         } else {

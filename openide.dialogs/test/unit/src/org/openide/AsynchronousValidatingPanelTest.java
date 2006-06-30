@@ -60,6 +60,7 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
             public String validateMsg;
             public String failedMsg;
             public boolean running;
+            public boolean wasEnabled;
             
             public MyPanel () {
                 super ("enhanced panel");
@@ -71,6 +72,7 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
             
             public synchronized void validate () throws WizardValidationException {
                 err.log ("validate() entry.");
+                wasEnabled = wd.isNextEnabled () || wd.isFinishEnabled ();
                 running = false;
                 notifyAll ();
                 if (validateMsg != null) {
@@ -104,15 +106,16 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
         synchronized (mp) {
             wd.doNextClick ();
             assertTrue ("Validation runs.", mp.running);
-            assertFalse ("Wizard is not valid now.",  wd.isValid ());
+            assertFalse ("Wizard is not valid when validation runs.",  wd.isForwardEnabled ());
             // let's wait till wizard is valid
             while (mp.running) {
-                assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
+                assertFalse ("Wizard is not valid during validation.",  wd.isForwardEnabled ());
                 mp.wait ();
             }
         }
         waitWhileSetValidDone ();
-        assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
+        assertFalse ("Finish is disabled during validation.", mp.wasEnabled);
+        assertTrue ("Wizard is ready to next validation however previous failed.",  wd.isForwardEnabled ());
         assertEquals ("The lazy validation failed on Next.", mp.validateMsg, mp.failedMsg);
         assertNull ("The lazy validation failed, still no initialiaation", panels[1].component);
         assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
@@ -120,15 +123,17 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
         mp.validateMsg = null;
         synchronized (mp) {
             err.log ("Do Next. Validation will run with: validateMsg=" + mp.validateMsg + ", failedMsg=" + mp.failedMsg);
+            assertTrue ("Wizard is valid before validation.",  wd.isForwardEnabled ());
             wd.doNextClick ();
             assertTrue ("Validation runs.", mp.running);
             while (mp.running) {
-                assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
+                assertFalse ("Wizard is not valid during validation.",  wd.isForwardEnabled ());
                 mp.wait ();
             }
         }
         waitWhileSetValidDone ();
-        assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
+        assertFalse ("Finish is disabled during validation.", mp.wasEnabled);
+        assertTrue ("Wizard is valid when validation passes.",  wd.isForwardEnabled ());
         assertNull ("Validation on Next passes", mp.failedMsg);
         assertNotNull ("Now we switched to another panel", panels[1].component);
         assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
@@ -141,12 +146,13 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
             err.log ("Do Finish. Validation will run with: validateMsg=" + mfp.validateMsg + ", failedMsg=" + mfp.failedMsg);
             wd.doFinishClick();
             while (mfp.running) {
-                assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
+                assertFalse ("Wizard is not valid during validation.",  wd.isForwardEnabled ());
                 mfp.wait ();
             }
         }
         waitWhileSetValidDone ();
-        assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
+        assertFalse ("Finish is disabled during validation.", mp.wasEnabled);
+        assertTrue ("Wizard is ready to next validation.",  wd.isForwardEnabled ());
         assertEquals ("The lazy validation failed on Finish.", mfp.validateMsg, mfp.failedMsg);
         assertNull ("The validation failed, still no initialiaation", panels[2].component);
         assertEquals ("State has not changed", state, wd.getValue ());
@@ -157,12 +163,13 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
             err.log ("Do Finish. Validation will run with: validateMsg=" + mfp.validateMsg + ", failedMsg=" + mfp.failedMsg);
             wd.doFinishClick ();
             while (mfp.running) {
-                assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
+                assertFalse ("Wizard is not valid during validation.",  wd.isForwardEnabled ());
                 mfp.wait ();
             }
         }
         waitWhileSetValidDone ();
-        assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
+        assertFalse ("Finish is disabled during validation.", mp.wasEnabled);
+        assertTrue ("Wizard is valid when validation passes.",  wd.isForwardEnabled ());
         assertNull ("Validation on Finish passes", mfp.failedMsg);        
         assertNull ("Finish was clicked, no initialization either", panels[2].component);
         assertEquals ("The state is finish", WizardDescriptor.FINISH_OPTION, wd.getValue ());
