@@ -13,8 +13,11 @@
 
 package org.openide.text;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -31,6 +34,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.Caret;
@@ -38,6 +42,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.openide.util.Lookup;
 import org.openide.windows.ExternalDropHandler;
+import org.openide.windows.TopComponent;
 
 /** performance trick - 18% of time saved during open of an editor
 *
@@ -211,7 +216,14 @@ final class QuietEditorPane extends JEditorPane {
                 if (t.isDataFlavorSupported(ActiveEditorDrop.FLAVOR)){
                     Object obj = t.getTransferData(ActiveEditorDrop.FLAVOR);
                     if (obj instanceof ActiveEditorDrop && comp instanceof JTextComponent){
-                        return ((ActiveEditorDrop)obj).handleTransfer((JTextComponent)comp);
+                        boolean success = false;
+                        try {
+                            success = ((ActiveEditorDrop)obj).handleTransfer((JTextComponent)comp);
+                        }
+                        finally {
+                            requestFocus(comp);
+                        }
+                        return success;
                     }
                 }
             } catch (Exception exc){
@@ -220,6 +232,26 @@ final class QuietEditorPane extends JEditorPane {
             return delegator.importData(comp, t);
         }
 
+        private void requestFocus(JComponent comp) {
+            Container container = SwingUtilities.getAncestorOfClass(TopComponent.class, comp);
+            if (container != null) {
+                ((TopComponent)container).requestActive();
+            }
+            else {
+                Component f = comp;
+                do {
+                    f = f.getParent();
+                    if (f instanceof Frame) {
+                        break;
+                    }
+                } while (f != null);
+                if (f != null) {
+                    f.requestFocus();
+                }
+                comp.requestFocus();
+            }
+        }
+        
         public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
             for (int i=0; i<transferFlavors.length; i++){
                 if (transferFlavors[i] == ActiveEditorDrop.FLAVOR){
