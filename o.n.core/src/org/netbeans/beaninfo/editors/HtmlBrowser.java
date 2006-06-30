@@ -61,10 +61,6 @@ public class HtmlBrowser extends Object {
             return NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser"); //NOI18N
         }
         
-        public boolean supportsCustomEditor () {
-            return false;
-        }
-        
         public void setAsText (java.lang.String str) throws java.lang.IllegalArgumentException {
             try {
                 if (NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser").equals (str) //NOI18N
