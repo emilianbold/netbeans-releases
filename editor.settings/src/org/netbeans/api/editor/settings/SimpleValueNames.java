@@ -1,13 +1,19 @@
 /*
- *                 Sun Public License Notice
- * 
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- * 
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,7 +25,7 @@ package org.netbeans.api.editor.settings;
  *  @author Martin Roskanin. Miloslav Metelka
  */
 public final class SimpleValueNames {
-    
+
     /**
      * Number of spaces to draw when the '\t' character
      * is found in the text. Better said when the drawing-engine
@@ -28,7 +34,7 @@ public final class SimpleValueNames {
      * Values: java.lang.Integer instances
      */
     public static final String TAB_SIZE = "tab-size"; // NOI18N
-    
+
     /**
      * Whether expand typed tabs to spaces. The number of spaces to substitute
      * per one typed tab is determined by SPACES_PER_TAB setting.
