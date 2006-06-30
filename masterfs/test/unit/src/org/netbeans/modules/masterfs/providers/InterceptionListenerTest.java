@@ -73,7 +73,9 @@ public class InterceptionListenerTest extends NbTestCase  {
             }
             
         });
-        assertNotNull(fo.createData(getName()));
+        try {
+            assertNotNull(fo.createData(getName()));
+        } catch (RuntimeException ex) {}
     }
     
     public void testBeforeCreate() throws IOException {
