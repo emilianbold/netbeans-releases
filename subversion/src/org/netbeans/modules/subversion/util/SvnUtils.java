@@ -16,6 +16,7 @@ package org.netbeans.modules.subversion.util;
 import java.util.regex.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.*;
+import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -24,6 +25,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.*;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.subversion.FileStatusCache;
@@ -600,24 +602,22 @@ public class SvnUtils {
     }
 
     /**
-     * Scans file content for binary data.
+     * Checks if the file is binary.
      * 
      * @param file file to check
-     * @return true if the file contains non-printable characters, false otherwise
+     * @return true if the file cannot be edited in NetBeans text editor, false otherwise
      */ 
     public static boolean isFileContentBinary(File file) {
-        BufferedInputStream in = null;
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) return false;
         try {
-            in = new BufferedInputStream(new FileInputStream(file), 1024);
-            byte [] probe = new byte[1024];
-            in.read(probe);
-            return isBinary(probe);
-        } catch (IOException e) {
-            return false;
-        } finally {
-            try { in.close(); } catch (Exception e) {}
+            DataObject dao = DataObject.find(fo);
+            return dao.getCookie(EditorCookie.class) == null;
+        } catch (DataObjectNotFoundException e) {
+            // not found, continue
         }
-    }
+            return false;
+        }
 
     /**
      * @return true if the buffer is almost certainly binary.
