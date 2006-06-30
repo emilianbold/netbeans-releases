@@ -1,13 +1,19 @@
 <!--
-                Sun Public License Notice
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
 
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
 
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <html>
@@ -15,13 +21,13 @@ Microsystems, Inc. All Rights Reserved.
 
 SPI for providers of J2EE Web module oriented projects.
 
-<p>This API will typically be used by modules that implement project types for 
-J2EE web module (various implementations of web module project, web module with 
+<p>This API will typically be used by modules that implement project types for
+J2EE web module (various implementations of web module project, web module with
 web services, portlets, etc.). It can be also used for implementation of web
 module that is not based on Projects API.
 </p>
 
-<p>A module that implements this API needs to expose implementation of 
+<p>A module that implements this API needs to expose implementation of
 {@link org.netbeans.modules.web.spi.webmodule.WebModuleProvider} either in
 project lookup (for implementations based on Projects API) or in global lookup.
 The module will implement 
