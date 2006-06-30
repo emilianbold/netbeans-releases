@@ -101,6 +101,21 @@ public final class TestKit {
         //TestKit.deleteRecursively(file);
     }
     
+    public static void closeProject(String projectName) {
+        try {
+            Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+            rootNode.performPopupActionNoBlock("Close Project");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+        catch (Exception e) {
+            
+        }    
+    }
+    
     public static int compareThem(Object[] expected, Object[] actual, boolean sorted) {
         int result = 0;
         if (expected == null || actual == null)
