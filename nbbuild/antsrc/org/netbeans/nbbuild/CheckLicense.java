@@ -210,8 +210,8 @@ public class CheckLicense extends Task {
                     if (changed) {
                         log ("Rewriting " + file);
                         FileOutputStream os = new FileOutputStream(file);
-                        workingString = Pattern.compile(" +$", Pattern.MULTILINE).matcher(workingString).replaceAll("");
-                        os.write(workingString.getBytes());
+                        workingString = Pattern.compile(" +$", Pattern.MULTILINE).matcher(workingString+"X").replaceAll("");
+                        os.write(workingString.substring(0, workingString.length() - 1).getBytes());
                         if (rest != null) {
                             os.write(rest);
                         }

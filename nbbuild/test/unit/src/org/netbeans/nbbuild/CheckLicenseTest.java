@@ -414,7 +414,7 @@ public class CheckLicenseTest extends NbTestCase {
         "Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun\n" +
         "Microsystems, Inc. All Rights Reserved.\n" +
         "-->\n";
-        String script = createStript();
+        String script = createScript();
         
     
         File fileScript = PublicPackagesInProjectizedXMLTest.extractString(script);
@@ -447,7 +447,7 @@ public class CheckLicenseTest extends NbTestCase {
         }
     }
 
-    private static String createStript() {
+    private static String createScript() {
         String script =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
     "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
@@ -706,7 +706,7 @@ public class CheckLicenseTest extends NbTestCase {
             " *\n" +
             " * Contributor(s): Ivan Soleimanipour.\n" +
             " */\n";
-        String script = createStript();
+        String script = createScript();
         
     
         File fileScript = PublicPackagesInProjectizedXMLTest.extractString(script);
@@ -731,7 +731,7 @@ public class CheckLicenseTest extends NbTestCase {
 
     
     public void testDoubleHtmlComments() throws Exception {
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString(createStript());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString(createScript());
 
         java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
 "<!--\n" +
@@ -764,6 +764,46 @@ public class CheckLicenseTest extends NbTestCase {
         }
     }    
     
+    public void testDoNotReplaceSpacesBeyondTheLicense() throws Exception {
+        StringBuffer sb = new StringBuffer();
+        sb.append('A');
+        for (int i = 0; i < 10000; i++) {
+            sb.append(' ');
+        }
+        sb.append('B');
+        
+        java.io.File license = PublicPackagesInProjectizedXMLTest.extractString(
+            "<!-- Sun Public License Notice -->\n" +
+            "<head></head><body>\n" +
+            "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
+            "</body>" +
+            sb
+        );
+        String script = createScript();
+        
+    
+        PublicPackagesInProjectizedXMLTest.execute (
+            PublicPackagesInProjectizedXMLTest.extractString(script), 
+            new String[] { 
+            "-Ddir=" + license.getParent(),  
+            "-Dinclude=" + license.getName(),
+        });
+        
+        String out = PublicPackagesInProjectizedXMLTest.readFile(license);
+
+
+        if (out.indexOf("Sun Public") >= 0) {
+            fail(out);
+        }
+        
+        Matcher m = Pattern.compile("A( *)B").matcher(out);
+        if (!m.find()) {
+            fail("There should be long line:\n" + out);
+        }
+        if (m.group(1).length() != 10000) {
+            fail("There should be 10000 spaces, but is only: " + m.group(1).length() + "\n" + out);
+        }
+    }    
 }
 
       
