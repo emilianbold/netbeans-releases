@@ -131,6 +131,8 @@ public class DocumentTabMarker implements PropertyChangeListener {
             if (orig == null) orig = tc.getDisplayName();
             if (orig == null) orig = tc.getName();
 
+            if (orig == null) return; // through finally
+
             if (orig.startsWith("<html>")) {
                 return;
             }
