@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="Test" basedir="." default="all" >
-  <taskdef name="checkl" 
-    classname="org.netbeans.nbbuild.CheckLicense" 
+  <taskdef name="checkl"
+    classname="org.netbeans.nbbuild.CheckLicense"
     classpath="${nb_all}/nbbuild/nbantext.jar"
   />
 <target name="all" >
@@ -22,7 +22,7 @@
    </convert>
    <convert token='1997-[0-2][09][09][0-9]' replace='1997-2006'/>
    <convert token='Original\n[^A-Za-z]*Code' replace='Original\n Software' replaceall="true"/>
-   <convert token='Original Code' replace='Original Software' replaceall="true"/>
+   <convert token='Original Software' replace='Original Software' replaceall="true"/>
   </checkl>
 </target>
 </project>
