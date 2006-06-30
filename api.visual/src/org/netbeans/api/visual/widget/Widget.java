@@ -15,6 +15,7 @@ package org.netbeans.api.visual.widget;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.EmptyBorder;
+import org.netbeans.api.visual.border.SwingBorder;
 import org.netbeans.api.visual.layout.AbsoluteLayout;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.model.ObjectState;
@@ -220,6 +221,11 @@ public class Widget {
             repaint ();
         else
             revalidate ();
+    }
+
+    public final void setBorder (javax.swing.border.Border swingBorder) {
+        assert swingBorder != null;
+        setBorder (new SwingBorder (scene, swingBorder));
     }
 
     public final Layout getLayout () {
