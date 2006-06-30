@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <process.h>
 #include <commdlg.h>
+#include <tchar.h>
 
 static char* getUserHomeFromRegistry(char* userhome);
 static char* GetStringValue(HKEY key, const char *name);
@@ -26,6 +27,7 @@ static void parseConfigFile(const char* path);
 static int readClusterFile(const char* path);
 static void parseArgs(int argc, char *argv[]);
 static int dirExists(const char* path);
+static void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction);
 
 static char userdir[MAX_PATH] = "c:\\nbuser";
 static char options[4098] = "";
@@ -107,8 +109,7 @@ int WINAPI
     sprintf(clusterFileName, "%s\\etc\\%s.clusters", topdir, appname);
 
     if (!readClusterFile(clusterFileName)) {
-        MessageBox(NULL, "Cannot read cluster file!", "Error", MB_ICONSTOP | MB_OK);
-	exit(1);
+        ErrorExit("Cannot read cluster file!", NULL);
     }
 
     char nbexec[MAX_PATH];
@@ -159,8 +160,7 @@ int WINAPI
     hFind = FindFirstFile(pattern, &ffd);
     do {
         if (hFind == INVALID_HANDLE_VALUE || bNext == FALSE) {
-            MessageBox(NULL, "Cannot find 'platform*' folder!", "Error", MB_ICONSTOP | MB_OK);
-            exit(1);
+            ErrorExit("Cannot find 'platform*' folder!", NULL);
         }
         if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
             sprintf(nbexec, "%s\\%s\\lib\\nbexec.exe", topdir, ffd.cFileName);
@@ -189,14 +189,15 @@ int WINAPI
     start.wShowWindow = SW_HIDE;
 #endif
     
+    // printf("Cmdline: >%s<\ncwd >%s<\n", cmdline2, topdir);
     if (!CreateProcess (NULL, cmdline2,
                         NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS,
-                        NULL, NULL,
+                        NULL, 
+                        _T(topdir), // lpCurrentDirectory
                         &start,
                         &pi)) {
         sprintf(buf, "Cannot start %s", appname);
-        MessageBox(NULL, buf, "Error", MB_ICONSTOP | MB_OK);
-        exit(1);
+        ErrorExit(buf, "CreateProcess");
     } else {
         // Wait until child process exits.
         WaitForSingleObject( pi.hProcess, INFINITE );
@@ -526,4 +527,44 @@ int dirExists(const char* path) {
     }
 }
 
+// Show error dialog and exits the program
+// lpszMessage - error message to be printed
+// lpszFunction - name of last called method that return fail status
+//                can be NULL
+void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction) 
+{ 
+    LPVOID lpMsgBuf;
+    LPVOID lpDisplayBuf;
+    DWORD dw = GetLastError(); 
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+        FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL,
+        dw,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR) &lpMsgBuf,
+        0, NULL );
+
+    if (lpszFunction != NULL ) {
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, 
+            (lstrlen((LPCTSTR)lpMsgBuf)+lstrlen((LPCTSTR)lpszFunction)+40)*sizeof(TCHAR)); 
+        wsprintf((LPTSTR)lpDisplayBuf, 
+            TEXT("%s\n%s failed with error %d: %s"), 
+            lpszMessage, lpszFunction, dw, lpMsgBuf); 
+    }
+    else {
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, 
+            lstrlen((LPCTSTR)lpMsgBuf)); 
+        wsprintf((LPTSTR)lpDisplayBuf, 
+            TEXT("%s"), 
+            lpszMessage); 
+    }
+    	
+    MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_ICONSTOP | MB_OK); 
+
+    LocalFree(lpMsgBuf);
+    LocalFree(lpDisplayBuf);
+    ExitProcess( (dw != 0)? dw: 1); 
+}
 
