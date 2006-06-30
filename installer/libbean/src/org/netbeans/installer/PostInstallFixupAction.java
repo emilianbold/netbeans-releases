@@ -148,6 +148,7 @@ public class PostInstallFixupAction extends ProductAction {
             init(support);
             
             deleteFiles(nbInstallDir, new String[] {"etc" + sep + "netbeans.conf"});
+            deleteFiles(nbInstallDir, new String[] {"etc" + sep + "netbeans.clusters"});
             deleteFiles(uninstallDir, new String[] {"install.log"});
             deleteFiles(nbInstallDir, new String[] {nbClusterDir + sep + "config" + sep + "productid" });
             deleteFiles(nbInstallDir, new String[] {nbClusterDir + sep + "var" + sep + "license_accepted" });
