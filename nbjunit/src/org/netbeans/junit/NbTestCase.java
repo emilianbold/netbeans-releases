@@ -110,9 +110,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     /**
-     * Provide ability for tests, setUp and tearDown to request that they run only in the AWT event queue.
+     * Provide ability for tests to request that they run only in the AWT event queue.
      * By default, false.
-     * @return true to run all test methods, setUp and tearDown in the EQ, false to run in whatever thread
+     * @return true to run all test methods in the EQ, false to run in whatever thread
      */
     protected boolean runInEQ() {
         return false;
@@ -162,22 +162,29 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     /**
-     * Runs the bare test sequence. It checks {@link #runInEQ} and possibly 
-     * schedules the call of <code>setUp</code>, <code>runTest</code> and <code>tearDown</code>
-     * to AWT event thread. It also consults {@link #timeOut} and if so, it starts a 
+     * Runs the actual test. It delegates to standard JUnit <code>runTest</code>
+     * but wraps the call with nbjunit specific enhancements. For example it 
+     * checks {@link #runInEQ} and possibly schedules the call to AWT event 
+     * thread. It also consultes {@link #timeOut} and if so, it starts a 
      * count down and aborts the <code>runTest</code> if the time out expires.
-     * @exception Throwable if any exception is thrown
      */
-    public void runBare() throws Throwable {
-        abstract class Guard implements Runnable {
+    protected void runTest() throws Throwable {
+        class Guard implements Runnable {
             private boolean finished;
             private Throwable t;
 
-            public abstract void doSomething() throws Throwable;
-            
             public void run() {
                 try {
-                    doSomething();
+                    long now = System.nanoTime();
+                    try {
+                        NbTestCase.super.runTest();
+                    } finally {
+                        long last = System.nanoTime() - now;
+                        if (last < 1) {
+                            last = 1;
+                        }
+                        NbTestCase.this.time = last;
+                    }
                 } catch (Throwable t) {
                     this.t = Log.wrapWithMessages(t);
                 } finally {
@@ -187,12 +194,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                     }
                 }
             }
-            
-            public synchronized void waitFinished() throws Throwable {
-                waitFinished(0);
-            }
 
-            public synchronized void waitFinished(int time) throws Throwable {
+            public synchronized void waitFinished() throws Throwable {
+                int time = timeOut();
                 if (!finished) {
                     try {
                         wait(time);
@@ -211,73 +215,26 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 }
             }
         }
-        /* original sequence from TestCase.runBare():
-            setUp();
-            try {
-                runTest();
-            } finally {
-                tearDown();
-            }
-         */
-        // setUp
-        if(runInEQ()) {
-            Guard setUp = new Guard() {
-                public void doSomething() throws Throwable {
-                    setUp();
-                }
-            };
-            EventQueue.invokeLater(setUp);
-            setUp.waitFinished();
+
+        Guard run = new Guard();
+
+        if (runInEQ()) {
+            EventQueue.invokeLater(run);
+            run.waitFinished();
         } else {
-            setUp();
-        }
-        try {
-            // runTest
-            Guard runTest = new Guard() {
-                public void doSomething() throws Throwable {
-                    long now = System.nanoTime();
-                    try {
-                        NbTestCase.super.runTest();
-                    } finally {
-                        long last = System.nanoTime() - now;
-                        if (last < 1) {
-                            last = 1;
-                        }
-                        NbTestCase.this.time = last;
-                    }
-                }
-            };
-            if (runInEQ()) {
-                EventQueue.invokeLater(runTest);
-                runTest.waitFinished(timeOut());
+            if (timeOut() == 0) {
+                // Regular test.
+                run.run();
+                run.waitFinished();
             } else {
-                if (timeOut() == 0) {
-                    // Regular test.
-                    runTest.run();
-                    runTest.waitFinished();
-                } else {
-                    // Regular test with time out
-                    Thread watchDog = new Thread(runTest, "Test Watch Dog: " + getName());
-                    watchDog.start();
-                    runTest.waitFinished(timeOut());
-                }
-            }
-        } finally {
-            // tearDown
-            if(runInEQ()) {
-                Guard tearDown = new Guard() {
-                    public void doSomething() throws Throwable {
-                        tearDown();
-                    }
-                };
-                EventQueue.invokeLater(tearDown);
-                tearDown.waitFinished();
-            } else {
-                tearDown();
+                // Regular test with time out
+                Thread watchDog = new Thread(run, "Test Watch Dog: " + getName());
+                watchDog.start();
+                run.waitFinished();
             }
         }
     }
-
+    
     /** Parses the test name to find out whether it encodes a number. The
      * testSomeName1343 represents nubmer 1343.
      * @return the number
