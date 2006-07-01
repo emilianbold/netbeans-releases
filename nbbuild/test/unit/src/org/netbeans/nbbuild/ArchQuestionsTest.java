@@ -123,7 +123,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString (
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
-                "Sun Public License Notice\n" +
+                "CDDL Notice\n" +
 "-->\n" +
             // "<!DOCTYPE api-answers PUBLIC '-//NetBeans//DTD Arch Answers//EN' '../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd' [\n" +
             // The following lines needs to be commented out as we do not have the right relative locations!
@@ -213,7 +213,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString (
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
-                "Sun Public License Notice\n" +
+                "CDDL Notice\n" +
 "-->\n" +
             // "<!DOCTYPE api-answers PUBLIC '-//NetBeans//DTD Arch Answers//EN' '../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd' [\n" +
             // The following lines needs to be commented out as we do not have the right relative locations!
@@ -269,7 +269,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         java.io.File apichanges = PublicPackagesInProjectizedXMLTest.extractString(
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
-                "Sun Public License Notice\n" +
+                "CDDL Notice\n" +
 "-->\n" +
 //"<!DOCTYPE apichanges PUBLIC '-//NetBeans//DTD API changes list 1.0//EN' '../../nbbuild/javadoctools/apichanges.dtd'>\n" +
 "<apichanges>\n" +
@@ -476,7 +476,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString (
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
-                "Sun Public License Notice\n" +
+                "CDDL Notice\n" +
 "-->\n" +
             // "<!DOCTYPE api-answers PUBLIC '-//NetBeans//DTD Arch Answers//EN' '../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd' [\n" +
             // The following lines needs to be commented out as we do not have the right relative locations!
@@ -520,7 +520,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         java.io.File project = PublicPackagesInProjectizedXMLTest.extractString(
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
-                "Sun Public License Notice\n" +
+                "CDDL Notice\n" +
 "-->\n" +
 "<project xmlns='http://www.netbeans.org/ns/project/1'>\n" +
     "<type>org.netbeans.modules.apisupport.project</type>\n" +
@@ -671,7 +671,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString (
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
-                "Sun Public License Notice\n" +
+                "CDDL Notice\n" +
 "-->\n" +
             // "<!DOCTYPE api-answers PUBLIC '-//NetBeans//DTD Arch Answers//EN' '../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd' [\n" +
             // The following lines needs to be commented out as we do not have the right relative locations!
@@ -712,7 +712,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         java.io.File project = PublicPackagesInProjectizedXMLTest.extractString(
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
-                "Sun Public License Notice\n" +
+                "CDDL Notice\n" +
 "-->\n" +
 "<project xmlns='http://www.netbeans.org/ns/project/1'>\n" +
     "<type>org.netbeans.modules.apisupport.project</type>\n" +

@@ -194,12 +194,7 @@ public class FixDependenciesTest extends NbTestCase {
         String projectXML = 
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
-"                Sun Public License Notice\n" +
-"\n" +
-"The contents of this file are subject to the Sun Public License\n" +
-"Version 1.0 (the 'License'). You may not use this file except in\n" +
-"compliance with the License. A copy of the License is available at\n" +
-"http://www.sun.com/\n" +
+"                CDDL Notice\n" +
 "\n" +
 "The Original Code is NetBeans. The Initial Developer of the Original\n" +
 "Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun\n" +
