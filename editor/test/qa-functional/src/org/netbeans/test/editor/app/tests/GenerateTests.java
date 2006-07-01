@@ -107,16 +107,7 @@ public class GenerateTests extends Object {
         
         result.println("//This file was automaticaly generated. Do not modify.");
         result.println("/*");
-        result.println(" *                 Sun Public License Notice");
-        result.println(" *");
-        result.println(" * The contents of this file are subject to the Sun Public License");
-        result.println(" * Version 1.0 (the \"License\"). You may not use this file except in");
-        result.println(" * compliance with the License. A copy of the License is available at");
-        result.println(" * http://www.sun.com/");
-        result.println(" *");
-        result.println(" * The Original Code is NetBeans. The Initial Developer of the Original");
-        result.println(" * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun");
-        result.println(" * Microsystems, Inc. All Rights Reserved.");
+        result.println(" * Some License");
         result.println(" */");
         result.println("");
         result.println("package " + packag + ";");
