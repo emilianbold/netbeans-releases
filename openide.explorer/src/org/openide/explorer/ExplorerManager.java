@@ -226,30 +226,30 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             private void updateSelection() {
                 oldValue = selectedNodes;
 
-                Collection<Node> currentNodes = Arrays.asList(oldValue);
+                Collection currentNodes = Arrays.asList(oldValue);
 
                 // PENDING: filter out duplicities from the selection
-                Collection<Node> newSelection = Arrays.asList(value);
+                Collection newSelection = Arrays.asList(value);
 
-                Collection<Node> nodesToAdd = new LinkedList<Node>(newSelection);
+                Collection nodesToAdd = new LinkedList(newSelection);
                 nodesToAdd.removeAll(currentNodes);
 
-                Collection<Node> nodesToRemove = new LinkedList<Node>(currentNodes);
+                Collection nodesToRemove = new LinkedList(currentNodes);
                 nodesToRemove.removeAll(newSelection);
 
                 selectedNodes = value;
 
-                Iterator<Node> it;
+                Iterator it;
 
                 // remove listeners from nodes that are being deselected
                 for (it = nodesToRemove.iterator(); it.hasNext();) {
-                    Node n = it.next();
+                    Node n = (Node) it.next();
                     n.removeNodeListener(weakListener);
                 }
 
                 // and add listeners to nodes that become selected
                 for (it = nodesToAdd.iterator(); it.hasNext();) {
-                    Node n = it.next();
+                    Node n = (Node) it.next();
                     n.removeNodeListener(weakListener);
                     n.addNodeListener(weakListener);
                 }
@@ -592,7 +592,7 @@ bigloop:
 
             fields.put("explored", explored); // NOI18N
 
-            LinkedList<String[]> selected = new LinkedList<String[]>();
+            LinkedList selected = new LinkedList();
 
             for (int i = 0; i < selectedNodes.length; i++) {
                 if (isUnderRoot(selectedNodes[i])) {
@@ -644,7 +644,7 @@ bigloop:
             ); // NOI18N
         } else {
             String[] exploredCtx = (String[]) fields.get("explored", null); // NOI18N
-            String[][] selPaths = (String[][]) fields.get("selected", null); // NOI18N
+            Object[] selPaths = (Object[]) fields.get("selected", null); // NOI18N
 
             try {
                 Node root = h.getNode();
@@ -678,7 +678,7 @@ bigloop:
         } else {
             String[] rootCtx = (String[]) ois.readObject();
             String[] exploredCtx = (String[]) ois.readObject();
-            LinkedList<String[]> ll = new LinkedList<String[]>();
+            LinkedList ll = new LinkedList();
 
             for (;;) {
                 String[] path = (String[]) ois.readObject();
@@ -696,7 +696,8 @@ bigloop:
     }
 
     private void restoreSelection(
-        final Node root, final String[] exploredCtx, final List<String[]> selectedPaths) {
+        final Node root, final String[] exploredCtx, final List selectedPaths /* of String[] */
+    ) {
         setRootContext(root);
 
         // XXX(-ttran) findPath() can take a long time and employs DataSystems
@@ -713,15 +714,15 @@ bigloop:
             new Runnable() {
                 public void run() {
                     // convert paths to Nodes
-                    List<Node> selNodes = new ArrayList<Node>(selectedPaths.size());
+                    List selNodes = new ArrayList(selectedPaths.size());
 
-                    for (Iterator<String[]> iter = selectedPaths.iterator(); iter.hasNext();) {
-                        String[] path = iter.next();
+                    for (Iterator iter = selectedPaths.iterator(); iter.hasNext();) {
+                        String[] path = (String[]) iter.next();
                         selNodes.add(findPath(root, path));
                     }
 
                     // set the selection
-                    Node[] newSelection = selNodes.toArray(new Node[selNodes.size()]);
+                    Node[] newSelection = (Node[]) selNodes.toArray(new Node[selNodes.size()]);
 
                     if (exploredCtx != null) {
                         setExploredContext(findPath(root, exploredCtx), newSelection);
@@ -837,7 +838,7 @@ bigloop:
     * Then the root node is changed to Node.EMPTY
     */
     private class Listener extends NodeAdapter implements Runnable {
-        Collection<Node> removeList = new HashSet<Node>();
+        Collection removeList = new HashSet();
 
         Listener() {
         }
@@ -897,10 +898,10 @@ bigloop:
                 // if another node is removed after this point, the selection
                 // will be updated later.
                 remove = removeList;
-                removeList = new HashSet<Node>();
+                removeList = new HashSet();
             }
 
-            LinkedList<Node> newSel = new LinkedList<Node>(Arrays.asList(getSelectedNodes()));
+            LinkedList newSel = new LinkedList(Arrays.asList(getSelectedNodes()));
             Iterator it = remove.iterator();
 
             while (it.hasNext()) {
@@ -908,7 +909,7 @@ bigloop:
 
                 if (newSel.contains(n_remove)) {
                     // compare paths to root
-                    Node n_selection = newSel.get(newSel.indexOf(n_remove));
+                    Node n_selection = (Node) newSel.get(newSel.indexOf(n_remove));
 
                     if (!Arrays.equals(NodeOp.createPath(n_remove, null), NodeOp.createPath(n_selection, null))) {
                         it.remove();
@@ -917,13 +918,13 @@ bigloop:
             }
 
             newSel.removeAll(remove);
-            for( Iterator<Node> i=newSel.iterator(); i.hasNext(); ) {
-                Node n = i.next();
+            for( Iterator i=newSel.iterator(); i.hasNext(); ) {
+                Node n = (Node)i.next();
                 if( !isUnderRoot( n ) )
                     i.remove();
             }
 
-            Node[] selNodes = newSel.toArray(new Node[newSel.size()]);
+            Node[] selNodes = (Node[]) newSel.toArray(new Node[newSel.size()]);
             setSelectedNodes0(selNodes);
         }
     }
