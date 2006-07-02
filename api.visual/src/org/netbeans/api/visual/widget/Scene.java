@@ -12,12 +12,15 @@
  */
 package org.netbeans.api.visual.widget;
 
-import org.netbeans.api.visual.util.GeomUtil;
 import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.laf.DefaultLookFeel;
 import org.netbeans.api.visual.laf.LookFeel;
+import org.netbeans.api.visual.util.GeomUtil;
+import org.openide.util.WeakSet;
 
 import javax.swing.*;
+import javax.swing.event.AncestorListener;
+import javax.swing.event.AncestorEvent;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -34,6 +37,7 @@ public class Scene extends Widget {
 
     private JComponent component;
     private Graphics2D graphics;
+    private WeakSet<JComponent> satelites;
 
     private Font defaultFont;
     private HashMap<Widget,Rectangle> repaints = new HashMap<Widget, Rectangle> ();
@@ -49,15 +53,34 @@ public class Scene extends Widget {
         setBackground (lookFeel.getBackground ());
         setForeground (lookFeel.getForeground ());
         sceneAnimator = new SceneAnimator (this);
+        satelites = new WeakSet<JComponent> ();
     }
 
     public JComponent createView () {
         assert component == null;
-        return component = new SceneComponent (this);
+        component = new SceneComponent (this);
+        component.addAncestorListener (new AncestorListener() {
+            public void ancestorAdded (AncestorEvent event) {
+                repaintSatelite ();
+            }
+            public void ancestorRemoved (AncestorEvent event) {
+                repaintSatelite ();
+            }
+            public void ancestorMoved (AncestorEvent event) {
+                repaintSatelite ();
+            }
+        });
+        return component;
     }
 
     public JComponent getComponent () {
         return component;
+    }
+
+    public JComponent createSateliteView () {
+        SateliteComponent sateliteComponent = new SateliteComponent (this);
+        satelites.add (sateliteComponent);
+        return sateliteComponent;
     }
 
     public final Graphics2D getGraphics () {
@@ -121,6 +144,7 @@ public class Scene extends Widget {
         if (! preferredSize.equals (component.getPreferredSize ())) {
             component.setPreferredSize (preferredSize);
             component.revalidate ();
+//            repaintSatelite ();
         }
 
         Dimension componentSize = component.getSize ();
@@ -140,8 +164,10 @@ public class Scene extends Widget {
         if (sceneResized)
             resolveBounds (getLocation (), bounds);
 
-        if (! getLocation ().equals (preLocation)  ||  ! bounds.equals (preBounds))
+        if (! getLocation ().equals (preLocation)  ||  ! bounds.equals (preBounds)) {
             component.repaint ();
+//            repaintSatelite ();
+        }
     }
 
     public final void validate () {
@@ -175,8 +201,10 @@ public class Scene extends Widget {
 
         // TODO - count with zoom factor while repainting
         // TODO - maybe improves performance when component.repaint will be called for all widgets/rectangles separately
-        if (r != null)
+        if (r != null) {
             component.repaint (convertSceneToView (r));
+            repaintSatelite ();
+        }
 //        System.out.println ("time: " + System.currentTimeMillis ());
 
         notifyValidated ();
@@ -186,6 +214,12 @@ public class Scene extends Widget {
     }
 
     protected void notifyValidated () {
+    }
+
+    private void repaintSatelite () {
+        for (JComponent view : satelites) {
+            view.repaint ();
+        }
     }
 
     public final double getZoomFactor () {
