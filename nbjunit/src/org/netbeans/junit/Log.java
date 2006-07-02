@@ -27,6 +27,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -204,6 +206,15 @@ public final class Log extends Handler {
         sb.append(Thread.currentThread().getName());
         sb.append(" MSG: ");
         String msg = record.getMessage();
+        ResourceBundle b = record.getResourceBundle();
+        if (b != null) {
+            try {
+                msg = b.getString(msg);
+            } catch (MissingResourceException ex) {
+                // ignore
+            }
+        }
+        
         if (msg != null && record.getParameters() != null) {
             msg = MessageFormat.format(msg, record.getParameters());
         }

@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 /** Checks that we can do proper logging.
@@ -131,5 +133,26 @@ public class LoggingTest extends NbTestCase {
             fail("There should be Ahoj\n" + s);
         }
         assertEquals("Not logged for FINE: " + s, -1, s.indexOf("Jardo"));
+    }
+    public void testFmting() throws Exception {
+        Logger log = Logger.getLogger(getName());
+        
+        LogRecord rec = new LogRecord(Level.SEVERE, "LOG_SevereMsg");
+        rec.setResourceBundle(ResourceBundle.getBundle("org.netbeans.junit.TestBundle"));
+        rec.setParameters(new Object[] { "Very" });
+        log.log(rec);
+
+        File f = new File(getWorkDir(), getName() + ".log");
+        assertEquals("Log file exists", true, f.exists());
+
+        byte[] arr = new byte[(int)f.length()];
+        FileInputStream is = new FileInputStream(f);
+        int l = is.read(arr);
+        assertEquals(l, arr.length);
+
+        String s = new String(arr);
+        if (s.indexOf("Important message Very") == -1) {
+            fail("There should the message\n" + s);
+        }
     }
 }
