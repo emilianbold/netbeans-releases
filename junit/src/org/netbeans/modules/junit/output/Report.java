@@ -101,9 +101,14 @@ final class Report {
     /**
      */
     Collection getTests() {
-        assert EventQueue.isDispatchThread();
         
-        /* Called from the EventDispatch thread */
+        /*
+         * May be called both from the EventDispatch thread and
+         * from other threads!
+         *
+         * TestSuiteNodeChildren.setFiltered() ... EventDispatch thread
+         * TestSuiteNodeChildren.addNotify() ... EventDispatch thread or else
+         */
         
         //PENDING - should be synchronized
         if (tests.isEmpty()) {
