@@ -566,7 +566,7 @@ public class MetaComponentCreator {
 
         try {
             newComp.initInstance(sourceComp.getBeanClass());
-            newComp.setInModel(true); // Issue 68897
+            newComp.setInModel(true); // need code epxression created (issue 68897)
         }
         catch (Exception ex) { // this is rather unlikely to fail
             ErrorManager em = ErrorManager.getDefault();
@@ -875,7 +875,7 @@ public class MetaComponentCreator {
         // add the new metacomponent to the model
         if (parentCont != null) {
             try {
-                formModel.addVisualComponent(newMetaComp, parentCont, constraints);
+                formModel.addVisualComponent(newMetaComp, parentCont, constraints, true);
             }
             catch (RuntimeException ex) {
                 // LayoutSupportDelegate may not accept the component
@@ -883,7 +883,7 @@ public class MetaComponentCreator {
                 return null;
             }
         }
-        else formModel.addComponent(newMetaComp, null);
+        else formModel.addComponent(newMetaComp, null, true);
 
         return newMetaComp;
     }
@@ -909,7 +909,7 @@ public class MetaComponentCreator {
                 && !(targetComp instanceof RADMenuComponent) ?
             (ComponentContainer) targetComp : null;
 
-        formModel.addComponent(newMetaComp, targetCont);
+        formModel.addComponent(newMetaComp, targetCont, true);
     }
 
 //    private RADComponent setContainerLayout(Class layoutClass,
@@ -1195,7 +1195,7 @@ public class MetaComponentCreator {
                 menuContainer = targetCont;
         }
 
-        formModel.addComponent(newMenuComp, menuContainer);
+        formModel.addComponent(newMenuComp, menuContainer, true);
     }
 
     // --------

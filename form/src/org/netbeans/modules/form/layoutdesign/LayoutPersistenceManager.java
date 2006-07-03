@@ -27,7 +27,7 @@ import org.w3c.dom.*;
  *
  * @author Jan Stola
  */
-public class LayoutPersistenceManager implements LayoutConstants {
+class LayoutPersistenceManager implements LayoutConstants {
     /** Layout model to load/save. */
     private LayoutModel layoutModel;
     /** Currently processed layout root. */
@@ -35,7 +35,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
     /** Currently processed dimension. */
     private int dimension;
     /** Map from component IDs to names or vice versa. */
-    private Map idNameMap;
+    private Map<String, String> idNameMap;
     /** Determines whether constants should be replaces by human readable expressions. */
     private boolean humanReadable;
     /** Size of current indent. */
@@ -283,16 +283,18 @@ public class LayoutPersistenceManager implements LayoutConstants {
     }
     
     /**
-     * Loads the layout of the given container.
+     * Loads the layout of the given container. Does not load containers
+     * recursively, is called for each container separately.
      *
      * @param rootId ID of the layout root (the container whose layout should be loaded).
      * @param dimLayoutList nodes holding the information about the layout.
      * @param nameToIdMap map from component names to component IDs.
      */
-    public void loadModel(String rootId, NodeList dimLayoutList, Map nameToIdMap)
+    void loadModel(String rootId, NodeList dimLayoutList, Map nameToIdMap)
         throws java.io.IOException
     {
         this.idNameMap = nameToIdMap;
+        resetMissingName(); // prepare for error recovery
         LayoutComponent root = layoutModel.getLayoutComponent(rootId);
         if (root == null) {
             root = new LayoutComponent(rootId, true);
@@ -316,6 +318,8 @@ public class LayoutPersistenceManager implements LayoutConstants {
                 }
             }
         }
+
+        correctMissingName(); // recover from missing component name if needed
     }
 
     /**
@@ -365,7 +369,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
             }
         }
         if (dimension == VERTICAL)
-            layoutModel.checkAndFixGroup(group);
+            checkAndFixGroup(group);
     }
 
     /**
@@ -396,8 +400,8 @@ public class LayoutPersistenceManager implements LayoutConstants {
         String name = attrMap.getNamedItem(ATTR_COMPONENT_ID).getNodeValue();
         Node linkSizeId = attrMap.getNamedItem(ATTR_LINK_SIZE);
         String id = (String)idNameMap.get(name);
-        if (id == null) {
-            throw new java.io.IOException("Undefined component referenced in layout: "+name); // NOI18N
+        if (id == null) { // try to workaround the missing name error (issue 77092)
+            id = useTemporaryId(name);
         }
         Node alignmentNode = attrMap.getNamedItem(ATTR_ALIGNMENT);
         int alignment = (alignmentNode == null) ? DEFAULT : integerFromNode(alignmentNode);
@@ -461,4 +465,128 @@ public class LayoutPersistenceManager implements LayoutConstants {
         return Integer.parseInt(nodeStr);
     }
 
+    // -----
+    // error recovery
+
+    /**
+     * This method is used during loading to check the alignment validity of
+     * given group and its subintervals. It checks use of BASELINE alignment of
+     * the group and the subintervals. Some invalid combinations were allowed by
+     * GroupLayout in version 1.0. See issue 78035 for details. This method also
+     * fixes the invalid combinations and sets the 'corrected' flag. This is
+     * needed for loading because wrong layouts still might exist from the past
+     * (and we still can't quite exclude it can't be created even now).
+     * BASELINE group can only contain BASELINE intervals, and vice versa,
+     * BASELINE interval can only be placed in BASELINE group.
+     * BASELINE can be set only on individual components.
+     * LEADING, TRAILING and CENTER alignments can be combined freely.
+     */
+    void checkAndFixGroup(LayoutInterval group) {
+        if (group.isParallel()) {
+            int groupAlign = group.getGroupAlignment();
+            int baselineCount = 0;
+
+            Iterator iter = group.getSubIntervals();
+            while (iter.hasNext()) {
+                LayoutInterval subInterval = (LayoutInterval)iter.next();
+                if (subInterval.getAlignment() == BASELINE) {
+                    if (!subInterval.isComponent()) {
+                        subInterval.setAlignment(groupAlign == BASELINE ? LEADING : DEFAULT);
+                        layoutModel.setCorrected();
+                        System.err.println("WARNING: Invalid use of BASELINE [1], corrected automatically"); // NOIO18N
+                    }
+                    else baselineCount++;
+                }
+            }
+
+            if (baselineCount > 0) {
+                if (baselineCount < group.getSubIntervalCount()) {
+                    // separate baseline intervals to a subgroup
+                    LayoutInterval subGroup = new LayoutInterval(PARALLEL);
+                    subGroup.setGroupAlignment(BASELINE);
+                    for (int i=0; i < group.getSubIntervalCount(); ) {
+                        LayoutInterval subInterval = group.getSubInterval(i);
+                        if (subInterval.getAlignment() == BASELINE) {
+                            group.remove(i);
+                            subGroup.add(subInterval, -1);
+                        }
+                        else i++;
+                    }
+                    if (groupAlign == BASELINE) {
+                        group.setGroupAlignment(LEADING);
+                    }
+                    group.add(subGroup, -1);
+                    layoutModel.setCorrected();
+                    System.err.println("WARNING: Invalid use of BASELINE [2], corrected automatically"); // NOIO18N
+                }
+                else if (groupAlign != BASELINE) {
+                    group.setGroupAlignment(BASELINE);
+                    layoutModel.setCorrected();
+                    System.err.println("WARNING: Invalid use of BASELINE [3], corrected automatically"); // NOIO18N
+                }
+            }
+            else if (groupAlign == BASELINE && group.getSubIntervalCount() > 0) {
+                group.setGroupAlignment(LEADING);
+                layoutModel.setCorrected();
+                System.err.println("WARNING: Invalid use of BASELINE [4], corrected automatically"); // NOIO18N
+            }
+        }
+    }
+
+    // The following code tries to fix a missing component name in the layout
+    // definition. Due to a bug (see issues 77092, 76749) it may happen that
+    // one component in the layout XML has "null" or duplicate name (while it is
+    // correct in the metacomponent). If it is the only wrong name in the
+    // container then it can be deduced from the map provided for converting
+    // names to IDs (it is the only ID not used).
+
+    private final String TEMPORARY_ID = "<temp_id>"; // NOI18N
+    private String missingNameH;
+    private String missingNameV;
+
+    private void resetMissingName() {
+        missingNameH = missingNameV = null;
+    }
+
+    private String useTemporaryId(String name) throws java.io.IOException {
+        if (dimension == HORIZONTAL) {
+            if (missingNameH == null && (missingNameV == null || missingNameV.equals(name))) {
+                missingNameH = name;
+                return TEMPORARY_ID;
+            }
+        }
+        else if (dimension == VERTICAL) {
+            if (missingNameV == null && (missingNameH == null || missingNameH.equals(name))) {
+                missingNameV = name;
+                return TEMPORARY_ID;
+            }
+        }
+        throw new java.io.IOException("Undefined component referenced in layout: "+name); // NOI18N
+    }
+
+    private void correctMissingName() throws java.io.IOException {
+        if (missingNameH == null && missingNameV == null)
+            return; // no problem
+
+        if (missingNameH != null && missingNameV != null && missingNameH.equals(missingNameV)
+            && idNameMap.size() == root.getSubComponentCount())
+        {   // we have one unknown name in each dimension, let's infer it from the idNameMap
+            for (Map.Entry<String, String> e : idNameMap.entrySet()) { // name -> id
+                if (layoutModel.getLayoutComponent(e.getValue()) == null) {
+                    LayoutComponent comp = layoutModel.getLayoutComponent(TEMPORARY_ID);
+                    layoutModel.changeComponentId(comp, e.getValue());
+                    layoutModel.setCorrected();
+                    System.err.println("WARNING: Invalid component name in layout: "+missingNameH // NOI18N
+                            +", corrected automatically to: "+e.getKey()); // NOI18N
+                    resetMissingName();
+                    return;
+                }
+            }
+        }
+
+        layoutModel.removeComponent(TEMPORARY_ID, true);
+        resetMissingName();
+        throw new java.io.IOException("Undefined component referenced in layout: " // NOI18N
+                + (missingNameH != null ? missingNameH : missingNameV));
+    }
 }

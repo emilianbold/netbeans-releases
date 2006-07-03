@@ -77,9 +77,6 @@ public class FormModel
     private MetaComponentCreator metaCreator;
 
     private CodeStructure codeStructure = new CodeStructure(false);
-    private Object codeStructureMark1;
-    private Object codeStructureMark2;
-//    private CodeGenerator codeGenerator; // [this reference should be removed]
     
     private FormSettings settings = new FormSettings(this);
     
@@ -285,11 +282,13 @@ public class FormModel
      * the container is not specified, the component is added to the
      * "other components". */
     public void addComponent(RADComponent metacomp,
-                             ComponentContainer parentContainer)
+                             ComponentContainer parentContainer,
+                             boolean newlyAdded)
     {
-        boolean newlyAdded = !metacomp.isInModel();
-        if (newlyAdded)
-            setInModel(metacomp, true);
+        if (newlyAdded || !metacomp.isInModel()) {
+            setInModelRecursively(metacomp, true);
+            newlyAdded = true;
+        }
 
         if (parentContainer != null) {
             parentContainer.add(metacomp);
@@ -300,14 +299,14 @@ public class FormModel
         }
 
         FormModelEvent ev = fireComponentAdded(metacomp, newlyAdded);
-        ev.setCodeChange(codeStructureMark1, codeStructureMark2);
     }
 
     /** Adds a new visual component to given container managed by the old
      * layout support. */
     public void addVisualComponent(RADVisualComponent metacomp,
                                    RADVisualContainer parentContainer,
-                                   Object constraints)
+                                   Object constraints,
+                                   boolean newlyAdded)
     {
         LayoutSupportManager layoutSupport = parentContainer.getLayoutSupport();
         if (layoutSupport != null) {
@@ -318,9 +317,10 @@ public class FormModel
             int index = constraints instanceof Integer ? ((Integer)constraints).intValue() : -1;
 
             // component needs to be "in model" (have code expression) before added to layout
-            boolean newlyAdded = !metacomp.isInModel();
-            if (newlyAdded)
-                setInModel(metacomp, true);
+            if (newlyAdded || !metacomp.isInModel()) {
+                setInModelRecursively(metacomp, true);
+                newlyAdded = true;
+            }
 
             try {
                 layoutSupport.acceptNewComponents(compArray, constrArray, index);
@@ -328,7 +328,7 @@ public class FormModel
             catch (RuntimeException ex) {
                 // LayoutSupportDelegate may not accept the component
                 if (newlyAdded)
-                    setInModel(metacomp, false);
+                    setInModelRecursively(metacomp, false);
                 throw ex;
             }
 
@@ -337,10 +337,9 @@ public class FormModel
             layoutSupport.addComponents(compArray, constrArray, index);
 
             FormModelEvent ev = fireComponentAdded(metacomp, newlyAdded);
-            ev.setCodeChange(codeStructureMark1, codeStructureMark2);
         }
         else {
-            addComponent(metacomp, parentContainer);
+            addComponent(metacomp, parentContainer, newlyAdded);
         }
     }
 
@@ -456,11 +455,10 @@ public class FormModel
         parentContainer.remove(metacomp);
 
         if (fromModel) {
-            setInModel(metacomp, false);
+            setInModelRecursively(metacomp, false);
         }
 
         FormModelEvent ev = fireComponentRemoved(metacomp, parentContainer, index, fromModel);
-        ev.setCodeChange(codeStructureMark1, codeStructureMark2);
     }
 
     // needed for the case of mixed hierarchy of new/old layout support
@@ -498,26 +496,6 @@ public class FormModel
         for (int i=0; i < events.length; i++)
             if (events[i].hasEventHandlers())
                 getFormEvents().detachEvent(events[i]);
-    }
-
-    void setInModel(RADComponent metacomp, boolean inModel) {
-        // turn on undo/redo recording on code structure (if allowed)
-        boolean codeStructureUndoRedo = codeStructure.isUndoRedoRecording();
-        if (undoRedoRecording && !codeStructureUndoRedo) {
-            codeStructure.setUndoRedoRecording(true);
-            codeStructureMark1 = codeStructure.markForUndo();
-        }
-
-        setInModelRecursively(metacomp, inModel);
-
-        // turn off undo/redo recording on code structure (if turned on)
-        if (undoRedoRecording && !codeStructureUndoRedo) {
-            codeStructureMark2 = codeStructure.markForUndo();
-            if (codeStructureMark2.equals(codeStructureMark1))
-                codeStructureMark2 = codeStructureMark1 = null;
-
-            codeStructure.setUndoRedoRecording(false);
-        }
     }
 
     static void setInModelRecursively(RADComponent metacomp, boolean inModel) {
@@ -808,8 +786,6 @@ public class FormModel
                                                ComponentContainer metacont,
                                                int index,
                                                boolean removedFromModel)
-//                                               Object codeStructureMark1,
-//                                               Object codeStructureMark2)
     {
         t("firing component removed: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
@@ -817,7 +793,6 @@ public class FormModel
         FormModelEvent ev =
             new FormModelEvent(this, FormModelEvent.COMPONENT_REMOVED);
         ev.setRemoveData(metacomp, metacont, index, removedFromModel);
-//                        codeStructureMark1, codeStructureMark2);
         sendEvent(ev);
 
         if (undoRedoRecording && metacomp != null && metacont != null)

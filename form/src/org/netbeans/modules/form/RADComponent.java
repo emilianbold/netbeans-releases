@@ -226,17 +226,19 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
     }
 
     protected void createCodeExpression() {
+        // create expression object
         if (componentCodeExpression == null) {
             CodeStructure codeStructure = formModel.getCodeStructure();
             componentCodeExpression = codeStructure.createExpression(
                                    FormCodeSupport.createOrigin(this));
             codeStructure.registerExpression(componentCodeExpression);
-
-            if (formModel.getTopRADComponent() != this)
-                formModel.getCodeStructure().createVariableForExpression(
-                                               componentCodeExpression,
-                                               0x30DF, // default type
-                                               storedName);
+        }
+        // make sure a variable is attached
+        if (formModel.getTopRADComponent() != this && componentCodeExpression.getVariable() == null) {
+            formModel.getCodeStructure().createVariableForExpression(
+                                           componentCodeExpression,
+                                           0x30DF, // default type
+                                           storedName);
         }
     }
 

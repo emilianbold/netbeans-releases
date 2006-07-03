@@ -248,20 +248,18 @@ class CopySupport {
                 if (sourceComponent instanceof RADVisualComponent
                     && targetComponent instanceof RADVisualContainer)
                 {
-                    RADVisualContainer visualCont =
-                        (RADVisualContainer) targetComponent;
-                    LayoutSupportManager layoutSupport =
-                        visualCont.getLayoutSupport();
+                    RADVisualComponent visualComp = (RADVisualComponent) sourceComponent;
+                    RADVisualContainer visualCont = (RADVisualContainer) targetComponent;
 
-                    if (layoutSupport == null) {
-                        visualCont.add(sourceComponent);
+                    if (visualCont.getLayoutSupport() == null) {
+                        targetForm.addComponent(visualComp, visualCont, false);
                         LayoutComponent parent = layoutModel.getLayoutComponent(visualCont.getId());
                         Object layoutUndoMark = layoutModel.getChangeMark();
                         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
                         boolean autoUndo = true;
                         if (layoutComponent == null) {
-                            layoutComponent = new LayoutComponent(sourceComponent.getId(),
-                                MetaComponentCreator.shouldBeLayoutContainer((RADVisualComponent)sourceComponent));
+                            layoutComponent = new LayoutComponent(visualComp.getId(),
+                                MetaComponentCreator.shouldBeLayoutContainer(visualComp));
                         }
                         resetConstraintProperties = true;
                         try {
@@ -275,28 +273,19 @@ class CopySupport {
                                 sourceForm.forceUndoOfCompoundEdit();
                             }
                         }
-                    } else {
-                        RADVisualComponent[] compArray = new RADVisualComponent[] {
-                            (RADVisualComponent) sourceComponent };
-                        LayoutConstraints[] constrArray = new LayoutConstraints[] {
-                            layoutSupport.getStoredConstraints(compArray[0]) };
-
+                    }
+                    else {
                         try {
-                            layoutSupport.acceptNewComponents(compArray,
-                                                              constrArray,
-                                                              -1);
+                            targetForm.addVisualComponent(visualComp, visualCont,
+                                    visualCont.getLayoutSupport().getStoredConstraints(visualComp),
+                                    false);
                         }
                         catch (RuntimeException ex) {
                             // layout support does not accept the component
                             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                             return transferable;
                         }
-
-                        // add the component to the target container
-                        visualCont.add(sourceComponent);
-                        layoutSupport.addComponents(compArray, constrArray, -1);
                     }
-                    targetForm.fireComponentAdded(sourceComponent, false);
                 }
                 else {
                     ComponentContainer targetContainer =
@@ -304,7 +293,7 @@ class CopySupport {
                             (ComponentContainer) targetComponent : null;
 
                     // add the component to the target container
-                    targetForm.addComponent(sourceComponent, targetContainer);
+                    targetForm.addComponent(sourceComponent, targetContainer, false);
                 }
                 if (resetConstraintProperties) {
                     ((RADVisualComponent)sourceComponent).resetConstraintsProperties();

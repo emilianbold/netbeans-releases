@@ -767,9 +767,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     newLayout = Boolean.TRUE;
                 }
                 catch (Exception ex) {
-                    for (Map.Entry<String, String> e : nameToIdMap.entrySet()) {
-                        layoutModel.removeComponent(e.getValue(), true);
-                    }
+                    // error occurred - treat this container as with unknown layout
+                    layoutModel.removeComponent(visualContainer.getId(), true);
                     layoutEx = ex;
                 }
             }

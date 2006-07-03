@@ -62,8 +62,6 @@ public class FormModelEvent extends EventObject
     private LayoutConstraints constraints;
     private int componentIndex = -1;
     private int[] reordering;
-    private Object codeUndoRedoStart;
-    private Object codeUndoRedoEnd;
     private String propertyName;
     private Object oldPropertyValue;
     private Object newPropertyValue;
@@ -135,14 +133,10 @@ public class FormModelEvent extends EventObject
                        ComponentContainer metacont,
                        int index,
                        boolean removedFromModel)
-//                       Object codeStructureMark1,
-//                       Object codeStructureMark2)
     {
         component = metacomp;
         container = metacont;
         componentIndex = index;
-//        codeUndoRedoStart = codeStructureMark1;
-//        codeUndoRedoEnd = codeStructureMark2;
         createdDeleted = removedFromModel;
 
         if (metacomp instanceof RADVisualComponent
@@ -153,11 +147,6 @@ public class FormModelEvent extends EventObject
             constraints = laysup == null ? null :
                 laysup.getStoredConstraints((RADVisualComponent)metacomp);
         }
-    }
-
-    void setCodeChange(Object startMark, Object endMark) {
-        codeUndoRedoStart = startMark;
-        codeUndoRedoEnd = endMark;
     }
 
     void setEvent(Event event, // may be null if the handler is just updated
@@ -474,13 +463,6 @@ public class FormModelEvent extends EventObject
             return ""; // NOI18N
         }
 
-        public void die() {
-            // it's quite necessary to release undo changes from CodeStructure
-            if (codeUndoRedoStart != null && codeUndoRedoEnd != null)
-                getFormModel().getCodeStructure().releaseUndoableChanges(
-                                       codeUndoRedoStart, codeUndoRedoEnd);
-        }
-
         // -------------
 
         private void undoContainerLayoutExchange() {
@@ -525,14 +507,18 @@ public class FormModelEvent extends EventObject
             RADVisualContainer metacont = (RADVisualContainer) getComponent();
             LayoutSupportManager laysup = metacont.getLayoutSupport();
             if (laysup != null) {
-                Node.Property prop = laysup.getLayoutProperty(getPropertyName());
-                if (prop != null)
-                    try {
-                        prop.setValue(getOldPropertyValue());
+                String propName = getPropertyName();
+                if (propName != null) {
+                    Node.Property prop = laysup.getLayoutProperty(propName);
+                    if (prop != null) {
+                        try {
+                            prop.setValue(getOldPropertyValue());
+                        }
+                        catch (Exception ex) { // should not happen
+                            ex.printStackTrace();
+                        }
                     }
-                    catch (Exception ex) { // should not happen
-                        ex.printStackTrace();
-                    }
+                }
             }
             else {
                 getFormModel().fireContainerLayoutChanged(metacont, null, null, null);
@@ -543,14 +529,18 @@ public class FormModelEvent extends EventObject
             RADVisualContainer metacont = (RADVisualContainer) getComponent();
             LayoutSupportManager laysup = metacont.getLayoutSupport();
             if (laysup != null) {
-                Node.Property prop = laysup.getLayoutProperty(getPropertyName());
-                if (prop != null)
-                    try {
-                        prop.setValue(getNewPropertyValue());
+                String propName = getPropertyName();
+                if (propName != null) {
+                    Node.Property prop = laysup.getLayoutProperty(propName);
+                    if (prop != null) {
+                        try {
+                            prop.setValue(getNewPropertyValue());
+                        }
+                        catch (Exception ex) { // should not happen
+                            ex.printStackTrace();
+                        }
                     }
-                    catch (Exception ex) { // should not happen
-                        ex.printStackTrace();
-                    }
+                }
             }
             else {
                 getFormModel().fireContainerLayoutChanged(metacont, null, null, null);
@@ -589,30 +579,18 @@ public class FormModelEvent extends EventObject
 
         private void undoComponentAddition() {
             removeComponent();
-            if (codeUndoRedoStart != null) {
-                getFormModel().getCodeStructure().undoToMark(codeUndoRedoStart);
-            }
         }
 
         private void undoComponentRemoval() {
-            if (codeUndoRedoStart != null) {
-                getFormModel().getCodeStructure().undoToMark(codeUndoRedoStart);
-            }
             addComponent();
         }
 
         private void redoComponentAddition() {
-            if (codeUndoRedoEnd != null) {
-                getFormModel().getCodeStructure().redoToMark(codeUndoRedoEnd);
-            }
             addComponent();
         }
 
         private void redoComponentRemoval() {
             removeComponent();
-            if (codeUndoRedoEnd != null) {
-                getFormModel().getCodeStructure().redoToMark(codeUndoRedoEnd);
-            }
         }
 
         private void addComponent() {

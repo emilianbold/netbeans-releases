@@ -111,6 +111,10 @@ public final class LayoutComponent implements LayoutConstants {
         }
     }
 
+    void setId(String id) {
+        componentId = id;
+    }
+
     void setLayoutInterval(LayoutInterval interval, int dimension) {
         layoutIntervals[dimension] = interval;
     }

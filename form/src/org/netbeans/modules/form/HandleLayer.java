@@ -2204,7 +2204,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         }
                         // Issue 69410 (don't mix remove/add chnages)
                         for (int i=0; i < movingComponents.length; i++) {
-                            getFormModel().addVisualComponent(movingComponents[i], targetContainer, null);
+                            getFormModel().addVisualComponent(movingComponents[i], targetContainer, null, false);
                         }
                     }
                     createLayoutUndoableEdit();
