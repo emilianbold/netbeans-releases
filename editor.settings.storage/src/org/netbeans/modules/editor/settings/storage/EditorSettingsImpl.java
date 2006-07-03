@@ -429,7 +429,7 @@ public class EditorSettingsImpl extends EditorSettings {
         if (currentKeyMapProfile == null) {
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject fo = fs.findResource (KEYMAPS_FOLDER);
-            currentKeyMapProfile = (String) fo.getAttribute (CURRENT_KEYMAP_PROFILE);
+            currentKeyMapProfile = fo == null ? null : (String) fo.getAttribute (CURRENT_KEYMAP_PROFILE);
             if (currentKeyMapProfile == null)
                 currentKeyMapProfile = "NetBeans";
         }
