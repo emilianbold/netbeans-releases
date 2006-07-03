@@ -5,6 +5,7 @@ additional libraries made available for use and distribution
 by other parties, including open-source projects.
 
 
+----------------------------------------------------------------
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 
 1. Definitions.
@@ -333,7 +334,6 @@ an equitable basis. Nothing herein is intended or shall be
 deemed to constitute any admission of liability.
 
 ----------------------------------------------------------------
-
 NOTICE PURSUANT TO SECTION 9 OF THE COMMON DEVELOPMENT AND
 DISTRIBUTION LICENSE (CDDL): This code is released under the
 CDDL and shall be governed by the laws of the State of
@@ -342,23 +342,18 @@ litigation relating to this License shall be subject to the
 jurisdiction of the Federal Courts of the Northern District of
 California and the state courts of the State of California, with
 venue lying in Santa Clara County, California.
-
 ----------------------------------------------------------------
 
-
-
-
-        
 Please review the complete list of open-source licenses
 governing software included in this software.  They can be
 found in the THIRDPARTYLICENSE.txt file.
 
 
-        
 Please review the list of libraries and licenses provided
 for use and redistribution by other parties. These libraries
 are redistributable subject to the conditions in the
 DISTRIBUTION.txt file.
+
 
 Sun Microsystems, Inc. ("Sun") SOFTWARE LICENSE AGREEMENT
 and ENTITLEMENT for SOFTWARE
