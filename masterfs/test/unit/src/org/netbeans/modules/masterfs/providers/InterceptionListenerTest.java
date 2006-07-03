@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.Action;
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -64,25 +65,6 @@ public class InterceptionListenerTest extends NbTestCase  {
         super(testName);
     }
     
-
-    public void testIssue71724() throws IOException {
-        FileObject fo = FileUtil.toFileObject(getWorkDir());
-        assertNotNull(fo);
-        assertNotNull(iListener);
-        assertEquals(0,iListener.beforeCreateCalls);
-        assertEquals(0,iListener.createSuccessCalls);
-        
-        fo.addFileChangeListener(new FileChangeAdapter() {
-            public void fileDataCreated(FileEvent fe) {
-                super.fileDataCreated(fe);
-                throw new RuntimeException();
-            }
-            
-        });
-        try {
-            assertNotNull(fo.createData(getName()));
-        } catch (RuntimeException ex) {}
-    }
     
     public void testBeforeCreate() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
