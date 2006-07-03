@@ -323,8 +323,9 @@ public class WorkDirStepOperator extends WizardOperator {
 
     /** clicks on "Search..." JButton
      */
-    public void search() {
-        btSearch().push();
+    public SearchRevisionsOperator search() {
+        btSearch().pushNoBlock();
+        return new SearchRevisionsOperator();
     }
 
     /**

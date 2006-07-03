@@ -1,7 +1,7 @@
 /*
  * SearchRevisions.java
  *
- * Created on 14/06/06 16:50
+ * Created on 7/3/06 9:46 AM
  */
 package org.netbeans.test.subversion.operators;
 
@@ -10,7 +10,7 @@ import org.netbeans.jemmy.operators.*;
 
 /** Class implementing all necessary methods for handling "Search Revisions" NbDialog.
  *
- * @author peter
+ * @author pvcs
  * @version 1.0
  */
 public class SearchRevisionsOperator extends NbDialogOperator {
@@ -21,10 +21,13 @@ public class SearchRevisionsOperator extends NbDialogOperator {
         super("Search Revisions");
     }
 
-    private JListOperator _lstSelectARevision;
-    private JButtonOperator _btWindowsScrollBarUI$WindowsArrowButton;
-    private JButtonOperator _btWindowsScrollBarUI$WindowsArrowButton2;
-    private JLabelOperator _lblSelectARevision;
+    private JListOperator _lstJList;
+    private JButtonOperator _btMetalScrollButton;
+    private JButtonOperator _btMetalScrollButton2;
+    private JLabelOperator _lblListLogEntriesFrom;
+    private JTextFieldOperator _txtFrom;
+    private JLabelOperator _lblYYYYMMDDEmptyMeansAll;
+    private JButtonOperator _btList;
     private JButtonOperator _btOK;
     private JButtonOperator _btCancel;
     private JButtonOperator _btHelp;
@@ -34,44 +37,74 @@ public class SearchRevisionsOperator extends NbDialogOperator {
     // Subcomponents definition part
     //******************************
 
-    /** Tries to find null ListView$NbList in this dialog.
+    /** Tries to find null JList in this dialog.
      * @return JListOperator
      */
-    public JListOperator lstSelectARevision() {
-        if (_lstSelectARevision==null) {
-            _lstSelectARevision = new JListOperator(this);
+    public JListOperator lstJList() {
+        if (_lstJList==null) {
+            _lstJList = new JListOperator(this);
         }
-        return _lstSelectARevision;
+        return _lstJList;
     }
 
-    /** Tries to find null WindowsScrollBarUI$WindowsArrowButton in this dialog.
+    /** Tries to find null MetalScrollButton in this dialog.
      * @return JButtonOperator
      */
-    public JButtonOperator btWindowsScrollBarUI$WindowsArrowButton() {
-        if (_btWindowsScrollBarUI$WindowsArrowButton==null) {
-            _btWindowsScrollBarUI$WindowsArrowButton = new JButtonOperator(this);
+    public JButtonOperator btMetalScrollButton() {
+        if (_btMetalScrollButton==null) {
+            _btMetalScrollButton = new JButtonOperator(this);
         }
-        return _btWindowsScrollBarUI$WindowsArrowButton;
+        return _btMetalScrollButton;
     }
 
-    /** Tries to find null WindowsScrollBarUI$WindowsArrowButton in this dialog.
+    /** Tries to find null MetalScrollButton in this dialog.
      * @return JButtonOperator
      */
-    public JButtonOperator btWindowsScrollBarUI$WindowsArrowButton2() {
-        if (_btWindowsScrollBarUI$WindowsArrowButton2==null) {
-            _btWindowsScrollBarUI$WindowsArrowButton2 = new JButtonOperator(this, 1);
+    public JButtonOperator btMetalScrollButton2() {
+        if (_btMetalScrollButton2==null) {
+            _btMetalScrollButton2 = new JButtonOperator(this, 1);
         }
-        return _btWindowsScrollBarUI$WindowsArrowButton2;
+        return _btMetalScrollButton2;
     }
 
-    /** Tries to find "Select a Revision:" JLabel in this dialog.
+    /** Tries to find "List log entries from: " JLabel in this dialog.
      * @return JLabelOperator
      */
-    public JLabelOperator lblSelectARevision() {
-        if (_lblSelectARevision==null) {
-            _lblSelectARevision = new JLabelOperator(this, "Select a Revision:");
+    public JLabelOperator lblListLogEntriesFrom() {
+        if (_lblListLogEntriesFrom==null) {
+            _lblListLogEntriesFrom = new JLabelOperator(this, "List log entries from:");
         }
-        return _lblSelectARevision;
+        return _lblListLogEntriesFrom;
+    }
+
+    /** Tries to find null JTextField in this dialog.
+     * @return JTextFieldOperator
+     */
+    public JTextFieldOperator txtFrom() {
+        if (_txtFrom==null) {
+            _txtFrom = new JTextFieldOperator(this);
+        }
+        return _txtFrom;
+    }
+
+    /** Tries to find "(YYYY-MM-DD - empty means all)" JLabel in this dialog.
+     * @return JLabelOperator
+     */
+    public JLabelOperator lblYYYYMMDDEmptyMeansAll() {
+        if (_lblYYYYMMDDEmptyMeansAll==null) {
+            _lblYYYYMMDDEmptyMeansAll = new JLabelOperator(this, "(YYYY-MM-DD - empty means all)");
+        }
+        return _lblYYYYMMDDEmptyMeansAll;
+    }
+
+    /** Tries to find "List" JButton in this dialog.
+     * @return JButtonOperator
+     */
+    public JButtonOperator btList() {
+        if (_btList==null) {
+            _btList = new JButtonOperator(this, "List");
+        }
+        return _btList;
     }
 
     /** Tries to find "OK" JButton in this dialog.
@@ -109,16 +142,48 @@ public class SearchRevisionsOperator extends NbDialogOperator {
     // Low-level functionality definition part
     //****************************************
 
-    /** clicks on null WindowsScrollBarUI$WindowsArrowButton
+    public void selectListItem(int index) {
+        lstJList().setSelectedIndex(index);
+    }
+    
+    public void selectListItem(Object item) {
+        lstJList().setSelectedValue(item, true);
+    }
+    
+    public Object getSelectItem() {
+        return lstJList().getSelectedValue();
+    }
+    
+    /** clicks on null MetalScrollButton
      */
-    public void windowsScrollBarUI$WindowsArrowButton() {
-        btWindowsScrollBarUI$WindowsArrowButton().push();
+    public void metalScrollButton() {
+        btMetalScrollButton().push();
     }
 
-    /** clicks on null WindowsScrollBarUI$WindowsArrowButton
+    /** clicks on null MetalScrollButton
      */
-    public void windowsScrollBarUI$WindowsArrowButton2() {
-        btWindowsScrollBarUI$WindowsArrowButton2().push();
+    public void metalScrollButton2() {
+        btMetalScrollButton2().push();
+    }
+
+    /** gets text for txtJTextField
+     * @return String text
+     */
+    public String getFrom() {
+        return txtFrom().getText();
+    }
+
+    /** sets text for txtJTextField
+     * @param text String text
+     */
+    public void setFrom(String text) {
+        txtFrom().setText(text);
+    }
+
+    /** clicks on "List" JButton
+     */
+    public void list() {
+        btList().push();
     }
 
     /** clicks on "OK" JButton
@@ -147,10 +212,13 @@ public class SearchRevisionsOperator extends NbDialogOperator {
     /** Performs verification of SearchRevisions by accessing all its components.
      */
     public void verify() {
-        lstSelectARevision();
-        btWindowsScrollBarUI$WindowsArrowButton();
-        btWindowsScrollBarUI$WindowsArrowButton2();
-        lblSelectARevision();
+        lstJList();
+        btMetalScrollButton();
+        btMetalScrollButton2();
+        lblListLogEntriesFrom();
+        txtFrom();
+        lblYYYYMMDDEmptyMeansAll();
+        btList();
         btOK();
         btCancel();
         btHelp();
