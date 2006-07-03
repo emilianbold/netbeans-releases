@@ -36,11 +36,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -56,6 +59,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Mutex.Action;
 import org.w3c.dom.Element;
 
 /**
@@ -83,6 +87,9 @@ import org.w3c.dom.Element;
 final class Classpaths implements ClassPathProvider, AntProjectListener, PropertyChangeListener {
     
     private static final ErrorManager err = ErrorManager.getDefault().getInstance(Classpaths.class.getName());
+
+    //for tests only:
+    static CountDownLatch TESTING_LATCH = null;
     
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
@@ -113,7 +120,29 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         evaluator.addPropertyChangeListener(this);
     }
     
-    public synchronized ClassPath findClassPath(FileObject file, String type) {
+    public ClassPath findClassPath(final FileObject file, final String type) {
+        //#77015: the findClassPathImpl method takes read access on ProjectManager.mutex
+        //taking the read access before the private lock to prevent deadlocks.
+        return (ClassPath) ProjectManager.mutex().readAccess(new Action() {
+            public Object run() {
+                return findClassPathImpl(file, type);
+            }
+        });
+    }
+
+    private synchronized ClassPath findClassPathImpl(FileObject file, String type) {
+        if (TESTING_LATCH != null) {
+            //only for tests:
+            TESTING_LATCH.countDown();
+            try {
+                TESTING_LATCH.await(2, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+            
+            classpaths.clear();
+        }
+        
         Map/*<FileObject,ClassPath>*/ classpathsByType = (Map)classpaths.get(type);
         if (classpathsByType == null) {
             classpathsByType = new WeakHashMap();

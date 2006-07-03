@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -46,6 +47,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.w3c.dom.Element;
 
 // XXX testClasspathsOfBuildProducts
 // - should have BOOT and EXECUTE
@@ -344,6 +346,44 @@ public class ClasspathsTest extends TestBase {
         compile = gpr.getPaths(ClassPath.COMPILE);
         expected = new HashSet();
         assertEquals("correct set of COMPILE classpaths", expected, compile);
+    }
+
+    public void testDeadlock77015() throws Exception {
+        final CountDownLatch l = new CountDownLatch(2);
+
+        Classpaths.TESTING_LATCH = l;
+
+        new Thread() {
+            public void run() {
+                ClassPath.getClassPath(myAppJava, ClassPath.SOURCE);
+            }
+        }.start();
+
+        Thread t = new Thread() {
+            public void run() {
+                ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                    public Object run() {
+                        AntProjectHelper helper = simple.helper();
+                        Element el = helper.getPrimaryConfigurationData(true);
+                        AuxiliaryConfiguration c = (AuxiliaryConfiguration) simple.getLookup().lookup(AuxiliaryConfiguration.class);
+                        
+                        l.countDown();
+                        try {
+                            l.await();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        
+                        c.putConfigurationFragment(el.getOwnerDocument().createElementNS("http://something/X", "A"), false);
+                        
+                        return null;
+                    }
+                });
+            }
+        };
+
+        t.start();
+        t.join();
     }
     
     // Copied from org.netbeans.modules.apisupport.project.ClassPathProviderImplTest:
