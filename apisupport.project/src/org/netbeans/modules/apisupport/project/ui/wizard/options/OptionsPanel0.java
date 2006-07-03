@@ -123,6 +123,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         displayNameField1.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayName"));
         categoryNameField.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CategoryName"));
         iconField.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_IconPath"));
+        iconButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_IconButton"));        
     }
     
     public void addNotify() {
