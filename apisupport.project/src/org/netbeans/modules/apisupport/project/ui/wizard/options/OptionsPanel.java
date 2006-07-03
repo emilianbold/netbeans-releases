@@ -135,6 +135,7 @@ final class OptionsPanel extends BasicWizardIterator.Panel {
     }
     
     private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_OptionsPanel"));        
         projectNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ProjectName"));
         packageName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_PackageName"));
         createdFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CreatedFilesValue"));
