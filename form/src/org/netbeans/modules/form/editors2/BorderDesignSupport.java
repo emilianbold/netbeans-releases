@@ -299,16 +299,13 @@ public class BorderDesignSupport implements FormDesignValue
         }
 
         public PropertyEditor getExpliciteEditor() {
-            if (desc.getPropertyEditorClass() != null) {
-                try {
-                    return (PropertyEditor)
-                           desc.getPropertyEditorClass().newInstance();
-                } 
-                catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+            try {
+                return desc.createPropertyEditor(theBorder);
+            } 
+            catch (Exception ex) {
+                ex.printStackTrace();
+                return null;
             }
-            return null;
         }
 	
 	protected Method getWriteMethod() {

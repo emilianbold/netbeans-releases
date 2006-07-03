@@ -192,10 +192,9 @@ public class RADProperty extends FormProperty {
                 prEd = createEnumEditor(descriptor);
         }
 
-        if (prEd == null && desc.getPropertyEditorClass() != null) {
+        if (prEd == null) {
             try {
-                prEd = (PropertyEditor)
-                       desc.getPropertyEditorClass().newInstance();
+                prEd = desc.createPropertyEditor(component.getBeanInstance());
             }
             catch (Exception ex) {
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
