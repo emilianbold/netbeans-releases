@@ -80,12 +80,19 @@ public final class ImportWizard implements ChangeListener {
                 importStep.stop();
             }            
         } else if (value == WizardDescriptor.FINISH_OPTION) {
-            // must be initialized so we may retrieve the commitFiles for the ImportAction
-            //importPreviewStep.setup();
+                setupImportPreviewStep();
         }
         return finnished;
     }    
 
+    private void setupImportPreviewStep() {
+        // must be initialized so we may retrieve the commitFiles for the ImportAction
+        String repositoryUrl = repositoryStep.getRepositoryFile().getRepositoryUrl().toString();
+        String repositoryFolderUrl = importStep.getRepositoryFolderUrl().toString();
+        String localPath = context.getRootFiles()[0].getAbsolutePath();            
+        importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath);
+    }
+    
     private void setErrorMessage(String msg) {
         errorMessage = msg;
         if (wizardDescriptor != null) {
@@ -165,10 +172,7 @@ public final class ImportWizard implements ChangeListener {
                 File file = context.getRootFiles()[0];
                 importStep.setup(repositoryStep.getRepositoryFile().appendPath(file.getName()));
             } else if(current() == importStep) {
-                String repositoryUrl = repositoryStep.getRepositoryFile().getRepositoryUrl().toString();
-                String repositoryFolderUrl = importStep.getRepositoryFolderUrl().toString();
-                String localPath = context.getRootFiles()[0].getAbsolutePath();
-                importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath);
+                setupImportPreviewStep();
             }
             super.nextPanel();
             if(current() == importStep) {                                                            
