@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -41,7 +40,6 @@ import org.netbeans.modules.i18n.wizard.I18nWizardAction;
 import org.netbeans.modules.i18n.wizard.I18nTestWizardAction;
 
 import org.openide.awt.Actions;
-import org.openide.awt.JMenuPlus;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -141,11 +139,8 @@ public final class I18nGroupAction extends SystemAction
     
     /** Menu item which will create its items lazilly when the popup will becomming visible.
      * Performance savings.*/
-    static class LazyPopup extends JMenuPlus {
+    static class LazyPopup extends JMenu {
 
-        /** Icon. */
-        private static Icon icon = null;
-        
         /** Indicates if is part of menu, i.e. if should have icons. */
         private boolean isMenu;
         
