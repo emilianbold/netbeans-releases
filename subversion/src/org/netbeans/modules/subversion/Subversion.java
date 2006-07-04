@@ -241,8 +241,8 @@ public class Subversion {
         if(attachListeners) {            
             if(noUrlClientWithListeners == null) {
                 noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();
-            }                   
-            attachListeners(noUrlClientWithListeners, false);
+                attachListeners(noUrlClientWithListeners, false);
+            }                               
             return noUrlClientWithListeners;
         } else {
             if(noUrlClientWithoutListeners == null) {
