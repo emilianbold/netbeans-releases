@@ -290,7 +290,9 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
 
     private volatile DO lastEvent = null;
     private int lastPostedLine = -1;
+    private int lastPostedLength = -1;
     private int lastFiredLine = -1;
+    private int lastFiredlength = -1;
     public void stateChanged(ChangeEvent changeEvent) {
         if (Controller.verbose) Controller.log (changeEvent != null ? "Document got change event from writer" : "Document timer polling");
         if (dlisteners.isEmpty()) {
@@ -305,11 +307,13 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             boolean noPostedLine = lastPostedLine == - 1;
 
             int lineCount = getLines().getLineCount();
+            int size = getLines().getCharCount();
             lastPostedLine = lineCount;
+            lastPostedLength = size;
             
             if (Controller.verbose) Controller.log ("Document may fire event - last fired getLine=" + lastFiredLine + " getLine count now " + lineCount);
-            if (lastFiredLine != lastPostedLine || noPostedLine) {
-                lastEvent = new DO(Math.max(0, lastFiredLine), noPostedLine);
+            if ((lastFiredLine != lastPostedLine  || lastPostedLength != lastFiredlength) || noPostedLine) {
+                lastEvent = new DO(Math.max(0, lastFiredLine == lastPostedLine ? lastFiredLine - 1 : lastFiredLine), noPostedLine);
 //                evts.add (lastEvent);
                 Mutex.EVENT.readAccess (new Runnable() {
                     public void run() {
@@ -318,6 +322,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                     }
                 });
                 lastFiredLine = lastPostedLine;
+                lastFiredlength = lastPostedLength;
             } else {
                 if (Controller.verbose) Controller.log ("Line count is still " + lineCount + " - not firing");
             }
@@ -513,6 +518,9 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                     }
                     assert endOffset >= getStartOffset() : "Illogical getLine #" + lineIndex
                         + " with lines " + getLines() + " or writer has been reset";
+                } else if (lineIndex >= getLines().getLineCount()-1) {
+                    //always recalculate the last line...
+                    endOffset = getLines().getCharCount();
                 }
             }
         }
@@ -616,9 +624,9 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
                         length = charsWritten;
                     } else {
                         first = start;
-                        if (first == getLines().getLineCount()) {
-                            throw new IllegalStateException ("Out of bounds");
-                        }
+//                        if (first == getLines().getLineCount()) {
+//                            throw new IllegalStateException ("Out of bounds");
+//                        }
 
                         offset = getLines().getLineStart(first);
                         lineCount = getLines().getLineCount() - first;
