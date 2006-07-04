@@ -20,6 +20,7 @@ package org.netbeans.modules.j2ee.websphere6;
 
 import java.io.*;
 import java.util.*;
+import java.util.jar.JarFile;
 
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.shared.*;
@@ -27,6 +28,8 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
 import javax.enterprise.deploy.spi.factories.*;
 import javax.enterprise.deploy.spi.status.*;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import org.netbeans.modules.j2ee.websphere6.config.*;
 
 import org.openide.*;
@@ -36,6 +39,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.zip.ZipEntry;
 
 /**
  * Main class of the deployment process. This serves a a wrapper for the
@@ -87,6 +91,10 @@ public class WSDeploymentManager implements DeploymentManager {
      */
     private boolean isConnected;
     
+    /**
+     * Temporary hack for storing webmodule`s context path in EntApplication
+     */
+    private static String webUrlInEntApp = "";
     /**
      * Creates a new instance of the deployment manager
      *
@@ -449,16 +457,61 @@ public class WSDeploymentManager implements DeploymentManager {
         // update the context classloader
         loader.updateLoader();
         //try {
-        if(target.length==1) {
-            int i=0;
-            i++;
+        webUrlInEntApp = null;
+        
+        if(file.exists() && file.getPath().endsWith(".ear")) {
+            // try to get WebApplication context path from EAR archive
+            JarFile jarFile = null;
+            ZipEntry ze= null;
+            InputStream is = null;
+            ByteArrayOutputStream os = null;
+            try {
+                jarFile = new JarFile(file);
+                ze = jarFile.getEntry("META-INF/application.xml");
+                is = jarFile.getInputStream(ze);
+                os = new ByteArrayOutputStream();
+                int n=0;
+                byte[] buf = new byte[1024];
+                while ((n = is.read(buf, 0, 1024)) > -1) {
+                    os.write(buf, 0, n);
+                }
+                String content = os.toString();
+                String token = "<context-root>";
+                int startIndex = content.indexOf(token);
+                int endIndex = content.indexOf("</context-root>");
+                if (startIndex != -1 && endIndex != -1) {
+                    webUrlInEntApp = content.substring(startIndex + token.length(),
+                            endIndex);
+                }
+            } catch (IOException ex) {
+                //do nothing.. strange case
+            } finally {
+                try {
+                    if(jarFile!=null) jarFile.close();
+                } catch(IOException ex) {
+                } finally {
+                    try {
+                        if(is != null) is.close();
+                    } catch(IOException ex) {
+                    } finally {
+                        try {
+                            if(os != null) is.close();
+                        } catch(IOException ex) {
+                        }
+                    }
+                }
+            }
+            
         }
         
         //}
         
         try {
             // delegate the call and return the result
-            return dm.distribute(target, file, file2);
+            ProgressObject po = dm.distribute(target, file, file2);
+            
+            return po;
+            
         } finally {
             // restore the context classloader
             loader.restoreLoader();
@@ -664,8 +717,100 @@ public class WSDeploymentManager implements DeploymentManager {
             Method method = targetModuleID[0].getClass().
                     getMethod("getWebURL", new Class[0]);            // NOI18N
             webUrl = (String) method.
-                    invoke(targetModuleID[0], new Object[0]);
-            if(targetModuleID[0].getModuleID().contains("type=WebModule")) {
+                    invoke(targetModuleID[0], new Object[0]);            
+          
+            if (webUrlInEntApp!=null && targetModuleID[0].getModuleID().contains("type=Application")) {
+                TargetModuleID [] tmids = targetModuleID;
+                if (tmids.length==1 &&
+                        tmids[0].getModuleID().contains("type=Application") &&
+                        tmids[0].getChildTargetModuleID()==null) {
+                    try {
+                        TargetModuleID child = (TargetModuleID) loader.loadClass(
+                                "com.ibm.ws.management.application.j2ee.deploy.spi.TargetModuleIDImpl").
+                                newInstance();
+                        
+                        //set target server
+                        method = child.getClass().
+                                getMethod("setTarget", new Class[] {Target.class});  // NOI18N
+                        method.invoke(child, new Object[] {tmids[0].getTarget()});
+                        
+                        
+                        // set parent
+                        method = child.getClass().
+                                getMethod("setParentTargetModuleID", new Class[] {TargetModuleID.class});  // NOI18N
+                        method.invoke(child, new Object[] {tmids[0]});
+                        
+                        
+                        // set object name
+                        String id = "WebSphere:name=" + webUrlInEntApp.substring(1) + ",type=WebModule";
+                        String oname = id + ",*";
+                        ObjectName on = new ObjectName(oname);
+                        method = child.getClass().
+                                getMethod("setObjectName", new Class[] {ObjectName.class} );  // NOI18N
+                        method.invoke(child, new Object [] {on});
+                        
+                        
+                        //set module id
+                        method = child.getClass().
+                                getMethod("setModuleID", new Class[] {String.class});  // NOI18N
+                        method.invoke(child, new Object [] {id});
+                        
+                        //set type
+                        method = child.getClass().
+                                getMethod("setModuleType", new Class[] {String.class});  // NOI18N
+                        String type = ModuleType.WAR.toString();
+                        method.invoke(child, new Object[] {type});
+                        
+                        //set startable
+                        
+                        method = child.getClass().
+                                getMethod("setStartable", new Class[] {boolean.class});  // NOI18N
+                        method.invoke(child, new Object[] {true}); 
+                        
+                        //set weburl
+                        String port=getDefaultHostPort();
+                        String host=getHost();
+                        if(uri.indexOf(WSURIManager.WSURI)!=-1) {
+                            host=uri.split(":")[2];
+                        }
+                        webUrl="http://" + host + ":" + port; // NOI18N
+                        if (webUrlInEntApp != null) {
+                            webUrl = webUrl + webUrlInEntApp;
+                            webUrlInEntApp = null;
+                        } else {
+                            System.out.println(
+                                    NbBundle.getMessage(WSDeploymentManager.class,
+                                    "ERR_wrongContextRoot"));
+                        }
+                        method = child.getClass().
+                                getMethod("setWebURL", new Class[] {String.class});  // NOI18N
+                        method.invoke(child, new Object[] {webUrl});                        
+                        
+                        method = tmids[0].getClass().
+                                getMethod("setChildTargetModuleID", new Class[] {TargetModuleID[].class});  // NOI18N
+                        method.invoke(tmids[0], new Object[] {new TargetModuleID[] {child}});
+                        
+                    } catch (ClassNotFoundException ex) {
+                        ex=null;//do nothing
+                    } catch (InstantiationException ex) {
+                        ex=null;//do nothing
+                    } catch (IllegalAccessException ex) {
+                        ex=null;//do nothing
+                    } catch (NoSuchMethodException ex) {
+                        ex=null;//do nothing
+                    } catch (InvocationTargetException ex) {
+                        ex=null;//do nothing
+                    }  catch (NullPointerException ex) {
+                        ex=null;//do nothing
+                    } catch (MalformedObjectNameException ex) {
+                        ex=null;//do nothing
+                    }
+                }
+            }
+            
+            
+            if(targetModuleID[0].getModuleID().contains("type=WebModule") /*||
+                    targetModuleID[0].getModuleID().contains("type=Application")*/) {
                 if(webUrl==null) {
                     String port=getDefaultHostPort();
                     String host=getHost();
@@ -673,14 +818,28 @@ public class WSDeploymentManager implements DeploymentManager {
                         host=uri.split(":")[2];
                     }
                     webUrl="http://" + host + ":" + port; // NOI18N
+                    if (webUrlInEntApp != null) {
+                        webUrl = webUrl + webUrlInEntApp;
+                        webUrlInEntApp = null;
+                    } else {
+                        System.out.println(
+                                NbBundle.getMessage(WSDeploymentManager.class,
+                                "ERR_wrongContextRoot"));
+                    }
                     method = targetModuleID[0].getClass().
                             getMethod("setWebURL", new Class[] {String.class});  // NOI18N
                     method.invoke(targetModuleID[0], new Object[] {webUrl});
-                    System.out.println(
-                            NbBundle.getMessage(WSDeploymentManager.class,
-                            "ERR_wrongContextRoot"));
+                    
+                    method = targetModuleID[0].getClass().
+                            getMethod("getWebURL", new Class[0] );  // NOI18N
+                    String webUrlAfter = (String) method.
+                            invoke(targetModuleID[0], new Object[0]);
+                    webUrlAfter = webUrlAfter + "";
                 }
+                
+                /* Commented as it doesn`t work properly
                 try { // stop running web modules
+                    
                     TargetModuleID [] modules = getRunningModules(
                             ModuleType.WAR,
                             new Target[] {targetModuleID[0].getTarget()});
@@ -690,14 +849,13 @@ public class WSDeploymentManager implements DeploymentManager {
                     
                     
                     for(int i=0;i<modules.length;i++) {
-                        if(/*modules[i].getWebURL()==null || */webUrl.equals(modules[i].getWebURL())) {
-                            
-                            stop(new TargetModuleID[] {modules[i]} );
+                        if(modules[i].getWebURL()==null || webUrl.equals(modules[i].getWebURL())) {                            
+                            //stop(new TargetModuleID[] {modules[i]} );
                         }
                     }
                 } catch(TargetException ex) {
                     ;//do nothing..
-                }
+                } */
             }
             
         }  catch (IllegalAccessException e) {
@@ -744,7 +902,8 @@ public class WSDeploymentManager implements DeploymentManager {
         
         try {
             // delegate the call and return the result
-            return dm.getAvailableModules(moduleType, target);
+            TargetModuleID[] am = dm.getAvailableModules(moduleType, target);
+            return am;
         } finally {
             // restore the context classloader
             loader.restoreLoader();
@@ -776,7 +935,8 @@ public class WSDeploymentManager implements DeploymentManager {
         
         try {
             // delegate the call and return the result
-            return dm.getNonRunningModules(moduleType, target);
+            TargetModuleID [] nrm = dm.getNonRunningModules(moduleType, target);
+            return nrm;
         } finally {
             // restore the context classloader
             loader.restoreLoader();
@@ -808,7 +968,8 @@ public class WSDeploymentManager implements DeploymentManager {
         
         try {
             // delegate the call and return the result
-            return dm.getRunningModules(moduleType, target);
+            TargetModuleID [] rm = dm.getRunningModules(moduleType, target);
+            return rm;
         } finally {
             // restore the context classloader
             loader.restoreLoader();
