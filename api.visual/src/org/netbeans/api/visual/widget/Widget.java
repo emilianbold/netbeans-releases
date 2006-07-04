@@ -436,12 +436,18 @@ public class Widget {
         gr.translate (location.x, location.y);
 
         if (! checkClipping  ||  bounds.intersects (gr.getClipBounds ())) {
+            Border border = getBorder ();
             if (opaque) {
                 gr.setPaint (background);
-                gr.fillRect (bounds.x, bounds.y, bounds.width, bounds.height);
+                if (border.isOpaque ()) {
+                    gr.fillRect (bounds.x, bounds.y, bounds.width, bounds.height);
+                } else {
+                    Insets insets = border.getInsets ();
+                    gr.fillRect (bounds.x + insets.left, bounds.y + insets.top, bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
+                }
             }
 
-            getBorder ().paint (gr, new Rectangle (bounds));
+            border.paint (gr, new Rectangle (bounds));
             paintWidget ();
             paintChildren ();
         }

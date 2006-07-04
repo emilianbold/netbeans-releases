@@ -24,4 +24,6 @@ public interface Border {
 
     public void paint (Graphics2D gr, Rectangle bounds);
 
+    public boolean isOpaque ();
+
 }

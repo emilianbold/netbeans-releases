@@ -32,9 +32,9 @@ import java.util.List;
  */
 public class VMDNodeWidget extends Widget {
 
-    private static Border BORDER_SHADOW_NORMAL = new ImageBorder (new Insets (6, 6, 6, 6), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
-    private static Border BORDER_SHADOW_HOVERED = new ImageBorder (new Insets (6, 6, 6, 6), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
-    private static Border BORDER_SHADOW_SELECTED = new ImageBorder (new Insets (6, 6, 6, 6), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_selected.png")); // NOI18N
+    private static Border BORDER_SHADOW_NORMAL = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
+    private static Border BORDER_SHADOW_HOVERED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
+    private static Border BORDER_SHADOW_SELECTED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_selected.png")); // NOI18N
 
     private ImageWidget imageWidget;
     private LabelWidget nameWidget;
