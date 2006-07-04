@@ -544,5 +544,42 @@ public final class MainWindow extends JFrame {
 
     // end of #24291 hacky fix
 
+    // Full Screen Mode
+    private boolean isFullScreenMode = false;
+    private Rectangle restoreBounds;
+    private int restoreExtendedState = JFrame.NORMAL;
+    
+    public void setFullScreenMode( boolean fullScreenMode ) {
+        if( isFullScreenMode == fullScreenMode ) {
+            return;
+        }
+        if( !isFullScreenMode ) {
+            restoreExtendedState = getExtendedState();
+            restoreBounds = getBounds();
+        }
+        isFullScreenMode = fullScreenMode;
+        setVisible( false );
+        dispose();
+        setUndecorated( isFullScreenMode );
+        setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );
+
+        getJMenuBar().setVisible( !isFullScreenMode );
+        getToolbarComponent().setVisible( !isFullScreenMode );
+        if( !isFullScreenMode && restoreExtendedState != JFrame.MAXIMIZED_BOTH ) {
+            setBounds( restoreBounds );
+        }
+        setVisible( true );
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                invalidate();
+                validate();
+                repaint();
+            }
+        });
+    }
+    
+    public boolean isFullScreenMode() {
+        return isFullScreenMode;
+    }
 }
 

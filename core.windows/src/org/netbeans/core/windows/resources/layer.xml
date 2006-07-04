@@ -64,9 +64,16 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-windows-actions-NextTabAction.instance"/>
             <file name="org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             <file name="org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
         </folder>    
     </folder>
     
+    <folder name="Shortcuts">
+        <file name="OS-ENTER.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
+	</file>
+    </folder>
+
     <folder name="Menu">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         
@@ -86,6 +93,17 @@ Microsystems, Inc. All Rights Reserved.
             
             <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance"/>
             <attr name="Separator2.instance/org-netbeans-core-windows-actions-ToolbarsListAction.instance" boolvalue="true" />
+
+            <file name="Separator3.instance">
+              <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="org-netbeans-core-windows-actions-ToolbarsListAction.instance/Separator3.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.shadow/Separator3.instance" boolvalue="true" />
+            
+            <file name="ToggleFullScreenAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToggleFullScreenAction.instance" />
+            </file>
+            <attr name="Separator3.instance/ToggleFullScreenAction.shadow" boolvalue="true" />
         </folder>
         
         <folder name="GoTo">
