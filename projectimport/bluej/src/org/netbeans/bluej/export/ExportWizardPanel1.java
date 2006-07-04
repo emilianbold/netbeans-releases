@@ -96,10 +96,16 @@ public class ExportWizardPanel1 implements WizardDescriptor.Panel {
     // by the user.
     public void readSettings(Object sets) {
         this.settings = (WizardDescriptor)sets;
+        File fil = (File)settings.getProperty("NewProjectLocation");
+        String path = fil != null ? fil.getAbsolutePath() : "";
+        updateValue(path);
     }
     public void storeSettings(Object set) {
         WizardDescriptor wiz = (WizardDescriptor)set;
-        wiz.putProperty("NewProjectLocation", new File(path.trim())); // NOI18N
+        if (path != null) {
+            //#79637 can be null when immediately cancelling the wizard.
+            wiz.putProperty("NewProjectLocation", new File(path.trim())); // NOI18N
+        }
     }
 
     void updateValue(String value) {

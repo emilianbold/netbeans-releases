@@ -26,6 +26,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -37,7 +38,7 @@ public class ExportPanel extends javax.swing.JPanel {
     public ExportPanel(FileObject dir, final ExportWizardPanel1 wizPanel) {
         initComponents();
         txtSource.setText(dir.getPath());
-        setName("Convert Project");
+        setName(NbBundle.getMessage(ExportPanel.class, "TIT_ExportPanel"));
         txtFolder.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 wizPanel.updateValue(txtFolder.getText());
