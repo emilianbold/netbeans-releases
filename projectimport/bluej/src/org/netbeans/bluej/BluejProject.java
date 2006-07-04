@@ -538,6 +538,7 @@ public final class BluejProject implements Project, AntProjectListener {
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
             "Templates/Bluej/StdClass.java", // NOI18N
+            "Templates/Bluej/MainClass.java", // NOI18N
             "Templates/Classes/Package", // NOI18N
             "Templates/Bluej/Interface.java", // NOI18N
             "Templates/Bluej/Enum.java", // NOI18N
