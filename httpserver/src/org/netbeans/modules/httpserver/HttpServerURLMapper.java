@@ -46,7 +46,7 @@ public class HttpServerURLMapper extends URLMapper {
     
     /** Get an array of FileObjects for this url
      * @param url to wanted FileObjects
-     * @return a suitable arry of FileObjects, or null
+     * @return a suitable array of FileObjects, or null
      */
     public FileObject[] getFileObjects(URL url) {
         String path = url.getPath();

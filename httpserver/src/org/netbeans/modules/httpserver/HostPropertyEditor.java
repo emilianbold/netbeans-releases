@@ -23,6 +23,8 @@ import java.beans.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 import org.openide.util.NbBundle;
 
@@ -30,7 +32,9 @@ import org.openide.util.NbBundle;
 *
 * @author Ales Novak, Petr Jiricka
 */
-public class HostPropertyEditor extends PropertyEditorSupport {
+public class HostPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor {
+
+    private PropertyEnv env;
 
     /** localized local (selected) host string*/
     private static String localhost() {
@@ -77,7 +81,11 @@ public class HostPropertyEditor extends PropertyEditorSupport {
     }
 
     public java.awt.Component getCustomEditor () {
-        return new HostPropertyCustomEditor (this);
+        return new HostPropertyCustomEditor (this, env);
+    }
+
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
     }
 
 }

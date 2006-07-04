@@ -135,6 +135,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     }
     
     /** stops the HTTP server */
+    @SuppressWarnings("deprecation")
     static void stopHTTPServer() {
         if (inSetRunning)
             return;
@@ -154,7 +155,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                         serverThread.join();
                     }
                     catch (InterruptedException e) {
-                        serverThread.stop();
+                        serverThread.stop(); 
                         /* deprecated, but this really is the last resort,
                            only if everything else failed */
                     }
@@ -307,7 +308,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         
         private ContextManager cm;
 
-	private Lookup.Result res;
+	private Lookup.Result<ClassLoader> res;
         
         public ContextReloader (EmbededTomcat tc, ContextManager cm, ServletContext ctx) {
             ide_ctx = ctx;
@@ -317,7 +318,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         
         /** Starts to listen on class loader changes */
         public void activate () {
-            res = Lookup.getDefault().lookup(new Lookup.Template (ClassLoader.class));
+            res = Lookup.getDefault().lookup(new Lookup.Template<ClassLoader> (ClassLoader.class));
             res.addLookupListener (this);
         }
         

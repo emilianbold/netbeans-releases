@@ -20,8 +20,10 @@
 package org.netbeans.modules.httpserver;
 
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -29,11 +31,12 @@ import org.openide.util.NbBundle;
  *
  * @author  Gabriel Tichy
  */
-public class HostPropertyCustomEditor extends javax.swing.JPanel implements HelpCtx.Provider, ActionListener, EnhancedCustomPropertyEditor {
+public class HostPropertyCustomEditor extends javax.swing.JPanel 
+        implements HelpCtx.Provider, ActionListener, PropertyChangeListener {
     private HostPropertyEditor editor;
 
     /** Creates new form HostEditorPanel */
-    public HostPropertyCustomEditor (HostPropertyEditor ed) {
+    public HostPropertyCustomEditor (HostPropertyEditor ed, PropertyEnv env) {
         editor = ed;
         initComponents ();
         initAccessibility();
@@ -54,6 +57,9 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Help
             selectedRadioButton.setSelected (true);
             grantTextArea.setText (hp.getGrantedAddresses ());
         }
+        
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addPropertyChangeListener(this);
     }
 
     public void actionPerformed (ActionEvent event) {
@@ -145,7 +151,7 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Help
 
     }//GEN-END:initComponents
 
-    public java.lang.Object getPropertyValue () throws java.lang.IllegalStateException {
+    private java.lang.Object getPropertyValue () throws java.lang.IllegalStateException {
         if (anyRadioButton.isSelected ())
             return new HttpServerSettings.HostProperty ("", HttpServerSettings.ANYHOST);    // NOI18N
         else if (selectedRadioButton.isSelected ())
@@ -172,4 +178,10 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Help
         String helpid = HttpServerNode.class.getName()+"_properties"; //NOI18N
         return new HelpCtx(helpid);
     }        
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            editor.setValue(getPropertyValue());
+        }
+    }
 }

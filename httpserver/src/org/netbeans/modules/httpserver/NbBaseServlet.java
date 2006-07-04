@@ -22,6 +22,7 @@ package org.netbeans.modules.httpserver;
 import java.io.IOException;
 import java.util.HashSet;
 import java.net.InetAddress;
+import java.util.Set;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
@@ -85,7 +86,7 @@ public abstract class NbBaseServlet extends HttpServlet {
         if (settings.getHostProperty ().getHost ().equals(HttpServerSettings.ANYHOST))
             return true;
 
-        HashSet hs = settings.getGrantedAddressesSet();
+        Set hs = settings.getGrantedAddressesSet();
 
         if (hs.contains(request.getRemoteAddr().trim()))
             return true;

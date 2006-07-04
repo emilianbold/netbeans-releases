@@ -23,6 +23,7 @@ import java.awt.Dialog;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Properties;
 import java.net.InetAddress;
@@ -54,7 +55,7 @@ public class HttpServerSettings extends SystemOption {
     static boolean inited = false;
 
     /** Contains threads which are or will be asking for access for the given IP address. */
-    private static Hashtable /* InetAddress -> Thread */ whoAsking = new Hashtable();
+    private static Hashtable<InetAddress,Thread> whoAsking = new Hashtable<InetAddress,Thread>();
 
     public static final int SERVER_STARTUP_TIMEOUT = 3000;
 
@@ -63,7 +64,7 @@ public class HttpServerSettings extends SystemOption {
     /** constant for any host */
     public static final String ANYHOST = "any"; // NOI18N
 
-    public static final HostProperty hostProperty = new HostProperty("", LOCALHOST);
+    public static HostProperty hostProperty = new HostProperty("", LOCALHOST);
     
     public static final String PROP_PORT               = "port"; // NOI18N
     public static final String PROP_HOST_PROPERTY      = "hostProperty"; // NOI18N
@@ -410,7 +411,7 @@ public class HttpServerSettings extends SystemOption {
         if (hostProperty.getHost().equals(HttpServerSettings.ANYHOST))
             return true;
 
-        HashSet hs = getGrantedAddressesSet();
+        Set hs = getGrantedAddressesSet();
         if (hs.contains(addr.getHostAddress()))
             return true;
 
@@ -435,8 +436,8 @@ public class HttpServerSettings extends SystemOption {
 
     /** Returns a list of addresses which have been granted access to the web server,
     * including the localhost. Addresses are represented as strings. */
-    HashSet getGrantedAddressesSet() {
-        HashSet addr = new HashSet();
+    Set<String> getGrantedAddressesSet() {
+        HashSet<String> addr = new HashSet<String>();
         try {
             addr.add(InetAddress.getByName("localhost").getHostAddress()); // NOI18N
             addr.add(InetAddress.getLocalHost().getHostAddress());
@@ -513,9 +514,8 @@ public class HttpServerSettings extends SystemOption {
      * @param hostProperty New value of property hostProperty.
      */
     public void setHostProperty (HttpServerSettings.HostProperty hostProperty) {
-        if (ANYHOST.equals(hostProperty.getHost ()) || LOCALHOST.equals(hostProperty.getHost ())) {
-            firePropertyChange(PROP_HOST_PROPERTY, null, hostProperty);
-        }
+        this.hostProperty = hostProperty; // XXX should update and fire less eagerly
+        firePropertyChange(PROP_HOST_PROPERTY, null, hostProperty);
     }
     
     public boolean isShowGrantAccessDialog () {
