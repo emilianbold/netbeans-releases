@@ -29,16 +29,16 @@ import org.netbeans.modules.xml.multiview.Error;
  *
  * @author  dlm198383
  */
-public class WSReferenceBindingsPanel extends SectionInnerPanel {
+public class WSReferenceBindingsPanel extends SectionInnerPanel implements java.awt.event.ItemListener{
     CommonRef reference;
     WSMultiViewDataObject dObj;
-     /**
+    /**
      * Creates new form WSReferenceBindingsPanel
      */
     public WSReferenceBindingsPanel(SectionView view, WSMultiViewDataObject dObj,  CommonRef reference) {
         super(view);
         this.dObj=dObj;
-        this.reference=reference;        
+        this.reference=reference;
         initComponents();
         referenceField.setText(reference.getXmiId());
         jndiNameField.setText(reference.getJndiName());
@@ -47,6 +47,9 @@ public class WSReferenceBindingsPanel extends SectionInnerPanel {
         addModifier(jndiNameField);
         addModifier(referenceField);
         getSectionView().getErrorPanel().clearError();
+        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(DDXmiConstants.BINDING_EJB_REF_TYPES));
+        typeComboBox.setSelectedItem(reference.getXmiType());
+        typeComboBox.addItemListener(this);
     }
     
     public void setValue(javax.swing.JComponent source, Object value) {
@@ -54,7 +57,7 @@ public class WSReferenceBindingsPanel extends SectionInnerPanel {
             reference.setXmiId((String)value);
         } else if(source==jndiNameField) {
             reference.setJndiName((String)value);
-        } else if(source==hrefField) {            
+        } else if(source==hrefField) {
             reference.setHref((String)value);
         }
     }
@@ -99,18 +102,23 @@ public class WSReferenceBindingsPanel extends SectionInnerPanel {
     }
     public void linkButtonPressed(Object ddBean, String ddProperty) {
     }
+    
+    public void itemStateChanged(java.awt.event.ItemEvent evt) {
+        if(evt.getSource()==typeComboBox) {
+            reference.setXmiType((String)typeComboBox.getSelectedItem());
+        }
+        dObj.modelUpdatedFromUI();
+        //dObj.setChangedFromUI(true);
+        dObj.setChangedFromUI(false);
+    }
+    
     public javax.swing.JComponent getErrorComponent(String errorId) {
         if ("id".equals(errorId)) return referenceField;
         if ("jndi".equals(errorId)) return jndiNameField;
         if ("webhref".equals(errorId)) return hrefField;
         return null;
     }
-     public void itemStateChanged(java.awt.event.ItemEvent evt) {                                            
-        // TODO add your handling code here:
-            dObj.modelUpdatedFromUI();
-            //dObj.setChangedFromUI(true);            
-            dObj.setChangedFromUI(false);        
-    }
+   
     /** This will be called before model is changed from this panel
      */
     protected void startUIChange() {
@@ -136,12 +144,16 @@ public class WSReferenceBindingsPanel extends SectionInnerPanel {
         referenceField = new javax.swing.JTextField();
         jndiNameField = new javax.swing.JTextField();
         hrefField = new javax.swing.JTextField();
+        typeComboBox = new javax.swing.JComboBox();
+        jLabel4 = new javax.swing.JLabel();
 
         jLabel1.setText("Name:");
 
         jLabel2.setText("JNDI Name:");
 
         jLabel3.setText("Name in Web.xml :");
+
+        jLabel4.setText("Type");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -152,12 +164,14 @@ public class WSReferenceBindingsPanel extends SectionInnerPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel1)
                     .add(jLabel2)
-                    .add(jLabel3))
+                    .add(jLabel3)
+                    .add(jLabel4))
                 .add(16, 16, 16)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(referenceField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
-                    .add(hrefField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
-                    .add(jndiNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE))
+                    .add(referenceField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                    .add(hrefField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                    .add(jndiNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                    .add(typeComboBox, 0, 338, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -175,7 +189,11 @@ public class WSReferenceBindingsPanel extends SectionInnerPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(hrefField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(typeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel4))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -185,8 +203,10 @@ public class WSReferenceBindingsPanel extends SectionInnerPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField jndiNameField;
     private javax.swing.JTextField referenceField;
+    private javax.swing.JComboBox typeComboBox;
     // End of variables declaration//GEN-END:variables
     
 }

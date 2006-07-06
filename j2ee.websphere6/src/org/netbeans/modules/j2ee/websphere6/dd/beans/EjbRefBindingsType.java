@@ -41,7 +41,8 @@ public class EjbRefBindingsType extends CommonRef implements DDXmiConstants {
                 BINDING_EJB_REF,
                 EJB_REF_BINDINGS_XMI_ID,
                 EJB_REF_BINDINGS_JNDI_NAME,
-                BINDING_EJB_REF_HREF);
+                BINDING_EJB_REF_HREF,
+                EJB_REF_BINDINGS_XMI_TYPE);
         this.initialize(options);
     }
     public void initialize(int options) {
@@ -50,8 +51,9 @@ public class EjbRefBindingsType extends CommonRef implements DDXmiConstants {
     public void setDefaults() {
         setBindingReference("");
         setHref("EjbRef_");
-        setXmiId("EjbReferenceBinding_");
-        setJndiName("services/cache/instance_");
+        setXmiId("EjbReferenceBinding_"+System.currentTimeMillis());
+        setJndiName(getXmiId());
+        setXmiType(BINDING_EJB_REF_TYPE_LOCAL_STRING);
     }
     public String getType(){
         return BINDING_REFERENCE_TYPE_EJB;

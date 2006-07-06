@@ -23,15 +23,15 @@ package org.netbeans.modules.j2ee.websphere6.dd.beans;
  * @author dlm198383
  */
 public interface DDXmiConstants {
-
+    
     public  static final String XMI_VERSION="XmiVersion";
     public  static final String XMI_VERSION_ID="xmi:version";
     public  static final String XMI_VERSION_STRING="2.0";
-
+    
     public  static final String NS_XMI="NamespaceXmi";
     public  static final String NS_XMI_ID="xmlns:xmi";
     public  static final String NS_XMI_STRING="http://www.omg.org/XMI";
-
+    
     public  static final String NS_EJB="NamespaceEjb";
     public  static final String NS_EJB_STRING="ejb.xmi";
     public  static final String NS_EJB_ID="xmlns:ejb";
@@ -218,21 +218,32 @@ public interface DDXmiConstants {
     static public final  String SERVE_SERVLETS="ServeServletsByClassnameEnabled";
     
     static public final String RES_REF_BINDINGS_XMI_ID="ResRefBindingsXmiId";
+    static public final String RES_REF_BINDINGS_XMI_TYPE="ResRefBindingsXmiType";
     static public final String RES_REF_BINDINGS_JNDI_NAME="ResRefBindingsJndiName";
     static public final String RES_REF_BINDINGS_ROOT="ResRefBindingsRoot";
     static public final String RES_REF_BINDINGS="ResRefBindings";
     
     static public final String RES_ENV_REF_BINDINGS_XMI_ID="ResEnvRefBindingsXmiId";
+    static public final String RES_ENV_REF_BINDINGS_XMI_TYPE="ResEnvRefBindingsXmiType";
     static public final String RES_ENV_REF_BINDINGS_JNDI_NAME="ResEnvRefBindingsJndiName";
     static public final String RES_ENV_REF_BINDINGS_ROOT="ResEnvRefBindingsRoot";
     static public final String RES_ENV_REF_BINDINGS="ResEnvRefBindings";
     
     
     static public final String EJB_REF_BINDINGS_XMI_ID="EjbRefBindingsXmiId";
+    static public final String EJB_REF_BINDINGS_XMI_TYPE="EjbRefBindingsXmiType";
     static public final String EJB_REF_BINDINGS_JNDI_NAME="EjbRefBindingsJndiName";
     static public final String EJB_REF_BINDINGS_ROOT="EjbRefBindingsRoot";
     static public final String EJB_REF_BINDINGS="EjbRefBindings";
     static public final String EJB_BINDINGS_ID="ejbBindings";
+    
+    static public final String BINDING_EJB_REF_TYPE_LOCAL_STRING = "common:EJBLocalRef";
+    static public final String BINDING_EJB_REF_TYPE_REMOTE_STRING = "common:EJBRemoteRef";
+    static public final String [] BINDING_EJB_REF_TYPES = new String [] {
+        BINDING_EJB_REF_TYPE_LOCAL_STRING,
+        BINDING_EJB_REF_TYPE_REMOTE_STRING
+    };
+    
     static public final String EXTENDED_SERVLETS="ExtendedServlets";
     static public final String EXTENDED_SERVLETS_ID="extendedServlets";
     static public final String EXTENDED_SERVLETS_XMI_ID="ExtendedServletsXmiId";
@@ -292,7 +303,7 @@ public interface DDXmiConstants {
     static public final String WEB_HREF_PREFIX    = "WEB-INF/web.xml#";
     
     static public final String EJB_EXTENSIONS="EjbExtensions";
-    static public final String EJB_EXTENSIONS_ID="ejbExtensions";    
+    static public final String EJB_EXTENSIONS_ID="ejbExtensions";
     static public final String EJB_EXTENSIONS_XMI_ID="EjbExtensionsXmiId";
     static public final String EJB_EXTENSIONS_XMI_TYPE="EjbExtensionsXmiType";
     static public final String EJB_EXTENSIONS_XMI_NAME="EjbExtensionsXmiName";

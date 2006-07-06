@@ -31,12 +31,13 @@ public abstract class CommonRef extends org.netbeans.modules.schema2beans.BaseBe
     private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(4, 2, 0);
     private String BINDING_REFERENCE;
     private String BINDING_REFERENCE_XMI_ID;
+    private String BINDING_REFERENCE_XMI_TYPE;
     private String BINDING_REFERENCE_JNDI_NAME;
     private String BINDING_REFERENCE_HREF;
     static public final String COMMON_REFERENCE="CommonReference"; //NOI18N
     protected String hrefType=WEB_APPLICATION; //default value
     
-    public CommonRef(String dtdName, String propName, String xmiIdName, String jndiNamePropName, String hrefPropName) {
+    public CommonRef(String dtdName, String propName, String xmiIdName, String jndiNamePropName, String hrefPropName, String typePropName) {
         super(comparators, runtimeVersion);
         // Properties (see root bean comments for the bean graph)
         
@@ -44,14 +45,17 @@ public abstract class CommonRef extends org.netbeans.modules.schema2beans.BaseBe
         BINDING_REFERENCE_XMI_ID=xmiIdName;
         BINDING_REFERENCE_JNDI_NAME=jndiNamePropName;
         BINDING_REFERENCE_HREF=hrefPropName;
-        
-        initPropertyTables(1);
+        BINDING_REFERENCE_XMI_TYPE=typePropName;
+        initPropertyTables(2);
         this.createProperty(dtdName, 	// NOI18N
                 BINDING_REFERENCE,
                 Common.TYPE_1 | Common.TYPE_STRING | Common.TYPE_KEY,
                 java.lang.String.class);
         
         this.createAttribute(BINDING_REFERENCE, HREF_ID, BINDING_REFERENCE_HREF,
+                AttrProp.CDATA | AttrProp.IMPLIED,
+                null, null);
+        this.createAttribute(BINDING_REFERENCE, XMI_TYPE_ID, BINDING_REFERENCE_XMI_TYPE,
                 AttrProp.CDATA | AttrProp.IMPLIED,
                 null, null);
     }
@@ -99,6 +103,9 @@ public abstract class CommonRef extends org.netbeans.modules.schema2beans.BaseBe
     public String getXmiId() {
         return (String) getAttributeValue(BINDING_REFERENCE_XMI_ID);
     }
+     public String getXmiType() {
+        return (String) getAttributeValue(BINDING_REFERENCE,BINDING_REFERENCE_XMI_TYPE);
+    }
     public String getJndiName() {
         return (String) this.getAttributeValue(BINDING_REFERENCE_JNDI_NAME);
     }
@@ -123,6 +130,9 @@ public abstract class CommonRef extends org.netbeans.modules.schema2beans.BaseBe
     }
     public void setXmiId(String value) {
         this.setAttributeValue(BINDING_REFERENCE_XMI_ID,value);
+    }
+    public void setXmiType(String value) {
+        this.setAttributeValue(BINDING_REFERENCE, BINDING_REFERENCE_XMI_TYPE,value);
     }
     public void setJndiName(String value) {
         this.setAttributeValue(BINDING_REFERENCE_JNDI_NAME,value);

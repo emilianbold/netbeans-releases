@@ -93,7 +93,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 -->
                 <folder name="DeploymentFileNames">
                     <folder name="EAR">
-                        <!--                       <file name="META-INF\WebSphere6.dpf"/> -->
+                        <!--<file name="META-INF\WebSphere6.dpf"/>-->
                         <file name="ibm-application-bnd.xmi"/>
                         <file name="ibm-application-ext.xmi"/>
 

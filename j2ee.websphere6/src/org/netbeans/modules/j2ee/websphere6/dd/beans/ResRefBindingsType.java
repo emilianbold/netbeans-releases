@@ -41,7 +41,8 @@ public class ResRefBindingsType extends CommonRef implements DDXmiConstants{
                 BINDING_RESOURCE_REF,
                 RES_REF_BINDINGS_XMI_ID,
                 RES_REF_BINDINGS_JNDI_NAME,
-                BINDING_RESOURCE_REF_HREF);
+                BINDING_RESOURCE_REF_HREF,
+                RES_REF_BINDINGS_XMI_TYPE);
         
         this.initialize(options);
     }

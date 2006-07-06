@@ -40,7 +40,8 @@ public class ResEnvRefBindingsType extends CommonRef implements DDXmiConstants {
                 BINDING_RESOURCE_ENV_REF,
                 RES_ENV_REF_BINDINGS_XMI_ID,
                 RES_ENV_REF_BINDINGS_JNDI_NAME,
-                BINDING_RESOURCE_ENV_REF_HREF);
+                BINDING_RESOURCE_ENV_REF_HREF,
+                RES_ENV_REF_BINDINGS_XMI_TYPE);
         this.initialize(options);
     }
     public void initialize(int options) {
