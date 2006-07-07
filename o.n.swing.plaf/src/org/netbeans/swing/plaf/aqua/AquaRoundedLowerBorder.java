@@ -53,15 +53,20 @@ public class AquaRoundedLowerBorder implements Border {
     }
     
     private boolean isFloating (Component c) {
-        return (((javax.swing.JComponent)c.getParent()).getBorder() instanceof DropShadowBorder);
+        boolean result = c.getParent() != null;
+        if (result) {
+            result = c.getParent().getParent() != null;
+        }
+        if (result) {
+            result = c.getParent().getParent() instanceof JLayeredPane;
+        }
+        return result;
     }
 
     public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
-        
         if (isFloating(c)) {
             return;
         }
-
         UIUtils.configureRenderingHints(g);
         int halfArc = ARCSIZE/2;
         
