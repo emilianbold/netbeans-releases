@@ -210,9 +210,11 @@ public class Scene extends Widget {
         notifyValidated ();
     }
 
+    @Deprecated
     protected void notifyValidating () {
     }
 
+    @Deprecated
     protected void notifyValidated () {
     }
 

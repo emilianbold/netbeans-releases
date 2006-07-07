@@ -35,6 +35,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         this.scene = scene;
         setOpaque (false);
         setDoubleBuffered (true);
+        setLayout (null);
         addMouseListener (this);
         addMouseMotionListener (this);
         addMouseWheelListener (this);

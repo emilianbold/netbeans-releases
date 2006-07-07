@@ -48,4 +48,12 @@ public class IconNodeWidget extends Widget {
         labelWidget.setLabel (label);
     }
 
+    public ImageWidget getImageWidget () {
+        return imageWidget;
+    }
+
+    public LabelWidget getLabelWidget () {
+        return labelWidget;
+    }
+
 }
