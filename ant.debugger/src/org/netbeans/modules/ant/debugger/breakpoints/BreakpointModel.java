@@ -74,7 +74,7 @@ public class BreakpointModel implements NodeModel, TableModel, Constants {
             FileObject fileObject = (FileObject) breakpoint.getLine ().
                 getLookup ().lookup (FileObject.class);
             return fileObject.getNameExt () + ":" + 
-                breakpoint.getLine ().getLineNumber ();
+                (breakpoint.getLine ().getLineNumber () + 1);
         }
         throw new UnknownTypeException (node);
     }
