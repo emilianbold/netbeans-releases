@@ -1495,7 +1495,7 @@ public abstract class TreeView extends JScrollPane {
         }
 
         private void calcRowHeight(Graphics g) {
-            int height = g.getFontMetrics(getFont()).getHeight();
+            int height = Math.max(18, 2 + g.getFontMetrics(getFont()).getHeight());
 
             //Issue 42743/"Jesse mode"
             String s = System.getProperty("nb.cellrenderer.fixedheight"); //NOI18N
@@ -1503,17 +1503,17 @@ public abstract class TreeView extends JScrollPane {
             if (s != null) {
                 try {
                     height = Integer.parseInt(s);
-                    setRowHeight(height);
-                    firstPaint = false;
-
-                    return;
                 } catch (Exception e) {
-                    //do nothing
+                    //do nothing, height not changed
                 }
             }
 
-            setRowHeight(Math.max(18, height + 2));
-            firstPaint = false;
+            if (getRowHeight() != height) {
+	        setRowHeight(height);
+            } else {
+                revalidate();
+                repaint();
+            }
         }
 
         //
@@ -1534,6 +1534,7 @@ public abstract class TreeView extends JScrollPane {
 
         private void guardedPaint(Graphics g) {
             if (firstPaint) {
+                firstPaint = false;
                 calcRowHeight(g);
 
                 //This will generate a repaint, so don't bother continuing with super.paint()
