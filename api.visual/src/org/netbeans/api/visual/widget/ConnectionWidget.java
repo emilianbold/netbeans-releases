@@ -294,21 +294,35 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         return getControlPointHitAt (localLocation) >= 0;
     }
 
-    public int getControlPointHitAt (Point localLocation) {
-        int controlRadius = controlPointShape.getRadius ();
+    public final boolean isFirstControlPointHitAt (Point localLocation) {
         int endRadius = endPointShape.getRadius ();
-        controlRadius *= controlRadius;
         endRadius *= endRadius;
-
         Point firstPoint = getFirstControlPoint ();
         if (firstPoint != null)
             if (Point2D.distanceSq (firstPoint.x, firstPoint.y, localLocation.x, localLocation.y) <= endRadius)
-                return 0;
+                return true;
+        return false;
+    }
 
+    public final boolean isLastControlPointHitAt (Point localLocation) {
+        int endRadius = endPointShape.getRadius ();
+        endRadius *= endRadius;
         Point lastPoint = getLastControlPoint ();
         if (lastPoint != null)
             if (Point2D.distanceSq (lastPoint.x, lastPoint.y, localLocation.x, localLocation.y) <= endRadius)
-                return controlPoints.size () - 1;
+                return true;
+        return false;
+    }
+
+    public final int getControlPointHitAt (Point localLocation) {
+        int controlRadius = controlPointShape.getRadius ();
+        controlRadius *= controlRadius;
+
+        if (isFirstControlPointHitAt (localLocation))
+            return 0;
+
+        if (isLastControlPointHitAt (localLocation))
+            return controlPoints.size () - 1;
 
         for (int i = 0; i < controlPoints.size (); i ++) {
             Point point = controlPoints.get (i);
