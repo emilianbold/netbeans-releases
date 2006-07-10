@@ -27,7 +27,6 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import java.awt.Image;
-import javax.swing.ImageIcon;
 import javax.swing.Action;
 
 /**

@@ -20,10 +20,7 @@
 package org.netbeans.progress.module;
 
 import java.awt.Component;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.openide.awt.StatusLineElementProvider;
-import org.openide.util.Utilities;
 
 /**
  * Implementation of StatusLineElementProvider which allows to dock the progress

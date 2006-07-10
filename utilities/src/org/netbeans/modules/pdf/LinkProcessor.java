@@ -19,17 +19,14 @@
 
 package org.netbeans.modules.pdf;
 
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.BeanInfo;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -37,13 +34,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.XMLDataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
