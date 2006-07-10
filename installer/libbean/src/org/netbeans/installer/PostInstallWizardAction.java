@@ -16,8 +16,19 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-import com.installshield.wizard.console.*;
-import com.installshield.wizard.platform.win32.*;
+
+package org.netbeans.installer;
+
+import com.installshield.product.SoftwareObjectKey;
+import com.installshield.product.service.product.ProductService;
+import com.installshield.util.Log;
+import com.installshield.wizard.WizardAction;
+import com.installshield.wizard.WizardBeanEvent;
+import com.installshield.wizard.WizardBuilderSupport;
+import com.installshield.wizard.platform.win32.Win32RegistryService;
+import com.installshield.wizard.service.ServiceException;
+
+import java.io.File;
 
 public class PostInstallWizardAction extends WizardAction {
     
