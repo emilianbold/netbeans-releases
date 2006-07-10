@@ -381,12 +381,17 @@ public class WorkingCopyDetails {
         while (basePosition != -1) {
             //Get the closing $
             int endBasePosition = baseLine.indexOf("$", basePosition + 1);
+            if(endBasePosition == -1) {
+                endBasePosition = basePosition + 1 + keyword.length();
+            }
             fromIndexBase = endBasePosition + 1;
 
             int workingPosition = workingLineBuilder.indexOf(headerPattern, fromIndexWorking);
             if (workingPosition != 1) {
                     int endWorkingPosition = workingLineBuilder.indexOf("$", workingPosition + 1);
-
+                    if(endWorkingPosition == -1) {
+                        endWorkingPosition = workingPosition + 1 + keyword.length();                                
+                    }
                     String replacementValue = baseLine.substring(basePosition, fromIndexBase);
                     workingLineBuilder.replace(workingPosition, endWorkingPosition + 1,
                             replacementValue);
