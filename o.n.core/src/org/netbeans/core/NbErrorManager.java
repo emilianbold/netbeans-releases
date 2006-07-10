@@ -49,7 +49,7 @@ public final class NbErrorManager extends Handler {
     
     Exc createExc(Throwable t, Level severity, LogRecord add) {
         LogRecord[] ann = findAnnotations(t, add);
-        return new Exc(t, severity, ann, findAnnotations0(t, add, true, new HashSet()));
+        return new Exc(t, severity, ann, findAnnotations0(t, add, true, new HashSet<Throwable>()));
     }
 
     public void publish(LogRecord record) {
@@ -99,15 +99,15 @@ public final class NbErrorManager extends Handler {
      * @return array of annotations or null
      */
     public synchronized LogRecord[] findAnnotations(Throwable t, LogRecord add) {
-        return findAnnotations0(t, add, false, new HashSet());
+        return findAnnotations0(t, add, false, new HashSet<Throwable>());
     }
     
     /** If recursively is true it is not adviced to print all annotations
      * because a lot of warnings will be printed. But while searching for
      * localized message we should scan all the annotations (even recursively).
      */
-    private synchronized LogRecord[] findAnnotations0(Throwable t, LogRecord add, boolean recursively, Set alreadyVisited) {
-        List l = new ArrayList();
+    private synchronized LogRecord[] findAnnotations0(Throwable t, LogRecord add, boolean recursively, Set<Throwable> alreadyVisited) {
+        List<LogRecord> l = new ArrayList<LogRecord>();
         Throwable collect = t;
         while (collect != null) {
             if (collect instanceof Callable) {
@@ -132,9 +132,9 @@ public final class NbErrorManager extends Handler {
         
         if (recursively) {
             if (l != null) {
-                ArrayList al = new ArrayList();
-                for (Iterator i = l.iterator(); i.hasNext(); ) {
-                    LogRecord ano = (LogRecord)i.next();
+                ArrayList<LogRecord> al = new ArrayList<LogRecord>();
+                for (Iterator<LogRecord> i = l.iterator(); i.hasNext(); ) {
+                    LogRecord ano = i.next();
                     Throwable t1 = ano.getThrown();
                     if ((t1 != null) && (! alreadyVisited.contains(t1))) {
                         alreadyVisited.add(t1);
