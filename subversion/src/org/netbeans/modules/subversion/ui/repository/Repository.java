@@ -183,7 +183,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         Component editor = repositoryPanel.urlComboBox.getEditor().getEditorComponent();
         JTextComponent textEditor = (JTextComponent) editor;
         if (recentRoots.size() == 0) {
-            textEditor.setText("file:");    // NOI18N
+            textEditor.setText("file:///");    // NOI18N
         } 
         textEditor.selectAll();
         textEditor.getDocument().addDocumentListener(this);
