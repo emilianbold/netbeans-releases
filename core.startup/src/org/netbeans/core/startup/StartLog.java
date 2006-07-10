@@ -80,8 +80,8 @@ public class StartLog {
      */
     public static void logEnd( String action ) {
         if (willLog()) {
-            String old = actions.empty() ? null : (String)actions.pop();
-            Throwable oldplace = DEBUG_NESTING && !places.empty() ? (Throwable)places.pop() : null;
+            String old = actions.empty() ? null : actions.pop();
+            Throwable oldplace = DEBUG_NESTING && !places.empty() ? places.pop() : null;
             if (!action.equals(old)) {
                 // Error, not ISE; don't want this caught and reported
                 // with ErrorManager, for then you get a wierd cycle!
