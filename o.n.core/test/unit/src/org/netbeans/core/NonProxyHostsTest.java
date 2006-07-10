@@ -75,12 +75,13 @@ public class NonProxyHostsTest extends NbTestCase {
     }
     
     public void testManualProxySettins () {
+        settings.setUserNonProxyHosts ("*.netbeans.org");
         settings.setProxyType (IDESettings.MANUAL_SET_PROXY);
         assertEquals ("Proxy type DIRECT_CONNECTION.", IDESettings.MANUAL_SET_PROXY, settings.getProxyType ());
         assertEquals ("Connect TO_LOCALHOST DIRECT.", "[DIRECT]", selector.select (TO_LOCALHOST).toString ());
         assertEquals ("Connect " + TO_LOCAL_DOMAIN_1 + " DIRECT.", "[DIRECT]", selector.select (TO_LOCAL_DOMAIN_1).toString ());
-        assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " DIRECT.", "[HTTP @ my.webcache:8080]", selector.select (TO_LOCAL_DOMAIN_2).toString ());
-        assertEquals ("Connect TO_EXTERNAL DIRECT.", "[HTTP @ my.webcache:8080]", selector.select (TO_EXTERNAL).toString ());
+        assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " via my.webcache:8080 proxy.", "[HTTP @ my.webcache:8080]", selector.select (TO_LOCAL_DOMAIN_2).toString ());
+        assertEquals ("Connect TO_EXTERNAL via my.webcache:8080 proxy.", "[HTTP @ my.webcache:8080]", selector.select (TO_EXTERNAL).toString ());
     }
     
     public void testSystemProxySettings () {
@@ -89,6 +90,6 @@ public class NonProxyHostsTest extends NbTestCase {
         assertEquals ("Connect TO_LOCALHOST DIRECT.", "[DIRECT]", selector.select (TO_LOCALHOST).toString ());
         assertEquals ("Connect " + TO_LOCAL_DOMAIN_1 + " DIRECT.", "[DIRECT]", selector.select (TO_LOCAL_DOMAIN_1).toString ());
         assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " DIRECT.", "[DIRECT]", selector.select (TO_LOCAL_DOMAIN_2).toString ());
-        assertEquals ("Connect TO_EXTERNAL DIRECT.", "[HTTP @ system.cache.org:777]", selector.select (TO_EXTERNAL).toString ());
+        assertEquals ("Connect TO_EXTERNAL via system.cache.org:777 proxy..", "[HTTP @ system.cache.org:777]", selector.select (TO_EXTERNAL).toString ());
     }
 }

@@ -38,6 +38,9 @@ public class HttpSettingsTest extends NbTestCase {
     private static String SILLY_USER_PROXY_HOST = "http://my.webcache";
     private static String SILLY_SYSTEM_PROXY_HOST = "http://system.cache.org";
     
+    private static String NETBEANS_ORG = "*.netbeans.org";
+    private static String OTHER_ORG = "*.other.org";
+    
     public HttpSettingsTest (String name) {
         super (name);
     }
@@ -50,7 +53,7 @@ public class HttpSettingsTest extends NbTestCase {
         super.setUp ();
         System.setProperty ("netbeans.system_http_proxy", SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
         System.setProperty ("netbeans.system_http_non_proxy_hosts", "*.other.org");
-        System.setProperty ("http.nonProxyHosts", "*.netbeans.org,*.netbeans.org");
+        System.setProperty ("http.nonProxyHosts", NETBEANS_ORG + ',' + NETBEANS_ORG);
         settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
         settings.initialize ();
         settings.setUserProxyHost (USER_PROXY_HOST);
@@ -103,7 +106,7 @@ public class HttpSettingsTest extends NbTestCase {
     }
     
     public void testIfTakeUpNonProxyFromProperty () {
-        assertTrue ("*.netbeans.org in one of Non-Proxy hosts.", settings.getNonProxyHosts ().indexOf ("*.netbeans.org") != -1);
+        assertTrue (NETBEANS_ORG + " in one of Non-Proxy hosts.", settings.getNonProxyHosts ().indexOf (NETBEANS_ORG) != -1);
     }
     
     public void testNonProxy () {
@@ -138,13 +141,14 @@ public class HttpSettingsTest extends NbTestCase {
     
     public void testAvoidDuplicateNonProxySetting () {
         settings.setProxyType (IDESettings.MANUAL_SET_PROXY);
-        assertEquals ("IDESettings returns new value.", "*.netbeans.org|localhost|127.0.0.1|rechtacek-nb|localhost.localdomain", settings.getNonProxyHosts ());
+        assertTrue (NETBEANS_ORG + " is among Non-proxy hosts detect from OS.", settings.getNonProxyHosts ().indexOf (NETBEANS_ORG) != -1);
+        assertFalse (NETBEANS_ORG + " is in Non-Proxy hosts only once.", settings.getNonProxyHosts ().indexOf (NETBEANS_ORG) < settings.getNonProxyHosts ().lastIndexOf (NETBEANS_ORG));
         assertEquals ("System property http.nonProxyHosts was changed as well.", settings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
     }
     
     public void testReadNonProxySettingFromSystem () {
         settings.setProxyType (IDESettings.AUTO_DETECT_PROXY);
-        assertEquals ("IDESettings returns new value.", "*.netbeans.org|*.other.org|localhost|127.0.0.1|rechtacek-nb|localhost.localdomain", settings.getNonProxyHosts ());
+        assertTrue (OTHER_ORG + " is among Non-proxy hosts detect from OS.", settings.getNonProxyHosts ().indexOf (OTHER_ORG) != -1);
         assertEquals ("System property http.nonProxyHosts was changed as well.", settings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
     }
     

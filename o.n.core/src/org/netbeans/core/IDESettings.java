@@ -285,6 +285,7 @@ public class IDESettings extends SystemOption {
             boolean oldUseProxy = getUseProxy ();
             String oldHost = getProxyHost ();
             String oldPort = getProxyPort ();
+            String oldNonProxyHosts = getNonProxyHosts ();
             this.proxyType = value;
             
             if (oldUseProxy != getUseProxy ()) {
@@ -295,6 +296,9 @@ public class IDESettings extends SystemOption {
             }
             if (!oldPort.equals (getProxyPort ())) {
                 firePropertyChange (PROP_PROXY_PORT, oldPort, getProxyPort ());
+            }
+            if (!oldNonProxyHosts.equals (getNonProxyHosts ())) {
+                firePropertyChange (PROP_NON_PROXY_HOSTS, oldNonProxyHosts, getNonProxyHosts ());
             }
             setProxy();
         }
