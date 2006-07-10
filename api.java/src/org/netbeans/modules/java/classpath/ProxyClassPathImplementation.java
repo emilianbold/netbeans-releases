@@ -57,18 +57,27 @@ public class ProxyClassPathImplementation implements ClassPathImplementation {
 
 
 
-    public synchronized List <? extends PathResourceImplementation> getResources() {
-        if (this.resourcesCache == null) {
-            ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> (classPaths.length*10);
-            for (ClassPathImplementation cpImpl : classPaths) {
-                List<? extends PathResourceImplementation> subPath = cpImpl.getResources();
-                assert subPath != null : "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: " 
-                       + cpImpl.getClass().toString() + " ClassPathImplementation: " + cpImpl.toString();
-                result.addAll (subPath);
+    public List <? extends PathResourceImplementation> getResources() {
+        synchronized (this) {
+            if (this.resourcesCache != null) {
+                return this.resourcesCache;
             }
-            resourcesCache = Collections.unmodifiableList (result);
         }
-        return this.resourcesCache;
+        
+        ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> (classPaths.length*10);
+        for (ClassPathImplementation cpImpl : classPaths) {
+            List<? extends PathResourceImplementation> subPath = cpImpl.getResources();
+            assert subPath != null : "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: " 
+                + cpImpl.getClass().toString() + " ClassPathImplementation: " + cpImpl.toString();
+            result.addAll (subPath);
+        }
+        
+        synchronized (this) {
+            if (this.resourcesCache == null) {
+                resourcesCache = Collections.unmodifiableList (result);
+            }
+            return this.resourcesCache;
+        }
     }
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
