@@ -96,12 +96,6 @@ public final class NbPlaces extends Object {
         return EnvironmentNode.find(EnvironmentNode.TYPE_ROOTS).getChildren ().getNodes (); 
     }
 
-    /** Default folder for templates.
-    */
-    public DataFolder templates () {
-        return findSessionFolder ("Templates"); // NOI18N
-    }
-
     /** Default folder for toolbars.
     */
     public DataFolder toolbars () {
