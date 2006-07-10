@@ -19,6 +19,7 @@
 
 package org.netbeans.core;
 
+import java.awt.Dialog;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -27,12 +28,17 @@ import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import org.netbeans.core.startup.CLIOptions;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.xml.sax.SAXParseException;
 
@@ -48,13 +54,15 @@ public final class NbErrorManagerTest extends NbTestCase {
     }
 
     public static Test suite() {
-        //return new NbErrorManagerTest("testAddedInfo");
+        //return new NbErrorManagerTest("testNestedThrowables");
         return new NbTestSuite(NbErrorManagerTest.class);
     }
     
     private ErrorManager err;
     protected void setUp() throws Exception {
         clearWorkDir();
+
+        MockServices.setServices(MockDD.class);
         
         System.setProperty("netbeans.user", getWorkDirPath());
         // init the whole system
@@ -381,5 +389,18 @@ public final class NbErrorManagerTest extends NbTestCase {
 
         return new String(arr);
     }
-    
+
+    public static final class MockDD extends DialogDisplayer {
+        public Object notify(NotifyDescriptor descriptor) {
+            return null;
+        }
+
+        public Dialog createDialog(DialogDescriptor descriptor) {
+            return new JDialog() {
+                @SuppressWarnings("deprecation")
+                public void show() {}
+            };
+        }
+        
+    }
 }

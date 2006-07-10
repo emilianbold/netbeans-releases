@@ -399,7 +399,7 @@ public final class TopLogging {
                 sb.append(message);
                 return;
             }
-            if (record.getLoggerName().equals("stderr") && record.getLevel() == Level.INFO) { // NOI18N
+            if ("stderr".equals(record.getLoggerName()) && record.getLevel() == Level.INFO) { // NOI18N
                 // do not prefix stderr logging...
                 sb.append(message);
                 return;
