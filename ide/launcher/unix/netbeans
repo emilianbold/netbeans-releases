@@ -72,6 +72,10 @@ readClusters() {
             echo $progdir/../$X
         elif [ -d "$X" ]; then
             echo $X
+        elif expr "$X" : ".*/" >/dev/null; then
+            echo $X
+        else
+            echo $progdir/../$X
         fi
     done
 }
