@@ -103,7 +103,7 @@ public class SvnWcParser {
                 }
 
                 String fileUrl = wcDetails.getValue("url");          // NOI18N        
-                long revision = wcDetails.getLongValue("revision");             // NOI18N         
+                long revision = wcDetails.getLongValue("revision");             // NOI18N                         
                 String nodeKind = wcDetails.getValue("kind", "normal");                  // NOI18N
                 String lastCommitAuthor = wcDetails.getValue("last-author");  // NOI18N
                 long lastChangedRevision = wcDetails.getLongValue("committed-rev");  // NOI18N
@@ -113,6 +113,9 @@ public class SvnWcParser {
                 String urlCopiedFrom = null;
                 if (isCopied) {                                        
                     urlCopiedFrom = wcDetails.getValue("copyfrom-url");  // NOI18N
+                    if(revision == -1) {
+                        revision = wcDetails.getLongValue("copyfrom-rev");             // NOI18N         
+                    }                    
                 }
 
                 File conflictNew = null;
@@ -250,7 +253,5 @@ public class SvnWcParser {
         }
         return returnValue;
     }
-    
-
-    
+   
 }

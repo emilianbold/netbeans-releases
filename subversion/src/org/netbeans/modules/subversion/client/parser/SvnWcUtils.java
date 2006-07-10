@@ -60,9 +60,9 @@ public class SvnWcUtils {
 
         if(file.isFile()) {            
             if (base) {
-                return getSvnFile(file, PROPS_BASE + "/" + file.getName() + "/"+ getPropFileNameSuffix(base));                    
+                return getSvnFile(file.getParentFile(), PROPS_BASE + "/" + file.getName() + getPropFileNameSuffix(base));
             } else {
-                return getSvnFile(file, PROPS + "/" + file.getName() + "/"+ getPropFileNameSuffix(base));                    
+                return getSvnFile(file.getParentFile(), PROPS + "/" + file.getName() + getPropFileNameSuffix(base));
             }            
         } else {            
             return getSvnFile(file, base ? "/dir-props-base" : "/dir-prop");
@@ -90,4 +90,3 @@ public class SvnWcUtils {
     }
     
 }
-

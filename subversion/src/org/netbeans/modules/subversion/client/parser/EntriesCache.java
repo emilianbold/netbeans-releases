@@ -86,27 +86,19 @@ public class EntriesCache {
             ef = new EntriesFile(getMergedAttributes(ea), lastModified, fileLength);            
             getEntries().put(entriesFile.getAbsolutePath(), ef);
         } 
+        if(ef.attributes.get(file.getName()) == null) {
+            // file does not exist in the svn metadata and 
+            // wasn't added to the entires cache yet
+            Map<String, String> attributes  = mergeThisDirAttributes(file.isDirectory(), file.getName(), ef.attributes);        
+        }
+        
         return ef.attributes.get(file.isDirectory() ? SVN_THIS_DIR : file.getName());
     }
 
     private EntryAttributes getMergedAttributes(EntryAttributes ea) throws SAXException {        
-        for(String fileName : ea.keySet()) {            
-            Map<String, String> attributes = ea.get(fileName);            
-            boolean isDirectory = attributes.get("kind").equals("dir");
-            for(Map.Entry<String, String> entry : ea.get(SVN_THIS_DIR).entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();            
-                if(isDirectory) {
-                    attributes.put(key, value);            
-                } else {
-                    if(key.equals("url")) {
-                        attributes.put(key, value + "/" + fileName);                
-                    } else if( key.equals("uuid") || key.equals("repos") ) {
-                        attributes.put(key, value);                                        
-                    }
-                }                            
-            }        
-
+        for(String fileName : ea.keySet()) {                                       
+            boolean isDirectory = ea.get(fileName).get("kind").equals("dir");
+            Map<String, String> attributes = mergeThisDirAttributes(isDirectory, fileName, ea);                    
             if(isDirectory) {
                 attributes.put(WorkingCopyDetails.IS_HANDLED, "" + (ea.get(SVN_THIS_DIR).get("deleted") == null));  // NOI18N
             } else {
@@ -122,6 +114,28 @@ public class EntriesCache {
         }    
         return ea;
     }    
+
+    private Map<String, String> mergeThisDirAttributes(final boolean isDirectory, final String fileName, final EntryAttributes ea) {
+        Map<String, String> attributes = ea.get(fileName);         
+        if(attributes == null) {
+           attributes = new HashMap<String, String>();
+           ea.put(fileName, attributes);
+        }
+        for(Map.Entry<String, String> entry : ea.get(SVN_THIS_DIR).entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();            
+            if(isDirectory) {
+                attributes.put(key, value);            
+            } else {
+                if(key.equals("url")) {
+                    attributes.put(key, value + "/" + fileName);                
+                } else if( key.equals("uuid") || key.equals("repos") ) {
+                    attributes.put(key, value);                                        
+                }
+            }                            
+        }        
+        return attributes;
+    }
     
     private EntriesHandler getEntriesHandler(File entriesFile, String fileName) throws IOException, SAXException {        
         //Parse the entries file

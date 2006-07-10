@@ -35,7 +35,7 @@ import org.netbeans.modules.subversion.client.*;
  */
 public class WorkingCopyDetails {
     static final String FILE_ATTRIBUTE_VALUE = "file";  // NOI18
-    static final String IS_HANDLED = "handled";    
+    static final String IS_HANDLED = "handled";
     private static final char SLASH_N = '\n';
     private static final char SLASH_R = '\r';
 
@@ -56,7 +56,7 @@ public class WorkingCopyDetails {
     /** Creates a new instance of WorkingCopyDetails */
     public WorkingCopyDetails(File file, Map<String, String> attributes) {
         this.file = file;
-        this.attributes  = attributes;        
+        this.attributes  = attributes;
     }
 
     public String getValue(String propertyName, String defaultValue) {
@@ -69,38 +69,38 @@ public class WorkingCopyDetails {
         return attributes != null ? attributes.get(key) : null;
     }
 
-    public long getLongValue(String key) throws LocalSubversionException {        
+    public long getLongValue(String key) throws LocalSubversionException {
         try {
             String value = getValue(key);
             if(value==null) return -1;
             return Long.parseLong(value);
         } catch (NumberFormatException ex) {
             throw new LocalSubversionException(ex);
-        }        
+        }
     }
 
-    public Date getDateValue(String key) throws LocalSubversionException {       
+    public Date getDateValue(String key) throws LocalSubversionException {
         try {
             String value = getValue(key);
-            if(value==null) return null;            
+            if(value==null) return null;
             return SvnWcUtils.parseSvnDate(value);
         } catch (ParseException ex) {
             throw new LocalSubversionException(ex);
         }
     }
 
-    public boolean getBooleanValue(String key) throws LocalSubversionException {       
+    public boolean getBooleanValue(String key) throws LocalSubversionException {
         String value = getValue(key);
         if(value==null) return false;
-        return Boolean.valueOf(value).booleanValue();        
+        return Boolean.valueOf(value).booleanValue();
     }
-    
+
     public boolean isHandled() throws LocalSubversionException {
         return getBooleanValue(IS_HANDLED);
     }
 
     public boolean isFile() {
-        return attributes !=null ? FILE_ATTRIBUTE_VALUE.equals(attributes.get("kind")) : false;            
+        return attributes !=null ? FILE_ATTRIBUTE_VALUE.equals(attributes.get("kind")) : false;
     }
 
     private File getPropertiesFile() throws IOException {
@@ -234,13 +234,44 @@ public class WorkingCopyDetails {
             }
 
             Properties workingSvnProps = getWorkingSvnProperties();
-            String rawKeywords = workingSvnProps != null ? workingSvnProps.getProperty("svn:keywords") : null;
-            if (rawKeywords != null) {
-                returnValue = isModifiedByLine(rawKeywords);
+            String value = "";
+            if(workingSvnProps!=null) {
+                value = workingSvnProps.getProperty("svn:special", "none");
+            }
+            if (value.equals("*")) {
+		if (isSymbolicLink()) {
+        	    returnValue = false;
+		}
             } else {
-                returnValue = isModifiedByByte();
+	        String rawKeywords = workingSvnProps != null ? workingSvnProps.getProperty("svn:keywords") : null;
+	        if (rawKeywords != null) {
+                    returnValue = isModifiedByLine(rawKeywords);
+	        } else {
+	            returnValue = isModifiedByByte();
+	        }
             }
         }
+
+        return returnValue;
+    }
+
+    private boolean isSymbolicLink() throws IOException {
+        boolean returnValue = false;
+
+	File baseFile = getTextBaseFile();
+	if (baseFile != null) {
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new java.io.FileReader(baseFile));
+	        String firstLine = reader.readLine();
+	        returnValue = firstLine.startsWith("link");
+            } finally {
+		if (reader != null) {
+                    reader.close();
+		}
+            }
+        }   
+
 
         return returnValue;
     }
