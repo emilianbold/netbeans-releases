@@ -653,13 +653,14 @@ final class XMLSettingsSupport {
                 }
                 return instance;
             } catch (Exception ex) {
-                IOException ioe = new IOException("Error reading " + source + ": " + ex); // NOI18N
-                Exceptions.attachMessage(ioe, "Class: " + clazz);  // NOI18N
-                Exceptions.attachMessage(ioe, "Method: " + srcMethod);  // NOI18N
-                Exceptions.attachMessage(ioe,
-                                                  "Content:\n" +
-                                                  getFileContent(source)); // NOI18N
+                IOException ioe = new IOException("Error reading " + source +
+                                                  ": " + ex);
+
                 ioe.initCause(ex);
+                Exceptions.attachMessage(ioe,
+                                         "Content:\n" + getFileContent(source));
+                Exceptions.attachMessage(ioe, "Method: " + srcMethod);
+                Exceptions.attachMessage(ioe, "Class: " + clazz);
                 throw ioe;
             }
         }
