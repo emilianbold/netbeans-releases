@@ -112,3 +112,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-libs-javacapi" value="${javadoc.web.root}/org-netbeans-libs-javacapi"/>
 <property name="javadoc.docs.org-netbeans-jackpot" value="${javadoc.web.root}/org-netbeans-jackpot"/>
 <property name="javadoc.docs.org-netbeans-modules-indexedannotations" value="${javadoc.web.root}/org-netbeans-modules-indexedannotations"/>
+<property name="javadoc.docs.org-netbeans-modules-junit" value="${javadoc.web.root}/org-netbeans-modules-junit"/>
