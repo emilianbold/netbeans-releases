@@ -68,9 +68,9 @@ final class EnvironmentNode extends AbstractNode {
      */
     public static Node find (final String name) {
         // XXX this is probably obsolete? consider deleting
-        Object retValue = 
-            Children.MUTEX.readAccess(new Mutex.Action() {
-                public Object run() {
+        Node retValue = 
+            Children.MUTEX.readAccess(new Mutex.Action<Node>() {
+                public Node run() {
                     synchronized (lock) {
                         Node n = types.get (name);
                         if (n == null) {
@@ -92,7 +92,7 @@ final class EnvironmentNode extends AbstractNode {
                 }
             });
         if (retValue != null) {
-            return (Node)retValue;
+            return retValue;
         }
         throw new IllegalStateException();
     }
