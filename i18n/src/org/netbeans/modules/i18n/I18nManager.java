@@ -336,7 +336,7 @@ public class I18nManager {
     private void closeDialog() {
         Dialog dialog = (Dialog) dialogWRef.get();
         if (dialog != null)
-            dialog.hide();
+            dialog.setVisible(false);
     }
 
 }
