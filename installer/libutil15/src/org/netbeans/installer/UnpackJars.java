@@ -77,9 +77,9 @@ public class UnpackJars {
         long completedBytes = 0L;
         for (int i = 0; i < jarList.size(); i++) {
             JarItem item = jarList.get(i);
-            progressInfo.setFileName(item.fileName);
             File fileIn = new File(item.fileName + ".pack.gz");
             File fileOut = new File(item.fileName);
+            progressInfo.setFileName(fileOut.getPath());
             if (!fileIn.exists()) {
                 log.logEvent(this,Log.ERROR,"Cannot find file: " + fileIn);
                 return false;
