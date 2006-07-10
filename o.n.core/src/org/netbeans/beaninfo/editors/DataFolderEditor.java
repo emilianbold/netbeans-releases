@@ -44,20 +44,6 @@ public class DataFolderEditor extends PropertyEditorSupport implements ExPropert
 
     PropertyEnv env;
 
-    /** This method is intended for use when generating Java code to set
-    * the value of the property.  It should return a fragment of Java code
-    * that can be used to initialize a variable with the current property
-    * value.
-    * <p>
-    *
-    * @return A fragment of Java code representing an initializer for the
-    *    current value.
-    */
-    public String getJavaInitializationString() {
-        // TODO: corect this
-        return "???"; // NOI18N
-    }
-
     /**
     * @return The property value as a human editable string.
     * <p>   Returns null if the value can't be expressed as an editable string.
