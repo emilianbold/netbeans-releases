@@ -82,20 +82,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
     
     private transient JToggleButton timestampButton;
 
-    /* These buttons were used for the feature that allows the user to
-     * specify whether the browser's cookie should be used or whether
-     * to replace it. In 3.6 ("Promotion B"), it is not
-     * possible to configure the monitor to use user-specified
-     * cookies, but I leave the method, in case it becomes possible in
-     * the future. Basically, we can no longer set the cookie on the
-     * server side (the Servlet APIs does not provide any method for
-     * doing this) but we could technically tell the browser that
-     * issues the replay request to send another cookie (the APIs for
-     * that are not there now). If so, the feature can be
-     * reintroduced. 
-     */ 
-    //private transient JToggleButton browserCookieButton, savedCookieButton; 
-
     // Sizing and stuff...
     private transient  Dimension logD = new Dimension(250, 400);
     private transient  Dimension dataD = new Dimension(500, 400);
@@ -126,56 +112,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
     // Data display tables 
     private int displayType = 0;
 
-    // Button icons
-
-    static protected Icon updateIcon;
-    static protected Icon a2zIcon;
-    static protected Icon timesortAIcon;
-    static protected Icon timesortDIcon;
-    static protected Icon timestampIcon;
-    // See comment above for variable declaration "browserCookieButton"
-    //static protected Icon browserCookieIcon;
-    //static protected Icon savedCookieIcon;
-    static protected ImageIcon frameIcon;
-   
-    static {
-		
-        updateIcon =
-        new ImageIcon(TransactionView.class.getResource
-        ("/org/netbeans/modules/web/monitor/client/icons/update.gif")); // NOI18N
-
-        a2zIcon =
-        new ImageIcon(TransactionView.class.getResource
-        ("/org/netbeans/modules/web/monitor/client/icons/a2z.gif")); // NOI18N
-
-        timesortAIcon =
-        new ImageIcon(TransactionView.class.getResource
-        ("/org/netbeans/modules/web/monitor/client/icons/timesortA.gif")); // NOI18N
-
-        timesortDIcon =
-        new ImageIcon(TransactionView.class.getResource
-                      ("/org/netbeans/modules/web/monitor/client/icons/timesortB.gif")); // NOI18N
-
-        timestampIcon =
-        new ImageIcon(TransactionView.class.getResource
-                      ("/org/netbeans/modules/web/monitor/client/icons/timestamp.gif")); // NOI18N
-
-        // See comment above for variable declaration
-        // "browserCookieButton"
-        // browserCookieIcon = 
-        // new ImageIcon(TransactionView.class.getResource
-        //	  ("/org/netbeans/modules/web/monitor/client/icons/browsercookie.gif")); // NOI18N
-
-        //savedCookieIcon = 
-        //new ImageIcon(TransactionView.class.getResource
-        //	  ("/org/netbeans/modules/web/monitor/client/icons/savedcookie.gif")); // NOI18N
-
-        frameIcon =
-        new ImageIcon(TransactionView.class.getResource
-        ("/org/netbeans/modules/web/monitor/client/icons/menuitem.gif")); // NOI18N
-
-    }
-
     // Need to override requestFocusInWindow to call requestFocusInWindow
     // on some internal component for F1 help to work correctly
     public boolean requestFocusInWindow() {
@@ -197,7 +133,8 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
      * retrieve any data until the Monitor is opened.
      */
     private TransactionView() {
-        setIcon(frameIcon.getImage());
+        setIcon(new ImageIcon(TransactionView.class.getResource
+        ("/org/netbeans/modules/web/monitor/client/icons/menuitem.gif")).getImage());
         setToolTipText(NbBundle.getMessage(TransactionView.class, "MON_Window_Tooltip"));
 	controller = Controller.getInstance();
 	initialize();
@@ -364,14 +301,16 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 				    ));
 	buttonPanel.setFloatable (false);
 
-	JButton updateButton = new JButton(updateIcon);
+	JButton updateButton = new JButton(new ImageIcon(TransactionView.class.getResource
+        ("/org/netbeans/modules/web/monitor/client/icons/update.gif")));; // NOI18N
 	updateButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Reload_all_17"));
 	updateButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    controller.getTransactions();
 		}});
 
-	timeAButton = new JToggleButton(timesortAIcon, false);
+	timeAButton = new JToggleButton(new ImageIcon(
+                TransactionView.class.getResource("/org/netbeans/modules/web/monitor/client/icons/timesortA.gif")), false);
 	timeAButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Order_transactions_15"));
 
 	timeAButton.addActionListener(new ActionListener() {
@@ -387,7 +326,8 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 		    }
 		}});
 
-	timeDButton = new JToggleButton(timesortDIcon, true);
+	timeDButton = new JToggleButton(new ImageIcon(
+                TransactionView.class.getResource("/org/netbeans/modules/web/monitor/client/icons/timesortB.gif")), true);
 	timeDButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Order_transactions_16"));
 	timeDButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -403,7 +343,8 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 
 		}});
 
-	alphaButton = new JToggleButton(a2zIcon, false);
+	alphaButton = new JToggleButton(new ImageIcon(
+                TransactionView.class.getResource("/org/netbeans/modules/web/monitor/client/icons/a2z.gif")), false);
 	alphaButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Order_transactions_14"));
 	alphaButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -420,32 +361,9 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 		}});
 
 
-	// See comment above for variable declaration
-	// "browserCookieButton"
-	/*
-	browserCookieButton = new JToggleButton(browserCookieIcon, true);
-	browserCookieButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Browser_cookie"));
-	browserCookieButton.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    browserCookieButton.setSelected(true);
-		    savedCookieButton.setSelected(false);
-		    controller.setUseBrowserCookie(true); 
-
-		}});
-
-	savedCookieButton = new JToggleButton(savedCookieIcon, false);
-	savedCookieButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Saved_cookie"));
-	savedCookieButton.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    browserCookieButton.setSelected(false);
-		    savedCookieButton.setSelected(true);
-		    controller.setUseBrowserCookie(false); 
-		}});
-
-	*/
-
 	timestampButton = new
-	    JToggleButton(timestampIcon,
+	    JToggleButton(new ImageIcon(
+            TransactionView.class.getResource("/org/netbeans/modules/web/monitor/client/icons/timestamp.gif")),
 				TransactionNode.showTimeStamp());
 	timestampButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Show_time_25"));
 	timestampButton.addActionListener(new ActionListener() {
@@ -470,22 +388,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	    };
 	sep.setMaximumSize(new Dimension(10, 10));
 	buttonPanel.add(sep);
-	// See comment above for variable declaration
-	// "browserCookieButton"
-	/*
-	buttonPanel.add(browserCookieButton);
-	buttonPanel.add(savedCookieButton);
-	sep = new JPanel() {
-		public float getAlignmentX() {
-		    return 0;
-		}
-		public float getAlignmentY() {
-		    return 0;
-		}
-	    };
-	sep.setMaximumSize(new Dimension(10, 10));
-	buttonPanel.add(sep);
-	*/
 	buttonPanel.add(timestampButton);
 
 	logPanel = new JPanel();
