@@ -296,7 +296,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                  +((support == null) ? null : support.cesEnv()) + "]"
             ); // NOI18N
         } else {
-            Workspace realWorkspace = (workspace == null) ? WindowManager.getDefault().getCurrentWorkspace() : workspace;
             dockIfNeeded();
             super.open(workspace);
         }
