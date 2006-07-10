@@ -21,53 +21,53 @@ package org.netbeans.modules.projectimport.jbuilder.ui;
 
 import java.io.File;
 import java.util.Collection;
-import org.netbeans.modules.projectimport.j2seimport.ui.BasicPanel;
+import org.netbeans.modules.projectimport.j2seimport.ui.BasicWizardIterator;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Radek Matous
  */
-public class JBWizardData extends BasicPanel.WizardData {
+public class JBWizardData extends BasicWizardIterator.BasicDataModel {
+    public JBWizardData() {
+        super();
+    }
+    
     private File projectFile = null;
     private File destinationDir = null;
     private Collection projectDefinition = null;
     private boolean includeDependencies;
-
-
-    /** Creates a new instance of JBWizardData */
-    public JBWizardData() {
-    }
-
-
+    
+    
     public File getDestinationDir() {
-        return destinationDir;
+        return (destinationDir != null) ? FileUtil.normalizeFile(destinationDir) : null;
     }
-
+    
     void setDestinationDir(File destination) {
         this.destinationDir = destination;
     }
-
+    
     public File getProjectFile() {
-        return projectFile;
+        return (projectFile != null) ? FileUtil.normalizeFile(projectFile) : null;
     }
-
+    
     void setProjectFile(File projectFile) {
         this.projectFile = projectFile;
     }
-
-    public Collection getProjectDefinition() {
+    
+    public Collection/*<AbstractProject>*/ getProjectDefinition() {
         return projectDefinition;
     }
-
-    void setProjectDefinition(Collection projectDefinition) {
+    
+    void setProjectDefinition(Collection/*<AbstractProject>*/ projectDefinition) {
         this.projectDefinition = projectDefinition;
     }
-
+    
     public boolean isIncludeDependencies() {
         return includeDependencies;
     }
-
+    
     void setIncludeDependencies(boolean includeDependencies) {
         this.includeDependencies = includeDependencies;
-    }    
+    }
 }

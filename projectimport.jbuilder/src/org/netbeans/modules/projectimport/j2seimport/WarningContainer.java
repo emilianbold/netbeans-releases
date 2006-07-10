@@ -18,8 +18,10 @@
  */
 
 package org.netbeans.modules.projectimport.j2seimport;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 /**
@@ -59,8 +61,11 @@ public final class WarningContainer  {
         return allWarnings.size();
     }
     
+    public Collection getAllWarnings() {
+        return new LinkedList(allWarnings);
+    }
     
-    public Iterator/*<WarningSupport.Warning>*/ getAllWarnings() {
+    public Iterator/*<WarningSupport.Warning>*/ getIterator() {
         return allWarnings.iterator();
     }
     

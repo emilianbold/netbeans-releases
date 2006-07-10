@@ -37,8 +37,8 @@ public class WarningMessage {
         WarningContainer warnings = iProcess.getWarnings();
         
         if (warnings != null) {
-            Iterator it = iProcess.getWarnings().getAllWarnings();
-            String message = createHtmlString(it);
+            Iterator it = iProcess.getWarnings().getIterator();
+            String message = createHtmlString(NbBundle.getMessage(WarningMessage.class, "MSG_ProblemsOccured"), it);//NOI18N
             if (message != null) {
                 NotifyDescriptor d = new DialogDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
@@ -46,10 +46,9 @@ public class WarningMessage {
         }
     }
     
-    private static String createHtmlString(Iterator it) {
+    public static String createHtmlString(String msg, Iterator it) {
         StringBuffer sb = new StringBuffer();
         boolean existsAnyNotification = false;
-        String msg = NbBundle.getMessage(WarningMessage.class, "MSG_ProblemsOccured");//NOI18N        
         sb.append("<html><b>").append(msg).append("</b><ul>");//NOI18N
         while (it.hasNext()) {
             WarningContainer.Warning warning = (Warning)it.next();

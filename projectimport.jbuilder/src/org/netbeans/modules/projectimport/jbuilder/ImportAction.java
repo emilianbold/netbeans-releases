@@ -18,26 +18,19 @@
  */
 
 package org.netbeans.modules.projectimport.jbuilder;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.projectimport.j2seimport.ui.BasicPanel;
+import org.netbeans.modules.projectimport.j2seimport.ui.BasicWizardIterator;
 import org.netbeans.modules.projectimport.j2seimport.ui.ProgressPanel;
 import org.netbeans.modules.projectimport.j2seimport.ui.WarningMessage;
 import org.netbeans.modules.projectimport.jbuilder.ui.JBWizardData;
-import org.netbeans.modules.projectimport.jbuilder.ui.JBWizardPanel1;
+import org.netbeans.modules.projectimport.jbuilder.ui.JBWizardPanel;
+import org.netbeans.modules.projectimport.jbuilder.ui.JBuilderWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
-import org.netbeans.modules.projectimport.j2seimport.AbstractProject;
 import org.netbeans.modules.projectimport.j2seimport.ImportProcess;
 import org.netbeans.modules.projectimport.j2seimport.ImportUtils;
 import org.netbeans.modules.projectimport.j2seimport.ui.WizardSupport;
@@ -48,36 +41,41 @@ import org.netbeans.modules.projectimport.j2seimport.ui.WizardSupport;
  * @author Radek Matous
  */
 public class ImportAction extends CallableSystemAction {
-    
+    private BasicWizardIterator wizardIterator;    
     public ImportAction() {
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
     
     public void performAction() {
-        final ImportProcess iProcess;
         try {
-            BasicPanel[] panels = new BasicPanel[]{JBWizardPanel1.getInstance()};
-            String title = NbBundle.getMessage(ImportAction.class, "CTL_WizardTitle"); // NOI18N
-            JBWizardData wizardData = (JBWizardData)WizardSupport.show(title, panels, new JBWizardData());
-
+            JBWizardData wizardData = showWizard();
             if (wizardData != null) {
-
-                FileObject prjDir = FileUtil.toFileObject(wizardData.getDestinationDir());
-                assert prjDir != null;
-
-                iProcess = ImportUtils.createImportProcess(prjDir,wizardData.getProjectDefinition(),
-                        wizardData.isIncludeDependencies());
-
-
-                ProgressPanel.showProgress(iProcess);
-                WarningMessage.showMessages(iProcess);
-
-                // open created projects when importing finished
-                OpenProjects.getDefault().open(iProcess.getProjectsToOpen(), true);
+                performImport(wizardData);
             }
         } catch (Throwable thr) {
             ErrorManager.getDefault().notify(thr);
         }
+    }
+
+    private JBWizardData showWizard() {
+        if (wizardIterator == null) {
+            wizardIterator = JBuilderWizardIterator.createIterator();                
+        }
+        wizardIterator.setData(new JBWizardData()); 
+        return (JBWizardData)WizardSupport.show(wizardIterator);
+    }
+
+    private void performImport(final JBWizardData wizardData) {
+        ImportProcess iProcess;
+        FileObject prjDir = FileUtil.toFileObject(wizardData.getDestinationDir());
+        assert prjDir != null;
+
+        iProcess = ImportUtils.createImportProcess(prjDir,wizardData.getProjectDefinition(),
+                wizardData.isIncludeDependencies());
+
+        ProgressPanel.showProgress(iProcess);
+        WarningMessage.showMessages(iProcess);
+        OpenProjects.getDefault().open(iProcess.getProjectsToOpen(), true);
     }
     
     

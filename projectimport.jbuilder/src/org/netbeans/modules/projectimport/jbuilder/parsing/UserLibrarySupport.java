@@ -70,10 +70,13 @@ public final class UserLibrarySupport {
             String home = System.getProperty("user.home", "");//NOI18N
             
             if (home.length() > 0) {
-                userHomeLib = new File(home, ".jbuilder2005");//NOI18N
+                userHomeLib = new File(home, ".jbuilder2006");//NOI18N
                 if (!userHomeLib.exists()) {
-                    logger.finest("Not valid user.home.lib: " + userHomeLib);//NOI18N
-                    userHomeLib = null;
+                    userHomeLib = new File(home, ".jbuilder2005");//NOI18N
+                    if (!userHomeLib.exists()) {
+                        logger.finest("Not valid user.home.lib: " + userHomeLib);//NOI18N
+                        userHomeLib = null;
+                    }
                 }
             } else {
                 logger.finest("Not valid user.home: ");//NOI18N
