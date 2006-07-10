@@ -258,50 +258,15 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         }
     }
 
-    /** Getter for a text from resource.
-    * @param resName resource name
-    * @return string with resource
-    */
-    static String getString (String resName) {
-        return NbBundle.getMessage(NonGui.class, resName);
-    }
-
-    /** Getter for a text from resource with one argument.
-    * @param resName resource name
-    * @return string with resource
-    * @param arg1 the argument
-    * @param arg2 the argument
-    */
-    static String getString (String resName, Object arg1, Object arg2) {
-        return NbBundle.getMessage(NonGui.class, resName, arg1, arg2);
-    }
-
     /** Exits from the VM.
     */
     static void doExit (int code) {
         TopSecurityManager.exit(code);
     }
 
-
-
     /** Get the module subsystem.  */
     public ModuleSystem getModuleSystem() {
         return Main.getModuleSystem ();
     }
 
-    /** This is a notification about hiding wizards 
-     * during startup (Import, Setup). It is used in subclass 
-     * for showing the splash screen again, when wizard disappears.
-     *
-     * It does nothing in NonGui implementation.
-     */
-    protected void showSplash () {
-    }
-
-    /** Return splash screen if available.
-     */
-    protected org.netbeans.core.startup.Splash.SplashOutput getSplash() {
-        return null;
-    }
-    
 }

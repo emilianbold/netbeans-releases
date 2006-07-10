@@ -57,15 +57,6 @@ public final class Main extends Object {
   /** is there progress bar in splash or not */
   private static final boolean noBar = Boolean.getBoolean("netbeans.splash.nobar");
 
-  /** Defines a max value for splash progress bar.
-   */
-  public static void setSplashMaxSteps(int maxSteps)
-  {
-      if (noBar || CLIOptions.isNoSplash() || splash == null)
-          return;
-      splash.setMaxSteps(maxSteps);
-  }
-  
   /** Adds temporary steps to create a max value for splash progress bar later.
    */
   public static void addToSplashMaxSteps(int steps)
@@ -417,7 +408,6 @@ public final class Main extends Object {
             if (splash != null) {
                 if (Splash.isVisible(splash))
                     return;
-                splash = null;
             }
             splash = Splash.showSplash ();
         }

@@ -88,13 +88,6 @@ implements Runnable {
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(status);
     }
 
-    protected void addToSplashMaxSteps (int cnt) {
-        Main.addToSplashMaxSteps (cnt);
-    }
-    protected void incrementSplashProgressBar () {
-        Main.incrementSplashProgressBar ();
-    }
-
     public void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL) {
           org.netbeans.swing.plaf.Startup.run(uiClass, uiFontSize, themeURL);
     }

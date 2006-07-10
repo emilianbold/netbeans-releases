@@ -50,7 +50,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
+import static javax.swing.SwingConstants.*;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.netbeans.Util;
@@ -61,19 +61,13 @@ import org.openide.util.NbBundle;
 *
 * @author Ian Formanek, David Peroutka
 */
-public final class Splash  implements SwingConstants {
+public final class Splash {
 
-    /** The splash image */
-    static Reference<Image> splashRef;
-
-    /** The about image */
-    static Reference<Image> aboutRef;
-    
     public static void showSplashDialog (java.awt.Frame parent, javax.swing.JComponent info) {
         createSplashDialog (parent, info).setVisible(true);
     }
     
-    static JDialog createSplashDialog (java.awt.Frame parent, javax.swing.JComponent info) {
+    private static JDialog createSplashDialog (java.awt.Frame parent, javax.swing.JComponent info) {
         SplashDialog splashDialog = new SplashDialog (parent, info);
         return splashDialog;
     }
@@ -102,8 +96,6 @@ public final class Splash  implements SwingConstants {
     public static interface SplashOutput {
         public void print (String s);
         
-        public void setMaxSteps(int maxSteps);
-        
         public void addToMaxSteps(int steps);
         
         public void addAndSetMaxSteps(int steps);
@@ -131,31 +123,9 @@ public final class Splash  implements SwingConstants {
     /**
      * Standard way how to place the window to the center of the screen.
      */
-    public static final void center(Window c) {
+    static final void center(Window c) {
         c.pack();
         c.setBounds(Utilities.findCenterBounds(c.getSize()));
-    }
-
-    /** @return splash image */
-    static Image getSplash() {
-        Image ret;
-        if ((splashRef == null) ||
-                ((ret = splashRef.get()) == null)) {
-            ret = loadSplash();
-            splashRef = new WeakReference<Image>(ret);
-        }
-        return ret;
-    }
-
-    /** @return about image */
-    static Image getAbout() {
-        Image ret;
-        if ((aboutRef == null) ||
-                ((ret = aboutRef.get()) == null)) {
-            ret = loadAbout();
-            aboutRef = new WeakReference<Image>(ret);
-        }
-        return ret;
     }
 
     /** Loads a splash image from its source */
@@ -205,7 +175,7 @@ public final class Splash  implements SwingConstants {
          * Creates a new splash screen component.
          */
         public SplashComponent() {
-            image = new ImageIcon(getSplash()).getImage(); // load!
+            image = new ImageIcon(loadSplash()).getImage(); // load!
             
             ResourceBundle bundle = NbBundle.getBundle(Splash.class);
             StringTokenizer st = new StringTokenizer(
@@ -297,13 +267,6 @@ public final class Splash  implements SwingConstants {
                     dirty = new Rectangle(rect);
                 }
             });
-        }
-        
-        /** Defines a max value for splash progress bar.
-         */
-        public void setMaxSteps(int maxSteps)
-        {
-            this.maxSteps = maxSteps;
         }
         
         /** Adds temporary steps to create a max value for splash progress bar later.
@@ -461,7 +424,7 @@ public final class Splash  implements SwingConstants {
         
         public AboutComponent () {
             ResourceBundle bundle = NbBundle.getBundle(Splash.class);
-            image = new ImageIcon(getAbout()).getImage(); // load!
+            image = new ImageIcon(loadAbout()).getImage(); // load!
                 StringTokenizer st = new StringTokenizer(
                     bundle.getString("AboutTextBounds"), " ,"); // NOI18N
                 view = new Rectangle(Integer.parseInt(st.nextToken()),
@@ -525,10 +488,6 @@ public final class Splash  implements SwingConstants {
             splashComponent.increment(steps);
         }
         
-        public void setMaxSteps(int maxSteps) {
-            splashComponent.setMaxSteps(maxSteps);
-        }
-        
         public void addToMaxSteps(int steps) {
             splashComponent.addToMaxSteps(steps);
         }
@@ -543,7 +502,7 @@ public final class Splash  implements SwingConstants {
         
     }
 
-    private static class SplashDialog extends JDialog implements SplashOutput, SplashOutputInternal, ActionListener {
+    private static class SplashDialog extends JDialog implements ActionListener {
         /** generated Serialized Version UID */
         static final long serialVersionUID = 5185644855500178404L;
 
@@ -577,45 +536,10 @@ public final class Splash  implements SwingConstants {
             setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         }
 
-        /**
-         * Prints the given progress message on the splash screen.
-         * @param x specifies a string that is to be displayed
-         */
-        public void print(String x) {
-            splashComponent.setText(x);
-        }
-        
-        private boolean hideRequested = false;
-        
-        public boolean isHideRequested() {
-            return hideRequested;
-        }        
-        
-        public void hideRequested() {
-            hideRequested = true;
-        }
-        
         public void actionPerformed(ActionEvent e) {
             setVisible (false);
             dispose();
         }
-        
-        public void increment(int steps) {
-        }
-        
-        public void setMaxSteps(int maxSteps) {
-        }
-        
-        public void addToMaxSteps(int steps) {
-        }
-        
-        public void addAndSetMaxSteps(int steps) {
-        }
-
-        public Component getComponent() {
-            return this;
-        }
-        
     }
 
     private static class SplashRunner implements Runnable {

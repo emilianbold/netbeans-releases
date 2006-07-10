@@ -123,13 +123,6 @@ public abstract class CoreBridge {
         LoaderPoolNode.endUpdates();
     */
 
-    protected abstract void addToSplashMaxSteps (int cnt); /*
-        Main.addToSplashMaxSteps (cnt);
-    }*/
-    protected abstract void incrementSplashProgressBar ();/* {
-        Main.incrementSplashProgressBar ();
-    }*/
-    
     /** Abstracts away from definition of property editors. 
      * @since 1.7 */
     public abstract void registerPropertyEditors();
