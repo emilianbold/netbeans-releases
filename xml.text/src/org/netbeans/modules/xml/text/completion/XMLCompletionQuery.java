@@ -20,16 +20,9 @@
 package org.netbeans.modules.xml.text.completion;
 
 import java.util.*;
-import java.awt.Color;
-import java.net.URL;
-import java.io.IOException;
-import java.util.Enumeration;
 
-import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
 
 import org.w3c.dom.*;
@@ -38,20 +31,12 @@ import org.xml.sax.*;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataLoader;
-import org.openide.loaders.UniFileLoader;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.ExtensionList;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.xml.text.syntax.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.UOException;
-
-import javax.swing.Icon;
-import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 
 /**
  * Consults grammar and presents list of possible choices
@@ -70,9 +55,6 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     
     // the name of a property indentifing cached query
     public static final String DOCUMENT_GRAMMAR_BINDING_PROP = "doc-bind-query";
-    
-    // remember last thread that invoked query method
-    private ThreadLocal thread;
     
     /**
      * Perform the query on the given component. The query usually
