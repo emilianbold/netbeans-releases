@@ -167,9 +167,7 @@ public final class ModuleSystem {
         } catch (MalformedURLException e) {
             Util.err.log(Level.WARNING, null, e);
         }
-        if (Util.err.isLoggable(Level.FINE)) {
-            Util.err.fine("ignoredPrefixes=" + ignoredPrefixes);
-        }
+        Util.err.log(Level.FINE, "ignoredPrefixes={0}", ignoredPrefixes);
         
         mgr.mutexPrivileged().enterWriteAccess();
         ev.log(Events.START_LOAD_BOOT_MODULES);
@@ -191,12 +189,11 @@ public final class ModuleSystem {
                 String manifestUrlS = manifestUrl.toExternalForm();
                 for (String pref: ignoredPrefixes) {
                     if (manifestUrlS.startsWith(pref)) {
+                        Util.err.log(Level.FINE, "ignoring JDK/JRE manifest: {0}", manifestUrlS);
                         continue MANIFESTS;
                     }
                 }
-                if (Util.err.isLoggable(Level.FINE)) {
-                    Util.err.fine("Checking boot manifest: " + manifestUrlS);
-                }
+                Util.err.log(Level.FINE, "Checking boot manifest: {0}", manifestUrlS);
                 
                 InputStream is;
                 try {
