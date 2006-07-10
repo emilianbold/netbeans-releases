@@ -583,8 +583,8 @@ public final class TopLogging {
                     sb.delete(0, 1);
                     continue;
                 }
-                log.log(Level.INFO, sb.substring(0, first));
-                sb.delete(0, first);
+                log.log(Level.INFO, sb.substring(0, first + 1));
+                sb.delete(0, first + 1);
             }
         }
     } // end of LgStream

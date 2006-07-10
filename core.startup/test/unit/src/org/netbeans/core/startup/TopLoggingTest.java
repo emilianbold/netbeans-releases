@@ -217,6 +217,7 @@ public class TopLoggingTest extends NbTestCase {
 
     public void testSystemErrIsSentToLog() throws Exception {
         System.err.println("Ahoj");
+        System.err.println("Jardo");
         new IllegalStateException("Hi").printStackTrace();
 
         if (handler != null) {
@@ -225,14 +226,13 @@ public class TopLoggingTest extends NbTestCase {
 
         String disk = readLog(true);
 
-        Matcher m = Pattern.compile("^Ahoj", Pattern.MULTILINE).matcher(disk);
+        Matcher m = Pattern.compile("^Ahoj(.*)Jardo", Pattern.MULTILINE | Pattern.DOTALL).matcher(disk);
         assertTrue(disk, m.find());
-        int ah = m.start();
-        if (ah == -1) {
-            char next = disk.charAt(ah + 4);
-            if (next != 10 && next != 13) {
-                fail("Expecting 'Ahoj': index: " + ah + " next char: " + (int)next + "text:\n" + disk);
-            }
+        assertEquals("One group found", 1, m.groupCount());
+        assertTrue("Non empty group: " + m.group(1) + "\n" + disk, m.group(1).length() > 0);
+        char next = m.group(1).charAt(0);
+        if (next != 10 && next != 13) {
+            fail("Expecting 'Ahoj': index: " + 0 + " next char: " + (int)next + "text:\n" + disk);
         }
         
         Pattern p = Pattern.compile("IllegalStateException.*Hi");
