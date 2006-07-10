@@ -20,13 +20,10 @@
 package org.netbeans.core.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.Image;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 import org.netbeans.core.NbMainExplorer;

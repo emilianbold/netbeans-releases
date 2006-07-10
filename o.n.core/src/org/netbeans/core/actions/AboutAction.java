@@ -19,13 +19,8 @@
 
 package org.netbeans.core.actions;
 
-import javax.swing.ImageIcon;
-import javax.swing.JMenuItem;
-
-import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
 
