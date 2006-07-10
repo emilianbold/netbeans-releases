@@ -19,6 +19,7 @@
 
 package org.openide.loaders;
 
+import javax.swing.SwingUtilities;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import java.beans.*;
@@ -105,6 +106,9 @@ public class BasicDataObjectTest extends NbTestCase {
         data.getNodeDelegate().addPropertyChangeListener(dnl);
 
         data.getNodeDelegate ().setName ("file2.txt");
+        
+        // wait for DataNode firing in AWT
+        SwingUtilities.invokeAndWait(new Runnable() { public void run() {} });
         
         assertTrue("DataObject fired PROP_NAME on rename.", dol.name);
         assertTrue("DataObject fired PROP_FILES on rename.", dol.files);
