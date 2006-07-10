@@ -113,26 +113,10 @@ public class IntEditor extends ExPropertyEditorSupport {
         for (int i=0; i < s.length; i++) {
             out.append(s[i]);
             if (i != s.length-1) {
-                out.append(","); //NOI18N
+                out.append(','); //NOI18N
             }
         }
         return out.toString();
-    }
-    
-    private String getStringRep(int i) {
-        if (keys != null) {
-            try {
-                return keys[i];
-            } catch (ArrayIndexOutOfBoundsException ae) {
-                //don't internationalize this exception, users never see it
-                throw new IllegalArgumentException(
-                "This property editor uses a set of keyed values, " +  //NOI18N
-                "and the value " //NOI18N
-                + i + " is out of range."); //NOI18N
-            }
-        } else {
-            return Integer.toString(i);
-        }
     }
     
     public String getAsText() {
