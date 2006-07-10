@@ -379,14 +379,16 @@ public class LayerUtils {
         public void fileDataCreated(FileEvent fe) {
             assert false;
         }
-        private synchronized void changed() {
+        private void changed() {
             //System.err.println("changed on disk; saving=" + saving + " in " + Thread.currentThread().getName() + " for " + this);
-            if (saving) {
-                return;
+            synchronized (this) {
+                if (saving) {
+                    return;
+                }
+                problem = null;
+                dirty = false;
+                root = null;
             }
-            problem = null;
-            dirty = false;
-            root = null;
             pcs.firePropertyChange(PROP_DOCUMENT_ROOT, null, null);
         }
     }
