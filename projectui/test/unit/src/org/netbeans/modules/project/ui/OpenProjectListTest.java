@@ -24,7 +24,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -32,7 +31,7 @@ import java.util.TreeSet;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -62,10 +61,7 @@ public class OpenProjectListTest extends NbTestCase {
 
     protected void setUp () throws Exception {
         super.setUp ();
-        TestUtil.setLookup(new Object[] { 
-            TestSupport.testProjectFactory(),
-            TestSupport.createAuxiliaryConfiguration(),
-        });
+        MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir ();
         
         ProjectUtilities.OPEN_CLOSE_PROJECT_DOCUMENT_IMPL = handler;
@@ -289,7 +285,7 @@ public class OpenProjectListTest extends NbTestCase {
         public MySubprojectProvider (final Project project) {
             p = project;
         }
-        public Set/*<Project>*/ getSubprojects () {
+        public Set<Project> getSubprojects() {
             return Collections.singleton (p);
         }
         
@@ -299,21 +295,21 @@ public class OpenProjectListTest extends NbTestCase {
     }
     
     private static class TestOpenCloseProjectDocument implements ProjectUtilities.OpenCloseProjectDocument {
-        public Set/*<String>*/ openFiles = new HashSet ();
-        public Map/*<Project, SortedSet<String>>*/ urls4project = new HashMap ();
+        public Set<String> openFiles = new HashSet<String>();
+        public Map<Project,SortedSet<String>> urls4project = new HashMap<Project,SortedSet<String>>();
         
         public boolean open (FileObject fo) {
             Project owner = FileOwnerQuery.getOwner (fo);
             if (!urls4project.containsKey (owner)) {
               // add project
-              urls4project.put (owner, new TreeSet ());
+                urls4project.put(owner, new TreeSet<String>());
             }
             URL url = null;
             DataObject dobj = null;
             try {
                 dobj = DataObject.find (fo);
                 url = dobj.getPrimaryFile ().getURL ();
-                ((SortedSet)urls4project.get (owner)).add (url.toExternalForm ());
+                urls4project.get(owner).add(url.toExternalForm());
                 openFiles.add (fo.getURL ().toExternalForm ());
             } catch (FileStateInvalidException fsie) {
                 fail ("FileStateInvalidException in " + dobj.getPrimaryFile ());
@@ -323,16 +319,14 @@ public class OpenProjectListTest extends NbTestCase {
             return true;
         }
         
-        public Map/*<Project, SortedSet<String>>*/ close (Project[] projects) {
+        public Map<Project,SortedSet<String>> close(Project[] projects) {
             
             for (int i = 0; i < projects.length; i++) {
-                Set projectOpenFiles = (Set) urls4project.get (projects [i]);
+                SortedSet<String> projectOpenFiles = urls4project.get(projects [i]);
                 if (projectOpenFiles != null) {
                     projectOpenFiles.retainAll (openFiles);
                     urls4project.put (projects [i], projectOpenFiles);
-                    Iterator loop = projectOpenFiles.iterator ();
-                    while (loop.hasNext ()) {
-                        String url = (String) loop.next ();
+                    for (String url : projectOpenFiles) {
                         FileObject fo = null;
                         try {
                             fo = URLMapper.findFileObject (new URL (url));

@@ -80,8 +80,8 @@ public class ActionsUtilTest extends NbTestCase {
             prj2.getLookup(),
         });
         
-        Set bothProjects = new HashSet(Arrays.asList(new Object[] {prj1, prj2}));
-        Set result = new HashSet(Arrays.asList(ActionsUtil.getProjectsFromLookup(projects, null)));
+        Set<Project> bothProjects = new HashSet<Project>(Arrays.asList(prj1, prj2));
+        Set<Project> result = new HashSet<Project>(Arrays.asList(ActionsUtil.getProjectsFromLookup(projects, null)));
         
         assertTrue(bothProjects.equals(result));
         
@@ -90,7 +90,7 @@ public class ActionsUtilTest extends NbTestCase {
         boolean wasThrown = false;
         
         try {
-            assertGC("", new WeakReference(o));
+            assertGC("", new WeakReference<Object>(o));
         } catch (AssertionFailedError e) {
             //ignore
             wasThrown = true;
@@ -100,21 +100,21 @@ public class ActionsUtilTest extends NbTestCase {
         
         projects.setLookupsOverride(new Lookup[] {prj1.getLookup()});
         
-        Set firstProject = new HashSet(Arrays.asList(new Object[] {prj1}));
+        Set<Project> firstProject = new HashSet<Project>(Arrays.asList(prj1));
         
-        result = new HashSet(Arrays.asList(ActionsUtil.getProjectsFromLookup(projects, null)));
+        result = new HashSet<Project>(Arrays.asList(ActionsUtil.getProjectsFromLookup(projects, null)));
         
         assertTrue(firstProject.equals(result));
         
         projects.setLookupsOverride(new Lookup[] {});
         
-        result = new HashSet(Arrays.asList(ActionsUtil.getProjectsFromLookup(projects, null)));
+        result = new HashSet<Project>(Arrays.asList(ActionsUtil.getProjectsFromLookup(projects, null)));
         
         assertTrue(Collections.EMPTY_SET.equals(result));
         
         projects.setLookupsOverride(new Lookup[] {prj1.getLookup(), prj2.getLookup()});
 
-        result = new HashSet(Arrays.asList(ActionsUtil.getProjectsFromLookup(projects, null)));
+        result = new HashSet<Project>(Arrays.asList(ActionsUtil.getProjectsFromLookup(projects, null)));
         
         assertTrue(bothProjects.equals(result));
     }
@@ -129,9 +129,9 @@ public class ActionsUtilTest extends NbTestCase {
         
         ActionsUtil.getProjectsFromLookup(projects, null);
         
-        WeakReference ref1 = new WeakReference(prj1);
-        WeakReference ref2 = new WeakReference(prj2);
-        WeakReference lookup = new WeakReference(projects);
+        WeakReference<?> ref1 = new WeakReference<Object>(prj1);
+        WeakReference<?> ref2 = new WeakReference<Object>(prj2);
+        WeakReference<?> lookup = new WeakReference<Object>(projects);
         
         prj1 = null;
         prj2 = null;
@@ -152,9 +152,9 @@ public class ActionsUtilTest extends NbTestCase {
         
         ActionsUtil.getProjectsFromLookup(projects, null);
         
-        WeakReference ref1 = new WeakReference(prj1);
-        WeakReference ref2 = new WeakReference(prj2);
-        WeakReference lookup = new WeakReference(projects);
+        WeakReference<?> ref1 = new WeakReference<Object>(prj1);
+        WeakReference<?> ref2 = new WeakReference<Object>(prj2);
+        WeakReference<?> lookup = new WeakReference<Object>(projects);
         
         prj1 = null;
         prj2 = null;

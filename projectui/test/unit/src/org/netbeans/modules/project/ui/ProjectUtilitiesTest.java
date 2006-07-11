@@ -28,7 +28,7 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -58,7 +58,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
     DataObject do1_1_open, do1_2_open, do1_3_close, do1_4_close;
     DataObject do2_1_open;
     Project project1, project2;
-    Set openFilesSet = new HashSet ();
+    Set<DataObject> openFilesSet = new HashSet<DataObject>();
     TopComponent tc1_1, tc1_2, tc2_1, tc1_1_navigator;
     
     public ProjectUtilitiesTest (String testName) {
@@ -71,10 +71,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
 
     protected void setUp () throws Exception {
         super.setUp ();
-        TestUtil.setLookup(new Object[] { 
-            TestSupport.testProjectFactory(),
-            TestSupport.createAuxiliaryConfiguration(),
-        });
+        MockServices.setServices(TestSupport.TestProjectFactory.class);
                                 
         clearWorkDir ();
         
@@ -105,14 +102,19 @@ public class ProjectUtilitiesTest extends NbTestCase {
         ((TestSupport.TestProject) project2).setLookup (Lookups.singleton (TestSupport.createAuxiliaryConfiguration ()));
         
         //it will be necessary to dock the top components into the "editor" and "navigator" modes, so they need to be created:
-        WindowManager.getDefault().getWorkspaces()[0].createMode(CloneableEditorSupport.EDITOR_MODE, "Editor Mode", null);
-        WindowManager.getDefault().getWorkspaces()[0].createMode(NAVIGATOR_MODE, "Navigator Mode", null);
+        createMode(CloneableEditorSupport.EDITOR_MODE);
+        createMode(NAVIGATOR_MODE);
         (tc1_1 = new SimpleTopComponent (do1_1_open, CloneableEditorSupport.EDITOR_MODE)).open ();
         (tc1_2 = new SimpleTopComponent (do1_2_open, CloneableEditorSupport.EDITOR_MODE)).open ();
         (tc2_1 = new SimpleTopComponent (do2_1_open, CloneableEditorSupport.EDITOR_MODE)).open ();
         (tc1_1_navigator = new SimpleTopComponent (do1_1_open, NAVIGATOR_MODE)).open ();
         
         ExitDialog.SAVE_ALL_UNCONDITIONALLY = true;
+    }
+    
+    @SuppressWarnings("deprecation")
+    private static void createMode(String name) {
+        WindowManager.getDefault().getWorkspaces()[0].createMode(name, name, null);
     }
 
     public void testCloseAllDocuments () {

@@ -23,13 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.modules.project.ui.actions.ProjectActionTest.ActionCreator;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
@@ -60,9 +58,7 @@ public class FileCommandActionTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
-            TestSupport.testProjectFactory(),
-        });
+        MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
     
@@ -96,18 +92,18 @@ public class FileCommandActionTest extends NbTestCase {
     }
     
     public void testCommandEnablement() {
-        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[]{} );
+        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         FileCommandAction action = new FileCommandAction( "COMMAND", "TestFileCommandAction", (Icon)null, lookup );
         
         assertFalse( "Action should NOT be enabled", action.isEnabled() );        
         
-        lookup.change( new Object[] { d1_1 } );
+        lookup.change(d1_1);
         assertTrue( "Action should be enabled", action.isEnabled() );        
         
-        lookup.change( new Object[] { d1_1, d1_2 } );       
+        lookup.change(d1_1, d1_2);
         assertFalse( "Action should NOT be enabled", action.isEnabled() );        
         
-        lookup.change( new Object[] { d1_1, d2_1 } );       
+        lookup.change(d1_1, d2_1);
         assertFalse( "Action should NOT be enabled", action.isEnabled() );        
         
     }
@@ -126,7 +122,7 @@ public class FileCommandActionTest extends NbTestCase {
         
         private String[] ACTIONS = new String[] { COMMAND };
         
-        private List invocations = new ArrayList();
+        private List<String> invocations = new ArrayList<String>();
         
         public String[] getSupportedActions() {
             return ACTIONS;

@@ -49,25 +49,25 @@ public class ProjectChooserAccessoryTest extends NbTestCase {
     /**The cycles in project dependencies should be handled gracefully:
      */
     public void testAddSubprojects() {
-        ChangeableLookup l1 = new ChangeableLookup(new Object[0]);
-        ChangeableLookup l2 = new ChangeableLookup(new Object[0]);
+        ChangeableLookup l1 = new ChangeableLookup();
+        ChangeableLookup l2 = new ChangeableLookup();
         Project p1 = new TestProject(l1);
         Project p2 = new TestProject(l2);
         
-        Set subprojects1 = new HashSet();
-        Set subprojects2 = new HashSet();
+        Set<Project> subprojects1 = new HashSet<Project>();
+        Set<Project> subprojects2 = new HashSet<Project>();
         
         subprojects1.add(p2);
         subprojects2.add(p1);
         
-        l1.change(new Object[] {new SubprojectProviderImpl(subprojects1)});
-        l2.change(new Object[] {new SubprojectProviderImpl(subprojects2)});
+        l1.change(new SubprojectProviderImpl(subprojects1));
+        l2.change(new SubprojectProviderImpl(subprojects2));
         
-        List result = new ArrayList();
+        List<Project> result = new ArrayList<Project>();
         
-        ProjectChooserAccessory.addSubprojects(p1, result, new HashMap());
+        ProjectChooserAccessory.addSubprojects(p1, result, new HashMap<Project,Set<? extends Project>>());
         
-        assertTrue(new HashSet(Arrays.asList(new Object[] {p1, p2})).equals(new HashSet(result)));
+        assertTrue(new HashSet<Project>(Arrays.asList(p1, p2)).equals(new HashSet<Project>(result)));
     }
     
     private final class TestProject implements Project {
@@ -89,13 +89,13 @@ public class ProjectChooserAccessoryTest extends NbTestCase {
     
     private static final class SubprojectProviderImpl implements SubprojectProvider {
         
-        private Set subprojects;
+        private Set<Project> subprojects;
         
-        public SubprojectProviderImpl(Set subprojects) {
+        public SubprojectProviderImpl(Set<Project> subprojects) {
             this.subprojects = subprojects;
         }
         
-        public Set getSubprojects() {
+        public Set<? extends Project> getSubprojects() {
             return subprojects;
         }
 

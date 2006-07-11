@@ -69,28 +69,28 @@ public class LookupSensitiveActionTest extends NbTestCase {
         // it has at least one property change listener
         
         
-        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[] { } );
+        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         TestLSA tlsa = new TestLSA( lookup );
 	assertTrue ("TestLSA action is enabled.", tlsa.isEnabled ());
 	tlsa.refreshCounter = 0;
 	
-        lookup.change( new Object[] { d1 } );       
+        lookup.change(d1);
         assertEquals( "No refresh should be called ", 0, tlsa.refreshCounter );
-        lookup.change( new Object[] { d2 } );       
-        lookup.change( new Object[] { d1 } );       
+        lookup.change(d2);
+        lookup.change(d1);
         assertEquals( "No refresh should be called ", 0, tlsa.refreshCounter );
         
                 
         TestPropertyChangeListener tpcl = new TestPropertyChangeListener();
         tlsa.addPropertyChangeListener( tpcl );
-        lookup.change( new Object[] { d2 } ); 
+        lookup.change(d2);
         assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
         assertEquals( "One event should be fired", 1, tpcl.getEvents().size() );
         
         
         tlsa.clear();
         tpcl.clear();
-        lookup.change( new Object[] { d3 } );         
+        lookup.change(d3);
         assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
         assertEquals( "One event should be fired", 1, tpcl.getEvents().size() );        
         
@@ -98,10 +98,10 @@ public class LookupSensitiveActionTest extends NbTestCase {
     
     public void testCorrectValuesWithoutListener() throws Exception {
         
-        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[] { } );
+        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         TestLSA tlsa = new TestLSA( lookup );
         
-        lookup.change( new Object[] { d1 } );       
+        lookup.change(d1);
         assertEquals( "Action should return correct name ", d1.getName(), tlsa.getValue( Action.NAME ) );
         
         assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
@@ -113,10 +113,10 @@ public class LookupSensitiveActionTest extends NbTestCase {
     
     public void testActionGC() throws Exception {
         
-        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[] { } );
+        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         TestLSA tlsa = new TestLSA( lookup );
         
-        WeakReference reference = new WeakReference( tlsa );
+        WeakReference<?> reference = new WeakReference<Object>(tlsa);
         tlsa = null;
         
         assertGC( "Action should be GCed", reference );
@@ -140,7 +140,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
         protected void refresh( Lookup context ) {
             refreshCounter++;
             
-            DataObject dobj = (DataObject)context.lookup( DataObject.class );
+            DataObject dobj = context.lookup(DataObject.class);
             
             if (dobj != null) {
 		putValue( Action.NAME, dobj.getName() );
@@ -158,7 +158,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
     
     private static class TestPropertyChangeListener implements PropertyChangeListener {
         
-        List events = new ArrayList();
+        List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
         
         public void propertyChange( PropertyChangeEvent e ) {
             events.add( e );
@@ -168,7 +168,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
             events.clear();
         }
         
-        List getEvents() {
+        List<PropertyChangeEvent> getEvents() {
             return events;
         }
                 

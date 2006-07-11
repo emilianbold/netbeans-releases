@@ -25,7 +25,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.actions.ProjectActionTest.ActionCreator;
@@ -41,11 +41,8 @@ public class SetMainProjectTest extends NbTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
-        
-        TestUtil.setLookup(new Object[] {
-            TestSupport.testProjectFactory(),
-            TestSupport.createAuxiliaryConfiguration(),
-        });
+
+        MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir ();
     }
     
@@ -63,7 +60,7 @@ public class SetMainProjectTest extends NbTestCase {
     
     public void test70368() {
         SetMainProject a = new SetMainProject();
-        WeakReference  ref = new WeakReference(a);
+        WeakReference<?> ref = new WeakReference<Object>(a);
         
         a = null;
         
@@ -102,8 +99,8 @@ public class SetMainProjectTest extends NbTestCase {
         assertEquals(2, menu.getItemCount());
         assertTrue(menu.isEnabled());
         
-        WeakReference menuRef = new WeakReference(menu);
-        WeakReference actionRef = new WeakReference(a);
+        WeakReference<?> menuRef = new WeakReference<Object>(menu);
+        WeakReference<?> actionRef = new WeakReference<Object>(a);
         
         a = null;
         

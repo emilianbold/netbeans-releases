@@ -19,26 +19,20 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.actions.Presenter.Menu;
 import org.openide.util.lookup.Lookups;
 
 public class ProjectActionTest extends NbTestCase {
@@ -62,9 +56,7 @@ public class ProjectActionTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
-            TestSupport.testProjectFactory()
-        });
+        MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
     
@@ -97,24 +89,24 @@ public class ProjectActionTest extends NbTestCase {
     }
     
     public void testCommandEnablement() {
-        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[]{} );
+        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         ProjectAction action = new ProjectAction( "COMMAND", "TestProjectAction", null, lookup );
         
         assertFalse( "Action should NOT be enabled", action.isEnabled() );        
         
-        lookup.change( new Object[] { d1_1 } );
+        lookup.change(d1_1);
         assertTrue( "Action should be enabled", action.isEnabled() );        
         
-        lookup.change( new Object[] { d1_1, d1_2 } );       
+        lookup.change(d1_1, d1_2);
         assertFalse( "Action should NOT be enabled", action.isEnabled() );        
         
-        lookup.change( new Object[] { d1_1, d2_1 } );       
+        lookup.change(d1_1, d2_1);
         assertFalse( "Action should NOT be enabled", action.isEnabled() );        
         
     }
     
     public void testProviderEnablement() {
-        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[]{} );
+        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         TestActionPerformer tap = new TestActionPerformer();
         ProjectAction action = new ProjectAction( tap, "TestProjectAction", null,lookup );
      
@@ -128,21 +120,21 @@ public class ProjectActionTest extends NbTestCase {
         
         tap.clear();
         tap.on( false );
-        lookup.change( new Object[] { d1_1 } );
+        lookup.change(d1_1);
         assertFalse( "Action should NOT be enabled", action.isEnabled() );
         assertEquals( "enable() should be called once: ", 1, tap.enableCount );
         assertEquals( "enable() should be called on right project: ", project1.toString(), tap.project.toString() );
         
         tap.clear();
         tap.on( true );
-        lookup.change( new Object[] { d1_2 } );        
+        lookup.change(d1_2);
         assertTrue( "Action should be enabled", action.isEnabled() );        
         assertEquals( "enable() should be called once: ", 1, tap.enableCount );
         assertEquals( "enable() should be called on right project: ", project1.toString(), tap.project.toString() );
                 
         tap.clear();
         tap.on( false );
-        lookup.change( new Object[] { d1_1, d2_1 } );
+        lookup.change(d1_1, d2_1);
         assertFalse( "Action should NOT be enabled", action.isEnabled() );
         assertEquals( "enable() should NOT be called: ", 0, tap.enableCount );
         
@@ -200,7 +192,7 @@ public class ProjectActionTest extends NbTestCase {
         
         private String[] ACTIONS = new String[] { COMMAND };
         
-        private List invocations = new ArrayList();
+        private List<String> invocations = new ArrayList<String>();
         
         public String[] getSupportedActions() {
             return ACTIONS;
@@ -220,9 +212,7 @@ public class ProjectActionTest extends NbTestCase {
         public boolean isActionEnabled( String command, Lookup context) throws IllegalArgumentException {
             
             if ( COMMAND.equals( command ) ) {
-                Collection dobjs = context.lookupAll(DataObject.class);
-                for ( Iterator it = dobjs.iterator(); it.hasNext();  ) {
-                    DataObject dobj = (DataObject)it.next();
+                for (DataObject dobj : context.lookupAll(DataObject.class)) {
                     if ( !dobj.getPrimaryFile().getNameExt().endsWith( ".java" ) ) {
                         return false;
                     }                    

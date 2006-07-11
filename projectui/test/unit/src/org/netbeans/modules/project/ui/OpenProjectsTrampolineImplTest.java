@@ -24,19 +24,11 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
-
 import org.netbeans.api.project.TestUtil;
-import org.openide.filesystems.FileLock;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -136,7 +128,7 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
     
     private static class TestPropertyChangeListener implements PropertyChangeListener {
         
-        List events = new ArrayList();
+        List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
         
         public void propertyChange( PropertyChangeEvent e ) {
             events.add( e );
@@ -146,7 +138,7 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
             events.clear();
         }
         
-        List getEvents() {
+        List<PropertyChangeEvent> getEvents() {
             return events;
         }
                 

@@ -44,7 +44,7 @@ public class SelectNodeActionTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        contextLookup = new ChangeableLookup(new Object[0]);
+        contextLookup = new ChangeableLookup();
         scratch = TestUtil.makeScratchDir(this);
         test =  scratch.createData("test", "txt");
         testDO = DataObject.find(test);
@@ -57,19 +57,19 @@ public class SelectNodeActionTest extends NbTestCase {
         Action a = SelectNodeAction.inProjects();
         
         assertFalse(a.isEnabled());
-        contextLookup.change(new Object[] {testDO});
+        contextLookup.change(testDO);
         assertTrue(a.isEnabled());
-        contextLookup.change(new Object[] {});
+        contextLookup.change();
         assertFalse(a.isEnabled());
-        contextLookup.change(new Object[] {testDO});
+        contextLookup.change(testDO);
         assertTrue(a.isEnabled());
-        contextLookup.change(new Object[] {test});
+        contextLookup.change(test);
         assertTrue(a.isEnabled());
-        contextLookup.change(new Object[] {testDO});
+        contextLookup.change(testDO);
         assertTrue(a.isEnabled());
-        contextLookup.change(new Object[] {test});
+        contextLookup.change(test);
         assertTrue(a.isEnabled());
-        contextLookup.change(new Object[] {});
+        contextLookup.change();
         assertFalse(a.isEnabled());
     }
     

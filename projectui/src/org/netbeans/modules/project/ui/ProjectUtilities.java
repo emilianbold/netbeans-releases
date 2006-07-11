@@ -473,7 +473,7 @@ public class ProjectUtilities {
         
         // closes documents of given projects and returns mapped document's urls by project
         // it's used as base for storing documents in project private.xml
-        public Map/*<Project, SortedSet<String>>*/ close (Project[] projects);
+        public Map<Project,SortedSet<String>> close(Project[] projects);
     }
     
 }

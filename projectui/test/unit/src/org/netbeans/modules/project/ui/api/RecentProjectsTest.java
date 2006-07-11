@@ -24,17 +24,14 @@ import java.net.URL;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import junit.framework.*;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-
-import org.netbeans.junit.*;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.actions.TestSupport;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.Lookups;
@@ -58,9 +55,7 @@ public class RecentProjectsTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
-            TestSupport.testProjectFactory(),
-        });
+        MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir();
         FileObject workDirFO = FileUtil.toFileObject(getWorkDir());
         for (int i = 0; i < testProjects.length; i++) {

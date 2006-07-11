@@ -46,23 +46,19 @@ public final class TestSupport {
         return p;
     }
             
-    /**
-     * Create a testing project factory which recognizes directories containing
-     * a subdirectory called "testproject".
-     * If that subdirectory contains a file named "broken" then loading the project
-     * will fail with an IOException.
-     */
-    public static ProjectFactory testProjectFactory() {
-        return new TestProjectFactory();
-    }
-    
     public static void notifyDeleted(Project p) {
         ((TestProject) p).state.notifyDeleted();
     }
         
-    private static final class TestProjectFactory implements ProjectFactory {
+    /**
+     * A testing project factory which recognizes directories containing
+     * a subdirectory called "testproject".
+     * If that subdirectory contains a file named "broken" then loading the project
+     * will fail with an IOException.
+     */
+    public static final class TestProjectFactory implements ProjectFactory {
         
-        TestProjectFactory() {}
+        public TestProjectFactory() {}
         
         public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
             FileObject testproject = projectDirectory.getFileObject("testproject");
@@ -134,11 +130,11 @@ public final class TestSupport {
         
     public static class ChangeableLookup extends ProxyLookup {
         
-        public ChangeableLookup( Object[] objects ) {
+        public ChangeableLookup(Object... objects) {
             super( new Lookup[] { Lookups.fixed( objects ) } );
         }
         
-        public void change( Object[] objects ) {
+        public void change(Object... objects) {
             setLookups( new Lookup[] { Lookups.fixed( objects ) } );                       
         }
                 
