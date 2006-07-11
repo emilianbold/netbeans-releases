@@ -238,7 +238,7 @@ public class Widget {
     }
 
     public final Point getPreferredLocation () {
-        return preferredLocation;
+        return preferredLocation != null ? new Point (preferredLocation) : null;
     }
 
     public final void setPreferredLocation (Point preferredLocation) {
@@ -367,13 +367,11 @@ public class Widget {
     }
 
     public final Point getLocation () {
-        return new Point (location);
+        return location != null ? new Point (location) : null;
     }
 
     public final Rectangle getBounds () {
-        if (bounds == null)
-            return null;
-        return new Rectangle (bounds);
+        return bounds != null ? new Rectangle (bounds) : null;
     }
 
     public final void resolveBounds (Point location, Rectangle bounds) {
