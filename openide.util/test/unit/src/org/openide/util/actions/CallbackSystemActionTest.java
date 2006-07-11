@@ -304,19 +304,23 @@ public class CallbackSystemActionTest extends NbTestCase {
         public static int INSTANCES = 0;
         
         public static void waitInstancesZero(Logger l) throws InterruptedException {
-            synchronized (INSTANCES_LOCK) {
-                for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 10; i++) {
+                synchronized (INSTANCES_LOCK) {
                     if (INSTANCES == 0) return;
                     
                     l.warning("instances still there: " + INSTANCES);
-                    ActionsInfraHid.doGC();
+                }
+                
+                ActionsInfraHid.doGC();
+                
+                synchronized (INSTANCES_LOCK) {
                     l.warning("after GC, do wait");
                     
                     INSTANCES_LOCK.wait(1000);
                     l.warning("after waiting");
                 }
-                failInstances("Instances are not zero");
             }
+            failInstances("Instances are not zero");
         }
         
         private static void failInstances(String msg) {
