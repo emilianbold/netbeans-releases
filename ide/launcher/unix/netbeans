@@ -83,8 +83,11 @@ readClusters() {
 absolutize_paths() {
     while read path; do
         oldpwd=`pwd`
-        cd "$path"
-        abspath=`pwd`
+        if cd "$path" 2>/dev/null; then
+            abspath=`pwd`
+        else
+            abspath=$oldpwd
+        fi
         cd "${oldpwd}"
         echo "$abspath"
     done
