@@ -166,7 +166,8 @@ public class TreeView48993Test extends NbTestCase {
         f.invalidate();
         f.repaint();
         
-        u.waitOn(10000); // Waits for getIcon to run
+        boolean timedout = u.waitOn(10000); // Waits for getIcon to run
+        assertFalse("Node painted in 10s timeout", timedout); 
         
         waitForAWT();
         
@@ -213,8 +214,12 @@ public class TreeView48993Test extends NbTestCase {
             fireIconChange();
         }
         
-        public void waitOn(int timeout) {
+        /**
+         * @return true if returning due to timeout 
+         */
+        public boolean waitOn(int timeout) {
             synchronized(this) {
+                boolean tck;
                 if(!ticked) { //while (!ticked) {
                     try {
                         wait(timeout);
@@ -222,7 +227,9 @@ public class TreeView48993Test extends NbTestCase {
                         throw new InternalError();
                     }
                 }
+                tck = ticked;
                 ticked = false; // reusable
+                return !tck;
             }
         }
         
