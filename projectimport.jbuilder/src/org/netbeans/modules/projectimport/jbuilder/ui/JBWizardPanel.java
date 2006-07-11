@@ -110,7 +110,6 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         fieldUpdate();
         Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
         prjFileTextArea.setBackground(lblBgr);
-        warningLabel.setBackground(lblBgr);
         jSpanTextArea.setBackground(lblBgr);
     }
     
@@ -182,12 +181,8 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
                             return;
                         } else if (isEmpty(userHomeTextField) || !f.exists() || f.getName().indexOf("jbuilder") == -1 ) {
                             errorMessage = NbBundle.getMessage(JBWizardPanel.class, "MSG_NotRegularUserHome", userHomeTextField.getText()); // NOI18N
-                        } else if (jbDirCheckBox.isSelected() || jbDirCheckBox.isVisible()) {
+                        } else if (jbDirTextField.isEnabled()) {
                             changedInstallDir();
-                            File installDir = UserLibrarySupport.getInstallDirLib();
-                            if (jbDirCheckBox.isSelected() && (installDir == null || installDir.isFile() || !installDir.exists())) {
-                                errorMessage = NbBundle.getMessage(JBWizardPanel.class, "MSG_BrokenReferences"); // NOI18N
-                            }
                         }
                     }
                 }
@@ -201,9 +196,8 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         
         if (errorMessage == null) {
             markValid();
-            String warning = Utils.getHtmlWarnings(allPrjDefs);
-            if (warning != null) {
-                setWarning(warning);
+            if (jbDirTextField.isEnabled()) {
+                setWarning(getMessage("LBL_Warning"));
             }            
         } else {
             setError(errorMessage);
@@ -270,18 +264,9 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
     }
                     
     private void enableAdditionalComponents(boolean enable) {
-        warningLabel.setVisible(enable);
-        jbDirCheckBox.setVisible(enable);
-        
-        if (jbDirCheckBox.isVisible()) {
-            jbDirTextField.setEnabled(jbDirCheckBox.isSelected());
-            jbDirBrowse.setEnabled(jbDirCheckBox.isSelected());
-            jbDirLabel.setEnabled(jbDirCheckBox.isSelected());
-        }
-        
-        jbDirTextField.setVisible(enable);
-        jbDirBrowse.setVisible(enable);
-        jbDirLabel.setVisible(enable);
+        jbDirTextField.setEnabled(enable);
+        jbDirBrowse.setEnabled(enable);
+        jbDirLabel.setEnabled(enable);
     }    
     
     public static File getFile(JTextField textField) {
@@ -337,9 +322,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         jbDirTextField = new javax.swing.JTextField();
         jbDirBrowse = new javax.swing.JButton();
         jSpanTextArea = new javax.swing.JTextArea();
-        jbDirCheckBox = new javax.swing.JCheckBox();
         jbDirLabel = new javax.swing.JLabel();
-        warningLabel = new javax.swing.JLabel();
         userHomeLabel = new javax.swing.JLabel();
         userHomeTextField = new javax.swing.JTextField();
         userHomeBrowse = new javax.swing.JButton();
@@ -422,7 +405,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -438,7 +421,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 10);
         add(jbDirBrowse, gridBagConstraints);
 
@@ -447,51 +430,24 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         jSpanTextArea.setWrapStyleWord(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 10, 0);
         add(jSpanTextArea, gridBagConstraints);
 
-        jbDirCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(jbDirCheckBox, java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/jbuilder/ui/Bundle").getString("CTL_JBDirCheck"));
-        jbDirCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbDirCheckBoxActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
-        add(jbDirCheckBox, gridBagConstraints);
-
         jbDirLabel.setLabelFor(jbDirTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jbDirLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/jbuilder/ui/Bundle").getString("LBL_InstallDir"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         add(jbDirLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/jbuilder/ui/Bundle").getString("LBL_Warning"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
-        add(warningLabel, gridBagConstraints);
-
-        userHomeLabel.setLabelFor(destDirTextField);
+        userHomeLabel.setLabelFor(userHomeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(userHomeLabel, org.openide.util.NbBundle.getMessage(JBWizardPanel.class, "LBL_UserHome"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -509,7 +465,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(userHomeTextField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(userHomeBrowse, java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/jbuilder/ui/Bundle").getString("CTL_BrowseDestDir"));
+        org.openide.awt.Mnemonics.setLocalizedText(userHomeBrowse, java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/jbuilder/ui/Bundle").getString("CTL_BrowseUserHome"));
         userHomeBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 userHomeBrowseActionPerformed(evt);
@@ -527,11 +483,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
     private void userHomeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userHomeBrowseActionPerformed
         browseActionPerformed(userHomeTextField, false);
     }//GEN-LAST:event_userHomeBrowseActionPerformed
-    
-    private void jbDirCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbDirCheckBoxActionPerformed
-        fieldUpdate();
-    }//GEN-LAST:event_jbDirCheckBoxActionPerformed
-    
+        
     private void jbDirBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbDirBrowseActionPerformed
         browseActionPerformed(jbDirTextField, true);
     }//GEN-LAST:event_jbDirBrowseActionPerformed
@@ -571,7 +523,6 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
     private javax.swing.JTextField destDirTextField;
     private javax.swing.JTextArea jSpanTextArea;
     private javax.swing.JButton jbDirBrowse;
-    private javax.swing.JCheckBox jbDirCheckBox;
     private javax.swing.JLabel jbDirLabel;
     private javax.swing.JTextField jbDirTextField;
     private javax.swing.JButton prjFileBrowse;
@@ -581,6 +532,5 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
     private javax.swing.JButton userHomeBrowse;
     private javax.swing.JLabel userHomeLabel;
     private javax.swing.JTextField userHomeTextField;
-    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
 }
