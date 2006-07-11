@@ -209,7 +209,7 @@ final class JpxBuilder extends ProjectBuilder {
                 final String libraryName = libraryElement;
                 AbstractProject.UserLibrary aulib = UserLibrarySupport.getInstance(libraryName,projectDir);
                 
-                aulib = (aulib != null) ? aulib : new AbstractProject.UserLibrary(libraryName);
+                aulib = (aulib != null) ? aulib : new AbstractProject.UserLibrary(libraryName, true);
                 project.addUserLibrary(aulib);
             }
         }

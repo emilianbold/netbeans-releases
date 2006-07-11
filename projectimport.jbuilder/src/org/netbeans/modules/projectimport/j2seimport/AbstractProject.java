@@ -306,7 +306,14 @@ public final class AbstractProject implements ProjectModel {
     
     public static final class UserLibrary implements ProjectModel.UserLibrary {
         private final String name;
-        private Collection/*<AbstractLibraryEntry>*/ libraries;
+        private Collection/*<AbstractProject.Library>*/ libraries;
+        private boolean fileNotFound = false;
+
+        public UserLibrary(String name, boolean fileNotFound) {
+            this(name);
+            this.fileNotFound = fileNotFound;
+        }
+        
         public UserLibrary(String name) {
             this.name = name;
             libraries = new HashSet();
@@ -331,6 +338,10 @@ public final class AbstractProject implements ProjectModel {
         
         public Collection/*<AbstractProjectDefinition.AbstractLibraryEntry>*/ getLibraries() {
             return libraries;
+        }
+
+        public final boolean  fileNotFound() {
+            return fileNotFound;
         }
         
         public final boolean  isValid() {

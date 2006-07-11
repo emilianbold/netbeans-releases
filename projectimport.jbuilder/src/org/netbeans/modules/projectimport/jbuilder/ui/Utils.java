@@ -41,6 +41,29 @@ final class Utils {
     static boolean checkUnresolvedReferences(Collection prjDefs) {
         return getInvalidUserLibraries(prjDefs).size() > 0;
     }
+
+    static boolean checkNotFoundUserLibraries(Collection prjDefs) {
+        return notFoundUserLibraries(prjDefs).size() > 0;
+    }
+    
+    static Collection notFoundUserLibraries(Collection allPrjDefs) {
+        Collection notFoundUserLibraries = new HashSet();
+        if (allPrjDefs != null) {
+            Iterator prjsIt = allPrjDefs.iterator();
+            while (prjsIt.hasNext()) {
+                AbstractProject ap = (AbstractProject)prjsIt.next();
+                Iterator it = ap.getUserLibraries().iterator();
+                while (it.hasNext()) {
+                    AbstractProject.UserLibrary uLib = (AbstractProject.UserLibrary)it.next();                    
+                    if (uLib.fileNotFound()) {
+                        notFoundUserLibraries.add(uLib);
+                    }
+                }
+            }
+        }
+        
+        return notFoundUserLibraries;
+    }
     
     static Collection getInvalidUserLibraries(Collection allPrjDefs) {
         Collection invalidUserLibraries = new HashSet();
@@ -96,7 +119,9 @@ final class Utils {
                 all.addAll(ap.getWarnings().getAllWarnings());
             }
         }        
-        return (all.isEmpty()) ? null : WarningMessage.createHtmlString("",all.iterator());//NOI18N
+                        
+        return (all.isEmpty()) ? null : 
+            WarningMessage.createHtmlString("",all.iterator(), true, 4);//NOI18N
     }
     
     private  static Collection collectAllDependencies(Collection prjDefs) {

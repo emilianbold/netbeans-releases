@@ -165,12 +165,12 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
             errorMessage = NbBundle.getMessage(JBWizardPanel.class, "MSG_NotRegularDestinationDir",destDirTextField.getText()); // NOI18N;
         }
         File projectFile = (isEmpty(prjFileTextField)) ? null : getFile(prjFileTextField);
-        boolean unresolvedReferences = Utils.checkUnresolvedReferences(allPrjDefs);
-        if (projectFile != null && ProjectBuilder.isProjectFile(projectFile)) {
-            enableAdditionalComponents(unresolvedReferences);
+        boolean unresolvedReferences = Utils.checkNotFoundUserLibraries(allPrjDefs);
+        if (projectFile != null && ProjectBuilder.isProjectFile(projectFile)) {            
             if (!projectFileValid) {
                 projectFileValid = true;
                 parseProjectFile(projectFile);
+                return;
             } else {
                 if (unresolvedReferences) {
                     File userHomeDir = UserLibrarySupport.getUserHomeLib();
@@ -179,6 +179,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
                         if (!isEmpty(userHomeTextField) && f.exists() && !f.equals(userHomeDir)) {
                             UserLibrarySupport.setUserHomeLib(f);
                             parseProjectFile(projectFile);
+                            return;
                         } else if (isEmpty(userHomeTextField) || !f.exists() || f.getName().indexOf("jbuilder") == -1 ) {
                             errorMessage = NbBundle.getMessage(JBWizardPanel.class, "MSG_NotRegularUserHome", userHomeTextField.getText()); // NOI18N
                         } else if (jbDirCheckBox.isSelected() || jbDirCheckBox.isVisible()) {
@@ -191,6 +192,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
                     }
                 }
             }
+            enableAdditionalComponents(unresolvedReferences);
         } else {
             projectFileValid = false;
             enableAdditionalComponents(false);
