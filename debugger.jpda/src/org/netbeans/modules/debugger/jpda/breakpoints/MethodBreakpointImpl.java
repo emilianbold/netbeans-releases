@@ -24,13 +24,21 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
 
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.Value;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
+import com.sun.jdi.event.MethodEntryEvent;
+import com.sun.jdi.event.MethodExitEvent;
 import com.sun.jdi.request.BreakpointRequest;
+import com.sun.jdi.request.MethodEntryRequest;
+import com.sun.jdi.request.MethodExitRequest;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -46,6 +54,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     
     private static final boolean verbose = 
         System.getProperty ("netbeans.debugger.breakpoints") != null;
+    private static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
 
     
     private MethodBreakpoint breakpoint;
@@ -74,6 +83,74 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 ((LocatableEvent) event).location ().declaringType (),
                 null
             );
+        if (event instanceof MethodEntryEvent) {
+            String methodName = ((MethodEntryEvent) event).method().name();
+            Set methodNames = (Set) event.request().getProperty("methodNames");
+            if (methodNames == null || methodNames.contains(methodName)) {
+                ReferenceType refType = null;
+                if (((LocatableEvent) event).location() != null) {
+                    refType = ((LocatableEvent) event).location().declaringType();
+                }
+                return perform (
+                    breakpoint.getCondition (),
+                    ((MethodEntryEvent) event).thread (),
+                    refType,
+                    null
+                );
+            }
+        }
+        if (event instanceof MethodExitEvent) {
+            String methodName = ((MethodExitEvent) event).method().name();
+            Set methodNames = (Set) event.request().getProperty("methodNames");
+            if (methodNames == null || methodNames.contains(methodName)) {
+                ReferenceType refType = null;
+                if (((LocatableEvent) event).location() != null) {
+                    refType = ((LocatableEvent) event).location().declaringType();
+                }
+                Value returnValue = null;
+                /* JDK 1.6.0 code */
+                if (IS_JDK_16) { // Retrieval of the return value
+                    VirtualMachine vm = event.virtualMachine();
+                    // vm.canGetMethodReturnValues();
+                    boolean canGetMethodReturnValues = false;
+                    java.lang.reflect.Method m = null;
+                    try {
+                        m = vm.getClass().getMethod("canGetMethodReturnValues", new Class[] {});
+                    } catch (Exception ex) {
+                    }
+                    if (m != null) {
+                        try {
+                            m.setAccessible(true);
+                            Object ret = m.invoke(vm, new Object[] {});
+                            canGetMethodReturnValues = Boolean.TRUE.equals(ret);
+                        } catch (Exception ex) {
+                        }
+                    }
+                    if (canGetMethodReturnValues) {
+                        //Value returnValue = ((MethodExitEvent) event).returnValue();
+                        try {
+                            m = event.getClass().getDeclaredMethod("returnValue", new Class[] {});
+                        } catch (Exception ex) {
+                            m = null;
+                        }
+                        if (m != null) {
+                            try {
+                                m.setAccessible(true);
+                                Object ret = m.invoke(event, new Object[] {});
+                                returnValue = (Value) ret;
+                            } catch (Exception ex) {
+                            }
+                        }
+                    }
+                }
+                return perform (
+                    breakpoint.getCondition (),
+                    ((MethodExitEvent) event).thread (),
+                    refType,
+                    returnValue
+                );
+            }
+        }
         return super.exec (event);
     }
     
@@ -81,26 +158,53 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         if (verbose)
             System.out.println ("B class loaded: " + referenceType);
 
-        List locations = new ArrayList ();
         Iterator methods = referenceType.methods ().iterator ();
+        MethodEntryRequest entryReq = null;
+        MethodExitRequest exitReq = null;
+        Set entryMethodNames = null;
+        Set exitMethodNames = null;
         while (methods.hasNext ()) {
             Method method = (Method) methods.next ();
             if ( (match (method.name (), breakpoint.getMethodName ()) ||
-                  breakpoint.getMethodName().equals("")) &&
-                  method.location () != null &&
-                  !method.isNative()
-            )
-                locations.add (method.location ());
-        }
-        Iterator it = locations.iterator ();
-        while (it.hasNext ()) {
-            Location location = (Location) it.next ();
-            try {
-                BreakpointRequest br = getEventRequestManager ().
-                    createBreakpointRequest (location);
-                addEventRequest (br);
-            } catch (VMDisconnectedException e) {
+                  breakpoint.getMethodName().equals(""))) {
+                
+                if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_ENTRY) != 0) {
+                    if (method.location () != null && !method.isNative()) {
+                        Location location = method.location ();
+                        try {
+                            BreakpointRequest br = getEventRequestManager ().
+                                createBreakpointRequest (location);
+                            addEventRequest (br);
+                        } catch (VMDisconnectedException e) {
+                        }
+                    } else {
+                        if (entryReq == null) {
+                            entryReq = getEventRequestManager().
+                                    createMethodEntryRequest();
+                            entryReq.addClassFilter(referenceType);
+                            entryMethodNames = new HashSet();
+                            entryReq.putProperty("methodNames", entryMethodNames);
+                        }
+                        entryMethodNames.add(method.name ());
+                    }
+                }
+                if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_EXIT) != 0) {
+                    if (exitReq == null) {
+                        exitReq = getEventRequestManager().
+                                createMethodExitRequest();
+                        exitReq.addClassFilter(referenceType);
+                        exitMethodNames = new HashSet();
+                        exitReq.putProperty("methodNames", exitMethodNames);
+                    }
+                    exitMethodNames.add(method.name());
+                }
             }
+        }
+        if (entryReq != null) {
+            addEventRequest(entryReq);
+        }
+        if (exitReq != null) {
+            addEventRequest(exitReq);
         }
     }
 }

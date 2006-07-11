@@ -43,7 +43,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     private boolean                     createBreakpoint = false;
     
     
-    private static MethodBreakpoint creteBreakpoint () {
+    private static MethodBreakpoint createBreakpoint () {
         MethodBreakpoint mb = MethodBreakpoint.create (
             EditorContextBridge.getCurrentClassName (),
             EditorContextBridge.getCurrentMethodName ()
@@ -58,7 +58,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     
     /** Creates new form LineBreakpointPanel */
     public MethodBreakpointPanel () {
-        this (creteBreakpoint ());
+        this (createBreakpoint ());
         createBreakpoint = true;
     }
     
@@ -79,7 +79,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             tfClassName.setText (className.substring (i + 1, className.length ()));
         }
         if (b.getMethodName ().equals ("")) {
-            tfMethodName.setText ("<all methods>");
+            tfMethodName.setText (org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "Method_Breakpoint_ALL_METHODS"));
             cbAllMethods.setSelected (true);
             tfMethodName.setEnabled (false);
         } else {
@@ -88,8 +88,9 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             else
                 tfMethodName.setText (b.getMethodName ());
         }
+        cbStopOnEntry.setSelected((b.getBreakpointType() & b.TYPE_METHOD_ENTRY) != 0);
+        cbStopOnExit.setSelected((b.getBreakpointType() & b.TYPE_METHOD_EXIT) != 0);
         
-//        cbInnerClasses.setSelected (b.getApplyToAnonymousInnerClasses ());
         tfCondition.setText (b.getCondition ());
         
         actionsPanel = new ActionsPanel (b);
@@ -125,10 +126,11 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         tfCondition = new javax.swing.JTextField();
         tfPackageName = new javax.swing.JTextField();
         tfClassName = new javax.swing.JTextField();
-        cbInnerClasses = new javax.swing.JCheckBox();
         cbAllMethods = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         tfMethodName = new javax.swing.JTextField();
+        cbStopOnEntry = new javax.swing.JCheckBox();
+        cbStopOnExit = new javax.swing.JCheckBox();
         pActions = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
 
@@ -136,53 +138,49 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
 
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("L_Method_Breakpoint_BorderTitle")));
-        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_L_Method_Breakpoint_Package_Name").charAt(0));
+        pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_BorderTitle")));
+        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_L_Method_Breakpoint_Package_Name").charAt(0));
         jLabel2.setLabelFor(tfPackageName);
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("L_Method_Breakpoint_Package_Name"));
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Package_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_L_Method_Breakpoint_Package_Name"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Package_Name"));
 
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_L_Method_Breakpoint_Class_Name").charAt(0));
+        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_L_Method_Breakpoint_Class_Name").charAt(0));
         jLabel3.setLabelFor(tfClassName);
-        jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("L_Method_Breakpoint_Class_Name"));
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Class_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel3, gridBagConstraints);
-        jLabel3.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_L_Method_Breakpoint_Class_Name"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Class_Name"));
 
-        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_L_Method_Breakpoint_Condition").charAt(0));
+        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_L_Method_Breakpoint_Condition").charAt(0));
         jLabel5.setLabelFor(tfCondition);
-        jLabel5.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("L_Method_Breakpoint_Condition"));
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Condition"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_L_Method_Breakpoint_Condition"));
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Condition"));
 
-        tfCondition.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_TF_Method_Breakpoint_Condition"));
+        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Condition"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfCondition, gridBagConstraints);
-        tfCondition.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_TF_Method_Breakpoint_Condition"));
+        tfCondition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Condition"));
 
-        tfPackageName.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_TF_Method_Breakpoint_Package_Name"));
+        tfPackageName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Package_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -190,9 +188,9 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfPackageName, gridBagConstraints);
-        tfPackageName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_TF_Method_Breakpoint_Package_Name"));
+        tfPackageName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Package_Name"));
 
-        tfClassName.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_TF_Method_Breakpoint_Class_Name"));
+        tfClassName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Class_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -200,25 +198,12 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfClassName, gridBagConstraints);
-        tfClassName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_TF_Method_Breakpoint_Class_Name"));
+        tfClassName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Class_Name"));
 
-        cbInnerClasses.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_CB_Method_Breakpoint_Inner_Classes").charAt(0));
-        cbInnerClasses.setSelected(true);
-        cbInnerClasses.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("CB_Method_Breakpoint_Inner_Classes"));
-        cbInnerClasses.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_CB_Method_Breakpoint_Inner_Classes"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(cbInnerClasses, gridBagConstraints);
-        cbInnerClasses.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_CB_Method_Breakpoint_Inner_Classes"));
-
-        cbAllMethods.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_CB_Method_Breakpoint_All_Methods").charAt(0));
-        cbAllMethods.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("CB_Method_Breakpoint_All_Methods"));
-        cbAllMethods.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_CB_Method_Breakpoint_All_Methods"));
+        cbAllMethods.setMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_CB_Method_Breakpoint_All_Methods").charAt(0));
+        cbAllMethods.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "CB_Method_Breakpoint_All_Methods"));
+        cbAllMethods.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_CB_Method_Breakpoint_All_Methods"));
+        cbAllMethods.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbAllMethods.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbAllMethodsActionPerformed(evt);
@@ -233,11 +218,11 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(cbAllMethods, gridBagConstraints);
-        cbAllMethods.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_CB_Method_Breakpoint_All_Methods"));
+        cbAllMethods.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_CB_Method_Breakpoint_All_Methods"));
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_L_Method_Breakpoint_Method_Name").charAt(0));
+        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_L_Method_Breakpoint_Method_Name").charAt(0));
         jLabel1.setLabelFor(tfMethodName);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("L_Method_Breakpoint_Method_Name"));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Method_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -245,9 +230,9 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_L_Method_Breakpoint_Method_Name"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Method_Name"));
 
-        tfMethodName.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_TF_Method_Breakpoint_Method_Name"));
+        tfMethodName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Method_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -255,7 +240,42 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfMethodName, gridBagConstraints);
-        tfMethodName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_TF_Method_Breakpoint_Method_Name"));
+        tfMethodName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Method_Name"));
+
+        cbStopOnEntry.setMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MNC_CB_MethodEntry").charAt(0));
+        cbStopOnEntry.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "LBL_CB_MethodEntry"));
+        cbStopOnEntry.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_CB_MethodEntry"));
+        cbStopOnEntry.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbStopOnEntry.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbStopOnEntryActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        pSettings.add(cbStopOnEntry, gridBagConstraints);
+
+        cbStopOnExit.setMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MNC_CB_MethodExit").charAt(0));
+        cbStopOnExit.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "LBL_CB_MethodExit"));
+        cbStopOnExit.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_CB_MethodExit"));
+        cbStopOnExit.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbStopOnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbStopOnExitActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        pSettings.add(cbStopOnExit, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -280,10 +300,24 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
 
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cbStopOnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbStopOnExitActionPerformed
+        // Assure that at least one checkbox is selected
+        if (!cbStopOnExit.isSelected() && !cbStopOnEntry.isSelected()) {
+            cbStopOnEntry.setSelected(true);
+        }
+    }//GEN-LAST:event_cbStopOnExitActionPerformed
+
+    private void cbStopOnEntryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbStopOnEntryActionPerformed
+        // Assure that at least one checkbox is selected
+        if (!cbStopOnEntry.isSelected() && !cbStopOnExit.isSelected()) {
+            cbStopOnExit.setSelected(true);
+        }
+    }//GEN-LAST:event_cbStopOnEntryActionPerformed
+
     private void cbAllMethodsActionPerformed (java.awt.event.ActionEvent evt)//GEN-FIRST:event_cbAllMethodsActionPerformed
     {//GEN-HEADEREND:event_cbAllMethodsActionPerformed
         if (cbAllMethods.isSelected ()) {
-            tfMethodName.setText ("<all methods>");
+            tfMethodName.setText (org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "Method_Breakpoint_ALL_METHODS"));
             tfMethodName.setEnabled (false);
         } else {
             tfMethodName.setText ("");
@@ -302,8 +336,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     public boolean ok () {
         if (! isFilled()) {
             JOptionPane.showMessageDialog(this,
-                java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle")
-                    .getString("MSG_No_Class_or_Method_Name_Spec"));
+                org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MSG_No_Class_or_Method_Name_Spec"));
             return false;
         }
         actionsPanel.ok ();
@@ -316,8 +349,15 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             breakpoint.setMethodName (tfMethodName.getText ().trim ());
         else
             breakpoint.setMethodName ("");
-//        breakpoint.setApplyToAnonymousInnerClasses (cbInnerClasses.isSelected ());
         breakpoint.setCondition (tfCondition.getText ());
+        int bpType = 0;
+        if (cbStopOnEntry.isSelected()) {
+            bpType |= breakpoint.TYPE_METHOD_ENTRY;
+        }
+        if (cbStopOnExit.isSelected()) {
+            bpType |= breakpoint.TYPE_METHOD_EXIT;
+        }
+        breakpoint.setBreakpointType(bpType);
         
         if (createBreakpoint) 
             DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
@@ -355,7 +395,8 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbAllMethods;
-    private javax.swing.JCheckBox cbInnerClasses;
+    private javax.swing.JCheckBox cbStopOnEntry;
+    private javax.swing.JCheckBox cbStopOnExit;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

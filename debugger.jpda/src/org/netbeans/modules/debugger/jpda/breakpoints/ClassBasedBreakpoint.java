@@ -196,7 +196,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     public boolean exec (Event event) {
         if (event instanceof ClassPrepareEvent)
             classLoaded (((ClassPrepareEvent) event).referenceType ());
-        else
+        else if (event instanceof ClassUnloadEvent)
             classUnloaded (((ClassUnloadEvent) event).className ());
         return true;
     }
