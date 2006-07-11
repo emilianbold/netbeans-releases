@@ -287,7 +287,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
     }
     
     public static boolean isEmpty(JTextField textField) {
-        return textField.getText().trim().isEmpty();
+        return textField.getText().trim().length() == 0;
     }
     
     public File getDestinationDir() {
