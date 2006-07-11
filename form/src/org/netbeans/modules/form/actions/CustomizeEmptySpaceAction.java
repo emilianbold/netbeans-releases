@@ -135,9 +135,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
         return false;
     }
     
-}
-
-class EmptySpaceCustomizer extends JPanel {
+private static class EmptySpaceCustomizer extends JPanel {
     JComboBox leftSize = new JComboBox();
     JComboBox rightSize = new JComboBox();
     JComboBox topSize = new JComboBox();
@@ -345,4 +343,5 @@ class EmptySpaceCustomizer extends JPanel {
         add(bottomSize, gridBagConstraints);
     }
 
+}
 }
