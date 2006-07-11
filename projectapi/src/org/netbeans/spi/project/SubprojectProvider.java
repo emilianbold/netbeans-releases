@@ -44,7 +44,7 @@ public interface SubprojectProvider {
      * @return an immutable and unchanging set of {@link Project}s
      * @see org.netbeans.api.project.ProjectUtils#hasSubprojectCycles
      */
-    Set<Project> getSubprojects();
+    Set<? extends Project> getSubprojects();
     
     /**
      * Add a listener to changes in the set of subprojects.

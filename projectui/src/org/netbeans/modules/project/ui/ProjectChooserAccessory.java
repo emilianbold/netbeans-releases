@@ -70,7 +70,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     private Boolean tempSetAsMain;
 
-    private Map<Project,Set<Project>> subprojectsCache = new HashMap<Project,Set<Project>>(); // #59098
+    private Map<Project,Set<? extends Project>> subprojectsCache = new HashMap<Project,Set<? extends Project>>(); // #59098
 
     /** Creates new form ProjectChooserAccessory */
     public ProjectChooserAccessory( JFileChooser chooser, boolean isOpenSubprojects, boolean isOpenAsMain ) {
@@ -375,8 +375,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     /** Gets all subprojects recursively
      */
-    static void addSubprojects(Project p, List<Project> result, Map<Project,Set<Project>> cache) {
-        Set<Project> subprojects = cache.get(p);
+    static void addSubprojects(Project p, List<Project> result, Map<Project,Set<? extends Project>> cache) {
+        Set<? extends Project> subprojects = cache.get(p);
         if (subprojects == null) {
             SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
             if (spp != null) {

@@ -244,13 +244,13 @@ public final class OpenProjectList {
             panel.setProjectName(ProjectUtils.getInformation(projects[0]).getDisplayName());
         }
         
-        Map<Project,Set<Project>> subprojectsCache = new HashMap<Project,Set<Project>>(); // #59098
+        Map<Project,Set<? extends Project>> subprojectsCache = new HashMap<Project,Set<? extends Project>>(); // #59098
 
         List<Project> toHandle = new LinkedList<Project>(Arrays.asList(projects));
         
         while (!toHandle.isEmpty()) {
             Project p = toHandle.remove(0);
-            Set<Project> subprojects = openSubprojects ? subprojectsCache.get(p) : Collections.<Project>emptySet();
+            Set<? extends Project> subprojects = openSubprojects ? subprojectsCache.get(p) : Collections.<Project>emptySet();
             
             if (subprojects == null) {
                 SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
