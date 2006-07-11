@@ -21,10 +21,7 @@ package org.netbeans.modules.project.ui;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 public class ProjectTabAction extends AbstractAction {

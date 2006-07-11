@@ -22,7 +22,6 @@ package org.netbeans.spi.project.support;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -33,7 +32,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 /**
  * Factories for standard {@link Sources} implementations.
