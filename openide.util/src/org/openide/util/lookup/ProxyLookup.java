@@ -16,19 +16,24 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util.lookup;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-
-import java.lang.ref.Reference;
-
-import java.util.*;
-
-import javax.swing.event.EventListenerList;
-
 
 /** Implementation of lookup that can delegate to others.
  *
@@ -105,8 +110,8 @@ public class ProxyLookup extends Lookup {
         }
     }
 
-    /** Change the delegates. To forbid anybody else then the creator
-     * of the lookup to change the delegates, this method is protected.
+    /**
+     * Changes the delegates.
      *
      * @param lookups the new lookups to delegate to
      * @since 1.19 protected
