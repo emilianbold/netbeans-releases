@@ -31,7 +31,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.FreeformProject;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -69,7 +68,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
             // check if the project is being customized
             if (dlg.isShowing ()) {
                 // make it showed
-                dlg.show();
+                dlg.setVisible(true);
                 return ;
             }
         }
@@ -111,7 +110,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
 
         customizerPerProject.put (project, dialog);
 
-        dialog.show();
+        dialog.setVisible(true);
         
     }    
     
