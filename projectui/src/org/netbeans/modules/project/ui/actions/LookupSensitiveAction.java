@@ -40,7 +40,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     private boolean needsRefresh = true;
     private boolean initialized = false;
         
-    private static boolean refreshing = false;
+    private boolean refreshing = false;
     
     /** Formats the name with following 
      */    
@@ -111,8 +111,11 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         
     private void doRefresh() {
         refreshing = true;
-        refresh( lookup );
-        refreshing = false;
+        try {
+            refresh( lookup );
+        } finally {
+            refreshing = false;
+        }
         needsRefresh = false;
     }
     
