@@ -1732,6 +1732,7 @@ public abstract class TreeView extends JScrollPane {
                 prepareSearchPanel();
                 add(searchpanel);
                 revalidate();
+                repaint();
 
                 // bugfix #28501, avoid the chars duplicated on jdk1.3
                 SwingUtilities.invokeLater(
