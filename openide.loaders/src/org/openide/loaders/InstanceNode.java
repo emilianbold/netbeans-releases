@@ -223,10 +223,8 @@ final class InstanceNode extends DataNode implements Runnable {
             if (beanInfoIcon == null && Action.class.isAssignableFrom(clazz)) {
                 Action action = (Action)ic.instanceCreate();
                 Icon icon = (Icon)action.getValue(Action.SMALL_ICON);
-                // [PENDING] not very pretty, but there is no good way to
-                // get an Image from an Icon that I know of
-                if (icon instanceof ImageIcon) {
-                    beanInfoIcon = ((ImageIcon)icon).getImage();
+                if (icon != null) {
+                    beanInfoIcon = Utilities.icon2Image(icon);
                 } else {
                     beanInfoIcon = Utilities.loadImage("org/openide/loaders/empty.gif", true); // NOI18N
                 }

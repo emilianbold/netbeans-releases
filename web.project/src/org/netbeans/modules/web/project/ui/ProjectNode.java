@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.web.project.ui;
 
-import java.awt.Component;
 import java.awt.Image;
-import java.awt.Panel;
-import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -34,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
@@ -73,7 +69,6 @@ import org.openide.util.Lookup;
 class ProjectNode extends AbstractNode {
 
     private static final String PROJECT_ICON = "org/netbeans/modules/web/project/ui/resources/projectDependencies.gif";    //NOI18N
-    private static final Component CONVERTOR_COMPONENT = new Panel();
 
     private final AntArtifact antArtifact;
     private final URI artifactLocation;
@@ -105,17 +100,7 @@ class ProjectNode extends AbstractNode {
             ProjectInformation info = getProjectInformation();
             if (info != null) {
                 Icon icon = info.getIcon();
-                //XXX: There should be an API for Icon -> Image conversion,
-                //issue: http://www.netbeans.org/issues/show_bug.cgi?id=52562
-                if (icon instanceof ImageIcon) {
-                    cachedIcon = ((ImageIcon)icon).getImage();
-                }
-                else {
-                    int height = icon.getIconHeight();
-                    int width = icon.getIconWidth();
-                    cachedIcon = new BufferedImage( width, height, BufferedImage.TYPE_INT_ARGB );
-                    icon.paintIcon( CONVERTOR_COMPONENT, cachedIcon.getGraphics(), 0, 0 );
-                }
+                cachedIcon = Utilities.icon2Image(icon);
             }
             else {
                 cachedIcon = Utilities.loadImage(PROJECT_ICON);
@@ -267,7 +252,7 @@ class ProjectNode extends AbstractNode {
     private static class Removable implements RemoveClassPathRootAction.Removable {
 
         private final UpdateHelper helper;
-        private final PropertyEvaluator eval;
+//        private final PropertyEvaluator eval;
         private final ReferenceHelper refHelper;
         private final String classPathId;
         private final String entryId;
@@ -277,7 +262,7 @@ class ProjectNode extends AbstractNode {
 
         Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
             this.helper = helper;
-            this.eval = eval;
+//            this.eval = eval;
             this.refHelper = refHelper;
             this.classPathId = classPathId;
             this.entryId = entryId;

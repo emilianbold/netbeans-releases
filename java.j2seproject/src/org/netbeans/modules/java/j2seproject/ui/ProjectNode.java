@@ -22,7 +22,6 @@ package org.netbeans.modules.java.j2seproject.ui;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.Panel;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -37,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
@@ -59,12 +57,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 
 
@@ -78,7 +74,6 @@ import org.netbeans.modules.java.j2seproject.UpdateHelper;
 class ProjectNode extends AbstractNode {
 
     private static final String PROJECT_ICON = "org/netbeans/modules/java/j2seproject/ui/resources/projectDependencies.gif";    //NOI18N
-    private static final Component CONVERTOR_COMPONENT = new Panel();
 
     private final AntArtifact antArtifact;
     private final URI artifactLocation;
@@ -110,17 +105,7 @@ class ProjectNode extends AbstractNode {
             ProjectInformation info = getProjectInformation();
             if (info != null) {
                 Icon icon = info.getIcon();
-                //XXX: There should be an API for Icon -> Image conversion,
-                //issue: http://www.netbeans.org/issues/show_bug.cgi?id=52562
-                if (icon instanceof ImageIcon) {
-                    cachedIcon = ((ImageIcon)icon).getImage();
-                }
-                else {
-                    int height = icon.getIconHeight();
-                    int width = icon.getIconWidth();
-                    cachedIcon = new BufferedImage( width, height, BufferedImage.TYPE_INT_ARGB );
-                    icon.paintIcon( CONVERTOR_COMPONENT, cachedIcon.getGraphics(), 0, 0 );
-                }
+                cachedIcon = Utilities.icon2Image(icon);
             }
             else {
                 cachedIcon = Utilities.loadImage(PROJECT_ICON);

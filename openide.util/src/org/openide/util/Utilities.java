@@ -26,6 +26,7 @@ import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -38,6 +39,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -74,6 +76,9 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -2572,6 +2577,24 @@ widthcheck:  {
      */
     public static final Image loadImage(String resourceID) {
         return IconManager.getIcon(resourceID, false);
+    }
+
+    /**
+     * Converts given icon to a {@link java.awt.Image}.
+     *
+     * @param icon {@link javax.swing.Icon} to be converted.
+     * @since 7.3
+     */
+    public static final Image icon2Image(Icon icon) {
+        if (icon instanceof ImageIcon) {
+            return ((ImageIcon) icon).getImage();
+        } else {
+            BufferedImage bImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics g = bImage.getGraphics();
+            icon.paintIcon(new JLabel(), g, 0, 0);
+            g.dispose();
+            return bImage;
+        }
     }
 
     /** Builds a popup menu from actions for provided context specified by

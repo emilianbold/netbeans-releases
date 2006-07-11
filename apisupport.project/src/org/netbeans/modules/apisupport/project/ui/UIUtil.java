@@ -613,7 +613,7 @@ public final class UIUtil {
         Image base = null;
         Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
         if (baseIcon != null) {
-            base = UIUtil.convertToImage(baseIcon);
+            base = Utilities.icon2Image(baseIcon);
         } else {
             base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
             if (base == null) { // fallback to our owns
@@ -622,23 +622,6 @@ public final class UIUtil {
         }
         assert base != null;
         return base;
-    }
-    
-    /**
-     * Converts given icon to a {@link java.awt.Image}.
-     *
-     * @param icon {@link javax.swing.Icon} to be converted.
-     */
-    public static Image convertToImage(final Icon icon) {
-        if (icon instanceof ImageIcon) {
-            return ((ImageIcon) icon).getImage();
-        } else {
-            BufferedImage bImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics g = bImage.getGraphics();
-            icon.paintIcon(new JLabel(), g, 0, 0);
-            g.dispose();
-            return bImage;
-        }
     }
     
     public static NbModuleProject runLibraryWrapperWizard(final Project suiteProvider) {

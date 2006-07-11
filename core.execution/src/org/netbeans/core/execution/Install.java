@@ -28,7 +28,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
-import java.awt.image.BufferedImage;
 import java.beans.Introspector;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -69,6 +68,7 @@ import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -393,7 +393,7 @@ public class Install extends ModuleInstall {
 
         /** Listens on changes of sources from getting the tasks from.
          * Currently on module actions only. */
-        private PropertyChangeListener propertyListener;
+//        private PropertyChangeListener propertyListener;
         
         
         /** Constructs new children. */
@@ -514,15 +514,7 @@ public class Install extends ModuleInstall {
         /** Overrides superclass method. */
         public Image getIcon(int type) {
             if(icon != null) {
-                Image im = new BufferedImage(
-                    icon.getIconWidth(),
-                    icon.getIconHeight(),
-                    BufferedImage.TYPE_INT_ARGB
-                );
-
-                icon.paintIcon(null, im.getGraphics(), 0, 0);
-                
-                return im;
+                return Utilities.icon2Image(icon);
             } else {
                 return super.getIcon(type);
             }

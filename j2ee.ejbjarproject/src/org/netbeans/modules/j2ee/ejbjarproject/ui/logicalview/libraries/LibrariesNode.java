@@ -184,8 +184,7 @@ public final class LibrariesNode extends AbstractNode {
 
     private Image computeIcon( boolean opened, int type ) {        
         Icon icon = getFolderIcon(opened);
-        Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
+        Image image = Utilities.mergeImages(Utilities.icon2Image(icon), ICON_BADGE, 7, 7 );
         return image;        
     }
 

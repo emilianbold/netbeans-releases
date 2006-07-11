@@ -26,6 +26,24 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="icon2image">
+        <api name="util"/>
+        <summary>Added <code>Utilities.icon2Image</code> method to perform conversion from <code>Icon</code> to Image</summary>
+        <version major="7" minor="3"/>
+        <date day="4" month="7" year="2006"/>
+        <author login="rkubacki"/>
+        <compatibility addition="yes" deprecation="no"/>
+        <description>
+            <p>
+                Conversion from <code>Icon</code> to <code>Image</code> is done 
+                at various places and newly introduced method avoids the need to 
+                duplicate the same code.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="52562"/>
+    </change>
+    
     <change id="Exceptions">
         <api name="util"/>
         <summary>Added <code>Exceptions</code> class as a replacement for <code>ErrorManager</code></summary>

@@ -1061,14 +1061,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         
         if (obj instanceof Icon) {
             Icon icon = (Icon)obj;
-            
-            int height = icon.getIconHeight();
-            int width = icon.getIconWidth();
-
-            BufferedImage bImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            icon.paintIcon(new JPanel(), bImage.getGraphics(), 0, 0);
-
-            return bImage;
+            return Utilities.icon2Image(icon);
         }
         
         return null;

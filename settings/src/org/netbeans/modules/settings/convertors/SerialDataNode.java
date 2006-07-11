@@ -293,10 +293,8 @@ public final class SerialDataNode extends DataNode {
                 SystemAction action = SystemAction.get (clazz);
                 if (beanInfoIcon == null) {
                     Icon icon = action.getIcon ();
-                    // [PENDING] not very pretty, but there is no good way to
-                    // get an Image from an Icon that I know of
-                    if (icon instanceof ImageIcon) {
-                        beanInfoIcon = ((ImageIcon) icon).getImage ();
+                    if (icon != null) {
+                        beanInfoIcon = Utilities.icon2Image(icon);
                     }
                 }
             }
