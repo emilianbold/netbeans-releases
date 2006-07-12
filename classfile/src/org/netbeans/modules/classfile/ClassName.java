@@ -60,7 +60,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * Not documented in the second edition of the specification
      * is that periods separating inner and outer classes are
      * replaced with dollar signs ('$').  Array classes have one
-     * or more left brackets ('[') prepending the class type.is
+     * or more left brackets ('[') prepending the class type.
      * For example:
      * <PRE><CODE>
      *   java.lang.String         java/lang/String
