@@ -604,7 +604,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         return true;
     }
     
-    /* Check if AS and NB installation dirs are the same or not.
+    /** 
+     * Check if AS and NB installation dirs are the same or not.
+     * Do not allow installation NB into AS folder and AS into NB folder.
      */
     private boolean checkBothInstallDirs(String nbDir, String asDir) {
 	String dialogTitle = resolveString(BUNDLE + "InstallLocationPanel.directoryDialogTitle)");
@@ -612,6 +614,24 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         
         if (nbDir.equals(asDir)) {
             dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.directoryNBASTheSame)");
+            showErrorMsg(dialogTitle,dialogMsg);
+            return false;
+        }
+        //Check if one dir is not inside another dir
+        //First check if AS install dir is not inside of NB install dir
+        String nbAbsolutePath = new File(nbDir).getAbsolutePath();
+        String asAbsolutePath = new File(asDir).getAbsolutePath();
+        logEvent(this,Log.DBG,"nbAbsolutePath: " + nbAbsolutePath);
+        logEvent(this,Log.DBG,"asAbsolutePath: " + asAbsolutePath);
+        if (asAbsolutePath.startsWith(nbAbsolutePath)) {
+            //AS is inside NB
+            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.ASDirCannotBeInNBDir)");
+            showErrorMsg(dialogTitle,dialogMsg);
+            return false;
+        }
+        if (nbAbsolutePath.startsWith(asAbsolutePath)) {
+            //NB is inside AS
+            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.NBDirCannotBeInASDir)");
             showErrorMsg(dialogTitle,dialogMsg);
             return false;
         }
