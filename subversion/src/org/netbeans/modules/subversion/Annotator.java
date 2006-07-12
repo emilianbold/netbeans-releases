@@ -490,8 +490,8 @@ public class Annotator {
                 SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context),
                 null,
                 SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
-//                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(nodes) ? 
-//                                        loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
+                                        ((BlameAction)SystemAction.get(BlameAction.class)).visible(nodes) ? 
+                                        loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
                                         loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context),
                 SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
                 null,
