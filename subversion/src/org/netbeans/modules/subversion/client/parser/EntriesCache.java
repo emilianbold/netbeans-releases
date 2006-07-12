@@ -128,10 +128,14 @@ public class EntriesCache {
                 attributes.put(key, value);            
             } else {
                 if(key.equals("url")) {
-                    attributes.put(key, value + "/" + fileName);                
-                } else if( key.equals("uuid") || key.equals("repos") ) {
-                    attributes.put(key, value);                                        
-                }
+                    if( attributes.get(key) == null ) {
+                        attributes.put(key, value + "/" + fileName);                
+                    }    
+                } else if( key.equals("uuid") || key.equals("repos") || key.equals("revision") ) {
+                    if( attributes.get(key) == null ) {
+                        attributes.put(key, value);
+                    }
+                } 
             }                            
         }        
         return attributes;

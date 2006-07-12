@@ -112,10 +112,7 @@ public class SvnWcParser {
                 boolean isCopied = wcDetails.getBooleanValue("copied");  // NOI18N
                 String urlCopiedFrom = null;
                 if (isCopied) {                                        
-                    urlCopiedFrom = wcDetails.getValue("copyfrom-url");  // NOI18N
-                    if(revision == -1) {
-                        revision = wcDetails.getLongValue("copyfrom-rev");             // NOI18N         
-                    }                    
+                    urlCopiedFrom = wcDetails.getValue("copyfrom-url");  // NOI18N  
                 }
 
                 File conflictNew = null;

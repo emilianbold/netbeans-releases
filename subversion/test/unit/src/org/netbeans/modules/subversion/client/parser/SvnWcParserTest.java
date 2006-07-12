@@ -81,7 +81,7 @@ public class SvnWcParserTest extends TestCase {
         assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
-        assertEquals(-1, parsedStatus.getRevision().getNumber());
+        assertEquals(2, parsedStatus.getRevision().getNumber());
         assertNull(parsedStatus.getConflictNew());
         assertNull(parsedStatus.getConflictOld());
         assertNull(parsedStatus.getConflictWorking());
@@ -105,7 +105,7 @@ public class SvnWcParserTest extends TestCase {
         assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.MODIFIED, parsedStatus.getTextStatus());
-        assertEquals(-1, parsedStatus.getRevision().getNumber());
+        assertEquals(2, parsedStatus.getRevision().getNumber());
         assertNull(parsedStatus.getConflictNew());
         assertNull(parsedStatus.getConflictOld());
         assertNull(parsedStatus.getConflictWorking());
@@ -202,7 +202,7 @@ public class SvnWcParserTest extends TestCase {
         assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/ReadMe.txt", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.CONFLICTED, parsedStatus.getTextStatus());
-        assertEquals(-1, parsedStatus.getRevision().getNumber());
+        assertEquals(5, parsedStatus.getRevision().getNumber());
         assertEquals(5, parsedStatus.getLastChangedRevision().getNumber());
         assertNotNull(parsedStatus.getConflictNew());
         assertNotNull(parsedStatus.getConflictOld());
@@ -321,7 +321,7 @@ public class SvnWcParserTest extends TestCase {
         assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/AnotherMain.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
-        assertEquals(-1, parsedStatus.getRevision().getNumber());
+        assertEquals(9, parsedStatus.getRevision().getNumber());
         assertNull(parsedStatus.getConflictNew());
         assertNull(parsedStatus.getConflictOld());
         assertNull(parsedStatus.getConflictWorking());
@@ -345,7 +345,7 @@ public class SvnWcParserTest extends TestCase {
         assertNull(parsedStatus.getUrlCopiedFrom());
         assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
-        assertEquals(-1, parsedStatus.getRevision().getNumber());
+        assertEquals(10, parsedStatus.getRevision().getNumber());
         assertNull(parsedStatus.getConflictNew());
         assertNull(parsedStatus.getConflictOld());
         assertNull(parsedStatus.getConflictWorking());
