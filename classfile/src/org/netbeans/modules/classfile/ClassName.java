@@ -1,6 +1,4 @@
 /*
- * ClassFile.java
- *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
@@ -17,10 +15,6 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 2000-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * Contributor(s): Thomas Ball
- *
- * Version: $Revision$
  */
 
 package org.netbeans.modules.classfile;
@@ -32,7 +26,14 @@ import java.util.Comparator;
 import java.util.WeakHashMap;
 
 /**
- * Class representing the name of a Java class.
+ * Class representing the name of a Java class.  This class is immutable, and
+ * can therefore be safely used by multiple threads.
+ * <p>
+ * <b>Warning:</b>  The same reference is often returned by the getClassName 
+ * factory method for multiple calls which use the same type name as its
+ * parameter.  However, no guarantee is made that this behavior will always 
+ * be true, so the equals method should always be used to compare ClassName 
+ * instances.
  *
  * @author Thomas Ball
  */
@@ -59,7 +60,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * Not documented in the second edition of the specification
      * is that periods separating inner and outer classes are
      * replaced with dollar signs ('$').  Array classes have one
-     * or more left brackets ('[') prepending the class type.
+     * or more left brackets ('[') prepending the class type.is
      * For example:
      * <PRE><CODE>
      *   java.lang.String         java/lang/String
