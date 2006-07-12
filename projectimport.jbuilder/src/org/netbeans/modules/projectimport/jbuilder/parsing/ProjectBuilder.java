@@ -49,8 +49,8 @@ public abstract class ProjectBuilder {
         return (provider != null) ? provider.buildImpl(file) : Collections.EMPTY_LIST;
     }
     
-    static ProjectBuilder getProvider(final File file) {
-        FileObject fo = FileUtil.toFileObject(file);
+    static ProjectBuilder getProvider(final File file) {        
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fo != null) {
             for (int i = 0; i < SUPPORTED_TYPES.length; i++) {
                 if (SUPPORTED_TYPES[i].isProjectFileImpl(file)) {

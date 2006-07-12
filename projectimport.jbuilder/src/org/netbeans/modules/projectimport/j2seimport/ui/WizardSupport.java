@@ -27,52 +27,21 @@ import org.openide.WizardDescriptor;
 
 
 /**
- *
  * @author Radek Matous
  */
-public class WizardSupport extends WizardDescriptor implements BasicPanel.ErrorMessages {
-
-    public static BasicPanel.WizardData show(final String title, final BasicPanel[] panels, final BasicPanel.WizardData data) {
-        WizardDescriptor.Panel[] wpanels = new WizardDescriptor.Panel[panels.length];
-        for (int i = 0; i < panels.length; i++) {
-            wpanels[i] = panels[i].getWizardPanel();
-        }
-        
-        WizardSupport ws = new WizardSupport(wpanels, data);
-        ws.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
-        //TODO
-        ws.setTitle(title); // NOI18N
+public class WizardSupport extends WizardDescriptor  {
+    public static BasicWizardIterator.BasicDataModel show(BasicWizardIterator wizardIterator) {        
+        WizardSupport ws = new WizardSupport(wizardIterator);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(ws);
         dialog.setVisible(true);
         dialog.toFront();
         return (ws.getValue() != WizardDescriptor.FINISH_OPTION) ?
-            null : data;
+            null : wizardIterator.getData();
          
-        /*DialogDescriptor desc = new DialogDescriptor(panels[0],"balbla",true, new Object[]{}, null, 0, null, null);
-        desc.setClosingOptions(new Object[]{});
-        
-        final Dialog progressDialog = DialogDisplayer.getDefault().createDialog(desc);
-        //((JDialog) progressDialog).setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        
-        progressDialog.setVisible(true);        
-        return null;
-         **/
     }
-     
-     
+          
     /** Creates a new instance of WizardSupport */
-    private WizardSupport(WizardDescriptor.Panel[] panels, BasicPanel.WizardData data) {
-        super(panels, data);
-        data.setErrorMessages(this);
-    }
-    
-    public void setError(String message) {
-        this.putProperty("WizardPanel_errorMessage", // NOI18N
-                message);
-    }
-            
-    public static final class ErrorMessages {
-        public void setError(String mesage) {
-        }
+    private WizardSupport(BasicWizardIterator wizardIterator) {
+        super(wizardIterator);
     }    
 }
