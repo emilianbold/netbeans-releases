@@ -47,6 +47,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
     private List<Point> controlPoints;
     private List<Point> controlPointsUm;
     private ConnectionWidgetLayout connectionWidgetLayout;
+    private Stroke stroke;
 
     public ConnectionWidget (Scene scene) {
         super (scene);
@@ -58,10 +59,19 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         routingRequired = true;
         connectionWidgetLayout = new ConnectionWidgetLayout (this);
         setLayout (connectionWidgetLayout);
+        stroke = new BasicStroke (1.0f);
     }
 
     public void notifyStateChanged (ObjectState state) {
         setForeground (getScene ().getLookFeel ().getLineColor (state));
+    }
+
+    public Stroke getStroke () {
+        return stroke;
+    }
+
+    public void setStroke (Stroke stroke) {
+        this.stroke = stroke;
     }
 
     public final Anchor getSourceAnchor () {
@@ -345,8 +355,13 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
                 path.lineTo (point.x + 0.5f, point.y + 0.5f);
             }
         }
-        if (path != null)
+        if (path != null) {
+            Stroke previousStroke = gr.getStroke ();
+            gr.setStroke (stroke);
             gr.draw (path);
+            gr.setStroke (previousStroke);
+        }
+
 
         AffineTransform previousTransform;
         Point controlPoint;
