@@ -42,7 +42,7 @@ public class EvaluationTest extends NbTestCase {
         DebuggerManager.getDebuggerManager ().addBreakpoint (
             LineBreakpoint.create (
                 "org.netbeans.api.debugger.jpda.testapps.EvalApp",
-                28
+                34
             )
         );
         support = JPDASupport.attach (

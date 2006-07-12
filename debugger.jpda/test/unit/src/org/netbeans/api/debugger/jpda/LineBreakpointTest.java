@@ -48,12 +48,12 @@ public class LineBreakpointTest extends NbTestCase {
 
     public void testConditionalBreakpoint() throws Exception {
         doTestBreakpointComplete (
-            33, 
+            39, 
             "x==22", 
             JPDABreakpointEvent.CONDITION_FALSE
         );
         doTestBreakpointComplete (
-            34, 
+            40, 
             "x==60", 
             JPDABreakpointEvent.CONDITION_TRUE
         );
@@ -61,11 +61,11 @@ public class LineBreakpointTest extends NbTestCase {
 
     public void testMultipleLineBreakpoints () throws Exception {
         try {
-            LineBreakpoint lb1 = LineBreakpoint.create (TEST_APP, 26);
-            LineBreakpoint lb2 = LineBreakpoint.create (TEST_APP, 31);
-            LineBreakpoint lb3 = LineBreakpoint.create (TEST_APP, 103);
-            LineBreakpoint lb4 = LineBreakpoint.create (TEST_APP, 86);
-            LineBreakpoint lb5 = LineBreakpoint.create (TEST_APP, 35);
+            LineBreakpoint lb1 = LineBreakpoint.create (TEST_APP, 32);
+            LineBreakpoint lb2 = LineBreakpoint.create (TEST_APP, 37);
+            LineBreakpoint lb3 = LineBreakpoint.create (TEST_APP, 109);
+            LineBreakpoint lb4 = LineBreakpoint.create (TEST_APP, 92);
+            LineBreakpoint lb5 = LineBreakpoint.create (TEST_APP, 41);
 
             DebuggerManager dm = DebuggerManager.getDebuggerManager ();
             dm.addBreakpoint (lb1);
@@ -148,28 +148,28 @@ public class LineBreakpointTest extends NbTestCase {
     }
 
     public void testStaticBlockBreakpoint() throws Exception {
-        doTestBreakpointComplete(23);
-        doTestBreakpointComplete(26);
+        doTestBreakpointComplete(29);
+        doTestBreakpointComplete(32);
     }
 
     public void testStaticInnerClassBreakpoint() throws Exception {
-        doTestBreakpointComplete(69);
-        doTestBreakpointComplete(72);
-        doTestBreakpointComplete(86);
+        doTestBreakpointComplete(75);
+        doTestBreakpointComplete(78);
+        doTestBreakpointComplete(92);
     }
 
     public void testMainLineBreakpoint() throws Exception {
-        doTestBreakpointComplete(30);
+        doTestBreakpointComplete(36);
     }
 
     public void testConstructorLineBreakpoint() throws Exception {
-        doTestBreakpointComplete(45);
+        doTestBreakpointComplete(51);
     }
 
     public void testInnerLineBreakpoint () throws Exception {
-        doTestBreakpointComplete (96);
-        doTestBreakpointComplete (99);
-        doTestBreakpointComplete (107);
+        doTestBreakpointComplete (102);
+        doTestBreakpointComplete (105);
+        doTestBreakpointComplete (113);
     }
 
     private void doTestBreakpointComplete (
@@ -250,7 +250,7 @@ public class LineBreakpointTest extends NbTestCase {
      */
     public void testBreakpointUnambiguity1 () throws Exception {
         try {
-            LineBreakpoint lb1 = LineBreakpoint.create (TEST_APP, 33);
+            LineBreakpoint lb1 = LineBreakpoint.create (TEST_APP, 39);
 //            lb1.setSourceRoot(System.getProperty ("test.dir.src"));
             DebuggerManager dm = DebuggerManager.getDebuggerManager ();
             dm.addBreakpoint (lb1);
@@ -278,7 +278,7 @@ public class LineBreakpointTest extends NbTestCase {
             /*
             // Second run - BP should not be hit with a different source root - viz testBreakpointUnambiguity2()
             support = null;
-            lb1 = LineBreakpoint.create (TEST_APP, 33);
+            lb1 = LineBreakpoint.create (TEST_APP, 39);
             lb1.setSourceRoot(System.getProperty ("test.dir.src")+"_2");
             dm = DebuggerManager.getDebuggerManager ();
             dm.addBreakpoint (lb1);
@@ -322,7 +322,7 @@ public class LineBreakpointTest extends NbTestCase {
             LineBreakpoint lb1 = LineBreakpoint.create(
                     System.getProperty("user.home") + java.io.File.separator +
                     //System.getProperty ("test.dir.src") +
-                    "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java", 33);
+                    "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java", 39);
             //lb1.setSourceRoot(System.getProperty ("test.dir.src") + "_2");
             DebuggerManager dm = DebuggerManager.getDebuggerManager ();
             dm.addBreakpoint (lb1);

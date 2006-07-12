@@ -46,7 +46,7 @@ public class BreakpointResumeTest  extends NbTestCase {
         try {
             LineBreakpoint lb = LineBreakpoint.create (
                 sourceRoot + "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java", 
-                30
+                36
             );
             lb.addJPDABreakpointListener (new TestBreakpointListener ());
             DebuggerManager.getDebuggerManager ().addBreakpoint (lb);

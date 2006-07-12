@@ -54,7 +54,7 @@ public class JPDAStepTest extends NbTestCase {
             LineBreakpoint lb = LineBreakpoint.create (
                 sourceRoot + 
                     "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
-                24
+                30
             );
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
@@ -68,23 +68,13 @@ public class JPDAStepTest extends NbTestCase {
             );
             assertEquals (
                 "Execution stopped at wrong line", 
-                24, 
+                30, 
                 getCurrentLineNumber()
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                25
-            );
-            stepCheck (
-                JPDAStep.STEP_INTO, 
-                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                36
-            );
-            stepCheck (
-                JPDAStep.STEP_INTO, 
-                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                37
+                31
             );
             stepCheck (
                 JPDAStep.STEP_INTO, 
@@ -92,7 +82,7 @@ public class JPDAStepTest extends NbTestCase {
                 42
             );
             stepCheck (
-                JPDAStep.STEP_OVER, 
+                JPDAStep.STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
                 43
             );
@@ -100,6 +90,16 @@ public class JPDAStepTest extends NbTestCase {
                 JPDAStep.STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
                 48
+            );
+            stepCheck (
+                JPDAStep.STEP_OVER, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                49
+            );
+            stepCheck (
+                JPDAStep.STEP_INTO, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                54
             );
            
             // resume VM
@@ -117,7 +117,7 @@ public class JPDAStepTest extends NbTestCase {
             LineBreakpoint lb = LineBreakpoint.create (
                 sourceRoot + 
                     "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
-                24
+                30
             );
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
@@ -131,33 +131,33 @@ public class JPDAStepTest extends NbTestCase {
             );
             assertEquals (
                 "Execution stopped at wrong line", 
-                24, 
+                30, 
                 getCurrentLineNumber()
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                25
+                31
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                26
+                32
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                27
+                33
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                28
+                34
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                29
+                35
             );
             
             // resume VM
@@ -175,7 +175,7 @@ public class JPDAStepTest extends NbTestCase {
             LineBreakpoint lb = LineBreakpoint.create (
                 sourceRoot + 
                     "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
-                24
+                30
             );
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
@@ -189,23 +189,13 @@ public class JPDAStepTest extends NbTestCase {
             );
             assertEquals (
                 "Execution stopped at wrong line", 
-                24, 
+                30, 
                 getCurrentLineNumber()
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                25
-            );
-            stepCheck (
-                JPDAStep.STEP_INTO, 
-                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                36
-            );
-            stepCheck (
-                JPDAStep.STEP_OVER, 
-                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                37
+                31
             );
             stepCheck (
                 JPDAStep.STEP_INTO, 
@@ -213,14 +203,24 @@ public class JPDAStepTest extends NbTestCase {
                 42
             );
             stepCheck (
-                JPDAStep.STEP_OUT, 
+                JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                37
+                43
+            );
+            stepCheck (
+                JPDAStep.STEP_INTO, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                48
             );
             stepCheck (
                 JPDAStep.STEP_OUT, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                25
+                43
+            );
+            stepCheck (
+                JPDAStep.STEP_OUT, 
+                "org.netbeans.api.debugger.jpda.testapps.StepApp", 
+                31
             );
             
             // resume VM

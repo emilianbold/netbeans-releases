@@ -54,7 +54,7 @@ public class FieldBreakpointTest extends NbTestCase {
 //            TestBreakpointListener tbl = new TestBreakpointListener (
 //                "x", 
 //                0, 
-//                new int [] {23, 26, 31 }
+//                new int [] {29, 32, 37 }
 //            );
 //            fb1.addJPDABreakpointListener (tbl);
 //            dm.addBreakpoint (fb1);
@@ -67,7 +67,7 @@ public class FieldBreakpointTest extends NbTestCase {
             TestBreakpointListener tb2 = new TestBreakpointListener (
                 "y", 
                 0, 
-                new int [] { 38, 41, 45 }
+                new int [] { 44, 47, 51 }
             );
             fb2.addJPDABreakpointListener (tb2);
             dm.addBreakpoint (fb2);
@@ -81,7 +81,7 @@ public class FieldBreakpointTest extends NbTestCase {
 //            TestBreakpointListener tb3 = new TestBreakpointListener (
 //                "InnerStatic.q", 
 //                0, 
-//                new int [] {69, 72 }
+//                new int [] {75, 78 }
 //            );
 //            fb3.addJPDABreakpointListener (tb3);
 //            dm.addBreakpoint (fb3);
@@ -94,7 +94,7 @@ public class FieldBreakpointTest extends NbTestCase {
             TestBreakpointListener tb4 = new TestBreakpointListener (
                 "InnerStatic.w", 
                 0, 
-                new int [] { 75, 78, 82 }
+                new int [] { 81, 84, 88 }
             );
             fb4.addJPDABreakpointListener (tb4);
             dm.addBreakpoint (fb4);
@@ -107,7 +107,7 @@ public class FieldBreakpointTest extends NbTestCase {
             TestBreakpointListener tb5 = new TestBreakpointListener (
                 "Inner.w", 
                 0, 
-                new int [] { 96, 99, 103 }
+                new int [] { 102, 105, 109 }
             );
             fb5.addJPDABreakpointListener (tb5);
             dm.addBreakpoint (fb5);
