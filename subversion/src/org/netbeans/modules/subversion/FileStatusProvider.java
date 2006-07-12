@@ -47,7 +47,9 @@ import java.beans.PropertyChangeEvent;
  */
 public class FileStatusProvider extends AnnotationProvider implements VersioningListener, PropertyChangeListener {
 
-    private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | 
+                                                FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | 
+                                                FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
     private static final Action[] EMPTY_ACTIONS = new Action[0];
 
@@ -216,7 +218,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
      */
     public void fireFileStatusEvent(File file) {
         Map<FileSystem, Set<FileObject>> folders = new HashMap<FileSystem, Set<FileObject>>();
-        for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
+        for (File parent = file; parent != null; parent = parent.getParentFile()) {
             try {
                 FileObject fo = FileUtil.toFileObject(parent);
                 if (fo != null) {

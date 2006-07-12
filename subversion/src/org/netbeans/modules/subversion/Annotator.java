@@ -400,39 +400,22 @@ public class Annotator {
         for (Iterator i = map.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) map.get(file);
-            if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
+            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
         }
 
         for (Iterator i = roots.iterator(); i.hasNext();) {
             File file = (File) i.next();
-            if (file instanceof FlatFolder) {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
-                    if (mf.getParentFile().equals(file)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                        if (info.isDirectory()) continue;
-                        int status = info.getStatus();
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/conflicts-badge.png", true);  // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
+            for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                File mf = (File) j.next();
+                if (SvnUtils.isParentOrEqual(file, mf)) {
+                    FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                    int status = info.getStatus();
+                    if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                        Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/conflicts-badge.png", true); // NOI18N
+                        return Utilities.mergeImages(icon, badge, 16, 9);
                     }
-                }
-            } else {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
-                    if (SvnUtils.isParentOrEqual(file, mf)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                        int status = info.getStatus();
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/conflicts-badge.png", true); // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
-                    }
+                    modified = true;
+                    allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                 }
             }
         }
