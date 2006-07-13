@@ -128,8 +128,10 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         
         // Try to preselect a folder            
         FileObject preselectedTarget = Templates.getTargetFolder( wizard );
+        // Try to preserve the already entered target name
+        String targetName = Templates.getTargetName( wizard );
         // Init values
-        gui.initValues( Templates.getTemplate( wizard ), preselectedTarget );
+        gui.initValues( Templates.getTemplate( wizard ), preselectedTarget, targetName );
         
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewFileWizard to modify the title

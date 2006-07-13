@@ -87,6 +87,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     }
     
     public void initValues( FileObject template, FileObject preselectedFolder ) {
+        initValues(template, preselectedFolder, null);
+    }
+    
+    public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
         assert project != null;
         
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
@@ -129,7 +133,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         
         if (template != null) {
-            documentNameTextField.setText (NEW_FILE_PREFIX + template.getName ());
+            if (documentName == null) {
+                documentName = NEW_FILE_PREFIX + template.getName ();
+            }
+            documentNameTextField.setText (documentName);
             documentNameTextField.selectAll ();
         }
         
