@@ -31,12 +31,14 @@ public class CLIOptionsTest extends NbTestCase {
     }
 
     public void testNoSplash() {
-        new CLIOptions().cli(new String[] { "--branding", "nosplash" });
-        assertTrue("this branding disables the splash", CLIOptions.isNoSplash());
-
         new CLIOptions().cli(new String[] { "--branding", "noexiting" });
         assertFalse("Splash is on in default branding", CLIOptions.isNoSplash());
+
+	CLIOptions.defaultsLoaded = false;
+        new CLIOptions().cli(new String[] { "--branding", "nosplash" });
+        assertTrue("this branding disables the splash", CLIOptions.isNoSplash());
         
+	CLIOptions.defaultsLoaded = false;
         new CLIOptions().cli(new String[] { "--branding", "noexiting", "--nosplash"});
         assertTrue("Splash is explicitly disabled", CLIOptions.isNoSplash());
     }

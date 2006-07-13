@@ -387,7 +387,7 @@ final class NbInstaller extends ModuleInstaller {
         // Whether we yet had occasion to attach to the module actions list.
         boolean attachedToMA = false;
         try {
-            Main.incrementSplashProgressBar();
+	    ev.log(Events.LOAD_SECTION);
             for (ManifestSection sect : s) {
                 if (sect instanceof ManifestSection.ActionSection) {
                     if (! attachedToMA) {

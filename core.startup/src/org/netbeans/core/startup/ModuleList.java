@@ -138,7 +138,7 @@ final class ModuleList {
             folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
         FileObject[] children = folder.getChildren();
-        ev.log(Events.PERF_TICK, "list of files found");
+        ev.log( Events.MODULES_FILE_SCANNED, children.length );
 
 	XMLReader reader = null;
 	

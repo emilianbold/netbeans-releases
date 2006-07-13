@@ -37,7 +37,7 @@ public class AboutAction extends CallableSystemAction {
     }
 
     public void performAction () {
-        Splash.showSplashDialog (
+        Splash.showAboutDialog(
             org.openide.windows.WindowManager.getDefault ().getMainWindow (),
             new org.netbeans.core.ui.ProductInformationPanel ()                
         );

@@ -34,6 +34,7 @@ import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.InstalledFileLocatorImpl;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.ModuleSystem;
+import org.netbeans.core.startup.Splash;
 import org.netbeans.core.startup.StartLog;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
@@ -63,7 +64,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         // autoload directories
         org.openide.util.Task automount = AutomountSupport.initialize ();
         StartLog.logProgress ("Automounter fired"); // NOI18N
-        Main.incrementSplashProgressBar();
+        Splash.getInstance().increment(1);
         
         // -----------------------------------------------------------------------------------------------------
         // 10. Loader pool loading
@@ -73,24 +74,23 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
             Logger.global.log(Level.WARNING, null, ioe);
         }
         StartLog.logProgress ("LoaderPool loaded"); // NOI18N
-        Main.incrementSplashProgressBar(10);
+        Splash.getInstance().increment(10);
 
         LoaderPoolNode.installationFinished ();
         StartLog.logProgress ("LoaderPool notified"); // NOI18N
-        Main.incrementSplashProgressBar(10);
+        Splash.getInstance().increment(10);
 
-        Main.incrementSplashProgressBar(10);
         // wait until mounting really occurs
         automount.waitFinished ();
         StartLog.logProgress ("Automounter done"); // NOI18N
-        Main.incrementSplashProgressBar(10);
+        Splash.getInstance().increment(10);
 
         //---------------------------------------------------------------------------------------------------------
         // initialize main window AFTER the setup wizard is finished
 
         initializeMainWindow ();
         StartLog.logProgress ("Main window initialized"); // NOI18N
-        Main.incrementSplashProgressBar();
+        Splash.getInstance().increment(1);
 
         // -----------------------------------------------------------------------------------------------------
         // 8. Advance Policy
@@ -104,7 +104,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         // install java.net.Authenticator
         java.net.Authenticator.setDefault (new NbAuthenticator ());
         StartLog.logProgress ("Security managers installed"); // NOI18N
-        Main.incrementSplashProgressBar();
+        Splash.getInstance().increment(1);
         
         
         InstalledFileLocatorImpl.discardCache();
@@ -150,13 +150,13 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         });
         timerInit.setRepeats(false);
         timerInit.start();
-        Main.incrementSplashProgressBar(10);
+        Splash.getInstance().increment(10);
         StartLog.logProgress ("Timer initialized"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // 13. Initialize Shortcuts
         ShortcutsFolder.initShortcuts();
-        Main.incrementSplashProgressBar();
+        Splash.getInstance().increment(1);
         StartLog.logProgress ("Shortcuts initialized"); // NOI18N
 
 

@@ -51,52 +51,10 @@ public final class Main extends Object {
     /** module subsystem is fully ready */
     private static boolean moduleSystemInitialized;
 
-  /** is there a splash screen or not */
-  private static Splash.SplashOutput splash;
-  
-  /** is there progress bar in splash or not */
-  private static final boolean noBar = Boolean.getBoolean("netbeans.splash.nobar");
-
-  /** Adds temporary steps to create a max value for splash progress bar later.
-   */
-  public static void addToSplashMaxSteps(int steps)
-  {
-      if (noBar || CLIOptions.isNoSplash() || splash == null)
-          return;
-      splash.addToMaxSteps(steps);
-  }
-  
-  /** Adds temporary steps and creates a max value for splash progress bar.
-   */
-  public static void addAndSetSplashMaxSteps(int steps)
-  {
-      if (noBar || CLIOptions.isNoSplash() || splash == null)
-          return;
-      splash.addAndSetMaxSteps(steps);
-  }
-  
-  /** Increments a current value of splash progress bar by one step.
-   */
-  public static void incrementSplashProgressBar()
-  {
-      incrementSplashProgressBar(1);
-  }
-  
-  /** Increments a current value of splash progress bar by given steps.
-   */
-  public static void incrementSplashProgressBar(int steps)
-  {
-      if (noBar || CLIOptions.isNoSplash() || splash == null)
-          return;
-      splash.increment(steps);
-  }
-  
   /** Prints the text to splash screen or to status line, if available.
    */
   public static void setStatusText (String msg) {
-        if (splash != null) {
-            splash.print (msg);
-        }
+        Splash.getInstance().print (msg);
         if (moduleSystemInitialized) {
             org.netbeans.core.startup.CoreBridge.conditionallyPrintStatus (msg);
         }
@@ -165,26 +123,10 @@ public final class Main extends Object {
                     }
                }
           }
-          //Bugfix #33546: If fontsize was not set from cammand line try to set it from bundle key
-          if (CLIOptions.uiFontSize == 0) {
-              String key = "";
-              try {
-                  key = NbBundle.getMessage (Main.class, "CTL_globalFontSize"); //NOI18N
-              } catch (MissingResourceException mre) {
-                  //Key not found, nothing to do
-              }
-              if (key.length() > 0) {
-                  try {
-                      CLIOptions.uiFontSize = Integer.parseInt(key);
-                  } catch (NumberFormatException exc) {
-                      //Incorrect value, nothing to do
-                  }
-              }
-          }
       } finally {
-          CoreBridge.getDefault ().initializePlaf(CLIOptions.uiClass, CLIOptions.uiFontSize, themeURL);
+          CoreBridge.getDefault ().initializePlaf(CLIOptions.uiClass, CLIOptions.getFontSize(), themeURL);
       }
-      if (CLIOptions.uiFontSize > 0 && "GTK".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+      if (CLIOptions.getFontSize() > 0 && "GTK".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
           Util.err.warning(NbBundle.getMessage(Main.class,
           "GTK_FONTSIZE_UNSUPPORTED")); //NOI18N
       }
@@ -209,7 +151,6 @@ public final class Main extends Object {
 
         moduleSystem.loadBootModules();
         moduleSystem.readList();
-        Main.addAndSetSplashMaxSteps(30); // additional steps after loading all modules
         moduleSystem.restore();
         StartLog.logEnd ("Modules initialization"); // NOI18N
 
@@ -353,11 +294,11 @@ public final class Main extends Object {
     // 8.5 - we can show the splash only after the upgrade wizard finished
     //
 
-    showSplash ();
+    Splash.getInstance().setRunning(true);
 
     // -----------------------------------------------------------------------------------------------------
 
-    setStatusText (NbBundle.getMessage(Main.class, "MSG_IDEInit"));
+    Splash.getInstance().print(NbBundle.getMessage(Main.class, "MSG_IDEInit"));
 
     
     // -----------------------------------------------------------------------------------------------------
@@ -385,34 +326,12 @@ public final class Main extends Object {
     org.netbeans.Main.finishInitialization();
     StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
 
-    // finish starting
-    if (splash != null) {
-      Splash.hideSplash(splash);
-      splash = null;
-    }
+    Splash.getInstance().setRunning(false);
+    Splash.getInstance().dispose();
     StartLog.logProgress ("Splash hidden"); // NOI18N
     StartLog.logEnd ("Preparation"); // NOI18N
   }
   
-    /** Return splash screen.
-    */
-    final static Splash.SplashOutput getSplash() {
-        return splash;
-    }
-  
-    /** This is a notification about hiding wizards 
-     * during startup (Import, Setup). It makes splash screen visible again.
-     */
-    protected static void showSplash () {
-        if (!CLIOptions.isNoSplash()) {
-            if (splash != null) {
-                if (Splash.isVisible(splash))
-                    return;
-            }
-            splash = Splash.showSplash ();
-        }
-    }
-    
     /** Loads a class from available class loaders. */
     private static final Class getKlass(String cls) {
         try {

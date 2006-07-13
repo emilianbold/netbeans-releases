@@ -95,6 +95,8 @@ public abstract class Events {
     public static final String FINISH_READ = "finishRead"; // NOI18N
     /** FileObject */
     public static final String MODULES_FILE_PROCESSED = "modulesFileProcessed"; // NOI18N
+    /** Integer */
+    public static final String MODULES_FILE_SCANNED = "modulesFileScanned"; // NOI18N
     /** Set<Module> toInstall */
     public static final String START_AUTO_RESTORE = "startAutoRestore"; // NOI18N
     /** Set<Module> toInstall */

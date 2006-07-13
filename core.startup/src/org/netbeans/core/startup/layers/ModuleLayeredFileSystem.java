@@ -412,7 +412,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
         }
     }
     private static void setStatusText (String msg) {
-        org.netbeans.core.startup.Main.setStatusText (msg);
+        org.netbeans.core.startup.Main.setStatusText(msg);
     }
 
 }

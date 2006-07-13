@@ -22,6 +22,7 @@ package org.netbeans.core.startup;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import org.netbeans.CLIHandler;
 import org.netbeans.TopSecurityManager;
 import org.openide.filesystems.FileUtil;
@@ -36,18 +37,20 @@ public class CLIOptions extends CLIHandler {
     /** directory for modules */
     static final String DIR_MODULES = "modules"; // NOI18N
 
+    static boolean defaultsLoaded = false; // package private for testing
+    
     /** The flag whether to create the log - can be set via -nologging
     * command line option */
     protected static boolean noLogging = false;
 
     /** The flag whether to show the Splash screen on the startup */
-    private static Boolean noSplash;
+    private static boolean noSplash;
     
     /* The class of the UIManager to be used for netbeans - can be set by command-line argument -ui <class name> */
     protected static Class uiClass;
     /* The size of the fonts in the UI - 0 pt, the default value is set in NbTheme (for Metal L&F), for other L&Fs is set
        in the class Main. The value can be changed in Themes.xml in system directory or by command-line argument -fontsize <size> */
-    protected static int uiFontSize = 0;
+    private static int uiFontSize = 0;
 
     /** The netbeans home dir - acquired from property netbeans.home */
     private static String homeDir;
@@ -96,7 +99,7 @@ public class CLIOptions extends CLIHandler {
                 System.getProperties().put("org.openide.TopManager", "org.netbeans.core.NonGui"); // NOI18N
                 System.setProperty ("org.openide.TopManager.GUI", "false"); // NOI18N
             } else if (isOption (args[i], "nosplash")) { // NOI18N
-                noSplash = Boolean.TRUE;
+                noSplash = true;
             } else if (isOption (args[i], "noinfo")) { // NOI18N
                 // obsolete switch, ignore
             } else if (isOption (args[i], "nologging")) { // NOI18N
@@ -291,16 +294,39 @@ public class CLIOptions extends CLIHandler {
     // other getters
     //
     
+    private static void initDefaults() {
+	if (!defaultsLoaded) {
+	    if (CLIOptions.uiFontSize == 0) {
+		String key = "";
+		try {
+		    key = NbBundle.getMessage (Main.class, "CTL_globalFontSize"); //NOI18N
+		} catch (MissingResourceException mre) {
+		    //Key not found, nothing to do
+		}
+		if (key.length() > 0) {
+		    try {
+			CLIOptions.uiFontSize = Integer.parseInt(key);
+		    } catch (NumberFormatException exc) {
+			//Incorrect value, nothing to do
+		    }
+		}
+	    }
+	    if (!noSplash) {
+		// was not overriden from command line - read brandable setting
+		String value = NbBundle.getMessage(CLIOptions.class, "SplashOnByDefault");
+		noSplash = !Boolean.parseBoolean(value);
+	    }
+	    
+	    defaultsLoaded = true;
+	}
+    }
     public static int getFontSize () {
+	initDefaults();
         return uiFontSize;
     }
 
     static boolean isNoSplash() {
-        if (noSplash != null) {
-            return noSplash.booleanValue();
-        }
-        
-        String value = NbBundle.getMessage(CLIOptions.class, "SplashOnByDefault"); // NOI18N
-        return !Boolean.valueOf(value);
+	initDefaults();
+        return noSplash;
     }
 }

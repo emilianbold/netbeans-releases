@@ -51,6 +51,10 @@ import org.openide.util.RequestProcessor;
 final class NbEvents extends Events {
     private Logger logger = Logger.getLogger(NbEvents.class.getName());
 
+	private int moduleCount;
+	
+	private int counter;
+
     /** Handle a logged event.
      * CAREFUL that this is called synchronously, usually within a write
      * mutex or other sensitive environment. So do not call anything
@@ -65,7 +69,7 @@ final class NbEvents extends Events {
         } else if (message == PERF_END) {
             StartLog.logEnd( (String)args[0]);
         } else if (message == START_CREATE_BOOT_MODULE) {
-            org.netbeans.core.startup.Main.addToSplashMaxSteps(1);
+            org.netbeans.core.startup.Splash.getInstance().increment(1);
         } else if (message == START_LOAD_BOOT_MODULES) {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_start_load_boot_modules"));
@@ -152,14 +156,18 @@ final class NbEvents extends Events {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_start_read"));
             StartLog.logStart("ModuleList.readInitial"); // NOI18N
+        } else if (message == MODULES_FILE_SCANNED) {
+	    moduleCount = (Integer)args[0];
+            Splash.getInstance().addToMaxSteps(Math.max(moduleCount + moduleCount/2 - 100, 0));
         } else if (message == MODULES_FILE_PROCESSED) {
-            incrementSplashProgressBar();
+            Splash.getInstance().increment(1);
             if (StartLog.willLog()) {
                 StartLog.logProgress("file " + ((FileObject)args[0]).getNameExt() + " processed"); // NOI18N
             }
         } else if (message == FINISH_READ) {
-            Set modules = (Set)args[0];
-            org.netbeans.core.startup.Main.addToSplashMaxSteps(modules.size() + modules.size());
+	    if (moduleCount < 100) {
+		Splash.getInstance().increment(moduleCount - 100);
+	    }
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_finish_read"));
             StartLog.logEnd("ModuleList.readInitial"); // NOI18N
@@ -167,18 +175,18 @@ final class NbEvents extends Events {
             // Don't look for display name. Just takes too long.
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_restore"/*, ((Module)args[0]).getDisplayName()*/));
-            incrementSplashProgressBar();
+	    if (++counter < moduleCount / 2) {
+		Splash.getInstance().increment(1);
+	    }
         } else if (message == INSTALL) {
             // Nice to see the real title; not that common, after all.
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_install", ((Module)args[0]).getDisplayName()));
             logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_install", ((Module)args[0]).getDisplayName()));
-            incrementSplashProgressBar();
         } else if (message == UPDATE) {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_update", ((Module)args[0]).getDisplayName()));
             logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_update", ((Module)args[0]).getDisplayName()));
-            incrementSplashProgressBar();
         } else if (message == UNINSTALL) {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_uninstall", ((Module)args[0]).getDisplayName()));
@@ -186,6 +194,9 @@ final class NbEvents extends Events {
             // Again avoid finding display name now.
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_load_section"/*, ((Module)args[0]).getDisplayName()*/));
+	    if (++counter < moduleCount / 4) {
+		Splash.getInstance().increment(1);
+	    }
         } else if (message == LOAD_LAYERS) {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_load_layers"));
@@ -305,8 +316,8 @@ final class NbEvents extends Events {
             int type = warn ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
             String msg = NbBundle.getMessage(Notifier.class, warn ? "MSG_warning" : "MSG_info"); // NOI18N
 
-            Splash.SplashOutput out = org.netbeans.core.startup.Main.getSplash();
-            Component c = out == null ? null : out.getComponent();
+            Splash out = Splash.getInstance();
+            Component c = out.getComponent() == null ? null : out.getComponent();
             
             JTextArea area = new JTextArea();
             area.setText(text);
@@ -327,11 +338,7 @@ final class NbEvents extends Events {
         }
     }
 
-    private static void incrementSplashProgressBar () {
-        org.netbeans.core.startup.Main.incrementSplashProgressBar ();
-    }
-    
     private static void setStatusText (String msg) {
-        org.netbeans.core.startup.Main.setStatusText (msg);
+        Main.setStatusText (msg);
     }
 }
