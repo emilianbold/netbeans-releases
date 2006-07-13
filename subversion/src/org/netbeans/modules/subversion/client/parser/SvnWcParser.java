@@ -56,12 +56,14 @@ public class SvnWcParser {
         List<ISVNStatus> ret = new ArrayList(20);
                         
         File[] children = path.listFiles();
-        for (int i = 0; i < children.length; i++) {
-            ret.add(getSingleStatus(children[i]));            
-            if(descend && children[i].isDirectory()) {                
-                ret.addAll(getStatus(children[i], descend));                
-            }                    
-        }        
+        if(children != null && children.length > 0) {        
+            for (int i = 0; i < children.length; i++) {
+                ret.add(getSingleStatus(children[i]));            
+                if(descend && children[i].isDirectory()) {                
+                    ret.addAll(getStatus(children[i], descend));                
+                }                    
+            }        
+        }
         ret.add(getSingleStatus(path));
         return ret;
     }    
