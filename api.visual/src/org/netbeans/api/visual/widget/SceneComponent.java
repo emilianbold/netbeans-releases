@@ -120,15 +120,21 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
     }
 
     public void keyTyped (KeyEvent e) {
-        processOperator (Operator.KEY_TYPED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processOperator (Operator.KEY_TYPED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
+        if (state.isConsumed ())
+            e.consume ();
     }
 
     public void keyPressed (KeyEvent e) {
-        processOperator (Operator.KEY_PRESSED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processOperator (Operator.KEY_PRESSED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
+        if (state.isConsumed ())
+            e.consume ();
     }
 
     public void keyReleased (KeyEvent e) {
-        processOperator (Operator.KEY_RELEASED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processOperator (Operator.KEY_RELEASED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
+        if (state.isConsumed ())
+            e.consume ();
     }
 
     public void dragEnter (DropTargetDragEvent e) {
