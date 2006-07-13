@@ -27,6 +27,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
@@ -125,17 +126,7 @@ public final class NbPlaces extends Object {
             FileObject fo = fs.findResource(name);
             if (fo == null) {
                 // resource not found, try to create new folder
-                fo = fs.getRoot();
-                StringTokenizer st = new StringTokenizer(name, "/"); // NOI18N
-                while(st.hasMoreTokens()) {
-                    String subFolderName = st.nextToken();
-                    FileObject ff = fo.getFileObject(subFolderName);
-                    if(ff != null && ff.isFolder()) {
-                        fo = ff;
-                        continue;
-                    }
-                    fo = fo.createFolder(subFolderName);
-                }
+                fo = FileUtil.createFolder(fs.getRoot(), name);
             }
             DataFolder df = DataFolder.findFolder(fo);
             return df;
