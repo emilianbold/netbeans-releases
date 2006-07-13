@@ -206,6 +206,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="verify-class-linkage" depends="jar,release">
         <verifyclasslinkage jar="${cluster}/${module.jar}" failonerror="false">
             <classpath refid="cp"/>
+            <classpath path="${nbjdk.bootclasspath}"/>
         </verifyclasslinkage>
     </target>
 
