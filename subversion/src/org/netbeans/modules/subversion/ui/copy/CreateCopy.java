@@ -66,8 +66,20 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         if (text == null || text.length() == 0) {            
             getOKButton().setEnabled(false);        
             return;
-        }
-        
+        }        
+        try {
+            RepositoryFile rf[] = repositoryPaths.getRepositoryFiles();
+            if(rf == null || rf.length == 0) {
+                getOKButton().setEnabled(false);        
+                return;
+            }
+        } catch (NumberFormatException ex) {
+            getOKButton().setEnabled(false);        
+            return;
+        } catch (MalformedURLException ex) {
+            getOKButton().setEnabled(false);        
+            return;
+        }        
         getOKButton().setEnabled(true);        
     }    
 
