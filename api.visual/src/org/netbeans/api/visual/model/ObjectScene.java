@@ -20,6 +20,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.util.*;
+import java.awt.*;
 
 /**
  * @author David Kaspar
@@ -178,7 +179,7 @@ public class ObjectScene extends Scene {
     }
 
     private class ObjectSelectAction extends SelectAction {
-        public void doSelect (Widget widget) {
+        public void doSelect (Widget widget, Point localLocation) {
             ObjectController objectController = findObjectController (widget);
             Set<ObjectController> set;
 

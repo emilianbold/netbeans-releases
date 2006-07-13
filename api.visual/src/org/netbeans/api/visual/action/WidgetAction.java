@@ -197,7 +197,85 @@ public interface WidgetAction {
         }
 
     }
-    
+
+    public static abstract class LockedAdapter implements WidgetAction {
+
+        protected abstract boolean isLocked ();
+
+        public State mouseClicked (Widget widget, WidgetMouseEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State mousePressed (Widget widget, WidgetMouseEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State mouseReleased (Widget widget, WidgetMouseEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State mouseEntered (Widget widget, WidgetMouseEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State mouseExited (Widget widget, WidgetMouseEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State mouseDragged (Widget widget, WidgetMouseEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State mouseMoved (Widget widget, WidgetMouseEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State mouseWheelMoved (Widget widget, WidgetMouseWheelEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State keyTyped (Widget widget, WidgetKeyEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State keyPressed (Widget widget, WidgetKeyEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State keyReleased (Widget widget, WidgetKeyEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State focusGained (Widget widget, WidgetFocusEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State focusLost (Widget widget, WidgetFocusEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State dragEnter (Widget widget, WidgetDropTargetDragEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State dragOver (Widget widget, WidgetDropTargetDragEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State dropActionChanged (Widget widget, WidgetDropTargetDragEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State dragExit (Widget widget, WidgetDropTargetEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+        public State drop (Widget widget, WidgetDropTargetDropEvent event) {
+            return isLocked () ? State.createLocked (widget, this) : State.REJECTED;
+        }
+
+    }
+
     public static final class Chain implements WidgetAction {
         
         private List<WidgetAction> actions;
