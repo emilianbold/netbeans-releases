@@ -1,5 +1,5 @@
 ant \
 -Dismp.home=$IS_HOME \
--Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_07-fcs-bin-b02-linux-i586-22_mar_2006.bin \
+-Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_08-linux-i586.bin \
 -Dbundled.jvm=$JVM_PATH/is-jre1_5_0_06-linux-i586.bin \
 build-linux-ml

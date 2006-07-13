@@ -1,5 +1,5 @@
 ant \
 -Dismp.home=$IS_HOME \
--Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_06-fcs-bin-b03-solaris-sparc-27_sep_2005.sh \
--Dbundled.jvm=$JVM_PATH/is-j2re1_4_2_07-solaris-sparc.bin \
+-Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_08-solaris-sparc.sh \
+-Dbundled.jvm=$JVM_PATH/is-jre1_5_0_06-solaris-sparc.bin \
 build-solaris-sparc
