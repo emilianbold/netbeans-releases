@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -41,6 +41,7 @@ import javax.net.ssl.X509TrustManager;
 
 import javax.swing.JButton;
 import org.netbeans.modules.proxy.ConnectivitySettings;
+import org.netbeans.modules.subversion.Diagnostics;
 import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
@@ -75,17 +76,19 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     
     public boolean handleException() throws Exception {
         if(isAuthentication(getException())) {
-            return handleAuthenticationError();
+            return handleRepositoryConnectError(false);
         } if(isNoCertificate(getException())) {
             return handleNoCertificateError();
+        } if (isHostNotFound(getException())) {
+            return handleRepositoryConnectError(true);
         }
 
         throw getException();
     }
 
-    private boolean handleAuthenticationError() {
+    private boolean handleRepositoryConnectError(boolean urlEditable) {
         SVNUrl url = client.getSvnUrl();
-        Repository repository = new Repository(url, false, false, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
+        Repository repository = new Repository(url, urlEditable, false, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
         CorrectAuthPanel corectPanel = new CorrectAuthPanel();
         corectPanel.panel.setLayout(new BorderLayout());
         corectPanel.panel.add(repository.getPanel(), BorderLayout.NORTH);
@@ -112,7 +115,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         return ret;
     }
 
-    // XXX refactor, move, clean up ...
+    // XXX refactor, move, clean up ...    
     private boolean handleNoCertificateError() throws Exception {
 
         // copy the certificate if it already exists
@@ -120,8 +123,9 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         String hostString = SvnUtils.ripUserFromHost(url.getHost());
         String realmString = url.getProtocol() + "://" + hostString + ":" + url.getPort(); // NOI18N
         File certFile = CertificateFile.getSystemCertFile(realmString);
-        if(certFile.exists()) {
-            FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));
+        File nbCertFile = CertificateFile.getNBCertFile(realmString);
+        if( !nbCertFile.exists() &&  certFile.exists() ) {            
+            FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));            
             return true;
         }
 
@@ -180,10 +184,14 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             ErrorManager.getDefault().notify(ex);
             return false;
         }
-        for (int i = 0; i < serverCerts.length; i++) {
-            if(serverCerts[i] instanceof X509Certificate) {
-                cert = (X509Certificate) serverCerts[i];
-                break; 
+        for (int i = 0; i < serverCerts.length; i++) {            
+            Diagnostics.println("Cert[" + i + "]  - " + serverCerts[i].toString());     // NOI18N
+            Diagnostics.println("Cert[" + i + "] type - " + serverCerts[i].getType());  // NOI18N
+            if(serverCerts[i] instanceof X509Certificate) {                                
+                if(cert != null) {
+                    cert = (X509Certificate) serverCerts[i];
+                }
+                //break; 
             }
         }
 

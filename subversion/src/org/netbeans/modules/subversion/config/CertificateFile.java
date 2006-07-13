@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -42,6 +42,7 @@ public class CertificateFile extends SVNCredentialFile {
         super(getNBCertFile(realmString));
         setCert(cert);
         setFailures(failures);
+        setRealmString(realmString);
         if(temporarily) {
             getFile().deleteOnExit();
         }
@@ -59,7 +60,7 @@ public class CertificateFile extends SVNCredentialFile {
 
     protected String getRealmString() {
         return getStringValue(getRealmstringKey());
-    }        
+    }
 
     private void setFailures(int failures) {
         setValue(getFailuresKey(), String.valueOf(failures));
