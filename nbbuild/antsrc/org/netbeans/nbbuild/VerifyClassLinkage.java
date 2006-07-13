@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -109,7 +110,7 @@ public class VerifyClassLinkage extends Task {
         try {
             // Map from class name (foo/Bar format) to true (found), false (not found), null (as yet unknown):
             Map/*<String,Boolean>*/ loadable = new HashMap();
-            Map/*<String,byte[]>*/ classfiles = new HashMap();
+            Map/*<String,byte[]>*/ classfiles = new TreeMap();
             read(jar, classfiles, new HashSet());
             Iterator it = classfiles.keySet().iterator();
             while (it.hasNext()) {
