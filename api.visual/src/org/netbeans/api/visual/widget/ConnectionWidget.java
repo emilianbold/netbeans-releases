@@ -35,6 +35,7 @@ import java.util.List;
 public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     private static final double HIT_DISTANCE_SQUARE = 16.0;
+    private static final Stroke STROKE_DEFAULT = new BasicStroke (1.0f);
 
     private Anchor sourceAnchor;
     private Anchor targetAnchor;
@@ -48,6 +49,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
     private List<Point> controlPointsUm;
     private ConnectionWidgetLayout connectionWidgetLayout;
     private Stroke stroke;
+    private boolean paintControlPoints;
 
     public ConnectionWidget (Scene scene) {
         super (scene);
@@ -59,11 +61,13 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         routingRequired = true;
         connectionWidgetLayout = new ConnectionWidgetLayout (this);
         setLayout (connectionWidgetLayout);
-        stroke = new BasicStroke (1.0f);
+        stroke = STROKE_DEFAULT;
+        paintControlPoints = false;
     }
 
     public void notifyStateChanged (ObjectState state) {
         setForeground (getScene ().getLookFeel ().getLineColor (state));
+        setPaintControlPoints (state.isSelected ()  ||  state.isFocused ());
     }
 
     public Stroke getStroke () {
@@ -72,6 +76,16 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void setStroke (Stroke stroke) {
         this.stroke = stroke;
+        repaint ();
+    }
+
+    public boolean isPaintControlPoints () {
+        return paintControlPoints;
+    }
+
+    public void setPaintControlPoints (boolean paintControlPoints) {
+        this.paintControlPoints = paintControlPoints;
+        repaint ();
     }
 
     public final Anchor getSourceAnchor () {
@@ -357,7 +371,8 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         }
         if (path != null) {
             Stroke previousStroke = gr.getStroke ();
-            gr.setStroke (stroke);
+            gr.setPaint (getForeground ());
+            gr.setStroke (getStroke ());
             gr.draw (path);
             gr.setStroke (previousStroke);
         }
@@ -386,8 +401,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
             gr.setTransform (previousTransform);
         }
 
-        ObjectState state = getState ();
-        if (state.isSelected ()  ||  state.isFocused ()) {
+        if (paintControlPoints) {
             int last = controlPoints.size () - 1;
             for (int index = 0; index <= last; index ++) {
                 Point point = controlPoints.get (index);
