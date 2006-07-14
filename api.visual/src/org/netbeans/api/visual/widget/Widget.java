@@ -442,24 +442,28 @@ public class Widget {
 
         if (! checkClipping  ||  bounds.intersects (gr.getClipBounds ())) {
             Border border = getBorder ();
-            if (opaque) {
-                gr.setPaint (background);
+            Insets insets = border.getInsets ();
+
+            if (isOpaque ()) {
+                gr.setPaint (getBackground ());
                 if (border.isOpaque ()) {
                     gr.fillRect (bounds.x, bounds.y, bounds.width, bounds.height);
                 } else {
-                    Insets insets = border.getInsets ();
                     gr.fillRect (bounds.x + insets.left, bounds.y + insets.top, bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
                 }
             }
 
             border.paint (gr, new Rectangle (bounds));
+
+            if (checkClipping)
+                gr.clipRect (bounds.x + insets.left, bounds.y + insets.top, bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
+
             paintWidget ();
             paintChildren ();
-
         }
 
         if (checkClipping)
-            gr.clip (tempClip);
+            gr.setClip (tempClip);
 
         gr.setTransform(previousTransform);
     }
@@ -469,11 +473,12 @@ public class Widget {
     
     protected void paintChildren () {
         if (checkClipping) {
+            Rectangle clipBounds = scene.getGraphics ().getClipBounds ();
             for (Widget child : children) {
                 Point location = child.getLocation ();
                 Rectangle bounds = child.getBounds ();
                 bounds.translate (location.x, location.y);
-                if (bounds.intersects (scene.getGraphics ().getClipBounds ()))
+                if (bounds.intersects (clipBounds))
                     child.paint ();
             }
         } else

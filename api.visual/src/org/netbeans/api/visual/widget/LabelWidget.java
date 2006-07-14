@@ -38,7 +38,7 @@ public class LabelWidget extends Widget {
     public LabelWidget (Scene scene, String text) {
         super (scene);
         setOpaque (false);
-        setCursor (new Cursor (Cursor.TEXT_CURSOR));
+//        setCursor (new Cursor (Cursor.TEXT_CURSOR));
         setLabel (text);
     }
 
