@@ -430,8 +430,15 @@ public class Widget {
     public final void paint () {
         assert bounds != null : "Scene.validate was not called";
         Graphics2D gr = scene.getGraphics ();
+
         AffineTransform previousTransform = gr.getTransform();
         gr.translate (location.x, location.y);
+
+        Shape tempClip = null;
+        if (checkClipping) {
+            tempClip = gr.getClip ();
+            gr.clip (bounds);
+        }
 
         if (! checkClipping  ||  bounds.intersects (gr.getClipBounds ())) {
             Border border = getBorder ();
@@ -448,7 +455,12 @@ public class Widget {
             border.paint (gr, new Rectangle (bounds));
             paintWidget ();
             paintChildren ();
+
         }
+
+        if (checkClipping)
+            gr.clip (tempClip);
+
         gr.setTransform(previousTransform);
     }
 
@@ -456,13 +468,17 @@ public class Widget {
     }
     
     protected void paintChildren () {
-//        Rectangle clip = gr.getClip ();
-//        gr.clip (bounds);
-        for (Widget child : children) {
-//            if (child.getBounds ().intersects (clipBounds))
-            child.paint ();
-        }
-//        gr.setClip (clip);
+        if (checkClipping) {
+            for (Widget child : children) {
+                Point location = child.getLocation ();
+                Rectangle bounds = child.getBounds ();
+                bounds.translate (location.x, location.y);
+                if (bounds.intersects (scene.getGraphics ().getClipBounds ()))
+                    child.paint ();
+            }
+        } else
+            for (Widget child : children)
+                child.paint ();
     }
 
     public final boolean equals (Object obj) {
