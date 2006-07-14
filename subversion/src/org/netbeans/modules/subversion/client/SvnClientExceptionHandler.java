@@ -195,13 +195,11 @@ class SvnClientExceptionHandler extends ExceptionHandler {
                 try {
                     cert.checkValidity();
                 } catch (CertificateExpiredException ex) {
-                    Diagnostics.println("Cert[" + i + "] - " + ex);                    // NOI18N
-                    cert = null;
-                    continue;
+                    Diagnostics.println("Cert[" + i + "] - " + ex);                    // NOI18N                    
+                    continue; // try to get the next one
                 } catch (CertificateNotYetValidException ex) {
                     Diagnostics.println("Cert[" + i + "] - " + ex);                    // NOI18N
-                    cert = null;
-                    continue;
+                    continue; // try to get the next one
                 }
                 break;
             }
