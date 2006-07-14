@@ -31,6 +31,8 @@ import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -184,13 +186,24 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             ErrorManager.getDefault().notify(ex);
             return false;
         }
-        for (int i = 0; i < serverCerts.length; i++) {            
-            Diagnostics.println("Cert[" + i + "] type - " + serverCerts[i].getType());  // NOI18N
+        for (int i = 0; i < serverCerts.length; i++) {                        
+            Diagnostics.println("Cert[" + i + "] type - " + serverCerts[i].getType());      // NOI18N
             if(serverCerts[i] instanceof X509Certificate) {                                
-                if(cert == null) {
-                    cert = (X509Certificate) serverCerts[i];
+                cert = (X509Certificate) serverCerts[i];                    
+                Diagnostics.println("Cert[" + i + "] - notAfter " + cert.getNotAfter());    // NOI18N
+                Diagnostics.println("Cert[" + i + "] - notBefore " + cert.getNotBefore());  // NOI18N
+                try {
+                    cert.checkValidity();
+                } catch (CertificateExpiredException ex) {
+                    Diagnostics.println("Cert[" + i + "] - " + ex);                    // NOI18N
+                    cert = null;
+                    continue;
+                } catch (CertificateNotYetValidException ex) {
+                    Diagnostics.println("Cert[" + i + "] - " + ex);                    // NOI18N
+                    cert = null;
+                    continue;
                 }
-                //break; 
+                break;
             }
         }
 
