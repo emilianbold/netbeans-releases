@@ -185,7 +185,6 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             return false;
         }
         for (int i = 0; i < serverCerts.length; i++) {            
-            Diagnostics.println("Cert[" + i + "]  - " + serverCerts[i].toString());     // NOI18N
             Diagnostics.println("Cert[" + i + "] type - " + serverCerts[i].getType());  // NOI18N
             if(serverCerts[i] instanceof X509Certificate) {                                
                 if(cert == null) {
