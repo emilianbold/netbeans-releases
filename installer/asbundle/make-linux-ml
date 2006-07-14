@@ -2,5 +2,5 @@
 # $AS_INSTALLER_PATH is location of SJS AS installer
 ant \
 -Dismp.home=$IS_HOME \
--Das.installer=$AS_INSTALLER_PATH/sjsas_pe-9_0-fcs-bin-b43-linux-05_apr_2006.bin \
+-Das.installer=$AS_INSTALLER_PATH/sjsas_pe-9_0-linux.bin \
 build-linux-ml
