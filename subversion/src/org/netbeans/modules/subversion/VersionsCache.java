@@ -60,8 +60,10 @@ public class VersionsCache {
         if (Setup.REVISION_BASE.equals(revision)) {
             String name = base.getName();
             File dir = base.getParentFile();
-            // XXX _svn
             File svnDir = new File(dir, ".svn");  // NOI18N
+            if (!svnDir.isDirectory()) {
+                svnDir = new File(dir, "_svn");  // NOI18N
+            }
             if (svnDir.isDirectory()) {
                 File text_base = new File(svnDir, "text-base"); // NOI18N
                 File pristine = new File(text_base, name + ".svn-base"); // NOI18N

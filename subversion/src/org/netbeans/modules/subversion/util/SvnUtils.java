@@ -85,7 +85,7 @@ public class SvnUtils {
                 continue;
             }
 */
-            Project project =  node.getLookup().lookup(Project.class);
+            Project project = (Project) node.getLookup().lookup(Project.class);
             if (project != null) {
                 addProjectFiles(files, rootFiles, rootFileExclusions, project);
                 continue;
@@ -136,7 +136,7 @@ public class SvnUtils {
      */
     public static boolean isVersionedProject(Node node) {
         Lookup lookup = node.getLookup();
-        Project project = lookup.lookup(Project.class);
+        Project project = (Project) lookup.lookup(Project.class);
         return isVersionedProject(project);
     }
 
@@ -595,7 +595,7 @@ public class SvnUtils {
         return client.getSingleStatus(file);
     }
 
-    /**
+    /*
      * Determines a versioned file's repository path
      * 
      * @param file versioned file
@@ -622,8 +622,8 @@ public class SvnUtils {
         } catch (DataObjectNotFoundException e) {
             // not found, continue
         }
-            return false;
-        }
+        return false;
+    }
 
     /**
      * @return true if the buffer is almost certainly binary.
@@ -752,8 +752,7 @@ public class SvnUtils {
         }
     }         
 
-    static Pattern branchesPattern = Pattern.compile(".*/branches/(.+?)/.*"); // NOI18N
-    static Pattern tagsPattern = Pattern.compile(".*/tags/(.+?)/.*"); // NOI18N
+    static Pattern branchTagPattern = Pattern.compile(".*/(branches|tags)/(.+?)(/.*|$)"); // NOI18N
 
     /**
      * Returns copy branch or tag name if lives
@@ -768,15 +767,9 @@ public class SvnUtils {
 
     public static String getCopy(SVNUrl url) {
         if (url != null) {
-            Matcher m = branchesPattern.matcher(url.toString());
+            Matcher m = branchTagPattern.matcher(url.toString());
             if (m.matches()) {
-                String paren = m.group(1);
-                return paren;
-            }
-
-            m = tagsPattern.matcher(url.toString());
-            if (m.matches()) {
-                String paren = m.group(1);
+                String paren = m.group(2);
                 return paren;
             }
         }

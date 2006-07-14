@@ -23,8 +23,6 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.netbeans.modules.subversion.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 import java.io.*;
 import org.openide.util.*;
@@ -134,13 +132,6 @@ public class DiffStreamSource extends StreamSource {
             failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
             failure.initCause(e);
             throw failure;
-        }
-        FileObject fo = FileUtil.toFileObject(baseFile);
-        if (fo == null && remoteFile != null) {
-            fo = FileUtil.toFileObject(remoteFile);
-        }
-        if (fo != null) {
-            mimeType = fo.getMIMEType();
         }
     }
 }

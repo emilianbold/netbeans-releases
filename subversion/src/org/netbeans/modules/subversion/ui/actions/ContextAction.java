@@ -336,7 +336,6 @@ public abstract class ContextAction extends NodeAction {
             } else {
                 getLogger().logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + runningName + " " + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Canceled")); // NOI18N
             }
-            
         }
     }
 }

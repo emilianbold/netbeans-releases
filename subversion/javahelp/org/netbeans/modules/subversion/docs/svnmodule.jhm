@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+         "http://java.sun.com/products/javahelp/map_2_0.dtd">
+
+<map version="2.0">
+
+    <mapID target="credits" url="credits.html" />
+
+    <mapID target="svn_about" url="svnmodule/svn_about.html" />
+    
+    <!--TODO find out what this is for-->
+    <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
+
+    <!--browser for selecting modules (called from Checkout wizard) - consider removing Help button; make sure not called for other purposes-->	
+    <mapID target="org.netbeans.modules.subversion.ui.browser.Browser" url="pending.html" />
+
+    <!--Checkout wizard, step 1-->	
+    <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep" url="pending.html" />
+
+    <!--Checkout wizard, step 2-->	
+    <mapID target="org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep" url="pending.html" />
+
+
+
+
+
+
+
+</map>
+

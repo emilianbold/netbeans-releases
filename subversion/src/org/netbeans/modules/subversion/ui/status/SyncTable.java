@@ -405,21 +405,30 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     public void valueChanged(ListSelectionEvent e) {
         List<SyncFileNode> selectedNodes = new ArrayList<SyncFileNode>();
         ListSelectionModel selectionModel = table.getSelectionModel();
-        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
+        final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
         if (tc == null) return; // table is no longer in component hierarchy
         
         int min = selectionModel.getMinSelectionIndex();
-        if (min == -1) {
-            tc.setActivatedNodes(new Node[0]);            
-        }
-        int max = selectionModel.getMaxSelectionIndex();
-        for (int i = min; i <= max; i++) {
-            if (selectionModel.isSelectedIndex(i)) {
-                int idx = sorter.modelIndex(i);
-                selectedNodes.add(nodes[idx]);
+        if (min != -1) {
+            int max = selectionModel.getMaxSelectionIndex();
+            for (int i = min; i <= max; i++) {
+                if (selectionModel.isSelectedIndex(i)) {
+                    int idx = sorter.modelIndex(i);
+                    selectedNodes.add(nodes[idx]);
+                }
             }
         }
-        tc.setActivatedNodes(selectedNodes.toArray(new Node[selectedNodes.size()]));
+        // this method may be called outside of AWT if a node fires change events from some other thread, see #79174
+        final Node [] nodes = selectedNodes.toArray(new Node[selectedNodes.size()]);
+        if (SwingUtilities.isEventDispatchThread()) {
+            tc.setActivatedNodes(nodes);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    tc.setActivatedNodes(nodes);
+                }
+            });
+        }
     }
     
     private class SyncTableCellRenderer extends DefaultTableCellRenderer {

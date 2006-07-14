@@ -80,7 +80,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
             getOKButton().setEnabled(false);        
             return;
         }        
-        getOKButton().setEnabled(true);        
+        getOKButton().setEnabled(true);              
     }    
 
     CreateCopyPanel getCreateCopyPanel() {

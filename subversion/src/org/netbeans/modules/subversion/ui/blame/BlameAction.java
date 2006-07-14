@@ -111,16 +111,10 @@ public class BlameAction extends ContextAction {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return;
         }
-        SVNRevision currentRevision = null;
-        try {
-            currentRevision = Subversion.getInstance().getStatusCache().getStatus(file).getEntry(file).getRevision();
-        } catch (Exception e) {
-            // ignore, use default (null) revision
-        }
 
         ISVNAnnotations annotations;
         try {
-            annotations = client.annotate(file, new SVNRevision.Number(1), currentRevision);
+            annotations = client.annotate(file, new SVNRevision.Number(1), SVNRevision.BASE);
         } catch (SVNClientException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return;
@@ -134,7 +128,7 @@ public class BlameAction extends ContextAction {
         // fetch log messages
         ISVNLogMessage [] logs;
         try {
-            logs = client.getLogMessages(file, new SVNRevision.Number(1), currentRevision, false, true);
+            logs = client.getLogMessages(file, new SVNRevision.Number(1), SVNRevision.BASE, false, false);
         } catch (SVNClientException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return;

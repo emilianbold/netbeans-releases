@@ -476,7 +476,10 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         if (file.isFile()) {
             srcDir = file.getParentFile();
         }
-        File admin = new File(srcDir, ".svn"); // NOI18N
+        File admin = new File(srcDir, "_svn"); // NOI18N
+        if (!admin.isDirectory()) {
+            admin = new File(srcDir, ".svn"); // NOI18N
+        }
         return admin;
     }
 

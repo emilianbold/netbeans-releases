@@ -58,6 +58,10 @@ public class FileStatusCache implements ISVNNotifyListener {
      * A special map saying that no file inside the folder is managed.
      */ 
     private static final Map<File, FileInformation> NOT_MANAGED_MAP = new NotManagedMap();
+       
+    private static final String METADATA_PATTERN = File.separatorChar + ".svn" + File.separatorChar; // NOI18N
+    
+    private static final String METADATA_PATTERN_2 = File.separatorChar + "_svn" + File.separatorChar; // NOI18N
         
     private static final int STATUS_MISSING =  
             FileInformation.STATUS_VERSIONED_NEWINREPOSITORY | 
@@ -797,7 +801,7 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     private boolean isInsideSubversionMetadata(File file) {
-        return file.getPath().indexOf(File.separatorChar + ".svn" + File.separatorChar) != -1; // NOI18N
+        return file.getPath().indexOf(METADATA_PATTERN) != -1 || file.getPath().indexOf(METADATA_PATTERN_2) != -1;
     }
 
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {

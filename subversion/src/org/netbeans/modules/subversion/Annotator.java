@@ -404,7 +404,7 @@ public class Annotator {
         }
 
         for (Iterator i = roots.iterator(); i.hasNext();) {
-            File file = (File) i.next();
+            File file = (File) i.next();  
             if (file instanceof FlatFolder) {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
@@ -420,9 +420,9 @@ public class Annotator {
                         allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                     }
                 }
-            } else {            
+            } else {  
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
+                    File mf = (File) j.next();                
                     if (SvnUtils.isParentOrEqual(file, mf)) {
                         FileInformation info = (FileInformation) modifiedFiles.get(mf);
                         int status = info.getStatus();
@@ -434,7 +434,7 @@ public class Annotator {
                         allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                     }
                 }
-            }    
+            }
         }
 
         if (modified && !allExcluded) {

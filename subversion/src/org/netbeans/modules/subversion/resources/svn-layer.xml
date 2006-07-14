@@ -285,10 +285,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-versioning-system-cvss-settings-MetadataAttic.settings" url="../settings/MetadataAttic.xml"/>
             <file name="org-netbeans-modules-versioning-system-cvss-settings-CvsModuleConfig.settings" url="../settings/CvsModuleConfig.xml"/>
         </folder>
-        <folder name="JavaHelp">
-            <file name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml" url="helpset-decl.xml"/>
-            <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-netbeans-modules-versioning-system-cvss-resources-helpset.xml" boolvalue="true"/>
-        </folder>
     </folder>
 -->
 
@@ -297,6 +293,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-settings-HistorySettings.settings" url="../settings/HistorySettings.xml"/>            
 <!--            <file name="org-netbeans-modules-subversion-settings-MetadataAttic.settings" url="../settings/MetadataAttic.xml"/>-->
             <file name="org-netbeans-modules-subversion-settings-SvnModuleConfig.settings" url="../settings/SvnModuleConfig.xml"/>
+        </folder>
+        <folder name="JavaHelp">
+            <file name="org-netbeans-modules-subversion-resources-helpset.xml" url="helpset-decl.xml"/>
+            <attr name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml/org-netbeans-modules-subversion-resources-helpset.xml" boolvalue="true"/>
         </folder>
     </folder>
     
@@ -340,4 +340,83 @@ Microsystems, Inc. All Rights Reserved.
         
     </folder>
 
+    <folder name="OptionsDialog">
+        <folder name="Actions">
+            <folder name="Subversion">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.resources.Bundle"/>
+
+                <file name="OpenVersioning.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance"/>
+                </file>
+                <file name="ShowAllChanges.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance"/>
+                </file>
+                <file name="DiffAllAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-diff-DiffAllAction.instance"/>
+                </file>
+                <file name="UpdateAllAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-UpdateAllAction.instance"/>
+                </file>
+                <file name="CommitAllAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-commit-CommitAllAction.instance"/>
+                </file>
+
+                <file name="CheckoutAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance"/>
+                </file>
+                <file name="ImportAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance"/>
+                </file>
+                <file name="UpdateWithDependenciesAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.instance"/>
+                </file>
+
+                <file name="StatusAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-StatusAction.instance"/>
+                </file>
+                <file name="DiffAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-diff-DiffAction.instance"/>
+                </file>
+                <file name="UpdateAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-UpdateAction.instance"/>
+                </file>
+                <file name="CommitAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-commit-CommitAction.instance"/>
+                </file>
+                <file name="ExcludeFromCommitAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-commit-ExcludeFromCommitAction.instance"/>
+                </file>
+                <file name="ConflictResolvedAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-commit-ConflictResolvedAction.instance"/>
+                </file>
+            
+                <file name="CreateCopyAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-CreateCopyAction.instance"/>
+                </file>
+                <file name="SwitchToAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-SwitchToAction.instance"/>
+                </file>
+                <file name="MergeAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-MergeAction.instance"/>
+                </file>
+                <file name="BlameAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-blame-BlameAction.instance"/>
+                </file>
+                <file name="SearchHistoryAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-history-SearchHistoryAction.instance"/>
+                </file>
+                <file name="RevertModificationsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-RevertModificationsAction.instance"/>
+                </file>
+                <file name="ResolveConflictsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-ResolveConflictsAction.instance"/>
+                </file>
+                <file name="IgnoreAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-ignore-IgnoreAction.instance"/>
+                </file>
+
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>

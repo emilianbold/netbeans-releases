@@ -114,6 +114,7 @@ public class RevertModifications implements PropertyChangeListener {
         getPanel().startRevisionTextField.setEnabled(b);
         getPanel().endRevisionTextField.setEnabled(b);
         getPanel().startSearchButton.setEnabled(b);
+        getPanel().endSearchButton.setEnabled(b);
     }
 
     protected void setOneCommitFieldsEnabled(boolean b) {

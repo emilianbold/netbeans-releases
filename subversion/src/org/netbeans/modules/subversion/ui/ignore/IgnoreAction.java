@@ -72,7 +72,7 @@ public class IgnoreAction extends ContextAction {
         int actionStatus = -1;
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {
-            if (files[i].getName().equals(".svn")) { // NOI18N
+            if (files[i].getName().equals(".svn") || files[i].getName().equals("_svn")) { // NOI18N
                 actionStatus = UNDEFINED;
                 break;
             }
