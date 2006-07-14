@@ -309,7 +309,7 @@
         <property name="splashDuration">0</property>
         <property name="includeLocalizedSplashImages">False</property>
         <property name="wizardIcon"/>
-        <property name="wizardIconSource">$A(IS_HOME)/images/InstallShield Images/icon.gif</property>
+        <property name="wizardIconSource">$A(basedir)/../lib/resources/netbeans.png</property>
         <property name="width">640</property>
         <property name="height">420</property>
         <property name="defaultFont" type="com.installshield.util.FontDef">
@@ -569,7 +569,7 @@
         <property name="splashDuration">0</property>
         <property name="includeLocalizedSplashImages">False</property>
         <property name="wizardIcon"/>
-        <property name="wizardIconSource">$A(IS_HOME)/images/InstallShield Images/icon.gif</property>
+        <property name="wizardIconSource">$A(basedir)/../lib/resources/netbeans.png</property>
         <property name="width">640</property>
         <property name="height">420</property>
         <property name="defaultFont" type="com.installshield.util.FontDef">
