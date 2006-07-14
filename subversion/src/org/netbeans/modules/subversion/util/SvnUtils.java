@@ -37,6 +37,7 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.SvnFileNode;
 
 import java.io.*;
 import java.util.*;
@@ -77,14 +78,12 @@ public class SvnUtils {
         List<File> rootFileExclusions = new ArrayList<File>(5);
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
-/*
-            CvsFileNode cvsNode = (CvsFileNode) node.getLookup().lookup(CvsFileNode.class);
-            if (cvsNode != null) {
-                files.add(cvsNode.getFile());
-                rootFiles.add(cvsNode.getFile());
+            SvnFileNode svnNode = (SvnFileNode) node.getLookup().lookup(SvnFileNode.class);
+            if (svnNode != null) {
+                files.add(svnNode.getFile());
+                rootFiles.add(svnNode.getFile());
                 continue;
             }
-*/
             Project project = (Project) node.getLookup().lookup(Project.class);
             if (project != null) {
                 addProjectFiles(files, rootFiles, rootFileExclusions, project);
