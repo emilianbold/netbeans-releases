@@ -238,7 +238,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         
         File iLib = UserLibrarySupport.getInstallDirLib();
         if (iLib != null && iLib.exists()) {
-            if (iLib.getName().equals("lib") && iLib.getParentFile() != null) {//NOIN
+            if (iLib.getName().equals("lib") && iLib.getParentFile() != null) {//NOI18N
                 iLib = iLib.getParentFile();
             }
             jbDirTextField.setText(iLib.getAbsolutePath());
