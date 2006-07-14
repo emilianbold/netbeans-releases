@@ -91,7 +91,7 @@ public class NonProxyHostsTest extends NbTestCase {
         assertEquals ("Proxy type DIRECT_CONNECTION.", IDESettings.AUTO_DETECT_PROXY, settings.getProxyType ());
         assertEquals ("Connect TO_LOCALHOST DIRECT.", "[DIRECT]", selector.select (TO_LOCALHOST).toString ());
         assertEquals ("Connect " + TO_LOCAL_DOMAIN_1 + " DIRECT.", "[DIRECT]", selector.select (TO_LOCAL_DOMAIN_1).toString ());
-        assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " DIRECT.", "[DIRECT]", selector.select (TO_LOCAL_DOMAIN_2).toString ());
+        assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " DIRECT ignoring settings " + System.getProperty ("http.nonProxyHosts"), "[DIRECT]", selector.select (TO_LOCAL_DOMAIN_2).toString ());
         assertEquals ("Connect TO_EXTERNAL via system.cache.org:777 proxy..", "[HTTP @ system.cache.org:777]", selector.select (TO_EXTERNAL).toString ());
     }
 }
