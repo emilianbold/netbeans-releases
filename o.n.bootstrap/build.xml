@@ -23,7 +23,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="netbeans-extra" depends="release"/>
 
-    <target name="compile" depends="projectized-common.compile">
+    <target name="compile" depends="check-main-status,projectized-common.compile,rebuild-main"/>
+
+    <target name="check-main-status">
+        <uptodate property="main.up.to.date" srcfile="${src.dir}/org/netbeans/Main.java" targetfile="${build.classes.dir}/org/netbeans/Main.class"/>
+    </target>
+
+    <target name="rebuild-main" unless="main.up.to.date">
         <mkdir dir="${build.classes.dir}"/>
         <delete file="${build.classes.dir}/org/netbeans/Main.class"/>
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="1.4" target="1.4" includeantruntime="false">
