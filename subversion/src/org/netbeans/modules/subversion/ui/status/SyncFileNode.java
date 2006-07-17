@@ -51,7 +51,7 @@ public class SyncFileNode extends AbstractNode {
     static final String COLUMN_NAME_NAME        = "name"; // NOI18N
     static final String COLUMN_NAME_PATH        = "path"; // NOI18N
     static final String COLUMN_NAME_STATUS      = "status"; // NOI18N
-    static final String COLUMN_NAME_STICKY      = "sticky"; // NOI18N
+    static final String COLUMN_NAME_BRANCH      = "branch"; // NOI18N
     
     private String htmlDisplayName;
 
@@ -122,7 +122,7 @@ public class SyncFileNode extends AbstractNode {
         ps.put(new NameProperty());
         ps.put(new PathProperty());
         ps.put(new StatusProperty());
-        ps.put(new StickyProperty());
+        ps.put(new BranchProperty());
         
         sheet.put(ps);
         setSheet(sheet);        
@@ -163,14 +163,15 @@ public class SyncFileNode extends AbstractNode {
         }
     }
     
-    private class StickyProperty extends SyncFileProperty {
+    private class BranchProperty extends SyncFileProperty {
 
-        public StickyProperty() {
-            super(COLUMN_NAME_STICKY, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2001"), NbBundle.getMessage(SyncFileNode.class, "BK2002")); // NOI18N
+        public BranchProperty() {
+            super(COLUMN_NAME_BRANCH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2001"), NbBundle.getMessage(SyncFileNode.class, "BK2002")); // NOI18N
         }
 
         public Object getValue() {
-            return "";//getSticky(); // NOI18N
+            String copyName = SvnUtils.getCopy(node.getFile());
+            return copyName == null ? "" : copyName;
         }
     }
     

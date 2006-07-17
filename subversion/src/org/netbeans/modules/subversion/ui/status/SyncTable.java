@@ -84,9 +84,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
     {
         ResourceBundle loc = NbBundle.getBundle(SyncTable.class);
-        columnLabels.put(SyncFileNode.COLUMN_NAME_STICKY, new String [] {
-                                          loc.getString("CTL_VersioningView_Column_Sticky_Title"), 
-                                          loc.getString("CTL_VersioningView_Column_Sticky_Desc")});
+        columnLabels.put(SyncFileNode.COLUMN_NAME_BRANCH, new String [] {
+                                          loc.getString("CTL_VersioningView_Column_Branch_Title"), 
+                                          loc.getString("CTL_VersioningView_Column_Branch_Desc")});
         columnLabels.put(SyncFileNode.COLUMN_NAME_NAME, new String [] { 
                                           loc.getString("CTL_VersioningView_Column_File_Title"), 
                                           loc.getString("CTL_VersioningView_Column_File_Desc")});

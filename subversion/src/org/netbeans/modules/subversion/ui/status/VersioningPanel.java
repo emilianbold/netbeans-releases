@@ -31,6 +31,7 @@ import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.settings.SvnModuleConfig;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.NoContentPanel;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.*;
@@ -246,13 +247,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
             final String branchTitle;
             if (nodes.length > 0) {
                 boolean stickyCommon = true;
-                String currentSticky = "";//nodes[0].getSticky(); // NOI18N
+                String currentSticky = SvnUtils.getCopy(nodes[0].getFile());
                 for (int i = 1; i < nodes.length; i++) {
                     if (Thread.interrupted()) {
                         // TODO set model that displays that fact to user
                         return;
                     }
-                    String sticky = "";//nodes[i].getSticky(); // NOI18N
+                    String sticky = SvnUtils.getCopy(nodes[i].getFile());
                     if (sticky != currentSticky && (sticky == null || currentSticky == null || !sticky.equals(currentSticky))) {
                         stickyCommon = false;
                         break;
@@ -260,9 +261,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
                 }
                 if (stickyCommon) {
                     tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-                    branchTitle = currentSticky.length() == 0 ? null : NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Single", currentSticky); // NOI18N
+                    branchTitle = currentSticky == null ? null : NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Single", currentSticky); // NOI18N
                 } else {
-                    tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STICKY, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
+                    tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_BRANCH, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
                     branchTitle = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle_Multi"); // NOI18N
                 }
             } else {
@@ -313,7 +314,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      */ 
     private void onCommitAction() {
         LifecycleManager.getDefault().saveAll();            
-        CommitAction.commit(context);
+        CommitAction.commit(parentTopComponent.getContentTitle(), context);
     }
     
     /**

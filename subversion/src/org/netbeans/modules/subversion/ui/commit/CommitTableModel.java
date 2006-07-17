@@ -43,6 +43,7 @@ class CommitTableModel extends AbstractTableModel {
     static final String COLUMN_NAME_STATUS  = "status"; // NOI18N
     static final String COLUMN_NAME_ACTION  = "action"; // NOI18N
     static final String COLUMN_NAME_PATH    = "path"; // NOI18N
+    static final String COLUMN_NAME_BRANCH  = "branch"; // NOI18N
 
     private class RootFile {
         String repositoryPath;
@@ -61,6 +62,9 @@ class CommitTableModel extends AbstractTableModel {
         columnLabels.put(COLUMN_NAME_NAME, new String [] {
                                           loc.getString("CTL_CommitTable_Column_File"), 
                                           loc.getString("CTL_CommitTable_Column_File")});
+        columnLabels.put(COLUMN_NAME_BRANCH, new String [] { 
+                                          loc.getString("CTL_CommitTable_Column_Branch"), 
+                                          loc.getString("CTL_CommitTable_Column_Branch")});
         columnLabels.put(COLUMN_NAME_STATUS, new String [] {
                                           loc.getString("CTL_CommitTable_Column_Status"), 
                                           loc.getString("CTL_CommitTable_Column_Status")});
@@ -139,6 +143,9 @@ class CommitTableModel extends AbstractTableModel {
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
+        } else if (col.equals(COLUMN_NAME_BRANCH)) {
+            String branch = SvnUtils.getCopy(nodes[rowIndex].getFile());
+            return branch == null ? "" : branch; // NOI18N
         } else if (col.equals(COLUMN_NAME_STATUS)) {
             node = nodes[rowIndex];
             FileInformation finfo =  node.getInformation();

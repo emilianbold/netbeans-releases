@@ -36,10 +36,15 @@ import java.awt.*;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+import java.text.MessageFormat;
+
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -62,7 +67,7 @@ public class CommitAction extends ContextAction {
     }
 
     /** Run commit action. Shows UI */
-    public static void commit(final Context ctx) {
+    public static void commit(String contentTitle, final Context ctx) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] roots = ctx.getFiles();
         if (roots.length == 0) {
@@ -92,8 +97,9 @@ public class CommitAction extends ContextAction {
         }       
 
         // show commit dialog
-        CommitPanel panel = new CommitPanel();
-        CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS);
+        final CommitPanel panel = new CommitPanel();
+        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS);
+        panel.setCommitTable(data);
         SvnFileNode[] nodes;
         ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
 
@@ -109,11 +115,19 @@ public class CommitAction extends ContextAction {
         panel.filesPanel.setLayout(new BorderLayout());
         panel.filesPanel.add(component, BorderLayout.CENTER);
 
-        DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Title")); // NOI18N
+        DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle)); // NOI18N
         dd.setModal(true);
-        JButton commitButton = new JButton(org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit")); // NOI18N
+        final JButton commitButton = new JButton(org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit")); // NOI18N
         dd.setOptions(new Object[] {commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel")}); // NOI18N
         dd.setHelpCtx(new HelpCtx(CommitAction.class));
+        panel.addVersioningListener(new VersioningListener() {
+            public void versioningEvent(VersioningEvent event) {
+                refreshCommitDialog(panel, data, commitButton);
+            }
+        });
+
+        panel.putClientProperty("contentTitle", contentTitle);  // NOI18N
+        panel.putClientProperty("DialogDescriptor", dd); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.pack();
         dialog.setVisible(true);
@@ -137,9 +151,69 @@ public class CommitAction extends ContextAction {
         
     }
     
+    /**
+     * User changed a commit action.
+     * 
+     * @param panel
+     * @param commit
+     */ 
+    private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit) {
+        ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
+        Map<SvnFileNode, CommitOptions> files = table.getCommitFiles();
+        Set stickyTags = new HashSet();
+        boolean conflicts = false;
+        
+        for (SvnFileNode fileNode : files.keySet()) {
+            CommitOptions options = files.get(fileNode);
+            if (options == CommitOptions.EXCLUDE) continue;
+            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
+            int status = fileNode.getInformation().getStatus();
+            if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                commit.setEnabled(false);
+                String msg = (status == FileInformation.STATUS_VERSIONED_CONFLICT) ? 
+                        loc.getString("MSG_CommitForm_ErrorConflicts") :
+                        loc.getString("MSG_CommitForm_ErrorRemoteChanges");
+                panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
+                conflicts = true;
+            }
+            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
+        }
+        
+        if (stickyTags.size() > 1) {
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS, 
+                                                CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
+        } else {
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS, 
+                                                CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
+        }
+        
+        String contentTitle = (String) panel.getClientProperty("contentTitle"); // NOI18N
+        DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
+        String errorLabel;
+        if (stickyTags.size() <= 1) {
+            String stickyTag = stickyTags.size() == 0 ? null : (String) stickyTags.iterator().next(); 
+            if (stickyTag == null) {
+                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }));
+                errorLabel = ""; // NOI18N
+            } else {
+                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), new Object [] { contentTitle, stickyTag }));
+                String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), new Object [] { stickyTag });
+                errorLabel = "<html><font color=\"#002080\">" + msg + "</font></html>"; // NOI18N
+            }
+        } else {
+            dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), new Object [] { contentTitle }));
+            String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches");
+            errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N
+        }
+        if (!conflicts) {
+            panel.setErrorLabel(errorLabel);
+            commit.setEnabled(true);
+        }
+    }
+    
     protected void performContextAction(Node[] nodes) {
         final Context ctx = getContext(nodes);
-        commit(ctx);
+        commit(getContextDisplayName(nodes), ctx);
     }
 
     public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support) {

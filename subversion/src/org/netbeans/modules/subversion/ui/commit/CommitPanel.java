@@ -19,17 +19,64 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import org.netbeans.modules.subversion.SvnFileNode;
+import org.netbeans.modules.subversion.settings.SvnModuleConfig;
+import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.netbeans.modules.versioning.util.VersioningListener;
+
+import javax.swing.event.TableModelListener;
+import javax.swing.event.TableModelEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+
 /**
  *
  * @author  pk97937
  */
-public class CommitPanel extends javax.swing.JPanel {
+public class CommitPanel extends javax.swing.JPanel implements PropertyChangeListener, TableModelListener {
 
+    static final Object EVENT_SETTINGS_CHANGED = new Object();
+
+    private CommitTable commitTable;
+    
     /** Creates new form CommitPanel */
     public CommitPanel() {
         initComponents();
     }
 
+    void setCommitTable(CommitTable commitTable) {
+        this.commitTable = commitTable;
+    }
+    
+    void setErrorLabel(String htmlErrorLabel) {
+        jLabel2.setText(htmlErrorLabel);
+    }    
+
+    public void addNotify() {
+        super.addNotify();
+        SvnModuleConfig.getDefault().addPropertyChangeListener(this);
+        commitTable.getTableModel().addTableModelListener(this);
+        listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+        messageTextArea.selectAll();
+    }
+
+    public void removeNotify() {
+        commitTable.getTableModel().removeTableModelListener(this);
+        SvnModuleConfig.getDefault().removePropertyChangeListener(this);
+        super.removeNotify();
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (SvnModuleConfig.PROP_COMMIT_EXCLUSIONS.equals(evt.getPropertyName())) {
+            commitTable.dataChanged();
+            listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+        }
+    }
+
+    public void tableChanged(TableModelEvent e) {
+        listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -40,7 +87,7 @@ public class CommitPanel extends javax.swing.JPanel {
 
         setMinimumSize(new java.awt.Dimension(400, 300));
         setPreferredSize(new java.awt.Dimension(650, 400));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_Message")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_Message"));
 
         messageTextArea.setColumns(30);
         messageTextArea.setLineWrap(true);
@@ -50,7 +97,7 @@ public class CommitPanel extends javax.swing.JPanel {
         messageTextArea.setMinimumSize(new java.awt.Dimension(100, 18));
         jScrollPane1.setViewportView(messageTextArea);
 
-        org.openide.awt.Mnemonics.setLocalizedText(filesLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_FilesToCommit")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filesLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_FilesToCommit"));
 
         filesPanel.setPreferredSize(new java.awt.Dimension(240, 108));
         org.jdesktop.layout.GroupLayout filesPanelLayout = new org.jdesktop.layout.GroupLayout(filesPanel);
@@ -61,7 +108,7 @@ public class CommitPanel extends javax.swing.JPanel {
         );
         filesPanelLayout.setVerticalGroup(
             filesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 211, Short.MAX_VALUE)
+            .add(0, 202, Short.MAX_VALUE)
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -74,7 +121,8 @@ public class CommitPanel extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, filesLabel))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, filesLabel)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -87,16 +135,27 @@ public class CommitPanel extends javax.swing.JPanel {
                 .add(15, 15, 15)
                 .add(filesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel2)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
+    ListenersSupport listenerSupport = new ListenersSupport(this);
+    public void addVersioningListener(VersioningListener listener) {
+        listenerSupport.addListener(listener);
+    }
+
+    public void removeVersioningListener(VersioningListener listener) {
+        listenerSupport.removeListener(listener);
+    }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JLabel filesLabel = new javax.swing.JLabel();
     final javax.swing.JPanel filesPanel = new javax.swing.JPanel();
     final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
+    final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
     final javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
     final javax.swing.JTextArea messageTextArea = new javax.swing.JTextArea();
     // End of variables declaration//GEN-END:variables
