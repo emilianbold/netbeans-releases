@@ -392,4 +392,10 @@ public class SvnWcParserTest extends TestCase {
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
     }
+
+    public void testGetSingleStatusBinaryConflict() throws Exception {
+        File myFile = new File(dataRootDir + "/SvnWcParser/file-binary-conflicts/bin/image.bmp");
+        ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
+        assertEquals(SVNStatusKind.CONFLICTED, parsedStatus.getTextStatus());
+    }
 }

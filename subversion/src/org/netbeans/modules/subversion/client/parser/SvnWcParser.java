@@ -122,16 +122,19 @@ public class SvnWcParser {
                 File conflictWorking = null;
                 value = wcDetails.getValue("conflict-wrk");  // NOI18N
                 if (value != null && ((String)value).length() > 0) {
-                    finalTextStatus = SVNStatusKind.CONFLICTED.toString();
                     conflictWorking = new File(file.getParentFile(), value);
-                    value = wcDetails.getValue("conflict-new");  // NOI18N
-                    if (value != null && ((String)value).length() > 0) {
-                        conflictNew = new File(file.getParentFile(), value);
-                    }
-                    value = wcDetails.getValue("conflict-old");  // NOI18N
-                    if (value != null && ((String)value).length() > 0) {
-                        conflictOld = new File(file.getParentFile(), value);
-                    }
+                }
+                
+                value = wcDetails.getValue("conflict-new");  // NOI18N
+                if (value != null && ((String)value).length() > 0) {
+                    conflictNew = new File(file.getParentFile(), value);
+                }
+                value = wcDetails.getValue("conflict-old");  // NOI18N
+                if (value != null && ((String)value).length() > 0) {
+                    conflictOld = new File(file.getParentFile(), value);
+                }
+                if ((conflictNew != null) || (conflictOld != null)) {
+                    finalTextStatus = SVNStatusKind.CONFLICTED.toString();                
                 }
 
                 Date lockCreationDate = wcDetails.getDateValue("lock-creation-date");  // NOI18N
