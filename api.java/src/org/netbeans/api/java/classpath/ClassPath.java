@@ -182,6 +182,8 @@ public final class ClassPath {
     private PropertyChangeListener pListener;
     private RootsListener rootsListener;
     private List<ClassPath.Entry> entriesCache;
+    private long invalidEntries;    //Lamport ordering of events
+    private long invalidRoots;      //Lamport ordering of events
 
     /**
      * Retrieves valid roots of ClassPath, in the proper order.
@@ -192,31 +194,42 @@ public final class ClassPath {
      * null.
      */
     public FileObject[]  getRoots() {
+        long current;
         synchronized (this) {
             if (rootsCache != null && rootsListener != null) {
                 return this.rootsCache;
             }
+            current = this.invalidRoots;
         }
         List<ClassPath.Entry> entries = this.entries();
         FileObject[] ret;
         synchronized (this) {
-            if (rootsCache == null || rootsListener == null) {
-                List<FileObject> l = new ArrayList<FileObject> ();
-                for (Entry entry : entries) {
-                    RootsListener rootsListener = this.getRootsListener();
-                    if (rootsListener != null) {
-                        rootsListener.addRoot (entry.getURL());
-                    }
-                    FileObject fo = entry.getRoot();
-                    if (fo != null)
-                        l.add (fo);
+            if (this.invalidRoots == current) {                            
+                if (rootsCache == null || rootsListener == null) {
+                    this.rootsCache = createRoots (entries);
                 }
-                this.rootsCache = l.toArray (new FileObject[l.size()]);
+                ret = this.rootsCache;
             }
-            ret = this.rootsCache;
+            else {
+                ret = createRoots (entries);
+            }
         }
         assert ret != null;
         return ret;
+    }
+    
+    private FileObject[] createRoots (final List<ClassPath.Entry> entries) {
+        List<FileObject> l = new ArrayList<FileObject> ();
+        for (Entry entry : entries) {
+            RootsListener rootsListener = this.getRootsListener();
+            if (rootsListener != null) {
+                rootsListener.addRoot (entry.getURL());
+            }
+            FileObject fo = entry.getRoot();
+            if (fo != null)
+                l.add (fo);
+        }
+        return l.toArray (new FileObject[l.size()]);
     }
 
     /**
@@ -227,33 +240,47 @@ public final class ClassPath {
      * @return list of definition entries (Entry instances)
      */
     public  List<ClassPath.Entry> entries() {
+        long current;
         synchronized (this) {
             if (this.entriesCache != null) {
                 return this.entriesCache;
             }
+            current = this.invalidEntries;
         }
         List<? extends PathResourceImplementation> resources = impl.getResources();
+        List<ClassPath.Entry> result;
         synchronized (this) {
-            if (this.entriesCache == null) {
-                //The ClassPathImplementation.getResources () should never return
-                // null but it was not explicitly stated in the javadoc
-                if (resources == null) {
-                    this.entriesCache = Collections.<ClassPath.Entry>emptyList();
+            if (this.invalidEntries == current) {
+                if (this.entriesCache == null) {                    
+                    this.entriesCache = createEntries (resources);
                 }
-                else {
-                    List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
-                    for (PathResourceImplementation pr : resources) {
-                        URL[] roots = pr.getRoots();
-                        for (URL root : roots) {
-                            Entry e = new Entry (root);
-                            cache.add (e);
-                        }
-                    }
-                    this.entriesCache = Collections.unmodifiableList (cache);
+                result = this.entriesCache;
+            }
+            else {                
+                result = createEntries (resources);
+            }         
+        }
+        assert result != null;
+        return result;
+    }
+    
+    private List<ClassPath.Entry> createEntries (final List<? extends PathResourceImplementation> resources) {
+        //The ClassPathImplementation.getResources () should never return
+        // null but it was not explicitly stated in the javadoc
+        if (resources == null) {
+            return Collections.<ClassPath.Entry>emptyList();
+        }
+        else {
+            List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
+            for (PathResourceImplementation pr : resources) {
+                URL[] roots = pr.getRoots();
+                for (URL root : roots) {
+                    Entry e = new Entry (root);
+                    cache.add (e);
                 }
             }
+            return Collections.unmodifiableList(cache);
         }
-        return this.entriesCache;
     }
 
     private ClassPath (ClassPathImplementation impl) {
@@ -694,6 +721,8 @@ public final class ClassPath {
                     }
                     ClassPath.this.entriesCache = null;
                     ClassPath.this.rootsCache = null;
+                    ClassPath.this.invalidEntries++;
+                    ClassPath.this.invalidRoots++;
                 }
                 ClassPath.this.firePropertyChange (PROP_ENTRIES,null,null);
                 ClassPath.this.firePropertyChange (PROP_ROOTS,null,null);
@@ -781,6 +810,7 @@ public final class ClassPath {
                 if (cp != null) {
                     synchronized (cp) {
                         cp.rootsCache = null;
+                        cp.invalidRoots++;
                         this.removeAllRoots();  //No need to listen
                     }
                     cp.firePropertyChange(PROP_ROOTS,null,null);
@@ -827,6 +857,7 @@ public final class ClassPath {
                     String rootPath = (String) it.next ();
                     if (rootPath.startsWith (path)) {
                         cp.rootsCache = null;
+                        cp.invalidRoots++;
                         this.removeAllRoots();  //No need to listen
                         fire = true;
                         break;
