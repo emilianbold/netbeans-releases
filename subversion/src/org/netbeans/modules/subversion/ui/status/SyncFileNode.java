@@ -32,6 +32,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
+import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.util.SvnUtils;
 
 import javax.swing.*;
@@ -84,14 +86,12 @@ public class SyncFileNode extends AbstractNode {
         return node.getName();
     }
 
-/*
     public Action getPreferredAction() {
         if (node.getInformation().getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
             return SystemAction.get(ResolveConflictsAction.class);
         }
         return SystemAction.get(DiffAction.class);
     }
-*/
 
     /**
      * Provide cookies to actions.

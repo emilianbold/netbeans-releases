@@ -393,12 +393,10 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             if (row == -1) return;
             row = sorter.modelIndex(row);
             Action action = nodes[row].getPreferredAction();
-/*
             if (action == null || !action.isEnabled()) action = new OpenInEditorAction();
             if (action.isEnabled()) {
                 action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
             }
-*/
         }
     }
 
