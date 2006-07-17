@@ -23,9 +23,7 @@ import org.netbeans.api.visual.util.GeomUtil;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -35,6 +33,8 @@ import java.util.List;
 // TODO - Should Widget be an abstract class?
 public class Widget {
 
+    private static final HashMap<String, WidgetAction.Chain> EMPTY_HASH_MAP = new HashMap<String, WidgetAction.Chain> (0);
+
     private Scene scene;
     private Widget parentWidget;
 
@@ -42,6 +42,7 @@ public class Widget {
     private List<Widget> childrenUm;
 
     private WidgetAction.Chain actionsChain;
+    private HashMap<String, WidgetAction.Chain> toolsActions = EMPTY_HASH_MAP;
 
     private HashMap<String, Object> properties;
     private ArrayList<Widget.Dependency> dependencies;
@@ -149,6 +150,23 @@ public class Widget {
 
     public final WidgetAction.Chain getActions () {
         return actionsChain;
+    }
+
+    public final WidgetAction.Chain getActions (String tool) {
+        return tool == null ? actionsChain : toolsActions.get (tool);
+    }
+
+    public final WidgetAction.Chain createActions (String tool) {
+        if (tool == null)
+            return actionsChain;
+        if (toolsActions == EMPTY_HASH_MAP)
+            toolsActions = new HashMap<String, WidgetAction.Chain> ();
+        WidgetAction.Chain chain = toolsActions.get (tool);
+        if (chain == null) {
+            chain = new WidgetAction.Chain ();
+            toolsActions.put (tool, chain);
+        }
+        return chain;
     }
 
     public final Object getProperty (String name) {
@@ -470,7 +488,7 @@ public class Widget {
 
     protected void paintWidget () {
     }
-    
+
     protected void paintChildren () {
         if (checkClipping) {
             Rectangle clipBounds = scene.getGraphics ().getClipBounds ();
@@ -491,9 +509,9 @@ public class Widget {
     }
 
     public interface Dependency {
-        
+
         public void revalidateDependency ();
-        
+
     }
 
 }

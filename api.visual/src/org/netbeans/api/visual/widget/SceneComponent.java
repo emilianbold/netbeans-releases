@@ -177,6 +177,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         event.setPoint (scene.convertViewToScene (event.getPoint ()));
 
         WidgetAction.State state;
+        String tool = scene.getActiveTool ();
 
         if (lockedAction != null) {
             Point location = lockedWidget.convertSceneToLocal (new Point ());
@@ -185,9 +186,9 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
             event.translatePoint (- location.x, - location.y);
 
             if (! state.isConsumed ())
-                state = processLocationOperator (operator, scene, event);
+                state = processLocationOperator (operator, tool, scene, event);
         } else
-            state = processLocationOperator (operator, scene, event);
+            state = processLocationOperator (operator, tool, scene, event);
 
         lockedWidget = state.getLockedWidget ();
         lockedAction = state.getLockedAction ();
@@ -199,7 +200,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         return state;
     }
 
-    private WidgetAction.State processLocationOperator (Operator operator, Widget widget, WidgetAction.WidgetLocationEvent event) {
+    private WidgetAction.State processLocationOperator (Operator operator, String tool, Widget widget, WidgetAction.WidgetLocationEvent event) {
         Point location = widget.getLocation ();
         event.translatePoint (- location.x, - location.y);
 
@@ -211,15 +212,18 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
             for (int i = childrenArray.length - 1; i >= 0; i --) {
                 Widget child = childrenArray[i];
-                state = processLocationOperator (operator, child, event);
+                state = processLocationOperator (operator, tool, child, event);
                 if (state.isConsumed ())
                     return state;
             }
 
             if (widget.isHitAt (event.getPoint ())) {
-                state = operator.operate (widget.getActions (), widget, event);
-                if (state.isConsumed ())
-                    return state;
+                WidgetAction.Chain actions = widget.getActions (tool);
+                if (actions != null) {
+                    state = operator.operate (actions, widget, event);
+                    if (state.isConsumed ())
+                        return state;
+                }
             }
         }
 
@@ -229,13 +233,14 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
     private WidgetAction.State processOperator (Operator operator, WidgetAction.WidgetEvent event) {
         WidgetAction.State state;
+        String tool = scene.getActiveTool ();
 
         if (lockedAction != null) {
             state = operator.operate (lockedAction, lockedWidget, event);
             if (! state.isConsumed ())
-                state = processOperator (operator, scene, event);
+                state = processOperator (operator, tool, scene, event);
         } else
-            state = processOperator (operator, scene, event);
+            state = processOperator (operator, tool, scene, event);
 
         lockedWidget = state.getLockedWidget ();
         lockedAction = state.getLockedAction ();
@@ -247,7 +252,7 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         return state;
     }
 
-    private WidgetAction.State processOperator (Operator operator, Widget widget, WidgetAction.WidgetEvent event) {
+    private WidgetAction.State processOperator (Operator operator, String tool, Widget widget, WidgetAction.WidgetEvent event) {
         WidgetAction.State state;
 
         List<Widget> children = widget.getChildren ();
@@ -255,14 +260,17 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
         for (int i = childrenArray.length - 1; i >= 0; i --) {
             Widget child = childrenArray[i];
-            state = processOperator (operator, child, event);
+            state = processOperator (operator, tool, child, event);
             if (state.isConsumed ())
                 return state;
         }
 
-        state = operator.operate (widget.getActions (), widget, event);
-        if (state.isConsumed ())
-            return state;
+        WidgetAction.Chain actions = widget.getActions (tool);
+        if (actions != null) {
+            state = operator.operate (actions, widget, event);
+            if (state.isConsumed ())
+                return state;
+        }
 
         return WidgetAction.State.REJECTED;
     }

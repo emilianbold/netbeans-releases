@@ -42,6 +42,7 @@ public class Scene extends Widget {
     private Font defaultFont;
     private HashMap<Widget,Rectangle> repaints = new HashMap<Widget, Rectangle> ();
     private LookFeel lookFeel = new DefaultLookFeel ();
+    private String activeTool;
 
     public Scene () {
         super (null);
@@ -243,6 +244,14 @@ public class Scene extends Widget {
 
     public void setLookFeel (LookFeel lookFeel) {
         this.lookFeel = lookFeel;
+    }
+
+    public String getActiveTool () {
+        return activeTool;
+    }
+
+    public void setActiveTool (String activeTool) {
+        this.activeTool = activeTool;
     }
 
     public final Point convertSceneToView (Point sceneLocation) {
