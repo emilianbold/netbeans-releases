@@ -86,7 +86,7 @@ public class NonProxyHostsTest extends NbTestCase {
     
     public void testSystemProxySettings () {
         settings.setProxyType (IDESettings.AUTO_DETECT_PROXY);
-        log ("Value of System.getProperty (\"http.nonProxyHosts\"): ", System.getProperty ("http.nonProxyHosts"));
+        log ("Value of System.getProperty (\"http.nonProxyHosts\"): " + System.getProperty ("http.nonProxyHosts"));
         assertTrue ("*.other.org is one of non-proxy hosts", System.getProperty ("http.nonProxyHosts").indexOf ("*.other.org") != -1);
         assertEquals ("Proxy type DIRECT_CONNECTION.", IDESettings.AUTO_DETECT_PROXY, settings.getProxyType ());
         assertEquals ("Connect TO_LOCALHOST DIRECT.", "[DIRECT]", selector.select (TO_LOCALHOST).toString ());
