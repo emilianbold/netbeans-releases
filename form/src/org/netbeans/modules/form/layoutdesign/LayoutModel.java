@@ -164,6 +164,31 @@ public class LayoutModel implements LayoutConstants {
         registerComponentImpl(comp);
     }
 
+    void replaceComponent(LayoutComponent comp, LayoutComponent substComp) {
+        assert substComp.getParent() == null;
+        for (int i=0; i<DIM_COUNT; i++) {
+            LayoutInterval interval = comp.getLayoutInterval(i);
+            LayoutInterval substInt = substComp.getLayoutInterval(i);
+            assert substInt.getParent() == null;
+            setIntervalAlignment(substInt, interval.getRawAlignment());
+            setIntervalSize(substInt, interval.getMinimumSize(),
+                    interval.getPreferredSize(), interval.getMaximumSize());
+            LayoutInterval parentInt = interval.getParent();
+            if (parentInt != null) {
+                int index = removeInterval(interval);
+                addInterval(substInt, parentInt, index);
+            }
+        }
+
+        LayoutComponent parent = comp.getParent();
+        if (parent != null) {
+            int index = removeComponentImpl(comp);
+            addComponentImpl(substComp, parent, index);
+        }
+        unregisterComponentImpl(comp);
+        registerComponentImpl(substComp);
+    }
+
     Iterator getAllComponents() {
         return idToComponents.values().iterator();
     }
@@ -223,20 +248,22 @@ public class LayoutModel implements LayoutConstants {
         }
     }
 
-    void removeComponentImpl(LayoutComponent component) {
+    int removeComponentImpl(LayoutComponent component) {
         int index;
         LayoutComponent parent = component.getParent();
         if (parent != null) {
             index = parent.remove(component);
         } else {
-            return; // the removal operation is "noop"
+            return -1; // the removal operation is "noop"
         }
 
         // record undo/redo and fire event
         LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_REMOVED);
         ev.setComponent(component, parent, index);
         addChange(ev);
-        fireEvent(ev);        
+        fireEvent(ev);
+
+        return index;
     }
 
     void removeComponentAndIntervals(LayoutComponent comp, boolean fromModel) {

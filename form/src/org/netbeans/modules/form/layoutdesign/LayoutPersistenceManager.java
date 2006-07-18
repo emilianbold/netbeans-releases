@@ -493,7 +493,7 @@ class LayoutPersistenceManager implements LayoutConstants {
                     if (!subInterval.isComponent()) {
                         subInterval.setAlignment(groupAlign == BASELINE ? LEADING : DEFAULT);
                         layoutModel.setCorrected();
-                        System.err.println("WARNING: Invalid use of BASELINE [1], corrected automatically"); // NOIO18N
+                        System.err.println("WARNING: Invalid use of BASELINE [1], corrected automatically"); // NOI18N
                     }
                     else baselineCount++;
                 }
@@ -517,18 +517,18 @@ class LayoutPersistenceManager implements LayoutConstants {
                     }
                     group.add(subGroup, -1);
                     layoutModel.setCorrected();
-                    System.err.println("WARNING: Invalid use of BASELINE [2], corrected automatically"); // NOIO18N
+                    System.err.println("WARNING: Invalid use of BASELINE [2], corrected automatically"); // NOI18N
                 }
                 else if (groupAlign != BASELINE) {
                     group.setGroupAlignment(BASELINE);
                     layoutModel.setCorrected();
-                    System.err.println("WARNING: Invalid use of BASELINE [3], corrected automatically"); // NOIO18N
+                    System.err.println("WARNING: Invalid use of BASELINE [3], corrected automatically"); // NOI18N
                 }
             }
             else if (groupAlign == BASELINE && group.getSubIntervalCount() > 0) {
                 group.setGroupAlignment(LEADING);
                 layoutModel.setCorrected();
-                System.err.println("WARNING: Invalid use of BASELINE [4], corrected automatically"); // NOIO18N
+                System.err.println("WARNING: Invalid use of BASELINE [4], corrected automatically"); // NOI18N
             }
         }
     }
@@ -572,15 +572,24 @@ class LayoutPersistenceManager implements LayoutConstants {
             && idNameMap.size() == root.getSubComponentCount())
         {   // we have one unknown name in each dimension, let's infer it from the idNameMap
             for (Map.Entry<String, String> e : idNameMap.entrySet()) { // name -> id
-                if (layoutModel.getLayoutComponent(e.getValue()) == null) {
-                    LayoutComponent comp = layoutModel.getLayoutComponent(TEMPORARY_ID);
-                    layoutModel.changeComponentId(comp, e.getValue());
-                    layoutModel.setCorrected();
-                    System.err.println("WARNING: Invalid component name in layout: "+missingNameH // NOI18N
-                            +", corrected automatically to: "+e.getKey()); // NOI18N
-                    resetMissingName();
-                    return;
+                String id = e.getValue();
+                LayoutComponent comp = layoutModel.getLayoutComponent(id);
+                if (comp == null) { // this is the missing id, set it to the temporary component
+                    comp = layoutModel.getLayoutComponent(TEMPORARY_ID);
+                    layoutModel.changeComponentId(comp, id);
                 }
+                else if (comp.getParent() == null) { // already loaded as a container
+                    // replace the temporary component
+                    LayoutComponent tempComp = layoutModel.getLayoutComponent(TEMPORARY_ID);
+                    layoutModel.replaceComponent(tempComp, comp);
+                }
+                else continue;
+
+                layoutModel.setCorrected();
+                System.err.println("WARNING: Invalid component name in layout: "+missingNameH // NOI18N
+                            +", corrected automatically to: "+e.getKey()); // NOI18N
+                resetMissingName();
+                return;
             }
         }
 
