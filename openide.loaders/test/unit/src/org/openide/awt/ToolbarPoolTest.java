@@ -22,9 +22,11 @@ package org.openide.awt;
 import java.awt.Component;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -39,12 +41,16 @@ import org.openide.loaders.InstanceDataObject;
  *
  * @author Jaroslav Tulach
  */
-public class ToolbarPoolTest extends TestCase {
+public class ToolbarPoolTest extends NbTestCase {
     FileObject toolbars;
     DataFolder toolbarsFolder;
     
     public ToolbarPoolTest (String testName) {
         super (testName);
+    }
+
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     protected void setUp() throws Exception {
