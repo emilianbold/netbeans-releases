@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -272,6 +273,7 @@ public class Evaluator extends javax.swing.JPanel {
         if (evalDialog != null) {
             evalDialog.setVisible(true);
             evalDialog.requestFocus();
+            requestFocusForExpression();
             return ;
         }
         final Evaluator evaluatorPanel = new Evaluator(debugger);
@@ -299,6 +301,15 @@ public class Evaluator extends javax.swing.JPanel {
                 NbBundle.getMessage(Evaluator.class, "Evaluator.A11YDescr"));
         currentEvaluator = evaluatorPanel;
         evalDialog.setVisible(true);
+        requestFocusForExpression();
+    }
+    
+    private static void requestFocusForExpression() {
+        Component c = currentEvaluator.expressionComboBox.getEditor().getEditorComponent();
+        if (c instanceof JScrollPane) {
+            c = ((JScrollPane) c).getViewport().getView();
+        }
+        c.requestFocusInWindow();
     }
     
     private static void close() {
