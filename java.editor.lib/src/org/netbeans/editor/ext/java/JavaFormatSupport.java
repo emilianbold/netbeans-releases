@@ -872,6 +872,26 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                 // For non-java-doc not because it can be commented code
                                 indent = getLineIndent(pos, true);
                             }
+                        } else {
+                            if (isJavaDocComment(firstNWS.getToken())) {
+                                if (!getFormatLeadingStarInComment()) {
+                                    // For java-doc it should be OK to remove the star
+                                    int len = -1;
+                                    if (firstNWS.getOffset() + 1 < firstNWS.getToken().getImage().length()) {
+                                        FormatTokenPosition nextCharPos = getPosition(firstNWS.getToken(), firstNWS.getOffset() + 1);
+                                        char nextChar = getChar(nextCharPos);
+                                        if (nextChar != '/') {
+                                            len = getChar(nextCharPos) == ' ' ? 2 : 1;
+                                        }
+                                    } else {
+                                        len = 1;
+                                    }
+                                    
+                                    if (len != -1) {
+                                        remove(firstNWS, len);
+                                    }
+                                }
+                            }
                         }
 
                     } else { // in indent mode (not formatting)
@@ -920,9 +940,9 @@ public class JavaFormatSupport extends ExtFormatSupport {
                 if (getFormatLeadingStarInComment()
                     && (isIndentOnly() || isJavaDocComment(token))
                 ) {
-                    // Insert initial '*'
-                    insertString(pos, "*"); // NOI18N
-                    setIndentShift(1);
+                    // Insert initial '* '
+                    insertString(pos, "* "); // NOI18N
+                    setIndentShift(2);
                 }
 
                 // Indent the multi-comment by one more space
