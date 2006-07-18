@@ -641,17 +641,6 @@ Nothing.
 <answer id="exec-property">
     The default implementation of this API recognizes these properties:
     <!-- Update also debuggerjpda/arch.xml/exec-property when changing this -->
-    <api name="J2ME_DEBUGGER" group="property" category="friend" type="export">
-        When set to <code>Boolean.TRUE</code>, it prevents from the continuous
-        poll of the debuggee threads. This poll is there to correctly enable and
-        disable actions in accordance with the threads status.
-        This property can be set through a map of properties that is passed to
-        JPDADebugger.attach (). E.g.:
-        <pre>Map properties = new HashMap();
-properties.put("J2ME_DEBUGGER", Boolean.TRUE);
-JPDADebugger.attach (host, address, new Object[] { properties });
-        </pre>
-    </api>
     <api name="SS_ACTION_STEPOUT" group="property" category="friend" type="export">
         When set to Boolean.TRUE, this option is causing step out during smart-stepping
         instead of step into. Thus it much faster skips code that is not selected

@@ -41,10 +41,7 @@ import org.openide.util.RequestProcessor;
 * @author   Jan Jancura
 * @author  Marian Petras
 */
-public class PauseActionProvider extends JPDADebuggerActionProvider 
-implements Runnable {
-    
-    private boolean j2meDebugger = false;
+public class PauseActionProvider extends JPDADebuggerActionProvider {
     
     private volatile boolean doingAction;
     
@@ -54,11 +51,7 @@ implements Runnable {
             (JPDADebuggerImpl) contextProvider.lookupFirst 
                 (null, JPDADebugger.class)
         );
-        Map properties = (Map) contextProvider.lookupFirst (null, Map.class);
-        if (properties != null)
-            j2meDebugger = properties.containsKey ("J2ME_DEBUGGER");
         setProviderToDisableOnLazyAction(this);
-        RequestProcessor.getDefault ().post (this, 200);
     }
     
     public Set getActions () {
@@ -92,55 +85,10 @@ implements Runnable {
     }
     
     protected void checkEnabled (int debuggerState) {
-        if (j2meDebugger) {
-            setEnabled (
-                ActionsManager.ACTION_PAUSE,
-                debuggerState == JPDADebugger.STATE_RUNNING
-            );
-            return;
-        }
-        VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
-        if (vm == null) {
-            setEnabled (
-                ActionsManager.ACTION_PAUSE,
-                false
-            );
-            return;
-        }
-        try {
-            List l = vm.allThreads ();
-            int i, k = l.size ();
-            boolean susp;
-            for (i = 0; i < k; i++) {
-                ThreadReference tr = (ThreadReference) l.get (i);
-                susp = true; //workaround for #57931
-                try {
-                    susp = tr.isSuspended();
-                } catch (com.sun.jdi.ObjectCollectedException e) {} 
-                if (! susp) {
-                    setEnabled (
-                        ActionsManager.ACTION_PAUSE,
-                        true
-                    );
-                
-                    return;
-                }
-            }
-        } catch (VMDisconnectedException ex) {
-            // The VM can be disconnected at any time
-        }
         setEnabled (
             ActionsManager.ACTION_PAUSE,
-            false
+            debuggerState == JPDADebugger.STATE_RUNNING
         );
     }
     
-    public void run () {
-        if (getDebuggerImpl ().getState () == JPDADebugger.STATE_DISCONNECTED)
-            return;
-        if (!doingAction) {
-            checkEnabled (getDebuggerImpl ().getState ());
-        }
-        RequestProcessor.getDefault ().post (this, 200);
-    }
 }

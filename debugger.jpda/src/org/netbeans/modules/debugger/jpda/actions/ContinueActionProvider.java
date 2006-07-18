@@ -33,17 +33,13 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.openide.util.RequestProcessor;
 
 
 /**
  *
  * @author  Jan Jancura
  */
-public class ContinueActionProvider extends JPDADebuggerActionProvider 
-implements Runnable {
-    
-    private boolean j2meDebugger = false;
+public class ContinueActionProvider extends JPDADebuggerActionProvider {
     
     private volatile boolean doingAction;
     
@@ -53,11 +49,7 @@ implements Runnable {
             (JPDADebuggerImpl) contextProvider.lookupFirst 
                 (null, JPDADebugger.class)
         );
-        Map properties = (Map) contextProvider.lookupFirst (null, Map.class);
-        if (properties != null)
-            j2meDebugger = properties.containsKey ("J2ME_DEBUGGER");
         setProviderToDisableOnLazyAction(this);
-        RequestProcessor.getDefault ().post (this, 200);
     }
     
     public Set getActions () {
@@ -91,52 +83,10 @@ implements Runnable {
     }
     
     protected void checkEnabled (int debuggerState) {
-        if (j2meDebugger) {
-            setEnabled (
-                ActionsManager.ACTION_CONTINUE,
-                debuggerState == JPDADebugger.STATE_STOPPED
-            );
-            return;
-        }
-        VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
-        if (vm == null) {
-            setEnabled (
-                ActionsManager.ACTION_PAUSE,
-                false
-            );
-            return;
-        }
-        try {
-            List l = vm.allThreads ();
-            int i, k = l.size ();
-            for (i = 0; i < k; i++) {
-                ThreadReference tr = (ThreadReference) l.get (i);
-                try {
-                    if (tr.isSuspended ()) {
-                        setEnabled (
-                            ActionsManager.ACTION_CONTINUE,
-                            true
-                        );
-                        return;
-                    }
-                } catch (ObjectCollectedException ocex) {
-                    // The thread just died - ignore
-                }
-            }
-        } catch (VMDisconnectedException ex) {
-        }
         setEnabled (
             ActionsManager.ACTION_CONTINUE,
-            false
+            debuggerState == JPDADebugger.STATE_STOPPED
         );
     }
     
-    public void run () {
-        if (getDebuggerImpl ().getState () == JPDADebugger.STATE_DISCONNECTED)
-            return;
-        if (!doingAction) {
-            checkEnabled (getDebuggerImpl ().getState ());
-        }
-        RequestProcessor.getDefault ().post (this, 200);
-    }
 }
