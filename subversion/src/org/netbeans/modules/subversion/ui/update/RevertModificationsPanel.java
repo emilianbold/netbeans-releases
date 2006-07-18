@@ -44,56 +44,56 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
 
         buttonGroup.add(localChangesRadioButton);
         localChangesRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(localChangesRadioButton, "Revert &Local Changes");
+        org.openide.awt.Mnemonics.setLocalizedText(localChangesRadioButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_RevertLocal"));
         localChangesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         localChangesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        localChangesRadioButton.getAccessibleContext().setAccessibleDescription("Revert Local Changes");
+        localChangesRadioButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_RevertLocal"));
 
         buttonGroup.add(moreCommitsRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(moreCommitsRadioButton, "Revert Modifications from &Previous Commits");
+        org.openide.awt.Mnemonics.setLocalizedText(moreCommitsRadioButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_RevertMulti"));
         moreCommitsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         moreCommitsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        moreCommitsRadioButton.getAccessibleContext().setAccessibleDescription("Revert Modifications from Previous Commits");
+        moreCommitsRadioButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_RevertMulti"));
 
         jLabel2.setLabelFor(startRevisionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "S&tarting Revision:");
-        jLabel2.getAccessibleContext().setAccessibleDescription("Starting Revision for Revert");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_StartingRevision"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_StartingRevision"));
 
         startRevisionTextField.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(startSearchButton, "Se&arch...");
+        org.openide.awt.Mnemonics.setLocalizedText(startSearchButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_Search2"));
         startSearchButton.setEnabled(false);
-        startSearchButton.getAccessibleContext().setAccessibleDescription("Search Starting Revision");
+        startSearchButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_Search2"));
 
-        jLabel9.setText("(empty means repository HEAD)");
+        jLabel9.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_EmptyHint"));
 
         endRevisionTextField.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(endSearchButton, "Sear&ch...");
+        org.openide.awt.Mnemonics.setLocalizedText(endSearchButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_Search3"));
         endSearchButton.setEnabled(false);
-        endSearchButton.getAccessibleContext().setAccessibleDescription("Search Ending Revision");
+        endSearchButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_Search3"));
 
         jLabel3.setLabelFor(endRevisionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "En&ding Revision:");
-        jLabel3.getAccessibleContext().setAccessibleDescription("Ending Revision for Revert");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_EndingRevision"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_EndingRevision"));
 
         buttonGroup.add(oneCommitRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(oneCommitRadioButton, "Revert Modifications from &Single Commit");
+        org.openide.awt.Mnemonics.setLocalizedText(oneCommitRadioButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_RevertSingle"));
         oneCommitRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         oneCommitRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        oneCommitRadioButton.getAccessibleContext().setAccessibleDescription("Revert Modifications from Single Commit");
+        oneCommitRadioButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_RevertSingle"));
 
         jLabel4.setLabelFor(oneRevisionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "&Revision:");
-        jLabel4.getAccessibleContext().setAccessibleDescription("Desired Revision for Revert");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_SingleRevision"));
+        jLabel4.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_SingleRevision"));
 
         oneRevisionTextField.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(oneRevisionSearchButton, "S&earch...");
+        org.openide.awt.Mnemonics.setLocalizedText(oneRevisionSearchButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_Search1"));
         oneRevisionSearchButton.setEnabled(false);
-        oneRevisionSearchButton.getAccessibleContext().setAccessibleDescription("Search Revision");
+        oneRevisionSearchButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_Search1"));
 
-        jLabel10.setText("(empty means repository HEAD)");
+        jLabel10.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_EmptyHint"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
