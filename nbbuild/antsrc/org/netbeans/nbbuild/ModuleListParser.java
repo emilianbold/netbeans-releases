@@ -562,18 +562,27 @@ final class ModuleListParser {
                 throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File((String) properties.get("basedir")));
             }
             // If scan.binaries property is set or it runs from tests we scan binaries otherwise sources.
-            if (properties.get("scan.binaries") != null || 
-                    properties.get("xtest.home") != null && properties.get("xtest.testtype") != null) {
+            boolean xtest = properties.get("xtest.home") != null && properties.get("xtest.testtype") != null;
+            if (properties.get("scan.binaries") != null || xtest) {
                 entries = scanBinaries(properties, project);
                 // module itself has to be added because it doesn't have to be in binaries
-                Entry e = scanStandaloneSource(properties, project);
-                entries.put(e.getCnb(), e);
+                    Entry e = scanStandaloneSource(properties, project);
+                    // xtest gets module jar and cluster from binaries
+                    if (e.clusterName == null && xtest) {
+                         Entry oldEntry = (Entry) entries.get(e.getCnb());
+                         if (oldEntry != null) {
+                             e = new Entry(e.getCnb(),oldEntry.getJar(),
+                                          e.getClassPathExtensions(),e.sourceLocation,
+                                          e.netbeansOrgPath,e.buildPrerequisites,
+                                          oldEntry.getClusterName());  
+                         }
+                    }
+                    entries.put(e.getCnb(), e);
             } else {
                 entries = scanNetBeansOrgSources(new File(nball), properties, project);
             }
         }
     }
-    
     /**
      * Find all entries in this list.
      * @return a set of all known entries

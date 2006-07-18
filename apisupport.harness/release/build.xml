@@ -38,6 +38,12 @@ Microsystems, Inc. All Rights Reserved.
             <isset property="suite.dir"/>
         </condition>
         <property name="cluster" location="build/cluster"/>
+        
+        <condition property="test.dist.dir" value="${suite.dir}/build/testdist">
+            <isset property="suite.dir"/>
+        </condition>
+        <property name="test.dist.dir" location="build/testdist"/>
+        
     </target>
     
     <target name="init" depends="basic-init,files-init,build-init"/>
@@ -64,7 +70,18 @@ Microsystems, Inc. All Rights Reserved.
             moduleclasspathproperty="module.classpath"
             publicpackagejardir="${public.package.jar.dir}"
             modulerunclasspathproperty="module.run.classpath"
-            classpathextensionsproperty="class.path.extensions"/>
+            classpathextensionsproperty="class.path.extensions"
+        >
+            <testtype name="unit" 
+                      folder="test.unit.folder" 
+                      runtimecp="test.unit.runtime.cp" 
+                      compilecp="test.unit.compile.cp"/>
+            <testtype name="qa-functional" 
+                      folder="test.qa-functional.folder" 
+                      runtimecp="test.qa-functional.runtime.cp" 
+                      compilecp="test.qa-functional.compile.cp"/>         
+
+        </parseprojectxml>
         <condition property="is.regular">
             <not>
                 <or>

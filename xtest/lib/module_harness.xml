@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="module-harness" default="forbidden">
-
+    
     <!-- location for workdir for the harness -->
     <property name="xtest.workdir" location="work"/>
     <!-- Directory where test are unpacked before their execution.
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
         directory where test developer can store golden files, sample files 
         or additional resources needed for tests.
     -->
-    <property name="xtest.data" location="${xtest.tests.dir}/${xtest.testtype}/data"/>
+    <property name="xtest.data" location="${xtest.workdir}/sys/data"/>
 
     <property name="xtest.tmpdir" location="${xtest.workdir}/tmpdir"/>
     <property name="xtest.sketchpad" location="${xtest.workdir}/user/sketch-pad"/>
@@ -45,10 +45,12 @@ Microsystems, Inc. All Rights Reserved.
     <property name="build.compiler.deprecation" value="off"/>
     <!-- should be default ON, because it helps to find problems -->
     <property name="build.compiler.debug" value="on"/>
-    
+    <!-- Location of jar with tests is ${xtest.build}/${xtest.file.location}/${xtest.file.name} -->
     <property name="xtest.build" location="."/>    
-    <property name="xtest.file.name" value="tests.xar"/>
+    <property name="xtest.file.name" value="tests-${xtest.testtype}.jar"/>
     <property name="xtest.file.location" value="lib"/>
+    <!-- Name of file with zipped test/${xtest.testtype}/data folder -->
+    <property name="xtest.data.zip" value="data-${xtest.testtype}.zip"/>
     
     <!-- nbjunit library home -->
     <property name="nbjunit.home" value="${xtest.home}/lib"/>
@@ -67,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Destination directory for compiled tests. Used in basic_compiler_targets.xml. -->
     <property name="compile.destdir" location="${compile.destdir.root}/${xtest.testtype}/classes"/>
 
-    
+    <property name="java.home.parent" location="${java.home}/.."/>
 
     <target name="forbidden">
        <antcall target="version"/>
@@ -306,6 +308,14 @@ Microsystems, Inc. All Rights Reserved.
     <target name="prepare-tests" depends="prepare-tests-init,test-unjared" unless="unjared">
         <unjar dest="${xtest.tests.dir}" 
                src="${xtest.build}/${xtest.file.location}/${xtest.file.name}"/>
+        <available file="${xtest.build}/${xtest.file.location}/${xtest.data.zip}" property="data.zip.available"/>
+        <antcall target="expand-data-zip"/>
+    </target>
+    
+    <target name="expand-data-zip" if="data.zip.available">
+        <mkdir dir="${xtest.data}"/>
+        <unzip dest="${xtest.data}" 
+               src="${xtest.build}/${xtest.file.location}/${xtest.data.zip}"/>
     </target>
     
     <!-- Just test whether tests are already unzipped -->

@@ -27,13 +27,19 @@ Microsystems, Inc. All Rights Reserved.
         <property name="package.tests.excludes" value=""/>
 
         <!-- Pack all compiled tests and resources in tests distribution -->
-        <jar basedir="${compile.destdir.root}"
-             jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}">
+        <jar destfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
+             basedir="${compile.destdir.root}/${xtest.testtype}/classes">
         </jar>
+        <available file="${basedir}/${xtest.testtype}/data" type="dir" property="data.dir.available"/>
+        <antcall target="create-data-zip"/>
     </target>
 
-        
-        
+    <!-- Zip ${xtest.testtype}/data to ${xtest.data.zip} -->
+    <target name="create-data-zip" if="data.dir.available">
+         <zip destfile="${xtest.build}/${xtest.file.location}/${xtest.data.zip}" 
+              basedir="${basedir}/${xtest.testtype}/data"/> 
+    </target>
+    
     <!-- forbidden main target -->
     <target name="forbidden">
        <fail message="This script is not intended to be directly executed. This in only library."/>

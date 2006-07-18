@@ -28,10 +28,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
@@ -189,6 +192,70 @@ public final class ParseProjectXml extends Task {
         classPathExtensionsProperty = s;
     }
 
+    // test distribution path 
+    public  static String testDistLocation;
+
+    public static class TestType {
+        private String name;
+        private String folder;
+        private String runtimeCP;
+        private String compileCP;
+
+        public TestType() {}
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getFolder() {
+            return folder;
+        }
+
+        public void setFolder(String folder) {
+            this.folder = folder;
+        }
+
+        public String getRuntimeCP() {
+            return runtimeCP;
+        }
+
+        public void setRuntimeCP(String runtimeCP) {
+            this.runtimeCP = runtimeCP;
+        }
+
+        public String getCompileCP() {
+            return compileCP;
+        }
+
+        public void setCompileCP(String compileCP) {
+            this.compileCP = compileCP;
+        }
+        
+    }
+      List /*<TestType>*/ testTypes = new LinkedList();
+      
+      public void addTestType(TestType testType) {
+          testTypes.add(testType);
+      }
+      public void add(TestType testType) {
+          testTypes.add(testType);
+      }
+  
+      
+      private TestType getTestType(String name) {
+          for (int i = 0 ; i < testTypes.size() ; i++) {
+              TestType testType = (TestType) testTypes.get(i);
+              if (testType.getName().equals(name)) {
+                  return testType;
+              }
+          }
+          return null;
+      }
+ 
+ 
     private void define(String prop, String val) {
         log("Setting " + prop + "=" + val, Project.MSG_VERBOSE);
         String old = getProject().getProperty(prop);
@@ -197,6 +264,7 @@ public final class ParseProjectXml extends Task {
         }
         getProject().setNewProperty(prop, val);
     }
+    
     
     public void execute() throws BuildException {
         try {
@@ -276,7 +344,10 @@ public final class ParseProjectXml extends Task {
             }
             ModuleListParser modules = null;
             Dep[] deps = null;
-            if (moduleDependenciesProperty != null || moduleClassPathProperty != null || moduleRunClassPathProperty != null) {
+            if (moduleDependenciesProperty != null || 
+                    moduleClassPathProperty != null || 
+                    moduleRunClassPathProperty != null ||
+                    testTypes.size() > 0) {
                 String nball = getProject().getProperty("nb_all");
                 Hashtable properties = getProject().getProperties();
                 properties.put("project", project.getAbsolutePath());
@@ -346,6 +417,36 @@ public final class ParseProjectXml extends Task {
                 String val = computeClassPathExtensions(pDoc);
                 if (val != null) {
                     define(classPathExtensionsProperty, val);
+                }
+            }
+            
+            // Test dependecies
+            //
+            if (modules != null) {
+               String testDistLocation = getProject().getProperty(TestDeps.TEST_DIST_VAR);
+               if (testDistLocation == null) {
+                   testDistLocation = "${" + TestDeps.TEST_DIST_VAR + "}";
+               }
+               ParseProjectXml.testDistLocation = testDistLocation;
+               
+                TestDeps testDepss[] = getTestDeps(pDoc,modules,getCodeNameBase(pDoc));
+                for (int tdIt = 0 ; tdIt < testDepss.length ; tdIt++) {
+                    TestDeps td = testDepss[tdIt];
+                    // unit tests 
+                    TestType testType = getTestType(td.testtype);
+                    if (testType!= null ) {
+                        if (testType.getFolder() != null) {
+                            define (testType.getFolder(),td.getTestFolder());
+                        }
+                        if (testType.getCompileCP() != null) {
+                            
+                            define(testType.getCompileCP(),td.getCompileClassPath());
+                        }
+                        if (testType.getRuntimeCP() != null) {
+                            define(testType.getRuntimeCP(),td.getRuntimeClassPath());
+                        }
+
+                    } 
                 }
             }
         } catch (BuildException e) {
@@ -737,7 +838,149 @@ public final class ParseProjectXml extends Task {
         }
         return module.getJar();
     }
-    
+ 
+  final class TestDeps {
+      public static final String UNIT = "unit";
+      public static final String QA_FUNCTIONAL = "qa-functional";
+      // unit, qa-functional, performance
+      final String testtype;
+      // all dependecies for the testtype
+      final  List /*<TestDep>*/ dependencies = new ArrayList();
+      // code name base of tested module
+      final String cnb;
+      final ModuleListParser modulesParser;
+
+      public  static final String TEST_DIST_VAR = "test.dist.dir";
+      public TestDeps(String testtype,String cnb,ModuleListParser modulesParser) {
+          assert modulesParser != null;
+          this.testtype = testtype;
+          this.cnb = cnb;
+          this.modulesParser = modulesParser;
+      }
+      
+      public List/*<String>*/ getFiles(boolean compile) {
+          List/*<String>*/ files = new ArrayList();
+          for (int dIt = 0 ; dIt < dependencies.size() ; dIt++) {
+              files.addAll(((TestDep)dependencies.get(dIt)).getFiles(compile));
+          }
+          return files;
+      }
+      public void addDepenency(TestDep dep) {
+          dependencies.add(dep);
+      }
+
+        private String getTestFolder() {
+            ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
+            String sep = File.separator;
+            
+            String cluster = entry.getClusterName(); 
+            if (cluster == null) {
+                // no cluster name is specified for standalone or module in module suite
+                cluster = "cluster";
+            }
+            return ParseProjectXml.testDistLocation + sep + testtype + sep + entry.getClusterName() + sep + cnb.replace('.','-');
+        }
+
+        String getCompileClassPath() {
+            return getPath(getFiles(true));
+        }
+        private String getPath(List/*<String>*/ files) {
+            StringBuffer path = new StringBuffer();
+            Set/*<String>*/ filesSet = new HashSet();
+            for (int fIt = 0 ; fIt < files.size() ; fIt++) {
+                String filePath = (String)files.get(fIt);
+                if (!filesSet.contains(filePath)) {
+                    if (path.length() > 0) {
+                        path.append(File.pathSeparatorChar);
+                    } 
+                    filesSet.add(filePath);
+                    path.append(filePath);
+                }
+            }
+            return path.toString();    
+        }
+
+        String getRuntimeClassPath() {
+            return getPath(getFiles(false));
+        }
+        
+
+  }
+   /** Test dependency for module and type
+    */ 
+   final class TestDep {
+       final ModuleListParser modulesParser;
+       // code name base
+       final String cnb;
+       // dependencies on tests of modules
+       final boolean recursive;
+       final boolean test;
+       // runtime classpath
+       final boolean compile;
+       TestDeps testDeps;
+       
+       TestDep (String cnb,ModuleListParser modules, boolean recursive,boolean test, boolean compile,TestDeps testDeps) {   
+           this.modulesParser = modules;
+           this.cnb = cnb;
+           this.recursive = recursive;
+           this.test = test;
+           this.testDeps = testDeps;
+           this.compile = compile;
+       }
+       /* get modules dependecies
+        */
+       List/*<ModuleListParser.Entry>*/ getModules() {
+           List /*<ModuleListParser.Entry>*/ entries = new ArrayList();
+           if (!test) {
+               if (recursive ) {
+                   Map/*<String,ModuleListParser.Entry>*/ entriesMap = new HashMap();
+                   addRecursiveModules(cnb,entriesMap);
+                   entries.addAll(entriesMap.values());
+               } else {
+                   entries.add(modulesParser.findByCodeNameBase(cnb));
+               }
+           }
+           return entries;     
+           
+       } 
+       
+       private void addRecursiveModules(String cnd, Map entriesMap) {
+           if (!entriesMap.containsKey(cnd)) {
+               ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnd);
+               entriesMap.put(cnd,entry);
+               String cnds[] = entry.getBuildPrerequisites();
+               // cnds can be null
+               if (cnds != null) {
+                   for (int i = 0 ; i < cnds.length ; i++) {
+                       addRecursiveModules(cnds[i],entriesMap);
+                   }
+               }
+           }
+       }
+       List/*<String>*/ getFiles(boolean compile) {
+           List/*<String>*/ files = new ArrayList();
+           if (!compile ||  ( compile && this.compile)) {
+               List /*<ModuleListParser.Entry>*/ modules = getModules();  
+               for (int mIt = 0 ; mIt <modules.size() ; mIt++) {
+                   ModuleListParser.Entry entry = (ModuleListParser.Entry)modules.get(mIt);
+                   if (entry != null) {
+                       files.add(entry.getJar().getAbsolutePath());
+                   } else {
+                       log("Entry doesn't exist.");
+                   }
+               }
+               // get tests files
+               if (test) {
+                   // get test folder
+                   ModuleListParser.Entry entry = (ModuleListParser.Entry) modulesParser.findByCodeNameBase(cnb);
+                   String sep = File.separator;
+                   String jarPath = ParseProjectXml.testDistLocation + sep + testDeps.testtype + sep +  entry.getClusterName() + sep + cnb.replace('.','-') + sep + "tests.jar";
+                   files.add(jarPath);
+               }
+           }
+           return files;
+       }
+   } 
     private String computeClassPathExtensions(Document pDoc) {
         Element data = getConfig(pDoc);
         StringBuffer list = null;
@@ -847,4 +1090,48 @@ public final class ParseProjectXml extends Task {
         return ppjar;
     }
 
+    private TestDeps[] getTestDeps(Document pDoc,ModuleListParser modules,String testCnb) {
+        assert modules != null;
+        Element cfg = getConfig(pDoc);
+        List testDepsList = new ArrayList(); 
+        Element pp = XMLUtil.findElement(cfg, "test-dependencies", NBM_NS);
+        if (pp != null) {
+            for (Iterator depssIt = XMLUtil.findSubElements(pp).iterator(); depssIt.hasNext();) {
+                Element depssEl = (Element) depssIt.next();
+                String testType = findTextOrNull(depssEl,"name");
+                if (testType == null) {
+                    testType = TestDeps.UNIT; // default variant
+                }
+                TestDeps testDeps = new TestDeps(testType,testCnb,modules);
+                testDepsList.add(testDeps);
+                for (Iterator depsIt = XMLUtil.findSubElements(depssEl).iterator() ; depsIt.hasNext();) {
+                    Element el = (Element) depsIt.next();
+                    if (el.getTagName().equals("test-dependency")) {
+                        // parse test dep
+                        boolean  test =   (XMLUtil.findElement(el,"test",NBM_NS) != null);;
+                        String cnb =  findTextOrNull(el,"code-name-base");
+                        boolean  recursive = (XMLUtil.findElement(el,"recursive",NBM_NS) != null);
+                        boolean  compile = (XMLUtil.findElement(el,"compile-dependency",NBM_NS) != null);                    
+                        testDeps.addDepenency(new TestDep(cnb,
+                                                         modules,
+                                                         recursive,
+                                                         test,
+                                                         compile,
+                                                         testDeps)); 
+                    }
+
+                }
+            }
+        }
+        TestDeps testDepss[] = new TestDeps[testDepsList.size()];
+        testDepsList.toArray(testDepss);
+        return testDepss;      
+    }
+    private static String findTextOrNull(Element parentElement,String elementName) {
+        Element el = XMLUtil.findElement(parentElement,elementName,NBM_NS);
+        return (el == null) ? null :
+                              XMLUtil.findText(el);
+                
+    }
+ 
 }

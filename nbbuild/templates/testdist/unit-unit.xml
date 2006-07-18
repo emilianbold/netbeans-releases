@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Unit test runner" default="test-unit" basedir=".">
+    <target name="init-unit">
+       <property name="extra.test.libs" location="../../../extralibs"/>
+       <property name="test.dist.dir" location="../../.."/>
+       <property name="test.unit.results.dir" location="../../results"/>
+       <property name="test.unit.classes.dir" location="../../classes"/>
+       <property name="java.home.parent" location="${java.home}/.."/> 
+       <loadproperties srcFile="test.properties"/>
+       <propertyset id="test.unit.properties">
+            <propertyref prefix="test-unit-sys-prop."/>
+            <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
+        </propertyset>
+       <delete dir="${test.unit.classes.dir}"/>
+       <mkdir dir="${test.unit.results.dir}"/>
+       <unjar src="tests.jar" dest="${test.unit.classes.dir}"/>
+       <available file="data.zip" type="file" property="exists.test.data"/>
+       <available file="${netbeans.dest.dir}/moduleCluster.properties" type="file" property="exists.platform.properties"/>
+       <path id="test.cp">
+                <pathelement location="${test.unit.classes.dir}"/>
+                <path path="${extra.test.libs.dir}"/>
+               <path path="${test.unit.run.cp}"/>
+       </path> 
+       
+    </target>
+    
+    <target name="init-data" if="exists.test.data">
+           <property name="test.data.folder" location="../../../data"/>
+           <unzip src="data.zip" dest="${test.data.folder}"/>            
+    </target>
+    
+    <target name="test-unit" depends="init-unit,init-data,run-test" if="tests.failed">
+       <mkdir dir="${test.unit.results.dir}/failed-test-var"/>      
+    </target>   
+    
+     <target name="run-test" depends="init-unit,init-platform-properties,init-data,do-test,fail-test" description="Run unit tests">   
+         
+     </target>
+     <target name="do-test">
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${test.unit.results.dir}">
+            <batchtest todir="${test.unit.results.dir}">
+                <fileset dir="${test.unit.classes.dir}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+            <classpath refid="test.cp"/>
+             <syspropertyset refid="test.unit.properties"/>
+            <jvmarg value="-ea -Xms32m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=160m"/>
+            <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
+        </junit>
+    <junitreport todir="${test.unit.results.dir}">
+      <fileset dir="${test.unit.results.dir}">
+        <include name="TEST-*.xml"/>
+      </fileset>
+    <report format="frames" todir="${test.unit.results.dir}/html"/>
+    </junitreport>
+    </target>
+    
+    <target name="fail-test" unless="test.disable.fails">
+        <fail if="tests.failed">Some tests failed;Look at results: 
+               ${test.unit.results.dir} .</fail>
+    </target>
+    
+    <target name="init-platform-properties" depends="init-unit" if="exists.platform.properties">
+          <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+    </target>
+</project>

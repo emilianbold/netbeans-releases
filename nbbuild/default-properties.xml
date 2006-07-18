@@ -37,5 +37,6 @@ Microsystems, Inc. All Rights Reserved.
   <!-- Have to be read here, so that they will affect even module builds (e.g. when setting JDK): -->
   <property file="${nb_all}/nbbuild/user.build.properties"/>
   <property file="${nb_all}/nbbuild/site.build.properties"/>
-  
+   
+   <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
 </project>

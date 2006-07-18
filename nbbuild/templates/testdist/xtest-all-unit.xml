@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="xtest-dist" default="all" basedir=".">
+    <target name="all">
+        <loadproperties srcFile="all-unit.properties"/>
+        <property name="xtest.templates.dir" location="nbbuild/templates"/>
+        <property name="xtest.results" location="results"/>
+        <delete dir="${xtest.results}"/>
+        <mkdir dir="${xtest.results}"/>
+        <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask" classpath="${xtest.home}/lib/xtest.jar"/>
+        <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
+        <subant buildpath="${xtest.modules.list}" target="runtestsdist" >
+            <property name="xtest.templates.dir" location="../nbbuild/templates"/>
+            <property name="xtest.results" location="results"/>
+            <property name="xtest.results.testrun.dir" location="${xtest.results.testrun.dir}"/>
+        </subant>    
+    </target>
+</project>

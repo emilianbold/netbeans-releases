@@ -21,10 +21,13 @@ Microsystems, Inc. All Rights Reserved.
 <project name="xtest-unit" basedir="." default="all">
 
     <condition property="do.we.need.to.parse.project.xml.file" >
-        <or>
-            <not><isset property="code.name.base.dashes" /></not>
-            <not><isset property="module.run.classpath" /></not>
-        </or>
+        <and>
+            <or>
+                <not><isset property="code.name.base.dashes" /></not>
+                <not><isset property="module.run.classpath" /></not>
+            </or>
+            <isfalse value="${xtest.distexec}"/>
+        </and>
     </condition>
     <available file="../nbproject/project.properties" property="do.we.need.to.process.properties.file" />
 
@@ -52,7 +55,14 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Use harness instead of nbbuild/nbantext.jar" -->
         <property name="harness.dir" location="${netbeans.dest.dir}/harness"/>
         <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${harness.dir}/tasks.jar"/>
-        <parseprojectxml project=".." codenamebasedashesproperty="code.name.base.dashes" modulerunclasspathproperty="module.run.classpath"/>
+        <parseprojectxml project=".." 
+                         codenamebasedashesproperty="code.name.base.dashes" 
+                         modulerunclasspathproperty="module.run.classpath">
+            <testtype name="unit" 
+                      folder="test.unit.folder" 
+                      runtimecp="test.unit.runtime.cp" 
+                      compilecp="test.unit.compile.cp"/>
+        </parseprojectxml>
     </target>
         
     <target name="init" depends="init-parse-project-xml,init-read-property-files">
@@ -75,10 +85,12 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${cluster}/${module.jar}"/>
             <pathelement path="${cp.extra}"/>
             <pathelement path="${test.unit.cp.extra}"/>
+            <pathelement path="${test.unit.compile.cp}"/>
         </path>
         <path id="test.unit.run.cp">
             <path refid="test.unit.compile.cp"/>
             <pathelement path="${test.unit.run.cp.extra}"/>
+            <pathelement path="${test.unit.runtime.cp}"/>
         </path>
     </target>
     
@@ -88,18 +100,34 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="default-compiler">
         <!-- Build tests but not build module sources. -->
-        <ant dir=".." target="do-test-build"/>
+        <ant dir=".." target="do-test-build" />
         <packageTests/>
     </target>
     
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
-    
-    <target name="run-unit-test" depends="init-cp">
+
+    <target name="run-unit-test" depends="run-unit-test-dist,run-unit-test-nodist"/>
+
+    <!-- Run unit tests from binary distribution. -->
+    <target name="run-unit-test-dist" if="xtest.distexec">
+        <property file="test.properties"/>
         <executeTests pluginname="jvm">
-            <classpath refid="test.unit.run.cp"/>
+            <classpath>
+                <pathelement path="${test.unit.run.cp}"/>
+            </classpath>
         </executeTests>
     </target>
-        
+    
+    <!-- Run unit tests from module - no binary distribution. -->
+    <target name="run-unit-test-nodist" unless="xtest.distexec" depends="init-parse-project-xml">
+        <property file="${test.dist.dir}/unit/${cluster.dir}/${code.name.base.dashes}/test.properties"/>
+        <executeTests pluginname="jvm">
+            <classpath>
+                <path refid="test.unit.run.cp"/>
+            </classpath>
+        </executeTests>
+    </target>
+    
 </project>

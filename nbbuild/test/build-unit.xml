@@ -21,18 +21,18 @@ Microsystems, Inc. All Rights Reserved.
 <project name="nbbuild/test-unit" basedir="." default="all">
 
     <property name="code.name.base.dashes" value="org-netbeans-nbbuild"  />
-    <property name="module.run.classpath" location="../../nbbuild/nbantext.jar:${ant.home}/lib/ant.jar:${ant.home}/lib/ant-launcher.jar" />
+    <property name="module.run.classpath" location="${nb_all}/nbbuild/nbantext.jar:${ant.home}/lib/ant.jar:${ant.home}/lib/ant-launcher.jar:${tools.jar}" />
     <property name="xtest.userdata|nb_all" location="${nb_all}"/>
     <property name="test.unit.cp.extra" value="${nb_all}/nbbuild/nbantext.jar:${java.class.path}"/>
-
+    <property name="test.unit.runtime.cp" value="${nb_all}/nbbuild/nbantext.jar:${java.class.path}"/>
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
     <!-- Need to override target from xtest-unit.xml because this is not standard nb module. -->
     <target name="default-compiler" depends="init-cp">
         <buildTests srcDir="unit/src" compileExcludes="**/data/**" debug="true">
             <classpath>
-                <path refid="test.unit.compile.cp"/>
-                <path path="${java.class.pah}"/>
+                <path path="${test.unit.cp.extra}"/>
+                <path path="${java.class.path}"/>
             </classpath>
         </buildTests>
     </target>

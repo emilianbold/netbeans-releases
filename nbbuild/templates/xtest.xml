@@ -68,6 +68,17 @@ Microsystems, Inc. All Rights Reserved.
 	<xtest executeAction="runTests"/>
     </target>
     
+    <!-- This target runs tests from distribution. -->
+    <target name="runtestsdist">
+    	<echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
+        <property name="xtest.distexec" value="true"/>
+        <property name="xtest.build" location="."/>
+        <property name="xtest.file.location" value="."/>
+        <property name="xtest.file.name" value="tests.jar"/>
+        <property name="xtest.data.zip" value="data.zip"/>
+        <xtest executeAction="runTests"/>
+    </target>
+    
     <!-- This target cleans test results. -->
     <target name="cleanresults" description="Deletes the results files.">
     	<xtest executeAction="cleanResults"/>

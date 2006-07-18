@@ -162,13 +162,9 @@ public class MTestExecutor extends Task {
                 }
                 
                 for (int j=0; j<testbag.getTestsets().length; j++) {
-                    // add compiled tests to classpath (work/sys/test/${xtest.testtype}/classes)
+                    // add compiled tests to classpath (work/sys/test)
                     
                     stb.append( ant_new.getProject().getProperty("xtest.tests.dir") );
-                    stb.append( "/" );
-                    stb.append(MTestConfigTask.getMTestConfig().getTesttype());
-                    stb.append( "/" );
-                    stb.append("classes");
                     stb.append(File.pathSeparatorChar);
 
                     // check if this testset contains setup dir
@@ -233,9 +229,8 @@ public class MTestExecutor extends Task {
             Testbag.Testset testset = testbag.getTestsets()[i];
             TestScanner ts = new TestScanner();
 
-            // scan for tests in ${xtest.tests.dir}/${xtest.testtype}/classes (e.g. work/sys/tests/unit/classes)
-            String testsClassesDir = getProject().getProperty("xtest.tests.dir")+File.separator+
-                    getProject().getProperty("xtest.testtype")+File.separator+"classes";
+            // scan for tests in ${xtest.tests.dir} (i.e. work/sys/tests)
+            String testsClassesDir = getProject().getProperty("xtest.tests.dir");
             ts.setBasedir(testsClassesDir);
 
             /*

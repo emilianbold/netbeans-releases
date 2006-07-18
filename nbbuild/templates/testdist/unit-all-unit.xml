@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="changeme" default="all" basedir=".">
+    <target name="all" depends="runtests,failtests">
+        
+    </target>
+    
+    <target name="runtests">
+       <loadproperties srcFile="all-unit.properties"/>
+           <property name="extra.test.libs" location="../extralibs"/>
+           <property name="test.dist.dir" location="."/>
+           <property name="test.unit.results.dir" location="results"/>
+            <subant buildpath="${unit.modules.list}" antfile="unit-unit.xml" >
+                <property name="test.disable.fails" value="true"/>
+            </subant>    
+            <mkdir dir="${test.unit.results.dir}"/>
+            <junitreport todir="${test.unit.results.dir}">
+              <fileset dir="${test.unit.results.dir}">
+                <include name="TEST-*.xml"/>
+              </fileset>
+              <report format="frames" todir="${test.unit.results.dir}/html"/>
+            </junitreport>
+           <available file="${test.unit.results.dir}/failed-test-var" type="dir" property="test.failed"/>
+  </target>
+  <target name="failtests" unless="test.disable.fails">
+           <fail if="test.failed">Some tests failed; see details above.</fail>
+  </target>
+</project>

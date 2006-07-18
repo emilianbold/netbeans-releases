@@ -28,17 +28,27 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-init" depends="basic-init">
         <property name="public.package.jar.dir" location="${nb_all}/nbbuild/build/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
+        <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
         <parseprojectxml
-            project="."
-            publicpackagesproperty="public.packages"
-            friendsproperty="friends"
-            javadocpackagesproperty="module.javadoc.packages"
-            moduledependenciesproperty="module.dependencies"
-            moduleclasspathproperty="module.classpath"
-            publicpackagejardir="${public.package.jar.dir}"
-            modulerunclasspathproperty="module.run.classpath"
-            domainproperty="nbm.domain"
-            classpathextensionsproperty="class.path.extensions"/>
+                project="."
+                publicpackagesproperty="public.packages"
+                friendsproperty="friends"
+                javadocpackagesproperty="module.javadoc.packages"
+                moduledependenciesproperty="module.dependencies"
+                moduleclasspathproperty="module.classpath"
+                publicpackagejardir="${public.package.jar.dir}"
+                modulerunclasspathproperty="module.run.classpath"
+                domainproperty="nbm.domain"
+                classpathextensionsproperty="class.path.extensions">
+            <testtype name="unit" 
+                      folder="test.unit.folder" 
+                      runtimecp="test.unit.runtime.cp" 
+                      compilecp="test.unit.compile.cp"/>
+            <testtype name="qa-functional" 
+                      folder="test.qa-functional.folder" 
+                      runtimecp="test.qa-functional.runtime.cp" 
+                      compilecp="test.qa-functional.compile.cp"/>         
+        </parseprojectxml>
         <condition property="is.regular">
             <not>
                 <or>
@@ -283,4 +293,92 @@ Microsystems, Inc. All Rights Reserved.
             <cvsfileset dir="${src.dir}"/>
         </checklicense>
     </target>
+    
+    <target name="test-init-qa-functional" depends="init,test-preinit,test-lib-init">
+        <property name="test.qa-functional.dir" location="test/qa-functional"/>
+        <property name="test.qa-functional.src.dir" location="${test.qa-functional.dir}/src"/>
+        <property name="build.test.qa-functional.dir" location="build/test/qa-functional"/>
+        <property name="build.test.qa-functional.classes.dir" location="${build.test.qa-functional.dir}/classes"/>
+        <property name="build.test.qa-functional.results.dir" location="${build.test.qa-functional.dir}/results"/>
+        
+        <property name="test.filter.trace" value="true"/>
+        
+        <!-- path reference used in both compiler and executor -->
+        <path id="test.qa-functional.cp">
+            <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
+            <pathelement path="${test.qa-functional.compile.cp}"/>
+            <pathelement path="${cp.extra}"/>
+            <pathelement location="${cluster}/${module.jar}"/>
+            <path refid="test.unit.lib.cp"/>
+            <pathelement path="${test.qa-functional.cp.extra}"/>
+            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
+        </path>
+        <path id="test.qa-functional.run.cp">
+            <pathelement path="${test.qa-functional.runtime.cp}"/>
+            <pathelement path="${test.qa-functional.run.cp.extra}"/>
+            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
+        </path>
+    </target>
+
+    <target name="test-build-qa-functional" depends="jar,do-test-build-qa-functional,test-build-datajar-qa-functional"/>
+        
+
+    <target name="do-test-build-qa-functional" depends="init,test-init-qa-functional">
+        <mkdir dir="${build.test.qa-functional.classes.dir}"/>
+        <javac srcdir="${test.qa-functional.src.dir}" destdir="${build.test.qa-functional.classes.dir}"
+               debug="true" deprecation="${build.compiler.deprecation}"
+               source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
+               <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
+               <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
+            <classpath refid="test.qa-functional.cp"/>
+            <compilerarg line="${javac.compilerargs}"/>
+        </javac>
+        <copy todir="${build.test.qa-functional.classes.dir}">
+            <fileset dir="${test.qa-functional.src.dir}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.test.qa-functional.dir}">
+            <fileset dir="${test.qa-functional.dir}">
+                <include name="data/**"/>
+            </fileset>
+        </copy>
+        
+        <available file="${test.qa-functional.dir}/data" type="dir" property="exists.test.qa-functional.data"/>
+        <!-- test distribution -->
+               <mkdir dir="${nb_all}/nbbuild/build/testdist"/>
+               <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
+               <mkdir dir="${test.dist.dir}/extralibs"/>
+               <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
+           <property name="test.qa-functional.out.folder" location="${test.qa-functional.folder}"/>
+           <mkdir dir="${test.qa-functional.out.folder}"/>
+           <jar destfile="${test.qa-functional.out.folder}/tests.jar" basedir="${build.test.qa-functional.classes.dir}"/>            
+           <!-- create properties -->
+           <taskdef name="shorterpaths" classname="org.netbeans.nbbuild.ShorterPaths" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+            <shorterpaths inref="test.qa-functional.run.cp" 
+                           out="test.qa-functional.run.cp.short" 
+                           extralibs="extra.test.libs.short" 
+                           extralibsdir="${extra.test.libs.dir}"
+                           testproperties="${test.qa-functional.out.folder}/test.properties">
+
+                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/>
+                <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
+                <replacement dir="${java.home}" name="java.home"/>
+                <replacement dir="${java.home.parent}" name="java.home.parent"/>
+            </shorterpaths>
+             <copy todir="${test.qa-functional.out.folder}">
+                <fileset dir="${test.qa-functional.dir}/..">
+                  <include name="build-qa-functional.xml"/>
+                  <include name="build.xml"/>
+                  <include name="cfg-qa-functional.xml"/>
+                </fileset>
+            </copy>
+    </target>
+    
+    <target name="test-build-datajar-qa-functional" depends="do-test-build-qa-functional" if="exists.test.qa-functional.data">
+           <zip destfile="${test.qa-functional.out.folder}/data.zip" basedir="${test.qa-functional.dir}/data"/> 
+    </target>
+
 </project>
