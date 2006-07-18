@@ -69,7 +69,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             workdirPanel.repositoryPathTextField.getDocument().addDocumentListener(this);        
             workdirPanel.repositoryPathTextField.addFocusListener(this);
             workdirPanel.revisionTextField.getDocument().addDocumentListener(this);
-            workdirPanel.revisionTextField.addFocusListener(this);
+            workdirPanel.revisionTextField.addFocusListener(this);                        
         }          
         validateUserInput(true);                                
         return workdirPanel;              
@@ -212,18 +212,10 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         }
 
         if (defaultDir == null) {
-            List recent = HistorySettings.getRecent(HistorySettings.PROP_CHECKOUT_DIRECTORY);
-            Iterator it = recent.iterator();
-
-            while (it.hasNext()) {
-                String path = (String) it.next();
-                File file = new File(path);
-                File parent = file.getParentFile();
-                if (parent != null && parent.exists() && parent.isDirectory()) {
-                    defaultDir = file;
-                    break;
-                }
-            }
+            String coDir = HistorySettings.getDefault().getCheckoutDirectory();
+            if(coDir != null) {
+                defaultDir = new File(coDir);               
+            }            
         }
 
         if (defaultDir == null) {

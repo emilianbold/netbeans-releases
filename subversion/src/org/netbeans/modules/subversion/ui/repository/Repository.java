@@ -171,7 +171,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         Set<String> recentRoots = new LinkedHashSet<String>();
         recentRoots.addAll(HistorySettings.getRecent(HistorySettings.PROP_SVN_URLS));        
         // templates for supported connection methods        
-        recentRoots.add("file:///");       // NOI18N
+        recentRoots.add("file:///");      // NOI18N
         recentRoots.add("http://");       // NOI18N
         recentRoots.add("https://");      // NOI18N
         recentRoots.add("svn://");        // NOI18N
