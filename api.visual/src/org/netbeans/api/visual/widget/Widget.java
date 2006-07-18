@@ -397,6 +397,14 @@ public class Widget {
         this.bounds = bounds != null ? new Rectangle (bounds) : new Rectangle (getPreferredBounds ());
     }
 
+    public final Rectangle getClientArea () {
+        Rectangle bounds = getBounds ();
+        if (bounds == null)
+            return null;
+        Insets insets = getBorder ().getInsets ();
+        return new Rectangle (bounds.x + insets.left, bounds.y + insets.top, bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
+    }
+
     public boolean isHitAt (Point localLocation) {
         return getBounds ().contains (localLocation);
     }
