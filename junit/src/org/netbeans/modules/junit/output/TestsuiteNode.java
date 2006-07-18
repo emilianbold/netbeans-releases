@@ -66,7 +66,7 @@ final class TestsuiteNode extends AbstractNode {
         this.suiteName = (report != null) ? report.suiteClassName : suiteName;
         this.filtered = filtered;
         
-        assert suiteName != null;
+        assert this.suiteName != null;
         
         setDisplayName();
         setIconBaseWithExtension(
