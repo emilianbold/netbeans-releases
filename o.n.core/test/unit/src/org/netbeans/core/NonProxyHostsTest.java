@@ -94,4 +94,14 @@ public class NonProxyHostsTest extends NbTestCase {
         assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " DIRECT ignoring settings " + System.getProperty ("http.nonProxyHosts"), "[DIRECT]", selector.select (TO_LOCAL_DOMAIN_2).toString ());
         assertEquals ("Connect TO_EXTERNAL via system.cache.org:777 proxy..", "[HTTP @ system.cache.org:777]", selector.select (TO_EXTERNAL).toString ());
     }
+
+    public void testTemporaryNonProxySettingsOnWindows () throws Exception {
+        System.setProperty ("http.nonProxyHosts", "*.other.org");
+        assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " DIRECT ignoring settings " + System.getProperty ("http.nonProxyHosts"), "[DIRECT]", selector.select (TO_LOCAL_DOMAIN_2).toString ());
+        System.setProperty ("http.nonProxyHosts", "cml*");
+        assertEquals ("Connect cml DIRECT ignoring settings " + System.getProperty ("http.nonProxyHosts"), "[DIRECT]", selector.select (new URI ("http://cml")).toString ());
+        System.setProperty ("http.nonProxyHosts", "*.other.org*");
+        assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " DIRECT ignoring settings " + System.getProperty ("http.nonProxyHosts"), "[DIRECT]", selector.select (TO_LOCAL_DOMAIN_2).toString ());
+    }
+
 }

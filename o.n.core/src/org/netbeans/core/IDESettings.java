@@ -686,7 +686,7 @@ public class IDESettings extends SystemOption {
         String reguralProxyHosts = "";
         while (st.hasMoreTokens ()) {
             String t = st.nextToken ();
-            if (! t.endsWith ("*")) { //NOI18N
+            if (t.indexOf ('*') == -1) { //NOI18N
                 t = t + '*'; //NOI18N
             }
             reguralProxyHosts = reguralProxyHosts + (reguralProxyHosts.length () > 0 ? "|" : "") + t; //NOI18N
