@@ -78,6 +78,25 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+          <test-dependencies>
+              <test-type>
+                  <name>unit</name>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.text</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                  </test-dependency>
+              </test-type>
+              <test-type>
+                  <name>qa-functional</name>
+              </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.j2ee.dd.api.application</package>
                 <package>org.netbeans.modules.j2ee.dd.api.ejb</package>

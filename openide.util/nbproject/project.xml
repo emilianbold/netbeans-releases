@@ -24,6 +24,19 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.openide.util</code-name-base>
             <module-dependencies>
             </module-dependencies>
+          <test-dependencies>
+              <test-type>
+                  <name>unit</name>
+                  <test-dependency>
+                      <code-name-base>org.openide.util</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+              </test-type>
+              <test-type>
+                  <name>qa-functional</name>
+              </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.openide</package>
                 <package>org.openide.util</package>
