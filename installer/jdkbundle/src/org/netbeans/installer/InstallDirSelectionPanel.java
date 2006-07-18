@@ -112,6 +112,12 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                     "installLocation",
                     resolveString(BUNDLE + "Product.installLocationForNonRoot)"));
                 }
+            } else {
+                service.setProductBeanProperty(
+                ProductService.DEFAULT_PRODUCT_SOURCE,
+                null,
+                "installLocation",
+                resolveString(BUNDLE + "Product.installLocationWindows)"));
             }
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
