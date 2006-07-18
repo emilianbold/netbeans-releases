@@ -23,6 +23,8 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -376,6 +378,13 @@ public class Evaluator extends javax.swing.JPanel {
             component = new JScrollPane(editor,
                                         JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            editor.addFocusListener(new FocusListener() {
+                public void focusGained(FocusEvent e) {
+                    WatchPanel.setupContext(editor);
+                }
+                public void focusLost(FocusEvent e) {
+                }
+            });
         }
         
         public void addActionListener(java.awt.event.ActionListener actionListener) {

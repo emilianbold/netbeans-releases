@@ -61,18 +61,8 @@ public class WatchPanel {
     public WatchPanel(String expression) {
         this.expression = expression;
     }
-
-    public JComponent getPanel() {
-        if (panel != null) return panel;
-
-        panel = new JPanel();
-        ResourceBundle bundle = NbBundle.getBundle(WatchPanel.class);
-
-        panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
-        JLabel textLabel = new JLabel (bundle.getString ("CTL_Watch_Name")); // NOI18N
-        editorPane = new JEditorPane("text/x-java", expression); // NOI18N
-        editorPane.setKeymap(new FilteredKeymap(editorPane.getKeymap()));
-        
+    
+    public static void setupContext(JEditorPane editorPane) {
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
         JPDADebugger d = (JPDADebugger) en.lookupFirst(null, JPDADebugger.class);
         CallStackFrame csf = d.getCurrentCallStackFrame();
@@ -95,6 +85,20 @@ public class WatchPanel {
             }
             editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
         }
+    }
+
+    public JComponent getPanel() {
+        if (panel != null) return panel;
+
+        panel = new JPanel();
+        ResourceBundle bundle = NbBundle.getBundle(WatchPanel.class);
+
+        panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
+        JLabel textLabel = new JLabel (bundle.getString ("CTL_Watch_Name")); // NOI18N
+        editorPane = new JEditorPane("text/x-java", expression); // NOI18N
+        editorPane.setKeymap(new FilteredKeymap(editorPane.getKeymap()));
+        
+        setupContext(editorPane);
         
         JScrollPane sp = new JScrollPane(editorPane, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                                      JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
