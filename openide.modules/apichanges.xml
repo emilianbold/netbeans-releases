@@ -24,6 +24,22 @@ Microsystems, Inc. All Rights Reserved.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="needs">
+        <api name="modules"/>
+        <summary>Requires/Provides and Needs</summary>
+        <version major="7" minor="1"/>
+        <date day="19" month="7" year="2006"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="yes" deletion="no" modification="no"/>
+        <description>
+            It is possible to require some implementation using
+            <code>OpenIDE-Module-Needs: token</code> which is slightly
+            less restrictive than usual
+            <code>OpenIDE-Module-Requires: token</code> as
+            explain in the <a href="@TOP@/org/openide/modules/doc-files/api.html#7.1">documentation</a>.
+        </description>
+        <class package="org.openide.modules" name="Dependency"/>
+    </change>
     <change id="generified">
         <api name="modules"/>
         <summary>Generified Interfaces</summary>

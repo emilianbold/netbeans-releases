@@ -1071,10 +1071,20 @@ public final class ModuleManager {
                 if (! other.isEnabled()) {
                     maybeAddToEnableList(willEnable, mightEnable, other, false);
                 }
-            } else if (dep.getType() == Dependency.TYPE_REQUIRES) {
+            } else if (
+                dep.getType() == Dependency.TYPE_REQUIRES || 
+                dep.getType() == Dependency.TYPE_NEEDS ||
+                dep.getType() == Dependency.TYPE_RECOMMENDS
+            ) {
                 String token = dep.getName();
                 Set<Module> providers = providersOf.get(token);
-                if (providers == null) throw new IllegalStateException("Should have found a provider of: " + token); // NOI18N
+                if (providers == null) {
+                    if (dep.getType() != Dependency.TYPE_RECOMMENDS) {
+                        throw new IllegalStateException("Should have found a provider of: " + token); // NOI18N
+                    } else {
+                        continue;
+                    }
+                }
                 // First check if >= 1 is already enabled or will be soon. If so, great.
                 boolean foundOne = false;
                 for (Module other : providers) {
@@ -1241,7 +1251,10 @@ public final class ModuleManager {
                         // No need to scan the rest of its dependencies.
                         break;
                     }
-                } else if (dep.getType() == Dependency.TYPE_REQUIRES) {
+                } else if (
+                    dep.getType() == Dependency.TYPE_REQUIRES || 
+                    dep.getType() == Dependency.TYPE_NEEDS
+                ) {
                     if (m.provides(dep.getName())) {
                         // Careful. There may be some third module still enabled which
                         // provides this same token too.
@@ -1284,7 +1297,11 @@ public final class ModuleManager {
                                 // Still used, skip it.
                                 continue FIND_AUTOLOADS;
                             }
-                        } else if (dep.getType() == Dependency.TYPE_REQUIRES) {
+                        } else if (
+                            dep.getType() == Dependency.TYPE_REQUIRES ||
+                            dep.getType() == Dependency.TYPE_NEEDS ||
+                            dep.getType() == Dependency.TYPE_RECOMMENDS
+                        ) {
                             // Here we play it safe and leave autoloads on if they provide
                             // something used by some module - even if technically it would
                             // be possible to turn off the autoload because there is another
@@ -1315,10 +1332,65 @@ public final class ModuleManager {
         // where moduleProblems are used are write-mutex only and so do not have
         // to worry about contention.
         synchronized (moduleProblems) {
-            return _missingDependencies(probed);
+            Set<Union2<Dependency,InvalidException>> result;
+            ArrayList<NeedsCheck> check = new ArrayList<NeedsCheck>();
+            result = _missingDependencies(probed, check);
+            LOOP: while (result.isEmpty()) {
+                for (NeedsCheck needs : check) {
+                    String token = needs.dep.getName();
+                    Set<Module> providers = providersOf.get(token);
+                    if (providers == null) {
+                        if (needs.dep.getType() == Dependency.TYPE_NEEDS) {
+                            // Nobody provides it. This dep failed.
+                            result.add(Union2.<Dependency,InvalidException>createFirst(needs.dep));
+                        } else {
+                            // TYPE_RECOMMENDS is ok if not present
+                            assert needs.dep.getType() == Dependency.TYPE_RECOMMENDS;
+                        }
+                    } else {
+                        // We have some possible providers. Check that at least one is good.
+                        boolean foundOne = false;
+                        Set<Module> possibleModules = new HashSet<Module>();
+                        for (Module other : providers) {
+                            if (other.isEnabled()) {
+                                foundOne = true;
+                                break;
+                            }
+                        }
+                        if (!foundOne) {
+                            for (Module m : providers) {
+                                ArrayList<NeedsCheck> arr = new ArrayList<NeedsCheck>();
+                                if (!_missingDependencies(m, arr).isEmpty()) {
+                                    continue;
+                                }
+                                
+                                if (!arr.isEmpty()) {
+                                    check.addAll(arr);
+                                    // restart the check
+                                    continue LOOP;
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+                break LOOP;
+            }
+            return result;
         }
     }
-    private Set<Union2<Dependency,InvalidException>> _missingDependencies(Module probed) {
+    
+    private static class NeedsCheck {
+        public final Module module;
+        public final Dependency dep;
+        
+        public NeedsCheck(Module m, Dependency d) {
+            this.module = m;
+            this.dep = d;
+        }
+    }
+    
+    private Set<Union2<Dependency,InvalidException>> _missingDependencies(Module probed, Collection<NeedsCheck> nonOrderingCheck) {
             Set<Union2<Dependency,InvalidException>> probs = moduleProblems.get(probed);
             if (probs == null) {
                 probs = new HashSet<Union2<Dependency,InvalidException>>(8);
@@ -1388,7 +1460,7 @@ public final class ModuleManager {
                         if (! other.isEnabled()) {
                             // Need to make sure the other one is not missing anything either.
                             // Nor that it depends (directly on indirectly) on this one.
-                            if (! _missingDependencies(other).isEmpty()) {
+                            if (! _missingDependencies(other, nonOrderingCheck).isEmpty()) {
                                 // This is a little subtle. Either the other module had real
                                 // problems, in which case our dependency on it is not legit.
                                 // Or, the other actually depends cyclically on this one. In
@@ -1422,7 +1494,7 @@ public final class ModuleManager {
                                 if (other.isEnabled()) {
                                     foundOne = true;
                                 } else {
-                                    if (_missingDependencies(other).isEmpty()) {
+                                    if (_missingDependencies(other, nonOrderingCheck).isEmpty()) {
                                         // See comment above for regular module deps
                                         // re. use of PROBING_IN_PROCESS.
                                         foundOne = true;
@@ -1434,6 +1506,8 @@ public final class ModuleManager {
                                 probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                             }
                         }
+                    } else if (dep.getType() == Dependency.TYPE_NEEDS || dep.getType() == Dependency.TYPE_RECOMMENDS) {
+                        nonOrderingCheck.add(new NeedsCheck(probed, dep));
                     } else {
                         assert dep.getType() == Dependency.TYPE_JAVA;
                         // Java dependency. Fixed for whole VM session, safe to check once and keep.
@@ -1474,7 +1548,10 @@ public final class ModuleManager {
                         }
                         Dependency dep = problem.first();
                         if (dep.getType() != Dependency.TYPE_MODULE &&
-                                dep.getType() != Dependency.TYPE_REQUIRES) {
+                            dep.getType() != Dependency.TYPE_REQUIRES && 
+                            dep.getType() != Dependency.TYPE_NEEDS &&
+                            dep.getType() != Dependency.TYPE_RECOMMENDS 
+                        ) {
                             // Also a hard problem.
                             continue;
                         }

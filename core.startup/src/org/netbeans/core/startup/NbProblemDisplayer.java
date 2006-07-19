@@ -112,6 +112,7 @@ public final class NbProblemDisplayer {
                     }
                 }
             case Dependency.TYPE_REQUIRES:
+            case Dependency.TYPE_NEEDS:
                 polite = (String)m.getLocalizedAttribute("OpenIDE-Module-Requires-Message"); // NOI18N
                 if (polite != null) {
                     return polite;

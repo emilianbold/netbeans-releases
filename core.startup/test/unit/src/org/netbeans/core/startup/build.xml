@@ -158,6 +158,12 @@ Microsystems, Inc. All Rights Reserved.
         <jar jarfile="jars/dep-on-relvertest-3-4.jar" manifest="jars/dep-on-relvertest-3-4.mf"/>
         <jar jarfile="jars/dep-on-relvertest-some.jar" manifest="jars/dep-on-relvertest-some.mf"/>
         <jar jarfile="jars/depends-on-simple-module-2.jar" manifest="jars/depends-on-simple-module-2.mf"/>
+        <jar jarfile="jars/needs-foo.jar" manifest="jars/needs-foo.mf"/>
+        <jar jarfile="jars/recommends-foo.jar" manifest="jars/recommends-foo.mf"/>
+        <antcall target="create-jar">
+            <param name="name" value="prov-foo-depends-needs_foo"/>
+            <param name="sourcedir" value="jars/prov-foo"/>
+        </antcall>
         <antcall target="create-jar">
             <param name="name" value="api-mod-export-all"/>
             <param name="sourcedir" value="jars/exposes-api"/>

@@ -19,8 +19,11 @@
 
 package org.netbeans.core.startup;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -32,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,8 +45,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import junit.framework.Test;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
@@ -50,11 +57,14 @@ import org.netbeans.Util;
 import org.netbeans.core.startup.SetupHid.FakeEvents;
 import org.netbeans.core.startup.SetupHid.FakeModuleInstaller;
 import org.netbeans.core.startup.SetupHid.LoggedPCListener;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 
 /** Test the module manager as well as the Module class.
@@ -88,6 +98,10 @@ public class ModuleManagerTest extends SetupHid {
         super(name);
     }
 
+    public static Test suite() {
+        return new NbTestSuite(ModuleManagerTest.class);
+        //return new ModuleManagerTest("testNeedsWithAProviderWithoutAProvider");
+    }
     /*
     public static void main(String[] args) {
         // Turn on verbose logging while developing tests:
@@ -1028,7 +1042,402 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
+    
+    public void testSimpleProvNeeds() throws Exception {
+        doSimpleProvNeeds(false, false);
+    }
+    
+    public void testSimpleProvNeedsReversed() throws Exception {
+        doSimpleProvNeeds(true, false);
+    }
 
+    public void testSimpleSatisfiedProvRecommends() throws Exception {
+        doSimpleProvNeeds(false, true);
+    }
+    
+    public void testSimpleSatisfiedProvRecommendsReversed() throws Exception {
+        doSimpleProvNeeds(true, true);
+    }
+    
+    private void doSimpleProvNeeds(boolean reverseOrder, boolean recommends) throws Exception {
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m1 = mgr.create(new File(jars, "prov-foo-depends-needs_foo.jar"), null, false, false, false);
+            Module m2;
+            if (recommends) {
+                m2 = mgr.create(new File(jars, "recommends-foo.jar"), null, false, false, false);
+            } else {
+                m2 = mgr.create(new File(jars, "needs-foo.jar"), null, false, false, false);
+            }
+            assertEquals(Collections.singletonList("foo"), Arrays.asList(m1.getProvides()));
+            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            assertEquals(1, m1.getDependencies().size());
+            int type = recommends ? Dependency.TYPE_RECOMMENDS : Dependency.TYPE_NEEDS;
+            assertEquals(Dependency.create(type, "foo"), m2.getDependencies());
+            Map<String,Module> modulesByName = new HashMap<String,Module>();
+            modulesByName.put(m1.getCodeNameBase(), m1);
+            modulesByName.put(m2.getCodeNameBase(), m2);
+            Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
+            providersOf.put("foo", Collections.singleton(m1));
+            List<Module> m1m2 = Arrays.asList(new Module[] {m1, m2});
+            List<Module> m2m1 = Arrays.asList(new Module[] {m2, m1});
+            Map<Module,List<Module>> deps = Util.moduleDependencies(m1m2, modulesByName, providersOf);
+            assertEquals(Collections.singletonList(m2), deps.get(m1));
+/*            assertEquals(Collections.singletonList(m1), deps.get(m2));
+            
+            try {
+                Utilities.topologicalSort(m1m2, deps);
+            } catch (TopologicalSortException ex) {
+                Set[] arr = ex.unsortableSets();
+                assertEquals("One unsortable set", 1, arr.length);
+                assertEquals("It contains two elements", 2, arr[0].size());
+                assertTrue("m1 is there", arr[0].contains(m1));
+                assertTrue("m2 is there", arr[0].contains(m2));
+            }*/
+            Set<Module> m1PlusM2 = new LinkedHashSet<Module>();
+            if (reverseOrder) {
+                m1PlusM2.add(m2);
+                m1PlusM2.add(m1);
+            } else {
+                m1PlusM2.add(m1);
+                m1PlusM2.add(m2);
+            }
+            List<Module> toEnable = mgr.simulateEnable(m1PlusM2);
+            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m2, m1}), toEnable);
+            toEnable = mgr.simulateEnable(Collections.singleton(m1));
+            assertEquals("correct result of simulateEnable #2", Arrays.asList(new Module[] {m2, m1}), toEnable);
+            toEnable = mgr.simulateEnable(Collections.singleton(m2));
+            assertEquals("correct result of simulateEnable #3", Arrays.asList(new Module[] {m2, m1}), toEnable);
+            mgr.enable(m1PlusM2);
+            assertEquals(Arrays.asList(new String[] {
+                "prepare",
+                "prepare",
+                "load"
+            }), installer.actions);
+            assertEquals(Arrays.asList(new Object[] {
+                m2,
+                m1,
+                Arrays.asList(new Module[] {m2, m1})
+            }), installer.args);
+            Class testclazz = Class.forName("org.prov_foo.Clazz", true, m1.getClassLoader());
+            try {
+                Class.forName("org.prov_foo.Clazz", true, m2.getClassLoader());
+                fail("Should not be able to access classes due to prov-req deps only");
+            } catch (ClassNotFoundException cnfe) {
+                // OK, good.
+            }
+            installer.clear();
+            List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m1));
+            if (!recommends) {
+                assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m1, m2}), toDisable);
+                toDisable = mgr.simulateDisable(m1PlusM2);
+                assertEquals("correct result of simulateDisable #2", Arrays.asList(new Module[] {m1, m2}), toDisable);
+                mgr.disable(m1PlusM2);
+                assertFalse(m1.isEnabled());
+                assertFalse(m2.isEnabled());
+                assertEquals(Arrays.asList(new String[] {
+                    "unload",
+                    "dispose",
+                    "dispose"
+                }), installer.actions);
+                assertEquals(Arrays.asList(new Object[] {
+                    Arrays.asList(new Module[] {m1, m2}),
+                    m1,
+                    m2
+                }), installer.args);
+            } else {
+                assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m1 }), toDisable);
+                toDisable = mgr.simulateDisable(m1PlusM2);
+                assertEquals("correct result of simulateDisable #2", Arrays.asList(new Module[] {m1, m2}), toDisable);
+                mgr.disable(m1);
+                assertFalse(m1.isEnabled());
+                assertTrue(m2.isEnabled());
+                mgr.disable(m2);
+                assertFalse(m2.isEnabled());
+                assertEquals(Arrays.asList(new String[] {
+                    "unload",
+                    "dispose",
+                    "unload",
+                    "dispose"
+                }), installer.actions);
+                assertEquals(Arrays.asList(new Object[] {
+                    Arrays.asList(new Module[] {m1}),
+                    m1,
+                    Arrays.asList(new Module[] {m2}),
+                    m2
+                }), installer.args);
+            }
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
+    public void testComplexProvNeeds() throws Exception {
+        doComplexProvNeeds(false, false, false);
+    }
+    
+    public void testComplexProvNeedsReversed() throws Exception {
+        doComplexProvNeeds(true, false, false);
+    }
+
+    public void testComplexSatisfiedProvRecommends() throws Exception {
+        doComplexProvNeeds(false, true, false);
+    }
+    
+    public void testComplexSatisfiedProvRecommendsReversed() throws Exception {
+        doComplexProvNeeds(true, true, true);
+    }
+
+    public void testComplexProvNeeds2() throws Exception {
+        doComplexProvNeeds(false, false, true);
+    }
+    
+    public void testComplexProvNeedsReversed2() throws Exception {
+        doComplexProvNeeds(true, false, true);
+    }
+
+    public void testComplexSatisfiedProvRecommends2() throws Exception {
+        doComplexProvNeeds(false, true, true);
+    }
+    
+    public void testComplexSatisfiedProvRecommendsReversed2() throws Exception {
+        doComplexProvNeeds(true, true, true);
+    }
+    
+    private void doComplexProvNeeds(boolean reverseOrder, boolean recommends, boolean sndRec) throws Exception {
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m1 = mgr.create(new File(jars, "prov-foo-depends-needs_foo.jar"), null, false, true, false);
+            Module m2;
+            if (recommends) {
+                m2 = mgr.create(new File(jars, "recommends-foo.jar"), null, false, false, false);
+            } else {
+                m2 = mgr.create(new File(jars, "needs-foo.jar"), null, false, false, false);
+            }
+            Module m3 = null;
+            if (sndRec) {
+                String manifest = "Manifest-Version: 1.0\n" +
+"OpenIDE-Module: snd.needs_foo\n" +
+"OpenIDE-Module-Name: 2nd Needs foo\n" +
+"OpenIDE-Module-Needs: foo\n";
+                m3 = mgr.create(copyJar(m2.getJarFile(), manifest), null, false, false, false);
+            } else {
+                String manifest = "Manifest-Version: 1.0\n" +
+"OpenIDE-Module: snd.needs_foo\n" +
+"OpenIDE-Module-Name: 2nd Needs foo\n" +
+"OpenIDE-Module-Recommends: foo\n";
+                m3 = mgr.create(copyJar(m2.getJarFile(), manifest), null, false, false, false);
+            }
+            assertEquals(Collections.singletonList("foo"), Arrays.asList(m1.getProvides()));
+            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            assertEquals(1, m1.getDependencies().size());
+            int type = recommends ? Dependency.TYPE_RECOMMENDS : Dependency.TYPE_NEEDS;
+            assertEquals(Dependency.create(type, "foo"), m2.getDependencies());
+            Map<String,Module> modulesByName = new HashMap<String,Module>();
+            modulesByName.put(m1.getCodeNameBase(), m1);
+            modulesByName.put(m2.getCodeNameBase(), m2);
+            Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
+            providersOf.put("foo", Collections.singleton(m1));
+            List<Module> m1m2 = Arrays.asList(new Module[] {m1, m2});
+            List<Module> m2m1 = Arrays.asList(new Module[] {m2, m1});
+            Map<Module,List<Module>> deps = Util.moduleDependencies(m1m2, modulesByName, providersOf);
+            assertEquals(Collections.singletonList(m2), deps.get(m1));
+            List<Module> toEnable = mgr.simulateEnable(Collections.singleton(m2));
+            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m2, m1}), toEnable);
+
+            mgr.enable(m2);
+            assertEquals(Arrays.asList(new String[] {
+                "prepare",
+                "prepare",
+                "load"
+            }), installer.actions);
+            assertEquals(Arrays.asList(new Object[] {
+                m2,
+                m1,
+                Arrays.asList(new Module[] {m2, m1})
+            }), installer.args);
+            Class testclazz = Class.forName("org.prov_foo.Clazz", true, m1.getClassLoader());
+            try {
+                Class.forName("org.prov_foo.Clazz", true, m2.getClassLoader());
+                fail("Should not be able to access classes due to prov-req deps only");
+            } catch (ClassNotFoundException cnfe) {
+                // OK, good.
+            }
+            
+            mgr.enable(m3);
+            assertTrue("m3 enabled1", m3.isEnabled());
+            
+            installer.clear();
+            List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m3));
+            if (!recommends) {
+                mgr.disable(m3);
+                assertFalse("M3 enabled", m3.isEnabled());
+                assertTrue("Provider enabled", m1.isEnabled());
+                assertTrue(m2.isEnabled());
+                assertEquals(Arrays.asList(new String[] {
+                    "unload",
+                    "dispose"
+                }), installer.actions);
+                assertEquals(Arrays.asList(new Object[] {
+                    Arrays.asList(new Module[] { m3 }),
+                    m3
+                }), installer.args);
+            } else {
+                mgr.disable(m3);
+                assertFalse(m3.isEnabled());
+                assertTrue(m2.isEnabled());
+                assertTrue(m1.isEnabled());
+                assertEquals(Arrays.asList(new String[] {
+                    "unload",
+                    "dispose"
+                }), installer.actions);
+                assertEquals(Arrays.asList(new Object[] {
+                    Arrays.asList(new Module[] {m3}),
+                    m3,
+                }), installer.args);
+            }
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+    
+    public void testRecommendsWithoutAProvider() throws Exception {
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m2 = mgr.create(new File(jars, "recommends-foo.jar"), null, false, false, false);
+            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            assertEquals(Dependency.create(Dependency.TYPE_RECOMMENDS, "foo"), m2.getDependencies());
+            Map<String,Module> modulesByName = new HashMap<String,Module>();
+            modulesByName.put(m2.getCodeNameBase(), m2);
+            Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
+            List<Module> m2List = Arrays.asList(new Module[] { m2 });
+            Map<Module,List<Module>> deps = Util.moduleDependencies(m2List, modulesByName, providersOf);
+            assertEquals(null, deps.get(m2));
+
+            List<Module> toEnable = mgr.simulateEnable(new HashSet<Module>(m2List));
+            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m2}), toEnable);
+            mgr.enable(new HashSet<Module>(m2List));
+            assertEquals(Arrays.asList(new String[] {
+                "prepare",
+                "load"
+            }), installer.actions);
+            assertEquals(Arrays.asList(new Object[] {
+                m2,
+//                m1,
+                Arrays.asList(new Module[] {m2})
+            }), installer.args);
+            installer.clear();
+            List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m2));
+            assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2}), toDisable);
+            mgr.disable(m2);
+            assertFalse(m2.isEnabled());
+            assertEquals(Arrays.asList(new String[] {
+                "unload",
+                "dispose"
+            }), installer.actions);
+            assertEquals(Arrays.asList(new Object[] {
+                Arrays.asList(new Module[] {m2}),
+//                m1,
+                m2
+            }), installer.args);
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
+    public void testNeedsWithAProviderWithoutAProvider() throws Exception {
+        doRecommendsWithAProviderWithoutAProvider(false);
+    }
+    
+    public void testRecommendsWithAProviderWithoutAProvider() throws Exception {
+        doRecommendsWithAProviderWithoutAProvider(true);
+    }
+
+    private void doRecommendsWithAProviderWithoutAProvider(boolean recommends) throws Exception {
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m2 = mgr.create(new File(jars, "recommends-foo.jar"), null, false, false, false);
+            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            
+            Module m1;
+            {
+                String manifest = "Manifest-Version: 1.0\n" +
+"OpenIDE-Module: snd.provides.foo\n" +
+"OpenIDE-Module-Name: Provides foo\n" +
+"OpenIDE-Module-Provides: foo\n" +
+"OpenIDE-Module-Needs: bla\n";
+                m1 = mgr.create(copyJar(m2.getJarFile(), manifest), null, false, true, false);
+                
+            }
+            assertEquals(Dependency.create(Dependency.TYPE_RECOMMENDS, "foo"), m2.getDependencies());
+            Map<String,Module> modulesByName = new HashMap<String,Module>();
+            modulesByName.put(m2.getCodeNameBase(), m2);
+            Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
+            List<Module> m2List = Arrays.asList(new Module[] { m2 });
+            Map<Module,List<Module>> deps = Util.moduleDependencies(m2List, modulesByName, providersOf);
+            assertEquals(null, deps.get(m2));
+
+            List<Module> toEnable = mgr.simulateEnable(new HashSet<Module>(m2List));
+            assertEquals("cannot enable while provider of bla is missing", Collections.emptyList(), toEnable);
+
+
+//            try {
+//                mgr.enable(new HashSet<Module>(m2List));
+//                fail("Shall not allow enablement as 'bar' is missing");
+//            } catch (IllegalArgumentException ex) {
+//                // this cannot be enabled
+//            }
+            
+            
+            Module m3;
+            {
+                String manifest = "Manifest-Version: 1.0\n" +
+"OpenIDE-Module: snd.provides.bar\n" +
+"OpenIDE-Module-Name: Provides bar\n" +
+"OpenIDE-Module-Provides: bla\n";
+                m3 = mgr.create(copyJar(m2.getJarFile(), manifest), null, false, true, false);
+            }
+            
+            Set allThreeModules = new HashSet(Arrays.asList(new Module[] {m1, m3, m2, }));
+            
+            toEnable = mgr.simulateEnable(new HashSet<Module>(m2List));
+            assertEquals("all 3 need to be enabled", allThreeModules, new HashSet(toEnable));
+            
+            mgr.enable(new HashSet<Module>(m2List));
+            assertEquals(Arrays.asList(new String[] {
+                "prepare",
+                "prepare",
+                "prepare",
+                "load"
+            }), installer.actions);
+            installer.clear();
+            List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m2));
+            assertEquals("correct result of simulateDisable", allThreeModules, new HashSet(toDisable));
+            mgr.disable(m2);
+            assertFalse(m2.isEnabled());
+            assertEquals(Arrays.asList(new String[] {
+                "unload",
+                "dispose",
+                "dispose",
+                "dispose"
+            }), installer.actions);
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+    
     public void testMultipleReqs() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1877,6 +2286,27 @@ public class ModuleManagerTest extends SetupHid {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
+    }
+
+    private File copyJar(File file, String manifest) throws IOException {
+        File ret = File.createTempFile(file.getName(), "2ndcopy", file.getParentFile());
+        JarFile jar = new JarFile(file);
+        JarOutputStream os = new JarOutputStream(new FileOutputStream(ret), new Manifest(
+            new ByteArrayInputStream(manifest.getBytes())
+        ));
+        Enumeration<JarEntry> en = jar.entries();
+        while (en.hasMoreElements()) {
+            JarEntry elem = en.nextElement();
+            if (elem.getName().equals("META-INF/MANIFEST.MF")) {
+                continue;
+            }
+            os.putNextEntry(elem);
+            InputStream is = jar.getInputStream(elem);
+            FileUtil.copy(is, os);
+            is.close();
+        }
+        os.close();
+        return ret;
     }
 
 }

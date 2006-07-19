@@ -113,3 +113,4 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-jackpot@" value="${javadoc.docs.org-netbeans-jackpot}"/>
 <replacefilter token="@org-netbeans-modules-indexedannotations@" value="${javadoc.docs.org-netbeans-modules-indexedannotations}"/>
 <replacefilter token="@org-netbeans-modules-junit@" value="${javadoc.docs.org-netbeans-modules-junit}"/>
+<replacefilter token="@org-netbeans-api-actions-support@" value="${javadoc.docs.org-netbeans-api-actions-support}"/>

@@ -196,6 +196,8 @@ public final class AutomaticDependencies {
                 pkgDeps.put(name, d);
                 break;
             case Dependency.TYPE_REQUIRES:
+            case Dependency.TYPE_NEEDS:
+            case Dependency.TYPE_RECOMMENDS:
                 tokDeps.put(d.getName(), d);
                 break;
             case Dependency.TYPE_JAVA:

@@ -774,8 +774,19 @@ package or class name - perhaps taken to be the name of a class which will
 be supplied to the lookup system, though there could be other meanings. A module
 may also <em>require</em> one or more tokens. A module which requires some tokens
 may only be enabled by the system if for each such token, there is at least one other
-module which provides that token and is already enabled.
+module which provides that token and is already enabled. 
 
+<a name="7.1"></a>
+Since version 7.1 there is also support for <code>OpenIDE-Module-Needs</code>
+which is a weaker version of requires as it does not impose any restriction on
+the ordering of module. The <code>OpenIDE-Module-Needs</code> is useful for
+modules that define some API and require an implementation of it. Just 
+specify the <q>need</q> for an implementation and make other modules depend
+on your module and <code>OpenIDE-Module-Provides</code> the implementation token.
+Moreover there is also <code>OpenIDE-Module-Recommends</code> which is even
+weaker version as it creates a conditional dependency - e.g. enables the module
+providing the token only if it is available, however if it is not, no dependency
+is broken.
 </ol>
 
 At the heart of all these tags are the conventions used in the 

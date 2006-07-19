@@ -53,6 +53,21 @@ public final class Dependency {
      */
     public final static int TYPE_REQUIRES = 5;
 
+    /** Dependency on a token, but without need to have token provider be initialised sooner.
+     * @see ModuleInfo#getProvides
+     * @since 7.1
+     */
+    public final static int TYPE_NEEDS = 6;
+
+    /** An advisory dependency on a token. If at least one provider of such token is 
+     * available, it is enabled. If there is no such provider, then nothing is done
+     * or reported.
+     *
+     * @see ModuleInfo#getProvides
+     * @since 7.1
+     */
+    public final static int TYPE_RECOMMENDS = 7;
+
     /** Comparison by specification version. */
     public final static int COMPARE_SPEC = 1;
 
@@ -316,6 +331,18 @@ public final class Dependency {
             } else if (type == Dependency.TYPE_REQUIRES) {
                 if (comparison != Dependency.COMPARE_ANY) {
                     throw new IllegalArgumentException("Cannot give a comparison for a token requires dep: " + body); // NOI18N
+                }
+
+                checkCodeName(name, false);
+            } else if (type == Dependency.TYPE_NEEDS) {
+                if (comparison != Dependency.COMPARE_ANY) {
+                    throw new IllegalArgumentException("Cannot give a comparison for a token needs dep: " + body); // NOI18N
+                }
+
+                checkCodeName(name, false);
+            } else if (type == Dependency.TYPE_RECOMMENDS) {
+                if (comparison != Dependency.COMPARE_ANY) {
+                    throw new IllegalArgumentException("Cannot give a comparison for a token needs dep: " + body); // NOI18N
                 }
 
                 checkCodeName(name, false);

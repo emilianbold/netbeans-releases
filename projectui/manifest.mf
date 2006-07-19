@@ -4,5 +4,8 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Install: org/netbeans/modules/project/ui/ProjectUiModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/project/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/project/ui/Bundle.properties
-OpenIDE-Module-Provides: org.netbeans.modules.project.uiapi.ActionsFactory, org.netbeans.modules.project.uiapi.OpenProjectsTrampoline, org.netbeans.modules.project.uiapi.ProjectChooserFactory
+OpenIDE-Module-Provides: 
+   org.netbeans.modules.project.uiapi.ActionsFactory, 
+   org.netbeans.modules.project.uiapi.OpenProjectsTrampoline,
+   org.netbeans.modules.project.uiapi.ProjectChooserFactory
 

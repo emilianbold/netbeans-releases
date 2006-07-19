@@ -45,10 +45,6 @@ public abstract class IOProvider {
      * instance in lookup, a fallback instance is created which just uses the
      * standard system I/O streams. This is useful for unit tests and perhaps
      * for standalone usage of various libraries.
-     * <p>
-     * Assuming you want to ensure that a real output window implementation is actually
-     * installed and enabled, you must require the token <code>org.openide.windows.IOProvider</code>
-     * from the module calling this method.
      * @return the default instance (never null)
      */
     public static IOProvider getDefault() {
@@ -67,7 +63,7 @@ public abstract class IOProvider {
      * the output window.  Streams for reading/writing can be accessed via
      * getters on the returned instance.
      *
-     * @param name A localized display name for the tab
+     * @param name A localised display name for the tab
      * @param newIO if <tt>true</tt>, a new <code>InputOutput</code> is returned, else an existing <code>InputOutput</code> of the same name may be returned
      * @return an <code>InputOutput</code> instance for accessing the new tab
      * @see InputOutput

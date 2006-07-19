@@ -4,9 +4,6 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/apache/tools/ant/module/Bundle.properties
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class
 OpenIDE-Module-Layer: org/apache/tools/ant/module/resources/AntModuleLayer.xml
-OpenIDE-Module-Requires: 
-  org.openide.execution.ExecutionEngine,
-  org.openide.windows.IOProvider
 
 Name: org/apache/tools/ant/module/loader/AntProjectDataLoader.class
 OpenIDE-Module-Class: Loader
