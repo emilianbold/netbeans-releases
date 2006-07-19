@@ -111,6 +111,38 @@ public class VMDNodeWidget extends Widget {
         topLayer.addChild (minimizeWidget);
     }
 
+    /**
+     * Check the minimized state.
+     *
+     * @see VMDMinimizeWidget#isMinimized()
+     */
+    public boolean isMinimized() {
+        return minimizeWidget.isMinimized();
+    }
+
+    /**
+     * Set the minimized state.  This method will add/remove child
+     * Widgets from the this Widget and switch Anchors.<br><br>
+     *
+     * When the Widget is minimized, new Edges can't be added to the
+     * children of the Widget since they don't exist on the 
+     * parent anymore.
+     *
+     * @see VMDMinimizeWidget#setMinimized(boolean minimized)
+     */
+    public void setMinimized(boolean minimized) {
+        minimizeWidget.setMinimized(minimized);
+    }
+
+    /**
+     * Change the minimized state to !{@link #isMinimized()}.
+     *
+     * @see VMDMinimizeWidget#toggleMinimized()
+     */
+    public void toggleMinimized() {
+        minimizeWidget.toggleMinimized();
+    }
+
     protected void notifyStateChanged (ObjectState state) {
         if (state.isHovered ())
             setBorder (BORDER_SHADOW_HOVERED);
