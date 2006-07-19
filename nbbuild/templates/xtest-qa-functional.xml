@@ -91,14 +91,15 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
             <pathelement location="${jelly.jar}"/>
         </path>
-        <!-- This property cannot be undefined. -->
+        <!-- These properties cannot be undefined. -->
         <property name="test.qa-functional.cp" value=""/>
+        <property name="test.qa-functional.cp.extra" value=""/>
         <path id="test.qa-functional.compile.cp">
             <pathelement path="${test.qa-functional.cp}"/>
             <path refid="jemmy.and.jelly.path"/>
             <pathelement path="${test.qa-functional.cp.extra}"/>
         </path>
-        <!-- This property cannot be undefined. -->
+        <!-- These properties cannot be undefined. -->
         <property name="test.qa-functional.run.cp.extra" value=""/>
         <property name="test.qa-functional.runtime.cp" value=""/>
         <path id="test.qa-functional.run.cp">
