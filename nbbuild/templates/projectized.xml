@@ -352,6 +352,8 @@ Microsystems, Inc. All Rights Reserved.
                <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
                <mkdir dir="${test.dist.dir}/extralibs"/>
                <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
+           <!-- if project.xml doesn't contain test dependencies -->
+           <property name="test.qa-functional.folder" location="build/test/qa-functional/dist"/>
            <property name="test.qa-functional.out.folder" location="${test.qa-functional.folder}"/>
            <mkdir dir="${test.qa-functional.out.folder}"/>
            <jar destfile="${test.qa-functional.out.folder}/tests.jar" basedir="${build.test.qa-functional.classes.dir}"/>            

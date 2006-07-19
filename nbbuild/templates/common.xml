@@ -362,8 +362,11 @@ Microsystems, Inc. All Rights Reserved.
         
         <available file="${test.unit.dir}/data" type="dir" property="exists.test.data"/>
         <!-- test distribution -->
-               <mkdir dir="${test.dist.dir}/extralibs"/>
-               <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
+           <mkdir dir="${test.dist.dir}/extralibs"/>
+           <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
+           <!-- if project.xml doesn't contain test dependencies -->
+           <property name="test.unit.folder" location="build/test/unit/dist"/>
+                            
            <property name="test.unit.out.folder" location="${test.unit.folder}"/>
            <mkdir dir="${test.unit.out.folder}"/>
            <jar destfile="${test.unit.out.folder}/tests.jar" basedir="${build.test.unit.classes.dir}"/>            
