@@ -142,7 +142,7 @@ public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Nod
 
     public final Collection<EdgeCtrl> findEdgeBetween (NodeCtrl sourceNodeController, NodeCtrl targetNodeController) {
         HashSet<EdgeCtrl> list = new HashSet<EdgeCtrl> ();
-        List<EdgeCtrl> inputEdgeControllers = nodeOutputEdgeControllers.get (targetNodeController);
+        List<EdgeCtrl> inputEdgeControllers = nodeInputEdgeControllers.get (targetNodeController);
         List<EdgeCtrl> outputEdgeControllers = nodeOutputEdgeControllers.get (sourceNodeController);
         for (EdgeCtrl edgeController : inputEdgeControllers)
             if (outputEdgeControllers.contains (edgeController))

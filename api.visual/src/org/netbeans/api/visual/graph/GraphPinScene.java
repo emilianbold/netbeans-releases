@@ -182,7 +182,7 @@ public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeContro
 
     public final Collection<EdgeCtrl> findEdgeBetween (PinCtrl sourcePinController, PinCtrl targetPinController) {
         HashSet<EdgeCtrl> list = new HashSet<EdgeCtrl> ();
-        List<EdgeCtrl> inputEdgeControllers = pinOutputEdgeControllers.get (targetPinController);
+        List<EdgeCtrl> inputEdgeControllers = pinInputEdgeControllers.get (targetPinController);
         List<EdgeCtrl> outputEdgeControllers = pinOutputEdgeControllers.get (sourcePinController);
         for (EdgeCtrl edgeController : inputEdgeControllers)
             if (outputEdgeControllers.contains (edgeController))
