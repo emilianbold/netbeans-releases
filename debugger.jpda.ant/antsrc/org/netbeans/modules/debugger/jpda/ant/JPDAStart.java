@@ -227,7 +227,16 @@ public class JPDAStart extends Task implements Runnable {
                 // This code parses the address string "HOST:PORT" to extract PORT and then point debugee to localhost:PORT
                 // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
                 final Map args = lc.defaultArguments ();
-                String address = lc.startListening (args);
+                String address;
+                try {
+                    address = lc.startListening (args);
+                } catch (java.io.IOException ioex) {
+                    getProject().log("Listening failed with arguments: "+args);
+                    throw ioex;
+                } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException iaex) {
+                    getProject().log("Listening failed with arguments: "+args);
+                    throw iaex;
+                }
                 int port = -1;
                 try {
                     port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
