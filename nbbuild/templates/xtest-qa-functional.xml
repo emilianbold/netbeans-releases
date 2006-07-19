@@ -114,7 +114,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="qa-functional-compiler" depends="build-jellytools">
         <!-- Build tests but don't build module sources. -->
-        <ant dir=".." target="test-build-qa-functional" />
+        <ant dir=".." target="do-test-build-qa-functional" />
         <packageTests/>
     </target>
     
