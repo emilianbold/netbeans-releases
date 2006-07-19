@@ -71,8 +71,6 @@ public final class CheckoutAction extends CallableSystemAction {
                 if(isCanceled()) {
                     return;
                 }
-
-                HistorySettings.getDefault().setCheckoutDirectory(file.getAbsolutePath());
                 
                 setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
                 if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0) {

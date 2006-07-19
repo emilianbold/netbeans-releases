@@ -77,7 +77,7 @@ public final class CheckoutWizard implements ChangeListener {
     /** Called on sucessfull finish. */
     private void onFinished() {
         String checkout = checkoutStep.getWorkdir().getPath();
-        HistorySettings.addRecent(HistorySettings.PROP_CHECKOUT_DIRECTORY, checkout);
+        HistorySettings.getDefault().setCheckoutDirectory(checkout);
     }
 
     private void setErrorMessage(String msg) {
