@@ -311,7 +311,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${cluster}/${module.jar}"/>
             <path refid="test.unit.lib.cp"/>
             <!-- for compatibility with property based classpath-->
-            <pathelement path="${module.classpath}"/>
+            <pathelement path="${module.run.classpath}"/>
             <pathelement path="${test.unit.cp.extra}"/>
         </path>
         <path id="test.unit.run.cp">
@@ -323,6 +323,7 @@ Microsystems, Inc. All Rights Reserved.
            <pathelement path="${build.test.unit.classes.dir}"/>
             <!-- for compatibility with property based classpath-->
             <pathelement path="${module.run.classpath}"/>
+            <pathelement path="${test.unit.run.cp.extra}"/>
             <pathelement path="${test.unit.cp.extra}"/>
         </path>
         
