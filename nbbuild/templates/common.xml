@@ -369,7 +369,7 @@ Microsystems, Inc. All Rights Reserved.
                             
            <property name="test.unit.out.folder" location="${test.unit.folder}"/>
            <mkdir dir="${test.unit.out.folder}"/>
-           <jar destfile="${test.unit.out.folder}/tests.jar" basedir="${build.test.unit.classes.dir}"/>            
+           <jar destfile="${test.unit.out.folder}/tests.jar" basedir="${build.test.unit.classes.dir}" filesetmanifest="merge"/>            
            <!-- create properties -->
             <shorterpaths inref="test.unit.run.cp" 
                            out="test.unit.run.cp.short" 
