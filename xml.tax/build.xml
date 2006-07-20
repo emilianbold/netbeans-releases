@@ -21,31 +21,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <!--
-    Workaround for new DOM3 interfaces that are not avalable on JDK 1.4
-    At runtime on JDK 1.4 we are happy because we do not call any DOM3 methods
-               on JDK 1.5 we are happy because system DOM3 interfaces prevail
-    -->
-    <target name="generate-user-handler">
-        <mkdir dir="build/domhack/org/w3c/dom"/>
-        <echo file="build/domhack/org/w3c/dom/UserDataHandler.java">
-        package org.w3c.dom; public interface UserDataHandler {}
-        </echo>
-        <echo file="build/domhack/org/w3c/dom/TypeInfo.java">
-        package org.w3c.dom; public interface TypeInfo {}
-        </echo>
-        <echo file="build/domhack/org/w3c/dom/DOMConfiguration.java">
-        package org.w3c.dom; public interface DOMConfiguration {}
-        </echo>
-    </target>
-
-    <target name="lib-compile" depends="build-init,generate-user-handler">
+    <target name="lib-compile" depends="build-init">
         <mkdir dir="build/libclasses"/>
         <javac destdir="build/libclasses" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" includeantruntime="false">
             <src path="lib/src"/>
-            <src path="build/domhack"/>
             <classpath>
-                <pathelement location="build/domhack"/>
                 <pathelement location="${xni-impl.jar}"/>
             </classpath>
         </javac>

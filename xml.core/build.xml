@@ -18,36 +18,5 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xml/core" default="netbeans" basedir=".">
-  <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <property name="xml_root" location=".."/>
-    <property name="api_root" location="${xml_root}/api"/>
-    <!--
-    <property name="tax_root" location="${xml_root}/tax"/>
-    <property name="tax_lib_root" location="${tax_root}/lib"/>
-    -->
-
-    <!--
-     - Workaround for new DOM3 interfaces that are not avalable on JDK 1.4
-     - At runtime on JDK 1.4 we are happy because we do not call any DOM3 methods
-     -            on JDK 1.5 we are happy because system DOM3 interfaces prevail
-    -->
-    <target name="generate-user-handler">
-        <mkdir dir="src/org/w3c/dom" />
-        <echo file="src/org/w3c/dom/UserDataHandler.java" >
-        package org.w3c.dom; public interface UserDataHandler {}
-        </echo>
-        <echo file="src/org/w3c/dom/TypeInfo.java" >
-        package org.w3c.dom; public interface TypeInfo {}
-        </echo>
-        <echo file="src/org/w3c/dom/DOMConfiguration.java" >
-        package org.w3c.dom; public interface DOMConfiguration {}
-        </echo>
-    </target>
-
-    <target name="compile" depends="generate-user-handler,projectized-common.compile">
-        <!-- removing temporary org.w3c package from src folder -->
-        <delete dir="src/org/w3c"/>
-    </target>
-
+    <import file="../../nbbuild/templates/projectized.xml"/>
 </project>
