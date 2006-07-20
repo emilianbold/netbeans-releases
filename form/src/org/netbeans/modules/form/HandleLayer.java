@@ -494,7 +494,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         do {
             currMetaComp = formDesigner.getMetaComponent(comp);
-            if (currMetaComp != null) {
+            if (currMetaComp != null && !isDraggedComponent(currMetaComp)) {
                 if (firstMetaComp == null)
                     firstMetaComp = currMetaComp;
 
@@ -885,6 +885,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         FormEditor.getAssistantModel(getFormModel()).setContext("select"); // NOI18N
         return done;
+    }
+
+    private boolean isDraggedComponent(RADComponent metacomp) {
+        if (draggedComponent != null && draggedComponent.movingComponents != null) {
+            for (RADComponent c : draggedComponent.movingComponents) {
+                if (c == metacomp || c.isParentComponent(metacomp))
+                    return true;
+            }
+        }
+        return false;
     }
 
     // Highlighted panel
