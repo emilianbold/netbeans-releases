@@ -37,7 +37,7 @@ public class Scene extends Widget {
 
     private JComponent component;
     private Graphics2D graphics;
-    private WeakSet<JComponent> satelites;
+    private WeakSet satelites;
 
     private Font defaultFont;
     private HashMap<Widget,Rectangle> repaints = new HashMap<Widget, Rectangle> ();
@@ -54,7 +54,7 @@ public class Scene extends Widget {
         setBackground (lookFeel.getBackground ());
         setForeground (lookFeel.getForeground ());
         sceneAnimator = new SceneAnimator (this);
-        satelites = new WeakSet<JComponent> ();
+        satelites = new WeakSet ();
     }
 
     public JComponent createView () {
@@ -220,8 +220,8 @@ public class Scene extends Widget {
     }
 
     private void repaintSatelite () {
-        for (JComponent view : satelites) {
-            view.repaint ();
+        for (Object view : satelites) {
+            ((JComponent) view).repaint ();
         }
     }
 
