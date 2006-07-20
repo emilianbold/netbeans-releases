@@ -104,75 +104,22 @@ Microsystems, Inc. All Rights Reserved.
                       <compile-dependency/>
                   </test-dependency>
                   <test-dependency>
-                      <code-name-base>org.openide.compat</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.core</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.loaders</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.swing.plaf</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.libs.xerces</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.api.progress</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.options</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.explorer</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.dialogs</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.nodes</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.text</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.awt</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.util</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
                       <code-name-base>org.openide.actions</code-name-base>
+                      <recursive/>
+                      <run-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core.startup</code-name-base>
                       <compile-dependency/>
+                      <recursive/>
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.netbeans.core.ui</code-name-base>
                       <compile-dependency/>
+                      <recursive/>
                   </test-dependency>
                   <test-dependency>
-                      <code-name-base>org.openide.modules</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.filesystems</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.swing.tabcontrol</code-name-base>
+                      <code-name-base>org.openide.text</code-name-base>
                       <compile-dependency/>
                   </test-dependency>
               </test-type>
