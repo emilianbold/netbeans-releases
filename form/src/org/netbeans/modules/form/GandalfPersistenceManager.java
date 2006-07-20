@@ -5639,6 +5639,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             shortName = defaultFormInfoNames[7];
         else if (java.awt.Panel.class.isAssignableFrom(formType))
             shortName = defaultFormInfoNames[8];
+        else if (org.openide.windows.TopComponent.class.getName().equals(formType.getName()))
+            shortName = defaultFormInfoNames[1]; // fallback TopComponent to JPanel (issue 79695)
         else return null;
 
         return "org.netbeans.modules.form.forminfo." + shortName; // NOI18N
