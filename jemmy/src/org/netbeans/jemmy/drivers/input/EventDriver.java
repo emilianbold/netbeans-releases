@@ -70,7 +70,7 @@ public class EventDriver extends LightSupportiveDriver {
      * @param event an event to dispatch.
      */
     public void dispatchEvent(Component comp, AWTEvent event) {
-        checkVisibility(comp);
+//        checkVisibility(comp);
         QueueTool.processEvent(event);
     }
 
