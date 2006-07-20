@@ -40,6 +40,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.jemmy.util.NameComponentChooser;
 import org.netbeans.jemmy.util.RegExComparator;
 
@@ -80,6 +81,7 @@ public class JMenuBarOperatorTest extends TestCase {
         menu.setName("JMenu1");
         menuBar.add(menu);
         menu.add(new JMenuItem("JMenuItem1"));
+        menu.add(new JMenuItem("JMenuItem11"));
         frame.setJMenuBar(menuBar);
         frame.setSize(400, 300);
         frame.setLocationRelativeTo(null);
@@ -510,5 +512,24 @@ public class JMenuBarOperatorTest extends TestCase {
         assertNotNull(operator1);
         
         operator1.setSelected(new JPanel());
+    }
+    
+    /**
+     * Test issue #54793.
+     */
+    public void testIssue54793() {
+        frame.setVisible(true);
+        
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JMenuBarOperator operator1 = new JMenuBarOperator(operator);
+        assertNotNull(operator1);
+        
+        JMenuOperator operator2 = new JMenuOperator(operator1, "JMenu1");
+        assertNotNull(operator2);
+        
+        JMenuItemOperator operator3 = operator2.showMenuItem("JMenuItem11", new DefaultStringComparator(true, true));
+        assertTrue(operator3.getText().equals("JMenuItem11"));
     }
 }
