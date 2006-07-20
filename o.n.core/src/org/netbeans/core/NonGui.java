@@ -61,11 +61,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
     /** Initialization of the manager.
     */
     public void run () {
-        // autoload directories
-        org.openide.util.Task automount = AutomountSupport.initialize ();
-        StartLog.logProgress ("Automounter fired"); // NOI18N
-        Splash.getInstance().increment(1);
-        
         // -----------------------------------------------------------------------------------------------------
         // 10. Loader pool loading
         try {
@@ -78,11 +73,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
 
         LoaderPoolNode.installationFinished ();
         StartLog.logProgress ("LoaderPool notified"); // NOI18N
-        Splash.getInstance().increment(10);
-
-        // wait until mounting really occurs
-        automount.waitFinished ();
-        StartLog.logProgress ("Automounter done"); // NOI18N
         Splash.getInstance().increment(10);
 
         //---------------------------------------------------------------------------------------------------------

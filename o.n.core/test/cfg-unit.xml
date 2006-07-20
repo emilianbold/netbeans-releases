@@ -34,7 +34,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="commit" executor="ide" name="Before Commit Validation in IDE">
         <testset dir="unit/src">
             <patternset>
-                <!-- this shall be enabled! <exclude name="org/netbeans/core/AutomountSupportTest.class"/> -->
                 <!-- this includes all tests testing layers -->
                 <include name="**/ValidateLayer*Test.class"/> 
                 <!-- Can throw OutOfMemoryError: <include name="org/netbeans/core/ValidateClassLinkageTest.class"/> -->

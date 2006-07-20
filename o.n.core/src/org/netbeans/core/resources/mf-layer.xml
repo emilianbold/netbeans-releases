@@ -44,8 +44,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder> 
 
-    <folder name="Mount"/> <!-- deprecated -->
-
     <folder name="xml">
 
         <!--

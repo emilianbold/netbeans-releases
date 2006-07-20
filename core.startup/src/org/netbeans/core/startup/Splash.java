@@ -234,7 +234,7 @@ public final class Splash {
 	    
 	    // 100 is allocated for module system that will adjust this when number 
 	    // of existing modules is known
-	    maxSteps = 150; 
+	    maxSteps = 140; 
 	    
 	    ResourceBundle bundle = NbBundle.getBundle(Splash.class);
 	    StringTokenizer st = new StringTokenizer(
