@@ -226,7 +226,7 @@ public class SerialDataConvertorTest extends NbTestCase {
     /** Tests the creation in atomic section.
      */
     public void testSameInAtomicSection () throws Exception {
-        class Test extends FileChangeAdapter 
+        class AtomAct extends FileChangeAdapter 
         implements FileSystem.AtomicAction {
             
             private java.awt.Button testSer = new java.awt.Button ();
@@ -263,7 +263,7 @@ public class SerialDataConvertorTest extends NbTestCase {
         }
 
         
-        Test t = new Test ();
+        AtomAct t = new AtomAct ();
         try {
             folder.getPrimaryFile().getFileSystem ().runAtomicAction (t);
 
