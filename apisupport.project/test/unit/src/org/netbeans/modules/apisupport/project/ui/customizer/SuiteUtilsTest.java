@@ -20,6 +20,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.File;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
@@ -30,6 +31,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 
 /**
  * Tests {@link SuiteUtils}
@@ -166,6 +168,18 @@ public class SuiteUtilsTest extends TestBase {
         assertTrue(suite + " is a suite", SuiteUtils.isSuite(suiteF));
         assertFalse(suite + " is not a suite", SuiteUtils.isSuite(new File(suiteF, "suiteComponent")));
         assertFalse(suite + " is not a suite", SuiteUtils.isSuite(new File(getWorkDir(), "module")));
+    }
+    
+    public void testFindSuiteNotSuiteProject80786() throws Exception {
+        // Check that SuiteUtils.findSuite gracefully ignores a project which is not a suite project.
+        SuiteProject suite = generateSuite("suite");
+        NbModuleProject module = generateSuiteComponent(suite, "suiteComponent");
+        FileObject copy = suite.getProjectDirectory().getParent().createFolder("copy");
+        DataFolder.findFolder(module.getProjectDirectory()).copy(DataFolder.findFolder(copy));
+        generateStandaloneModuleDirectory(getWorkDir(), "copy");
+        Project modulecopy = ProjectManager.getDefault().findProject(copy.getFileObject("suiteComponent"));
+        assertNotNull(modulecopy);
+        assertNull(SuiteUtils.findSuite(modulecopy));
     }
     
 }

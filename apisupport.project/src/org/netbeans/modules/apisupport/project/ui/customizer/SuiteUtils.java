@@ -440,7 +440,7 @@ public final class SuiteUtils {
                             suite = ProjectManager.getDefault().findProject(fo);
                         }
                     }
-                    return suite;
+                    return suite instanceof SuiteProject ? suite : /* #80786 */null;
                 }
             });
         } catch (MutexException e) {
