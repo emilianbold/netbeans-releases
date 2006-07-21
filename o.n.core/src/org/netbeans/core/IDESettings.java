@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -674,7 +675,7 @@ public class IDESettings extends SystemOption {
         String compactedProxyHosts = "";
         while (st.hasMoreTokens ()) {
             String t = st.nextToken ();
-            if (s.add (t)) {
+            if (s.add (t.toLowerCase (Locale.US))) {
                 compactedProxyHosts = compactedProxyHosts + (compactedProxyHosts.length () > 0 ? "|" : "") + t; //NOI18N
             }
         }
