@@ -456,6 +456,11 @@ public class Widget {
         for (Widget widget : children)
             widget.layout (childFullValidation);
 
+        if (fullValidation)
+            if (dependencies != null)
+                for (Dependency dependency : dependencies)
+                    dependency.revalidateDependency ();
+
         if (childFullValidation  ||  requiresPartValidation)
             layout.layout (this);
 
