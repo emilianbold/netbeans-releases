@@ -36,83 +36,72 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Various hacks that should be solved better later.
  */
 public class Hacks {
     
-    private static Object windowSystemImpl = null;
-    private static Method setProjectName = null;
+    private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
+    
     /**
      * Show name of project corresponding to selection in Main Window title bar.
      * @author Jesse Glick
      */
     static void keepCurrentProjectNameUpdated() {
-        try {
-            Class<?> windowSystemImplClazz = Class.forName(
-                "org.netbeans.core.NbTopManager$WindowSystem", true, 
-                Thread.currentThread().getContextClassLoader());
-            windowSystemImpl = Lookup.getDefault().lookup(windowSystemImplClazz);
-            if (windowSystemImpl != null) {
-                setProjectName = windowSystemImplClazz.getMethod(
-                    "setProjectName", new Class[] {String.class});
-            }
-        } catch (Exception e) {
-            // OK.
-            e.printStackTrace();
-        }
-        if (setProjectName != null) {
-            final TopComponent.Registry r = TopComponent.getRegistry();
-            final RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
-                public void run() {
-                    Node[] sel = r.getActivatedNodes();
-                    Set<Project> projects = new HashSet<Project>();
-                    for (int i = 0; i < sel.length; i++) {
-                        Lookup l = sel[i].getLookup();
-                        Project p = l.lookup(Project.class);
-                        if (p != null) {
-                            projects.add(p);
-                        } else {
-                            DataObject d = l.lookup(DataObject.class);
-                            if (d != null) {
-                                FileObject f = d.getPrimaryFile();
-                                p = FileOwnerQuery.getOwner(f);
-                                if (p != null) {
-                                    projects.add(p);
-                                }
-                            }
-                        }
-                    }
-                    final String pname;
-                    if (projects.size() == 1) {
-                        Project p = projects.iterator().next();
-                        pname = ProjectUtils.getInformation(p).getDisplayName();
-                        assert pname != null : p;
-                    } else if (projects.isEmpty()) {
-                        pname = null;
+        final TopComponent.Registry r = TopComponent.getRegistry();
+        final RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                Node[] sel = r.getActivatedNodes();
+                Set<Project> projects = new HashSet<Project>();
+                for (int i = 0; i < sel.length; i++) {
+                    Lookup l = sel[i].getLookup();
+                    Project p = l.lookup(Project.class);
+                    if (p != null) {
+                        projects.add(p);
                     } else {
-                        pname = NbBundle.getMessage(Hacks.class, "LBL_MultipleProjects"); // NOI18N
-                    }
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            try {
-                                setProjectName.invoke(windowSystemImpl, pname);
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                        DataObject d = l.lookup(DataObject.class);
+                        if (d != null) {
+                            FileObject f = d.getPrimaryFile();
+                            p = FileOwnerQuery.getOwner(f);
+                            if (p != null) {
+                                projects.add(p);
                             }
                         }
-                    });
-                }
-            });
-            r.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent ev) {
-                    if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(ev.getPropertyName())) {
-                        task.schedule(200);
                     }
                 }
-            });
-        }
+                final String pname;
+                if (projects.size() == 1) {
+                    Project p = projects.iterator().next();
+                    pname = ProjectUtils.getInformation(p).getDisplayName();
+                    assert pname != null : p;
+                } else if (projects.isEmpty()) {
+                    pname = null;
+                } else {
+                    pname = NbBundle.getMessage(Hacks.class, "LBL_MultipleProjects");
+                }
+                Project p = OpenProjectList.getDefault().getMainProject();
+                final String mname = p != null? 
+                    ProjectUtils.getInformation(p).getDisplayName():
+                    NbBundle.getMessage(Hacks.class, "LBL_NoMainProject");
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        WindowManager.getDefault().getMainWindow().setTitle(
+                                pname != null?
+                                NbBundle.getMessage(Hacks.class, "LBL_MainWindowTitle", BUILD_NUMBER, pname, mname):
+                                NbBundle.getMessage(Hacks.class, "LBL_MainWindowTitle_NoProject", BUILD_NUMBER, mname));
+                    }
+                });
+            }
+        });
+        r.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(ev.getPropertyName())) {
+                    task.schedule(200);
+                }
+            }
+        });
     }
     
     

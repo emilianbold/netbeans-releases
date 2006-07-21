@@ -467,21 +467,11 @@ public final class MainWindow extends JFrame {
         updateTitle(projectName);
     }
     
-    private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
-    private static final String TITLE_NO_PROJECT = NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", BUILD_NUMBER);
-    private static final Format FORMAT_PROJECT = new MessageFormat(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title"));
+    private static final String WINDOW_TITLE = NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", System.getProperty("netbeans.buildnumber"));
     
     /** Updates the MainWindow's title */
     private void updateTitle(String projectName) {
-        // XXX might be a good idea to put this into a RequestProcessor task
-        // scheduled for 100msec in the future to coalesce changes (also need
-        // to then repost back to EQ); seems that JFrame.setTitle can be expensive
-        if (projectName == null) {
-            setTitle(TITLE_NO_PROJECT);
-        } else {
-            setTitle(FORMAT_PROJECT.format(new Object[] {BUILD_NUMBER, projectName}));
-        }
-        
+        setTitle(WINDOW_TITLE);
     }
 
     // [dafe] Start of #24291 hacky fix, to prevent from main window flicking on
