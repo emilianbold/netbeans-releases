@@ -257,6 +257,61 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+          <test-dependencies>
+              <test-type>
+                  <name>unit</name>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.apisupport.project</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.io</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.api.xml</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.modules</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.options</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openidex.util</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.xml.core</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.text</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.api.progress</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.apisupport.feedreader</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.websvc.clientapi</code-name-base>
+                  </test-dependency>
+              </test-type>
+              <test-type>
+                  <name>qa-functional</name>
+              </test-type>
+            </test-dependencies>
             <public-packages/>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
