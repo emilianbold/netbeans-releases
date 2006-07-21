@@ -54,14 +54,14 @@ public class Expression {
     throws ParseException {
         String replace_return = REPLACE_return;
         while (expr.indexOf(replace_return) >= 0) {
-            replace_return = "return" + new Random().nextLong();
+            replace_return = "return" + new Random().nextLong(); // NOI18N
         }
         String replace_class = REPLACE_class;
         while (expr.indexOf(replace_class) >= 0) {
-            replace_class = "class" + new Random().nextLong();
+            replace_class = "class" + new Random().nextLong(); // NOI18N
         }
-        String replacedExpr = expr.replace("return", replace_return);
-        replacedExpr = replacedExpr.replaceAll("^class|[^\\.]class", replace_class);
+        String replacedExpr = replaceSpecialVar(expr, "return", replace_return); // NOI18N
+        replacedExpr = replaceSpecialVar(replacedExpr, "class", replace_class); // NOI18N
         StringReader reader = new StringReader(replacedExpr);
         try {
             JavaParser parser = new JavaParser(reader);
@@ -73,6 +73,39 @@ public class Expression {
         } finally {
             reader.close();
         }
+    }
+    
+    private static String replaceSpecialVar(String expr, String var, String replace_var) {
+        int i = expr.indexOf(var);
+        while (i >= 0) {
+            boolean replace;
+            if (i > 0) {
+                char ch = expr.charAt(i - 1);
+                if (Character.isJavaIdentifierStart(ch) ||
+                    Character.isJavaIdentifierPart(ch) ||
+                    ch == '.') {
+                    replace = false;
+                } else {
+                    replace = true;
+                }
+            } else {
+                replace = true;
+            }
+            if (replace && i < (expr.length() - var.length())) {
+                char ch = expr.charAt(i + var.length());
+                if (Character.isJavaIdentifierPart(ch)) {
+                    replace = false;
+                }
+            }
+            if (replace) {
+                expr = expr.substring(0, i) + replace_var + expr.substring(i + var.length());
+                i += replace_var.length();
+            } else {
+                i += var.length();
+            }
+            i = expr.indexOf(var, i);
+        }
+        return expr;
     }
     
     private Expression(String expression, String language, SimpleNode root,
