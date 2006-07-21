@@ -30,6 +30,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
         <include name="org/netbeans/xtest/plugin/ide/services/XTestErrorManager*"/>
         <include name="META-INF/**"/>
+        <!-- Needed for xtest IDE handler functionality controled by xtest.ide.handler property -->
+        <include name="org/netbeans/xtest/plugin/ide/XTestIDEHandler*"/>
     </patternset>
 
     <patternset id="xtest.ide.plugin">
@@ -51,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
            debug="${build.compiler.debug}">          
           <classpath path="${bootcp}"/>
           <patternset refid="xtest.ide.plugin" />
-        </javac> 
+        </javac>
         <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
         <copy file="src/META-INF/services/org.openide.ErrorManager" todir="build/classes/META-INF/services"/>
     </target>

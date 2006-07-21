@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
@@ -210,7 +211,8 @@ public class MainWithExec implements Main.MainWithExecInterface {
     
     public void run() throws Exception {
         try {
-            if("true".equals(System.getProperty("xtest.ide.error.manager"))) {
+            if("true".equals(System.getProperty("xtest.ide.error.manager")) ||
+               "true".equals(System.getProperty("xtest.ide.handler"))) {
                 // install xtest error manager
                 MyJUnitTestRunner testRunner = new MyJUnitTestRunner();
                 testRunner.runTests();
@@ -231,6 +233,10 @@ public class MainWithExec implements Main.MainWithExecInterface {
 
         public MyJUnitTestRunner() throws IOException {
             super(null, System.out);
+            if("true".equals(System.getProperty("xtest.ide.handler"))) {
+                // adds handler to track exceptions thrown by logger
+                Logger.getLogger("").addHandler(new XTestIDEHandler());
+            }
         }
 
         protected void addTestListeners(TestResult testResult) {
@@ -245,7 +251,8 @@ public class MainWithExec implements Main.MainWithExecInterface {
     private static class XTestResultListener implements TestListener {
         
         private  TestResult result;
-        private boolean checkXTestErrorManager = true;
+        private boolean checkXTestErrorManager = "true".equals(System.getProperty("xtest.ide.error.manager"));
+        private boolean errorInTest = false;
         
         public XTestResultListener(TestResult result) {
             this.result = result;
@@ -253,8 +260,8 @@ public class MainWithExec implements Main.MainWithExecInterface {
         
         /** An error occurred. */
         public void addError(Test test, Throwable t) {
-            // report this error and ignore possible additional errors from XTestErrorManager
-            checkXTestErrorManager = false;
+            // report this error and ignore possible additional errors from IDE
+            errorInTest = true;
         }
         
         /** A failure occurred.*/
@@ -262,21 +269,30 @@ public class MainWithExec implements Main.MainWithExecInterface {
 
         /* A test ended. */
         public void endTest(Test test) {
-            if(checkXTestErrorManager) {
+            if(!errorInTest) {
                 try {
                     Iterator it = XTestErrorManager.getExceptions().iterator();
-                    if (it.hasNext()) {
+                    if (checkXTestErrorManager && it.hasNext()) {
                         // exception was thrown => add the first found exception as
                         // an error (i.e. its stack trace will be printed in results)
                         result.addError(test, (Throwable)it.next());
                         XTestErrorManager.clearExceptions();
+                    } else {
+                        // check XTestIDEHandler
+                        Iterator itHandler = XTestIDEHandler.getExceptions().iterator();
+                        if(itHandler.hasNext()) {
+                            // exception was thrown => add the first found exception as
+                            // an error (i.e. its stack trace will be printed in results)
+                            result.addError(test, (Throwable)itHandler.next());
+                            XTestIDEHandler.clearExceptions();
+                        }
                     }
                 } catch (Exception e) {
                     // ClassNotFound exception, etc
                     e.printStackTrace();
                 }
             }
-            checkXTestErrorManager = true;
+            errorInTest = false;
         }
         
         /** A test started. */

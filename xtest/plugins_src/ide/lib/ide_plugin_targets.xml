@@ -70,6 +70,9 @@ Microsystems, Inc. All Rights Reserved.
         <!-- install xtest error manager to IDE which tracks internal errors. 
              If exception or error appear, the test is signed as error. -->
         <property name="xtest.ide.error.manager" value="true"/>
+        <!-- Add XTestIDEHandler to IDE which tracks internal errors. 
+             If exception or error appear, the test is signed as error. -->
+        <property name="xtest.ide.handler" value="true"/>
         <!-- Use prebuilt JDK mdr storage at specified location. It sets 
              IDE option -J-Dprebuilt.storage.dir -->
         <property name="xtest.ide.mdrstorage" location="${jdkhome}/mdrstorage"/>
@@ -238,6 +241,7 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dxtest.ide.create.project=${xtest.ide.create.project}
 -J-Dxtest.ide.open.project=&quot;${xtest.ide.open.project}&quot;
 -J-Dxtest.ide.error.manager=${xtest.ide.error.manager}
+-J-Dxtest.ide.handler=${xtest.ide.handler}
 -J-Dxtest.userdir=&quot;${xtest.userdir}&quot;
 -J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}
 -J-Dprebuilt.storage.dir=&quot;${xtest.ide.mdrstorage}&quot;

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="XTest IDE plugin-IDE">
+    
+    <property name="build.classes.dir" location="build/classes"/>
+    <property name="netbeans.dest.dir" value="../../../nbbuild/netbeans"/>
+    <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+    <property file="build.properties"/>
+    
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#compilesingle) -->
+    <target name="compile-selected-files-in-src">
+        <fail unless="files">Must set property 'files'</fail>
+        <!-- TODO decide on and define some value for ${build.classes.dir} -->
+        <mkdir dir="${build.classes.dir}"/>
+        <javac destdir="${build.classes.dir}" includes="${files}" source="1.4" srcdir="src">
+            <classpath path="../../../nbbuild/netbeans/platform7/lib/org-openide-util.jar;../../../nbbuild/netbeans/platform7/lib/boot.jar;../../lib/xtest.jar;../../lib/xtest-junit-testrunner.jar;../../lib/nbjunit.jar;../../../../../builds/060716/netbeans/ide8/ant/lib/ant.jar;../../../junit/external/junit-3.8.2.jar;../../../nbbuild/netbeans/platform7/core/core.jar;../../../nbbuild/netbeans/platform7/core/org-openide-filesystems.jar;../../../nbbuild/netbeans/platform7/modules/org-openide-nodes.jar;../../../nbbuild/netbeans/platform7/modules/org-openide-dialogs.jar;../../../nbbuild/netbeans/platform7/modules/org-openide-loaders.jar;../../../nbbuild/netbeans/platform7/modules/org-netbeans-core.jar;../../../nbbuild/netbeans/platform7/modules/org-netbeans-core-execution.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-projectapi.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-projectui.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-java-j2seproject.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-project-ant.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-javacore.jar;../../../nbbuild/netbeans/ide8/modules/ext/jmiutils.jar"/>
+        </javac>
+    </target>
+</project>
