@@ -12,153 +12,171 @@
  */
 package org.netbeans.api.visual.graph;
 
-import org.netbeans.api.visual.model.ObjectController;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.util.GeomUtil;
 
 import java.util.*;
 
 /**
  * @author David Kaspar
  */
-// TODO - is it asserted that removing a node disconnects all the attached edges
-// TODO - attachNodeController should be called first, then value of NodeController.getID should be used and storaged in structures, similarly for attachEdgeController
-public abstract class GraphScene<Node, Edge, NodeCtrl extends NodeController<Node>, EdgeCtrl extends EdgeController<Edge>> extends ObjectScene {
+public abstract class GraphScene<N, E> extends ObjectScene {
 
-    private HashMap<Node, NodeCtrl> nodeControllers = new HashMap<Node, NodeCtrl> ();
-    private HashMap<Edge, EdgeCtrl> edgeControllers = new HashMap<Edge, EdgeCtrl> ();
-    private HashMap<EdgeCtrl, NodeCtrl> edgeSourceNodeControllers = new HashMap<EdgeCtrl, NodeCtrl> ();
-    private HashMap<EdgeCtrl, NodeCtrl> edgeTargetNodeControllers = new HashMap<EdgeCtrl, NodeCtrl> ();
-    private HashMap<NodeCtrl, List<EdgeCtrl>> nodeInputEdgeControllers = new HashMap<NodeCtrl, List<EdgeCtrl>> ();
-    private HashMap<NodeCtrl, List<EdgeCtrl>> nodeOutputEdgeControllers = new HashMap<NodeCtrl, List<EdgeCtrl>> ();
+    private HashSet<N> nodes = new HashSet<N> ();
+    private Set<N> nodesUm = Collections.unmodifiableSet (nodes);
+
+    private HashSet<E> edges = new HashSet<E> ();
+    private Set<E> edgesUm = Collections.unmodifiableSet (edges);
+
+    private HashMap<E, N> edgeSourceNodes = new HashMap<E, N> ();
+    private HashMap<E, N> edgeTargetNodes = new HashMap<E, N> ();
+
+    private HashMap<N, List<E>> nodeInputEdges = new HashMap<N, List<E>> ();
+    private HashMap<N, List<E>> nodeOutputEdges = new HashMap<N, List<E>> ();
 
     public GraphScene () {
     }
 
-    private void removeWidgets (ObjectController controller) {
-        for (Widget widget : controller.getWidgets ())
-            widget.getParentWidget ().removeChild (widget);
+    public final Widget addNode (N node) {
+        assert node != null  &&  ! nodes.contains (node);
+        Widget widget = attachNodeWidget (node);
+        addObject (node, widget);
+        nodes.add (node);
+        nodeInputEdges.put (node, new ArrayList<E> ());
+        nodeOutputEdges.put (node, new ArrayList<E> ());
+        return widget;
     }
 
-    public final NodeCtrl addNode (Node node) {
-        assert ! nodeControllers.containsKey (node);
-        NodeCtrl nodeController = attachNodeController (node);
-        assert nodeController != null;
-        addObject (nodeController);
-        node = nodeController.getNode ();
-        nodeControllers.put (node, nodeController);
-        nodeInputEdgeControllers.put (nodeController, new ArrayList<EdgeCtrl> ());
-        nodeOutputEdgeControllers.put (nodeController, new ArrayList<EdgeCtrl> ());
-        return nodeController;
+    public final void removeNode (N node) {
+        assert node != null  &&  nodes.contains (node);
+        for (E edge : findNodeEdges (node, true, false))
+            setEdgeSource (edge, null);
+        for (E edge : findNodeEdges (node, false, true))
+            setEdgeTarget (edge, null);
+        nodeInputEdges.remove (node);
+        nodeOutputEdges.remove (node);
+        Widget widget = findWidget (node);
+        removeObject (node);
+        detachNodeWidget (node, widget);
     }
 
-    public final void removeNode (NodeCtrl nodeController) {
-        assert nodeController != null;
-        for (EdgeCtrl edgeController : findNodeEdges (nodeController, true, false))
-            setEdgeSource (edgeController, null);
-        for (EdgeCtrl edgeController : findNodeEdges (nodeController, false, true))
-            setEdgeTarget (edgeController, null);
-        nodeInputEdgeControllers.remove (nodeController);
-        nodeOutputEdgeControllers.remove (nodeController);
-        nodeControllers.remove (nodeController.getNode ());
-        removeWidgets (nodeController);
-        removeObject (nodeController);
+    public final void removeNodeWithEdges (N node) {
+        for (E edge : findNodeEdges (node, true, true))
+            removeEdge (edge);
+        removeNode (node);
     }
 
-    public final Collection<NodeCtrl> getNodes () {
-        return Collections.unmodifiableCollection (nodeControllers.values ());
+    public final Collection<N> getNodes () {
+        return nodesUm;
     }
 
-    public final NodeCtrl findNodeController (Node node) {
-        return nodeControllers.get (node);
+    public final Widget addEdge (E edge) {
+        assert edge != null  &&  ! edges.contains (edge);
+        Widget widget = attachEdgeWidget (edge);
+        addObject (edge, widget);
+        edges.add (edge);
+        return widget;
     }
 
-    public final EdgeCtrl addEdge (Edge edge) {
-        assert ! edgeControllers.containsKey (edge);
-        EdgeCtrl edgeController = attachEdgeController (edge);
-        assert edgeController != null;
-        addObject (edgeController);
-        edge = edgeController.getEdge ();
-        edgeControllers.put (edge, edgeController);
-        return edgeController;
+    public final void removeEdge (E edge) {
+        assert edge != null  &&  edges.contains (edge);
+        setEdgeSource (edge, null);
+        setEdgeTarget (edge, null);
+        edges.remove (edge);
+        edgeSourceNodes.remove (edge);
+        edgeTargetNodes.remove (edge);
+        Widget widget = findWidget (edge);
+        removeObject (edge);
+        detachEdgeWidget (edge, widget);
     }
 
-    public final void removeEdge (EdgeCtrl edgeController) {
-        assert edgeController != null;
-        setEdgeSource (edgeController, null);
-        setEdgeTarget (edgeController, null);
-        edgeControllers.remove (edgeController.getEdge ());
-        removeWidgets (edgeController);
-        removeObject (edgeController);
+    public final Collection<E> getEdges () {
+        return edgesUm;
     }
 
-    public final Collection<EdgeCtrl> getEdges () {
-        return Collections.unmodifiableCollection (edgeControllers.values ());
-    }
-
-    public final EdgeCtrl findEdgeController (Edge edge) {
-        return edgeControllers.get (edge);
-    }
-
-    public final void setEdgeSource (EdgeCtrl edgeController, NodeCtrl sourceNodeController) {
-        NodeCtrl oldNodeController = edgeSourceNodeControllers.put (edgeController, sourceNodeController);
-        if (oldNodeController == sourceNodeController)
+    public final void setEdgeSource (E edge, N sourceNode) {
+        assert edge != null  &&  edges.contains (edge);
+        if (sourceNode != null)
+            assert nodes.contains (sourceNode);
+        N oldNode = edgeSourceNodes.put (edge, sourceNode);
+        if (GeomUtil.equals (oldNode, sourceNode))
             return;
-        if (oldNodeController != null)
-            nodeOutputEdgeControllers.get (oldNodeController).remove (edgeController);
-        attachEdgeSource (edgeController, sourceNodeController);
-        if (sourceNodeController != null)
-            nodeOutputEdgeControllers.get (sourceNodeController).add (edgeController);
-
+        if (oldNode != null)
+            nodeOutputEdges.get (oldNode).remove (edge);
+        if (sourceNode != null)
+            nodeOutputEdges.get (sourceNode).add (edge);
+        attachEdgeSourceAnchor (edge, oldNode, sourceNode);
     }
 
-    public final void setEdgeTarget (EdgeCtrl edgeController, NodeCtrl targetNodeController) {
-        NodeCtrl oldNodeController = edgeTargetNodeControllers.put (edgeController, targetNodeController);
-        if (oldNodeController == targetNodeController)
+    public final void setEdgeTarget (E edge, N targetNode) {
+        assert edge != null  &&  edges.contains (edge);
+        if (targetNode != null)
+            assert nodes.contains (targetNode);
+        N oldNode = edgeTargetNodes.put (edge, targetNode);
+        if (GeomUtil.equals (oldNode, targetNode))
             return;
-        if (oldNodeController != null)
-            nodeInputEdgeControllers.get (oldNodeController).remove (edgeController);
-        attachEdgeTarget (edgeController, targetNodeController);
-        if (targetNodeController != null)
-            nodeInputEdgeControllers.get (targetNodeController).add (edgeController);
+        if (oldNode != null)
+            nodeInputEdges.get (oldNode).remove (edge);
+        if (targetNode != null)
+            nodeInputEdges.get (targetNode).add (edge);
+        attachEdgeTargetAnchor (edge, oldNode, targetNode);
     }
 
-    public final NodeCtrl getEdgeSource (EdgeCtrl edgeController) {
-        return edgeSourceNodeControllers.get (edgeController);
+    public final N getEdgeSource (E edge) {
+        return edgeSourceNodes.get (edge);
     }
 
-    public final NodeCtrl getEdgeTarget (EdgeCtrl edgeController) {
-        return edgeTargetNodeControllers.get (edgeController);
+    public final N getEdgeTarget (E edge) {
+        return edgeTargetNodes.get (edge);
     }
 
-    public final Collection<EdgeCtrl> findNodeEdges (NodeCtrl nodeController, boolean allowOutputEdges, boolean allowInputEdges) {
-        ArrayList<EdgeCtrl> list = new ArrayList<EdgeCtrl> ();
+    public final Collection<E> findNodeEdges (N node, boolean allowOutputEdges, boolean allowInputEdges) {
+        ArrayList<E> list = new ArrayList<E> ();
         if (allowInputEdges)
-            list.addAll (nodeInputEdgeControllers.get (nodeController));
+            list.addAll (nodeInputEdges.get (node));
         if (allowOutputEdges)
-            list.addAll (nodeOutputEdgeControllers.get (nodeController));
+            list.addAll (nodeOutputEdges.get (node));
         return list;
     }
 
-    public final Collection<EdgeCtrl> findEdgeBetween (NodeCtrl sourceNodeController, NodeCtrl targetNodeController) {
-        HashSet<EdgeCtrl> list = new HashSet<EdgeCtrl> ();
-        List<EdgeCtrl> inputEdgeControllers = nodeInputEdgeControllers.get (targetNodeController);
-        List<EdgeCtrl> outputEdgeControllers = nodeOutputEdgeControllers.get (sourceNodeController);
-        for (EdgeCtrl edgeController : inputEdgeControllers)
-            if (outputEdgeControllers.contains (edgeController))
-                list.add (edgeController);
+    public final Collection<E> findEdgeBetween (N sourceNode, N targetNode) {
+        HashSet<E> list = new HashSet<E> ();
+        List<E> inputEdges = nodeInputEdges.get (targetNode);
+        List<E> outputEdges = nodeOutputEdges.get (sourceNode);
+        for (E edge : inputEdges)
+            if (outputEdges.contains (edge))
+                list.add (edge);
         return list;
     }
 
-    protected abstract NodeCtrl attachNodeController (Node node);
+    public boolean isNode (Object object) {
+        return nodes.contains (object);
+    }
 
-    protected abstract EdgeCtrl attachEdgeController (Edge edge);
+    public boolean isEdge (Object object) {
+        return edges.contains (object);
+    }
 
-    protected abstract void attachEdgeSource (EdgeCtrl edgeController, NodeCtrl sourceNodeController);
+    protected void detachNodeWidget (N node, Widget widget) {
+        if (widget != null)
+            widget.removeFromParent ();
+    }
 
-    protected abstract void attachEdgeTarget (EdgeCtrl edgeController, NodeCtrl targetNodeController);
+    protected void detachEdgeWidget (E edge, Widget widget) {
+        if (widget != null)
+            widget.removeFromParent ();
+    }
+
+    protected abstract Widget attachNodeWidget (N node);
+
+    protected abstract Widget attachEdgeWidget (E edge);
+
+    protected abstract void attachEdgeSourceAnchor (E edge, N oldSourceNode, N sourceNode);
+
+    protected abstract void attachEdgeTargetAnchor (E edge, N oldTargetNode, N targetNode);
     
-    public static abstract class StringGraph extends GraphScene<String, String, NodeController.StringNode, EdgeController.StringEdge> {
+    public static abstract class StringGraph extends GraphScene<String, String> {
         
     }
 

@@ -12,9 +12,7 @@
  */
 package org.netbeans.api.visual.graph.layout;
 
-import org.netbeans.api.visual.graph.EdgeController;
 import org.netbeans.api.visual.graph.GraphScene;
-import org.netbeans.api.visual.graph.NodeController;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
@@ -23,16 +21,16 @@ import java.util.*;
 /**
  * @author David Kaspar
  */
-public class TreeGraphLayout<N, E, NC extends NodeController<N>, EC extends EdgeController<E>> {
+public class TreeGraphLayout<N, E> {
 
-    private GraphScene<N, E, NC, EC> scene;
+    private GraphScene<N, E> scene;
     private int originX;
     private int originY;
     private int verticalGap;
     private int horizontalGap;
     private boolean vertical;
 
-    public TreeGraphLayout (GraphScene<N, E, NC, EC> scene, int originX, int originY, int verticalGap, int horizontalGap, boolean vertical) {
+    public TreeGraphLayout (GraphScene<N, E> scene, int originX, int originY, int verticalGap, int horizontalGap, boolean vertical) {
         this.scene = scene;
         this.originX = originX;
         this.originY = originY;
@@ -41,13 +39,13 @@ public class TreeGraphLayout<N, E, NC extends NodeController<N>, EC extends Edge
         this.vertical = vertical;
     }
 
-    public final void layout (NC rootNode) {
+    public final void layout (N rootNode) {
         if (rootNode == null)
             return;
-        Collection<NC> allNodes = scene.getNodes ();
-        ArrayList<NC> nodesToResolve = new ArrayList<NC> (allNodes);
+        Collection<N> allNodes = scene.getNodes ();
+        ArrayList<N> nodesToResolve = new ArrayList<N> (allNodes);
 
-        HashSet<NC> loadedSet = new HashSet<NC> ();
+        HashSet<N> loadedSet = new HashSet<N> ();
         Node root = new Node (rootNode, loadedSet);
         nodesToResolve.removeAll (loadedSet);
         if (vertical) {
@@ -58,30 +56,30 @@ public class TreeGraphLayout<N, E, NC extends NodeController<N>, EC extends Edge
             root.resolveHorizontally (originX, originY);
         }
 
-        final HashMap<NC, Point> resultPosition = new HashMap<NC, Point> ();
+        final HashMap<N, Point> resultPosition = new HashMap<N, Point> ();
         root.upload (resultPosition);
 
-        for (NC node : nodesToResolve) {
+        for (N node : nodesToResolve) {
             Point position = new Point ();
             // TODO - resolve others
             resultPosition.put (node, position);
         }
 
-        for (Map.Entry<NC, Point> entry : resultPosition.entrySet ())
-            entry.getKey ().getMainWidget ().setPreferredLocation (entry.getValue ());
+        for (Map.Entry<N, Point> entry : resultPosition.entrySet ())
+            scene.findWidget (entry.getKey ()).setPreferredLocation (entry.getValue ());
     }
 
-    protected Collection<NC> resolveChildren (NC node) {
-        Collection<EC> edges = scene.findNodeEdges (node, false, true);
-        HashSet<NC> nodes = new HashSet<NC> ();
-        for (EC edge : edges)
+    protected Collection<N> resolveChildren (N node) {
+        Collection<E> edges = scene.findNodeEdges (node, false, true);
+        HashSet<N> nodes = new HashSet<N> ();
+        for (E edge : edges)
             nodes.add (scene.getEdgeTarget (edge));
         return nodes;
     }
 
     private class Node {
 
-        private NC node;
+        private N node;
         private ArrayList<Node> children;
 
         private Rectangle relativeBounds;
@@ -89,19 +87,19 @@ public class TreeGraphLayout<N, E, NC extends NodeController<N>, EC extends Edge
         private int totalSpace;
         private Point point;
 
-        public Node (NC node, HashSet<NC> loadedSet) {
+        public Node (N node, HashSet<N> loadedSet) {
             this.node = node;
             loadedSet.add (node);
 
-            Collection<NC> list = resolveChildren (node);
+            Collection<N> list = resolveChildren (node);
             children = new ArrayList<Node> ();
-            for (NC child : list)
+            for (N child : list)
                 if (! loadedSet.contains (child))
                     children.add (new Node (child, loadedSet));
         }
 
         public int allocateHorizontally () {
-            Widget widget = node.getMainWidget ();
+            Widget widget = scene.findWidget (node);
             widget.getLayout ().layout (widget);
             relativeBounds = widget.getPreferredBounds ();
             space = 0;
@@ -125,7 +123,7 @@ public class TreeGraphLayout<N, E, NC extends NodeController<N>, EC extends Edge
         }
 
         public int allocateVertically () {
-            Widget widget = node.getMainWidget ();
+            Widget widget = scene.findWidget (node);
             widget.getLayout ().layout (widget);
             relativeBounds = widget.getPreferredBounds ();
             space = 0;
@@ -148,7 +146,7 @@ public class TreeGraphLayout<N, E, NC extends NodeController<N>, EC extends Edge
             }
         }
 
-        public void upload (HashMap<NC, Point> result) {
+        public void upload (HashMap<N, Point> result) {
             result.put (node, point);
             for (Node child : children)
                 child.upload (result);

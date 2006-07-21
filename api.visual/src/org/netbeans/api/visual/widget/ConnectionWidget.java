@@ -67,7 +67,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void notifyStateChanged (ObjectState state) {
         setForeground (getScene ().getLookFeel ().getLineColor (state));
-        setPaintControlPoints (state.isSelected ()  ||  state.isFocused ());
+        setPaintControlPoints (state.isSelected ());
     }
 
     public Stroke getStroke () {

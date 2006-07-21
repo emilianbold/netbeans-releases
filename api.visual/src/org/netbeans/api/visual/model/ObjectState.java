@@ -18,52 +18,55 @@ package org.netbeans.api.visual.model;
 public class ObjectState {
 
     public static final ObjectState NORMAL = new ObjectState ();
-
-    private boolean selected;
-    private boolean highlighted;
-    private boolean focused;
-    private boolean hovered;
+    private boolean objectSelected;
+    private boolean objectHighlighted;
+    private boolean objectHovered;
+    private boolean widgetHovered;
 
     public ObjectState () {
     }
 
-    public ObjectState (boolean selected, boolean highlighted, boolean focused, boolean hovered) {
-        this.selected = selected;
-        this.highlighted = highlighted;
-        this.focused = focused;
-        this.hovered = hovered;
+    public ObjectState (boolean objectSelected, boolean objectHighlighted, boolean objectHovered, boolean widgetHovered) {
+        this.objectSelected = objectSelected;
+        this.objectHighlighted = objectHighlighted;
+        this.objectHovered = objectHovered;
+        this.widgetHovered = widgetHovered;
     }
 
     public boolean isSelected () {
-        return selected;
+        return objectSelected;
     }
 
     public ObjectState deriveSelected (boolean selected) {
-        return new ObjectState (selected, highlighted, focused, hovered);
+        return new ObjectState (selected, objectHighlighted, objectHovered, widgetHovered);
     }
 
     public boolean isHighlighted () {
-        return highlighted;
+        return objectHighlighted;
     }
 
     public ObjectState deriveHighlighted (boolean highlighted) {
-        return new ObjectState (selected, highlighted, focused, hovered);
-    }
-
-    public boolean isFocused () {
-        return focused;
-    }
-
-    public ObjectState deriveFocused (boolean focused) {
-        return new ObjectState (selected, highlighted, focused, hovered);
+        return new ObjectState (objectSelected, highlighted, objectHovered, widgetHovered);
     }
 
     public boolean isHovered () {
-        return hovered;
+        return objectHovered  ||  widgetHovered;
     }
 
-    public ObjectState deriveHovered (boolean hovered) {
-        return new ObjectState (selected, highlighted, focused, hovered);
+    public boolean isObjectHovered () {
+        return objectHovered;
+    }
+
+    public ObjectState deriveObjectHovered (boolean hovered) {
+        return new ObjectState (objectSelected, objectHighlighted, hovered, widgetHovered);
+    }
+
+    public boolean isWidgetHovered () {
+        return widgetHovered;
+    }
+
+    public ObjectState deriveWidgetHovered (boolean hovered) {
+        return new ObjectState (objectSelected, objectHighlighted, objectHovered, hovered);
     }
 
 }

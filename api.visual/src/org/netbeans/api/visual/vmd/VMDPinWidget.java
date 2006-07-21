@@ -78,4 +78,10 @@ public class VMDPinWidget extends Widget {
         return typeWidget.getLabel();
     }
 
+    public void setProperties (Image image, String name, String type) {
+        setPinImage (image);
+        setPinName (name);
+        setPinType (type);
+    }
+
 }

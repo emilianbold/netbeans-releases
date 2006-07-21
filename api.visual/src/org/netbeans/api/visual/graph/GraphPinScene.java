@@ -12,195 +12,222 @@
  */
 package org.netbeans.api.visual.graph;
 
-import org.netbeans.api.visual.model.ObjectController;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.util.GeomUtil;
 
 import java.util.*;
 
 /**
  * @author David Kaspar
  */
-// TODO - PinCtrl should not have NodeCtrl reference, add NodeCtrl getPinNode (PinCtrl)
 // TODO - is it asserted that removing a node removes all its pins
 // TODO - is it asserted that removing a pin disconnects all the attached edges
-// TODO - attachNodeController should be called first, then value of NodeController.getID should be used and storaged in structures, similarly for attachEdgeController and attachPinController
-public abstract class GraphPinScene<Node, Edge, Pin, NodeCtrl extends NodeController<Node>, EdgeCtrl extends EdgeController<Edge>, PinCtrl extends PinController<Pin>> extends ObjectScene {
+public abstract class GraphPinScene<N, E, P> extends ObjectScene {
 
-    private HashMap<Node, NodeCtrl> nodeControllers = new HashMap<Node, NodeCtrl> ();
-    private HashMap<Edge, EdgeCtrl> edgeControllers = new HashMap<Edge, EdgeCtrl> ();
-    private HashMap<NodeCtrl, HashMap<Pin, PinCtrl>> nodePinControllers = new HashMap<NodeCtrl, HashMap<Pin, PinCtrl>> ();
-    private HashMap<PinCtrl, NodeCtrl> pinNodeControllers = new HashMap<PinCtrl, NodeCtrl> ();
-    private HashMap<EdgeCtrl, PinCtrl> edgeSourcePinControllers = new HashMap<EdgeCtrl, PinCtrl> ();
-    private HashMap<EdgeCtrl, PinCtrl> edgeTargetPinControllers = new HashMap<EdgeCtrl, PinCtrl> ();
-    private HashMap<PinCtrl, List<EdgeCtrl>> pinInputEdgeControllers = new HashMap<PinCtrl, List<EdgeCtrl>> ();
-    private HashMap<PinCtrl, List<EdgeCtrl>> pinOutputEdgeControllers = new HashMap<PinCtrl, List<EdgeCtrl>> ();
+    private HashSet<N> nodes = new HashSet<N> ();
+    private Set<N> nodesUm = Collections.unmodifiableSet (nodes);
+    private HashSet<E> edges = new HashSet<E> ();
+    private Set<E> edgesUm = Collections.unmodifiableSet (edges);
+    private HashSet<P> pins = new HashSet<P> ();
+    private Set<P> pinsUm = Collections.unmodifiableSet (pins);
+
+    private HashMap<N, HashSet<P>> nodePins = new HashMap<N, HashSet<P>> ();
+    private HashMap<P, N> pinNodes = new HashMap<P, N> ();
+    private HashMap<E, P> edgeSourcePins = new HashMap<E, P> ();
+    private HashMap<E, P> edgeTargetPins = new HashMap<E, P> ();
+    private HashMap<P, List<E>> pinInputEdges = new HashMap<P, List<E>> ();
+    private HashMap<P, List<E>> pinOutputEdges = new HashMap<P, List<E>> ();
 
     public GraphPinScene () {
     }
 
-    private void removeWidgets (ObjectController controller) {
-        for (Widget widget : controller.getWidgets ())
-            widget.getParentWidget ().removeChild (widget);
+    public final Widget addNode (N node) {
+        assert node != null  &&  ! nodes.contains (node);
+        Widget widget = attachNodeWidget (node);
+        addObject (node, widget);
+        nodes.add (node);
+        nodePins.put (node, new HashSet<P> ());
+        return widget;
     }
 
-    public final NodeCtrl addNode (Node node) {
-        assert ! nodeControllers.containsKey (node);
-        NodeCtrl nodeController = attachNodeController (node);
-        assert nodeController != null;
-        addObject (nodeController);
-        node = nodeController.getNode ();
-        nodeControllers.put (node, nodeController);
-        nodePinControllers.put (nodeController, new HashMap<Pin, PinCtrl> ());
-        return nodeController;
+    public final void removeNode (N node) {
+        assert node != null  &&  nodes.contains (node);
+        for (P pin : nodePins.get (node))
+            removePin (pin);
+        nodes.remove (node);
+        nodePins.remove (node);
+        Widget widget = findWidget (node);
+        removeObject (node);
+        detachNodeWidget (node, widget);
     }
 
-    public final void removeNode (NodeCtrl nodeController) {
-        assert nodeController != null;
-        HashMap<Pin, PinCtrl> pinControllers = nodePinControllers.get (nodeController);
-        for (PinCtrl pinController : pinControllers.values ())
-            removePin (pinController);
-        nodePinControllers.remove (nodeController);
-        nodeControllers.remove (nodeController.getNode ());
-        removeWidgets (nodeController);
-        removeObject (nodeController);
+    public final Collection<N> getNodes () {
+        return nodesUm;
     }
 
-    public final NodeCtrl getNodeController (Node node) {
-        return nodeControllers.get (node);
+    public final Widget addEdge (E edge) {
+        assert edge != null  &&  ! edges.contains (edge);
+        Widget widget = attachEdgeWidget (edge);
+        addObject (edge, widget);
+        edges.add (edge);
+        return widget;
     }
 
-    public final EdgeCtrl addEdge (Edge edge) {
-        assert ! edgeControllers.containsKey (edge);
-        EdgeCtrl edgeController = attachEdgeController (edge);
-        assert edgeController != null;
-        addObject (edgeController);
-        edge = edgeController.getEdge ();
-        edgeControllers.put (edge, edgeController);
-        return edgeController;
+    public final void removeEdge (E edge) {
+        assert edge != null  &&  edges.contains (edge);
+        setEdgeSource (edge, null);
+        setEdgeTarget (edge, null);
+        edges.remove (edge);
+        edgeSourcePins.remove (edge);
+        edgeTargetPins.remove (edge);
+        Widget widget = findWidget (edge);
+        removeObject (edge);
+        detachEdgeWidget (edge, widget);
     }
 
-    public final void removeEdge (EdgeCtrl edgeController) {
-        assert edgeController != null;
-        setEdgeSource (edgeController, null);
-        setEdgeTarget (edgeController, null);
-        edgeControllers.remove (edgeController.getEdge ());
-        removeWidgets (edgeController);
-        removeObject (edgeController);
+    public final Collection<E> getEdges () {
+        return edgesUm;
     }
 
-    public final EdgeCtrl getEdgeController (Edge edge) {
-        return edgeControllers.get (edge);
+    public final Widget addPin (N node, P pin) {
+        assert node != null  &&  pin != null  &&  ! pins.contains (pin);
+        Widget widget = attachPinWidget (node, pin);
+        addObject (pin, widget);
+        pins.add (pin);
+        nodePins.get (node).add (pin);
+        pinNodes.put (pin, node);
+        pinInputEdges.put (pin, new ArrayList<E> ());
+        pinOutputEdges.put (pin, new ArrayList<E> ());
+        return widget;
     }
 
-    public final PinCtrl addPin (NodeCtrl nodeController, Pin pin) {
-        HashMap<Pin, PinCtrl> pinControllers = nodePinControllers.get (nodeController);
-        assert pinControllers != null;
-        assert ! pinControllers.containsKey (pin);
-        PinCtrl pinController = attachPinController (nodeController, pin);
-        assert ! pinNodeControllers.containsKey (pinController);
-        assert pinController != null;
-        addObject (pinController);
-        pin = pinController.getPin ();
-        pinControllers.put (pin, pinController);
-        pinNodeControllers.put (pinController, nodeController);
-        pinInputEdgeControllers.put (pinController, new ArrayList<EdgeCtrl> ());
-        pinOutputEdgeControllers.put (pinController, new ArrayList<EdgeCtrl> ());
-        return pinController;
+    public final void removePin (P pin) {
+        assert pin != null  &&  pins.contains (pin);
+        for (E edge : findPinEdges (pin, true, false))
+            setEdgeSource (edge, null);
+        for (E edge : findPinEdges (pin, false, true))
+            setEdgeTarget (edge, null);
+        pins.remove (pin);
+        N node = pinNodes.remove (pin);
+        nodePins.get (node).remove (pin);
+        pinInputEdges.remove (pin);
+        pinOutputEdges.remove (pin);
+        Widget widget = findWidget (pin);
+        removeObject (pin);
+        detachPinWidget (pin, widget);
     }
 
-    public final void removePin (PinCtrl pinController) {
-        assert pinController != null;
-        NodeCtrl nodeController = pinNodeControllers.get (pinController);
-        assert nodeController != null;
-        HashMap<Pin, PinCtrl> pinControllers = nodePinControllers.get (nodeController);
-        for (EdgeCtrl edgeController : findPinEdges (pinController, true, false))
-            setEdgeSource (edgeController, null);
-        for (EdgeCtrl edgeController : findPinEdges (pinController, false, true))
-            setEdgeTarget (edgeController, null);
-        pinInputEdgeControllers.remove (pinController);
-        pinOutputEdgeControllers.remove (pinController);
-        pinControllers.remove (pinController.getPin ());
-        pinNodeControllers.remove (pinController);
-        removeWidgets (pinController);
-        removeObject (pinController);
+    public final N getPinNode (P pin) {
+        return pinNodes.get (pin);
     }
 
-    public final NodeCtrl getPinNode (PinCtrl pinController) {
-        return pinNodeControllers.get (pinController);
+    public final Collection<P> getPins () {
+        return pinsUm;
     }
 
-    public final PinCtrl getPinController (NodeCtrl nodeController, Pin pin) {
-        if (nodeController == null)
+    public final Collection<P> getNodePins (N node) {
+        if (node == null)
             return null;
-        return nodePinControllers.get (nodeController).get (pin);
+        HashSet<P> ps = nodePins.get (node);
+        if (ps == null)
+            return null;
+        return Collections.unmodifiableCollection (ps);
     }
 
-    public final void setEdgeSource (EdgeCtrl edgeController, PinCtrl sourcePinController) {
-        PinCtrl oldPinController = edgeSourcePinControllers.put (edgeController, sourcePinController);
-        if (oldPinController == sourcePinController)
+    public final void setEdgeSource (E edge, P sourcePin) {
+        assert edge != null  &&  edges.contains (edge);
+        if (sourcePin != null)
+            assert pins.contains (sourcePin);
+        P oldPin = edgeSourcePins.put (edge, sourcePin);
+        if (GeomUtil.equals (oldPin, sourcePin))
             return;
-        if (oldPinController != null)
-            pinOutputEdgeControllers.get (oldPinController).remove (edgeController);
-        attachEdgeSource (edgeController, sourcePinController);
-        if (sourcePinController != null)
-            pinOutputEdgeControllers.get (sourcePinController).add (edgeController);
-
+        if (oldPin != null)
+            pinOutputEdges.get (oldPin).remove (edge);
+        if (sourcePin != null)
+            pinOutputEdges.get (sourcePin).add (edge);
+        attachEdgeSourceAnchor (edge, oldPin, sourcePin);
     }
 
-    public final void setEdgeTarget (EdgeCtrl edgeController, PinCtrl targetPinController) {
-        PinCtrl oldPinController = edgeTargetPinControllers.put (edgeController, targetPinController);
-        if (oldPinController == targetPinController)
+    public final void setEdgeTarget (E edge, P targetPin) {
+        assert edge != null  &&  edges.contains (edge);
+        if (targetPin != null)
+            assert pins.contains (targetPin);
+        P oldPin = edgeTargetPins.put (edge, targetPin);
+        if (GeomUtil.equals (oldPin, targetPin))
             return;
-        if (oldPinController != null)
-            pinInputEdgeControllers.get (oldPinController).remove (edgeController);
-        attachEdgeTarget (edgeController, targetPinController);
-        if (targetPinController != null)
-            pinInputEdgeControllers.get (targetPinController).add (edgeController);
+        if (oldPin != null)
+            pinInputEdges.get (oldPin).remove (edge);
+        if (targetPin != null)
+            pinInputEdges.get (targetPin).add (edge);
+        attachEdgeTargetAnchor (edge, oldPin, targetPin);
     }
 
-    public final Collection<PinCtrl> getNodePins (NodeCtrl nodeController) {
-        return Collections.unmodifiableCollection (nodePinControllers.get (nodeController).values ());
+    public final P getEdgeSource (E edge) {
+        return edgeSourcePins.get (edge);
     }
 
-    public final PinCtrl getEdgeSource (EdgeCtrl edgeController) {
-        return edgeSourcePinControllers.get (edgeController);
+    public final P getEdgeTarget (E edge) {
+        return edgeTargetPins.get (edge);
     }
 
-    public final PinCtrl getEdgeTarget (EdgeCtrl edgeController) {
-        return edgeTargetPinControllers.get (edgeController);
-    }
-
-    public final Collection<EdgeCtrl> findPinEdges (PinCtrl pinController, boolean allowOutputEdges, boolean allowInputEdges) {
-        ArrayList<EdgeCtrl> list = new ArrayList<EdgeCtrl> ();
+    public final Collection<E> findPinEdges (P pin, boolean allowOutputEdges, boolean allowInputEdges) {
+        ArrayList<E> list = new ArrayList<E> ();
         if (allowInputEdges)
-            list.addAll (pinInputEdgeControllers.get (pinController));
+            list.addAll (pinInputEdges.get (pin));
         if (allowOutputEdges)
-            list.addAll (pinOutputEdgeControllers.get (pinController));
+            list.addAll (pinOutputEdges.get (pin));
         return list;
     }
 
-    public final Collection<EdgeCtrl> findEdgeBetween (PinCtrl sourcePinController, PinCtrl targetPinController) {
-        HashSet<EdgeCtrl> list = new HashSet<EdgeCtrl> ();
-        List<EdgeCtrl> inputEdgeControllers = pinInputEdgeControllers.get (targetPinController);
-        List<EdgeCtrl> outputEdgeControllers = pinOutputEdgeControllers.get (sourcePinController);
-        for (EdgeCtrl edgeController : inputEdgeControllers)
-            if (outputEdgeControllers.contains (edgeController))
-                list.add (edgeController);
+    public final Collection<E> findEdgeBetween (P sourcePin, P targetPin) {
+        HashSet<E> list = new HashSet<E> ();
+        List<E> inputEdges = pinInputEdges.get (targetPin);
+        List<E> outputEdges = pinOutputEdges.get (sourcePin);
+        for (E edge : inputEdges)
+            if (outputEdges.contains (edge))
+                list.add (edge);
         return list;
     }
 
-    protected abstract NodeCtrl attachNodeController (Node node);
+    public boolean isNode (Object object) {
+        return nodes.contains (object);
+    }
 
-    protected abstract EdgeCtrl attachEdgeController (Edge edge);
+    public boolean isPin (Object object) {
+        return pins.contains (object);
+    }
 
-    protected abstract PinCtrl attachPinController (NodeCtrl nodeController, Pin pin);
+    public boolean isEdge (Object object) {
+        return edges.contains (object);
+    }
 
-    protected abstract void attachEdgeSource (EdgeCtrl edgeController, PinCtrl sourcePinController);
+    protected void detachNodeWidget (N node, Widget widget) {
+        if (widget != null)
+            widget.removeFromParent ();
+    }
 
-    protected abstract void attachEdgeTarget (EdgeCtrl edgeController, PinCtrl targetPinController);
+    protected void detachPinWidget (P pin, Widget widget) {
+        if (widget != null)
+            widget.removeFromParent ();
+    }
 
-    public static abstract class StringGraph extends GraphPinScene<String, String, String, NodeController.StringNode, EdgeController.StringEdge, PinController.StringPin> {
+    protected void detachEdgeWidget (E edge, Widget widget) {
+        if (widget != null)
+            widget.removeFromParent ();
+    }
+
+    protected abstract Widget attachNodeWidget (N node);
+
+    protected abstract Widget attachPinWidget (N node, P pin);
+
+    protected abstract Widget attachEdgeWidget (E edge);
+
+    protected abstract void attachEdgeSourceAnchor (E edge, P oldSourcePin, P sourcePin);
+
+    protected abstract void attachEdgeTargetAnchor (E edge, P oldTargetPin, P targetPin);
+
+    public static abstract class StringGraph extends GraphPinScene<String, String, String> {
 
     }
 

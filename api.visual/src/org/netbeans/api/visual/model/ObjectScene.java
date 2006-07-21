@@ -13,7 +13,6 @@
 package org.netbeans.api.visual.model;
 
 import org.netbeans.api.visual.action.MouseHoverAction;
-import org.netbeans.api.visual.action.MoveAction;
 import org.netbeans.api.visual.action.SelectAction;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Scene;
@@ -27,114 +26,114 @@ import java.awt.*;
  */
 public class ObjectScene extends Scene {
 
-    private HashSet<ObjectController> objects = new HashSet<ObjectController> ();
-    private HashMap<Widget, ObjectController> widgets2controllers = new HashMap<Widget, ObjectController> ();
-    private Set<ObjectController> objectsUm = Collections.unmodifiableSet (objects);
-    private HashSet<ObjectController> selectedObjects = new HashSet<ObjectController> ();
-    private Set<ObjectController> selectedObjectsUm = Collections.unmodifiableSet (selectedObjects);
-    private HashSet<ObjectController> highlightedObjects = new HashSet<ObjectController> ();
-    private Set<ObjectController> highlightedObjectsUm = Collections.unmodifiableSet (highlightedObjects);
-    private ObjectController focusedObject = null;
-    private ObjectController hoveredObject = null;
+    private HashMap<Object, Object> objects = new HashMap<Object, Object> ();
+    private Set<Object> objectsUm = Collections.unmodifiableSet (objects.keySet ());
+
+    private HashMap<Object, Widget> object2widgets = new HashMap<Object, Widget> ();
+    private HashMap<Widget, Object> widget2objects = new HashMap<Widget, Object> ();
+
+    private HashMap<Object, ObjectState> objectStates = new HashMap<Object, ObjectState> ();
+
+    private HashSet<Object> selectedObjects = new HashSet<Object> ();
+    private Set<Object> selectedObjectsUm = Collections.unmodifiableSet (selectedObjects);
+
+    private HashSet<Object> highlightedObjects = new HashSet<Object> ();
+    private Set<Object> highlightedObjectsUm = Collections.unmodifiableSet (highlightedObjects);
+
+    private Object hoveredObject = null;
 
     private WidgetAction selectAction = new ObjectSelectAction ();
-    private WidgetAction hoverAction;
-    private WidgetAction moveAction = new MoveAction ();
+    private WidgetAction objectHoverAction;
 
-    public void addObject (ObjectController objectController) {
-        if (objectController == null)
-            return;
-        objects.add (objectController);
-        for (Widget widget : objectController.getWidgets ()) {
-            assert widget.getScene () == this  &&  widget.getParentWidget () != null;
-            ObjectController oldValue = widgets2controllers.put (widget, objectController);
-            assert oldValue == null;
+    public void addObject (Object object, Widget widget) {
+        assert object != null  &&  ! objects.containsKey (object);
+        if (widget != null)
+            assert ! widget2objects.containsKey (widget)  &&  widget.getScene () == this  &&  widget.getParentWidget () != null;
+        objects.put (object, object);
+        object2widgets.put (object, widget);
+        objectStates.put (object, ObjectState.NORMAL);
+        if (widget != null) {
+            widget2objects.put (widget, object);
+            widget.setState (ObjectState.NORMAL);
         }
     }
 
-    public void removeObject (ObjectController objectController) {
-        if (objectController == null)
-            return;
-        selectedObjects.remove (objectController);
-        highlightedObjects.remove (objectController);
-        if (objectController.equals (focusedObject))
-            focusedObject = null;
-        if (objectController.equals (hoveredObject))
+    public void removeObject (Object object) {
+        assert object != null  &&   objects.containsKey (object);
+        selectedObjects.remove (object);
+        highlightedObjects.remove (object);
+        if (object.equals (hoveredObject))
             hoveredObject = null;
-        objectController.setState (ObjectState.NORMAL);
-        objects.remove (objectController);
-        for (Widget widget : objectController.getWidgets ())
-            widgets2controllers.remove (widget);
+        objectStates.remove (object);
+        Widget widget = object2widgets.remove (object);
+        if (widget != null) {
+            widget.setState (ObjectState.NORMAL);
+            widget2objects.remove (widget);
+        }
+        objects.remove (object);
     }
 
-    public Set<ObjectController> getObjects () {
+    public Set<Object> getObjects () {
         return objectsUm;
     }
 
-    public Set<ObjectController> getSelectedObjects () {
+    public Set<Object> getSelectedObjects () {
         return selectedObjectsUm;
     }
 
-    public void setSelectedObjects (Set<ObjectController> selectedObjects) {
-        for (Iterator<ObjectController> iterator = this.selectedObjects.iterator (); iterator.hasNext ();) {
-            ObjectController controller = iterator.next ();
-            if (! selectedObjects.contains (controller)) {
+    public void setSelectedObjects (Set<? extends Object> selectedObjects) {
+        for (Iterator<Object> iterator = this.selectedObjects.iterator (); iterator.hasNext ();) {
+            Object object = iterator.next ();
+            if (! selectedObjects.contains (object)) {
                 iterator.remove ();
-                controller.setState (controller.getState ().deriveSelected (false));
+                objectStates.put (object, objectStates.get (object).deriveSelected (false));
+                Widget widget = object2widgets.get (object);
+                if (widget != null)
+                    widget.setState (widget.getState ().deriveSelected (false));
             }
         }
-        for (ObjectController controller : selectedObjects) {
-            if (! this.selectedObjects.contains (controller)) {
-                this.selectedObjects.add (controller);
-                controller.setState (controller.getState ().deriveSelected (true));
+        for (Object object : selectedObjects) {
+            if (! this.selectedObjects.contains (object)) {
+                this.selectedObjects.add (object);
+                objectStates.put (object, objectStates.get (object).deriveSelected (true));
+                Widget widget = object2widgets.get (object);
+                if (widget != null)
+                    widget.setState (widget.getState ().deriveSelected (true));
             }
         }
     }
 
-    public Set<ObjectController> getHighlightedObjects () {
+    public Set<Object> getHighlightedObjects () {
         return highlightedObjectsUm;
     }
 
-    public void setHighlightedObjects (Set<ObjectController> highlightedObjects) {
-        for (Iterator<ObjectController> iterator = this.highlightedObjects.iterator (); iterator.hasNext ();) {
-            ObjectController controller = iterator.next ();
-            if (! highlightedObjects.contains (controller)) {
+    public void setHighlightedObjects (Set<? extends Object> highlightedObjects) {
+        for (Iterator<Object> iterator = this.highlightedObjects.iterator (); iterator.hasNext ();) {
+            Object object = iterator.next ();
+            if (! highlightedObjects.contains (object)) {
                 iterator.remove ();
-                controller.setState (controller.getState ().deriveHighlighted (false));
+                objectStates.put (object, objectStates.get (object).deriveHighlighted (false));
+                Widget widget = object2widgets.get (object);
+                if (widget != null)
+                    widget.setState (widget.getState ().deriveHighlighted (false));
             }
         }
-        for (ObjectController controller : highlightedObjects) {
-            if (! this.highlightedObjects.contains (controller)) {
-                this.highlightedObjects.add (controller);
-                controller.setState (controller.getState ().deriveHighlighted (true));
+        for (Object object : highlightedObjects) {
+            if (! this.highlightedObjects.contains (object)) {
+                this.highlightedObjects.add (object);
+                objectStates.put (object, objectStates.get (object).deriveHighlighted (true));
+                Widget widget = object2widgets.get (object);
+                if (widget != null)
+                    widget.setState (widget.getState ().deriveHighlighted (true));
             }
         }
     }
 
-    public ObjectController getFocusedObject () {
-        return focusedObject;
-    }
-
-    public void setFocusedObject (ObjectController focusedObject) {
-        if (focusedObject != null) {
-            if (this.focusedObject.equals (focusedObject))
-               return;
-        } else {
-            if (this.focusedObject == null)
-                return;
-        }
-        if (this.focusedObject != null)
-            this.focusedObject.setState (this.focusedObject.getState ().deriveFocused (false));
-        this.focusedObject = focusedObject;
-        if (this.focusedObject != null)
-            this.focusedObject.setState (this.focusedObject.getState ().deriveFocused (true));
-    }
-
-    public ObjectController getHoveredObject () {
+    public Object getHoveredObject () {
         return hoveredObject;
     }
 
-    public void setHoveredObject (ObjectController hoveredObject) {
+    public void setHoveredObject (Object hoveredObject) {
         if (hoveredObject != null) {
             if (hoveredObject.equals (this.hoveredObject))
                 return;
@@ -142,54 +141,71 @@ public class ObjectScene extends Scene {
             if (this.hoveredObject == null)
                 return;
         }
-        if (this.hoveredObject != null)
-            this.hoveredObject.setState (this.hoveredObject.getState ().deriveHovered (false));
+        if (this.hoveredObject != null) {
+            Widget widget = object2widgets.get (this.hoveredObject);
+            objectStates.put (this.hoveredObject, objectStates.get (this.hoveredObject).deriveObjectHovered (false));
+            if (widget != null)
+                widget.setState (widget.getState ().deriveObjectHovered (false));
+        }
         this.hoveredObject = hoveredObject;
-        if (this.hoveredObject != null)
-            this.hoveredObject.setState (this.hoveredObject.getState ().deriveHovered (true));
+        if (this.hoveredObject != null) {
+            objectStates.put (this.hoveredObject, objectStates.get (this.hoveredObject).deriveObjectHovered (true));
+            Widget widget = object2widgets.get (this.hoveredObject);
+            if (widget != null)
+                widget.setState (widget.getState ().deriveObjectHovered (true));
+        }
     }
 
     public WidgetAction createSelectAction () {
         return selectAction;
     }
 
-    public WidgetAction createHoverAction () {
-        if (hoverAction == null) {
-            hoverAction = new ObjectHoverAction ();
-            getActions ().addAction (hoverAction);
+    public WidgetAction createObjectHoverAction () {
+        if (objectHoverAction == null) {
+            objectHoverAction = new ObjectHoverAction ();
+            getActions ().addAction (objectHoverAction);
         }
-        return hoverAction;
+        return objectHoverAction;
     }
 
-    public WidgetAction createMoveAction () {
-        return moveAction;
+    public Widget findWidget (Object object) {
+        assert ! (object instanceof Widget);
+        return object2widgets.get (object);
     }
 
-    public ObjectController findObjectController (Widget widget) {
-        if (widget == null)
-            return null;
-        ObjectController objectController = widgets2controllers.get (widget);
-        if (objectController != null)
-            return objectController;
-        return findObjectController (widget.getParentWidget ());
+    public Object findObject (Widget widget) {
+        while (widget != null) {
+            Object o = widget2objects.get (widget);
+            if (o != null)
+                return o;
+            widget = widget.getParentWidget ();
+        }
+        return null;
     }
 
-    public void userSelectionSuggested (Set<ObjectController> objectControllers) {
-        setSelectedObjects (objectControllers);
+    public Object findStoredObject (Object object) {
+        assert ! (object instanceof Widget);
+        return objects.get (object);
+    }
+
+    public ObjectState getObjectState (Object object) {
+        return objectStates.get (object);
+    }
+
+    public void userSelectionSuggested (Set<? extends Object> suggestedSelectedObjects) {
+        setSelectedObjects (suggestedSelectedObjects);
     }
 
     private class ObjectSelectAction extends SelectAction {
         public void doSelect (Widget widget, Point localLocation) {
-            ObjectController objectController = findObjectController (widget);
-            Set<ObjectController> set;
+            Object object = findObject (widget);
 
-            if (objectController != null) {
-                if (getSelectedObjects ().contains (objectController))
+            if (object != null) {
+                if (getSelectedObjects ().contains (object))
                     return;
-                set = Collections.singleton (objectController);
+                userSelectionSuggested (Collections.singleton (object));
             } else
-                set = Collections.emptySet ();
-            userSelectionSuggested (set);
+                userSelectionSuggested (Collections.emptySet ());
         }
     }
 
@@ -198,7 +214,7 @@ public class ObjectScene extends Scene {
         protected void widgetHovered (Widget widget) {
             if (ObjectScene.this == widget)
                 widget = null;
-            setHoveredObject (findObjectController (widget));
+            setHoveredObject (findObject (widget));
         }
 
     }

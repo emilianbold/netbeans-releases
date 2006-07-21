@@ -16,6 +16,8 @@ import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.laf.DefaultLookFeel;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.api.visual.action.MouseHoverAction;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.openide.util.WeakSet;
 
 import javax.swing.*;
@@ -43,6 +45,8 @@ public class Scene extends Widget {
     private HashMap<Widget,Rectangle> repaints = new HashMap<Widget, Rectangle> ();
     private LookFeel lookFeel = new DefaultLookFeel ();
     private String activeTool;
+
+    private WidgetAction widgetHoverAction;
 
     public Scene () {
         super (null);
@@ -268,6 +272,26 @@ public class Scene extends Widget {
 
     public Point convertViewToScene (Point viewLocation) {
         return new Point ((int) ((double) viewLocation.x / zoomFactor), (int) ((double) viewLocation.y / zoomFactor));
+    }
+
+    public WidgetAction createWidgetHoverAction () {
+        if (widgetHoverAction == null) {
+            widgetHoverAction = new WidgetHoverAction ();
+            getActions ().addAction (widgetHoverAction);
+        }
+        return widgetHoverAction;
+    }
+
+    private class WidgetHoverAction extends MouseHoverAction.TwoStated {
+
+        protected void unsetHovering (Widget widget) {
+            widget.setState (widget.getState ().deriveWidgetHovered (false));
+        }
+
+        protected void setHovering (Widget widget) {
+            widget.setState (widget.getState ().deriveWidgetHovered (true));
+        }
+
     }
 
 }

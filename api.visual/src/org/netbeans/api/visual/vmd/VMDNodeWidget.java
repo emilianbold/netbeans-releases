@@ -176,7 +176,14 @@ public class VMDNodeWidget extends Widget {
     public void setGlyphs (List<Image> glyphs) {
         glyphSetWidget.setGlyphs (glyphs);
     }
-    
+
+    public void setNodeProperties (Image image, String nodeName, String nodeType, List<Image> glyphs) {
+        setNodeImage (image);
+        setNodeName (nodeName);
+        setNodeType (nodeType);
+        setGlyphs (glyphs);
+    }
+
     public Anchor getNodeAnchor () {
         return nodeAnchor;
     }

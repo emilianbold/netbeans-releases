@@ -148,6 +148,11 @@ public class Widget {
         revalidate ();
     }
 
+    public final void removeFromParent () {
+        if (parentWidget != null)
+            parentWidget.removeChild (this);
+    }
+
     public final WidgetAction.Chain getActions () {
         return actionsChain;
     }
