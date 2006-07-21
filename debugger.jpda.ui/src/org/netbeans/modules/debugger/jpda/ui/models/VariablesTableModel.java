@@ -22,6 +22,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.util.WeakHashMap;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.LocalVariable;
@@ -95,6 +96,9 @@ public class VariablesTableModel implements TableModel, Constants {
             if (row instanceof Variable)
                 return ((Variable) row).getValue ();
         }
+        if (row instanceof JPDAClassType) {
+            return ""; // NOI18N
+        }
         if (row.toString().startsWith("SubArray")) { // NOI18N
             return ""; // NOI18N
         }
@@ -123,6 +127,9 @@ public class VariablesTableModel implements TableModel, Constants {
                 else
                     return true;
             }
+        }
+        if (row instanceof JPDAClassType) {
+            return true;
         }
         if (row.toString().startsWith("SubArray")) {
             return true;

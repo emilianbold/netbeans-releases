@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.jpda.ClassVariable;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.api.debugger.jpda.ReturnVariable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -58,6 +61,10 @@ public class VariablesNodeModel implements NodeModel {
         "org/netbeans/modules/debugger/resources/watchesView/StaticField";
     public static final String SUPER =
         "org/netbeans/modules/debugger/resources/watchesView/SuperVariable";
+    public static final String STATIC =
+        "org/netbeans/modules/debugger/resources/watchesView/SuperVariable";
+    public static final String RETURN =
+        "org/netbeans/modules/debugger/jpda/resources/Filter";
 
     
     private JPDADebugger debugger;
@@ -88,6 +95,15 @@ public class VariablesNodeModel implements NodeModel {
             return NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info");
         if (o == "No current thread") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
+        }
+        if (o instanceof JPDAClassType) {
+            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_StaticNode");    // NOI18N
+        }
+        if (o instanceof ClassVariable) {
+            return "class";
+        }
+        if (o instanceof ReturnVariable) {
+            return "return "+((ReturnVariable) o).methodName()+"()";
         }
         String str = o.toString();
         if (str.startsWith("SubArray")) { // NOI18N
@@ -197,6 +213,15 @@ public class VariablesNodeModel implements NodeModel {
         if (o == "No current thread") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
         }
+        if (o instanceof JPDAClassType) {
+            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_StaticNode_descr");    // NOI18N
+        }
+        if (o instanceof ClassVariable) {
+            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_Class_descr");    // NOI18N
+        }
+        if (o instanceof ReturnVariable) {
+            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_Return_descr", ((ReturnVariable) o).methodName()+"()");    // NOI18N
+        }
         return null;
         //throw new UnknownTypeException (o);
     }
@@ -211,6 +236,9 @@ public class VariablesNodeModel implements NodeModel {
         if (str.startsWith("SubArray")) return ; // NOI18N
         if (o == "NoInfo") return ; // NOI18N
         if (o == "No current thread") return ; // NOI18N
+        if (o instanceof JPDAClassType) return ;
+        if (o instanceof ClassVariable) return ;
+        if (o instanceof ReturnVariable) return ;
         throw new UnknownTypeException (o);
     }
     
@@ -229,6 +257,15 @@ public class VariablesNodeModel implements NodeModel {
             return SUPER;
         if (o instanceof This)
             return FIELD;
+        if (o instanceof JPDAClassType) {
+            return STATIC;
+        }
+        if (o instanceof ClassVariable) {
+            return STATIC;
+        }
+        if (o instanceof ReturnVariable) {
+            return RETURN;
+        }
         if (o.toString().startsWith("SubArray")) // NOI18N
             return LOCAL;
         if (o == "NoInfo" || o == "No current thread") // NOI18N

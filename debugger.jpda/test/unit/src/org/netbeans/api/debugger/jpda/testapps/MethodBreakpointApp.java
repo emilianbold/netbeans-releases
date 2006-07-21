@@ -32,8 +32,8 @@ public class MethodBreakpointApp {
         sa.b();
         sa.c();
         new InnerStatic().getW();
+        new ConcreteInner().compute(); new ConcreteInner().getString();
     }
-
     static {
         System.currentTimeMillis();
     }
@@ -97,6 +97,32 @@ public class MethodBreakpointApp {
         public int getW() {
             return w;
         }
+    }
+    
+    private static abstract class AbstractInner {
+        
+        public abstract double compute();
+        
+    }
+    
+    private static interface InterfaceInner {
+        
+        String getString();
+        
+    }
+    
+    private static class ConcreteInner extends AbstractInner implements InterfaceInner {
+        
+        public double compute() {
+            double num = Math.PI/2;
+            return Math.round(Math.sin(num)*1000)/1000.0;
+        }
+        
+        public String getString() {
+            char[] chars = new char[] { 'H', 'e', 'l', 'l', 'o' };
+            return new String(chars);
+        }
+        
     }
 
 }

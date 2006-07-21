@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
 import org.netbeans.modules.debugger.jpda.models.ObjectTranslation;
@@ -611,7 +612,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                         resumedThread[0].notifyToBeRunning();
                                     }
                                 }
-                            }
+                            },
+                            this
                         )
                     );
                 try {
@@ -931,6 +933,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     public Variable getLocalVariable(LocalVariable lv, Value v) {
         return (Variable) localsTranslation.translate(lv, v);
+    }
+    
+    public JPDAClassType getClassType(ReferenceType cr) {
+        return (JPDAClassType) localsTranslation.translate (cr);
     }
 
     public Variable getVariable (Value value) {

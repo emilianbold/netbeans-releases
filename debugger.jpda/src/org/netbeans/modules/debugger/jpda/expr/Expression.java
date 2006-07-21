@@ -20,6 +20,7 @@
 package org.netbeans.modules.debugger.jpda.expr;
 
 import java.io.StringReader;
+import java.util.Random;
 
 /**
  * Represents an pre-parsed Java expression to be later evaluated in a specific JVM context.
@@ -31,10 +32,15 @@ public class Expression {
 
     public static final String LANGUAGE_JAVA_1_4 = JavaParser.LANGUAGE_JAVA_1_4;
     public static final String LANGUAGE_JAVA_1_5 = JavaParser.LANGUAGE_JAVA_1_5;
+    
+    private static final String REPLACE_return = "return01234";
+    private static final String REPLACE_class = "class01234";
 
     private String       strExpression;
     private String       language;
     private SimpleNode   root;
+    private String       replace_return;
+    private String       replace_class;
 
     /**
      * Creates a new expression by pre-parsing the given String representation of the expression.
@@ -46,23 +52,36 @@ public class Expression {
      */
     public static Expression parse (String expr, String language) 
     throws ParseException {
-        StringReader reader = new StringReader(expr);
+        String replace_return = REPLACE_return;
+        while (expr.indexOf(replace_return) >= 0) {
+            replace_return = "return" + new Random().nextLong();
+        }
+        String replace_class = REPLACE_class;
+        while (expr.indexOf(replace_class) >= 0) {
+            replace_class = "class" + new Random().nextLong();
+        }
+        String replacedExpr = expr.replace("return", replace_return);
+        replacedExpr = replacedExpr.replaceAll("^class|[^\\.]class", replace_class);
+        StringReader reader = new StringReader(replacedExpr);
         try {
             JavaParser parser = new JavaParser(reader);
             parser.setTargetJDK(language);
             SimpleNode root = parser.Expression();
-            return new Expression(expr, language, root);
+            return new Expression(expr, language, root, replace_return, replace_class);
         } catch (Error e) {
             throw new ParseException(e.getMessage());
         } finally {
             reader.close();
         }
     }
-
-    private Expression(String expression, String language, SimpleNode root) {
+    
+    private Expression(String expression, String language, SimpleNode root,
+                       String replace_return, String replace_class) {
         strExpression = expression;
         this.language = language;
         this.root = root;
+        this.replace_return = replace_return;
+        this.replace_class = replace_class;
     }
 
     /**
@@ -86,5 +105,13 @@ public class Expression {
 
     public String getExpression() {
         return strExpression;
+    }
+    
+    String returnReplaced() {
+        return replace_return;
+    }
+    
+    String classReplaced() {
+        return replace_class;
     }
 }

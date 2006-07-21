@@ -388,6 +388,24 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.spi.debugger.jpda" name="SourcePathProvider" />
         <issue number="52180"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Added JPDAClassType, ClassVariable and ReturnVariable classes</summary>
+        <version major="2" minor="7"/>
+        <date day="12" month="7" year="2006"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+                In order to be able to provide static context information
+                and return value of methods, three new classes were added.
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAClassType" />
+        <class package="org.netbeans.api.debugger.jpda" name="ClassVariable" />
+        <class package="org.netbeans.api.debugger.jpda" name="ReturnVariable" />
+        <issue number="80090"/>
+    </change>
 
 </changes>
 

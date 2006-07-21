@@ -39,13 +39,14 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.JDIObjectVariable;
 import org.openide.util.NbBundle;
 
 
 /**
  * @author   Jan Jancura
  */
-class AbstractVariable implements ObjectVariable, Customizer { // Customized for add/removePropertyChangeListener
+class AbstractVariable implements JDIObjectVariable, Customizer { // Customized for add/removePropertyChangeListener
 
     private Value           value;
     private JPDADebuggerImpl debugger;
@@ -457,6 +458,10 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
         fields = null;
         staticFields = null;
         inheritedFields = null;
+    }
+    
+    public Value getJDIValue() {
+        return value;
     }
     
     protected final JPDADebuggerImpl getDebugger() {

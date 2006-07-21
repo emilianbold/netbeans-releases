@@ -42,6 +42,7 @@ public class EvaluationContext {
     private List       staticImports;
     private boolean canInvokeMethods;
     private Runnable methodInvokePreproc;
+    private JPDADebuggerImpl debugger;
 
     /**
      * Creates a new context in which to evaluate expresions.
@@ -51,7 +52,8 @@ public class EvaluationContext {
      * @param staticImports list of static imports
      */
     public EvaluationContext(StackFrame frame, List imports, List staticImports,
-                             boolean canInvokeMethods, Runnable methodInvokePreproc) {
+                             boolean canInvokeMethods, Runnable methodInvokePreproc,
+                             JPDADebuggerImpl debugger) {
         if (frame == null) throw new IllegalArgumentException("Frame argument must not be null");
         if (imports == null) throw new IllegalArgumentException("Imports argument must not be null");
         if (staticImports == null) throw new IllegalArgumentException("Static imports argument must not be null");
@@ -60,6 +62,7 @@ public class EvaluationContext {
         this.staticImports = staticImports;
         this.canInvokeMethods = canInvokeMethods;
         this.methodInvokePreproc = methodInvokePreproc;
+        this.debugger = debugger;
     }
 
     public List getStaticImports() {
@@ -86,6 +89,10 @@ public class EvaluationContext {
         if (methodInvokePreproc != null) {
             methodInvokePreproc.run();
         }
+    }
+    
+    JPDADebuggerImpl getDebugger() {
+        return debugger;
     }
     
 }

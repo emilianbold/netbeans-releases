@@ -42,7 +42,7 @@ public class MethodBreakpointTest extends NbTestCase {
         super (s);
     }
 
-    public void testMethodBreakpoints() throws Exception {
+    public void testMethodEntryBreakpoints() throws Exception {
         try {
             MethodBreakpoint mb1 = MethodBreakpoint.create (CLASS_NAME, "a");
             TestBreakpointListener tbl = new TestBreakpointListener 
@@ -157,6 +157,45 @@ public class MethodBreakpointTest extends NbTestCase {
         }
     }
 
+    public void testMethodExitBreakpoints() throws Exception {
+        try {
+            MethodBreakpoint mb1 = MethodBreakpoint.create (
+                CLASS_NAME + "$AbstractInner", "compute"
+            );
+            mb1.setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
+            TestBreakpointListener tbl = new TestBreakpointListener 
+                ("compute", 118, 1, "1.0");
+            mb1.addJPDABreakpointListener (tbl);
+            dm.addBreakpoint(mb1);
+            
+            MethodBreakpoint mb2 = MethodBreakpoint.create (
+                CLASS_NAME + "$InterfaceInner", "getString"
+            );
+            mb2.setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
+            TestBreakpointListener tb2 = new TestBreakpointListener 
+                ("getString", 123, 1, "\"Hello\"");
+            mb2.addJPDABreakpointListener (tb2);
+            dm.addBreakpoint(mb2);
+            
+            support = JPDASupport.attach (CLASS_NAME);
+
+            for (;;) {
+                support.waitState (JPDADebugger.STATE_STOPPED);
+                if (support.getDebugger ().getState () == 
+                    JPDADebugger.STATE_DISCONNECTED
+                ) break;
+                support.doContinue ();
+            }
+            tbl.assertFailure ();
+            tb2.assertFailure ();
+
+            dm.removeBreakpoint (mb1);
+            dm.removeBreakpoint (mb2);
+        } finally {
+            support.doFinish();
+        }
+    }
+
     private class TestBreakpointListener implements JPDABreakpointListener {
 
         private int                 hitCount;
@@ -164,6 +203,7 @@ public class MethodBreakpointTest extends NbTestCase {
         private String methodName;
         private int hitLine;
         private int expectedHitCount;
+        private String returnValue;
 
         public TestBreakpointListener (
             String methodName, 
@@ -175,6 +215,16 @@ public class MethodBreakpointTest extends NbTestCase {
             this.expectedHitCount = expectedHitCount;
         }
 
+        public TestBreakpointListener (
+            String methodName, 
+            int hitLine, 
+            int expectedHitCount,
+            String returnValue
+        ) {
+            this(methodName, hitLine, expectedHitCount);
+            this.returnValue = returnValue;
+        }
+        
         public void breakpointReached(JPDABreakpointEvent event) {
             try {
                 checkEvent(event);
@@ -207,6 +257,20 @@ public class MethodBreakpointTest extends NbTestCase {
                 mb.getMethodName (), 
                 event.getThread ().getMethodName ()
             );
+            
+            if (returnValue != null && !System.getProperty("java.version").startsWith("1.5")) {
+                Variable retVar = event.getVariable();
+                assertNotNull(
+                        "Breakpoint event: The return value must not be null!",
+                        retVar);
+                ReturnVariable returnVariable = (ReturnVariable) retVar;
+                assertEquals(
+                        "Breakpoint event: Wrong method name hit",
+                        methodName, returnVariable.methodName());
+                assertEquals(
+                        "Breakpoint event: Wrong return value",
+                        returnValue, returnVariable.getValue());
+            }
 
             hitCount++;
         }

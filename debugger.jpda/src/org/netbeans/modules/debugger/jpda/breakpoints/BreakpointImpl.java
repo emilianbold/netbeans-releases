@@ -37,6 +37,8 @@ import org.netbeans.api.debugger.Breakpoint;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.Session;
@@ -45,6 +47,8 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.openide.ErrorManager;
 
@@ -200,6 +204,21 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         } catch (java.lang.IndexOutOfBoundsException e) {
             // No frame in case of Thread and "Main" class breakpoints, PATCH 56540 
         } 
+        Variable variable = null;
+        if (getBreakpoint() instanceof MethodBreakpoint &&
+                (((MethodBreakpoint) getBreakpoint()).getBreakpointType()
+                 & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
+            JPDAThreadImpl jt = (JPDAThreadImpl) getDebugger().getThread(thread);
+            if (value != null) {
+                ReturnVariableImpl retVariable = new ReturnVariableImpl(getDebugger(), value, "", jt.getMethodName());
+                jt.setReturnVariable(retVariable);
+                variable = retVariable;
+            }
+        }
+        if (variable == null) {
+            variable = debugger.getVariable(value);
+        }
+        
         
         if ((condition == null) || condition.equals ("")) {
             JPDABreakpointEvent e = new JPDABreakpointEvent (
@@ -208,7 +227,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 JPDABreakpointEvent.CONDITION_NONE,
                 debugger.getThread (thread), 
                 referenceType, 
-                debugger.getVariable (value)
+                variable
             );
             getDebugger ().fireBreakpointEvent (
                 getBreakpoint (),
@@ -222,7 +241,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 condition, 
                 thread,
                 referenceType,
-                value
+                variable
             );
             //PATCH 48174
             resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || resume;
@@ -240,7 +259,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         String condition, 
         ThreadReference thread,
         ReferenceType referenceType,
-        Value value
+        Variable variable
     ) {
         try {
             try {
@@ -257,7 +276,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                             JPDABreakpointEvent.CONDITION_FALSE,
                         debugger.getThread (thread), 
                         referenceType, 
-                        debugger.getVariable (value)
+                        variable
                     );
                 }
                 getDebugger ().fireBreakpointEvent (
@@ -277,7 +296,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     ex,
                     debugger.getThread (thread), 
                     referenceType, 
-                    debugger.getVariable (value)
+                    variable
                 );
                 getDebugger ().fireBreakpointEvent (
                     getBreakpoint (),
@@ -293,7 +312,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     ex,
                     debugger.getThread (thread), 
                     referenceType, 
-                    debugger.getVariable (value)
+                    variable
                 );
                 getDebugger ().fireBreakpointEvent (
                     getBreakpoint (),

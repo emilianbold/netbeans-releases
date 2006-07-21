@@ -384,7 +384,7 @@ public class ClassesTreeModel implements TreeModel {
         public int compare (Object o1, Object o2) {
             if (o1 instanceof Object[]) {
                 if (o2 instanceof Object[])
-                    return ((String) ((Object[]) o1) [0]).compareTo (((Object[]) o2) [0]);
+                    return ((String) ((Object[]) o1) [0]).compareTo ((String) ((Object[]) o2) [0]);
                 return -1;
             } 
             if (o2 instanceof Object[])

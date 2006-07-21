@@ -26,6 +26,7 @@ import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.WeakHashMap;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -128,6 +130,14 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             if (o instanceof ArrayChildrenNode) {
                 return ((ArrayChildrenNode) o).getChildren();
             } else
+            if (o instanceof JPDAClassType) {
+                JPDAClassType clazz = (JPDAClassType) o;
+                List staticFields = clazz.staticFields();
+                Object[] fields = new Object[1 + staticFields.size()];
+                fields[0] = clazz.classObject();
+                System.arraycopy(staticFields.toArray(), 0, fields, 1, staticFields.size());
+                return fields;
+            } else
             throw new UnknownTypeException (o);
         } catch (VMDisconnectedException ex) {
             return new Object [0];
@@ -155,12 +165,16 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     return 1;
                 try {
                     int i = 0;
+                    if (((JPDAThreadImpl) frame.getThread()).getReturnVariable() != null) {
+                        i++;
+                    }
                     try {
-                        i = sf.visibleVariables ().size ();
+                        i += sf.visibleVariables ().size ();
                     } catch (AbsentInformationException ex) {
                         i++;
                     }
-                    if (sf.thisObject () != null) i++;
+                    // This or Static
+                    i++;//if (sf.thisObject () != null) i++;
                     return i;
                 } catch (NativeMethodException ex) {
                     return 1;//throw new NoInformationException ("native method");
@@ -183,6 +197,10 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             if (node instanceof ArrayChildrenNode) {
                 return ((ArrayChildrenNode) node).getChildren().length;
             } else
+            if (node instanceof JPDAClassType) {
+                JPDAClassType clazz = (JPDAClassType) node;
+                return 1 + clazz.staticFields().size();
+            } else
             throw new UnknownTypeException (node);
         } catch (VMDisconnectedException ex) {
         }
@@ -199,6 +217,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         }
         if (o.equals ("NoInfo")) // NOI18N
             return true;
+        if (o instanceof JPDAClassType) return false;
         throw new UnknownTypeException (o);
     }
 
@@ -252,34 +271,51 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 return new String [] {"No current thread"};
             try {
                 ObjectReference thisR = stackFrame.thisObject ();
+                ReturnVariableImpl returnVariable = ((JPDAThreadImpl) callStackFrame.getThread()).getReturnVariable();
+                int retValShift = (returnVariable == null) ? 0 : 1;
                 if (thisR == null) {
+                    ReferenceType classType = stackFrame.location().declaringType();
                     Object[] avs = null;
                     try {
-                        return getLocalVariables (
+                        avs = getLocalVariables (
                             callStackFrame,
                             stackFrame,
-                            from,
-                            to
+                            Math.max (from - retValShift - 1, 0),
+                            Math.max (to - retValShift - 1, 0)
                         );
                     } catch (AbsentInformationException ex) {
-                        return new String [] {"NoInfo"};
+                        avs = new String [] {"NoInfo"};
                     }
+                    Object[] result = new Object [avs.length + retValShift + 1];
+                    if (from < 1) {
+                        result[0] = returnVariable;
+                    }
+                    if (from < 1 + retValShift) {
+                        //result [0] = new ThisVariable (debugger, classType.classObject(), "");
+                        result[retValShift] = debugger.getClassType(classType);
+                    }
+                    System.arraycopy (avs, 0, result, 1 + retValShift, avs.length);
+                    return result;
                 } else {
                     Object[] avs = null;
                     try {
                         avs = getLocalVariables (
                             callStackFrame,
                             stackFrame,
-                            Math.max (from - 1, 0),
-                            Math.max (to - 1, 0)
+                            Math.max (from - retValShift - 1, 0),
+                            Math.max (to - retValShift - 1, 0)
                         );
                     } catch (AbsentInformationException ex) {
                         avs = new Object[] {"NoInfo"};
                     }
-                    Object[] result = new Object [avs.length + 1];
-                    if (from < 1)
-                        result [0] = new ThisVariable (debugger, thisR, "");
-                    System.arraycopy (avs, 0, result, 1, avs.length);
+                    Object[] result = new Object [avs.length + retValShift + 1];
+                    if (from < 1) {
+                        result[0] = returnVariable;
+                    }
+                    if (from < 1 + retValShift) {
+                        result[retValShift] = new ThisVariable (debugger, thisR, "");
+                    }
+                    System.arraycopy (avs, 0, result, 1 + retValShift, avs.length);
                     return result;
                 }            
             } catch (InternalException ex) {

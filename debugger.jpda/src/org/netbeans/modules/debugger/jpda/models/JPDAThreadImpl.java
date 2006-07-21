@@ -54,6 +54,7 @@ public final class JPDAThreadImpl implements JPDAThread {
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
     private boolean             suspended;
+    private ReturnVariableImpl  returnVariable;
     private PropertyChangeSupport pch = new PropertyChangeSupport(this);
 
     public JPDAThreadImpl (
@@ -314,6 +315,7 @@ public final class JPDAThreadImpl implements JPDAThread {
     public void resume () {
         Boolean suspendedToFire = null;
         synchronized (this) {
+            setReturnVariable(null); // Clear the return var on resume
             try {
                 if (isSuspended ()) {
                     int count = threadReference.suspendCount ();
@@ -337,6 +339,7 @@ public final class JPDAThreadImpl implements JPDAThread {
     public void notifyToBeRunning() {
         Boolean suspendedToFire = null;
         synchronized (this) {
+            setReturnVariable(null); // Clear the return var on resume
             if (suspended) {
                 suspended = false;
                 suspendedToFire = Boolean.FALSE;
@@ -425,6 +428,14 @@ public final class JPDAThreadImpl implements JPDAThread {
     
     public ThreadReference getThreadReference () {
         return threadReference;
+    }
+    
+    public synchronized ReturnVariableImpl getReturnVariable() {
+        return returnVariable;
+    }
+    
+    public synchronized void setReturnVariable(ReturnVariableImpl returnVariable) {
+        this.returnVariable = returnVariable;
     }
     
     public void addPropertyChangeListener(PropertyChangeListener l) {

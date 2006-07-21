@@ -24,6 +24,8 @@ import com.sun.jdi.*;
 import java.util.*;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.NbBundle;
 
 
@@ -1453,6 +1455,25 @@ public class Evaluator implements JavaParserVisitor {
                 if (field != null) return type.getValue(field);
             } catch (Exception e) {
                 // no such type or field
+            }
+        }
+        
+        // class special variable
+        if (expression.classReplaced().equals(ctx.identifier)) {
+            ReferenceType refType = frame.location().declaringType();
+            JPDAClassType classType = evaluationContext.getDebugger().getClassType(refType);
+            return ((JDIObjectVariable) classType.classObject()).getJDIValue();
+        }
+        
+        // return special variable
+        if (expression.returnReplaced().equals(ctx.identifier)) {
+            ThreadReference tr = frame.thread();
+            JPDAThreadImpl thread = (JPDAThreadImpl) evaluationContext.getDebugger().getThread(tr);
+            JDIObjectVariable returnVar = (JDIObjectVariable) thread.getReturnVariable();
+            if (returnVar != null) {
+                return returnVar.getJDIValue();
+            } else {
+                return null;
             }
         }
 

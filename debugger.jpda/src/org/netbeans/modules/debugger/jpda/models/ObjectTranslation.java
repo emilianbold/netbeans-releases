@@ -22,6 +22,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Mirror;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
@@ -77,6 +78,10 @@ public final class ObjectTranslation {
                     return new JPDAThreadGroupImpl ((ThreadGroupReference) o, debugger);
                 } else {
                     return null;
+                }
+            case LOCALS_ID:
+                if (o instanceof ReferenceType) {
+                    return new JPDAClassTypeImpl(debugger, (ReferenceType) o);
                 }
             default:
                 throw new IllegalStateException(""+o);
