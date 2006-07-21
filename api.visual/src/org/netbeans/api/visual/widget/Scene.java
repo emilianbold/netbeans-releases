@@ -210,7 +210,10 @@ public class Scene extends Widget {
     }
 
     public final Rectangle calculateRepaintBounds (Widget widget) {
-        Rectangle sceneRectangle = new Rectangle (widget.getBounds ());
+        Rectangle bounds = widget.getBounds ();
+        if (bounds == null)
+            return null;
+        Rectangle sceneRectangle = new Rectangle (bounds);
         for (;;) {
             if (widget == null)
                 return null;
