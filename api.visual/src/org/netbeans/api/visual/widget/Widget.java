@@ -238,12 +238,8 @@ public class Widget {
 
     public final void setBorder (Border border) {
         assert border != null;
-        boolean repaint = this.border.getInsets ().equals (border.getInsets ());
         this.border = border;
-        if (repaint)
-            repaint ();
-        else
-            revalidate ();
+        revalidate (this.border.getInsets ().equals (border.getInsets ()));
     }
 
     public final void setBorder (javax.swing.border.Border swingBorder) {
@@ -414,6 +410,7 @@ public class Widget {
         return getBounds ().contains (localLocation);
     }
 
+    // NOTE - has to be called before a change is set into the widget when the change immediatelly affects calculation of the local/scene location/boundary (means any property used in convertLocalToScene) because repaint/revalidate needs to calculate old scene boundaries
     public final void repaint () {
         scene.revalidateWidget (this);
     }
@@ -422,6 +419,15 @@ public class Widget {
         return ! requiresPartValidation;
     }
 
+    // NOTE - has to be called before a change is set into the widget when the change affects the local/scene location/boundary because repaint/revalidate needs to calculate old scene boundaries
+    public final void revalidate (boolean repaintOnly) {
+        if (repaintOnly)
+            repaint ();
+        else
+            revalidate ();
+    }
+
+    // NOTE - has to be called before a change is set into the widget when the change affects the local/scene location/boundary because repaint/revalidate needs to calculate old scene boundaries
     public final void revalidate () {
         requiresFullValidation = true;
         revalidateUptoRoot ();
@@ -440,6 +446,9 @@ public class Widget {
         requiresPartValidation = true;
         if (parentWidget != null)
             parentWidget.revalidateUptoRoot ();
+        if (dependencies != null)
+            for (Dependency dependency : dependencies)
+                dependency.revalidateDependency ();
     }
 
     final void layout (boolean fullValidation) {
@@ -447,12 +456,8 @@ public class Widget {
         for (Widget widget : children)
             widget.layout (childFullValidation);
 
-        if (childFullValidation  ||  requiresPartValidation) {
+        if (childFullValidation  ||  requiresPartValidation)
             layout.layout (this);
-            if (dependencies != null)
-                for (Dependency dependency : dependencies)
-                    dependency.revalidateDependency ();
-        }
 
         requiresFullValidation = false;
         requiresPartValidation = false;

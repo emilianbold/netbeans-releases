@@ -12,20 +12,20 @@
  */
 package org.netbeans.api.visual.widget;
 
+import org.netbeans.api.visual.action.MouseHoverAction;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.laf.DefaultLookFeel;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.util.GeomUtil;
-import org.netbeans.api.visual.action.MouseHoverAction;
-import org.netbeans.api.visual.action.WidgetAction;
 import org.openide.util.WeakSet;
 
 import javax.swing.*;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * @author David Kaspar
@@ -42,7 +42,8 @@ public class Scene extends Widget {
     private WeakSet satelites;
 
     private Font defaultFont;
-    private HashMap<Widget,Rectangle> repaints = new HashMap<Widget, Rectangle> ();
+    private Rectangle repaintRegion = null;
+    private HashSet<Widget> repaintWidgets = new HashSet<Widget> ();
     private LookFeel lookFeel = new DefaultLookFeel ();
     private String activeTool;
 
@@ -100,22 +101,22 @@ public class Scene extends Widget {
         return defaultFont;
     }
 
+    protected boolean isRepaintRequiredForRevalidating () {
+        return false;
+    }
+
     // TODO - maybe it could improve the perfomance, if bounds != null then do nothing
     // WARNING - you have to asure that there will be no component/widget will not change its location/bounds between this and validate method calls
     public final void revalidateWidget (Widget widget) {
-        Rectangle bounds = repaints.get (widget);
-        Rectangle absoluteBounds = widget.getBounds ();
-        if (absoluteBounds == null) {
-            if (bounds == null)
-                repaints.remove (widget);
-            return;
+        Rectangle widgetBounds = widget.getBounds ();
+        if (widgetBounds != null) {
+            Rectangle sceneBounds = widget.convertLocalToScene (widgetBounds);
+            if (repaintRegion == null)
+                repaintRegion = sceneBounds;
+            else
+                repaintRegion.add (sceneBounds);
         }
-        Point absoluteLocation = widget.convertLocalToScene (new Point ());
-        absoluteBounds.translate (absoluteLocation.x, absoluteLocation.y);
-        if (bounds == null)
-            repaints.put (widget, absoluteBounds);
-        else
-            bounds.add (absoluteBounds);
+        repaintWidgets.add (widget);
     }
 
     // TODO - requires optimalization while changing preferred size and calling revalidate/repaint
@@ -170,8 +171,11 @@ public class Scene extends Widget {
             resolveBounds (getLocation (), bounds);
 
         if (! getLocation ().equals (preLocation)  ||  ! bounds.equals (preBounds)) {
-            component.repaint ();
-//            repaintSatelite ();
+            Rectangle rectangle = convertLocalToScene (getBounds ());
+            if (repaintRegion == null)
+                repaintRegion = rectangle;
+            else
+                repaintRegion.add (rectangle);
         }
     }
 
@@ -180,39 +184,43 @@ public class Scene extends Widget {
             return;
         notifyValidating ();
 
-        Rectangle r = null;
-        for (Rectangle bounds : repaints.values ()) {
-            if (bounds == null)
-                continue;
-            if (r != null)
-                r.add (bounds);
-            else
-                r = new Rectangle (bounds);
-        }
-
         layoutScene ();
 
-        for (Widget widget : repaints.keySet ()) {
-            Rectangle absoluteBounds = widget.convertLocalToScene (widget.getBounds ());
-            if (r != null)
-                r.add (absoluteBounds);
+        for (Widget widget : repaintWidgets) {
+            Rectangle repaintBounds = calculateRepaintBounds (widget);
+            if (repaintBounds == null)
+                continue;
+            if (repaintRegion != null)
+                repaintRegion.add (repaintBounds);
             else
-                r = absoluteBounds;
+                repaintRegion = repaintBounds;
         }
-
-        repaints.clear ();
-
+        repaintWidgets.clear ();
 //        System.out.println ("r = " + r);
 
-        // TODO - count with zoom factor while repainting
-        // TODO - maybe improves performance when component.repaint will be called for all widgets/rectangles separately
-        if (r != null) {
-            component.repaint (convertSceneToView (r));
+        // NOTE - maybe improves performance when component.repaint will be called for all widgets/rectangles separately
+        if (repaintRegion != null) {
+            component.repaint (convertSceneToView (repaintRegion));
             repaintSatelite ();
+            repaintRegion = null;
         }
 //        System.out.println ("time: " + System.currentTimeMillis ());
 
         notifyValidated ();
+    }
+
+    public final Rectangle calculateRepaintBounds (Widget widget) {
+        Rectangle sceneRectangle = new Rectangle (widget.getBounds ());
+        for (;;) {
+            if (widget == null)
+                return null;
+            Point location = widget.getLocation ();
+            sceneRectangle.x += location.x;
+            sceneRectangle.y += location.y;
+            if (widget == this)
+                return sceneRectangle;
+            widget = widget.getParentWidget ();
+        }
     }
 
     @Deprecated

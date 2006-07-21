@@ -120,12 +120,8 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void setSourceAnchorShape (AnchorShape sourceAnchorShape) {
         assert sourceAnchorShape != null;
-        boolean repaint = this.sourceAnchorShape.getRadius () == sourceAnchorShape.getRadius ();
+        revalidate (this.sourceAnchorShape.getRadius () == sourceAnchorShape.getRadius ());
         this.sourceAnchorShape = sourceAnchorShape;
-        if (repaint)
-            repaint ();
-        else
-            revalidate ();
     }
 
     public AnchorShape getTargetAnchorShape () {
@@ -134,12 +130,8 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void setTargetAnchorShape (AnchorShape targetAnchorShape) {
         assert targetAnchorShape != null;
-        boolean repaint = this.targetAnchorShape.getRadius () == targetAnchorShape.getRadius ();
+        revalidate (this.targetAnchorShape.getRadius () == targetAnchorShape.getRadius ());
         this.targetAnchorShape = targetAnchorShape;
-        if (repaint)
-            repaint ();
-        else
-            revalidate ();
     }
 
     public PointShape getControlPointShape () {
@@ -148,12 +140,8 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void setControlPointShape (PointShape controlPointShape) {
         assert controlPointShape != null;
-        boolean repaint = this.controlPointShape.getRadius () == controlPointShape.getRadius ();
+        revalidate (this.controlPointShape.getRadius () == controlPointShape.getRadius ());
         this.controlPointShape = controlPointShape;
-        if (repaint)
-            repaint ();
-        else
-            revalidate ();
     }
 
     public PointShape getEndPointShape () {
@@ -162,12 +150,8 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void setEndPointShape (PointShape endPointShape) {
         assert endPointShape != null;
-        boolean repaint = this.endPointShape.getRadius () == endPointShape.getRadius ();
+        revalidate (this.endPointShape.getRadius () == endPointShape.getRadius ());
         this.endPointShape = endPointShape;
-        if (repaint)
-            repaint ();
-        else
-            revalidate ();
     }
 
     public final Router getRouter () {
