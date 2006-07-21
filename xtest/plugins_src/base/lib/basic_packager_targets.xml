@@ -28,7 +28,8 @@ Microsystems, Inc. All Rights Reserved.
 
         <!-- Pack all compiled tests and resources in tests distribution -->
         <jar destfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
-             basedir="${compile.destdir.root}/${xtest.testtype}/classes">
+             basedir="${compile.destdir.root}/${xtest.testtype}/classes"
+             filesetmanifest="merge">
         </jar>
         <available file="${basedir}/${xtest.testtype}/data" type="dir" property="data.dir.available"/>
         <antcall target="create-data-zip"/>
