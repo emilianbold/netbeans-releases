@@ -238,7 +238,7 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         }
 
         if (rect != null)
-            rect.grow (2, 2);
+            rect.grow (2, 2); // TODO - improve line width calculation
 
         return rect != null ? rect : new Rectangle ();
     }
