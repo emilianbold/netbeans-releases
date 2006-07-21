@@ -328,6 +328,7 @@ final class ModuleListParser {
             }
         }
         List/*<String>*/ prereqs = new ArrayList();
+        List/*<String>*/ rundeps = new ArrayList();
         Element depsEl = XMLUtil.findElement(dataEl, "module-dependencies", ParseProjectXml.NBM_NS);
         if (depsEl == null) {
             throw new IOException("Malformed project file " + projectxml);
@@ -335,18 +336,19 @@ final class ModuleListParser {
         Iterator deps = XMLUtil.findSubElements(depsEl).iterator();
         while (deps.hasNext()) {
             Element dep = (Element) deps.next();
-            if (XMLUtil.findElement(dep, "build-prerequisite", ParseProjectXml.NBM_NS) == null) {
-                continue;
-            }
             Element cnbEl2 = XMLUtil.findElement(dep, "code-name-base", ParseProjectXml.NBM_NS);
             if (cnbEl2 == null) {
                 throw new IOException("Malformed project file " + projectxml);
             }
             String cnb2 = XMLUtil.findText(cnbEl2);
+            rundeps.add(cnb2);
+            if (XMLUtil.findElement(dep, "build-prerequisite", ParseProjectXml.NBM_NS) == null) {
+                continue;
+            }
             prereqs.add(cnb2);
         }
         String cluster = fakeproj.getProperty("cluster.dir"); // may be null
-        Entry entry = new Entry(cnb, jar, (File[]) exts.toArray(new File[exts.size()]), dir, path, (String[]) prereqs.toArray(new String[prereqs.size()]), cluster);
+        Entry entry = new Entry(cnb, jar, (File[]) exts.toArray(new File[exts.size()]), dir, path, (String[]) prereqs.toArray(new String[prereqs.size()]),cluster,(String[])rundeps.toArray(new String[rundeps.size()]));
         if (entries.containsKey(cnb)) {
             throw new IOException("Duplicated module " + cnb + ": found in " + entries.get(cnb) + " and " + entry);
         } else {
@@ -431,6 +433,7 @@ final class ModuleListParser {
                         } else {
                             codenamebase = codename.substring(0, slash);
                         }
+                        
                         String cp = attr.getValue("Class-Path");
                         File[] exts;
                         if (cp == null) {
@@ -442,7 +445,10 @@ final class ModuleListParser {
                                 exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
                             }
                         }
-                        Entry entry = new Entry(codenamebase, m, exts, dir, null, null, clusters[i].getName());
+                        String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
+                        
+                        
+                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, clusters[i].getName(),parseRuntimeDependencies(moduleDependencies));
                         if (entries.containsKey(codenamebase)) {
                             throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
                         } else {
@@ -574,7 +580,8 @@ final class ModuleListParser {
                              e = new Entry(e.getCnb(),oldEntry.getJar(),
                                           e.getClassPathExtensions(),e.sourceLocation,
                                           e.netbeansOrgPath,e.buildPrerequisites,
-                                          oldEntry.getClusterName());  
+                                          oldEntry.getClusterName(),
+                                          e.runtimeDependencies);  
                          }
                     }
                     entries.put(e.getCnb(), e);
@@ -599,6 +606,43 @@ final class ModuleListParser {
     public Entry findByCodeNameBase(String cnb) {
         return (Entry)entries.get(cnb);
     }
+
+    
+    /** parse Openide-Module-Module-Dependencies entry
+     * @return array of code name bases
+     */
+    private static String[] parseRuntimeDependencies(String moduleDependencies) {
+        if (moduleDependencies == null) {
+            return new String[0];
+        }
+        List/*<String>*/ cnds = new ArrayList();
+        StringTokenizer toks = new StringTokenizer(moduleDependencies,",");
+        while (toks.hasMoreTokens()) {
+            String token = toks.nextToken().trim();
+            // substring cnd/x
+            int slIdx = token.indexOf('/');
+            if (slIdx != -1) {
+                token = token.substring(0,slIdx);
+            }
+            // substring cnd' 'xx
+            slIdx = token.indexOf(' ');
+            if (slIdx != -1) {
+                token = token.substring(0,slIdx);
+            }
+            // substring cnd > 
+            slIdx = token.indexOf('>');
+            if (slIdx != -1) {
+                token = token.substring(0,slIdx);
+            }
+            token = token.trim();
+            if (token.length() > 0) {
+               cnds.add(token);
+            }
+        }
+        String cndsArray [] = new String[cnds.size()];
+        cnds.toArray(cndsArray);
+        return cndsArray;
+    }
     
     /**
      * One entry in the file.
@@ -612,8 +656,9 @@ final class ModuleListParser {
         private final String netbeansOrgPath;
         private final String[] buildPrerequisites;
         private final String clusterName;
+        private final String[] runtimeDependencies; 
         
-        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites, String clusterName) {
+        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites, String clusterName,String[] runtimeDependencies) {
             this.cnb = cnb;
             this.jar = jar;
             this.classPathExtensions = classPathExtensions;
@@ -621,6 +666,7 @@ final class ModuleListParser {
             this.netbeansOrgPath = netbeansOrgPath;
             this.buildPrerequisites = buildPrerequisites;
             this.clusterName = clusterName;
+            this.runtimeDependencies = runtimeDependencies;
         }
         
         /**
@@ -657,6 +703,11 @@ final class ModuleListParser {
          */
         public String[] getBuildPrerequisites() {
             return buildPrerequisites;
+        }
+        /** Get runtime dependencies, OpenIDE-Module-Dependencies entry. 
+         */
+        public String[] getRuntimeDependencies() {
+            return runtimeDependencies;
         }
         
         /**

@@ -22,6 +22,8 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
     <target name="all" >
+        <!-- default netbeans.dest.dir if it is not overriden -->
+        <property name="netbeans.dest.dir" location="${nb_all}/nbbuild/netbeans"/>
         <propertyfile file="${netbeans.dest.dir}/moduleCluster.properties"/>
         <property name="xtest.home" value="any"/>
         <property name="xtest.testtype" value="testtype"/>
@@ -47,8 +49,8 @@ Microsystems, Inc. All Rights Reserved.
             <and>
                 <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform7/org-openide-filesystems/tests.jar"/>
                 <contains string="${unit.runtime.cp}" substring="platform7/modules/org-openide-nodes.jar"/>
-<!--                <contains string="${unit.runtime.cp}" substring="platform7/lib/org-openide-util.jar"/>-->
-<!--                <contains string="${unit.runtime.cp}" substring="platform7/modules/org-netbeans-modules-queries.jar"/>-->
+                <contains string="${unit.runtime.cp}" substring="platform7/lib/org-openide-util.jar"/>
+                <contains string="${unit.runtime.cp}" substring="platform7/modules/org-netbeans-modules-queries.jar"/>
             </and>
         </condition> 
         <condition property="ok-unittestcompileclasspath" >

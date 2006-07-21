@@ -948,7 +948,7 @@ public final class ParseProjectXml extends Task {
            if (!entriesMap.containsKey(cnd)) {
                ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnd);
                entriesMap.put(cnd,entry);
-               String cnds[] = entry.getBuildPrerequisites();
+               String cnds[] = entry.getRuntimeDependencies();
                // cnds can be null
                if (cnds != null) {
                    for (int i = 0 ; i < cnds.length ; i++) {
