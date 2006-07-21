@@ -108,6 +108,27 @@ public class ClassPathProviderImplTest extends TestBase {
         "org-netbeans-modules-nbjunit.jar",
         "org-netbeans-modules-nbjunit-ide.jar",
     }));
+    
+    private void assertSets(String message,Set set1, Set set2 ) {
+        StringBuffer result = new StringBuffer();
+        boolean pass = true;
+        for (Iterator it = set1.iterator() ; it.hasNext() ; ) {
+            Object obj = it.next();
+            if (!set2.contains(obj)) {
+                pass = false;
+                result.append("- " + obj + "\n");
+            }
+        }
+        for (Iterator it = set2.iterator() ; it.hasNext() ; ) {
+            Object obj = it.next();
+            if (!set1.contains(obj)) {
+                pass = false;
+                result.append("+ " + obj + "\n");
+            }
+        }
+        assertTrue(message + "\n" + result,pass);
+    }
+ 
     private Set/*<String>*/ urlsOfCp4Tests(ClassPath cp) {
         Set/*<String>*/ s = new TreeSet();
         Iterator it = cp.entries().iterator();
@@ -295,13 +316,18 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add("nbjunit.jar");
         expectedRoots.add("nbjunit-ide.jar");
         expectedRoots.add("insanelib.jar");
-        assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
+        // recursive dependencies
+        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-swing-plaf.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-text.jar"));
+        
+        assertSets("right COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
+        
         cp = ClassPath.getClassPath(src, ClassPath.EXECUTE);
         assertNotNull("have an EXECUTE classpath", cp);
         expectedRoots.add(urlForDir("autoupdate/build/test/unit/classes"));
         // test.unit.run.cp.extra:
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/boot.jar"));
-        assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
+        assertSets("right EXECUTE classpath (COMPILE plus classes)", expectedRoots, urlsOfCp4Tests(cp));
         cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
         assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet(Arrays.asList(cp.getRoots())));
@@ -424,6 +450,7 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNull ("ClassPath.SOURCE for build/test must be null",ClassPath.getClassPath(testBuildClasses, ClassPath.SOURCE));
         assertNull ("ClassPath.COMPILE for build/test must be null",ClassPath.getClassPath(testBuildClasses, ClassPath.COMPILE));
         cp = ClassPath.getClassPath(testBuildClasses, ClassPath.EXECUTE);
+        
         String path = ((NbModuleProject)prj).evaluator().getProperty("test.unit.run.cp.extra");     //NOI18N
         List trExtra = new ArrayList ();
         if (path != null) {
@@ -448,6 +475,7 @@ public class ClassPathProviderImplTest extends TestBase {
                 ClassPathSupport.createClassPath(new FileObject[] {testBuildClasses}),
                 tccp,
                 ClassPathSupport.createClassPath(trExtra),
+                ClassPathSupport.createClassPath(new URL[] {new URL(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-modules-masterfs.jar"))})
         });
         assertClassPathsHaveTheSameResources(cp, expectedCp);
 
@@ -455,6 +483,7 @@ public class ClassPathProviderImplTest extends TestBase {
         FileObject jarFO = FileUtil.toFileObject(jarFile);
         assertNotNull("No module jar", jarFO);
         FileObject jarRoot = FileUtil.getArchiveRoot(jarFO);
+//        assertEquals(prj, FileOwnerQuery.getOwner(jarRoot));
         assertNull("ClassPath.SOURCE for module jar must be null", ClassPath.getClassPath(jarRoot, ClassPath.SOURCE));
         assertNull("ClassPath.COMPILE for module jar must be null", ClassPath.getClassPath(jarRoot, ClassPath.COMPILE));
         cp = ClassPath.getClassPath(jarRoot, ClassPath.EXECUTE);
@@ -594,7 +623,7 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     private void assertClassPathsHaveTheSameResources(ClassPath actual, ClassPath expected) {
-        assertEquals(urlsOfCp(expected).toString(), urlsOfCp(actual).toString());
+        assertSets("cls: ",urlsOfCp(expected), urlsOfCp(actual));
     }
     
     public void testTransitiveExecuteClasspath() throws Exception { // #70206
