@@ -1102,7 +1102,13 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
         }
         alloc = null;
-        fail(text + ":\n" + findRefsFromRoot(ref.get(), rootsHint));
+        String str = null;
+        try {
+            str = findRefsFromRoot(ref.get(), rootsHint);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        fail(text + ":\n" + str);
     }
     
     /** Assert size of some structure. Traverses the whole reference
@@ -1191,7 +1197,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         return -1; // fail throws for sure
     }
     
-    private static String findRefsFromRoot(final Object target, final Set<?> rootsHint) {
+    private static class ObjectFoundException extends RuntimeException {}
+    
+    private static String findRefsFromRoot(final Object target, final Set<?> rootsHint) throws Exception {
         final Map<Object,Entry> objects = new IdentityHashMap<Object,Entry>();
         boolean found = false;
         
@@ -1219,7 +1227,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             
             public void visitStaticReference(ObjectMap map, Object to, java.lang.reflect.Field ref) {
                 objects.get(to).addStatic(ref);
-                if (to == target) throw new RuntimeException("Done");
+                if (to == target) throw new ObjectFoundException();
             }
         };
         
@@ -1228,7 +1236,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             Set<Object> s = new HashSet<Object>(ScannerUtils.interestingRoots());
             s.addAll(rootsHint);
             ScannerUtils.scanExclusivelyInAWT(ScannerUtils.skipNonStrongReferencesFilter(), vis, s);
-        } catch (Exception ex) {
+        } catch (ObjectFoundException ex) {
             // found object
             found = true;
         }
