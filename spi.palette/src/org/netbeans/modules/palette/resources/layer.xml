@@ -38,8 +38,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="ShowPaletteAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
             </file>
-            <attr name="ShowPaletteAction.shadow/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-navigator-ShowNavigatorAction.instance/ShowPaletteAction.shadow" boolvalue="true" />
+            <attr name="ShowPaletteAction.shadow/org-netbeans-core-actions-GlobalPropertiesAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow/ShowPaletteAction.shadow" boolvalue="true" />
         </folder>
     </folder>
     

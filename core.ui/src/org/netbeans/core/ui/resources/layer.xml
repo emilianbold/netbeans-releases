@@ -200,8 +200,10 @@ Microsystems, Inc. All Rights Reserved.
         </folder> 
 
         <folder name="Window">
-            <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-            <attr name="org-netbeans-core-actions-GlobalPropertiesAction.instance/oldRootsStart.txt" boolvalue="true"/>
+            <file name="org-netbeans-core-actions-GlobalPropertiesAction.shadow">
+              <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
+            </file>
+            <attr name="org-netbeans-core-actions-GlobalPropertiesAction.shadow/oldRootsStart.txt" boolvalue="true"/>
             <file name="oldRootsStart.txt"/>
             <!-- #22758 Just a placeholder for old roots menu items -->
             <attr name="oldRootsStart.txt/oldRootsEnd.txt" boolvalue="true"/>
