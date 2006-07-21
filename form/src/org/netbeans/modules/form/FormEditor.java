@@ -259,6 +259,7 @@ public class FormEditor {
         formLoaded = true;
 	
         getCodeGenerator().initialize(formModel);
+        getI18nSupport();
         formModel.fireFormLoaded();
         if (formModel.wasCorrected()) // model repaired or upgraded
             formModel.fireFormChanged(false);
