@@ -18,11 +18,12 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.ErrorManager;
 import javax.imageio.ImageIO;
 import javax.swing.border.Border;
 
@@ -43,12 +44,76 @@ public class FakeDropShadowBorder implements Border {
     public Insets getBorderInsets(Component c) {
         return new Insets(1, 13, 25, 13);
     }
+
+    /**
+     * Fill the area we are *not* going to paint with the translucent shadow,
+     * so the windows behind the popup window do not show through the gaps
+     * between the rectangle of the image and the shaped, rounded perimeter  
+     * where the shadow is drawn.
+     */
+    public void fillBackground (Component c, Graphics2D gg,int x, int y, int w, int h) {
+        Shape clip = gg.getClip();
+        gg.setColor (Color.WHITE);
+        Insets ins = getBorderInsets(c);        
+        //y offset for the bottom of the window
+        int bottom = h - ins.bottom + 6;  //517
+        //y offset for the end of the curves around the bottom, from which
+        //the edges ascend
+        int bottomOffCurve = bottom - 20; //497
+        //The top of the inner part of the border
+        int top = ins.top + 3; //34
+        //The left edge
+        int left = ins.left - 2; //41
+        //The level of the "shoulders" in the border shape
+        int shoulderTop = top + 16; //50
+        //The y coordinate at which the edge segment stops and the shoulder
+        //curve stops
+        int shoulderTopOffCurve = shoulderTop + 9; //59
+        //the x position it which the top right curve begins to curl around
+        //the right corner
+        int rightOffCurve = x + w - 34; //329
+        //the right edge of the perimeter
+        int right = rightOffCurve + 24; //352
+        
+        //Calculate a shape to fill, which matches the perceived perimeter of
+        //the border (larger than the actual component displayed to make room
+        //for our rounded borders
+        GeneralPath gp = new GeneralPath();
+        //start at the bottom after the left edge curve - first segment is a line
+        //upward - the left edge
+        gp.moveTo (left, bottomOffCurve);
+        gp.lineTo (left, shoulderTopOffCurve);
+        //relatively flat bezier curve making the left shoulder of the window border
+        gp.curveTo (left, shoulderTop, left + 6, shoulderTop, left + 8, shoulderTop + 1);
+        //and steeper, up and around to the top edge
+        gp.curveTo (left + 11, top, left + 19, top + 1, left + 25, top);
+        //top edge
+        gp.lineTo (rightOffCurve, top);
+        //steep curve back down to the right shoulder
+        gp.curveTo (rightOffCurve + 6, top, rightOffCurve + 17, top + 5, rightOffCurve + 16, shoulderTop);
+        //shallower curve out to the right to make the left shoulder
+        gp.curveTo (right - 4, shoulderTop + 1, right, shoulderTop, right, shoulderTop + 9);
+        //the right edge of the window border
+        gp.lineTo (right, bottomOffCurve);
+        //curve around to the left to the bottom edge
+        gp.curveTo (right + 1, bottom, right - 1, bottom + 1, right - 12, bottom);
+        //the bottom edge
+        gp.lineTo (left + 14, bottom);
+        //curve to the left and up to come back to where we started
+        gp.curveTo (left + 1, bottom, left - 1, bottom, left, bottomOffCurve);
+        gp.closePath();
+        //fill this with white;  the window will overpaint it;  this fills in so
+        //we don't see the windows underneath it peeking between the rounded 
+        //border's edges and the smaller rectangle of the component inside it
+        gg.fill(gp);
+    }
     
     public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
         Graphics2D gg = (Graphics2D) g;
-        g.setColor (Color.WHITE);
-        g.fillRect (x + 1, y + 1, w - 2, h - 2);
-        
+        //Fill in the space between the component rect and the border
+        //perimeter
+        fillBackground (c, gg, x, y, w, h);
+        //Tile the shadow pngs around the shape
         BufferedImage b = getImage(upLeft);
         int yoff = b.getHeight();
         int topL = b.getWidth();
@@ -83,7 +148,6 @@ public class FakeDropShadowBorder implements Border {
     
     private final Color xpar = new Color (255, 255, 255, 0);
     private void draw(Graphics2D g, BufferedImage b, int x, int y) {
-//        g.clearRect(x, y, b.getWidth(), b.getHeight());
         g.setColor (xpar);
         g.fillRect (x, y, b.getWidth(), b.getHeight());
         g.drawRenderedImage(b, AffineTransform.getTranslateInstance(x,y));
