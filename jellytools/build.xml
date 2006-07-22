@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
         </manifest>
         <jar basedir="${build.classes.dir}" compress="false" jarfile="jelly2-nb.jar"
              manifest="${build.classes.dir}/org/netbeans/jellytools/version_info"
-             excludesfile="../nbbuild/standard-jar-excludes.txt">
+             excludes="${jar-excludes}">
         </jar>
      </target>
      

@@ -36,13 +36,11 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javac>
         <copy todir="build/antclasses">
-            <fileset dir="antsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="antsrc" excludes="${jar-excludes}"/>
         </copy>
         <mkdir dir="${cluster}/ant/extra"/>
         <jar jarfile="${cluster}/ant/extra/copyfiles.jar" compress="false">
-            <fileset dir="build/antclasses">
-                <excludesfile name="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-            </fileset>
+            <fileset dir="build/antclasses"/>
         </jar>
         <copy todir="${cluster}/ant/sources">
             <fileset dir="antsrc" includes="**/*.java"/>

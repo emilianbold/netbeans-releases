@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="lib"/>
     <jar jarfile="lib/performance.jar"
 	    basedir="src"
-	    excludesfile="../nbbuild/standard-jar-excludes.txt"
+	    excludes="**/*.java,**/*.jjt,**/*.jj"
 	    compress="false"/>
   </target>
 

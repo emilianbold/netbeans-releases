@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javac>
         <copy todir="build/server-classes">
-            <fileset dir="serversrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="serversrc" excludes="${jar-excludes}"/>
         </copy>
     </target>
 

@@ -132,7 +132,7 @@ All Rights Reserved.
         <copy file="${jnlp-servlet.file.location}" todir="release/WEB-INF/lib"/>
         <mkdir dir="release/WEB-INF/classes"/>
         <copy todir="release/WEB-INF/classes" flatten="false">
-            <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
+            <fileset dir="src" excludes="**/*.java">
                 <include name="**/IndexServlet*"/>
             </fileset>
         </copy>
@@ -196,8 +196,7 @@ All Rights Reserved.
         <mkdir dir="jars"/>
         <jar compress="false"
              jarfile="jars/nbjnlpinstaller.jar">
-             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
-             </fileset>
+             <fileset dir="src" excludes="**/*.java"/>
         </jar>
     </target>
 

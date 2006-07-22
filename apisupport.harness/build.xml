@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javac>
         <copy todir="build/jnlp-launcher-classes">
-            <fileset dir="jnlp-src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="jnlp-src" excludes="${jar-excludes}"/>
         </copy>
     </target>
    

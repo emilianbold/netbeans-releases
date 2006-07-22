@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     <jar destfile="imagecache.jar"
             manifest="manifest.mf"
             basedir="src"
-	    excludesfile="../../nbbuild/standard-jar-excludes.txt"
+	    excludes="**/*.java,**/*.form"
 	    compress="true">
     </jar>
   </target>

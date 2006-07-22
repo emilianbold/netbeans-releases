@@ -102,7 +102,6 @@ Microsystems, Inc. All Rights Reserved.
         <zip zipfile="xml-nbms.zip"
              basedir="."
              includes="*.nbm"
-             excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
              compress="true"/>
     </target>
 

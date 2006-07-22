@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
             <compilerarg line="${javac.compilerargs}"/>
         </javac>
         <copy todir="build/bridge-classes">
-            <fileset dir="src-bridge" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="src-bridge" excludes="${jar-excludes}"/>
         </copy>
     </target>
 
@@ -158,7 +158,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${online.manual}"/>
         <mkdir dir="${online.manual}"/>
         <copy todir="${online.manual}">
-            <fileset dir="${orig.manual}" excludesfile="../nbbuild/standard-jar-excludes.txt">
+            <fileset dir="${orig.manual}">
                 <!-- These are obviated by JavaHelp: -->
                 <exclude name="*list.html"/>
                 <exclude name="index.html"/>

@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
     <jar jarfile="${cluster}/modules/org-netbeans-modules-testtools.jar"
          manifest="manifest-subst.mf"
          basedir="src"
-	 excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
+	 excludes="**/*.java,**/*.form"
 	 compress="false">
     </jar>
   </target>
@@ -145,7 +145,6 @@ Microsystems, Inc. All Rights Reserved.
      <zip zipfile="testtools-bundle.zip"
           basedir="."
           includes="*.nbm"
-          excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
           compress="true"/>
   </target>
 

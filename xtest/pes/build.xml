@@ -54,7 +54,6 @@ Microsystems, Inc. All Rights Reserved.
     <jar jarfile="lib/xtest-pes.jar"
             basedir="build/classes"
             manifest="manifest.mf"
-            excludesfile="../../nbbuild/standard-jar-excludes.txt"
             compress="false"
             includes="org/netbeans/xtest/**"/>
   </target>

@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
            basedir="base"
 	   excludes="base/run.sh"
 	   manifest="manifest.mf"
-           excludesfile="../../nbbuild/standard-jar-excludes.txt"
+           excludes="**/*.java,**/*.form"
            compress="false">
      <fileset dir="../release/system" />
      </jar>

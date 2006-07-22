@@ -87,7 +87,6 @@ Microsystems, Inc. All Rights Reserved.
         <jar jarfile="lib/xtest.jar"
             manifest="manifest.mf"
             basedir="${build.classes.dir}"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false">
             <include name="org/netbeans/xtest/**"/>
             <exclude name="org/netbeans/xtest/pe/server*/**"/>
@@ -97,7 +96,6 @@ Microsystems, Inc. All Rights Reserved.
         <jar jarfile="lib/xtest-junit-testrunner.jar"
             manifest="manifest.mf"
             basedir="${build.classes.dir}"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false">
             <include name="org/netbeans/xtest/testrunner/**"/>
         </jar>	        

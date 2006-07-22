@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="lib"/>
         <jar basedir="src"
 		compress="false"
-		excludesfile="../../../nbbuild/standard-jar-excludes.txt"
+		excludes="**/*.jar"
 		jarfile="lib/tests.jar"/>
     </target>
 

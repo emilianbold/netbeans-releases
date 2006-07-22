@@ -29,9 +29,7 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javac>
         <copy todir="build/antclasses">
-            <fileset dir="antsrc">
-                <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
-            </fileset>
+            <fileset dir="antsrc" excludes="${jar-excludes}"/>
         </copy>
         <jar jarfile="build/tasks.jar">
             <fileset dir="build/antclasses"/>

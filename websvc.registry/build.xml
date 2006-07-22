@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javac>
         <copy todir="build/extclasses">
-          <fileset dir="extsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+          <fileset dir="extsrc" excludes="${jar-excludes}"/>
         </copy>
     </target>
 

@@ -62,14 +62,12 @@ Microsystems, Inc. All Rights Reserved.
         <!-- ant tasks used in ide_plugin_targets.xml -->
         <jar jarfile="lib/xtest-ide-plugin.jar"            
             basedir="build/classes"
-            excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
             <patternset refid="xtest.ide.plugin" />
         </jar>
         <!-- load by system classloader (-J-Dnetbeans.systemclassloader.patches) -->
         <jar jarfile="lib/xtest-ide-testexec.jar"
             basedir="build/classes"
-            excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
             <include name=""/>
             <!-- At the time there is no reason to include anything in this jar. -->
@@ -78,7 +76,6 @@ Microsystems, Inc. All Rights Reserved.
         <!-- -J-Dnetbeans.classpath or also AKA Dynamic Classpath-->
         <jar jarfile="lib/xtest-ide-main.jar"
             basedir="build/classes"
-            excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
             <patternset refid="xtest.ide.main" />
         </jar>        
