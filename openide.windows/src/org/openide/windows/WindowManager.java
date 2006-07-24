@@ -84,7 +84,7 @@ public abstract class WindowManager extends Object implements Serializable {
         return dummyInstance;
     }
 
-    /** Finds mode where specified name.
+    /** Finds mode of specified name.
      * @return <code>Mode</code> whith the specified name is or <code>null</code>
      *          if there does not exist such <code>Mode</code> inside window system.
      * @since 4.13 */
@@ -463,7 +463,7 @@ public abstract class WindowManager extends Object implements Serializable {
 
     /** A manager that handles operations on top components.
      * It is always attached to a {@link TopComponent}.
-     * @deprecated Do not use anymore. This interface is replaced by bunch of protedcted methods
+     * @deprecated Do not use anymore. This interface is replaced by bunch of protected methods
      * which name starts with topComponent prefix, i.e. {@link #topComponentOpen}, {@link #topComponentClose} etc. */
     protected interface Component extends java.io.Serializable {
         /**
