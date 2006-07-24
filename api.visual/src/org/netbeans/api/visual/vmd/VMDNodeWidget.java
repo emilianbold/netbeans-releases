@@ -15,22 +15,24 @@ package org.netbeans.api.visual.vmd;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.DirectionalAnchor;
 import org.netbeans.api.visual.anchor.ProxyAnchor;
+import org.netbeans.api.visual.model.StateModel;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.EmptyBorder;
 import org.netbeans.api.visual.border.ImageBorder;
 import org.netbeans.api.visual.layout.SerialLayout;
-import org.netbeans.api.visual.widget.*;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.widget.*;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.openide.util.Utilities;
 
 import java.awt.*;
-import java.util.Arrays;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 /**
  * @author David Kaspar
  */
-public class VMDNodeWidget extends Widget {
+public class VMDNodeWidget extends Widget implements StateModel.Listener {
 
     private static Border BORDER_SHADOW_NORMAL = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
     private static Border BORDER_SHADOW_HOVERED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
@@ -41,7 +43,8 @@ public class VMDNodeWidget extends Widget {
     private LabelWidget typeWidget;
     private Widget pinsWidget;
     private VMDGlyphSetWidget glyphSetWidget;
-    private VMDMinimizeWidget minimizeWidget;
+
+    private StateModel stateModel = new StateModel (2);
     private Anchor nodeAnchor = new DirectionalAnchor (this, DirectionalAnchor.Kind.VERTICAL);
 
     public VMDNodeWidget (Scene scene) {
@@ -96,6 +99,7 @@ public class VMDNodeWidget extends Widget {
         pinsWidget = new Widget (scene);
         pinsWidget.setBorder (new EmptyBorder (8, 4));
         pinsWidget.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL, SerialLayout.Alignment.JUSTIFY, 0));
+        pinsWidget.setCheckClipping (true);
 //        inner.addChild (pinsWidget);
         mainLayer.addChild (pinsWidget);
 
@@ -107,40 +111,40 @@ public class VMDNodeWidget extends Widget {
         Widget topLayer = new Widget (scene);
         addChild (topLayer);
 
-        minimizeWidget = new VMDMinimizeWidget (scene, mainLayer, Arrays.asList (pinsSeparator, pinsWidget));
+        stateModel = new StateModel ();
+        stateModel.addListener (this);
+
+        Widget minimizeWidget = new ImageWidget (scene, Utilities.loadImage ("org/netbeans/modules/visual/resources/minimize.png"));
+        minimizeWidget.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
+        minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
+
         topLayer.addChild (minimizeWidget);
     }
 
     /**
      * Check the minimized state.
-     *
-     * @see VMDMinimizeWidget#isMinimized()
      */
     public boolean isMinimized() {
-        return minimizeWidget.isMinimized();
+        return stateModel.getBooleanState ();
     }
 
     /**
-     * Set the minimized state.  This method will add/remove child
-     * Widgets from the this Widget and switch Anchors.<br><br>
-     *
-     * When the Widget is minimized, new Edges can't be added to the
-     * children of the Widget since they don't exist on the 
-     * parent anymore.
-     *
-     * @see VMDMinimizeWidget#setMinimized(boolean minimized)
+     * Set the minimized state.  This method will show/hide child
+     * Widgets from the this Widget and switch Anchors.
      */
     public void setMinimized(boolean minimized) {
-        minimizeWidget.setMinimized(minimized);
+        stateModel.setBooleanState (minimized);
     }
 
     /**
      * Change the minimized state to !{@link #isMinimized()}.
-     *
-     * @see VMDMinimizeWidget#toggleMinimized()
      */
     public void toggleMinimized() {
-        minimizeWidget.toggleMinimized();
+        stateModel.toggleBooleanState ();
+    }
+
+    public void stateChanged () {
+        pinsWidget.setPreferredBounds (stateModel.getBooleanState () ? new Rectangle () : null);
     }
 
     protected void notifyStateChanged (ObjectState state) {
@@ -189,9 +193,19 @@ public class VMDNodeWidget extends Widget {
     }
     
     public ProxyAnchor createAnchorPin (Anchor anchor) {
-        ProxyAnchor proxyAnchor = new ProxyAnchor (anchor, nodeAnchor);
-        minimizeWidget.addProxyAnchor (proxyAnchor);
-        return proxyAnchor;
+        return new ProxyAnchor (stateModel, anchor, nodeAnchor);
+    }
+
+
+    private final class ToggleMinimizedAction extends WidgetAction.Adapter {
+
+        public State mousePressed (Widget widget, WidgetMouseEvent event) {
+            if (event.getButton () == MouseEvent.BUTTON1 || event.getButton () == MouseEvent.BUTTON2) {
+                stateModel.toggleBooleanState ();
+                return State.CONSUMED;
+            }
+            return State.REJECTED;
+        }
     }
 
 }

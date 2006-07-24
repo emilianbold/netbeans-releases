@@ -59,7 +59,11 @@ public abstract class Anchor implements Widget.Dependency {
             }
         }
     }
-    
+
+    public boolean isUsed () {
+        return attachedToWidget;
+    }
+
     public void notifyUsed () {
         if (relatedWidget != null)
             relatedWidget.addDependency (this);
