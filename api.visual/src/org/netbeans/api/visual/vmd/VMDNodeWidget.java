@@ -12,17 +12,16 @@
  */
 package org.netbeans.api.visual.vmd;
 
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.anchor.DirectionalAnchor;
 import org.netbeans.api.visual.anchor.ProxyAnchor;
-import org.netbeans.api.visual.model.StateModel;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.EmptyBorder;
 import org.netbeans.api.visual.border.ImageBorder;
 import org.netbeans.api.visual.layout.SerialLayout;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.model.StateModel;
 import org.netbeans.api.visual.widget.*;
-import org.netbeans.api.visual.action.WidgetAction;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -45,7 +44,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
     private VMDGlyphSetWidget glyphSetWidget;
 
     private StateModel stateModel = new StateModel (2);
-    private Anchor nodeAnchor = new DirectionalAnchor (this, DirectionalAnchor.Kind.VERTICAL);
+    private Anchor nodeAnchor = new VMDNodeAnchor (this);
 
     public VMDNodeWidget (Scene scene) {
         super (scene);

@@ -12,13 +12,15 @@
  */
 package org.netbeans.api.visual.anchor;
 
+import org.netbeans.api.visual.util.GeomUtil;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.util.GeomUtil;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.EnumSet;
+import java.util.Collections;
+import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -26,60 +28,77 @@ import java.util.EnumSet;
 public abstract class Anchor implements Widget.Dependency {
 
     public static final EnumSet<Direction> DIRECTION_ANY = EnumSet.allOf (Direction.class);
-    
+
     public enum Direction {
         LEFT, TOP, RIGHT, BOTTOM
     }
 
     private boolean attachedToWidget;
     private Widget relatedWidget;
-    private ArrayList<Widget.Dependency> dependencies;
-    
+    private ArrayList<Entry> entries = new ArrayList<Entry> ();
+
     protected Anchor (Widget relatedWidget) {
         this.relatedWidget = relatedWidget;
     }
 
-    public void addDependency (Widget.Dependency dependency) {
-        if (dependency == null)
+    public final void addEntry (Anchor.Entry entry) {
+        if (entry == null)
             return;
-        if (dependencies == null)
-            dependencies = new ArrayList<Widget.Dependency> ();
-        dependencies.add (dependency);
-        if (! attachedToWidget  ||  relatedWidget != null) {
-            notifyUsed ();
+        notifyEntryAdded (entry);
+        entries.add (entry);
+        if (! attachedToWidget  &&  entries.size () > 0) {
             attachedToWidget = true;
+            if (relatedWidget != null)
+                relatedWidget.addDependency (this);
+            notifyUsed ();
         }
     }
 
-    public void removeDependency (Widget.Dependency dependency) {
-        if (dependencies != null  &&  dependencies.remove (dependency)) {
-            if (dependencies.size () == 0  &&  attachedToWidget) {
-                notifyUnused ();
-                attachedToWidget = false;
-            }
+    public void removeEntry (Entry entry) {
+        entries.remove (entry);
+        if (attachedToWidget  &&  entries.size () <= 0) {
+            attachedToWidget = false;
+            if (relatedWidget != null)
+                relatedWidget.removeDependency (this);
+            notifyUnused ();
         }
     }
 
-    public boolean isUsed () {
+    public void addEntries (List<Entry> entries) {
+        for (Entry entry : entries)
+            addEntry (entry);
+    }
+
+    public void removeEntries (List<Entry> entries) {
+        for (Entry entry : entries)
+            removeEntry (entry);
+    }
+
+    public List<Entry> getEntries () {
+        return Collections.unmodifiableList (entries);
+    }
+
+    protected boolean isUsed () {
         return attachedToWidget;
     }
 
-    public void notifyUsed () {
-        if (relatedWidget != null)
-            relatedWidget.addDependency (this);
+    protected void notifyEntryAdded (Entry entry) {
     }
-    
-    public void notifyUnused () {
-        if (relatedWidget != null)
-            relatedWidget.removeDependency (this);
+
+    protected void notifyEntryRemoved (Entry entry) {
     }
-    
+
+    protected void notifyUsed () {
+    }
+
+    protected void notifyUnused () {
+    }
+
     public void revalidateDependency () {
-        if (dependencies != null)
-            for (Widget.Dependency dependency : dependencies)
-                dependency.revalidateDependency ();
+        for (Entry entry : entries)
+            entry.revalidateEntry ();
     }
-    
+
     public Widget getRelatedWidget () {
         return relatedWidget;
     }
@@ -91,39 +110,49 @@ public abstract class Anchor implements Widget.Dependency {
         return null;
     }
 
-    public Point getOppositeSceneLocation (ConnectionWidget connectionWidget, boolean isThisSourceAnchor) {
-        Anchor oppositeAnchor = getOppositeAnchor (connectionWidget, isThisSourceAnchor);
+    public Point getOppositeSceneLocation (Entry entry) {
+        Anchor oppositeAnchor = entry.getOppositeAnchor ();
         return oppositeAnchor != null ? oppositeAnchor.getRelatedSceneLocation () : null;
     }
 
-    public Anchor getOppositeAnchor (ConnectionWidget connectionWidget, boolean isThisSourceAnchor) {
-        return isThisSourceAnchor ? connectionWidget.getTargetAnchor() : connectionWidget.getSourceAnchor();
-    }
-    
-    public abstract Result compute (ConnectionWidget connectionWidget, boolean isThisSourceAnchor);
+    public abstract Result compute (Entry entry);
 
     public final class Result {
 
         private Point anchorSceneLocation;
         private EnumSet<Anchor.Direction> directions;
-        
+
         public Result (Point anchorSceneLocation, Direction direction) {
             this (anchorSceneLocation, EnumSet.of (direction));
         }
-        
+
         public Result (Point anchorSceneLocation, EnumSet<Direction> directions) {
             this.anchorSceneLocation = anchorSceneLocation;
             this.directions = directions;
         }
-        
+
         public Point getAnchorSceneLocation () {
             return anchorSceneLocation;
         }
-        
+
         public EnumSet<Direction> getDirections () {
             return directions;
         }
 
     }
-    
+
+    public interface Entry {
+
+        void revalidateEntry ();
+
+        ConnectionWidget getAttachedConnectionWidget ();
+
+        boolean isAttachedToConnectionSource ();
+
+        Anchor getAttachedAnchor ();
+
+        Anchor getOppositeAnchor ();
+
+    }
+
 }

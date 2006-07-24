@@ -32,7 +32,7 @@ import java.util.List;
  * @author David Kaspar
  */
 // TODO - control points can be modified by accessing: getControlPoints ().get (0).x or y
-public class ConnectionWidget extends Widget implements Widget.Dependency {
+public class ConnectionWidget extends Widget {
 
     private static final double HIT_DISTANCE_SQUARE = 16.0;
     private static final Stroke STROKE_DEFAULT = new BasicStroke (1.0f);
@@ -51,6 +51,9 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
     private Stroke stroke;
     private boolean paintControlPoints;
 
+    private ConnectionEntry sourceEntry;
+    private ConnectionEntry targetEntry;
+
     public ConnectionWidget (Scene scene) {
         super (scene);
         sourceAnchorShape = AnchorShape.NONE;
@@ -63,6 +66,8 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
         setLayout (connectionWidgetLayout);
         stroke = STROKE_DEFAULT;
         paintControlPoints = false;
+        sourceEntry = new ConnectionEntry (true);
+        targetEntry = new ConnectionEntry (false);
     }
 
     public void notifyStateChanged (ObjectState state) {
@@ -94,10 +99,10 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public final void setSourceAnchor (Anchor sourceAnchor) {
         if (this.sourceAnchor != null)
-            this.sourceAnchor.removeDependency (this);
+            this.sourceAnchor.removeEntry (sourceEntry);
         this.sourceAnchor = sourceAnchor;
         if (this.sourceAnchor != null)
-            sourceAnchor.addDependency (this);
+            sourceAnchor.addEntry (sourceEntry);
         reroute ();
     }
 
@@ -107,11 +112,19 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public final void setTargetAnchor (Anchor targetAnchor) {
         if (this.targetAnchor != null)
-            this.targetAnchor.removeDependency (this);
+            this.targetAnchor.removeEntry (targetEntry);
         this.targetAnchor = targetAnchor;
         if (targetAnchor != null)
-            targetAnchor.addDependency (this);
+            targetAnchor.addEntry (targetEntry);
         reroute ();
+    }
+
+    public ConnectionEntry getSourceAnchorEntry () {
+        return sourceEntry;
+    }
+
+    public ConnectionEntry getTargetAnchorEntry () {
+        return targetEntry;
     }
 
     public AnchorShape getSourceAnchorShape () {
@@ -191,10 +204,6 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
 
     public void removeConstraint (Widget childWidget) {
         connectionWidgetLayout.removeConstraint (childWidget);
-    }
-
-    public void revalidateDependency () {
-        reroute ();
     }
 
     public void calculateRouting () {
@@ -398,6 +407,36 @@ public class ConnectionWidget extends Widget implements Widget.Dependency {
                 gr.setTransform (previousTransform);
             }
         }
+    }
+
+    private class ConnectionEntry implements Anchor.Entry {
+
+        private boolean source;
+
+        public ConnectionEntry (boolean source) {
+            this.source = source;
+        }
+
+        public void revalidateEntry () {
+            ConnectionWidget.this.reroute ();
+        }
+
+        public ConnectionWidget getAttachedConnectionWidget () {
+            return ConnectionWidget.this;
+        }
+
+        public boolean isAttachedToConnectionSource () {
+            return source;
+        }
+
+        public Anchor getAttachedAnchor () {
+            return source ? ConnectionWidget.this.getSourceAnchor () : ConnectionWidget.this.getTargetAnchor ();
+        }
+
+        public Anchor getOppositeAnchor () {
+            return source ? ConnectionWidget.this.getTargetAnchor () : ConnectionWidget.this.getSourceAnchor ();
+        }
+
     }
 
 }
