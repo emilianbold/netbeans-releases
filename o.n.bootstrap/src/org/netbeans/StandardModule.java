@@ -297,14 +297,7 @@ final class StandardModule extends Module {
             while (tok.hasMoreTokens()) {
                 String ext = tok.nextToken();
                 if (new File(ext).isAbsolute() || ext.indexOf("../") != -1) { // NOI18N
-                    if (ext.equals("../lib/updater.jar")) { // NOI18N
-                        // Special case, see #24703.
-                        // JAR is special to the launcher, so it makes sense in lib/ rather
-                        // than modules/ext/. However updater.jar is not in startup classpath,
-                        // so autoupdate module explicitly declares it this way.
-                    } else {
-                        Util.err.warning("Class-Path value " + ext + " from " + jar + " is illegal according to the Java Extension Mechanism: must be relative and not move up directories");
-                    }
+                    Util.err.warning("Class-Path value " + ext + " from " + jar + " is illegal according to the Java Extension Mechanism: must be relative and not move up directories");
                 }
                 File extfile = new File(jar.getParentFile(), ext.replace('/', File.separatorChar));
                 if (! extfile.exists()) {
