@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -87,10 +88,12 @@ public class Hacks {
                     NbBundle.getMessage(Hacks.class, "LBL_NoMainProject");
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        WindowManager.getDefault().getMainWindow().setTitle(
-                                pname != null?
-                                NbBundle.getMessage(Hacks.class, "LBL_MainWindowTitle", BUILD_NUMBER, pname, mname):
-                                NbBundle.getMessage(Hacks.class, "LBL_MainWindowTitle_NoProject", BUILD_NUMBER, mname));
+                        // depends on exported keys in core/windows
+                        String key = pname != null? "CTL_MainWindow_Title": "CTL_MainWindow_Title_No_Project"; // NOI18N
+                        String title = pname != null?
+                            MessageFormat.format(NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString(key), BUILD_NUMBER, pname, mname):
+                            MessageFormat.format(NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString(key), BUILD_NUMBER, mname);
+                        WindowManager.getDefault().getMainWindow().setTitle(title);
                     }
                 });
             }
