@@ -70,7 +70,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
             return null;
 
         VMDPinWidget widget = new VMDPinWidget (this);
-        ((VMDNodeWidget) findWidget (node)).addPin (widget);
+        ((VMDNodeWidget) findWidget (node)).attachPinWidget (widget);
         widget.getActions ().addAction (createObjectHoverAction ());
         widget.getActions ().addAction (createSelectAction ());
 

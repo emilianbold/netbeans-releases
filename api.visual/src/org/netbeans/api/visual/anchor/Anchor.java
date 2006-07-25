@@ -52,6 +52,7 @@ public abstract class Anchor implements Widget.Dependency {
                 relatedWidget.addDependency (this);
             notifyUsed ();
         }
+        revalidateDependency ();
     }
 
     public void removeEntry (Entry entry) {
@@ -62,6 +63,7 @@ public abstract class Anchor implements Widget.Dependency {
                 relatedWidget.removeDependency (this);
             notifyUnused ();
         }
+        revalidateDependency ();
     }
 
     public void addEntries (List<Entry> entries) {

@@ -37,6 +37,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
     private static Border BORDER_SHADOW_HOVERED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
     private static Border BORDER_SHADOW_SELECTED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_selected.png")); // NOI18N
 
+    private Widget header;
     private ImageWidget imageWidget;
     private LabelWidget nameWidget;
     private LabelWidget typeWidget;
@@ -58,8 +59,9 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         mainLayer.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL));
         addChild (mainLayer);
 
-        Widget header = new Widget (scene);
+        header = new Widget (scene);
         header.setBorder (new EmptyBorder (4));
+        header.setOpaque (true);
         header.setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL, SerialLayout.Alignment.CENTER, 0));
         mainLayer.addChild (header);
 
@@ -97,6 +99,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
 
         pinsWidget = new Widget (scene);
         pinsWidget.setBorder (new EmptyBorder (8, 4));
+        pinsWidget.setOpaque (true);
+        pinsWidget.setBackground (Color.WHITE);
         pinsWidget.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL, SerialLayout.Alignment.JUSTIFY, 0));
         pinsWidget.setCheckClipping (true);
 //        inner.addChild (pinsWidget);
@@ -123,7 +127,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
     /**
      * Check the minimized state.
      */
-    public boolean isMinimized() {
+    public boolean isMinimized () {
         return stateModel.getBooleanState ();
     }
 
@@ -131,14 +135,14 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
      * Set the minimized state.  This method will show/hide child
      * Widgets from the this Widget and switch Anchors.
      */
-    public void setMinimized(boolean minimized) {
+    public void setMinimized (boolean minimized) {
         stateModel.setBooleanState (minimized);
     }
 
     /**
      * Change the minimized state to !{@link #isMinimized()}.
      */
-    public void toggleMinimized() {
+    public void toggleMinimized () {
         stateModel.toggleBooleanState ();
     }
 
@@ -153,6 +157,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
             setBorder (BORDER_SHADOW_SELECTED);
         else
             setBorder (BORDER_SHADOW_NORMAL);
+        header.setBackground (getScene ().getLookFeel ().getBackground (state));
+
     }
 
     public void setNodeImage (Image image) {
@@ -172,7 +178,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         typeWidget.setLabel ("[" + nodeType + "]");
     }
 
-    public void addPin (VMDPinWidget widget) {
+    public void attachPinWidget (Widget widget) {
         pinsWidget.addChild (widget);
     }
 
@@ -187,10 +193,14 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         setGlyphs (glyphs);
     }
 
+    public LabelWidget getNodeNameWidget () {
+        return nameWidget;
+    }
+
     public Anchor getNodeAnchor () {
         return nodeAnchor;
     }
-    
+
     public ProxyAnchor createAnchorPin (Anchor anchor) {
         return new ProxyAnchor (stateModel, anchor, nodeAnchor);
     }

@@ -12,76 +12,61 @@
  */
 package org.netbeans.api.visual.vmd;
 
+import org.netbeans.api.visual.border.CompositeBorder;
+import org.netbeans.api.visual.border.EmptyBorder;
+import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.layout.SerialLayout;
-import org.netbeans.api.visual.widget.ImageWidget;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
+import java.util.List;
 
 /**
  * @author David Kaspar
  */
 public class VMDPinWidget extends Widget {
 
-    private ImageWidget imageWidget;
     private LabelWidget nameWidget;
-    private LabelWidget typeWidget;
+    private VMDGlyphSetWidget glyphsWidget;
 
     public VMDPinWidget (Scene scene) {
         super (scene);
 
-        setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL, SerialLayout.Alignment.JUSTIFY, 4));
+        setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL, SerialLayout.Alignment.CENTER, 8));
+        addChild (nameWidget = new LabelWidget (scene));
+        addChild (glyphsWidget = new VMDGlyphSetWidget (scene));
 
-//        setBorder (new LineBorder (1, Color.GRAY));
-
-//        Widget innerWidget = new Widget (scene);
-//        innerWidget.setBorder (new EmptyBorder (4));
-//        innerWidget.setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL, SerialLayout.Alignment.JUSTIFY, 4));
-//        addChild (innerWidget);
-
-        imageWidget = new ImageWidget (scene);
-        addChild (imageWidget);
-
-        nameWidget = new LabelWidget (scene);
-//        innerWidget.addChild (nameWidget);
-        addChild (nameWidget);
-
-        typeWidget = new LabelWidget (scene);
-        typeWidget.setForeground (Color.GRAY);
-//        innerWidget.addChild (typeWidget);
-//        addChild (typeWidget);
+        notifyStateChanged (ObjectState.NORMAL);
     }
 
-    public void setPinImage (Image image) {
-        imageWidget.setImage (image);
+    protected void notifyStateChanged (ObjectState state) {
+        LookFeel lookFeel = getScene ().getLookFeel ();
+        setBorder (new CompositeBorder (new EmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
+        setForeground (lookFeel.getForeground (state));
     }
-    
-    public Image getPinImage () {
-        return imageWidget.getImage ();
+
+    public Widget getPinNameWidget () {
+        return nameWidget;
     }
 
     public void setPinName (String name) {
         nameWidget.setLabel (name);
     }
-    
+
     public String getPinName () {
         return nameWidget.getLabel();
     }
 
-    public void setPinType (String type) {
-        typeWidget.setLabel (" [" + type + "]");
-    }
-    
-     public String getPinType () {
-        return typeWidget.getLabel();
+    public void setGlyphs (List<Image> glyphs) {
+        glyphsWidget.setGlyphs (glyphs);
     }
 
-    public void setProperties (Image image, String name, String type) {
-        setPinImage (image);
+    public void setProperties (String name, List<Image> glyphs) {
         setPinName (name);
-        setPinType (type);
+        glyphsWidget.setGlyphs (glyphs);
     }
 
 }
