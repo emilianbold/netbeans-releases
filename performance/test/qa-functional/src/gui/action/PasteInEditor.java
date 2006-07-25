@@ -74,7 +74,7 @@ public class PasteInEditor extends org.netbeans.performance.test.utilities.Perfo
         waitNoEvent(1000);
         // go to the end of the second file
         editorOperator2.makeComponentVisible();
-        editorOperator2.setCaretPositionToLine(23);
+        editorOperator2.setCaretPositionToLine(29);
         new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator2);
    }
     

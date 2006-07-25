@@ -120,7 +120,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         waitNoEvent(2000);
         
         // go to the right place
-        editorOperator.setCaretPosition(32,19);
+        editorOperator.setCaretPosition(38,19);
         // make the file modified
         //new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER)).perform(editorOperator);
         

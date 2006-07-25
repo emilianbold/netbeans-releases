@@ -109,7 +109,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
 
         // scroll to the place where we start
         editorOperator.activateWindow();
-        editorOperator.setCaretPositionToLine(18);
+        editorOperator.setCaretPositionToLine(39);
         // insert the initial text
         editorOperator.insert("{ System");
         // wait
