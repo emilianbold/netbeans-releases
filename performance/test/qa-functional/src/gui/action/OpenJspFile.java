@@ -21,6 +21,7 @@ package gui.action;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -76,19 +77,27 @@ public class OpenJspFile extends OpenFiles {
     }
     
     public ComponentOperator open(){
-        JPopupMenuOperator popup =  this.openNode.callPopup();
-        if (popup == null) {
-            throw new Error("Cannot get context menu for node [" + WEB_PAGES + '|' +  fileName + "] in project [" + fileProject + "]");
-        }
-        log("------------------------- after popup invocation ------------");
-        try {
-            popup.pushMenu(this.menuItem);
-        }
-        catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error("Cannot push menu item "+this.menuItem+" of node [" + WEB_PAGES + '|' +  fileName + "] in project [" + fileProject + "]");
-        }
-        log("------------------------- after open ------------");
+        new OpenAction().performPopup(this.openNode);
+//        JPopupMenuOperator popup =  this.openNode.callPopup();
+//        if (popup == null) {
+//            throw new Error("Cannot get context menu for node [" + WEB_PAGES + '|' +  fileName + "] in project [" + fileProject + "]");
+//        }
+//        log("------------------------- after popup invocation ------------");
+//        try {
+//            popup.pushMenu(this.menuItem);
+//        }
+//        catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
+//            throw new Error("Cannot push menu item "+this.menuItem+" of node [" + WEB_PAGES + '|' +  fileName + "] in project [" + fileProject + "]");
+//        }
+//        log("------------------------- after open ------------");
         return new EditorOperator(this.fileName);
+    }
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new OpenJspFile("testOpening20kBJSPFile"));
     }
     
 }
