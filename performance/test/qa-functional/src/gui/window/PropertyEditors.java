@@ -20,8 +20,11 @@
 package gui.window;
 
 import java.awt.event.KeyEvent;
-import org.netbeans.jellytools.Bundle;
+import java.lang.reflect.InvocationTargetException;
 
+import javax.swing.SwingUtilities;
+
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.Action.Shortcut;
@@ -68,11 +71,22 @@ public abstract class PropertyEditors extends org.netbeans.performance.test.util
         String waitDialogTimeout = "DialogWaiter.WaitDialogTimeout";
         long findTimeout = JemmyProperties.getCurrentTimeout(waitDialogTimeout);
         JemmyProperties.setCurrentTimeout(waitDialogTimeout, 3000);
-
+        
         try{
             propertiesWindow = new NbDialogOperator(Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }catch(org.netbeans.jemmy.TimeoutExpiredException exception){
-            new PropertyEditorsTestSheet();
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        new PropertyEditorsTestSheet();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            } catch (InvocationTargetException ex) {
+                ex.printStackTrace();
+            }
+            
             propertiesWindow = new NbDialogOperator(Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }
         
@@ -95,7 +109,7 @@ public abstract class PropertyEditors extends org.netbeans.performance.test.util
         tableOperator.waitHasFocus();
         // need to select property first
         ((javax.swing.JTable)tableOperator.getSource()).changeSelection(property.getRow(), 0, false, false);
-//        return new Property(new PropertySheetOperator(propertiesWindow), propertyName);
+        //        return new Property(new PropertySheetOperator(propertiesWindow), propertyName);
         return property;
     }
     

@@ -30,12 +30,12 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author  mmirilovic@netbeans.org
  */
 public class PropertyEditorString extends PropertyEditors {
-
+    
     /** Creates a new instance of PropertyEditorString */
     public PropertyEditorString(String testName) {
         super(testName);
     }
-
+    
     /** Creates a new instance of PropertyEditorString */
     public PropertyEditorString(String testName, String performanceDataName) {
         super(testName,performanceDataName);
@@ -51,5 +51,13 @@ public class PropertyEditorString extends PropertyEditors {
         openPropertyEditor();
         return new StringCustomEditorOperator("String"); //NOI18N impossible
     }
-
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new PropertyEditorString("measureTime"));
+    }
+    
+    
 }
