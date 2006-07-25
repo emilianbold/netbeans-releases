@@ -495,7 +495,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /*private*/ ModeImpl getDefaultEditorMode() {
         ModeImpl mode = findModeImpl("editor"); // NOI18N
         if(mode == null) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.global.log(Level.INFO, null,
                               new java.lang.IllegalStateException("Creating default editor mode. It shouldn\'t happen this way")); // NOI18N
             // PENDING should be defined in winsys layer?
             ModeImpl newMode = createModeImpl("editor", Constants.MODE_KIND_EDITOR, true); // NOI18N
@@ -511,7 +511,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     ModeImpl getDefaultViewMode() {
         ModeImpl mode = findModeImpl("explorer"); // NOI18N
         if(mode == null) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.global.log(Level.INFO, null,
                               new java.lang.IllegalStateException("Creating default view mode. It shouldn\'t happen this way")); // NOI18N
             // PENDING should be defined in winsys layer?
             ModeImpl newMode = createModeImpl("explorer", Constants.MODE_KIND_VIEW, true); // NOI18N
@@ -529,7 +529,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     ModeImpl getDefaultSlidingMode() {
         ModeImpl mode = findModeImpl("sliding"); // NOI18N
         if(mode == null) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.global.log(Level.INFO, null,
                               new java.lang.IllegalStateException("Creating default sliding mode. It shouldn\'t happen this way")); // NOI18N
             // PENDING should be defined in winsys layer?
             ModeImpl newMode = createModeImpl("sliding", Constants.MODE_KIND_SLIDING, true); // NOI18N
