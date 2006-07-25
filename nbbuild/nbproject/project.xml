@@ -209,6 +209,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../debuggerjpda</project>
                 <project>../debuggerjpda/ant</project>
                 <project>../debuggerjpda/api</project>
+                <project>../debuggerjpda/projects</project>
                 <project>../debuggerjpda/ui</project>
                 <project>../diff</project>
                 <project>../editor</project>

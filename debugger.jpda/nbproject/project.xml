@@ -47,12 +47,6 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>2</release-version>
                     </run-dependency>
                 </dependency>
-                <dependency> <!-- An artificial runtime dependency on JPDA Debugger Ant Task. We need to have the EditorContext implementation. -->
-                    <code-name-base>org.netbeans.modules.debugger.jpda.ant</code-name-base>
-                    <run-dependency>
-                        <!-- <release-version>1</release-version>  There is no release version -->
-                    </run-dependency>
-                </dependency>
                 <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
