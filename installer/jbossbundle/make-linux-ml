@@ -1,0 +1,6 @@
+# $IS_HOME is location of Install Shield
+# $JBOSS_INSTALLER_PATH is location of JBoss AS installer
+ant \
+-Dismp.home=$IS_HOME \
+-Djboss.installer=$JBOSS_INSTALLER_PATH/jems-installer-1.2.0.BETA.jar \
+build-linux-ml

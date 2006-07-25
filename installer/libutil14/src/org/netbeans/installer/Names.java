@@ -35,6 +35,7 @@ public class Names {
     public static final String INSTALLER_TYPE = "InstallerType";
     public static final String INSTALLER_NB = "NetBeansInstaller";
     public static final String INSTALLER_AS_BUNDLE = "ASBundleInstaller";
+    public static final String INSTALLER_JBOSS_BUNDLE = "JBossBundleInstaller";
     public static final String INSTALLER_JDK_BUNDLE = "JDKBundleInstaller";
             
     /** Creates a new instance of Names */
