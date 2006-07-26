@@ -269,11 +269,18 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	// SJS AS install dir components
         
 	String asInstallDir;
-        File f = new File(nbInstallDir);
-        if (f.getParent() != null) {
-            asInstallDir = f.getParent() + resolveString("$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+	if (Util.isWindowsOS()) {
+	    StringBuffer drive = new StringBuffer(" :\\");
+	    drive.setCharAt(0, getWinSystemDrive());
+	    String sysDrive = drive.toString();
+	    asInstallDir = sysDrive + resolveString(BUNDLE + "AS.defaultInstallDirectory)");
         } else {
-            asInstallDir = resolveString("$D(home)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+            File f = new File(nbInstallDir);
+            if (f.getParent() != null) {
+                asInstallDir = f.getParent() + resolveString("$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+            } else {
+                asInstallDir = resolveString("$D(home)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+            }
         }
         logEvent(this, Log.DBG, "asInstallDir: " + asInstallDir);
         
@@ -526,7 +533,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             return false;
         } else if (st.countTokens() > 1) {
             //Check for spaces in path - it is not supported by AS installer on Linux/Solaris
-	    if (!Util.isWindowsOS() && (installDirType == AS_INSTALL_DIR)) {
+	    //if (!Util.isWindowsOS() && (installDirType == AS_INSTALL_DIR)) {
+            //JBoss AS installer does not support space in install path even on Windows now.
+            if (installDirType == AS_INSTALL_DIR) {
 		dialogMsg = msgPrefix + " "
 		+ resolveString(BUNDLE + "InstallLocationPanel.directoryHasSpaceMessage)");
 		showErrorMsg(dialogTitle,dialogMsg);
