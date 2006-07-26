@@ -76,7 +76,11 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private static final int NB_INSTALL_DIR = 1;
     private static final int AS_INSTALL_DIR = 2;
     
-    private static final int AS_INSTALL_PATH_MAX_LENGTH = 48;
+    /** 
+     * Estimate for JBoss: As longest path inside JBoss install dir is about 110 chars long,
+     * no more than 120 chars. Maximum path length on Windows is 256 chars.
+     */
+    private static final int AS_INSTALL_PATH_MAX_LENGTH = 130;
     
     private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
     
