@@ -25,16 +25,7 @@ import com.installshield.product.ProductBuilderSupport;
 import com.installshield.product.ProductException;
 import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
-import com.installshield.util.ProcessExec;
-import com.installshield.util.ProcessExecException;
-import com.installshield.util.ProcessOutputHandler;
-import com.installshield.wizard.platform.win32.Win32RegistryService;
-import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.file.FileService;
-import com.installshield.wizard.service.system.SystemUtilService;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class PostInstallFixupAppServerAction extends ProductAction {
     
@@ -47,7 +38,6 @@ public class PostInstallFixupAppServerAction extends ProductAction {
     private FileService fileService;
     private String psep;
     private String sep;
-    
     
     public void build(ProductBuilderSupport support) {
         try {
@@ -88,7 +78,7 @@ public class PostInstallFixupAppServerAction extends ProductAction {
         
         init(support);
         
-        if (Names.INSTALLER_AS_BUNDLE.equals(Util.getStringPropertyValue(Names.INSTALLER_TYPE))) {
+        if (Names.INSTALLER_JBOSS_BUNDLE.equals(Util.getStringPropertyValue(Names.INSTALLER_TYPE))) {
             addASInstallDirToIDEConfigFile();
         }
         
@@ -108,17 +98,18 @@ public class PostInstallFixupAppServerAction extends ProductAction {
     public void replace(ProductAction oldAction, ProductActionSupport support) throws ProductException {
         logEvent(this, Log.DBG,"replace, oldAction is " + oldAction +", support is " + support + " ...");
         
-        // TODO might be modify config file
+        // TODO might modify config file
     }
     
     /** Adds value for system property com.sun.aas.installRoot to netbeans.conf.
      * Path (property value) is surrounded by double quotes on Windows.
      */
-    //-J-Dcom.sun.aas.installRoot=\"E:\software\appserver81_ur2\"
+    //-J-Dorg.netbeans.modules.j2ee.jboss4.installRoot=\"E:\software\jboss-4.0.4.GA\"
     private void addASInstallDirToIDEConfigFile() {
-        //If not set do not do anything (eg. if SJS AS installer was cancelled)
+        //If not set do not do anything (eg. if JBoss AS installer was cancelled)
         String asInstallDir = Util.getASInstallDir();
         if (asInstallDir == null) {
+            logEvent(this, Log.DBG, "AS install dir is not set");
             return;
         }
         try {
@@ -143,15 +134,13 @@ public class PostInstallFixupAppServerAction extends ProductAction {
                 int pos = line.lastIndexOf('"');
                 String newLine = "";
                 //Add " around path on Windows due to possible space(s) in path
-                //On Linux/Solaris/Mac it is not necessary as SJS AS installer does
-                //not allow space in path. If it will be changed it must be tested
-                //also with IDE launcher.
+                //It is for future as now JBoss AS installer does not support spaces in install path.
                 if (Util.isWindowsOS()) {
                     newLine = line.substring(0, pos) + " " 
-                    + "-J-Dcom.sun.aas.installRoot=\"" + asInstallDir + "\"\"";
+                    + "-J-Dorg.netbeans.modules.j2ee.jboss4.installRoot=\"" + asInstallDir + "\"\"";
                 } else {
                     newLine = line.substring(0, pos) + " " 
-                    + "-J-Dcom.sun.aas.installRoot=" + asInstallDir + "\"";
+                    + "-J-Dorg.netbeans.modules.j2ee.jboss4.installRoot=" + asInstallDir + "\"";
                 }
                 logEvent(this, Log.DBG, "newLine: " + newLine);
                 fileService.updateAsciiFile(configFilename, new String[] {newLine}, whereToReplace);
