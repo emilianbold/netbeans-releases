@@ -549,7 +549,11 @@ public final class MultiViewPeer  {
             
             InvocationHandler ih =  new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) {
-                    tabs.setToolbarBarVisible(isToolbarVisible());
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            tabs.setToolbarBarVisible(isToolbarVisible());
+                        }
+                    });
                     return null;
                 }
             };
