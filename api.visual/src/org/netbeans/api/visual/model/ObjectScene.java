@@ -77,6 +77,10 @@ public class ObjectScene extends Scene {
         return objectsUm;
     }
 
+    public boolean isObject (Object object) {
+        return objects.containsKey (object);
+    }
+
     public Set<Object> getSelectedObjects () {
         return selectedObjectsUm;
     }
