@@ -114,3 +114,5 @@ Microsystems, Inc. All Rights Reserved.
 <link href="${javadoc.docs.org-netbeans-modules-indexedannotations}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-indexedannotations"/>
 <link href="${javadoc.docs.org-netbeans-modules-junit}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-junit"/>
 <link href="${javadoc.docs.org-netbeans-api-actions-support}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-actions-support"/>
+<!-- API support for Mustang javac API to be part of NetBeans 6.0.  This is a Mustang weekly build href, which should be updated when that JDK releases. -->
+<link href="http://download.java.net/jdk6/docs/api" offline="true" packagelistloc="./javac-api"/>
