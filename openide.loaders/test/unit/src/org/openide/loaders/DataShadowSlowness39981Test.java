@@ -53,7 +53,7 @@ public class DataShadowSlowness39981Test extends NbTestCase implements Operation
     }
     
     public static NbTestSuite suite () {
-        return NbTestSuite.speedSuite (DataShadowSlowness39981Test.class, 10, 5);
+        return NbTestSuite.speedSuite (DataShadowSlowness39981Test.class, 20, 5);
     }
     
     protected void setUp() throws Exception {
