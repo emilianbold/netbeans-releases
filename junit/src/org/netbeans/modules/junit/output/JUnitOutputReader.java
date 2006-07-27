@@ -41,9 +41,12 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
 /**
@@ -58,9 +61,23 @@ import org.xml.sax.SAXException;
 final class JUnitOutputReader {
     
     private static final int MAX_REPORT_FILE_SIZE = 1 << 19;    //512 kBytes
+    /** number of progress bar workunits */
+    private static final int PROGRESS_WORKUNITS = 1000;
     /** */
     private static final int UPDATE_DELAY = 300;    //milliseconds
     
+    /**
+     * number of test suites that are going to be executed
+     *
+     * @see  #executedSuitesCount
+     */
+    private int expectedSuitesCount = 0;
+    /**
+     * number of test suites executed so far
+     *
+     * @see  #expectedSuitesCount
+     */
+    private int executedSuitesCount = 0;
     /** */
     private boolean testTargetStarted = false;
     /** */
@@ -75,6 +92,16 @@ final class JUnitOutputReader {
     private final AntSession session;
     /** */
     private final TaskType sessionType;
+    /**
+     * handle to the progress indicator
+     */
+    private ProgressHandle progressHandle;
+    /**
+     * whether the progress handle is in determinate mode
+     *
+     * @see  #progressHandle
+     */
+    private boolean isDeterminateProgress;
     /** */
     private final File antScript;
     /** */
@@ -507,9 +534,65 @@ final class JUnitOutputReader {
     }
     
     /**
+     * Notifies that a test (Ant) task was just started.
+     *
+     * @param  expectedSuitesCount  expected number of test suites going to be
+     *                              executed by this task
      */
-    void testTaskStarted() {
-        checkTestTaskStarted();
+    void testTaskStarted(int expectedSuitesCount) {
+        
+        final boolean willBeDeterminateProgress = (expectedSuitesCount > 0);
+        if (progressHandle == null) {
+            progressHandle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(getClass(), "MSG_ProgressMessage"));//NOI18N
+            
+            if (willBeDeterminateProgress) {
+                this.expectedSuitesCount = expectedSuitesCount;
+                progressHandle.start(PROGRESS_WORKUNITS);
+            } else {
+                progressHandle.start();
+            }
+        } else if (willBeDeterminateProgress) {
+            if (!isDeterminateProgress) {
+                progressHandle.switchToDeterminate(PROGRESS_WORKUNITS);
+            }
+            this.expectedSuitesCount += expectedSuitesCount;
+            updateProgress();
+        } else if (isDeterminateProgress /* and will be indeterminate */ ) {
+            progressHandle.switchToIndeterminate();
+        }//else
+            //is indeterminate and will be indeterminate - no change
+         //
+        isDeterminateProgress = willBeDeterminateProgress;
+        
+        Manager.getInstance().testStarted(session,
+                                          sessionType);
+    }
+    
+    /**
+     */
+    void testTaskFinished() {
+        expectedSuitesCount = executedSuitesCount;
+        if (isDeterminateProgress) {
+            updateProgress();
+        }
+    }
+    
+    /**
+     * Updates the progress bar according to the current values of
+     * {@link #executedSuitesCount} and {@link #expectedSuitesCount}.
+     */
+    private void updateProgress() {
+        assert progressHandle != null;
+        
+        progressHandle.progress(getProcessedWorkunits());
+    }
+    
+    /**
+     *
+     */
+    private int getProcessedWorkunits() {
+        return executedSuitesCount * PROGRESS_WORKUNITS / expectedSuitesCount;
     }
     
     /**
@@ -519,6 +602,7 @@ final class JUnitOutputReader {
         Manager.getInstance().sessionFinished(session,
                                               sessionType,
                                               testTaskStarted == false);
+        progressHandle.finish();
     }
     
     /**
@@ -540,6 +624,14 @@ final class JUnitOutputReader {
     /**
      */
     private void suiteFinished(final Report report) {
+        executedSuitesCount++;
+        if (executedSuitesCount > expectedSuitesCount) {
+            expectedSuitesCount = executedSuitesCount;
+        }
+        if (isDeterminateProgress) {
+            updateProgress();
+        }
+        
         Manager.getInstance().displayReport(session, sessionType, report);
     }
     
@@ -599,16 +691,6 @@ final class JUnitOutputReader {
         if (!testTargetStarted) {
             testTargetStarted = true;
             Manager.getInstance().targetStarted(session, sessionType);
-        }
-    }
-    
-    /**
-     */
-    private void checkTestTaskStarted() {
-        if (!testTaskStarted) {
-            testTargetStarted = true;
-            testTaskStarted = true;
-            Manager.getInstance().testStarted(session, sessionType);
         }
     }
     

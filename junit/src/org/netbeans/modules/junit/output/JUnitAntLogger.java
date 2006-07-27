@@ -24,6 +24,7 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
+import org.netbeans.modules.junit.output.antutils.TestCounter;
 
 /**
  * Ant logger interested in task &quot;junit&quot;,
@@ -44,8 +45,8 @@ public final class JUnitAntLogger extends AntLogger {
         AntEvent.LOG_VERBOSE
     };
     
-    private static final String TASK_JAVA = "java";                     //NOI18N
-    private static final String TASK_JUNIT = "junit";                   //NOI18N
+    public static final String TASK_JAVA = "java";                      //NOI18N
+    public static final String TASK_JUNIT = "junit";                    //NOI18N
     private static final String[] INTERESTING_TASKS = {TASK_JAVA, TASK_JUNIT};
     
     /** default constructor for lookup */
@@ -169,7 +170,8 @@ public final class JUnitAntLogger extends AntLogger {
             if (sessionInfo.sessionType == null) {
                 sessionInfo.sessionType = taskType;
             }
-            getOutputReader(event).testTaskStarted();
+            final int testClassCount = TestCounter.getTestClassCount(event);
+            getOutputReader(event).testTaskStarted(testClassCount);
         }
     }
     
@@ -178,6 +180,7 @@ public final class JUnitAntLogger extends AntLogger {
     public void taskFinished(final AntEvent event) {
         AntSessionInfo sessionInfo = getSessionInfo(event.getSession());
         if (isTestTaskType(sessionInfo.currentTaskType)) {
+            getOutputReader(event).testTaskFinished();
             sessionInfo.currentTaskType = null;
         }
         
