@@ -200,10 +200,13 @@ public final class OpenAction extends AbstractAction {
             });
             // try to activate outer TopComponent
             Container temp = pane;
-            while (!(temp instanceof TopComponent)) {
+            // #81238 - don't throw exception when no outer TC exists
+            while (temp != null && !(temp instanceof TopComponent)) {
                 temp = temp.getParent();
             }
-            ((TopComponent) temp).requestActive();
+            if (temp != null) {
+                ((TopComponent) temp).requestActive();
+            }
         }
     }
 
