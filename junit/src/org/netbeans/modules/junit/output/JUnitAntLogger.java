@@ -89,25 +89,29 @@ public final class JUnitAntLogger extends AntLogger {
             TaskStructure taskStructure = event.getTaskStructure();
 
             String className = taskStructure.getAttribute("classname"); //NOI18N
-            if ((className == null)
-                    || !event.evaluate(className)
-                        .equals("junit.textui.TestRunner")) {           //NOI18N
+            if (className == null) {
                 return TaskType.OTHER_TASK;
             }
             
-            TaskStructure[] nestedElems = taskStructure.getChildren();
-            for (TaskStructure ts : nestedElems) {
-                if (ts.getName().equals("jvmarg")) {                    //NOI18N
-                    String value = ts.getAttribute("value");            //NOI18N
-                    if ((value != null)
-                            && event.evaluate(value)
-                               .equals("-Xdebug")) {                    //NOI18N
-                        return TaskType.DEBUGGING_TEST_TASK;
+            className = event.evaluate(className);
+            if (className.equals("junit.textui.TestRunner")             //NOI18N
+                    || className.equals(
+    "org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner")) {  //NOI18N
+                TaskStructure[] nestedElems = taskStructure.getChildren();
+                for (TaskStructure ts : nestedElems) {
+                    if (ts.getName().equals("jvmarg")) {                //NOI18N
+                        String value = ts.getAttribute("value");        //NOI18N
+                        if ((value != null)
+                                && event.evaluate(value)
+                                   .equals("-Xdebug")) {                //NOI18N
+                            return TaskType.DEBUGGING_TEST_TASK;
+                        }
                     }
                 }
+                return TaskType.TEST_TASK;
             }
             
-            return TaskType.TEST_TASK;
+            return TaskType.OTHER_TASK;
         }
         
         assert false : "Unhandled task name";                           //NOI18N
