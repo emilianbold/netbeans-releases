@@ -21,6 +21,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -75,8 +76,9 @@ public class CommitDataTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CommitDataTest("testCommitFile"));      
-        //suite.addTest(new CommitDataTest("testCommitPackage"));      
-        //suite.addTest(new CommitDataTest("testRecognizeMimeType"));   
+        suite.addTest(new CommitDataTest("testCommitPackage"));      
+        suite.addTest(new CommitDataTest("testRecognizeMimeType"));   
+        suite.addTest(new CommitDataTest("testFinalRemove"));   
         return suite;
     }
     
@@ -99,10 +101,11 @@ public class CommitDataTest extends JellyTestCase {
         RepositoryStepOperator rso = new RepositoryStepOperator();       
         
         //create repository... 
+        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
-        new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
+        work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -112,7 +115,7 @@ public class CommitDataTest extends JellyTestCase {
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
+        wdso.setLocalFolder(work.getCanonicalPath());
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
         //open project
@@ -170,10 +173,13 @@ public class CommitDataTest extends JellyTestCase {
         //color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         Thread.sleep(1000);
         vo = VersioningOperator.invoke();
-        table = vo.tabFiles();
-        assertEquals("Wrong row count of table.", 0, table.getRowCount());
-        assertNull("Wrong color of node!!!", nodeIDE.getHtmlDisplayName());
-        
+        TimeoutExpiredException tee = null;
+        try {
+            vo.tabFiles();
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull("There shouldn't be any table in Versioning view", tee);
         TestKit.removeAllData("JavaApp");
         stream.flush();
         stream.close();
@@ -197,10 +203,11 @@ public class CommitDataTest extends JellyTestCase {
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         
         //create repository... 
+        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
-        new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
+        work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -210,7 +217,7 @@ public class CommitDataTest extends JellyTestCase {
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
+        wdso.setLocalFolder(work.getCanonicalPath());
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
         //open project
@@ -266,9 +273,14 @@ public class CommitDataTest extends JellyTestCase {
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong status of node!!!", TestKit.UPTODATE_STATUS, status);
         Thread.sleep(1000);
-        table = vo.tabFiles();
-        assertEquals("Wrong row count of table.", 0, table.getRowCount());
-        
+        vo = VersioningOperator.invoke();
+        TimeoutExpiredException tee = null;
+        try {
+            vo.tabFiles();
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull("There shouldn't be any table in Versioning view", tee);
         TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
@@ -294,10 +306,11 @@ public class CommitDataTest extends JellyTestCase {
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         
         //create repository... 
+        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
-        new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
+        work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -307,7 +320,7 @@ public class CommitDataTest extends JellyTestCase {
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
+        wdso.setLocalFolder(work.getCanonicalPath());
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
         //open project
@@ -319,14 +332,16 @@ public class CommitDataTest extends JellyTestCase {
         
         //create various types of files
         String src = getDataDir().getCanonicalPath() + File.separator + "files" + File.separator;
-        String dest = TMP_PATH + File.separator + WORK_PATH + File.separator + PROJECT_NAME + File.separator + "src" + File.separator + "javaapp" + File.separator;
+        String dest = work.getCanonicalPath() + File.separator + PROJECT_NAME + File.separator + "src" + File.separator + "javaapp" + File.separator;
         
         for (int i = 0; i < expected.length; i++) {
             TestKit.copyTo(src + expected[i], dest + expected[i]);
         }
         
         oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
+        
         Node nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         nodeSrc.performPopupAction("Subversion|Show Changes");
         oto.waitText("Refreshing... finished.");
@@ -351,6 +366,7 @@ public class CommitDataTest extends JellyTestCase {
         assertEquals("Not All files listed in Commit dialog", expected.length, result);
         
         oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         CommitOperator cmo = CommitOperator.invoke(nodeSrc);
@@ -370,7 +386,7 @@ public class CommitDataTest extends JellyTestCase {
         assertEquals("Not All files listed in Commit dialog", expected.length, result);
         cmo.commit();
         for (int i = 0; i < expected.length; i++) {
-            oto.waitText("Adding");
+            oto.waitText("add -N");
             oto.waitText(expected[i]);
         }
         oto.waitText("Committing... finished.");
@@ -384,13 +400,22 @@ public class CommitDataTest extends JellyTestCase {
             assertNull("Wrong status or color of node!!!", nodeIDE.getHtmlDisplayName());
         }
         //verify versioning view
-        table = vo.tabFiles();
-        model = table.getModel();       
-        
-        assertEquals("Not All files listed in Commit dialog", 0, model.getRowCount());
-               
+        vo = VersioningOperator.invoke();
+        TimeoutExpiredException tee = null;
+        try {
+            vo.tabFiles();
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull("There shouldn't be any table in Versioning view", tee);       
         TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+    }
+    
+    public void testFinalRemove() throws Exception {
+        TestKit.closeProject(PROJECT_NAME);
+        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
+        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

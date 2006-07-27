@@ -85,6 +85,7 @@ public class ProxySettingsUITest extends JellyTestCase {
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator co1so = new RepositoryStepOperator();
         co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
+                
         TimeoutExpiredException tee = null;
         try {
             co1so.invokeProxy();

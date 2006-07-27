@@ -70,7 +70,7 @@ public class AnnotationsTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new AnnotationsTest("testShowAnnotations"));
-        
+        suite.addTest(new AnnotationsTest("testFinalRemove"));
         return suite;
     }
     
@@ -85,10 +85,11 @@ public class AnnotationsTest extends JellyTestCase {
         RepositoryStepOperator rso = new RepositoryStepOperator();       
         
         //create repository... 
+        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
-        new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
+        work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -96,7 +97,7 @@ public class AnnotationsTest extends JellyTestCase {
         rso.next();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
+        wdso.setLocalFolder(work.getCanonicalPath());
         wdso.checkCheckoutContentOnly(false);
         OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
@@ -121,4 +122,8 @@ public class AnnotationsTest extends JellyTestCase {
         stream.close();
     }
     
+    public void testFinalRemove() throws Exception {
+        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
+        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
+    }
 }

@@ -67,7 +67,7 @@ public class RevertUiTest extends JellyTestCase{
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new RevertUiTest("testInvokeClose"));
-    
+        suite.addTest(new RevertUiTest("testFinalRemove"));
         return suite;
     }
     
@@ -158,4 +158,8 @@ public class RevertUiTest extends JellyTestCase{
         TestKit.removeAllData(PROJECT_NAME);
     }
     
+    public void testFinalRemove() throws Exception {
+        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
+        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
+    }
 }

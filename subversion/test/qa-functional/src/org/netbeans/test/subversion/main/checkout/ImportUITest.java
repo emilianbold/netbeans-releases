@@ -70,7 +70,7 @@ public class ImportUITest extends JellyTestCase {
         suite.addTest(new ImportUITest("testWarningMessage"));
         suite.addTest(new ImportUITest("testRepositoryFolderLoad"));
         suite.addTest(new ImportUITest("testCommitStep"));
-        //suite.addTest(new ImportUITest("testStopProcess"));
+        suite.addTest(new ImportUITest("testFinalRemove"));
         return suite;
     }
     
@@ -129,8 +129,8 @@ public class ImportUITest extends JellyTestCase {
         assertEquals("No Warning message", " ", ftiso.lblImportMessageRequired().getText());
         assertTrue("Next button should be enabled", ftiso.btNext().isEnabled());
         //Finish button should be enabled.
-        System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=76165!!!");
-        assertFalse("Finish button should be enabled", ftiso.btFinish().isEnabled());
+        //System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=76165!!!");
+        assertTrue("Finish button should be enabled", ftiso.btFinish().isEnabled());
         iwo.cancel();
         TestKit.removeAllData(PROJECT_NAME);
     }
@@ -241,9 +241,8 @@ public class ImportUITest extends JellyTestCase {
         cso.selectCommitAction("project.xml", "Add As Text");
         cso.selectCommitAction("project.xml", "Add As Binary");
         cso.selectCommitAction("project.xml", "Exclude from Commit");
-        cso.selectCommitAction(1, "Add As Text");
-        cso.selectCommitAction(1, "Add As Binary");
-        cso.selectCommitAction(1, "Exclude from Commit");
+        cso.selectCommitAction("test", "Add Directory");
+        cso.selectCommitAction("test", "Exclude from Commit");
         iwo.cancel();
         TestKit.removeAllData(PROJECT_NAME);        
     }
@@ -291,5 +290,10 @@ public class ImportUITest extends JellyTestCase {
         rso.verify();
         
         TestKit.removeAllData(PROJECT_NAME);
+    }
+    
+    public void testFinalRemove() throws Exception {
+        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
+        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

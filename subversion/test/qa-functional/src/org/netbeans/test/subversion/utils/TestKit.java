@@ -44,7 +44,7 @@ public final class TestKit {
     
     public static File prepareProject(String category, String project, String project_name) throws Exception {
         //create temporary folder for test
-        String folder = "work";
+        String folder = "work" + File.separator + "w" + System.currentTimeMillis();
         File file = new File("/tmp", folder); // NOI18N
         file.mkdirs();
         RepositoryMaintenance.deleteFolder(file);

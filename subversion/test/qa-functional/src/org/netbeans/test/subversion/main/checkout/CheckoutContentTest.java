@@ -71,23 +71,25 @@ public class CheckoutContentTest extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CheckoutContentTest("testCheckoutProject"));      
         suite.addTest(new CheckoutContentTest("testCheckoutContent"));      
+        suite.addTest(new CheckoutContentTest("testFinalRemove"));      
         return suite;
     }
     
     public void testCheckoutProject() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        TestKit.closeProject(PROJECT_NAME);
         OutputTabOperator oto;
         OutputOperator oo = OutputOperator.invoke();
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         RepositoryStepOperator rso = new RepositoryStepOperator();       
-        TestKit.closeProject(PROJECT_NAME);
         
         //create repository... 
+        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
-        new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
+        work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -97,7 +99,7 @@ public class CheckoutContentTest extends JellyTestCase {
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
+        wdso.setLocalFolder(work.getCanonicalPath());
         wdso.checkCheckoutContentOnly(false);
         wdso.finish();
         //open project
@@ -116,15 +118,17 @@ public class CheckoutContentTest extends JellyTestCase {
     public void testCheckoutContent() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator rso = new RepositoryStepOperator();
         TestKit.closeProject(PROJECT_NAME);
         
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        RepositoryStepOperator rso = new RepositoryStepOperator();
+        
         //create repository... 
+        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
-        new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
+        work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -135,7 +139,7 @@ public class CheckoutContentTest extends JellyTestCase {
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/JavaApp/src");
         wdso.checkCheckoutContentOnly(true);
-        wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
+        wdso.setLocalFolder(work.getCanonicalPath());
         wdso.finish();
         //open project
         oto.waitText("Checking out... finished.");
@@ -147,5 +151,10 @@ public class CheckoutContentTest extends JellyTestCase {
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         //ProjectSupport.waitScanFinished();
         //Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
+    }
+    
+    public void testFinalRemove() throws Exception {
+        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
+        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

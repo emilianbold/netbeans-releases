@@ -20,6 +20,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
+import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.SearchHistoryOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
@@ -73,6 +74,7 @@ public class SearchHistoryUITest extends JellyTestCase{
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new SearchHistoryUITest("testInvokeSearch"));
+        suite.addTest(new SearchHistoryUITest("testFinalRemove"));
         
         return suite;
     }
@@ -88,10 +90,11 @@ public class SearchHistoryUITest extends JellyTestCase{
         RepositoryStepOperator rso = new RepositoryStepOperator();       
         
         //create repository... 
+        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
-        new File(TMP_PATH + File.separator + WORK_PATH).mkdirs();
+        work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -99,7 +102,7 @@ public class SearchHistoryUITest extends JellyTestCase{
         rso.next();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(TMP_PATH + File.separator + WORK_PATH);
+        wdso.setLocalFolder(work.getCanonicalPath());
         wdso.checkCheckoutContentOnly(false);
         OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
@@ -138,5 +141,10 @@ public class SearchHistoryUITest extends JellyTestCase{
         TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+    }
+    
+    public void testFinalRemove() throws Exception {
+        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
+        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }
