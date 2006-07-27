@@ -49,7 +49,7 @@ public class RedoAction extends CallableSystemAction {
         String redo = UndoAction.getUndoRedo().getRedoPresentationName();
 
         if ((redo != null) && (SWING_DEFAULT_LABEL != null) && redo.startsWith(SWING_DEFAULT_LABEL)) {
-            redo = redo.substring(0, SWING_DEFAULT_LABEL.length()).trim();
+            redo = redo.substring(SWING_DEFAULT_LABEL.length()).trim();
         }
 
         return NbBundle.getMessage(RedoAction.class, "Redo", redo);

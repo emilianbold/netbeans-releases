@@ -117,7 +117,7 @@ public class UndoAction extends CallableSystemAction {
         String undo = getUndoRedo().getUndoPresentationName();
 
         if ((undo != null) && (SWING_DEFAULT_LABEL != null) && undo.startsWith(SWING_DEFAULT_LABEL)) {
-            undo = undo.substring(0, SWING_DEFAULT_LABEL.length()).trim();
+            undo = undo.substring(SWING_DEFAULT_LABEL.length()).trim();
         }
 
         return NbBundle.getMessage(UndoAction.class, "Undo", undo);
