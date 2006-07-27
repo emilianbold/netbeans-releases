@@ -87,6 +87,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
     // Related:
     private boolean checkingForDuplicates;
     private String currPath;
+    private boolean atLeastOneFileOrFolderInLayer;
 
     /** Constructor for subclasses.
      */
@@ -139,9 +140,13 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
                     oneLayerFiles = new HashSet<String>(100);
                     currPath = null;
                 }
-                LayerCacheManager.err.fine("Parsing: " + base);
+                LayerCacheManager.err.log(Level.FINE, "Parsing: {0}", base);
+                atLeastOneFileOrFolderInLayer = false;
                 try {
                     r.parse(base.toExternalForm());
+                    if (!atLeastOneFileOrFolderInLayer) {
+                        LayerCacheManager.err.log(Level.WARNING, "Inefficient to include an empty layer in a module: {0}", base);
+                    }
                 } catch (Exception e) {
                     curr.clear();
                     curr.push(root);
@@ -266,6 +271,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
     }
     
     private MemFileOrFolder fileOrFolder(String qname, Attributes attrs) {
+        atLeastOneFileOrFolderInLayer = true;
         String name = attrs.getValue("name");
         if (name == null) throw new NullPointerException("No name"); // NOI18N
         if (!(curr.peek() instanceof MemFolder)) throw new ClassCastException("Stack: " + curr); // NOI18N
