@@ -90,9 +90,12 @@ final class NbInputHandler implements InputHandler {
         JComponent comp = null;
         if (request instanceof MultipleChoiceInputRequest) {
             combo = new javax.swing.JComboBox(((MultipleChoiceInputRequest)request).getChoices());
+            if (defaultValue != null && defaultValue.length() > 0) {
+                combo.setSelectedItem(defaultValue);
+            }
             comp = combo;
         } else {
-            input = new JTextField(25);
+            input = new JTextField(defaultValue, 25);
             comp = input;
         }
         
@@ -119,6 +122,11 @@ final class NbInputHandler implements InputHandler {
         HelpCtx.setHelpIDString(pane, "org.apache.tools.ant.module.run.NBInputHandler"); // NOI18N
         
         return pane;
+    }
+    
+    private static String defaultValue;
+    static void setDefaultValue(String d) {
+        defaultValue = d;
     }
     
 }

@@ -432,6 +432,15 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                     ERR.notify(EM_LEVEL, x);
                 }
             }
+            if ("input".equals(e.getTaskName())) { // #81139; NOI18N
+                TaskStructure s = e.getTaskStructure();
+                if (s != null) {
+                    String def = s.getAttribute("defaultvalue"); // NOI18N
+                    if (def != null) {
+                        NbInputHandler.setDefaultValue(e.evaluate(def));
+                    }
+                }
+            }
         } finally {
             AntBridge.resumeDelegation();
         }
@@ -453,6 +462,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                     ERR.notify(EM_LEVEL, x);
                 }
             }
+            NbInputHandler.setDefaultValue(null);
         } finally {
             AntBridge.resumeDelegation();
         }
