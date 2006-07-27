@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
@@ -320,6 +321,45 @@ public class FolderObjTest extends NbTestCase {
             
             f = f.getParentFile();
         }        
+    }
+    
+    public void testGetChildrenStackOwerflow() throws Exception {
+        File f = testFile;
+        assertTrue(f.exists());
+        assertTrue(f.isDirectory());        
+        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        assertNotNull(fs);
+        final FileObject fo = fs.findResource(f.getAbsolutePath()); 
+        assertNotNull(f.getAbsolutePath(),fo);        
+        assertTrue(fo.isFolder());
+        assertEquals(0,fo.getChildren().length);
+        assertTrue(new File(f,"child1").createNewFile());
+        assertTrue(new File(f,"child2").createNewFile());
+        final File child3 = new File(f,"child3");
+        assertTrue(child3.createNewFile());
+        final List keepThem = new ArrayList();
+        fo.addFileChangeListener(new FileChangeAdapter(){
+            public void fileDeleted(FileEvent fe) {
+                for (Iterator it = keepThem.iterator(); it.hasNext();) {
+                    FileObject fodel = (FileObject) it.next();
+                    FileObject[] all =  fo.getChildren();
+                    for (int i = 0; i < all.length; i++) {
+                        all[i].refresh();
+                    }
+                    
+                }
+            }
+            
+            public void fileDataCreated(FileEvent fe) {
+                FileObject ffoo = fe.getFile(); 
+                keepThem.add(ffoo);
+                ((BaseFileObj)ffoo).getFileName().getFile().delete();
+                ffoo.refresh();
+            }            
+        } );
+
+        fo.refresh();
+        assertEquals(0,fo.getChildren().length);
     }
     
     /**

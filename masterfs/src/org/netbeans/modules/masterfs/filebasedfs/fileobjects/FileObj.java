@@ -29,14 +29,15 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.Enumeration;
 import org.netbeans.modules.masterfs.filebasedfs.Statistics;
+import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
+import org.openide.util.Mutex;
 
 /**
  * @author rm111737
@@ -194,11 +195,23 @@ class FileObj extends BaseFileObj {
             boolean validityFlag = getFileName().getFile().exists();                    
             if (!validityFlag) {
                 //fileobject is invalidated
+                FolderObj parent = getExistingParent();
+                if (parent != null) {
+                    ChildrenCache childrenCache = parent.getChildrenCache();
+                    final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+                    if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
+                    try {
+                        childrenCache.getChild(getFileName().getFile().getName(),true);
+                    } finally {
+                        if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
+                    }
+                    
+                }
                 setValid(false);
                 if (fire) {
-                fireFileDeletedEvent(expected);    
+                    fireFileDeletedEvent(expected);
+                }                
             }            
-        }                 
         }                 
         stopWatch.stop();
     }        
