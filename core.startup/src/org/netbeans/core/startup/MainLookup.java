@@ -44,6 +44,12 @@ public final class MainLookup extends ProxyLookup {
     public static void startedNbTopManager() {
         started = true;
     }
+    
+    /** Checks whether everything is started.
+     */
+    static boolean isStarted() {
+        return started;
+    } 
 
     /** Initialize the lookup to delegate to NbTopManager.
     */

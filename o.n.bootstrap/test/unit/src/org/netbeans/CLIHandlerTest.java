@@ -43,7 +43,7 @@ public class CLIHandlerTest extends NbTestCase {
     }
     
     public static junit.framework.Test suite() {
-        //return new CLIHandlerTest("testHostNotFound64004");
+        //return new CLIHandlerTest("testHelpIsPassedToRunningServer");
         return new NbTestSuite(CLIHandlerTest.class);
     }
     
@@ -124,6 +124,97 @@ public class CLIHandlerTest extends NbTestCase {
         assertNotNull("Previous file deleted and new one created", second.resultFile());
         assertTrue("Another port allocated", second.resultPort() != runner.resultPort());
         
+        
+    }
+    public void testHelpIsPrinted() throws Exception {
+        class UserDir extends CLIHandler {
+            private int cnt;
+            private boolean doCheck;
+            
+            public UserDir() {
+                super(WHEN_BOOT);
+            }
+            
+            protected int cli(Args args) {
+                if (!doCheck) {
+                    return 0;
+                }
+                
+                cnt++;
+                
+                for (String a : args.getArguments()) {
+                    if ("--help".equals(a)) {
+                        return 0;
+                    }
+                }
+                return 5;
+            }
+            
+            protected void usage(PrintWriter w) {
+                w.println("this is a help");
+            }
+        }
+        UserDir ud = new UserDir();
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        
+        CLIHandler.Status res = cliInitialize(new String[] { "--help" }, new CLIHandler[] { ud }, nullInput, os, nullOutput);
+        assertEquals("Help returns 2", 2, res.getExitCode());
+        
+        if (os.toString().indexOf("help") == -1) {
+            fail("There should be some help text:\n" + os);
+        }
+    }
+
+    public void testHelpIsPassedToRunningServer() throws Exception {
+        class UserDir extends CLIHandler implements Runnable {
+            private int cnt;
+            private int usage;
+            private boolean doCheck;
+            private CLIHandler.Status res;
+            
+            public UserDir() {
+                super(WHEN_BOOT);
+            }
+            
+            protected int cli(Args args) {
+                if (!doCheck) {
+                    return 0;
+                }
+                
+                cnt++;
+                
+                for (String a : args.getArguments()) {
+                    if ("--help".equals(a)) {
+                        return 0;
+                    }
+                }
+                return 5;
+            }
+            
+            protected void usage(PrintWriter w) {
+                usage++;
+            }
+            
+            public void run() {
+                res = cliInitialize(new String[] { }, new CLIHandler[] { this }, nullInput, nullOutput, nullOutput);
+            }
+        }
+        UserDir ud = new UserDir();
+        
+        RequestProcessor.getDefault().post(ud).waitFinished();
+        assertNotNull(ud.res);
+        
+        assertNotNull("File created", ud.res.getLockFile());
+        assertTrue("Port allocated", ud.res.getServerPort() != 0);
+        
+        ud.doCheck = true;
+        CLIHandler.Status res = cliInitialize(new String[] { "--help" }, new CLIHandler[0], nullInput, nullOutput, nullOutput);
+        
+        assertEquals("Ok exec of help", 2, res.getExitCode());
+        
+        assertEquals("No cli called", 0, ud.cnt);
+        assertEquals("Usage called", 1, ud.usage);
         
     }
     

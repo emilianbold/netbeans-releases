@@ -62,6 +62,14 @@ public class CLICoreBridge extends CLIHandler {
     }
 
     protected void usage(PrintWriter w) {
+        if (MainLookup.isStarted()) {
+            Lookup clis = Lookup.getDefault();
+            Collection handlers = clis.lookupAll(CLIHandler.class);
+            showHelp(w, handlers, WHEN_EXTRA);
+            w.flush();
+            return;
+        }
+        
         ModuleSystem moduleSystem;
         try {
             moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem());

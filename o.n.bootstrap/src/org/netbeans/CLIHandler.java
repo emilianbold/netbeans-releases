@@ -177,6 +177,24 @@ public abstract class CLIHandler extends Object {
         }
     }
     
+    private static boolean checkHelp(Args args, Collection handlers) {
+        String[] argv = args.getArguments();
+        for (int i = 0; i < argv.length; i++) {
+            if (argv[i] == null) {
+                continue;
+            }
+
+            if (argv[i].equals("-?") || argv[i].equals("--help") || argv[i].equals ("-help")) { // NOI18N
+                PrintWriter w = new PrintWriter(args.getOutputStream());
+                showHelp(w, handlers, -1);
+                w.flush();
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     /** Notification of available handlers.
      * @return non-zero if one of the handlers fails
      */
@@ -194,20 +212,7 @@ public abstract class CLIHandler extends Object {
                     return r;
                 }
             }
-            //System.err.println("notifyHandlers: handlers=" + handlers + " when=" + when + " args=" + Arrays.asList(args.getArguments()));
             String[] argv = args.getArguments();
-            for (int i = 0; i < argv.length; i++) {
-                if (argv[i] == null) {
-                    continue;
-                }
-                
-                if (argv[i].equals("-?") || argv[i].equals("--help") || argv[i].equals ("-help")) { // NOI18N
-                    PrintWriter w = new PrintWriter(args.getOutputStream());
-                    showHelp(w, handlers, -1);
-                    w.flush();
-                    return 2;
-                }
-            }
             if (failOnUnknownOptions) {
                 argv = args.getArguments();
                 for (int i = 0; i < argv.length; i++) {
@@ -471,6 +476,11 @@ public abstract class CLIHandler extends Object {
                     enterState(5, block);
                     throw new IOException("EXISTS"); // NOI18N
                 }
+                
+                if (i == 0 && checkHelp(args, handlers)) {
+                    return new Status(2);
+                }
+                
                 lockFile.getParentFile().mkdirs();
                 lockFile.createNewFile();
                 lockFile.deleteOnExit();
@@ -1021,7 +1031,11 @@ public abstract class CLIHandler extends Object {
                     
                     public void run () {
                         try {
-                            res = notifyHandlers (arguments, handlers, WHEN_INIT, failOnUnknownOptions, false);
+                            if (checkHelp(arguments, handlers)) {
+                                res = 2;
+                            } else {
+                                res = notifyHandlers (arguments, handlers, WHEN_INIT, failOnUnknownOptions, false);
+                            }
 
                             if (res == 0) {
                                 enterState (98, block);
