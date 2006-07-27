@@ -184,4 +184,62 @@ class ErrWriter extends OutputWriter {
             ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
+
+    public void print(char[] s) {
+        closed = false;
+        synchronized (wrapped) {
+            wrapped.print(s);
+            ((AbstractLines) wrapped.getLines()).markErr();
+        }
+    }
+
+    public void print(Object obj) {
+        closed = false;
+        synchronized (wrapped) {
+            wrapped.print(obj);
+            ((AbstractLines) wrapped.getLines()).markErr();
+        }
+    }
+
+    public void print(char c) {
+        closed = false;
+        synchronized (wrapped) {
+            wrapped.print(c);
+            ((AbstractLines) wrapped.getLines()).markErr();
+        }
+    }
+
+    public void print(int i) {
+        closed = false;
+        synchronized (wrapped) {
+            wrapped.print(i);
+            ((AbstractLines) wrapped.getLines()).markErr();
+        }
+    }
+
+    public void print(String s) {
+        closed = false;
+        synchronized (wrapped) {
+            wrapped.print(s);
+            ((AbstractLines) wrapped.getLines()).markErr();
+        }
+    }
+
+    public void print(boolean b) {
+        closed = false;
+        synchronized (wrapped) {
+            wrapped.print(b);
+            ((AbstractLines) wrapped.getLines()).markErr();
+        }
+    }
+    
+    public void println() {
+        closed = false;
+        synchronized (wrapped) {
+            wrapped.println();
+            ((AbstractLines) wrapped.getLines()).markErr();
+        }
+    }
+
+    
 }
