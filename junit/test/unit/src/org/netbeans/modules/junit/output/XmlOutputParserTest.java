@@ -49,7 +49,7 @@ public class XmlOutputParserTest extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        instance = (XmlOutputParser) constructor.newInstance(null);
+        instance = (XmlOutputParser) constructor.newInstance((Object[]) null);
     }
 
     public void testGetStackTrace() throws IllegalAccessException,
