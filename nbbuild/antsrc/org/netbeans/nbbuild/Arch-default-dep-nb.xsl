@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- print out <api /> dependencies on all needed netbeans subprojects -->
     <xsl:template match="/" >
         <p>
-            These modules are required in project.xml file:
+            These modules are required in project.xml:
             <xsl:apply-templates select="//dependency" mode="comment" />
             <ul>
                 <xsl:apply-templates select="//dependency" />

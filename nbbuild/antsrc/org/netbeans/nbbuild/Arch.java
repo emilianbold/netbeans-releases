@@ -69,7 +69,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * Task to process Arch questions & answers document.
+ * Task to process Arch questions and answers document.
  * @author Jaroslav Tulach, Jesse Glick
  */
 public class Arch extends Task implements ErrorHandler, EntityResolver, URIResolver {
@@ -88,7 +88,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
     //
 
     private File questionsFile;
-    /** Questions & answers file */
+    /** Questions and answers file */
     public void setAnswers (File f) {
         questionsFile = f;
     }
@@ -446,7 +446,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
                     } else {
                         log("Adding default answer to the end of previous one", Project.MSG_VERBOSE);
                         Element para = q.createElement("p");
-                        para.appendChild(q.createTextNode("Default answer to this question is:"));
+                        para.appendChild(q.createTextNode("The default answer to this question is:"));
                         para.appendChild(q.createComment("If you do not want default answer to be generated you can use <defaultanswer generate='none' /> here"));
                         para.appendChild(q.createElement("br"));
                         para.appendChild(res.getNode());
