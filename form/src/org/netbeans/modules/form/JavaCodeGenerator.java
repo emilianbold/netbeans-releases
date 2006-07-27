@@ -3411,8 +3411,10 @@ class JavaCodeGenerator extends CodeGenerator {
             Integer oldValue = (Integer)getValue();
             Integer newValue = (Integer)value;
             formModel.getSettings().setLayoutCodeTarget(newValue.intValue());
+            FormEditor formEditor = FormEditor.getFormEditor(formModel);
+            formEditor.updateProjectForNaturalLayout();
             formModel.fireSyntheticPropertyChanged(null, FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, oldValue, newValue);
-            FormRootNode formRootNode = (FormRootNode)FormEditor.getFormEditor(formModel).getFormRootNode();
+            FormRootNode formRootNode = (FormRootNode) formEditor.getFormRootNode();
             formRootNode.firePropertyChangeHelper(
                 FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, oldValue, newValue);
         }
