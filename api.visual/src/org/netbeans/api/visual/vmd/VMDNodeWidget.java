@@ -26,6 +26,7 @@ import org.openide.util.Utilities;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -33,9 +34,12 @@ import java.util.List;
  */
 public class VMDNodeWidget extends Widget implements StateModel.Listener {
 
-    private static Border BORDER_SHADOW_NORMAL = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
-    private static Border BORDER_SHADOW_HOVERED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
-    private static Border BORDER_SHADOW_SELECTED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_selected.png")); // NOI18N
+    private static final Border BORDER_SHADOW_NORMAL = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
+    private static final Border BORDER_SHADOW_HOVERED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
+    private static final Border BORDER_SHADOW_SELECTED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_selected.png")); // NOI18N
+
+    private static final Color COLOR_CATEGORY_BACKGROUND = new Color (0xEEEEEE);
+    private static final Color COLOR_CATEGORY_FOREGROUND = Color.GRAY;
 
     private Widget header;
     private ImageWidget imageWidget;
@@ -43,6 +47,9 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
     private LabelWidget typeWidget;
     private Widget pinsWidget;
     private VMDGlyphSetWidget glyphSetWidget;
+
+    private HashMap<String, Widget> pinCategoryWidgets = new HashMap<String, Widget> ();
+    private Font fontPinCategory = getScene ().getFont ().deriveFont (10.0f);
 
     private StateModel stateModel = new StateModel (2);
     private Anchor nodeAnchor = new VMDNodeAnchor (this);
@@ -205,6 +212,54 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         return new ProxyAnchor (stateModel, anchor, nodeAnchor);
     }
 
+    public void sortPins (HashMap<String, List<Widget>> pinsCategories) {
+        ArrayList<Widget> unresolvedPins = new ArrayList<Widget> (pinsWidget.getChildren ());
+        for (Iterator<Widget> iterator = unresolvedPins.iterator (); iterator.hasNext ();) {
+            Widget widget = iterator.next ();
+            if (pinCategoryWidgets.containsValue (widget))
+                iterator.remove ();
+        }
+
+        ArrayList<String> unusedCategories = new ArrayList<String> (pinCategoryWidgets.keySet ());
+
+        ArrayList<String> categoryNames = new ArrayList<String> (pinsCategories.keySet ());
+        Collections.sort (categoryNames);
+
+        ArrayList<Widget> newWidgets = new ArrayList<Widget> ();
+        for (String categoryName : categoryNames) {
+            if (categoryName == null)
+                continue;
+            unusedCategories.remove (categoryName);
+            newWidgets.add (createPinCategoryWidget (categoryName));
+            List<Widget> widgets = pinsCategories.get (categoryName);
+            for (Widget widget : widgets)
+                if (unresolvedPins.remove (widget))
+                    newWidgets.add (widget);
+        }
+
+        if (! unresolvedPins.isEmpty ())
+            newWidgets.addAll (0, unresolvedPins);
+
+        for (String category : unusedCategories)
+            pinCategoryWidgets.remove (category);
+
+        pinsWidget.removeChildren ();
+        pinsWidget.addChildren (newWidgets);
+    }
+
+    private Widget createPinCategoryWidget (String categoryDisplayName) {
+        Widget w = pinCategoryWidgets.get (categoryDisplayName);
+        if (w != null)
+            return w;
+        LabelWidget label = new LabelWidget (getScene (), categoryDisplayName);
+        label.setOpaque (true);
+        label.setBackground (COLOR_CATEGORY_BACKGROUND);
+        label.setForeground (COLOR_CATEGORY_FOREGROUND);
+        label.setFont (fontPinCategory);
+        label.setAligment (LabelWidget.Alignment.CENTER);
+        pinCategoryWidgets.put (categoryDisplayName, label); 
+        return label;
+    }
 
     private final class ToggleMinimizedAction extends WidgetAction.Adapter {
 

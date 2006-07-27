@@ -153,6 +153,16 @@ public class Widget {
             parentWidget.removeChild (this);
     }
 
+    public void removeChildren () {
+        while (! children.isEmpty ())
+            removeChild (children.get (0));
+    }
+
+    public void addChildren (List<? extends Widget> children) {
+        for (Widget child : children)
+            addChild (child);
+    }
+
     public final WidgetAction.Chain getActions () {
         return actionsChain;
     }
