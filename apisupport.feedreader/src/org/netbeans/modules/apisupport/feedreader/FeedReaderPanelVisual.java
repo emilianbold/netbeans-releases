@@ -35,13 +35,11 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     
     private FeedReaderWizardPanel panel;
-    private int type;
     
     /** Creates new form PanelProjectLocationVisual */
     public FeedReaderPanelVisual(FeedReaderWizardPanel panel) {
         initComponents();
         this.panel = panel;
-        this.type = type;
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener( this );
         projectLocationTextField.getDocument().addDocumentListener( this );
