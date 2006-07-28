@@ -112,8 +112,7 @@ public class RADComponentNode extends FormNode
     }
 
     public HelpCtx getHelpCtx() {
-        HelpCtx help = HelpCtx.findHelp(component.getBeanInstance());
-        return help != null ? help : new HelpCtx("gui.component-inspector"); // NOI18N
+        return new HelpCtx("gui.component-inspector"); // NOI18N
     }
 
     public Node.PropertySet[] getPropertySets() {
