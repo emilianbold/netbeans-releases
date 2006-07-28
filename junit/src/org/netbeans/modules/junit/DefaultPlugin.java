@@ -567,29 +567,17 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
             TestUtil.notifyUser(message, NotifyDescriptor.INFORMATION_MESSAGE);
 
-        } else {
-            final int createdCount = created.size();
-            if (createdCount == 1) {
-                // created exactly one class, highlight it in the explorer
-                // and open it in the editor
-                DataObject dobj = (DataObject)
-                                  results.getCreated().iterator().next();
-                EditorCookie ec = (EditorCookie)
-                                  dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    ec.open();          //XXX - remove
+        }
+        if (created.isEmpty()) {
+            Mutex.EVENT.writeAccess(new Runnable() {
+                public void run() {
+                    TestUtil.notifyUser(
+                            NbBundle.getMessage(
+                                    DefaultPlugin.class,
+                                    "MSG_No_test_created"),     //NOI18N
+                            NotifyDescriptor.INFORMATION_MESSAGE);
                 }
-            } else if (createdCount == 0) {
-                Mutex.EVENT.writeAccess(new Runnable() {
-                    public void run() {
-                        TestUtil.notifyUser(
-                                NbBundle.getMessage(
-                                        DefaultPlugin.class,
-                                        "MSG_No_test_created"),     //NOI18N
-                                NotifyDescriptor.INFORMATION_MESSAGE);
-                    }
-                });
-            }
+            });
         }
         
         FileObject[] createdFiles;
