@@ -575,7 +575,13 @@ final class JUnitOutputReader {
     void testTaskFinished() {
         expectedSuitesCount = executedSuitesCount;
         if (isDeterminateProgress) {
-            updateProgress();
+            /*
+             * The above assignment statement might set expectedSuitesCount
+             * to zero which would cause a "division by zero" exception
+             * if method updateProgress() was called. That's why we bypass
+             * the method and set the progress bar to 100% directly.
+             */
+            progressHandle.progress(PROGRESS_WORKUNITS);
         }
     }
     
