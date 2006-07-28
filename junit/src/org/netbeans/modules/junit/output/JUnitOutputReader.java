@@ -549,6 +549,7 @@ final class JUnitOutputReader {
             if (willBeDeterminateProgress) {
                 this.expectedSuitesCount = expectedSuitesCount;
                 progressHandle.start(PROGRESS_WORKUNITS);
+                progressHandle.progress(PROGRESS_WORKUNITS / 100);
             } else {
                 progressHandle.start();
             }
