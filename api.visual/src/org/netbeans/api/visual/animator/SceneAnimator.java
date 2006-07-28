@@ -36,6 +36,7 @@ public class SceneAnimator {
     private volatile boolean taskAlive;
 
     private PreferredLocationAnimator preferredLocationAnimator = new PreferredLocationAnimator (this);
+    private PreferredBoundsAnimator preferredBoundsAnimator = new PreferredBoundsAnimator (this);
     private ZoomAnimator zoomAnimator = new ZoomAnimator (this);
 
     public SceneAnimator (Scene scene) {
@@ -69,6 +70,10 @@ public class SceneAnimator {
 
     public PreferredLocationAnimator getPreferredLocationAnimator () {
         return preferredLocationAnimator;
+    }
+
+    public PreferredBoundsAnimator getPreferredBoundsAnimator () {
+        return preferredBoundsAnimator;
     }
 
     public ZoomAnimator getZoomAnimator () {

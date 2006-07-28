@@ -41,12 +41,15 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
     private static final Color COLOR_CATEGORY_BACKGROUND = new Color (0xEEEEEE);
     private static final Color COLOR_CATEGORY_FOREGROUND = Color.GRAY;
 
+    private Widget mainLayer;
+
     private Widget header;
     private ImageWidget imageWidget;
     private LabelWidget nameWidget;
     private LabelWidget typeWidget;
-    private Widget pinsWidget;
     private VMDGlyphSetWidget glyphSetWidget;
+
+    private SeparatorWidget pinsSeparator;
 
     private HashMap<String, Widget> pinCategoryWidgets = new HashMap<String, Widget> ();
     private Font fontPinCategory = getScene ().getFont ().deriveFont (10.0f);
@@ -60,10 +63,10 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         setBackground (Color.WHITE);
         setOpaque (true);
         setBorder (BORDER_SHADOW_NORMAL);
-        setCursor (new Cursor (Cursor.MOVE_CURSOR));
 
-        final Widget mainLayer = new Widget (scene);
+        mainLayer = new Widget (scene);
         mainLayer.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL));
+        mainLayer.setCheckClipping (true);
         addChild (mainLayer);
 
         header = new Widget (scene);
@@ -92,31 +95,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         glyphSetWidget = new VMDGlyphSetWidget (scene);
         desc.addChild (glyphSetWidget);
 
-        Widget pinsSeparator = new SeparatorWidget (scene, SeparatorWidget.Orientation.HORIZONTAL);
+        pinsSeparator = new SeparatorWidget (scene, SeparatorWidget.Orientation.HORIZONTAL);
         mainLayer.addChild (pinsSeparator);
-
-//        Widget inner = new Widget (scene);
-//        inner.setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL));
-//        inner.setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL));
-//        addChild (inner);
-
-//        SeparatorWidget separator1 = new SeparatorWidget (scene, SeparatorWidget.Orientation.VERTICAL);
-//        separator1.setBorder (new EmptyBorder (8));
-//        inner.addChild (separator1);
-
-        pinsWidget = new Widget (scene);
-        pinsWidget.setBorder (new EmptyBorder (8, 4));
-        pinsWidget.setOpaque (true);
-        pinsWidget.setBackground (Color.WHITE);
-        pinsWidget.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL, SerialLayout.Alignment.JUSTIFY, 0));
-        pinsWidget.setCheckClipping (true);
-//        inner.addChild (pinsWidget);
-        mainLayer.addChild (pinsWidget);
-
-//        SeparatorWidget separator2 = new SeparatorWidget (scene, SeparatorWidget.Orientation.VERTICAL);
-//        separator2.setBorder (new EmptyBorder (8));
-//        inner.addChild (separator2);
-
 
         Widget topLayer = new Widget (scene);
         addChild (topLayer);
@@ -154,7 +134,10 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
     }
 
     public void stateChanged () {
-        pinsWidget.setPreferredBounds (stateModel.getBooleanState () ? new Rectangle () : null);
+        Rectangle rectangle = stateModel.getBooleanState () ? new Rectangle () : null;
+        for (Widget widget : mainLayer.getChildren ())
+            if (widget != header  &&  widget != pinsSeparator)
+                getScene ().getSceneAnimator ().getPreferredBoundsAnimator ().setPreferredBounds (widget, rectangle);
     }
 
     protected void notifyStateChanged (ObjectState state) {
@@ -165,7 +148,6 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         else
             setBorder (BORDER_SHADOW_NORMAL);
         header.setBackground (getScene ().getLookFeel ().getBackground (state));
-
     }
 
     public void setNodeImage (Image image) {
@@ -186,7 +168,10 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
     }
 
     public void attachPinWidget (Widget widget) {
-        pinsWidget.addChild (widget);
+        widget.setCheckClipping (true);
+        mainLayer.addChild (widget);
+        if (stateModel.getBooleanState ())
+            widget.setPreferredBounds (new Rectangle ());
     }
 
     public void setGlyphs (List<Image> glyphs) {
@@ -212,8 +197,17 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         return new ProxyAnchor (stateModel, anchor, nodeAnchor);
     }
 
+    private List<Widget> getPinWidgets () {
+        ArrayList<Widget> pins = new ArrayList<Widget> (mainLayer.getChildren ());
+        pins.remove (header);
+        pins.remove (pinsSeparator);
+        return pins;
+    }
+
     public void sortPins (HashMap<String, List<Widget>> pinsCategories) {
-        ArrayList<Widget> unresolvedPins = new ArrayList<Widget> (pinsWidget.getChildren ());
+        List<Widget> previousPins = getPinWidgets ();
+        ArrayList<Widget> unresolvedPins = new ArrayList<Widget> (previousPins);
+
         for (Iterator<Widget> iterator = unresolvedPins.iterator (); iterator.hasNext ();) {
             Widget widget = iterator.next ();
             if (pinCategoryWidgets.containsValue (widget))
@@ -243,8 +237,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         for (String category : unusedCategories)
             pinCategoryWidgets.remove (category);
 
-        pinsWidget.removeChildren ();
-        pinsWidget.addChildren (newWidgets);
+        mainLayer.removeChildren (previousPins);
+        mainLayer.addChildren (newWidgets);
     }
 
     private Widget createPinCategoryWidget (String categoryDisplayName) {
@@ -257,6 +251,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         label.setForeground (COLOR_CATEGORY_FOREGROUND);
         label.setFont (fontPinCategory);
         label.setAligment (LabelWidget.Alignment.CENTER);
+        label.setCheckClipping (true);
         pinCategoryWidgets.put (categoryDisplayName, label); 
         return label;
     }

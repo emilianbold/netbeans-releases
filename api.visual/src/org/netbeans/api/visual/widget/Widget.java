@@ -153,12 +153,17 @@ public class Widget {
             parentWidget.removeChild (this);
     }
 
-    public void removeChildren () {
+    public final void removeChildren () {
         while (! children.isEmpty ())
             removeChild (children.get (0));
     }
 
-    public void addChildren (List<? extends Widget> children) {
+    public final void removeChildren (List<Widget> widgets) {
+        for (Widget widget : widgets)
+            removeChild (widget);
+    }
+
+    public final void addChildren (List<? extends Widget> children) {
         for (Widget child : children)
             addChild (child);
     }
@@ -316,32 +321,32 @@ public class Widget {
         revalidate ();
     }
 
-    public boolean isCheckClipping () {
+    public final boolean isCheckClipping () {
         return checkClipping;
     }
 
-    public void setCheckClipping (boolean checkClipping) {
+    public final void setCheckClipping (boolean checkClipping) {
         this.checkClipping = checkClipping;
         repaint ();
     }
 
-    public Cursor getCursor () {
+    public final Cursor getCursor () {
         return cursor;
     }
 
-    public void setCursor (Cursor cursor) {
+    public final void setCursor (Cursor cursor) {
         this.cursor = cursor;
     }
 
-    public String getToolTipText () {
+    public final String getToolTipText () {
         return toolTipText;
     }
 
-    public void setToolTipText (String toolTipText) {
+    public final void setToolTipText (String toolTipText) {
         this.toolTipText = toolTipText;
     }
 
-    public ObjectState getState () {
+    public final ObjectState getState () {
         return state;
     }
 
@@ -381,7 +386,7 @@ public class Widget {
         return sceneRectangle;
     }
 
-    public Point convertSceneToLocal (Point sceneLocation) {
+    public final Point convertSceneToLocal (Point sceneLocation) {
         Point localLocation = new Point (sceneLocation);
         Widget widget = this;
         while (widget != null) {
