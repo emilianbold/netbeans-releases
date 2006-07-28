@@ -49,7 +49,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.progress.module.Controller;
-import org.netbeans.progress.module.InternalHandle;
+import org.netbeans.progress.spi.InternalHandle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
