@@ -402,7 +402,6 @@ final class SheetCellEditor implements TableCellEditor, ActionListener {
                 //            }
             } finally {
                 setInplaceEditor(null);
-                reusableEnv.clear();
                 inStopCellEditing = false;
             }
 
