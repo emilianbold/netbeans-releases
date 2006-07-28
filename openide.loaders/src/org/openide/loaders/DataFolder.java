@@ -621,6 +621,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         return super.handleRename (name);
     }
     
+    private static final ThreadLocal KEEP_ALIVE = new ThreadLocal();
+    
     /* Handles move of the object. Must be overriden in children. Since 1.13 move operation
     * behaves similar like copy, it merges folders whith existing folders in target location.
     * @param df target data folder
@@ -632,6 +634,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         FileLock lock = originalFolder.lock();
         List backup = saveEntries();
         
+        boolean clearKeepAlive = false;
         try {
             // move entries (FolderEntry creates new folder when moved)
 
@@ -639,7 +642,12 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             
             DataFolder newFolder = null;
             boolean dispose = false;
-            boolean keepAlive = false;
+            
+            boolean[] keepAlive = (boolean[])KEEP_ALIVE.get();
+            if (keepAlive == null) {
+                keepAlive = new boolean[] { false };
+                KEEP_ALIVE.set(keepAlive);
+            }
 
             /* 
              * The following code is a partial bugfix of the issue #8705.
@@ -706,7 +714,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                     if (obj.isMoveAllowed ()) {
                         obj.move (newFolder);
                     } else {
-                        keepAlive = true;
+                        keepAlive[0] = true;
                         
                         // data object can not be moved, inform user
                         DataObject.LOG.warning(
@@ -715,12 +723,12 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         );
                     }
                 } catch (IOException ex) {
-                    keepAlive = true;
+                    keepAlive[0] = true;
                     Exceptions.printStackTrace(ex);
                 }
             }
 
-            if (keepAlive) {
+            if (keepAlive[0]) {
                 // some children couldn't be moved -> folder shouldn't be moved
                 restoreEntries (backup);
                 list.refresh ();
@@ -757,6 +765,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
             return newFile;
         } finally {
+            if (clearKeepAlive) {
+                KEEP_ALIVE.remove();
+            }
             lock.releaseLock();
         }
     }
