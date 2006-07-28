@@ -271,10 +271,9 @@ class FileSetScanner {
             } else /* (lastPart) */ {
                             /* HANDLES THE REMAINING UNCOLOURED AREAS */
                 if (isIncludePattern) {
+                    assert !isDir;  //already handled by blue and yellow areas
+                    
                     matches = true;
-                    if (isDir) {
-                        childrenTests.add(patternTest);
-                    }
                 } else {
                     matches = false;
                     break;
