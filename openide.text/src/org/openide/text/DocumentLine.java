@@ -601,9 +601,13 @@ public abstract class DocumentLine extends Line {
             this.length = limitLength(length);
         }
 
-        private int limitLength(int suggestedLenth) {
+        private int limitLength(int suggestedLength) {
             Document d = position.getCloneableEditorSupport().getDocument();
-            int end = position.getOffset() + suggestedLenth;
+            if (d == null) {
+                // Can happen when closing a document, don't know why.
+                return suggestedLength;
+            }
+            int end = position.getOffset() + suggestedLength;
 
             if (end > d.getLength()) {
                 end = d.getLength();
