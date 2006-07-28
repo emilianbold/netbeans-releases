@@ -171,9 +171,25 @@ class FileSetScanner {
             final PatternPartType partType =
                     pattern.patternPartTypes[partIndex];
             final boolean isLastPart = pattern.isLastPart(partIndex);
+
+            /*
+             * There is an overview sketch of the following code
+             * (the many if-then-else condition statements) available
+             * in the 'www' section of this module.
+             *
+             * Local access:
+             *    <cvsroot>/junit/www/doc/dev/ant-pattern-matcher-decision-tree.gif
+             *
+             * Web access:
+             *    http://junit.netbeans.org/doc/dev/ant-pattern-matcher-decision-tree.gif
+             *
+             * The  'HANDLES THE <colour> AREAS'  notes refer to the sketch.
+             */
             
             if (isIncludePattern && isLastPart
                     && partType == PatternPartType.DOUBLE_STAR) {
+                            /* HANDLES THE BLUE AREAS */
+                
                 /*
                  * This is a universal include pattern (**).
                  * If it is present, it should be the only include pattern
@@ -185,10 +201,12 @@ class FileSetScanner {
             }
             
             if (isFile && (!isLastPart || (matches && isIncludePattern))) {
+                            /* HANDLES THE GREEN AREAS */
                 continue;
             }
             if (isDir && isLastPart
                     && (partType != PatternPartType.DOUBLE_STAR)) {
+                            /* HANDLES THE YELLOW AREA */
                 continue;
             }
             
@@ -196,10 +214,12 @@ class FileSetScanner {
                     (partType == PatternPartType.DOUBLE_STAR)
                     || isMatchingFile(file, pattern, partIndex);
             if (!nameMatches) {
+                            /* HANDLES THE RED AREAS */
                 continue;
             }
             
             if (!isLastPart) {
+                            /* HANDLES THE CYAN AREAS */
                 assert isDir;  // We know it's a dir - see the conditions above.
                 
                 if (isIncludePattern) {
@@ -249,6 +269,7 @@ class FileSetScanner {
                     }
                 }
             } else /* (lastPart) */ {
+                            /* HANDLES THE REMAINING UNCOLOURED AREAS */
                 if (isIncludePattern) {
                     matches = true;
                     if (isDir) {
