@@ -771,6 +771,10 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         int row = rowAtPoint(pt);
         int col = columnAtPoint(pt);
         FeatureDescriptor fd = getSheetModel().getPropertySetModel().getFeatureDescriptor(row);
+        if( null == fd ) {
+            //prevent NPE when the activated Node has been destroyed and a new one hasn't been set yet
+            return false;
+        }
 
         //see if the event happened over the custom editor button
         boolean success;
