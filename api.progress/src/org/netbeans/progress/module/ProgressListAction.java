@@ -22,7 +22,7 @@ package org.netbeans.progress.module;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataListener;
-import org.netbeans.progress.module.ui.StatusLineComponent;
+import org.netbeans.progress.spi.ProgressUIWorkerWithModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -50,7 +50,7 @@ public class ProgressListAction extends AbstractAction implements ListDataListen
     }
     
     public void run() {
-        ((StatusLineComponent)Controller.getDefault().getVisualComponent()).showPopup();
+        ((ProgressUIWorkerWithModel)Controller.getDefault().getVisualComponent()).showPopup();
     }
 
     private void updateEnabled() {

@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JProgressBar;
-import org.netbeans.progress.module.InternalHandle;
+import org.netbeans.progress.spi.InternalHandle;
 
 /**
  * Instances provided by the ProgressHandleFactory allow the users of the API to

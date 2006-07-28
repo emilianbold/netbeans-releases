@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-            <dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -39,23 +39,17 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-            <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-            <dependency>
-                    <code-name-base>org.openide.windows</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
+          <test-dependencies>
+              <test-type>
+                  <name>unit</name>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
+                      <!--recursive/-->
+                      <compile-dependency/>
+                  </test-dependency>
+              </test-type>
+          </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.progress</package>
                 <package>org.netbeans.api.progress.aggregate</package>

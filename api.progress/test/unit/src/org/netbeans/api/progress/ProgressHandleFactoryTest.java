@@ -20,9 +20,9 @@
 package org.netbeans.api.progress;
 
 import javax.swing.JComponent;
+import javax.swing.JProgressBar;
 import junit.framework.TestCase;
-import org.netbeans.progress.module.InternalHandle;
-import org.netbeans.progress.module.ui.NbProgressBar;
+import org.netbeans.progress.spi.InternalHandle;
 import org.openide.util.Cancellable;
 
 /**
@@ -69,8 +69,8 @@ public class ProgressHandleFactoryTest extends TestCase {
         } catch (Exception exc) {
             
         }
-        assertEquals(15, ((NbProgressBar) component).getMaximum());
-        assertEquals(2, ((NbProgressBar) component).getValue());
+        assertEquals(15, ((JProgressBar) component).getMaximum());
+        assertEquals(2, ((JProgressBar) component).getValue());
         
         handle = ProgressHandleFactory.createHandle("task 2");
         component = ProgressHandleFactory.createProgressComponent(handle);
@@ -82,8 +82,8 @@ public class ProgressHandleFactoryTest extends TestCase {
         } catch (Exception exc) {
             
         }
-        assertEquals(20, ((NbProgressBar) component).getMaximum());
-        assertEquals(0, ((NbProgressBar) component).getValue());
+        assertEquals(20, ((JProgressBar) component).getMaximum());
+        assertEquals(0, ((JProgressBar) component).getValue());
         
     }
      

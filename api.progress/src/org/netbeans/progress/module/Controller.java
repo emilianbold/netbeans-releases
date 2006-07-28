@@ -34,8 +34,13 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import org.netbeans.progress.module.ui.StatusLineComponent;
-import org.openide.windows.WindowManager;
+import org.netbeans.progress.spi.InternalHandle;
+import org.netbeans.progress.spi.ProgressEvent;
+import org.netbeans.progress.spi.ProgressUIWorker;
+import org.netbeans.progress.spi.ProgressUIWorkerProvider;
+import org.netbeans.progress.spi.ProgressUIWorkerWithModel;
+import org.netbeans.progress.spi.TaskModel;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -72,7 +77,9 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
 
     public static synchronized Controller getDefault() {
         if (defaultInstance == null) {
-            StatusLineComponent component = new StatusLineComponent();
+            ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class); 
+            assert prov != null;
+            ProgressUIWorkerWithModel component = prov.getDefaultWorker();
             defaultInstance = new Controller(component);
             component.setModel(defaultInstance.getModel());
         }
@@ -91,7 +98,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         return model;
     }
     
-    void start(InternalHandle handle) {
+    public void start(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_START, isWatched(handle));
         if (this == getDefault() && handle.getInitialDelay() > 100) {
             // default controller
@@ -101,34 +108,34 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         }
     }
     
-    void finish(InternalHandle handle) {
+    public void finish(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_FINISH, isWatched(handle));
         postEvent(event);
     }
     
-    void toIndeterminate(InternalHandle handle) {
+    public void toIndeterminate(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SWITCH, isWatched(handle));
         postEvent(event);
     }
     
-    void toDeterminate(InternalHandle handle) {
+    public void toDeterminate(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SWITCH, isWatched(handle));
         postEvent(event);
     }    
     
-    void progress(InternalHandle handle, String msg, 
+    public void progress(InternalHandle handle, String msg, 
                   int units, int percentage, long estimate) {
         ProgressEvent event = new ProgressEvent(handle, msg, units, percentage, estimate, isWatched(handle));
         postEvent(event);
     }
     
-    ProgressEvent snapshot(InternalHandle handle, String msg, 
+    public ProgressEvent snapshot(InternalHandle handle, String msg, 
                   int units, int percentage, long estimate) {
         return new ProgressEvent(handle, msg, units, percentage, estimate, isWatched(handle));
     }
     
     
-    void explicitSelection(InternalHandle handle, int units, int percentage, long estimate) {
+    public void explicitSelection(InternalHandle handle, int units, int percentage, long estimate) {
         InternalHandle old = model.getExplicitSelection();
         model.explicitlySelect(handle);
         Collection<ProgressEvent> evnts = new ArrayList<ProgressEvent>();
@@ -140,7 +147,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         runImmediately(evnts);
     }
     
-    void displayNameChange(InternalHandle handle, int units, int percentage, long estimate, String display) {
+    public void displayNameChange(InternalHandle handle, int units, int percentage, long estimate, String display) {
         Collection<ProgressEvent> evnts = new ArrayList<ProgressEvent>();
         evnts.add(new ProgressEvent(handle, null, units, percentage, estimate, isWatched(handle), display));
         runImmediately(evnts);

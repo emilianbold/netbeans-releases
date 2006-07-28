@@ -19,15 +19,15 @@
 
 package org.netbeans.api.progress;
 
+import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.progress.module.Controller;
-import org.netbeans.progress.module.InternalHandle;
-import org.netbeans.progress.module.ProgressUIWorker;
-import org.netbeans.progress.module.ProgressEvent;
-import org.netbeans.progress.module.ui.NbProgressBar;
+import org.netbeans.progress.spi.InternalHandle;
+import org.netbeans.progress.spi.ProgressUIWorker;
+import org.netbeans.progress.spi.ProgressEvent;
 import org.openide.util.Cancellable;
 
 /**
@@ -306,20 +306,20 @@ public class ProgressHandleTest extends NbTestCase {
  */
     public void testSwitch() {
         final int WAIT = 1500;
-        
-        class MyFrame extends JFrame implements Runnable {
-            
-            JComponent component;
-            
-            public MyFrame(JComponent component) {
-                getContentPane().add(component);
-            }
-            
-            public void run() {
-                setVisible(true);
-                setBounds(0, 0, 400, 50);
-            }
-        }
+
+class MyFrame extends JFrame implements Runnable {
+    
+    JComponent component;
+    
+    public MyFrame(JComponent component) {
+        getContentPane().add(component);
+    }
+    
+    public void run() {
+        setVisible(true);
+        setBounds(0, 0, 400, 50);
+    }
+}
         
         assertFalse(SwingUtilities.isEventDispatchThread());
         ProgressHandle handle = ProgressHandleFactory.createHandle("foo");
@@ -346,9 +346,15 @@ public class ProgressHandleTest extends NbTestCase {
             Thread.sleep(WAIT);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } 
-
-        assertFalse("The progress bar is still indeterminate!", ((NbProgressBar)component).isIndeterminate());
+        }
+        try {
+            Method meth = component.getClass().getMethod("isIndeterminate", new Class[0]);
+            Boolean bool = (Boolean)meth.invoke(component, new Object[0]);
+            assertFalse("The progress bar is still indeterminate!", bool.booleanValue());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail();
+        }
         handle.finish();
         frm.setVisible(false);
         frm.dispose();

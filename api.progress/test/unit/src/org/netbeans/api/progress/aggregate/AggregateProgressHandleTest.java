@@ -21,8 +21,8 @@ package org.netbeans.api.progress.aggregate;
 
 import junit.framework.TestCase;
 import org.netbeans.progress.module.Controller;
-import org.netbeans.progress.module.ProgressUIWorker;
-import org.netbeans.progress.module.ProgressEvent;
+import org.netbeans.progress.spi.ProgressUIWorker;
+import org.netbeans.progress.spi.ProgressEvent;
 
 /**
  *

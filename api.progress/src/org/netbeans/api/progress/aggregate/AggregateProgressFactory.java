@@ -21,7 +21,7 @@ package org.netbeans.api.progress.aggregate;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
-import org.netbeans.progress.module.InternalHandle;
+import org.netbeans.progress.spi.InternalHandle;
 import org.openide.util.Cancellable;
 
 /**
