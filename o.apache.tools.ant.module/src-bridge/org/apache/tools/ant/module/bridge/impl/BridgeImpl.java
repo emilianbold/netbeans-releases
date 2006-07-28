@@ -502,7 +502,12 @@ public class BridgeImpl implements BridgeInterface {
                 fs[i].set(p, null);
             }
             // #43113: IntrospectionHelper can hold strong refs to dynamically loaded classes
-            Field helpersF = IntrospectionHelper.class.getDeclaredField("helpers");
+            Field helpersF;
+            try {
+                helpersF = IntrospectionHelper.class.getDeclaredField("helpers");
+            } catch (NoSuchFieldException x) { // Ant 1.7.0
+                helpersF = IntrospectionHelper.class.getDeclaredField("HELPERS");
+            }
             helpersF.setAccessible(true);
             Object helpersO = helpersF.get(null);
             Map helpersM = (Map) helpersO;
