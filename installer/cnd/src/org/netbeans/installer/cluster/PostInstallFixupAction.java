@@ -29,6 +29,7 @@ import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.system.SystemUtilService;
 
 import java.io.File;
+import java.util.StringTokenizer;
 
 public class PostInstallFixupAction extends ProductAction {
     
@@ -53,7 +54,13 @@ public class PostInstallFixupAction extends ProductAction {
     public void install(ProductActionSupport support) throws ProductException {
         try {
             init();
-            patchNbClusters(true);
+            File clustersFile = new File(nbDir + File.separator + "etc" + File.separator + "netbeans.clusters");
+            //Patch netbeans.conf if netbeans.clusters does not exist.
+            if (clustersFile.exists()) {
+                patchNbClusters(true);
+            } else {
+                patchNbConfig(false);
+            }
         } catch (ServiceException ex) {
             logEvent(this, Log.ERROR, ex);
         }
@@ -62,7 +69,13 @@ public class PostInstallFixupAction extends ProductAction {
     public void uninstall(ProductActionSupport support) throws ProductException {
         try {
             init();
-            patchNbClusters(false);
+            File clustersFile = new File(nbDir + File.separator + "etc" + File.separator + "netbeans.clusters");
+            //Patch netbeans.conf if netbeans.clusters does not exist.
+            if (clustersFile.exists()) {
+                patchNbClusters(false);
+            } else {
+                patchNbConfig(true);
+            }
             logEvent(this, Log.DBG, "uninstall installDir: " + installDir);
             deleteFiles(installDir, new String[] {"_uninst" + File.separator + "install.log"});
 
@@ -147,6 +160,117 @@ public class PostInstallFixupAction extends ProductAction {
                 }
                 fileService.createAsciiFile(fname,update);
                 logEvent(this, Log.DBG, "Remove line: '" + content[index] + "'");
+            }
+        } catch (Exception ex) {
+            logEvent(this, Log.ERROR, ex);
+        }
+    }
+    
+    /** 
+     * Support for NB 5.0 where netbeans.clusters is not yet used. Installer must 
+     * modify netbeans.conf.
+     */
+    private void patchNbConfig (boolean reverse) {
+        try {
+            FileService fileService = (FileService) getServices().getService(FileService.NAME);
+            ProductService pservice = (ProductService)getService(ProductService.NAME);
+            
+            String fsep = fileService.getSeparator();
+            String psep = fileService.getPathSeparator();
+            
+            String installDir = resolveString((String)pservice.getProductBeanProperty(
+                ProductService.DEFAULT_PRODUCT_SOURCE,
+                null,
+                "absoluteInstallLocation"));
+            
+            String nbdir = resolveString(installDir + fsep + "..");
+            
+            String configFilename = nbdir + fsep + "etc" + fsep + "netbeans.conf";
+            logEvent(this,Log.DBG,"Patching " + configFilename);
+            String[] content = fileService.readAsciiFile(configFilename);
+            if (content == null) {
+                logEvent(this,Log.ERROR,"Error: Cannot parse " + configFilename);
+                return;
+            }
+            if (!reverse) {
+                //Add cnd cluster to netbeans_extraclusters
+                int index = -1;
+                for (int i = 0; i < content.length; i++) {
+                    String line = content[i].trim();
+                    if (line.startsWith("netbeans_extraclusters=")) {
+                        index = i;
+                        break;
+                    }
+                }
+                String line = "";
+                if (index >= 0) {
+                    StringTokenizer stok = new StringTokenizer(content[index].trim(), psep);
+                    while (stok.hasMoreElements()) {
+                        if (!"".equals(line)) {
+                            line += psep;
+                        }
+                        String s = stok.nextToken();
+                        if (s.endsWith("\"")) {
+                            line += s.substring(0,s.length() - 1);
+                        } else {
+                            line += s;
+                        }
+                    }
+                }
+                if (!"".equals(line)) {
+                    line += psep;
+                }
+                line += installDir;
+                if (index >= 0) {
+                    line = line + "\"";
+                    fileService.updateAsciiFile(configFilename, new String[] {line}, index);
+                } else {
+                    line = "netbeans_extraclusters=\"" + line + "\"";
+                    fileService.appendToAsciiFile(configFilename, new String[] {line});
+                }
+                logEvent(this, Log.DBG, "Replace line " + line);
+          } else {
+                //Remove cnd cluster from netbeans_extraclusters
+                int index = -1;
+                for (int i = 0; i < content.length; i++) {
+                    String line = content[i].trim();
+                    if (line.startsWith("netbeans_extraclusters=")) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index < 0) {
+                    return;
+                }
+                File instdir = new File(installDir);
+                String line = "";
+                StringTokenizer stok = new StringTokenizer(content[index].trim().substring("netbeans_extraclusters=".length()), psep);
+                boolean update = false;
+                while (stok.hasMoreElements()) {
+                    String tok = stok.nextToken();
+                    if (tok.startsWith("\"")) {
+                        tok = tok.substring(1,tok.length());
+                    }
+                    if (tok.endsWith("\"")) {
+                        tok = tok.substring(0,tok.length() - 1);
+                    }
+                    if (instdir.equals(new File(tok))) {
+                        update = true;
+                        continue;
+                    }
+                    if (!"".equals(line)) {
+                        line += psep;
+                    }
+                    line += tok;
+                }
+                if (!"".equals(line)) {
+                    line = "netbeans_extraclusters=\"" + line + "\"";
+                }
+                if (update) {
+                    //Update only when cnd cluster path is found and removed from netbeans_extraclusters
+                    fileService.updateAsciiFile(configFilename, new String[] {line}, index);
+                    logEvent(this, Log.DBG, "Replace line " + line);
+                }
             }
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
