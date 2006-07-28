@@ -74,7 +74,7 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         
         final DataLoader l = DataLoader.getLoader(SlowDataLoader.class);
         Pool.setExtra(l);
-        class DoTheTest extends Object implements Runnable {
+        class DoTheWork extends Object implements Runnable {
             private DataObject first;
             /** any eception from run method */
             private Throwable ex;
@@ -130,7 +130,7 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
             }
         }
 
-        DoTheTest dtt = new DoTheTest ();
+        DoTheWork dtt = new DoTheWork();
         synchronized (dtt) {
             new Thread (dtt, "Slow").start ();
             dtt.runInMainThread ();

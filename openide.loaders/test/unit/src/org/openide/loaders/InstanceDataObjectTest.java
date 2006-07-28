@@ -261,7 +261,7 @@ public class InstanceDataObjectTest extends NbTestCase {
     /** Tests the creation in atomic section.
      */
     public void testSameInAtomicSection () throws Exception {
-        class Test extends FileChangeAdapter 
+        class Work extends FileChangeAdapter 
         implements FileSystem.AtomicAction {
             
             private Button testSer = new Button ();
@@ -298,7 +298,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         }
 
         
-        Test t = new Test ();
+        Work t = new Work ();
         try {
             folder.getPrimaryFile().getFileSystem ().runAtomicAction (t);
 
