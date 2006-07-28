@@ -574,7 +574,7 @@ OUTER:
         }
 
         public JMenuItem getMenuPresenter() {
-            if (isMethodOverriden(delegate, "getMenuPresenter")) { // NOI18N
+            if (isMethodOverridden(delegate, "getMenuPresenter")) { // NOI18N
 
                 return delegate.getMenuPresenter();
             } else {
@@ -583,7 +583,7 @@ OUTER:
         }
 
         public JMenuItem getPopupPresenter() {
-            if (isMethodOverriden(delegate, "getPopupPresenter")) { // NOI18N
+            if (isMethodOverridden(delegate, "getPopupPresenter")) { // NOI18N
 
                 return delegate.getPopupPresenter();
             } else {
@@ -592,7 +592,7 @@ OUTER:
         }
 
         public Component getToolbarPresenter() {
-            if (isMethodOverriden(delegate, "getToolbarPresenter")) { // NOI18N
+            if (isMethodOverridden(delegate, "getToolbarPresenter")) { // NOI18N
 
                 return delegate.getToolbarPresenter();
             } else {
@@ -600,7 +600,7 @@ OUTER:
             }
         }
 
-        private boolean isMethodOverriden(NodeAction d, String name) {
+        private boolean isMethodOverridden(NodeAction d, String name) {
             try {
                 Method m = d.getClass().getMethod(name, new Class[0]);
 
