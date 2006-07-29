@@ -23,7 +23,7 @@ import java.util.*;
 /**
  * @author David Kaspar
  */
-public class SceneAnimator {
+public final class SceneAnimator {
 
     private static final long TIME_PERIOD = 500;
     private static final long SLEEP = 10;

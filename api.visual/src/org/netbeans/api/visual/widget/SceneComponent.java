@@ -63,7 +63,6 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 //        long s = System.currentTimeMillis ();
         Graphics2D gr = (Graphics2D) g;
 
-        super.paint (g);
 //        gr.setRenderingHint (RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 //        gr.setRenderingHint (RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         scene.setGraphics (gr);
@@ -74,6 +73,8 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
         scene.paint ();
         gr.setTransform (previousTransform);
 
+        g.setColor (Color.BLACK);
+        super.paint (g);
 //        System.out.println ("PAINT Time: " + (System.currentTimeMillis () - s));
     }
 

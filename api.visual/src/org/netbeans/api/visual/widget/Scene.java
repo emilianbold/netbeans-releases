@@ -30,8 +30,8 @@ import java.util.HashSet;
 /**
  * @author David Kaspar
  */
-// TODO - revalidateWidget does not work for ConnectionWidget correct - probably the old bounds are not taken in account
 // TODO - take SceneComponent dimension and correct Scene.resolveBounds
+// TODO - remove SuppressWarnings
 public class Scene extends Widget {
 
     private double zoomFactor = 1.0;
@@ -46,6 +46,8 @@ public class Scene extends Widget {
     private HashSet<Widget> repaintWidgets = new HashSet<Widget> ();
     private LookFeel lookFeel = new DefaultLookFeel ();
     private String activeTool;
+
+    private final HashSet validateListeners = new HashSet ();
 
     private WidgetAction widgetHoverAction;
 
@@ -83,6 +85,7 @@ public class Scene extends Widget {
         return component;
     }
 
+    @SuppressWarnings("unchecked")
     public JComponent createSateliteView () {
         SateliteComponent sateliteComponent = new SateliteComponent (this);
         satelites.add (sateliteComponent);
@@ -179,10 +182,15 @@ public class Scene extends Widget {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public final void validate () {
         if (graphics == null)
             return;
-        notifyValidating ();
+        ValidateListener[] ls = (ValidateListener[]) validateListeners.toArray (new ValidateListener[validateListeners.size ()]);
+
+        for (ValidateListener listener : ls)
+            if (listener != null)
+                listener.sceneValidating ();
 
         layoutScene ();
 
@@ -206,7 +214,9 @@ public class Scene extends Widget {
         }
 //        System.out.println ("time: " + System.currentTimeMillis ());
 
-        notifyValidated ();
+        for (ValidateListener listener : ls)
+            if (listener != null)
+                listener.sceneValidated ();
     }
 
     public final Rectangle calculateRepaintBounds (Widget widget) {
@@ -226,18 +236,9 @@ public class Scene extends Widget {
         }
     }
 
-    @Deprecated
-    protected void notifyValidating () {
-    }
-
-    @Deprecated
-    protected void notifyValidated () {
-    }
-
     private void repaintSatelite () {
-        for (Object view : satelites) {
+        for (Object view : satelites)
             ((JComponent) view).repaint ();
-        }
     }
 
     public final double getZoomFactor () {
@@ -267,6 +268,18 @@ public class Scene extends Widget {
 
     public void setActiveTool (String activeTool) {
         this.activeTool = activeTool;
+    }
+
+    public final void addValidateListener (ValidateListener listener) {
+        synchronized (validateListeners) {
+            validateListeners.add (listener);
+        }
+    }
+
+    public final void removeValidateListener (ValidateListener listener) {
+        synchronized (validateListeners) {
+            validateListeners.remove (listener);
+        }
     }
 
     public final Point convertSceneToView (Point sceneLocation) {
@@ -302,6 +315,14 @@ public class Scene extends Widget {
         protected void setHovering (Widget widget) {
             widget.setState (widget.getState ().deriveWidgetHovered (true));
         }
+
+    }
+
+    public interface ValidateListener {
+
+        void sceneValidating ();
+
+        void sceneValidated ();
 
     }
 
