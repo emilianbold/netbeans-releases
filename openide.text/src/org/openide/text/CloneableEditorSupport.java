@@ -2555,7 +2555,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 return true;
             }
 
-            return false;
+            return delegate.addEdit(anEdit);
         }
 
         public void undo() {
