@@ -220,7 +220,13 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
             }
 
             if (widget.isHitAt (event.getPoint ())) {
-                WidgetAction.Chain actions = widget.getActions (tool);
+                WidgetAction.Chain actions;
+                actions = widget.getActions ();
+                state = operator.operate (actions, widget, event);
+                if (state.isConsumed ())
+                    return state;
+
+                actions = widget.getActions (tool);
                 if (actions != null) {
                     state = operator.operate (actions, widget, event);
                     if (state.isConsumed ())
@@ -267,7 +273,12 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
                 return state;
         }
 
-        WidgetAction.Chain actions = widget.getActions (tool);
+        WidgetAction.Chain actions;
+        state = operator.operate (widget.getActions (), widget, event);
+        if (state.isConsumed ())
+            return state;
+
+        actions = widget.getActions (tool);
         if (actions != null) {
             state = operator.operate (actions, widget, event);
             if (state.isConsumed ())

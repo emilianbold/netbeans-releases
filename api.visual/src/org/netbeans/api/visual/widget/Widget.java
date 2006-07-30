@@ -173,14 +173,16 @@ public class Widget {
     }
 
     public final WidgetAction.Chain getActions (String tool) {
-        return tool == null ? actionsChain : toolsActions.get (tool);
+        return toolsActions.get (tool);
     }
 
     public final WidgetAction.Chain createActions (String tool) {
         if (tool == null)
             return actionsChain;
-        if (toolsActions == EMPTY_HASH_MAP)
+        if (toolsActions == EMPTY_HASH_MAP) {
             toolsActions = new HashMap<String, WidgetAction.Chain> ();
+            toolsActions.put (null, actionsChain);
+        }
         WidgetAction.Chain chain = toolsActions.get (tool);
         if (chain == null) {
             chain = new WidgetAction.Chain ();
