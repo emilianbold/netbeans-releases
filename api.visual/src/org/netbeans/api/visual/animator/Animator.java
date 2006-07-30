@@ -26,23 +26,23 @@ public abstract class Animator {
         this.sceneAnimator = sceneAnimator;
     }
 
-    protected Scene getScene () {
+    protected final Scene getScene () {
         return sceneAnimator.getScene ();
     }
 
-    protected void start () {
+    protected final void start () {
         sceneAnimator.start (this);
     }
 
-    public boolean isRunning () {
+    public final boolean isRunning () {
         return sceneAnimator.isRunning (this);
     }
 
-    void reset () {
+    final void reset () {
         reset = true;
     }
 
-    void performTick (double progress) {
+    final void performTick (double progress) {
         if (reset) {
             reset = false;
             return;
@@ -50,6 +50,6 @@ public abstract class Animator {
         tick (progress);
     }
 
-    public abstract void tick (double progress);
+    protected abstract void tick (double progress);
 
 }
