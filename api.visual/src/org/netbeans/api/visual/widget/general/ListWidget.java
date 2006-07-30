@@ -12,13 +12,11 @@
  */
 package org.netbeans.api.visual.widget.general;
 
-import org.netbeans.api.visual.border.LineBorder;
-import org.netbeans.api.visual.border.CompositeBorder;
-import org.netbeans.api.visual.border.EmptyBorder;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.layout.SerialLayout;
-import org.netbeans.api.visual.widget.*;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.widget.*;
 
 import java.awt.*;
 
@@ -37,7 +35,7 @@ public class ListWidget extends Widget {
         LookFeel lookFeel = scene.getLookFeel ();
         setOpaque (true);
         setBackground (lookFeel.getBackground ());
-        setBorder (new LineBorder (1));
+        setBorder (BorderFactory.createLineBorder ());
         setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL));
 
         header = new Widget (scene);
@@ -53,7 +51,7 @@ public class ListWidget extends Widget {
 
     public void notifyStateChanged (ObjectState state) {
         LookFeel lookFeel = getScene ().getLookFeel ();
-        header.setBorder (new CompositeBorder (new EmptyBorder (2), lookFeel.getBorder (state)));
+        header.setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (2), lookFeel.getBorder (state)));
         labelWidget.setForeground (lookFeel.getForeground (state));
     }
 

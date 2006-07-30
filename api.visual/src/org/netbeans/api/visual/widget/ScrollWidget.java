@@ -13,8 +13,8 @@
 package org.netbeans.api.visual.widget;
 
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.border.BevelBorder;
 import org.netbeans.api.visual.border.Border;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.openide.util.Utilities;
 
@@ -39,7 +39,7 @@ public class ScrollWidget extends Widget {
     private static final Point POINT_EMPTY = new Point ();
     private static final Rectangle RECTANGLE_EMPTY = new Rectangle ();
 
-    private static final Border BORDER = new BevelBorder (true);
+    private static final Border BORDER = BorderFactory.createBevelBorder (true);
 
     private Widget viewport;
     private Widget view;
@@ -267,7 +267,7 @@ public class ScrollWidget extends Widget {
         }
 
         private static final Color COLOR = new Color (0x5B87CE);
-        private static final BevelBorder BORDER = new BevelBorder (true, COLOR);
+        private static final Border BORDER = BorderFactory.createBevelBorder (true, COLOR);
 
         private boolean vertical;
         private long minimumValue = 0;

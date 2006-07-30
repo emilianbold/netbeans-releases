@@ -17,6 +17,7 @@ import java.awt.*;
 /**
  * @author David Kaspar
  */
+// TODO - change abstract class to assure immutable insets?
 public interface Border {
 
     // WARNING - must be immutable during whole lifecycle

@@ -34,7 +34,7 @@ public final class AnchorFactory {
     }
 
     public static Anchor createProxyAnchor (StateModel model, Anchor... anchors) {
-        return model != null ? new ProxyAnchor (model, anchors) : null;
+        return model != null  &&  model.getMaxStates () == anchors.length ? new ProxyAnchor (model, anchors) : null;
     }
 
     public static Anchor createCenterAnchor (Widget widget) {

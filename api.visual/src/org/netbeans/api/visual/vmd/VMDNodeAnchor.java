@@ -1,11 +1,13 @@
 package org.netbeans.api.visual.vmd;
 
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.anchor.RectangularAnchor;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
  * @author David Kaspar
@@ -97,10 +99,6 @@ public class VMDNodeAnchor extends Anchor {
     public Result compute (Entry entry) {
         recalculate ();
         return results.get (entry);
-    }
-
-    public static Anchor create (Widget widget) {
-        return widget != null ? new RectangularAnchor (widget) : null;
     }
 
 }

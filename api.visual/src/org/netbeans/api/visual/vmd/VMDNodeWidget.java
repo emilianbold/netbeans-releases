@@ -16,8 +16,7 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.border.Border;
-import org.netbeans.api.visual.border.EmptyBorder;
-import org.netbeans.api.visual.border.ImageBorder;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.SerialLayout;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
@@ -34,9 +33,9 @@ import java.util.List;
  */
 public class VMDNodeWidget extends Widget implements StateModel.Listener {
 
-    private static final Border BORDER_SHADOW_NORMAL = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
-    private static final Border BORDER_SHADOW_HOVERED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
-    private static final Border BORDER_SHADOW_SELECTED = new ImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_selected.png")); // NOI18N
+    private static final Border BORDER_SHADOW_NORMAL = BorderFactory.createImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
+    private static final Border BORDER_SHADOW_HOVERED = BorderFactory.createImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
+    private static final Border BORDER_SHADOW_SELECTED = BorderFactory.createImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_selected.png")); // NOI18N
 
     private static final Color COLOR_CATEGORY_BACKGROUND = new Color (0xEEEEEE);
     private static final Color COLOR_CATEGORY_FOREGROUND = Color.GRAY;
@@ -56,6 +55,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
 
     private StateModel stateModel = new StateModel (2);
     private Anchor nodeAnchor = new VMDNodeAnchor (this);
+    private static final Border BORDER_4 = BorderFactory.createEmptyBorder (4);
 
     public VMDNodeWidget (Scene scene) {
         super (scene);
@@ -70,17 +70,17 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         addChild (mainLayer);
 
         header = new Widget (scene);
-        header.setBorder (new EmptyBorder (4));
+        header.setBorder (BORDER_4);
         header.setOpaque (true);
         header.setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL, SerialLayout.Alignment.CENTER, 0));
         mainLayer.addChild (header);
 
         imageWidget = new ImageWidget (scene);
-        header.setBorder (new EmptyBorder (4));
+        header.setBorder (BORDER_4);
         header.addChild (imageWidget);
 
         Widget desc = new Widget (scene);
-        desc.setBorder (new EmptyBorder (4));
+        desc.setBorder (BORDER_4);
         desc.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL));
         header.addChild (desc);
 

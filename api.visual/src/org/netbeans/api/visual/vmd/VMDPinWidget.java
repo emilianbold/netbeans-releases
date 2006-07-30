@@ -12,8 +12,7 @@
  */
 package org.netbeans.api.visual.vmd;
 
-import org.netbeans.api.visual.border.CompositeBorder;
-import org.netbeans.api.visual.border.EmptyBorder;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.layout.SerialLayout;
 import org.netbeans.api.visual.model.ObjectState;
@@ -44,7 +43,7 @@ public class VMDPinWidget extends Widget {
 
     protected void notifyStateChanged (ObjectState state) {
         LookFeel lookFeel = getScene ().getLookFeel ();
-        setBorder (new CompositeBorder (new EmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
+        setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
         setForeground (lookFeel.getForeground (state));
     }
 
