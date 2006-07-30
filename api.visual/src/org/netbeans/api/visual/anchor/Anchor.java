@@ -66,22 +66,18 @@ public abstract class Anchor implements Widget.Dependency {
         revalidateDependency ();
     }
 
-    public void addEntries (List<Entry> entries) {
+    public final void addEntries (List<Entry> entries) {
         for (Entry entry : entries)
             addEntry (entry);
     }
 
-    public void removeEntries (List<Entry> entries) {
+    public final void removeEntries (List<Entry> entries) {
         for (Entry entry : entries)
             removeEntry (entry);
     }
 
-    public List<Entry> getEntries () {
+    public final List<Entry> getEntries () {
         return Collections.unmodifiableList (entries);
-    }
-
-    protected boolean isUsed () {
-        return attachedToWidget;
     }
 
     protected void notifyEntryAdded (Entry entry) {
@@ -90,13 +86,17 @@ public abstract class Anchor implements Widget.Dependency {
     protected void notifyEntryRemoved (Entry entry) {
     }
 
+    protected final boolean isUsed () {
+        return attachedToWidget;
+    }
+
     protected void notifyUsed () {
     }
 
     protected void notifyUnused () {
     }
 
-    public void revalidateDependency () {
+    public final void revalidateDependency () {
         for (Entry entry : entries)
             entry.revalidateEntry ();
     }

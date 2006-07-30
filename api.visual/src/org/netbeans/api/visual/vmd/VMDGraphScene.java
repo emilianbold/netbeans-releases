@@ -107,7 +107,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         Widget pinMainWidget = findWidget (pin);
         Anchor anchor;
         if (pinMainWidget != null) {
-            anchor = new DirectionalAnchor (pinMainWidget, DirectionalAnchor.Kind.HORIZONTAL);
+            anchor = AnchorFactory.createDirectionalAnchor (pinMainWidget, AnchorFactory.DirectionalAnchorKind.HORIZONTAL);
             anchor = nodeWidget.createAnchorPin (anchor);
         } else
             anchor = nodeWidget.getNodeAnchor ();

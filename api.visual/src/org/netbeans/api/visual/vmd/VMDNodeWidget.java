@@ -14,7 +14,7 @@ package org.netbeans.api.visual.vmd;
 
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.anchor.ProxyAnchor;
+import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.EmptyBorder;
 import org.netbeans.api.visual.border.ImageBorder;
@@ -193,8 +193,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         return nodeAnchor;
     }
 
-    public ProxyAnchor createAnchorPin (Anchor anchor) {
-        return new ProxyAnchor (stateModel, anchor, nodeAnchor);
+    public Anchor createAnchorPin (Anchor anchor) {
+        return AnchorFactory.createProxyAnchor (stateModel, anchor, nodeAnchor);
     }
 
     private List<Widget> getPinWidgets () {

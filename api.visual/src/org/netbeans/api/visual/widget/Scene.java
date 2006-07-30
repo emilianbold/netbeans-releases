@@ -26,6 +26,7 @@ import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
+import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -47,7 +48,7 @@ public class Scene extends Widget {
     private LookFeel lookFeel = new DefaultLookFeel ();
     private String activeTool;
 
-    private final HashSet validateListeners = new HashSet ();
+    private final ArrayList<ValidateListener> validateListeners = new ArrayList<ValidateListener> ();
 
     private WidgetAction widgetHoverAction;
 
@@ -109,7 +110,7 @@ public class Scene extends Widget {
     }
 
     // TODO - maybe it could improve the perfomance, if bounds != null then do nothing
-    // WARNING - you have to asure that there will be no component/widget will not change its location/bounds between this and validate method calls
+    // WARNING - you have to asure that there will be no component/widget will change its location/bounds between this and validate method calls
     public final void revalidateWidget (Widget widget) {
         Rectangle widgetBounds = widget.getBounds ();
         if (widgetBounds != null) {
@@ -186,7 +187,10 @@ public class Scene extends Widget {
     public final void validate () {
         if (graphics == null)
             return;
-        ValidateListener[] ls = (ValidateListener[]) validateListeners.toArray (new ValidateListener[validateListeners.size ()]);
+        ValidateListener[] ls;
+        synchronized (validateListeners) {
+            ls = validateListeners.toArray (new ValidateListener[validateListeners.size ()]);
+        }
 
         for (ValidateListener listener : ls)
             if (listener != null)
