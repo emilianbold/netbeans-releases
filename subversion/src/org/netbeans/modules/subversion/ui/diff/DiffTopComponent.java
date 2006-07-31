@@ -20,7 +20,7 @@
 package org.netbeans.modules.subversion.ui.diff;
 
 import java.awt.*;
-import javax.swing.*;
+import java.util.*;
 import org.openide.util.*;
 import org.openide.windows.*;
 
@@ -30,7 +30,7 @@ import org.openide.windows.*;
  *
  * @author Petr Kuzel
  */
-public class DiffTopComponent extends TopComponent {
+public class DiffTopComponent extends TopComponent implements DiffSetupSource {
 
     private final DiffMainPanel panel;
 
@@ -65,14 +65,14 @@ public class DiffTopComponent extends TopComponent {
         panel.requestActive();
     }
 
-//        public Collection getSetups() {
-//            DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
-//            return mainPanel.getSetups();
-//        }
+    public Collection getSetups() {
+        DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
+        return mainPanel.getSetups();
+    }
 
-//        public String getSetupDisplayName() {
-//            DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
-//            return mainPanel.getSetupDisplayName();
-//        }
+    public String getSetupDisplayName() {
+        DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
+        return mainPanel.getSetupDisplayName();
+    }
     
 }

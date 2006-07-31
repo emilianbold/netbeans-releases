@@ -23,6 +23,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Subversion">
+            <file name="org-netbeans-modules-subversion-ui-status-ShowTextAnnotationsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.ShowTextAnnotationsAction"/>
+            </file>
             <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.OpenVersioningAction"/>
             </file>
@@ -55,11 +58,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-ui-diff-DiffAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.diff.DiffAction"/>
             </file>
-            <!--
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ExportDiffAction"/>
+            <file name="org-netbeans-modules-subversion-ui-diff-ExportDiffAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.diff.ExportDiffAction"/>
             </file>
-            -->
             <file name="org-netbeans-modules-subversion-ui-update-UpdateAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.update.UpdateAction"/>
             </file>
@@ -107,6 +108,12 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="Refactoring/SVN" boolvalue="true"/>
         <attr name="CVS/SVN" boolvalue="true"/>
 
+        <folder name="View">
+            <file name="org-netbeans-modules-subversion-ui-status-ShowTextAnnotationsAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-ShowTextAnnotationsAction.instance"/>
+            </file>            
+        </folder>
+        
         <folder name="SVN">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.resources.Bundle"/>
 
@@ -181,13 +188,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator5.instance">
        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-            <attr name="Separator5.instance/org-netbeans-modules-subversion-ui-copy-CreateCopyAction.shadow" boolvalue="true"/>
+            <attr name="Separator5.instance/org-netbeans-modules-subversion-ui-diff-ExportDiffAction.shadow" boolvalue="true"/>
             
-            <!--
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.instance"/>
+            <file name="org-netbeans-modules-subversion-ui-diff-ExportDiffAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-diff-ExportDiffAction.instance"/>
             </file>
-            -->
+            <attr name="org-netbeans-modules-subversion-ui-diff-ExportDiffAction.shadow/Separator8.instance" boolvalue="true"/>
+            <file name="Separator8.instance">
+           		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="Separator8.instance/org-netbeans-modules-subversion-ui-copy-CreateCopyAction.shadow" boolvalue="true"/>
+
             <file name="org-netbeans-modules-subversion-ui-copy-CreateCopyAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-CreateCopyAction.instance"/>
             </file>            
