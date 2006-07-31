@@ -221,9 +221,9 @@ public class ClientRuntime {
         }
 
         File commonParent;
-        // TODO: revisit: how to determine local work dir for a command ?
+
         if (files[0].isDirectory()) {    // XXX it does not work for checkout
-            commonParent = files[0].getParentFile(); 
+            commonParent = files[0]; 
         } else {
             commonParent = files[0].getParentFile();                                
         }
