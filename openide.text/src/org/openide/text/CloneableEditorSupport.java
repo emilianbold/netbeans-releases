@@ -1893,7 +1893,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     private final void fireDocumentChange(StyledDocument document, boolean closing) {
         fireStateChangeEvent(document, closing);
-        firePropertyChange(EditorCookie.Observable.PROP_DOCUMENT, null, null);
+        firePropertyChange(EditorCookie.Observable.PROP_DOCUMENT,
+                closing ? document : null,
+                closing ? null : document);
     }
 
     /** Fires a status change event to all listeners. */
