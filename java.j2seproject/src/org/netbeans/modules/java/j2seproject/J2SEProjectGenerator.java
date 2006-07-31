@@ -21,6 +21,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Stack;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
@@ -266,20 +267,32 @@ public class J2SEProjectGenerator {
     }
 
     private static FileObject createProjectDir (File dir) throws IOException {
-        FileObject dirFO;
-        if(!dir.exists()) {
-            //Refresh before mkdir not to depend on window focus, refreshFileSystem does not work correctly
-            refreshFolder (dir);
-            if (!dir.mkdirs()) {
-                throw new IOException ("Can not create project folder.");   //NOI18N
-            }
-            refreshFileSystem (dir);
+        Stack stack = new Stack ();
+        while (!dir.exists()) {
+            stack.push (dir.getName());
+            dir = dir.getParentFile();
+        }        
+        FileObject dirFO = FileUtil.toFileObject (dir);
+        if (dirFO == null) {
+            refreshFileSystem(dir);
+            dirFO = FileUtil.toFileObject (dir);
         }
-        dirFO = FileUtil.toFileObject(dir);
-        assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
-        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N        
+        assert dirFO != null;
+        while (!stack.isEmpty()) {
+            dirFO = dirFO.createFolder((String)stack.pop());
+        }        
         return dirFO;
     }   
+    
+    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
+        File rootF = dir;
+        while (rootF.getParentFile() != null) {
+            rootF = rootF.getParentFile();
+        }
+        FileObject dirFO = FileUtil.toFileObject(rootF);
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+        dirFO.getFileSystem().refresh(false);
+    }
     
 
     private static void createMainClass( String mainClassName, FileObject srcFolder ) throws IOException {
@@ -315,28 +328,6 @@ public class J2SEProjectGenerator {
         DataFolder pDf = DataFolder.findFolder( pkgFolder );        
         mt.createFromTemplate( pDf, mName );
         
-    }
-
-
-    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
-    }
-    
-    private static void refreshFolder (File dir) {
-        while (!dir.exists()) {
-            dir = dir.getParentFile();
-        }        
-        FileObject fo = FileUtil.toFileObject(dir);
-        if (fo != null) {
-            fo.getChildren();
-            fo.refresh();
-        }
     }
     
     //------------ Used by unit tests -------------------
