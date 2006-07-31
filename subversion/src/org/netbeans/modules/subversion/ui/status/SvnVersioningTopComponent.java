@@ -207,13 +207,26 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
             setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "MSG_Preparing")); // NOI18N
             setEnabled(false);
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            setToolTipText(""); // NOI18N            
         } else {
             setEnabled(true);
             setCursor(Cursor.getDefaultCursor());
             context = ctx;
             setBranchTitle(null);
             refreshContent();
+            setToolTipText(getContextFilesList(ctx));            
         }
+    }
+
+    private String getContextFilesList(Context ctx) {
+        StringBuffer sb = new StringBuffer(200);
+        sb.append("<html>"); // NOI18N
+        for (File file : ctx.getFiles()) {
+            sb.append(file.getAbsolutePath());
+            sb.append("<br>"); // NOI18N
+        }
+        sb.delete(sb.length() - 4, Integer.MAX_VALUE);
+        return sb.toString();
     }
 
     private List<File> removeDuplicates(File [] roots) {
