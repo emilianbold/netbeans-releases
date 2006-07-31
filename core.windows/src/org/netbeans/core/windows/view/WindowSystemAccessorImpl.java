@@ -44,7 +44,6 @@ final class WindowSystemAccessorImpl implements WindowSystemAccessor {
     private ModeAccessor activeMode;
     private ModeAccessor maximizedMode;
     private ModeStructureAccessor modeStructureAccessor;
-    private String projectName;
     
     public WindowSystemAccessorImpl() {
     }
@@ -143,15 +142,6 @@ final class WindowSystemAccessorImpl implements WindowSystemAccessor {
     public ModeStructureAccessor getModeStructureAccessor() {
         return modeStructureAccessor;
     }
-    
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-    
-    public String getProjectName() {
-        return projectName;
-    }
-    
     
     public ModeAccessor findModeAccessor(String modeName) {
         if(modeName == null) {

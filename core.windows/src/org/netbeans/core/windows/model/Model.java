@@ -87,8 +87,6 @@ public interface Model {
     public void addTopComponentGroup(TopComponentGroupImpl tcGroup);
     /** Removes top component group. */
     public void removeTopComponentGroup(TopComponentGroupImpl tcGroup);
-    // XXX 
-    public void setProjectName(String projectName);
     /** Adds sliding mode into specific side */ 
     public void addSlidingMode(ModeImpl mode, String side);
     /** Resets the model to an initial state. */

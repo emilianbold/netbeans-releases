@@ -77,9 +77,6 @@ final class DefaultModel implements Model {
     /** Set of TopComponentGroup's. */
     private final Set topComponentGroups = new HashSet(5);
     
-    // XXX
-    private String projectName;
-    
     // Locks.
     /** Lock for visible property. */
     private final Object LOCK_VISIBLE = new Object();
@@ -289,13 +286,6 @@ final class DefaultModel implements Model {
         }
     }
     
-    // XXX
-    public void setProjectName(String projectName) {
-        synchronized(LOCK_PROJECT_NAME) {
-            this.projectName = projectName;
-        }
-    }
-    
     public void reset() {
         mode2model.clear();
         group2model.clear();
@@ -443,12 +433,6 @@ final class DefaultModel implements Model {
         }
     }
     
-    // XXX
-    public String getProjectName() {
-        synchronized(LOCK_PROJECT_NAME) {
-            return this.projectName;
-        }
-    }
     /////////////////////////////////////
     // Accessor methods <<
     /////////////////////////////////////
@@ -1044,7 +1028,6 @@ final class DefaultModel implements Model {
         wsms.setMainWindowFrameStateJoined(getMainWindowFrameStateJoined());
         wsms.setMainWindowFrameStateSeparated(getMainWindowFrameStateSeparated());
         wsms.setToolbarConfigurationName(getToolbarConfigName());
-        wsms.setProjectName(getProjectName());
         return wsms;
     }
 

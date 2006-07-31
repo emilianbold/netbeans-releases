@@ -78,7 +78,6 @@ public interface View {
     
     // Others
     public int CHANGE_UI_UPDATE    = 61;
-    public int CHANGE_PROJECT_NAME = 62;
     
     public int TOPCOMPONENT_REQUEST_ATTENTION = 63;
     public int TOPCOMPONENT_CANCEL_REQUEST_ATTENTION = 64;

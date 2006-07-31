@@ -771,10 +771,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return null;
     }
     
-    public void setProjectName(String projectName) {
-        central.setProjectName(projectName);
-    }
-
     private static final boolean NAME_HACK = Boolean.getBoolean("nb.tabnames.html"); //NOI18N
     
     /** Helper method to retrieve soem form of display name of TopComponent.

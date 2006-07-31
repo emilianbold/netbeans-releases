@@ -301,11 +301,6 @@ public abstract class NbTopManager {
         void load();
         void save();
         void clear();
-        /**
-         * This is used by projects/projectui to track the project selection.
-         * @since 1.20
-         */
-        void setProjectName(String projectName);
     } // End of WindowSystem interface.
     
     public static boolean isModalDialogPresent() {

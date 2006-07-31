@@ -187,6 +187,7 @@ public final class MainWindow extends JFrame {
             }
         });
         //#38810 end
+        setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", System.getProperty("netbeans.buildnumber")));
     }
     
     private static void decoratePanel (JPanel panel) {
@@ -461,17 +462,6 @@ public final class MainWindow extends JFrame {
         }
         
         return bounds;
-    }
-
-    public void setProjectName(String projectName) {
-        updateTitle(projectName);
-    }
-    
-    private static final String WINDOW_TITLE = NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", System.getProperty("netbeans.buildnumber"));
-    
-    /** Updates the MainWindow's title */
-    private void updateTitle(String projectName) {
-        setTitle(WINDOW_TITLE);
     }
 
     // [dafe] Start of #24291 hacky fix, to prevent from main window flicking on

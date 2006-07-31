@@ -49,7 +49,7 @@ final class ViewRequest {
     }
     
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append ("ViewRequest@");
         result.append (System.identityHashCode(this));
         result.append (" [TYPE=");
@@ -121,9 +121,6 @@ final class ViewRequest {
             case  View.CHANGE_UI_UPDATE :
                 tp = "CHANGE_UI_UPDATE"; //NOI18N
                 break;
-            case  View.CHANGE_PROJECT_NAME :
-                tp = "CHANGE_PROJECT_NAME"; //NOI18N
-                break;
             case  View.TOPCOMPONENT_REQUEST_ATTENTION :
                 tp = "TOPCOMPONENT_REQUEST_ATTENTION"; //NOI18N
                 break;
@@ -134,11 +131,9 @@ final class ViewRequest {
                 tp = "UNKNOWN";
                 break;
         }
-        result.append (tp);
-        result.append ("] ");
-        result.append (" [oldValue:" + oldValue + "]");
-        result.append (" [newValue:" + newValue + "]");
-        result.append (" [source:" + source + "]");
+        result.append (tp).append ("]  [oldValue:").append(oldValue)
+                .append("] [newValue:").append(newValue)
+                .append("] [source:").append(source).append(']');
         return result.toString();
     }
         

@@ -589,10 +589,6 @@ final class ViewHierarchy {
         // validation (one in MainWindow - needs to be provided here) and this as second one.
     }
     
-    public void setProjectName(String projectName) {
-        mainWindow.setProjectName(projectName);
-    }
-    
     private void setMaximizedViewIntoDesktop(ViewElement elem) {
         boolean revalidate = elem.updateAWTHierarchy(desktop.getInnerPaneDimension());
         

@@ -71,15 +71,6 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
         ShortcutAndMenuKeyEventProcessor.uninstall();
     }
     
-    private String lastProjectName = null;
-    public void setProjectName(String projectName) {
-        WindowManagerImpl.assertEventDispatchThread();
-        if (lastProjectName == null || !lastProjectName.equals(projectName)) {
-            WindowManagerImpl.getInstance().setProjectName(projectName);
-        }
-        lastProjectName = projectName;
-    }
-    
     /**
      * Implements <code>NbTopManager.WindowSystem</code> interface method. 
      * Clears the window system model - does not delete the configuration
