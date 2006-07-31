@@ -250,7 +250,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         label.setBackground (COLOR_CATEGORY_BACKGROUND);
         label.setForeground (COLOR_CATEGORY_FOREGROUND);
         label.setFont (fontPinCategory);
-        label.setAligment (LabelWidget.Alignment.CENTER);
+        label.setAlignment (LabelWidget.Alignment.CENTER);
         label.setCheckClipping (true);
         pinCategoryWidgets.put (categoryDisplayName, label); 
         return label;

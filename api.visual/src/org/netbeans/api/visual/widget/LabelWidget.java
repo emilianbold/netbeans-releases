@@ -29,7 +29,7 @@ public class LabelWidget extends Widget {
     }
 
     private String label;
-    private Alignment aligment = Alignment.LEFT;
+    private Alignment alignment = Alignment.LEFT;
 
     public LabelWidget (Scene scene) {
         this (scene, null);
@@ -53,12 +53,12 @@ public class LabelWidget extends Widget {
         revalidate ();
     }
 
-    public Alignment getAligment () {
-        return aligment;
+    public Alignment getAlignment () {
+        return alignment;
     }
 
-    public void setAligment (Alignment aligment) {
-        this.aligment = aligment;
+    public void setAlignment (Alignment alignment) {
+        this.alignment = alignment;
         repaint ();
     }
 
@@ -79,10 +79,10 @@ public class LabelWidget extends Widget {
         gr.setFont (getFont ());
 
         int x = 0;
-        if (aligment == Alignment.RIGHT) {
+        if (alignment == Alignment.RIGHT) {
             int textWidth = gr.getFontMetrics ().stringWidth (label);
             x = getBounds ().width - textWidth;
-        } else if (aligment == Alignment.CENTER) {
+        } else if (alignment == Alignment.CENTER) {
             int halfWidth = gr.getFontMetrics ().stringWidth (label) / 2;
             x = getBounds ().width / 2 - halfWidth;
         }
