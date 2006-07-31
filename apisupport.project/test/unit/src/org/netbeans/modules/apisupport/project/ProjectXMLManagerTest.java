@@ -62,7 +62,7 @@ public class ProjectXMLManagerTest extends TestBase {
     private final static Set ASSUMED_CNBS;
     
     static {
-        Set assumedCNBs = new HashSet(2);
+        Set assumedCNBs = new HashSet(2, 1.0f);
         assumedCNBs.add(ANT_PROJECT_SUPPORT);
         assumedCNBs.add(DIALOGS);
         ASSUMED_CNBS = Collections.unmodifiableSet(assumedCNBs);
@@ -530,8 +530,8 @@ public class ProjectXMLManagerTest extends TestBase {
         try {
             p.parse(xml.toURI().toString(), new Handler());
         } catch (SAXParseException e) {
-            assertTrue("Validation of XML document " + xml + " against schema failed. Details: " +
-                    e.getSystemId() + ":" + e.getLineNumber() + ": " + e.getLocalizedMessage(), false);
+            fail("Validation of XML document " + xml + " against schema failed. Details: " +
+                    e.getSystemId() + ":" + e.getLineNumber() + ": " + e.getLocalizedMessage());
         }
         if (checkOrder) {
             checkDependenciesOrder(proj);
