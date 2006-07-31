@@ -56,6 +56,8 @@ import org.tigris.subversion.svnclientadapter.*;
  */
 public class SvnUtils {
 
+    private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.|_)svn(\\" + File.separatorChar + ".*|$)");
+    
     private static Node []  contextNodesCached;
     private static Context  contextCached;
 
@@ -711,6 +713,16 @@ public class SvnUtils {
         return ret.toArray(new File[ret.size()]);
     }
 
+    /**
+     * Checks file location.
+     * 
+     * @param file file to check
+     * @return true if the file or folder is a part of subverion metadata, false otherwise
+     */ 
+    public static boolean isPartOfSubversionMetadata(File file) {
+        return metadataPattern.matcher(file.getAbsolutePath()).matches();
+    }
+    
     /**
      * Gets integer status that can be used in comparators. The more important the status is for the user,
      * the lower value it has. Conflict is 0, unknown status is 100. 

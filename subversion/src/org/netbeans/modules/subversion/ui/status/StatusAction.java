@@ -81,6 +81,7 @@ public class StatusAction  extends ContextAction {
                 return;
             }
 
+            Subversion.getInstance().getStatusCache().refreshCached(context);
             File[] roots = context.getRootFiles();
             for (int i=0; i<roots.length; i++) {
                 if(support.isCanceled()) {

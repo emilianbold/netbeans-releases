@@ -59,15 +59,6 @@ public class FileStatusCache implements ISVNNotifyListener {
      */ 
     private static final Map<File, FileInformation> NOT_MANAGED_MAP = new NotManagedMap();
        
-    private static final String METADATA_PATTERN = File.separatorChar + ".svn" + File.separatorChar; // NOI18N
-    
-    private static final String METADATA_PATTERN_2 = File.separatorChar + "_svn" + File.separatorChar; // NOI18N
-        
-    private static final int STATUS_MISSING =  
-            FileInformation.STATUS_VERSIONED_NEWINREPOSITORY | 
-            FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | 
-            FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY; 
-    
     public static final ISVNStatus REPOSITORY_STATUS_UNKNOWN  = null;
 
     // Constant FileInformation objects that can be safely reused
@@ -377,38 +368,18 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     /**
-     * Scans given directory and performs two tasks: 1) refreshes all cached file statuses, 2) removes from cache
-     * all files having one of the {@link STATUS_MISSING} status.  
-     *  
-     * @param dir directory to cleanup
+     * Refreshes status of all files inside given context. Files that have some remote status, eg. REMOTELY_ADDED
+     * are brought back to UPTODATE.
+     * 
+     * @param ctx context to refresh
      */ 
-    public void clearVirtualDirectoryContents(File dir, boolean recursive, File [] exclusions) {
-        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
-        if (files == null) {
-           return;
-        }
-        Set<File> set = new HashSet<File>(files.keySet());
-        Map<File, FileInformation> newMap = null;
-        outter: for (Iterator i = set.iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            if (exclusions != null) {
-                for (int j = 0; j < exclusions.length; j++) {
-                    if (SvnUtils.isParentOrEqual(exclusions[j], file)) continue outter; 
-                }
-            }
-            if (recursive && file.isDirectory()) {
-                clearVirtualDirectoryContents(file, true, exclusions);
-            }
-            FileInformation fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
-            if ((fi.getStatus() & STATUS_MISSING) != 0) {
-                if (newMap == null) newMap = new HashMap<File, FileInformation>(files);
-                newMap.remove(file);
-            }
-        }
-        if (newMap != null) {
-            dir = FileUtil.normalizeFile(dir);
-            assert newMap.containsKey(dir) == false;
-            turbo.writeEntry(dir, FILE_STATUS_MAP, newMap);
+    public void refreshCached(Context ctx) {
+        
+        File [] files = listFiles(ctx, ~0);
+        
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            refreshCached(file, REPOSITORY_STATUS_UNKNOWN);
         }
     }
 
@@ -685,7 +656,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         if (parentStatus == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
             if (isDirectory) {
                 // Working directory roots (aka managed roots). We already know that isManaged(file) is true
-                return isInsideSubversionMetadata(file) ? 
+                return SvnUtils.isPartOfSubversionMetadata(file) ? 
                     FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_UPTODATE_DIRECTORY;
             } else {
                 return FILE_INFORMATION_NOTMANAGED;
@@ -798,10 +769,6 @@ public class FileStatusCache implements ISVNNotifyListener {
         if (fo != null) {
             fo.refresh();
         }
-    }
-
-    private boolean isInsideSubversionMetadata(File file) {
-        return file.getPath().indexOf(METADATA_PATTERN) != -1 || file.getPath().indexOf(METADATA_PATTERN_2) != -1;
     }
 
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
