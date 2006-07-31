@@ -14,7 +14,7 @@ package org.netbeans.api.visual.vmd;
 
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.laf.LookFeel;
-import org.netbeans.api.visual.layout.SerialLayout;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
@@ -34,7 +34,7 @@ public class VMDPinWidget extends Widget {
     public VMDPinWidget (Scene scene) {
         super (scene);
 
-        setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL, SerialLayout.Alignment.CENTER, 8));
+        setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         addChild (nameWidget = new LabelWidget (scene));
         addChild (glyphsWidget = new VMDGlyphSetWidget (scene));
 

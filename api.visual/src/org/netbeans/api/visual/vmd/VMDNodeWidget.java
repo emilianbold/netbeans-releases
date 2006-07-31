@@ -17,7 +17,7 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.layout.SerialLayout;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
 import org.netbeans.api.visual.widget.*;
@@ -65,14 +65,14 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         setBorder (BORDER_SHADOW_NORMAL);
 
         mainLayer = new Widget (scene);
-        mainLayer.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL));
+        mainLayer.setLayout (LayoutFactory.createVerticalLayout ());
         mainLayer.setCheckClipping (true);
         addChild (mainLayer);
 
         header = new Widget (scene);
         header.setBorder (BORDER_4);
         header.setOpaque (true);
-        header.setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL, SerialLayout.Alignment.CENTER, 0));
+        header.setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, 0));
         mainLayer.addChild (header);
 
         imageWidget = new ImageWidget (scene);
@@ -81,7 +81,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
 
         Widget desc = new Widget (scene);
         desc.setBorder (BORDER_4);
-        desc.setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL));
+        desc.setLayout (LayoutFactory.createVerticalLayout ());
         header.addChild (desc);
 
         nameWidget = new LabelWidget (scene);

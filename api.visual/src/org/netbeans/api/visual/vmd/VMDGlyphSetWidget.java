@@ -13,6 +13,7 @@
 package org.netbeans.api.visual.vmd;
 
 import org.netbeans.api.visual.layout.SerialLayout;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -28,7 +29,7 @@ public class VMDGlyphSetWidget extends Widget {
 
     public VMDGlyphSetWidget (Scene scene) {
         super (scene);
-        setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL));
+        setLayout (LayoutFactory.createHorizontalLayout ());
     }
 
     public void setGlyphs (List<Image> glyphs) {

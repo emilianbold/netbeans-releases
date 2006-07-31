@@ -14,7 +14,7 @@ package org.netbeans.api.visual.widget.general;
 
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.laf.LookFeel;
-import org.netbeans.api.visual.layout.SerialLayout;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.*;
 
@@ -36,10 +36,10 @@ public class ListWidget extends Widget {
         setOpaque (true);
         setBackground (lookFeel.getBackground ());
         setBorder (BorderFactory.createLineBorder ());
-        setLayout (new SerialLayout (SerialLayout.Orientation.VERTICAL));
+        setLayout (LayoutFactory.createVerticalLayout ());
 
         header = new Widget (scene);
-        header.setLayout (new SerialLayout (SerialLayout.Orientation.HORIZONTAL, SerialLayout.Alignment.CENTER, 0));
+        header.setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, 0));
         header.addChild (imageWidget = new ImageWidget (scene));
         header.addChild (labelWidget = new LabelWidget (scene));
         addChild (header);

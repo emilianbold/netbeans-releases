@@ -15,8 +15,8 @@ package org.netbeans.api.visual.widget;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.layout.AbsoluteLayout;
 import org.netbeans.api.visual.layout.Layout;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.util.GeomUtil;
 
@@ -84,7 +84,7 @@ public class Widget {
         background = Color.WHITE;
         foreground = Color.BLACK;
         border = BorderFactory.createEmptyBorder ();
-        layout = AbsoluteLayout.getDefault ();
+        layout = LayoutFactory.createAbsoluteLayout ();
         preferredLocation = null;
         preferredBounds = null;
         checkClipping = false;

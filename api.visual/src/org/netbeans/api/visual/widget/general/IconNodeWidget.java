@@ -1,9 +1,12 @@
 package org.netbeans.api.visual.widget.general;
 
 import org.netbeans.api.visual.laf.LookFeel;
-import org.netbeans.api.visual.layout.SerialLayout;
-import org.netbeans.api.visual.widget.*;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.widget.ImageWidget;
+import org.netbeans.api.visual.widget.LabelWidget;
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
 
@@ -12,17 +15,31 @@ import java.awt.*;
  */
 public class IconNodeWidget extends Widget {
 
+    public static enum TextOrientation {
+
+        BOTTOM_CENTER, RIGHT_CENTER
+
+    }
+
     private ImageWidget imageWidget;
     private LabelWidget labelWidget;
 
     public IconNodeWidget (Scene scene) {
-        this (scene, SerialLayout.Orientation.VERTICAL);
+        this (scene, TextOrientation.BOTTOM_CENTER);
     }
 
-    public IconNodeWidget (Scene scene, SerialLayout.Orientation orientation) {
+    public IconNodeWidget (Scene scene, TextOrientation orientation) {
         super (scene);
         LookFeel lookFeel = getScene ().getLookFeel ();
-        setLayout (new SerialLayout (orientation, SerialLayout.Alignment.CENTER, - lookFeel.getMargin () + 1));
+
+        switch (orientation) {
+            case BOTTOM_CENTER:
+                setLayout (LayoutFactory.createVerticalLayout (LayoutFactory.SerialAlignment.CENTER, - lookFeel.getMargin () + 1));
+                break;
+            case RIGHT_CENTER:
+                setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, - lookFeel.getMargin () + 1));
+                break;
+        }
 
         imageWidget = new ImageWidget (scene);
         addChild (imageWidget);

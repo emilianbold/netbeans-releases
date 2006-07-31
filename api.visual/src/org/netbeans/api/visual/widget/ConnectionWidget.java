@@ -15,17 +15,20 @@ package org.netbeans.api.visual.widget;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
+import org.netbeans.api.visual.layout.Layout;
+import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.router.DirectRouter;
 import org.netbeans.api.visual.router.Router;
-import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.layout.ConnectionWidgetLayout;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -47,7 +50,7 @@ public class ConnectionWidget extends Widget {
     private boolean routingRequired;
     private List<Point> controlPoints;
     private List<Point> controlPointsUm;
-    private ConnectionWidgetLayout connectionWidgetLayout;
+    private Layout connectionWidgetLayout;
     private Stroke stroke;
     private boolean paintControlPoints;
 
@@ -62,7 +65,7 @@ public class ConnectionWidget extends Widget {
         endPointShape = PointShape.NONE;
         router = DirectRouter.DEFAULT;
         routingRequired = true;
-        connectionWidgetLayout = new ConnectionWidgetLayout (this);
+        connectionWidgetLayout = LayoutFactory.createConnectionWidgetLayout (this);
         setLayout (connectionWidgetLayout);
         stroke = STROKE_DEFAULT;
         paintControlPoints = false;
@@ -194,16 +197,16 @@ public class ConnectionWidget extends Widget {
         revalidate ();
     }
 
-    public void setConstraint (Widget childWidget, ConnectionWidgetLayout.Alignment alignment, float placementInPercentage) {
-        connectionWidgetLayout.setConstraint (childWidget, alignment, placementInPercentage);
+    public void setConstraint (Widget childWidget, LayoutFactory.ConnectionWidgetLayoutAlignment alignment, float placementInPercentage) {
+        LayoutFactory.setConstraint (this, childWidget, alignment, placementInPercentage);
     }
 
-    public void setConstraint (Widget childWidget, ConnectionWidgetLayout.Alignment alignment, int placementAtDistance) {
-        connectionWidgetLayout.setConstraint (childWidget, alignment, placementAtDistance);
+    public void setConstraint (Widget childWidget, LayoutFactory.ConnectionWidgetLayoutAlignment alignment, int placementAtDistance) {
+        LayoutFactory.setConstraint (this, childWidget, alignment, placementAtDistance);
     }
 
     public void removeConstraint (Widget childWidget) {
-        connectionWidgetLayout.removeConstraint (childWidget);
+        LayoutFactory.removeConstraint (this, childWidget);
     }
 
     public void calculateRouting () {
