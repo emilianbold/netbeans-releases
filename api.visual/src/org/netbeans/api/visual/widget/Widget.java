@@ -159,14 +159,40 @@ public class Widget {
             removeChild (children.get (0));
     }
 
+    public final void addChildren (List<? extends Widget> children) {
+        for (Widget child : children)
+            addChild (child);
+    }
+
     public final void removeChildren (List<Widget> widgets) {
         for (Widget widget : widgets)
             removeChild (widget);
     }
 
-    public final void addChildren (List<? extends Widget> children) {
-        for (Widget child : children)
-            addChild (child);
+    public final void bringToFront () {
+        if (parentWidget == null)
+            return;
+        List<Widget> children = parentWidget.children;
+        int i = children.indexOf (this);
+        if (i < 0)
+            return;
+        children.remove (i);
+        children.add (children.size (), this);
+        revalidate ();
+        parentWidget.revalidate ();
+    }
+
+    public final void bringToBack () {
+        if (parentWidget == null)
+            return;
+        List<Widget> children = parentWidget.children;
+        int i = children.indexOf (this);
+        if (i <= 0)
+            return;
+        children.remove (i);
+        children.add (0, this);
+        revalidate ();
+        parentWidget.revalidate ();
     }
 
     public final WidgetAction.Chain getActions () {
