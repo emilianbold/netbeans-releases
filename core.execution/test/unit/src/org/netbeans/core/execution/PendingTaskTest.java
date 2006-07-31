@@ -26,8 +26,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.progress.module.Controller;
-import org.netbeans.progress.module.ProgressEvent;
-import org.netbeans.progress.module.ProgressUIWorker;
+import org.netbeans.progress.spi.ProgressEvent;
+import org.netbeans.progress.spi.ProgressUIWorker;
 import org.openide.actions.ActionManager;
 import org.openide.util.RequestProcessor;
 
