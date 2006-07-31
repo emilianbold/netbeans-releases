@@ -137,7 +137,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         Rectangle rectangle = stateModel.getBooleanState () ? new Rectangle () : null;
         for (Widget widget : mainLayer.getChildren ())
             if (widget != header  &&  widget != pinsSeparator)
-                getScene ().getSceneAnimator ().getPreferredBoundsAnimator ().setPreferredBounds (widget, rectangle);
+                getScene ().getSceneAnimator ().animatePreferredBounds (widget, rectangle);
     }
 
     protected void notifyStateChanged (ObjectState state) {

@@ -13,12 +13,14 @@
 package org.netbeans.api.visual.animator;
 
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.awt.*;
 
 /**
  * @author David Kaspar
@@ -46,7 +48,7 @@ public final class SceneAnimator {
     public Scene getScene () {
         return scene;
     }
-
+    
     void start (Animator animator) {
         synchronized (animators) {
             animators.put (animator, System.currentTimeMillis ());
@@ -68,14 +70,45 @@ public final class SceneAnimator {
         return false;
     }
 
+    public boolean isAnimatingPreferredLocation (Widget widget) {
+        return isRunning (preferredLocationAnimator);
+    }
+
+    public void animatePreferredLocation (Widget widget, Point targetPreferredLocation) {
+        preferredLocationAnimator.setPreferredLocation (widget, targetPreferredLocation);
+    }
+
+    public boolean isAnimatingPreferredBounds (Widget widget) {
+        return isRunning (preferredBoundsAnimator);
+    }
+
+    public void animatePreferredBounds (Widget widget, Rectangle targetPreferredBounds) {
+        preferredBoundsAnimator.setPreferredBounds (widget, targetPreferredBounds);
+    }
+
+    public boolean isAnimatingZoomFactor () {
+        return isRunning (zoomAnimator);
+    }
+
+    public double getTargetZoomFactor () {
+        return zoomAnimator.getTargetZoom ();
+    }
+
+    public void animateZoomFactor (double targetZoomFactor) {
+        zoomAnimator.setZoomFactor (targetZoomFactor);
+    }
+
+    @Deprecated
     public PreferredLocationAnimator getPreferredLocationAnimator () {
         return preferredLocationAnimator;
     }
 
+    @Deprecated
     public PreferredBoundsAnimator getPreferredBoundsAnimator () {
         return preferredBoundsAnimator;
     }
 
+    @Deprecated
     public ZoomAnimator getZoomAnimator () {
         return zoomAnimator;
     }

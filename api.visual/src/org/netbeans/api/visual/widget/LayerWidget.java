@@ -12,7 +12,7 @@
  */
 package org.netbeans.api.visual.widget;
 
-import org.netbeans.api.visual.animator.PreferredLocationAnimator;
+import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.layout.Layout;
 
 import java.awt.*;
@@ -75,10 +75,10 @@ public class LayerWidget extends Widget {
             setLayout (layout);
             getScene ().validate ();
             // The child Widgets have now had their 'location' set... Now, we need to set their preferredLocation.
-            PreferredLocationAnimator pla = getScene ().getSceneAnimator ().getPreferredLocationAnimator ();
+            SceneAnimator sceneAnimator = getScene ().getSceneAnimator ();
             for (Widget child : getChildren ()) {
                 if (animate)
-                    pla.setPreferredLocation (child, child.getLocation ());
+                    sceneAnimator.animatePreferredLocation (child, child.getLocation ());
                 else
                     child.setPreferredLocation (child.getLocation ());
             }

@@ -23,6 +23,7 @@ public abstract class Animator {
     private boolean reset;
 
     protected Animator (SceneAnimator sceneAnimator) {
+        assert sceneAnimator != null;
         this.sceneAnimator = sceneAnimator;
     }
 
