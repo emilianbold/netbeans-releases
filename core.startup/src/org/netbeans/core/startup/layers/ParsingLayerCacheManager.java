@@ -133,9 +133,9 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             urls = new ArrayList<URL>(urls);
             Collections.reverse(urls);
             checkingForDuplicates = LayerCacheManager.err.isLoggable(Level.FINE);
-            Iterator it = urls.iterator();
+            Iterator<URL> it = urls.iterator();
             while (it.hasNext()) {
-                base = (URL)it.next(); // store base for resolving in parser
+                base = it.next(); // store base for resolving in parser
                 if (checkingForDuplicates) {
                     oneLayerFiles = new HashSet<String>(100);
                     currPath = null;
@@ -223,7 +223,8 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
         } else if (qname == "attr") {
             attrCount++;
             MemAttr attr = new MemAttr();
-            for (int i = 0; i < attrs.getLength(); i++) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
                 String attrName = attrs.getQName(i);
                 if ("name".equals(attrName)) {
                     attr.name = attrs.getValue(i);
