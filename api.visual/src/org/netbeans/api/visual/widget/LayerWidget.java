@@ -37,10 +37,12 @@ public class LayerWidget extends Widget {
         return false;
     }
 
+    @Deprecated
     public Layout getDevolveLayout () {
         return devolveLayout;
     }
 
+    @Deprecated
     public void setDevolveLayout (Layout devolveLayout) {
         this.devolveLayout = devolveLayout;
     }
@@ -66,6 +68,7 @@ public class LayerWidget extends Widget {
      * @param animate
      * @deprecated Because of many side-effects, this method could be redesigned later.
      */
+    @Deprecated
     public void reevaluateLayout (Layout layout, boolean animate) {
         if (layout == null)
             return;
