@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * @author David Kaspar
  */
-public class VMDNodeWidget extends Widget implements StateModel.Listener {
+public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMinimizeAbility {
 
     private static final Border BORDER_SHADOW_NORMAL = BorderFactory.createImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
     private static final Border BORDER_SHADOW_HOVERED = BorderFactory.createImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
@@ -109,6 +109,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
 
         topLayer.addChild (minimizeWidget);
+
+        notifyStateChanged (ObjectState.NORMAL);
     }
 
     /**
@@ -147,7 +149,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
             setBorder (BORDER_SHADOW_SELECTED);
         else
             setBorder (BORDER_SHADOW_NORMAL);
-        header.setBackground (getScene ().getLookFeel ().getBackground (state));
+        header.setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (4), getScene ().getLookFeel ().getBorder (state)));
     }
 
     public void setNodeImage (Image image) {
@@ -254,6 +256,14 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener {
         label.setCheckClipping (true);
         pinCategoryWidgets.put (categoryDisplayName, label); 
         return label;
+    }
+
+    public void collapseWidget () {
+        stateModel.setBooleanState (true);
+    }
+
+    public void expandWidget () {
+        stateModel.setBooleanState (false);
     }
 
     private final class ToggleMinimizedAction extends WidgetAction.Adapter {
