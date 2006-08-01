@@ -64,7 +64,12 @@ final class BatchTest {
         int count = 0;
         for (FileSet fileSet : fileSets) {
             Collection<File> matchingFiles = FileSetScanner.listFiles(fileSet);
-            count += matchingFiles.size();
+            for (File file : matchingFiles) {
+                final String name = file.getName();
+                if (name.endsWith(".java") || name.endsWith(".class")) {//NOI18N
+                    count++;
+                }
+            }
         }
         //TODO - handle the situation that two or more filesets contain
         //       the same file
