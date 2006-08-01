@@ -53,7 +53,10 @@ NodeActionsProviderFilter, NodeModelFilter {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++)
                     fixedWatches.remove (nodes [i]);
-                fireModelChanged ();
+                fireModelChanged(new ModelEvent.NodeChanged(
+                        FixedWatchesManager.this,
+                        TreeModel.ROOT,
+                        ModelEvent.NodeChanged.CHILDREN_MASK));
             }
         },
         Models.MULTISELECTION_TYPE_ANY
@@ -152,18 +155,16 @@ NodeActionsProviderFilter, NodeModelFilter {
         return original.isLeaf (node);
     }
 
-    public void addModelListener (ModelListener l) {
-        HashSet newListeners = (listeners == null) ? 
-            new HashSet () : (HashSet) listeners.clone ();
-        newListeners.add (l);
-        listeners = newListeners;
+    public synchronized void addModelListener (ModelListener l) {
+        if (listeners == null) {
+            listeners = new HashSet();
+        }
+        listeners.add(l);
     }
 
-    public void removeModelListener (ModelListener l) {
+    public synchronized void removeModelListener (ModelListener l) {
         if (listeners == null) return;
-        HashSet newListeners = (HashSet) listeners.clone ();
-        newListeners.remove (l);
-        listeners = newListeners;
+        listeners.remove (l);
     }
 
     
@@ -250,15 +251,34 @@ NodeActionsProviderFilter, NodeModelFilter {
     }
 
     private void addFixedWatch (String name, Variable variable) {
+        // Clone the variable to assure that it's unique and sticks to the JDI value.
+        if (variable instanceof Cloneable) {
+            try { // terrible code to invoke the clone() method
+                java.lang.reflect.Method cloneMethod = variable.getClass().getMethod("clone", new Class[] {});
+                cloneMethod.setAccessible(true);
+                Object newVar = cloneMethod.invoke(variable, new Object[] {});
+                if (newVar instanceof Variable) {
+                    variable = (Variable) newVar;
+                }
+            } catch (Exception ex) {} // Ignore any exceptions
+        }
         fixedWatches.put (variable, name);
-        fireModelChanged ();
+        fireModelChanged (new ModelEvent.NodeChanged(
+                this,
+                TreeModel.ROOT,
+                ModelEvent.NodeChanged.CHILDREN_MASK));
     }
 
-    private void fireModelChanged () {
-        if (listeners == null) return;
-        for (Iterator i = listeners.iterator (); i.hasNext ();) {
+    private void fireModelChanged (ModelEvent event) {
+        HashSet listenersCopy;
+        synchronized (this) {
+            if (listeners == null) return;
+            listenersCopy = new HashSet(listeners);
+        }
+        for (Iterator i = listenersCopy.iterator (); i.hasNext ();) {
             ModelListener listener = (ModelListener) i.next();
-            listener.modelChanged(null);;
+            listener.modelChanged(event);
         }
     }
+    
 }

@@ -31,7 +31,6 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  */
 public class ClassVariableImpl extends AbstractVariable implements ClassVariable {
     
-    private JPDADebuggerImpl debugger;
     private ClassObjectReference clazz;
     
     /** Creates a new instance of ClassVariableImpl */
@@ -45,12 +44,17 @@ public class ClassVariableImpl extends AbstractVariable implements ClassVariable
             clazz,
             parentID + ".class"
         );
-        this.debugger = debugger;
         this.clazz = clazz;
     }
     
     public JPDAClassType getClassType() {
-        return debugger.getClassType(clazz.referenceType());
+        return getDebugger().getClassType(clazz.referenceType());
+    }
+
+    public ClassVariableImpl clone() {
+        ClassVariableImpl clon = new ClassVariableImpl(getDebugger(), clazz,
+                getID().substring(0, getID().length() - ".class".length()));
+        return clon;
     }
     
     public String toString () {

@@ -37,6 +37,7 @@ implements ObjectVariable {
 
 
     private ObjectReference objectReference;
+    private String genericSignature;
     
     ObjectFieldVariable (
         JPDADebuggerImpl debugger, 
@@ -56,6 +57,7 @@ implements ObjectVariable {
             genericSignature
         );
         this.objectReference = objectReference;
+        this.genericSignature = genericSignature;
     }
 
     protected void setValue (Value value) throws InvalidExpressionException {
@@ -66,6 +68,11 @@ implements ObjectVariable {
         } catch (ClassNotLoadedException ex) {
             throw new InvalidExpressionException (ex);
         }
+    }
+
+    public ObjectFieldVariable clone() {
+        return new ObjectFieldVariable(getDebugger(), (ObjectReference) getJDIValue(),
+                field, getID(), genericSignature, objectReference);
     }
 
     

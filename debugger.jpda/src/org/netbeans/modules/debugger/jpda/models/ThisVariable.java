@@ -41,10 +41,13 @@ class ThisVariable extends AbstractVariable implements This {
         );
     }
 
-
     // This impl................................................................
 
-    
+    public ThisVariable clone() {
+        return new ThisVariable(getDebugger(), getJDIValue(),
+                getID().substring(0, getID().length() - ".this^".length()));
+    }
+
     // other methods ...........................................................
     
     public String toString () {

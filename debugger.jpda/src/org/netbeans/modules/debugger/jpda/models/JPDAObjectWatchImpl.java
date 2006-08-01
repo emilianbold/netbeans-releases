@@ -180,5 +180,16 @@ ObjectVariable {
     boolean isPrimitive () {
         return !(getInnerValue () instanceof ObjectReference);
     }
+    
+    public JPDAObjectWatchImpl clone() {
+        JPDAObjectWatchImpl clon;
+        if (exceptionDescription == null) {
+            clon = new JPDAObjectWatchImpl(getDebugger(), watch, (ObjectReference) getJDIValue());
+        } else {
+            clon = new JPDAObjectWatchImpl(getDebugger(), watch, exceptionDescription);
+        }
+        return clon;
+    }
+    
 }
 

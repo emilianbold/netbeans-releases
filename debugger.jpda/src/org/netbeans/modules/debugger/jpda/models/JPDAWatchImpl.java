@@ -166,5 +166,16 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
     boolean isPrimitive () {
         return !(getInnerValue () instanceof ObjectReference);
     }
+
+    public JPDAWatchImpl clone() {
+        JPDAWatchImpl clon;
+        if (exceptionDescription == null) {
+            clon = new JPDAWatchImpl(getDebugger(), watch, getJDIValue(), nodeRef.get());
+        } else {
+            clon = new JPDAWatchImpl(getDebugger(), watch, new Exception(exceptionDescription), nodeRef.get());
+        }
+        return clon;
+    }
+    
 }
 

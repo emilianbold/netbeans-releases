@@ -44,9 +44,16 @@ org.netbeans.api.debugger.jpda.ObjectVariable {
     ) {
         super (debugger, value, className, local, genericSignature, frame);
     }
-    
+
     
     // LocalVariable impl.......................................................
+
+    public ObjectLocalVariable clone() {
+        ObjectLocalVariable clon = new ObjectLocalVariable(getDebugger(), getJDIValue(), className, local, genericSignature, null);
+        clon.depth = this.depth;
+        clon.thread = this.thread;
+        return clon;
+    }
     
     // other methods ...........................................................
     

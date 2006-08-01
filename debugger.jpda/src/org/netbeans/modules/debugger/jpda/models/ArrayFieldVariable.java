@@ -30,9 +30,9 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 class ArrayFieldVariable extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.Field {
 
-    private final ArrayReference array;
-    private int index;
-    private int maxIndexLog;
+    final ArrayReference array;
+    int index;
+    int maxIndexLog;
     private String declaredType;
 
     ArrayFieldVariable (
@@ -134,6 +134,19 @@ org.netbeans.api.debugger.jpda.Field {
         } catch (ClassNotLoadedException ex) {
             throw new InvalidExpressionException (ex);
         }
+    }
+
+    public ArrayFieldVariable clone() {
+        ArrayFieldVariable clon = new ArrayFieldVariable(
+                getDebugger(),
+                getJDIValue(),
+                declaredType,
+                array,
+                index,
+                0,
+                getID().substring(0, getID().length() - ('.' + index + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()));
+        clon.maxIndexLog = this.maxIndexLog;
+        return clon;
     }
     
     // other methods ...........................................................

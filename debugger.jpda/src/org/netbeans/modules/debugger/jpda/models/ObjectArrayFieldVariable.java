@@ -51,7 +51,19 @@ implements ObjectVariable {
         );
     }
 
-    
+    public ObjectArrayFieldVariable clone() {
+        ObjectArrayFieldVariable clon = new ObjectArrayFieldVariable(
+                getDebugger(),
+                (ObjectReference) getJDIValue(),
+                getDeclaredType(),
+                array,
+                index,
+                0,
+                getID());
+        clon.maxIndexLog = this.maxIndexLog;
+        return clon;
+    }
+
     // other methods ...........................................................
 
     public String toString () {

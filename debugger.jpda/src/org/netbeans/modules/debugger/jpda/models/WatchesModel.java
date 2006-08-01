@@ -407,6 +407,10 @@ public class WatchesModel implements TreeModel {
         public boolean isCurrent() {
             return evaluatedWatch != null;
         }
+
+        public JPDAWatchEvaluating clone() {
+            return new JPDAWatchEvaluating(model, w, debugger);
+        }
         
     }
     

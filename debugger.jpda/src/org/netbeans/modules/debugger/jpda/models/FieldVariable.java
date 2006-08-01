@@ -37,6 +37,7 @@ org.netbeans.api.debugger.jpda.Field {
     protected Field field;
     //private String className;
     private ObjectReference objectReference;
+    private String genericSignature;
     
 
     FieldVariable (
@@ -69,6 +70,7 @@ org.netbeans.api.debugger.jpda.Field {
         super(debugger, value, genericSignature, parentID + '.' + field.name () +
                 (value instanceof ObjectReference ? "^" : ""));
         this.field = field;
+        this.genericSignature = genericSignature;
        // this.className = className;
     }
     
@@ -121,7 +123,20 @@ org.netbeans.api.debugger.jpda.Field {
         }
     }
 
-    
+    public FieldVariable clone() {
+        FieldVariable clon;
+        if (genericSignature == null) {
+            clon = new FieldVariable(getDebugger(), getJDIValue(), field,
+                    getID().substring(0, getID().length() - ("." + field.name() + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()),
+                    objectReference);
+        } else {
+            clon = new FieldVariable(getDebugger(), getJDIValue(), field,
+                    getID().substring(0, getID().length() - ("." + field.name() + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()),
+                    genericSignature);
+        }
+        return clon;
+    }
+
     // other methods ...........................................................
 
     public String toString () {

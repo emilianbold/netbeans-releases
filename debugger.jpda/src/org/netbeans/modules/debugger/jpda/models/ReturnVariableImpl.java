@@ -31,7 +31,6 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  */
 public class ReturnVariableImpl extends AbstractVariable implements ReturnVariable {
     
-    private JPDADebuggerImpl debugger;
     private String methodName;
     
     /** Creates a new instance of ClassVariableImpl */
@@ -46,12 +45,19 @@ public class ReturnVariableImpl extends AbstractVariable implements ReturnVariab
             returnValue,
             parentID + ".return"
         );
-        this.debugger = debugger;
         this.methodName = methodName;
     }
     
     public String methodName() {
         return methodName;
+    }
+
+    public ReturnVariableImpl clone() {
+        return new ReturnVariableImpl(
+                getDebugger(),
+                getJDIValue(),
+                getID().substring(0, getID().length() - ".return".length()),
+                methodName);
     }
     
     public String toString () {

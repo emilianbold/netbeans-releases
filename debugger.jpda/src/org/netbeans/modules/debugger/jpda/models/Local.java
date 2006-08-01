@@ -38,10 +38,10 @@ class Local extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.LocalVariable {
         
     protected LocalVariable     local;
-    private JPDAThread          thread;
-    private int                 depth;
-    private String              className;
-
+    JPDAThread          thread;
+    int                 depth;
+    String              className;
+    String              genericSignature;
     
     Local (
         JPDADebuggerImpl debugger,
@@ -85,6 +85,7 @@ org.netbeans.api.debugger.jpda.LocalVariable {
             this.depth = frame.getFrameDepth();
         }
         this.className = className;
+        this.genericSignature = genericSignature;
     }
 
     // LocalVariable impl.......................................................
@@ -139,6 +140,18 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     final void setFrame(CallStackFrameImpl frame) {
         this.thread = frame.getThread();
         this.depth = frame.getFrameDepth();
+    }
+
+    public Local clone() {
+        Local clon;
+        if (genericSignature == null) {
+            clon = new Local(getDebugger(), getJDIValue(), className, local, null);
+        } else {
+            clon = new Local(getDebugger(), getJDIValue(), className, local, genericSignature, null);
+        }
+        clon.depth = this.depth;
+        clon.thread = this.thread;
+        return clon;
     }
     
     public String toString () {

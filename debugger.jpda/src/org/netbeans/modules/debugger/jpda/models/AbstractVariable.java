@@ -35,18 +35,22 @@ import java.io.IOException;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIObjectVariable;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 /**
  * @author   Jan Jancura
  */
-class AbstractVariable implements JDIObjectVariable, Customizer { // Customized for add/removePropertyChangeListener
+class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
+    // Customized for add/removePropertyChangeListener
+    // Cloneable for fixed watches
 
     private Value           value;
     private JPDADebuggerImpl debugger;
@@ -55,8 +59,10 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
     private Field[]         fields;
     private Field[]         staticFields;
     private Field[]         inheritedFields;
+    private volatile boolean refreshFields;
     
     private Set listeners = new HashSet();
+    private DebuggetStateListener stateChangeListener = new DebuggetStateListener();
 
     
     AbstractVariable (
@@ -69,6 +75,8 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
         this.id = id;
         if (this.id == null)
             this.id = Integer.toString(super.hashCode());
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE,
+                WeakListeners.propertyChange(stateChangeListener, debugger));
     }
 
     AbstractVariable (JPDADebuggerImpl debugger, Value value, String genericSignature,
@@ -85,6 +93,8 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
         this.id = id;
         if (this.id == null)
             this.id = Integer.toString (super.hashCode());
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE,
+                WeakListeners.propertyChange(stateChangeListener, debugger));
     }
 
     
@@ -178,7 +188,9 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
                 return 0;
             }
         } else {
-            if (fields == null) initFields ();
+            if (fields == null || refreshFields) {
+                initFields ();
+            }
             return fields.length;
         }
     }
@@ -227,7 +239,9 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
                 return elements;
             } else {
                 //either the fields are cached or we have to init them
-                if (fields == null) initFields ();
+                if (fields == null || refreshFields) {
+                    initFields ();
+                }
                 if (to != 0) {
                     to = Math.min(fields.length, to);
                     from = Math.min(fields.length, from);
@@ -252,7 +266,9 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
         if (v == null || v instanceof ArrayReference) {
             return new Field[] {};
         }
-        if (fields == null) initFields ();
+        if (fields == null || refreshFields) {
+            initFields ();
+        }
         if (to != 0) {
             to = Math.min(staticFields.length, to);
             from = Math.min(staticFields.length, from);
@@ -273,7 +289,9 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
         if (v == null || v instanceof ArrayReference) {
             return new Field[] {};
         }
-        if (fields == null) initFields ();
+        if (fields == null || refreshFields) {
+            initFields ();
+        }
         if (to != 0) {
             to = Math.min(inheritedFields.length, to);
             from = Math.min(inheritedFields.length, from);
@@ -468,7 +486,7 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
         return debugger;
     }
     
-    String getID () {
+    protected final String getID () {
         return id;
     }
     
@@ -545,6 +563,7 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
     }
 
     private void initFields () {
+        refreshFields = false;
         Value value = getInnerValue();
         Type type;
         if (value != null) {
@@ -680,6 +699,12 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
         return new FieldVariable (debugger, v, f, parentID, or);
     }
     
+    public Variable clone() {
+        AbstractVariable clon = new AbstractVariable(debugger, value, id);
+        clon.genericType = this.genericType;
+        return clon;
+    }
+    
     public void addPropertyChangeListener(PropertyChangeListener l) {
         listeners.add(l);
     }
@@ -754,6 +779,20 @@ class AbstractVariable implements JDIObjectVariable, Customizer { // Customized 
                     sb.append (s.charAt (i));
             }
         return sb.toString();
+    }
+    
+    private class DebuggetStateListener extends Object implements PropertyChangeListener {
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
+                Object newValue = evt.getNewValue();
+                if (newValue instanceof Integer &&
+                    JPDADebugger.STATE_RUNNING == ((Integer) newValue).intValue()) {
+                    AbstractVariable.this.refreshFields = true;
+                }
+            }
+        }
+        
     }
     
 }
