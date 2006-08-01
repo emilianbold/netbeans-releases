@@ -22,6 +22,7 @@ package org.netbeans.modules.junit.output.antutils;
 import java.io.File;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.netbeans.modules.junit.output.antutils.FileUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -50,8 +51,7 @@ final class AntProject {
         if (baseDirName == null) {
             baseDirName = ".";                                          //NOI18N
         }
-        baseDir = FileUtils.normalizePath(
-                        new File(baseDirName).getAbsolutePath());
+        baseDir = FileUtil.normalizeFile(new File(baseDirName));
     }
 
     /**
