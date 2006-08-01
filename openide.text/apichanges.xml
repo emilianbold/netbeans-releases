@@ -24,6 +24,27 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+    <change id="CloneableEditorSupport.getEditorKit">
+        <api name="text"/>
+        <summary>Adding CloneableEditorSupport.getEditorKit method</summary>
+        <version major="6" minor="12"/>
+        <date day="2" month="8" year="2006"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            <p>The <code>CloneableEditorSupport.getEditorKit()</code> method
+            allows to access <code>EditorKit</code>s registered in
+            MimeLookup. This is meant to be the primary way of finding
+            <code>EditorKit</code>s registered by Netbeans modules. The
+            <code>JEditorPane.createEditorKitForContentType</code> and the
+            other related methods in <code>JEditorPane</code> should only be
+            used for finding <code>EditorKit</code>s provided by JDK.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupport"/>
+        <issue number="52657"/>
+    </change>
+
     <change id="EditorPaneDragAndDrop">
         <api name="text"/>
         <summary>Editor panes listen for special objects being dragged over them</summary>

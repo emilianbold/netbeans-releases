@@ -65,6 +65,8 @@ import javax.swing.text.*;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Exceptions;
 
 
@@ -1406,6 +1408,48 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         return prepareDocument();
     }
 
+    /**
+     * Gets an <code>EditorKit</code> from Netbeans registry. The method looks
+     * in the <code>MimeLookup</code> for <code>EditorKit</code>s registered for
+     * the mime-path passed in and returns the first one it finds. If there is
+     * no <code>EditorKit</code> registered for the mime-path it will fall back
+     * to the 'text/plain' <code>EditorKit</code> and eventually to its own
+     * default kit.
+     * 
+     * <div class="nonnormative">
+     * <p>A mime-path is a concatenation of one or more mime-types allowing to
+     * address fragments of text with a different mime-type than the mime-type
+     * of a document that contains those fragments. As an example you can use
+     * a JSP page containing a java scriplet. The JSP page is a document of
+     * 'text/x-jsp' mime-type, while the mime-type of the java scriplet is 'text/x-java'.
+     * When accessing settings or services such as an 'EditorKit' for java scriplets
+     * embedded in a JSP page the scriplet's mime-path 'text/x-jsp/text/x-java'
+     * should be used.
+     * </p>
+     * <p>If you are trying to get an 'EditorKit' for the whole document you can
+     * simply pass in the document's mime-type (e.g. 'text/x-java'). For the main
+     * document its mime-type and mime-path are the same.
+     * </div>
+     *
+     * @param mimePath    The mime-path to find an <code>EditorKit</code> for.
+     *
+     * @return The <code>EditorKit</code> implementation registered for the given mime-path.
+     * @see org.netbeans.api.editor.mimelookup.MimeLookup
+     * @since org.openide.text 6.12
+     */
+    public static EditorKit getEditorKit(String mimePath) {
+        Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
+        EditorKit kit = (EditorKit) lookup.lookup(EditorKit.class);
+        
+        if (kit == null) {
+            // Try 'text/plain'
+            lookup = MimeLookup.getLookup(MimePath.parse("text/plain"));
+            kit = (EditorKit) lookup.lookup(EditorKit.class);
+        }
+        
+        return kit != null ? kit : new PlainEditorKit();
+    }
+    
     /** Creates editor kit for this source.
     * @return editor kit
     */
@@ -1415,37 +1459,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         if (mimeType != null) {
-            kit = JEditorPane.createEditorKitForContentType(mimeType);
+            kit = getEditorKit(mimeType);
         } else {
             String defaultMIMEType = cesEnv().getMimeType();
-            kit = JEditorPane.createEditorKitForContentType(defaultMIMEType);
-        }
-
-        if (isDumbKit(kit)) {
-            kit = JEditorPane.createEditorKitForContentType("text/plain"); // NOI18N
-        }
-
-        if (isDumbKit(kit)) {
-            kit = new PlainEditorKit();
+            kit = getEditorKit(defaultMIMEType);
         }
 
         return kit;
-    }
-
-    /** Is this a useless default kit?
-     * @param kit the kit to test
-     * @return true if so
-     */
-    private boolean isDumbKit(EditorKit kit) {
-        if (kit == null) {
-            return true;
-        }
-
-        String clazz = kit.getClass().getName();
-
-        return (clazz.equals("javax.swing.text.DefaultEditorKit") || // NOI18N
-        clazz.equals("javax.swing.JEditorPane$PlainEditorKit") || // NOI18N
-        clazz.equals("javax.swing.text.html.HTMLEditorKit")); // NOI18N
     }
 
     /** Method that can be overriden by children to create empty

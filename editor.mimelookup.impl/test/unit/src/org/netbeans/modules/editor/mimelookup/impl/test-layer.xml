@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Editors">
+        <folder name="Popup">
+            <file name="org-openide-actions-CutAction.instance"/>
+            <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+            <file name="org-openide-actions-CopyAction.instance"/>
+            <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
+            <file name="org-openide-actions-PasteAction.instance"/>
+        </folder>
+        
+        <!-- issue #61245 testing -->
+        <folder name="application">
+            <folder name="xml">
+                <file name="org-openide-actions-FindAction.instance"/>
+            </folder>
+            <folder name="xhtml+xml">
+                <file name="org-openide-actions-CutAction.instance"/>
+            </folder>
+        </folder>
+        
+        <folder name="text">
+            
+            <folder name="xml">
+                <folder name="Popup">
+                    <file name="org-openide-actions-ReplaceAction.instance"/>
+                    <attr name="org-openide-actions-PasteAction.instance/org-openide-actions-ReplaceAction.instance" boolvalue="true"/>
+                </folder>
+                <file name="org-openide-actions-CopyAction.instance"/>
+                <file name="org-openide-actions-PasteAction.instance_hidden"/>
+                <file name="org-openide-actions-ReplaceAction.instance"/>
+            </folder>
+            <folder name="x-ant+xml">
+                <folder name="Popup">
+                    <file name="org-openide-actions-FindAction.instance"/>
+                    <attr name="org-openide-actions-ReplaceAction.instance/org-openide-actions-FindAction.instance" boolvalue="true"/>
+                </folder>
+                <file name="org-openide-actions-CutAction.instance"/>
+                <file name="org-openide-actions-CopyAction.instance">
+                    <attr name="hidden" boolvalue="true" />
+                </file>
+                <file name="org-openide-actions-PasteAction.instance"/>
+                <file name="org-openide-actions-ReplaceAction.instance">
+                    <attr name="hidden" boolvalue="true" />
+                </file>
+            </folder>
+            
+            <folder name="x-java">
+                <folder name="text">
+                    <folder name="html">
+                        <folder name="text">
+                            <folder name="xml">
+                                <folder name="Popup">
+                                    <file name="format"/>
+                                    <file name="Separator0.instance">
+                                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                                    </file>
+                                    <attr name="org-openide-actions-PasteAction.instance/format" boolvalue="true"/>
+                                    <attr name="Separator0.instance/format" boolvalue="true"/>
+                                    <attr name="org-openide-actions-PasteAction.instance/Separator0.instance" boolvalue="true"/>
+                                </folder>
+                            </folder>
+                        </folder>
+                        <folder name="Popup">
+                            <file name="org-openide-actions-ReplaceAction.instance"/>
+                            <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-ReplaceAction.instance" boolvalue="true"/>
+                            <attr name="org-openide-actions-ReplaceAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name="Popup">    
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                </folder>                    
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

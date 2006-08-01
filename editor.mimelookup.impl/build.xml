@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -17,31 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<project name="editor/mimelookup/test/unit" basedir="." default="all">
-
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
-
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-    
-    <target name="unit-compiler">
-        <antcall target="default-compiler" /> <!-- xtest-unit. -->
-    </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-
-    <target name="runcodetest">
-        <antcall target="run-unit-test-nodist" />
-    </target>
-
-    <target name="runmemorytest" depends="init">
-        <antcall target="run-unit-test-nodist" >
-            <param name="xtest.jvm.args" value="-Xms1m -Xmx1m"/>
-        </antcall>
-    </target>
-    
+<project name="editor/mimelookup/impl" default="netbeans" basedir=".">
+    <import file="../../../nbbuild/templates/projectized.xml"/>
 </project>

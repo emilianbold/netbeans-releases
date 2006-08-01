@@ -41,10 +41,7 @@ public class MimePathLookupTest extends NbTestCase {
     protected void setUp() throws java.lang.Exception {
         // Set up the default lookup, repository, etc.
         EditorTestLookup.setLookup(new String[0], getWorkDir(), new Object[] {},
-            getClass().getClassLoader(), 
-            new Class [] { 
-                DefaultMimeDataProvider.class, 
-            }
+            getClass().getClassLoader()
         );
     }
     

@@ -22,6 +22,7 @@ package org.openide.text;
 
 import java.io.*;
 import java.util.Arrays;
+import javax.swing.text.EditorKit;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.util.Exceptions;
@@ -173,6 +174,13 @@ implements CloneableEditorSupport.Env {
     public void testSaveWhenNoDocumentOpen() throws IOException {
         modified = true;
         support.saveDocument();
+    }
+
+    public void testGetEditorKit() {
+        EditorKit kit = CloneableEditorSupport.getEditorKit("text/plain");
+        assertNotNull("EditorKit should never be null", kit);
+        // There shouldn't be any EK registered and we should get the default one
+        assertEquals("Wrong default EditorKit", "org.openide.text.CloneableEditorSupport$PlainEditorKit", kit.getClass().getName());
     }
     
     private void compareStreamWithString(InputStream is, String s) throws Exception{

@@ -20,7 +20,6 @@
 package org.netbeans.api.editor.mimelookup;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.mimelookup.DefaultMimeDataProvider;
 import org.netbeans.modules.editor.mimelookup.EditorTestLookup;
 import org.netbeans.modules.editor.mimelookup.TestUtilities;
 import org.openide.util.Lookup;
@@ -43,10 +42,7 @@ public class MimeLookupMemoryTest extends NbTestCase {
             },
             getWorkDir(),
             new Object[] {},
-            getClass().getClassLoader(), 
-            new Class [] { 
-                DefaultMimeDataProvider.class, 
-            }
+            getClass().getClassLoader()
         );
     }
     
