@@ -42,6 +42,9 @@ import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.xml.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import org.xml.sax.*;
 
@@ -401,6 +404,13 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             FileLock lck;
             FileObject data;
             
+            
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream ();            
+            try {
+                write (buffer);
+            } finally {
+                buffer.close();                        
+            }
             if (holder != null) {
                 data = holder.getPrimaryEntry().getFile();
                 lck = holder.getPrimaryEntry().takeLock();
@@ -411,13 +421,13 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 lck = data.lock();
             }
             try {
-                OutputStream ostm = data.getOutputStream(lck);
-                PrintWriter writer = new PrintWriter(
-                    new OutputStreamWriter(ostm, "UTF8"));
-                write(writer);
-                writer.flush();
-                writer.close();
-                ostm.close();
+                OutputStream out = data.getOutputStream(lck);
+                try {
+                    out.write(buffer.toByteArray());
+                    out.flush();
+                } finally {
+                    out.close();
+                }
             } finally {
                 lck.releaseLock();
             }
@@ -426,64 +436,63 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             }
         }
         
-        void write(PrintWriter pw) throws IOException {
-            pw.println("<?xml version='1.0'?>");
-            pw.println(
-            "<!DOCTYPE platform PUBLIC '"+PLATFORM_DTD_ID+"' 'http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd'>");
-            pw.println("<platform name='"
-                + XMLUtil.toAttributeValue(instance.getDisplayName()) +
-                "' default='" + (defaultPlatform ? "yes" : "no") +
-                "'>");
-            Map props = instance.getProperties();
-            Map sysProps = instance.getSystemProperties();
-            pw.println("  <properties>");
-            writeProperties(props, pw);
-            pw.println("  </properties>");
+        void write(final  OutputStream out) throws IOException {
+            final Map props = instance.getProperties();
+            final Map sysProps = instance.getSystemProperties();
+            final Document doc = XMLUtil.createDocument(ELEMENT_PLATFORM,null,PLATFORM_DTD_ID,"http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd"); //NOI18N
+            final Element platformElement = doc.getDocumentElement();
+            platformElement.setAttribute(ATTR_PLATFORM_NAME,instance.getDisplayName());
+            platformElement.setAttribute(ATTR_PLATFORM_DEFAULT,defaultPlatform ? "yes" : "no"); //NOI18N
+            final Element propsElement = doc.createElement(ELEMENT_PROPERTIES);
+            writeProperties(props, propsElement, doc);
+            platformElement.appendChild(propsElement);
             if (!defaultPlatform) {
-                pw.println("  <sysproperties>");
-                writeProperties(sysProps, pw);
-                pw.println("  </sysproperties>");
-                pw.println("  <jdkhome>");
+                final Element sysPropsElement = doc.createElement(ELEMENT_SYSPROPERTIES);
+                writeProperties(sysProps, sysPropsElement, doc);
+                platformElement.appendChild(sysPropsElement);
+                final Element jdkHomeElement = doc.createElement(ELEMENT_JDKHOME);
                 for (Iterator it = instance.getInstallFolders().iterator(); it.hasNext();) {
                     URL url = ((FileObject)it.next ()).getURL();
-                    pw.println("    <resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>");
-                }
-                pw.println("  </jdkhome>");
-            }
+                    final Element resourceElement = doc.createElement(ELEMENT_RESOURCE);
+                    resourceElement.appendChild(doc.createTextNode(url.toExternalForm()));
+                    jdkHomeElement.appendChild(resourceElement);
+                }                
+                platformElement.appendChild(jdkHomeElement);                
+            }            
             List pl = this.instance.getSourceFolders().entries();
-            if (pl.size()>0 && shouldWriteSources ()) {
-                pw.println ("  <sources>");
+            if (pl.size()>0 && shouldWriteSources ()) {                
+                final Element sourcesElement = doc.createElement (ELEMENT_SOURCEPATH);
                 for (Iterator it = pl.iterator(); it.hasNext();) {
                     URL url = ((ClassPath.Entry)it.next ()).getURL();
-                    pw.println("    <resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>");
+                    final Element resourceElement = doc.createElement (ELEMENT_RESOURCE);
+                    resourceElement.appendChild(doc.createTextNode(url.toExternalForm()));
+                    sourcesElement.appendChild(resourceElement);
                 }
-                pw.println ("  </sources>");
+                platformElement.appendChild(sourcesElement);
             }
             pl = this.instance.getJavadocFolders();
             if (pl.size()>0 && shouldWriteJavadoc ()) {
-                pw.println("  <javadoc>");
-                for (Iterator it = pl.iterator(); it.hasNext();) {
+                final Element javadocElement = doc.createElement(ELEMENT_JAVADOC);
+                for (Iterator it = pl.iterator(); it.hasNext();) {                    
                     URL url = (URL) it.next ();
-                    pw.println("<resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>");
+                    final Element resourceElement = doc.createElement(ELEMENT_RESOURCE);
+                    resourceElement.appendChild(doc.createTextNode(url.toExternalForm()));
+                    javadocElement.appendChild(resourceElement);
                 }
-                pw.println("  </javadoc>");
+                platformElement.appendChild(javadocElement);
             }
-            pw.println("</platform>");
+            XMLUtil.write(doc, out, "UTF8");                                                    //NOI18N
         }
         
-        void writeProperties(Map props, PrintWriter pw) throws IOException {
-            Collection sortedProps = new TreeSet(props.keySet());
+        void writeProperties(final Map props, final Element element, final Document doc) throws IOException {
+            final Collection sortedProps = new TreeSet(props.keySet());
             for (Iterator it = sortedProps.iterator(); it.hasNext(); ) {
-                String n = (String)it.next();
-                String val = (String)props.get(n);
-                String xmlName = XMLUtil.toAttributeValue(n);
-                try {
-                    String xmlValue = XMLUtil.toAttributeValue(val);
-                    pw.println("    <property name='" + xmlName + "' value='" + xmlValue + "'/>"); //NOI18N
-                } catch (CharConversionException ce) {
-                    //Ignore the invalid property
-                    ErrorManager.getDefault().log("PlatformConvertor: invalid property name="+n+" value="+val);
-                }                
+                final String n = (String)it.next();
+                final String val = (String)props.get(n);                
+                final Element propElement = doc.createElement(ELEMENT_PROPERTY);
+                propElement.setAttribute(ATTR_PROPERTY_NAME,n);
+                propElement.setAttribute(ATTR_PROPERTY_VALUE,val);
+                element.appendChild(propElement);
             }
         }
         

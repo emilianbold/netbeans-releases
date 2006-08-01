@@ -19,7 +19,16 @@
 package org.netbeans.modules.java.j2seplatform;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.util.Iterator;
@@ -35,6 +44,8 @@ import org.openide.ErrorManager;
 
 
 public class J2SEPlatformModule extends ModuleInstall {
+    
+    private static final String DEFAULT_PLATFORM = "Services/Platforms/org-netbeans-api-java-Platform/default_platform.xml";    //NOI18N
 
     public void restored() {
         super.restored();
@@ -48,6 +59,7 @@ public class J2SEPlatformModule extends ModuleInstall {
             new Runnable () {
                 public void run () {
                     try {
+                        recoverDefaultPlatform ();
                         EditableProperties ep = PropertyUtils.getGlobalProperties();
                         boolean save = updateSourceLevel(ep);
                         save |= updateBuildProperties (ep);
@@ -95,4 +107,34 @@ public class J2SEPlatformModule extends ModuleInstall {
         return changed;
     }
 
+    private static void recoverDefaultPlatform () {
+        final FileObject defaultPlatform = Repository.getDefault().getDefaultFileSystem().findResource(DEFAULT_PLATFORM);
+        if (defaultPlatform != null) {
+            try {
+                DataObject dobj = DataObject.find(defaultPlatform);
+                boolean valid = false;
+                InstanceCookie ic = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+                if (ic != null) {
+                    try {
+                        ic.instanceCreate();
+                        valid = true;
+                    } catch (Exception e) {
+                        //Ignore it, logged bellow
+                    }
+                }
+                if (!valid) {
+                    Logger.getLogger("global").log(Level.WARNING,"default_platform.xml is broken, regenerating.");
+                    Object attr = defaultPlatform.getAttribute("removeWritables");      //NOI18N
+                    if (attr instanceof Callable) {
+                        ((Callable)attr).call ();
+                    }
+                }
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        else {
+            Logger.getLogger("global").log(Level.WARNING,"The default platform is hidden.");  //NOI18N
+        }
+    }
 }
