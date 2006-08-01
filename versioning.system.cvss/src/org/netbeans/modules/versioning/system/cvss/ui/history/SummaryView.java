@@ -458,9 +458,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             defaultFormat = DateFormat.getDateTimeInstance();
 
             hiliteStyle = textPane.addStyle("hilite", normalStyle); // NOI18N
-            StyleConstants.setBackground(hiliteStyle, (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background));
-            StyleConstants.setForeground(hiliteStyle, (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground));
-            
+            Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
+            if (c != null) StyleConstants.setBackground(hiliteStyle, c);
+            c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
+            if (c != null) StyleConstants.setForeground(hiliteStyle, c);
+
             setLayout(new BorderLayout());
             add(textPane);
             add(actionsPane, BorderLayout.PAGE_END);
@@ -557,6 +559,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 }
                 sd.insertString(sd.getLength(), "\n", null); // NOI18N
                 sd.insertString(sd.getLength(), commitMessage, null);
+                sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
                 if (message != null && !isSelected) {
                     int idx = revision.getMessage().indexOf(message);
                     if (idx != -1) {
@@ -565,7 +568,6 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                         sd.setCharacterAttributes(doclen - len + idx, message.length(), hiliteStyle, false);
                     }
                 }
-                sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
                 if (indentation > 0) {
                     sd.setParagraphAttributes(0, sd.getLength(), indentStyle, false);
                 } else {
