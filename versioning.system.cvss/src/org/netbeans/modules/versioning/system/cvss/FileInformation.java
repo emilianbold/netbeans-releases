@@ -255,6 +255,8 @@ public class FileInformation implements Serializable {
             return loc.getString("CTL_FileInfoStatus_ModifiedLocally_Short");
         } else if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
             return loc.getString("CTL_FileInfoStatus_Conflict_Short");
+        } else if (status == FileInformation.STATUS_VERSIONED_MERGE) {
+            return loc.getString("CTL_FileInfoStatus_ModifiedLocally_Short");
         } else {
             return "";      // NOI18N                  
         }
