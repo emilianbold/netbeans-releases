@@ -27,6 +27,8 @@ import java.util.List;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -489,10 +491,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             for (Iterator it = sortedProps.iterator(); it.hasNext(); ) {
                 final String n = (String)it.next();
                 final String val = (String)props.get(n);                
-                final Element propElement = doc.createElement(ELEMENT_PROPERTY);
-                propElement.setAttribute(ATTR_PROPERTY_NAME,n);
-                propElement.setAttribute(ATTR_PROPERTY_VALUE,val);
-                element.appendChild(propElement);
+                try {
+                    XMLUtil.toAttributeValue(n);
+                    XMLUtil.toAttributeValue(val);
+                    final Element propElement = doc.createElement(ELEMENT_PROPERTY);
+                    propElement.setAttribute(ATTR_PROPERTY_NAME,n);
+                    propElement.setAttribute(ATTR_PROPERTY_VALUE,val);
+                    element.appendChild(propElement);
+                } catch (CharConversionException e) {
+                    Logger.getLogger("global").log(Level.WARNING,"Cannot store property: " + n + " value: " + val);   //NOI18N
+                }
             }
         }
         
