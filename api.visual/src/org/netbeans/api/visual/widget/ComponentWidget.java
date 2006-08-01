@@ -33,6 +33,7 @@ public final class ComponentWidget extends Widget {
         super (scene);
         this.component = component;
         validateListener = new ComponentValidateListener ();
+        componentListener = new ComponentComponentListener ();
         attach ();
     }
 
@@ -40,7 +41,7 @@ public final class ComponentWidget extends Widget {
         getScene ().addValidateListener (validateListener);
     }
 
-    public final void deatach () {
+    public final void detach () {
         getScene ().removeValidateListener (validateListener);
     }
 
