@@ -40,6 +40,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -54,7 +55,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author S. Aubrecht
  */
-public final class DefaultSettings implements Settings, ModelListener, CategoryListener {
+public final class DefaultSettings implements Settings, ModelListener, CategoryListener, Runnable {
     
     private static final String SETTINGS_ROOT_FOLDER = "PaletteSettings";
     private static final String NODE_ATTR_PREFIX = "psa_";
@@ -83,6 +84,8 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport( this );
     
     private FileLock settingsFileLock;
+    
+    private RequestProcessor requestProcessor = new RequestProcessor( "PaletteSettings" ); //NOI18N
     
     public DefaultSettings( Model model ) {
         this.model = model;
@@ -222,11 +225,15 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
             return;
         }
         node.setValue( NODE_ATTR_PREFIX+attrName, newValue );
-        store();
+        requestProcessor.post( this );
         propertySupport.firePropertyChange( attrName, oldValue, newValue );
     }
 
     public void categoryModified( Category src ) {
+        requestProcessor.post( this );
+    }
+    
+    public void run() {
         store();
     }
 
@@ -234,14 +241,14 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         for( int i=0; i<removedCategories.length; i++ ) {
             removedCategories[i].removeCategoryListener( this );
         }
-        store();
+        requestProcessor.post( this );
     }
 
     public void categoriesAdded( Category[] addedCategories ) {
         for( int i=0; i<addedCategories.length; i++ ) {
             addedCategories[i].addCategoryListener( this );
         }
-        store();
+        requestProcessor.post( this );
     }
 
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -395,6 +402,28 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
     public int getItemWidth() {
         Node node = getNode( model.getRoot() );
         return get( node, PaletteController.ATTR_ITEM_WIDTH, -1 );
+    }
+
+    public void reset() {
+        Node root = (Node)model.getRoot().lookup( Node.class );
+        clearAttributes( root );
+        Category[] categories = model.getCategories();
+        for( int i=0; i<categories.length; i++ ) {
+            Node cat = (Node)categories[i].getLookup().lookup( Node.class );
+            clearAttributes( cat );
+            Item[] items = categories[i].getItems();
+            for( int j=0; j<items.length; j++ ) {
+                Node it = (Node)items[j].getLookup().lookup( Node.class );
+                clearAttributes( it );
+            }
+        }
+        requestProcessor.post( this );
+    }
+
+    private void clearAttributes( Node node ) {
+        for( int i=0; i<KNOWN_PROPERTIES.length; i++ ) {
+            node.setValue( KNOWN_PROPERTIES[i], NULL_VALUE );
+        }
     }
 
     private class SettingsHandler extends DefaultHandler {
