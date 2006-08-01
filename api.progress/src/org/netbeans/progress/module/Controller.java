@@ -78,7 +78,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     public static synchronized Controller getDefault() {
         if (defaultInstance == null) {
             ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class); 
-            assert prov != null;
+            assert prov != null : "Cannot find implementation for ProgressUIWorkerProvider, please make sure you have the org.netbeans.modules.progress.ui module enabled.";
             ProgressUIWorkerWithModel component = prov.getDefaultWorker();
             defaultInstance = new Controller(component);
             component.setModel(defaultInstance.getModel());
