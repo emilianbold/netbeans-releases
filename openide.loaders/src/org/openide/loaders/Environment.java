@@ -66,6 +66,7 @@ public final class Environment extends Object {
     }
     
     /** Finds a JNDI context for a given data object.
+     * This method is probably unused and useless.
      * @param obj the data object
      * @return the JNDI context for this data object
      * @since 3.13
