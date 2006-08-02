@@ -148,7 +148,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                 lastReload = System.currentTimeMillis();
 
                 setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
-
+                
                 ArrayList itemList = buildItemList();
                 final JPanel contentPanel = new NoHorizontalScrollPanel();
                 contentPanel.setOpaque( false );
@@ -356,21 +356,30 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     }
 
     private JComponent buildErrorLabel() {
-        JLabel label = new JLabel( BundleSupport.getLabel( "ErrLoadingFeed" ) ); // NOI18N
-        label.setHorizontalAlignment( JLabel.CENTER );
-        label.setVerticalAlignment( JLabel.CENTER );
-        label.setForeground( DEFAULT_TEXT_COLOR );
-        label.setBackground( DEFAULT_BACKGROUND_COLOR );
-        label.setOpaque( false );
         Component header = getContentHeader();
+        JPanel panel = null == header ? new JPanel(new GridBagLayout()) : new NoHorizontalScrollPanel();
+        panel.setOpaque( false );
+
+        int row = 0;
         if( null != header ) {
-            JPanel panel = new NoHorizontalScrollPanel();
-            panel.add( header, new GridBagConstraints(0,0,1,1,0.0,0.0,
-                GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
-            panel.add( label, new GridBagConstraints(0,1,1,1,1.0,1.0,
-                GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
+            panel.add( header,  new GridBagConstraints(0,row++,1,1,1.0,0.0,
+                    GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
         }
-        return label;
+
+        panel.add( new JLabel(BundleSupport.getLabel("ErrLoadingFeed")),  // NOI18N
+                new GridBagConstraints(0,row++,1,1,0.0,0.0,
+                GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(5,10,10,5),0,0 ) );
+        JButton button = new JButton();
+        Mnemonics.setLocalizedText( button, BundleSupport.getLabel( "Reload" ) );  // NOI18N
+        button.setOpaque( false );
+        button.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                reload();
+            }
+        });
+        panel.add( button, new GridBagConstraints(0,row++,1,1,0.0,0.0,
+                GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(5,10,10,5),0,0 ) );
+        return panel;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
