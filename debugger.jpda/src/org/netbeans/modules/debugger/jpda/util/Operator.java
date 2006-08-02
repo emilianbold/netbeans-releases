@@ -28,6 +28,8 @@ import com.sun.jdi.ThreadReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 
 /**
@@ -55,15 +57,14 @@ import org.openide.ErrorManager;
 * @author Jan Jancura
 */
 public class Operator {
+    
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
 
     private Thread            thread;
     private boolean           breakpointsDisabled;
     private List              staledEvents = new ArrayList();
     private List              staledRequests = new ArrayList();
     private boolean           stop;
-
-    private static boolean verbose = 
-        System.getProperty ("netbeans.debugger.jdievents") != null;
 
     /**
      * Creates an operator for a given virtual machine. The operator will listen
@@ -116,8 +117,8 @@ public class Operator {
                      if (eventSet == null) {
                         try {
                             eventSet = eventQueue.remove ();
-                            if (verbose) {
-                                System.out.println("HAVE EVENT(s) in the Queue: "+eventSet);
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.fine("HAVE EVENT(s) in the Queue: "+eventSet);
                             }
                         } catch (InterruptedException iexc) {
                             synchronized (Operator.this) {
@@ -134,8 +135,8 @@ public class Operator {
                              if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
                                 staledEvents.add(eventSet);
                                 eventSet.resume();
-                                if (verbose) {
-                                    System.out.println("RESUMING "+eventSet);
+                                if (logger.isLoggable(Level.FINE)) {
+                                    logger.fine("RESUMING "+eventSet);
                                 }
                              }
                              continue;
@@ -143,29 +144,31 @@ public class Operator {
                      }
                      boolean resume = true, startEventOnly = true;
                      EventIterator i = eventSet.eventIterator ();
-                     if (verbose)
+                     if (logger.isLoggable(Level.FINE)) {
                          switch (eventSet.suspendPolicy ()) {
                              case EventRequest.SUSPEND_ALL:
-                                 System.out.println("\nJDI new events (suspend all)=============================================");
+                                 logger.fine("JDI new events (suspend all)=============================================");
                                  break;
                              case EventRequest.SUSPEND_EVENT_THREAD:
-                                 System.out.println("\nJDI new events (suspend one)=============================================");
+                                 logger.fine("JDI new events (suspend one)=============================================");
                                  break;
                              case EventRequest.SUSPEND_NONE:
-                                 System.out.println("\nJDI new events (suspend none)=============================================");
+                                 logger.fine("JDI new events (suspend none)=============================================");
                                  break;
                              default:
-                                 System.out.println("\nJDI new events (?????)=============================================");
+                                 logger.fine("JDI new events (?????)=============================================");
                                  break;
                          }
+                     }
                      while (i.hasNext ()) {
                          Event e = i.nextEvent ();
                          if ((e instanceof VMDeathEvent) ||
                                  (e instanceof VMDisconnectEvent)
                             ) {
 
-                             if (verbose)
+                             if (logger.isLoggable(Level.FINE)) {
                                  printEvent (e, null);
+                             }
 //                             disconnected = true;
                              if (finalizer != null) finalizer.run ();
                              //S ystem.out.println ("EVENT: " + e); // NOI18N
@@ -179,19 +182,22 @@ public class Operator {
                          if ((e instanceof VMStartEvent) && (starter != null)) {
                              resume = resume & starter.exec (e);
                              //S ystem.out.println ("Operator.start VM"); // NOI18N
-                             if (verbose)
+                             if (logger.isLoggable(Level.FINE)) {
                                  printEvent (e, null);
+                             }
                              continue;
                          }
                          Executor exec = null;
                          if (e.request () == null) {
-                             if (verbose)
-                                 System.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
+                             if (logger.isLoggable(Level.FINE)) {
+                                 logger.fine("EVENT: " + e + " REQUEST: null"); // NOI18N
+                             }
                          } else
                              exec = (Executor) e.request ().getProperty ("executor");
 
-                         if (verbose)
+                         if (logger.isLoggable(Level.FINE)) {
                              printEvent (e, exec);
+                         }
 
                          // safe invocation of user action
                          if (exec != null)
@@ -209,9 +215,9 @@ public class Operator {
                              }
                      } // while
                      //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
-                     if (verbose) {
-                         System.out.println("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");
-                         System.out.println("  resume = "+resume+", startEventOnly = "+startEventOnly);
+                     if (logger.isLoggable(Level.FINE)) {
+                         logger.fine("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");
+                         logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
                      }
                      if (resume && (!startEventOnly)) {
                          synchronized (resumeLock) {
@@ -333,39 +339,39 @@ public class Operator {
     private void printEvent (Event e, Executor exec) {
         try {
             if (e instanceof ClassPrepareEvent) {
-                System.out.println ("\nJDI EVENT: ClassPrepareEvent " + ((ClassPrepareEvent) e).referenceType ()); // NOI18N
+                logger.fine("JDI EVENT: ClassPrepareEvent " + ((ClassPrepareEvent) e).referenceType ()); // NOI18N
             } else
             if (e instanceof ClassUnloadEvent) {
-                System.out.println ("\nJDI EVENT: ClassUnloadEvent " + ((ClassUnloadEvent) e).className ()); // NOI18N
+                logger.fine("JDI EVENT: ClassUnloadEvent " + ((ClassUnloadEvent) e).className ()); // NOI18N
             } else
             if (e instanceof ThreadStartEvent) {
                 try {
-                    System.out.println ("\nJDI EVENT: ThreadStartEvent " + ((ThreadStartEvent) e).thread ()); // NOI18N
+                    logger.fine("JDI EVENT: ThreadStartEvent " + ((ThreadStartEvent) e).thread ()); // NOI18N
                 } catch (Exception ex) {
-                    System.out.println ("\nJDI EVENT: ThreadStartEvent1 " + e); // NOI18N
+                    logger.fine("JDI EVENT: ThreadStartEvent1 " + e); // NOI18N
                 }
             } else
             if (e instanceof ThreadDeathEvent) {
                 try {
-                    System.out.println ("\nJDI EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ()); // NOI18N
+                    logger.fine("JDI EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ()); // NOI18N
                 } catch (Exception ex) {
-                    System.out.println ("\nJDI EVENT: ThreadDeathEvent1 " + e); // NOI18N
+                    logger.fine("JDI EVENT: ThreadDeathEvent1 " + e); // NOI18N
                 }
             } else
             if (e instanceof MethodEntryEvent) {
                 try {
-                    System.out.println ("\nJDI EVENT: MethodEntryEvent " + e);
+                    logger.fine("JDI EVENT: MethodEntryEvent " + e);
                 } catch (Exception ex) {
-                    System.out.println ("\nJDI EVENT: MethodEntryEvent " + e);
+                    logger.fine("JDI EVENT: MethodEntryEvent " + e);
                 }
             } else
             if (e instanceof BreakpointEvent) {
-                System.out.println ("\nJDI EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ()); // NOI18N
+                logger.fine("JDI EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ()); // NOI18N
             } else
             if (e instanceof StepEvent) {
-                System.out.println ("\nJDI EVENT: StepEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ()); // NOI18N
+                logger.fine("JDI EVENT: StepEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ()); // NOI18N
             } else
-                System.out.println ("\nJDI EVENT: " + e + " : " + exec); // NOI18N
+                logger.fine("JDI EVENT: " + e + " : " + exec); // NOI18N
         } catch (Exception ex) {
         }
     }

@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -59,8 +60,7 @@ import org.openide.ErrorManager;
  */
 public abstract class BreakpointImpl implements Executor, PropertyChangeListener {
     
-    private static boolean verbose = 
-        System.getProperty ("netbeans.debugger.breakpoints") != null;
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
     private JPDADebuggerImpl    debugger;
     private JPDABreakpoint      breakpoint;
@@ -152,8 +152,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     }
 
     synchronized protected void addEventRequest (EventRequest r) {
-        if (verbose)
-            System.out.println ("B   addEventRequest: " + r);
+        logger.fine("BreakpointImpl addEventRequest: " + r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
        
@@ -175,8 +174,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         try {
             for (i = 0; i < k; i++) { 
                 EventRequest r = (EventRequest) requests.get (i);
-                if (verbose)
-                    System.out.println ("B   removeEventRequest: " + r);
+                logger.fine("BreakpointImpl removeEventRequest: " + r);
                 vm.eventRequestManager().deleteEventRequest(r);
                 getDebugger ().getOperator ().unregister (r);
             }
@@ -234,8 +232,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 e
             );
             resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
-            if (verbose)
-                System.out.println ("B perform breakpoint (no condition): " + this + " resume: " + resume);
+            logger.fine("BreakpointImpl: perform breakpoint (no condition): " + this + " resume: " + resume);
         } else {
             resume = evaluateCondition (
                 condition, 
@@ -286,8 +283,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                             
                 // condition true => stop here (do not resume)
                 // condition false => resume
-                if (verbose)
-                    System.out.println ("B perform breakpoint (condition = " + result + "): " + this + " resume: " + (!result || ev.getResume ()));
+                logger.fine("BreakpointImpl: perform breakpoint (condition = " + result + "): " + this + " resume: " + (!result || ev.getResume ()));
                 return !result || ev.getResume ();
             } catch (ParseException ex) {
                 JPDABreakpointEvent ev = new JPDABreakpointEvent (
@@ -302,8 +298,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     getBreakpoint (),
                     ev
                 );
-                if (verbose)
-                    System.out.println ("B perform breakpoint (bad condition): " + this + " resume: " + ev.getResume ());
+                logger.fine("BreakpointImpl: perform breakpoint (bad condition): " + this + " resume: " + ev.getResume ());
                 return ev.getResume ();
             } catch (InvalidExpressionException ex) {
                 JPDABreakpointEvent ev = new JPDABreakpointEvent (
@@ -318,6 +313,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     getBreakpoint (),
                     ev
                 );
+                logger.fine("BreakpointImpl: perform breakpoint (invalid condition): " + this + " resume: " + ev.getResume ());
                 return ev.getResume ();
             }
         } catch (IncompatibleThreadStateException ex) {

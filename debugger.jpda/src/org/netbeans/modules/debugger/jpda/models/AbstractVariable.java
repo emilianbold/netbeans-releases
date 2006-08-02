@@ -32,6 +32,8 @@ import java.util.Set;
 import java.io.PushbackReader;
 import java.io.StringReader;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.Field;
@@ -51,6 +53,8 @@ import org.openide.util.WeakListeners;
 class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
     // Customized for add/removePropertyChangeListener
     // Cloneable for fixed watches
+    
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
 
     private Value           value;
     private JPDADebuggerImpl debugger;
@@ -683,9 +687,15 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
     ) {
         Value v;
         try {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("STARTED : "+or+".getValue("+f+")");
+            }
             v = or.getValue (f);
         } catch (ObjectCollectedException ocex) {
             v = null;
+        }
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("FINISHED: "+or+".getValue("+f+") = "+v);
         }
         if ( (v == null) || (v instanceof ObjectReference))
             return new ObjectFieldVariable (

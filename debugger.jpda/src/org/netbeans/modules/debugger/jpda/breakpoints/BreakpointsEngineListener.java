@@ -22,6 +22,7 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -54,8 +55,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 public class BreakpointsEngineListener extends LazyActionsManagerListener 
 implements PropertyChangeListener, DebuggerManagerListener {
     
-    private static boolean verbose = 
-        System.getProperty ("netbeans.debugger.breakpoints") != null;
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
     private JPDADebuggerImpl        debugger;
     private SourcePath           engineContext;
@@ -164,8 +164,6 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     private void createBreakpointImpl (Breakpoint b) {
         if (breakpointToImpl.containsKey (b)) return;
-        if (verbose)
-            System.out.println ("B create breakpoint impl for breakpoint: " + b);
         if (b instanceof LineBreakpoint) {
             breakpointToImpl.put (
                 b,
@@ -228,13 +226,13 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 )
             );
         }
+        logger.finer("BreakpointsEngineListener: created impl "+breakpointToImpl.get(b)+" for "+b);
     }
 
     private void removeBreakpointImpl (Breakpoint b) {
-        if (verbose)
-            System.out.println ("B remove breakpoint impl for breakpoint: " + b);
         BreakpointImpl impl = (BreakpointImpl) breakpointToImpl.get (b);
         if (impl == null) return;
+        logger.finer("BreakpointsEngineListener: removed impl "+impl+" for "+b);
         impl.remove ();
         breakpointToImpl.remove (b);
     }

@@ -26,6 +26,8 @@ import com.sun.jdi.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.Field;
@@ -39,6 +41,8 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  * @author Martin Entlicher
  */
 public class JPDAClassTypeImpl implements JPDAClassType {
+    
+    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
     
     private JPDADebuggerImpl debugger;
     private ReferenceType classType;
@@ -70,7 +74,13 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             Value value = null;
             com.sun.jdi.Field origField = allFieldsOrig.get(i);
             if (origField.isStatic()) {
+                if (loggerValue.isLoggable(Level.FINE)) {
+                    loggerValue.fine("STARTED : "+classType+".getValue("+origField+")");
+                }
                 value = classType.getValue(origField);
+                if (loggerValue.isLoggable(Level.FINE)) {
+                    loggerValue.fine("FINISHED: "+classType+".getValue("+origField+") = "+value);
+                }
                 staticFields.add(new FieldVariable(debugger, value, origField, "", (ObjectReference) null));
             }
         }

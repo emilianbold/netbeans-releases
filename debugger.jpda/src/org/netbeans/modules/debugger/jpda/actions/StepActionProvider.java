@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 
 
@@ -63,8 +64,7 @@ implements Executor {
     
     private static boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
-    private static boolean verbose = 
-        System.getProperty ("netbeans.debugger.jdievents") != null;
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
 
 
     private static int getJDIAction (Object action) {
@@ -134,8 +134,7 @@ implements Executor {
                 getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
                 stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
                 stepRequest.enable ();
-                if (verbose)
-                    System.out.println("JDI Request: " + stepRequest);
+                logger.fine("JDI Request: " + stepRequest);
 
                 // 3) resume JVM
                 getDebuggerImpl ().resume ();

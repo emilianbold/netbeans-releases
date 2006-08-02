@@ -52,8 +52,6 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 */
 public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     
-    private static final boolean verbose = 
-        System.getProperty ("netbeans.debugger.breakpoints") != null;
     private static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
 
     
@@ -155,9 +153,6 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     protected void classLoaded (ReferenceType referenceType) {
-        if (verbose)
-            System.out.println ("B class loaded: " + referenceType);
-
         Iterator methods = referenceType.methods ().iterator ();
         MethodEntryRequest entryReq = null;
         MethodExitRequest exitReq = null;

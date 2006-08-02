@@ -22,6 +22,8 @@ package org.netbeans.modules.debugger.jpda.expr;
 import com.sun.jdi.*;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -42,6 +44,9 @@ public class Evaluator implements JavaParserVisitor {
     
     private static final boolean      verbose = 
         System.getProperty ("netbeans.debugger.noInvokeMethods") != null;
+    
+    private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
+    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
 
     private Expression              expression;
     private EvaluationContext       evaluationContext;
@@ -192,7 +197,16 @@ public class Evaluator implements JavaParserVisitor {
 
     private ObjectReference primitiveClass(String name) throws IncompatibleThreadStateException {
         ReferenceType primType = resolveType("java.lang." + name.substring(0, 1).toUpperCase() + name.substring(1));
-        return (ObjectReference) primType.getValue(primType.fieldByName("TYPE"));
+        try {
+            if (loggerValue.isLoggable(Level.FINE)) {
+                loggerValue.fine("STARTED : "+primType+".getValue("+primType.fieldByName("TYPE")+")");
+            }
+            return (ObjectReference) primType.getValue(primType.fieldByName("TYPE"));
+        } finally {
+            if (loggerValue.isLoggable(Level.FINE)) {
+                loggerValue.fine("FINISHED: "+primType+".getValue("+primType.fieldByName("TYPE")+")");
+            }
+        }
     }
 
     private Object visitResultType(SimpleNode node, Object data) {
@@ -824,6 +838,9 @@ public class Evaluator implements JavaParserVisitor {
                     return Assert.error(node, "calleeException", new UnsupportedOperationException(), ctx);
                 }
                 evaluationContext.methodToBeInvoked();
+                if (loggerMethod.isLoggable(Level.FINE)) {
+                    loggerMethod.fine("STARTED : "+method.instanceContext+"."+method.method+" ("+method.args+") in thread "+frameThread);
+                }
                 return method.instanceContext.invokeMethod(frameThread, method.method, method.args,
                                                         ObjectReference.INVOKE_SINGLE_THREADED | ObjectReference.INVOKE_NONVIRTUAL);
             } catch (InvalidTypeException e) {
@@ -840,6 +857,9 @@ public class Evaluator implements JavaParserVisitor {
                 Assert.error(node, "calleeException", e, ctx);
             }
             finally {
+                if (loggerMethod.isLoggable(Level.FINE)) {
+                    loggerMethod.fine("FINISHED: "+method.instanceContext+"."+method.method+" ("+method.args+") in thread "+frameThread);
+                }
                 try {
                     frame = frameThread.frame(frameIndex);
                 } catch (IncompatibleThreadStateException e) {
@@ -970,7 +990,13 @@ public class Evaluator implements JavaParserVisitor {
                 object = origObject;
                 break; //No outer reference
             }
+            if (loggerValue.isLoggable(Level.FINE)) {
+                loggerValue.fine("STARTED : "+object+".getValue("+outerRef+")");
+            }
             object = (ObjectReference) object.getValue(outerRef);
+            if (loggerValue.isLoggable(Level.FINE)) {
+                loggerValue.fine("FINISHED: getValue("+outerRef+") = "+object);
+            }
             type = object.referenceType();
             methods = getMethodsByName(type, ctx.identifier);
                 
@@ -1265,6 +1291,9 @@ public class Evaluator implements JavaParserVisitor {
                 throw new UnsupportedOperationException();
             }
             evaluationContext.methodToBeInvoked();
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("STARTED : "+reference+"."+toCall+" () in thread "+frameThread);
+            }
             return (PrimitiveValue) reference.invokeMethod(frameThread, toCall, new ArrayList(0), ObjectReference.INVOKE_SINGLE_THREADED);
         } catch (UnsupportedOperationException uoex) {
             evaluationContext.setCanInvokeMethods(false);
@@ -1274,6 +1303,9 @@ public class Evaluator implements JavaParserVisitor {
             // this should never happen, indicates an internal error
             throw new RuntimeException("Unexpected exception while invoking unboxing method", e);
         } finally {
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("FINISHED: "+reference+"."+toCall+" () in thread "+frameThread);
+            }
             try {
                 frame = frameThread.frame(frameIndex);
             } catch (IncompatibleThreadStateException e) {
@@ -1385,7 +1417,13 @@ public class Evaluator implements JavaParserVisitor {
             for (Iterator j = fields.iterator(); j.hasNext();) {
                 Field field = (Field) j.next();
                 if (field.isSynthetic() && field.name().startsWith("this$")) {
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("STARTED : "+obj+".getValue("+field+")");
+                    }
                     obj = (ObjectReference) obj.getValue(field);
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("FINISHED: getValue("+field+") = "+obj);
+                    }
                     ClassType type = (ClassType) obj.referenceType();
                     if (type.name().endsWith(typeQualifier)) {
                         return obj;
@@ -1412,7 +1450,18 @@ public class Evaluator implements JavaParserVisitor {
         // field
         if (ctx.instanceContext != null) {
             Field field = ctx.typeContext.fieldByName(ctx.identifier);
-            if (field != null) return ctx.instanceContext.getValue(field);
+            if (field != null) {
+                try {
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("STARTED : "+ctx.instanceContext+".getValue("+field+")");
+                    }
+                    return ctx.instanceContext.getValue(field);
+                } finally {
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("FINISHED : "+ctx.instanceContext+".getValue("+field+")");
+                    }
+                }
+            }
             if (ctx.instanceContext instanceof ArrayReference) {
                 if (ctx.identifier.equals("length")) {
                     return vm.mirrorOf(((ArrayReference) ctx.instanceContext).length());
@@ -1423,7 +1472,18 @@ public class Evaluator implements JavaParserVisitor {
         // field from static context
         Field field = ctx.typeContext.fieldByName(ctx.identifier);
         try {
-            if (field != null) return ctx.typeContext.getValue(field);
+            if (field != null) {
+                try {
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("STARTED : "+ctx.typeContext+".getValue("+field+")");
+                    }
+                    return ctx.typeContext.getValue(field);
+                } finally {
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("FINISHED : "+ctx.typeContext+".getValue("+field+")");
+                    }
+                }
+            }
         } catch (IllegalArgumentException e) {
             Assert.error(currentNode, "accessInstanceVariableFromStaticContext", ctx);
         }
@@ -1431,17 +1491,45 @@ public class Evaluator implements JavaParserVisitor {
         // local variable accessed from innerclass
         if (ctx.instanceContext != null) {
             field = ctx.typeContext.fieldByName("val$" + ctx.identifier);
-            if (field != null) return ctx.instanceContext.getValue(field);
+            if (field != null) {
+                try {
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("STARTED : "+ctx.instanceContext+".getValue("+field+")");
+                    }
+                    return ctx.instanceContext.getValue(field);
+                } finally {
+                    if (loggerValue.isLoggable(Level.FINE)) {
+                        loggerValue.fine("FINISHED: "+ctx.instanceContext+".getValue("+field+")");
+                    }
+                }
+            }
         }
         
         // outer field accessed from innerclass
         if (ctx.instanceContext != null) {
             Field helpField = ctx.typeContext.fieldByName("this$0");
             if (helpField != null) {
+                if (loggerValue.isLoggable(Level.FINE)) {
+                    loggerValue.fine("STARTED : "+ctx.instanceContext+".getValue("+helpField+")");
+                }
                 ObjectReference or = (ObjectReference)ctx.instanceContext.getValue(helpField);
+                if (loggerValue.isLoggable(Level.FINE)) {
+                    loggerValue.fine("FINISHED: "+ctx.instanceContext+".getValue("+helpField+") = "+or);
+                }
                 if (or != null) {
                     field = or.referenceType().fieldByName(ctx.identifier);
-                    if (field != null) return or.getValue(field);
+                    if (field != null) {
+                        try {
+                            if (loggerValue.isLoggable(Level.FINE)) {
+                                loggerValue.fine("STARTED : "+or+".getValue("+field+")");
+                            }
+                            return or.getValue(field);
+                        } finally {
+                            if (loggerValue.isLoggable(Level.FINE)) {
+                                loggerValue.fine("FINISHED: "+or+".getValue("+field+")");
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1452,7 +1540,18 @@ public class Evaluator implements JavaParserVisitor {
             try {
                 ReferenceType type = resolveType(typeName);
                 field = type.fieldByName(ctx.identifier);
-                if (field != null) return type.getValue(field);
+                if (field != null) {
+                    try {
+                        if (loggerValue.isLoggable(Level.FINE)) {
+                            loggerValue.fine("STARTED : "+type+".getValue("+field+")");
+                        }
+                        return type.getValue(field);
+                    } finally {
+                        if (loggerValue.isLoggable(Level.FINE)) {
+                            loggerValue.fine("FINISHED: "+type+".getValue("+field+")");
+                        }
+                    }
+                }
             } catch (Exception e) {
                 // no such type or field
             }
@@ -1660,10 +1759,16 @@ public class Evaluator implements JavaParserVisitor {
                 "CTL_UnsupportedOperationException"
             ));
         try {
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("STARTED : "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
+            }
             Value value =
                     objectReference.invokeMethod(evaluationThread, method,
                                                  args,
                                                  ObjectReference.INVOKE_SINGLE_THREADED);
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("   return = "+value);
+            }
             return value;
         } catch (InvalidTypeException itex) {
             throw new InvalidExpressionException (itex);
@@ -1684,6 +1789,10 @@ public class Evaluator implements JavaParserVisitor {
         } catch (ObjectCollectedException ocex) {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 Evaluator.class, "CTL_EvalError_collected"));
+        } finally {
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
+            }
         }
     }
 }

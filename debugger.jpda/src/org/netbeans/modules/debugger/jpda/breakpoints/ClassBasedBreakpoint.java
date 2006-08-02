@@ -31,6 +31,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.Iterator;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
@@ -50,8 +51,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     private final Object SOURCE_ROOT_LOCK = new Object();
     private SourceRootsChangedListener srChListener;
     
-    private static boolean verbose = 
-        System.getProperty ("netbeans.debugger.breakpoints") != null;
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
     public ClassBasedBreakpoint (
         JPDABreakpoint breakpoint, 
@@ -119,8 +119,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     ClassPrepareRequest cpr = getEventRequestManager ().
                         createClassPrepareRequest ();
                     cpr.addClassFilter (classFilters [i]);
-                    if (verbose)
-                        System.out.println ("B     set class load request: " + classFilters [i]);
+                    logger.fine("Set class load request: " + classFilters [i]);
                     addEventRequest (cpr);
                 }
                 k = classExclusionFilters.length;
@@ -128,8 +127,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     ClassPrepareRequest cpr = getEventRequestManager ().
                         createClassPrepareRequest ();
                     cpr.addClassExclusionFilter (classExclusionFilters [i]);
-                    if (verbose)
-                        System.out.println ("B     set class load exclusion request: " + classExclusionFilters [i]);
+                    logger.fine("Set class load exclusion request: " + classExclusionFilters [i]);
                     addEventRequest (cpr);
                 }
             }
@@ -140,8 +138,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     ClassUnloadRequest cur = getEventRequestManager ().
                         createClassUnloadRequest ();
                     cur.addClassFilter (classFilters [i]);
-                    if (verbose)
-                        System.out.println ("B     set class unload request: " + classFilters [i]);
+                    logger.fine("Set class unload request: " + classFilters [i]);
                     addEventRequest (cur);
                 }
                 k = classExclusionFilters.length;
@@ -149,8 +146,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     ClassUnloadRequest cur = getEventRequestManager ().
                         createClassUnloadRequest ();
                     cur.addClassExclusionFilter (classExclusionFilters [i]);
-                    if (verbose)
-                        System.out.println ("B     set class unload exclusion request: " + classExclusionFilters [i]);
+                    logger.fine("Set class unload exclusion request: " + classExclusionFilters [i]);
                     addEventRequest (cur);
                 }
             }
@@ -162,8 +158,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         String className, 
         boolean all
     ) {
-        if (verbose)
-            System.out.println("B   check loaded classes: " + className + " : " + all);
+        logger.fine("Check loaded classes: " + className + " : " + all);
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
         boolean matched = false;
@@ -181,8 +176,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 if (i != null) {
                     String name = referenceType.name ();
                     if (match (name, className)) {
-                        if (verbose)
-                            System.out.println("B       cls loaded! " + referenceType);
+                        logger.fine(" Class loaded: " + referenceType);
                         classLoaded (referenceType);
                         matched = true;
                     }
@@ -194,10 +188,13 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     }
 
     public boolean exec (Event event) {
-        if (event instanceof ClassPrepareEvent)
+        if (event instanceof ClassPrepareEvent) {
+            logger.fine(" Class loaded: " + ((ClassPrepareEvent) event).referenceType ());
             classLoaded (((ClassPrepareEvent) event).referenceType ());
-        else if (event instanceof ClassUnloadEvent)
+        } else if (event instanceof ClassUnloadEvent) {
+            logger.fine(" Class unloaded: " + ((ClassPrepareEvent) event).referenceType ());
             classUnloaded (((ClassUnloadEvent) event).className ());
+        }
         return true;
     }
     
