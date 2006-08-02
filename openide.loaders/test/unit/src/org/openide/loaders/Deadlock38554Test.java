@@ -42,6 +42,7 @@ public class Deadlock38554Test extends NbTestCase implements FileChangeListener 
     }
     
     protected void setUp() throws Exception {
+        clearWorkDir();
         lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[] {
             "folder/",
             "folder/f.uni",

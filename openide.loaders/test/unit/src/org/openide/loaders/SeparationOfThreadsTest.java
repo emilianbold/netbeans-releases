@@ -47,6 +47,7 @@ public class SeparationOfThreadsTest extends NbTestCase {
 
     // For each test setup a FileSystem and DataObjects
     protected void setUp() throws Exception {
+        clearWorkDir();
         String fsstruct [] = new String [] {
             "source/A.attr", 
             "B.attr",
@@ -93,8 +94,10 @@ public class SeparationOfThreadsTest extends NbTestCase {
         ALoader loader = (ALoader)ALoader.getLoader(ALoader.class);
         synchronized (loader) {
             try {
+                int cnt = 0;
                 while (!loader.finished) {
-                    loader.wait ();
+                    loader.wait(1000);
+                    assertTrue("apparent hang in tearDown", cnt++ < 100);
                 }
 
                 if (res == null) {

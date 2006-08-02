@@ -68,6 +68,8 @@ implements PropertyChangeListener {
     }
     
     protected void setUp () throws Exception {
+        clearWorkDir();
+
         MockServices.setServices(new Class[] {ErrManager.class, Pool.class});
         
         if (previous != null) {
@@ -139,10 +141,11 @@ implements PropertyChangeListener {
         }
     }
     
-    public void testReorderWithoutChecksWhenFolderReconizerIsBusy () throws Exception {
+    /* XXX how does this differ from testReorderWithoutChecks?!
+    public void testReorderWithoutChecksWhenFolderRecognizerIsBusy() throws Exception {
         doTest ();
     }
-
+     */
     
     public void testReorderWithoutChecks () throws Exception {
         doTest ();

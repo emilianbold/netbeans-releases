@@ -46,6 +46,7 @@ public final class DefaultSettingsContextTest extends NbTestCase {
     
     protected void setUp() throws java.lang.Exception {
         super.setUp();
+        clearWorkDir();
         
         String fsstruct [] = new String [] {
             "AA/a.test"

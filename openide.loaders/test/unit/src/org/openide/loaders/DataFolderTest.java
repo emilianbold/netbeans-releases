@@ -61,7 +61,7 @@ public class DataFolderTest extends LoggingTestCaseHid {
         assertEquals ("Found the right one", fo, df.getPrimaryFile());
     }
     
-    /** Tests whether children are updated immediatelly.
+    /** Tests whether children are updated immediately.
      */
     public void testChildren () throws Exception {
         String fsstruct [] = new String [] {
