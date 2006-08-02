@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.welcome.content;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Method;
@@ -37,9 +38,17 @@ class HttpProxySettings {
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport( this );
 
     public static final String PROXY_SETTINGS = "ProxySettings"; // NOI18N
+    
+    private static String[] proxyChangeEvents = { "useProxy" // NOI18N
+                ,"proxyType" // NOI18N
+                ,"userProxyHost" // NOI18N
+                ,"userProxyPort" // NOI18N
+                ,"userNonProxy" // NOI18N
+                };
 
     /** Creates a new instance of HttpProxySettings */
     private HttpProxySettings() {
+        initProxyMethodsMaybe();
     }
 
     public static HttpProxySettings getDefault() {
@@ -69,7 +78,7 @@ class HttpProxySettings {
     // the system option. If something goes wrong, log it quietly and revert
     // to just setting the system properties (valid just for the session duration).
     
-    private static Object settingsInstance;
+    private static SharedClassObject settingsInstance;
    
     private static Method mGetProxyType, mSetProxyType, mGetProxyHost, mSetProxyHost, mGetProxyPort, mSetProxyPort;
     
@@ -96,6 +105,17 @@ class HttpProxySettings {
             mSetProxyHost = clazz.getMethod("setUserProxyHost", new Class[] {String.class}); // NOI18N
             mGetProxyPort = clazz.getMethod("getUserProxyPort", null); // NOI18N
             mSetProxyPort = clazz.getMethod("setUserProxyPort", new Class[] {String.class}); // NOI18N
+            //listen to proxy changes made elsewhere in the gui
+            settingsInstance.addPropertyChangeListener( new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    for( int i=0; i<proxyChangeEvents.length; i++ ) {
+                        if( proxyChangeEvents[i].equals( evt.getPropertyName() ) ) {
+                            getDefault().propertySupport.firePropertyChange( PROXY_SETTINGS, null, getDefault() );
+                            return;
+                        }
+                    }
+                }
+            });
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             // OK, use system properties rather than reflection.
