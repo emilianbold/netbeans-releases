@@ -43,6 +43,8 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** The MainWindow of IDE. Holds toolbars, main menu and also entire desktop
  * if in MDI user interface. Singleton.
@@ -533,6 +535,7 @@ public final class MainWindow extends JFrame {
         if( isFullScreenMode == fullScreenMode ) {
             return;
         }
+        final TopComponent activatedTc = WindowManager.getDefault().getRegistry().getActivated();
         if( !isFullScreenMode ) {
             restoreExtendedState = getExtendedState();
             restoreBounds = getBounds();
@@ -554,6 +557,9 @@ public final class MainWindow extends JFrame {
                 invalidate();
                 validate();
                 repaint();
+                if( null != activatedTc ) {
+                    activatedTc.requestFocusInWindow();
+                }
             }
         });
     }
