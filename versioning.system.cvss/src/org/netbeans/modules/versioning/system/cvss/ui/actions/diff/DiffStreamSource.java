@@ -92,7 +92,21 @@ public class DiffStreamSource extends StreamSource {
         if (binary) {
             return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle()));
         } else {
-            return EncodedReaderFactory.getDefault().getReader(remoteFile, mimeType);
+            FileObject remoteFo = FileUtil.toFileObject(remoteFile);
+            FileObject bfo = FileUtil.toFileObject(baseFile);
+            if (bfo != null) {
+                return EncodedReaderFactory.getDefault().getReader(remoteFo, null, bfo);
+            } else {
+                // locally deleted file, use a nasty workaround
+                File tempFile = new File(remoteFile.getParentFile(), remoteFile.getName().substring(0, remoteFile.getName().indexOf('#')));
+                if (tempFile.exists()) tempFile.delete();
+
+                bfo = FileUtil.copyFile(remoteFo, remoteFo.getParent(), tempFile.getName(), "");
+                
+                Reader r = EncodedReaderFactory.getDefault().getReader(remoteFo, null, bfo);
+                tempFile.delete();
+                return r;
+            }
         }
     }
 
