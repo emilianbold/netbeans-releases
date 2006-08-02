@@ -291,15 +291,16 @@ public class Scene extends Widget {
     }
 
     public final Rectangle convertSceneToView (Rectangle sceneRectangle) {
+        Point location = getLocation ();
         return GeomUtil.roundRectangle (new Rectangle2D.Double (
-                (double) sceneRectangle.x * zoomFactor,
-                (double) sceneRectangle.y * zoomFactor,
+                (double) (sceneRectangle.x + location.x) * zoomFactor,
+                (double) (sceneRectangle.y + location.y) * zoomFactor,
                 (double) sceneRectangle.width * zoomFactor,
                 (double) sceneRectangle.height * zoomFactor));
     }
 
     public Point convertViewToScene (Point viewLocation) {
-        return new Point ((int) ((double) viewLocation.x / zoomFactor), (int) ((double) viewLocation.y / zoomFactor));
+        return new Point ((int) ((double) viewLocation.x / zoomFactor) - getLocation ().x, (int) ((double) viewLocation.y / zoomFactor) - getLocation ().y);
     }
 
     public WidgetAction createWidgetHoverAction () {

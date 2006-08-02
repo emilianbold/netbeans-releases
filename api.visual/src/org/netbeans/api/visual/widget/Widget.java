@@ -391,11 +391,11 @@ public class Widget {
         Point sceneLocation = new Point (localLocation);
         Widget widget = this;
         while (widget != null) {
+            if (widget == scene)
+                break;
             Point location = widget.getLocation ();
             sceneLocation.x += location.x;
             sceneLocation.y += location.y;
-            if (widget == scene)
-                break;
             widget = widget.getParentWidget ();
         }
         return new Point (sceneLocation.x, sceneLocation.y);
@@ -405,11 +405,11 @@ public class Widget {
         Rectangle sceneRectangle = new Rectangle (localRectangle);
         Widget widget = this;
         while (widget != null) {
+            if (widget == scene)
+                break;
             Point location = widget.getLocation ();
             sceneRectangle.x += location.x;
             sceneRectangle.y += location.y;
-            if (widget == scene)
-                break;
             widget = widget.getParentWidget ();
         }
         return sceneRectangle;
@@ -419,11 +419,11 @@ public class Widget {
         Point localLocation = new Point (sceneLocation);
         Widget widget = this;
         while (widget != null) {
+            if (widget == scene)
+                break;
             Point location = widget.getLocation ();
             localLocation.x -= location.x;
             localLocation.y -= location.y;
-            if (widget == scene)
-                break;
             widget = widget.getParentWidget ();
         }
         return localLocation;
