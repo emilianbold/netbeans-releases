@@ -51,7 +51,10 @@ public interface Index extends Node.Cookie {
     public void reorder();
 
     /** Reorder all children with a given permutation.
-    * @param perm permutation with the length of current nodes
+    * @param perm permutation with the length of current nodes. The permutation
+    * lists the new positions of the original nodes, that is, for nodes
+    * <code>[A,B,C,D]</code> and permutation <code>[0,3,1,2]</code>, the final
+    * order would be <code>[A,C,D,B]</code>.
     * @exception IllegalArgumentException if the permutation is not valid
     */
     public void reorder(int[] perm);
