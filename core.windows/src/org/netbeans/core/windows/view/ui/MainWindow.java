@@ -187,7 +187,7 @@ public final class MainWindow extends JFrame {
             }
         });
         //#38810 end
-        setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", System.getProperty("netbeans.buildnumber")));
+        setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", System.getProperty("netbeans.buildnumber")));
     }
     
     private static void decoratePanel (JPanel panel) {
