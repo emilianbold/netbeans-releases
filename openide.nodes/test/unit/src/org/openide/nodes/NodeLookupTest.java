@@ -99,8 +99,8 @@ public class NodeLookupTest extends NbTestCase {
         assertEquals ("It also possible to get it from getLookup", myInstance, node.getLookup ().lookup (myInstance.getClass ()));
     }
     
-    private void checkInstanceInGetCookie (Object obj, InstanceContent ic, Node node) {
-        assertNull ("The node does not contain the object yet", node.getCookie (obj.getClass ()));
+    private void checkInstanceInGetCookie (Node.Cookie obj, InstanceContent ic, Node node) {
+        assertNull("The node does not contain the object yet", node.getCookie(obj.getClass()));
         
         Listener listener = new Listener ();
         node.addNodeListener(listener);
@@ -108,11 +108,7 @@ public class NodeLookupTest extends NbTestCase {
         ic.add (obj);
         listener.assertEvents ("One change in node", 1, -1);
 
-        if (obj instanceof Node.Cookie) {
-            assertEquals ("Can access cookie in the content", obj, node.getCookie (obj.getClass ()));
-        } else {
-            assertNull ("Cannot access noncookie in the content", node.getCookie (obj.getClass ()));
-        }
+        assertEquals("Can access cookie in the content", obj, node.getCookie(obj.getClass()));
 
         ic.remove (obj);
         listener.assertEvents ("One change in node", 1, -1);

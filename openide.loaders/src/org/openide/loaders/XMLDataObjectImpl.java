@@ -68,6 +68,7 @@ class XMLDataObjectImpl extends Object {
         return builder;
     }
     
+    @Deprecated
     static Parser makeParser(boolean validate) {
         
         try {

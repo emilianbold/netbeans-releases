@@ -34,6 +34,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -243,22 +246,22 @@ public abstract class OpenSupport extends CloneableOpenSupport {
         
         /** Method that allows environment to find its 
          * cloneable open support.
-        * @return the support or null if the environemnt is not in valid 
+        * @return the support or null if the environment is not in valid 
         * state and the CloneableOpenSupport cannot be found for associated
         * data object
         */
         public CloneableOpenSupport findCloneableOpenSupport() {
-            Object obj = getDataObject ().getCookie (CloneableOpenSupport.class);
-            if (obj instanceof CloneableOpenSupport) {
-                return (CloneableOpenSupport)obj;
+            OpenCookie oc = getDataObject().getCookie(OpenCookie.class);
+            if (oc != null && oc instanceof CloneableOpenSupport) {
+                return (CloneableOpenSupport) oc;
             }
-            obj = getDataObject ().getCookie (org.openide.cookies.OpenCookie.class);
-            if (obj instanceof CloneableOpenSupport) {
-                return (CloneableOpenSupport)obj;
+            EditCookie edc = getDataObject().getCookie(EditCookie.class);
+            if (edc != null && edc instanceof CloneableOpenSupport) {
+                return (CloneableOpenSupport) edc;
             }
-            obj = getDataObject ().getCookie (org.openide.cookies.EditorCookie.class);
-            if (obj instanceof CloneableOpenSupport) {
-                return (CloneableOpenSupport)obj;
+            EditorCookie ec = getDataObject().getCookie(EditorCookie.class);
+            if (ec != null && ec instanceof CloneableOpenSupport) {
+                return (CloneableOpenSupport) ec;
             }
             return null;
         }
@@ -395,7 +398,21 @@ public abstract class OpenSupport extends CloneableOpenSupport {
 
         public Object readResolve () {
             DataObject obj = entry.getDataObject ();
-            OpenSupport os = (OpenSupport)obj.getCookie (OpenSupport.class);
+            OpenSupport os = null;
+            OpenCookie oc = obj.getCookie(OpenCookie.class);
+            if (oc != null && oc instanceof OpenSupport) {
+                os = (OpenSupport) oc;
+            } else {
+                EditCookie edc = obj.getCookie(EditCookie.class);
+                if (edc != null && edc instanceof OpenSupport) {
+                    os = (OpenSupport) edc;
+                } else {
+                    EditorCookie ec = obj.getCookie(EditorCookie.class);
+                    if (ec != null && ec instanceof OpenSupport) {
+                        os = (OpenSupport) ec;
+                    }
+                }
+            }
             if (os == null) {
                 // problem! no replace!?
                 return this;

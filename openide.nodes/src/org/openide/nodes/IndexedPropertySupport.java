@@ -16,6 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.nodes;
 
 import org.openide.util.Utilities;
@@ -25,17 +26,13 @@ import java.beans.Beans;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-
 /** Support for indexed properties.
 *
-* @see Node
-*
 * @author Jan Jancura
-* @version 0.14, Jan 20, 1998
 */
-public class IndexedPropertySupport extends Node.IndexedProperty {
+public class IndexedPropertySupport<T,E> extends Node.IndexedProperty<T,E> {
     /** Instance of the bean. */
-    protected Object instance;
+    protected T instance;
 
     /** setter method */
     private Method setter;
@@ -59,7 +56,7 @@ public class IndexedPropertySupport extends Node.IndexedProperty {
     * @param indexedSetter set method for one element
     */
     public IndexedPropertySupport(
-        Object instance, Class valueType, Class elementType, Method getter, Method setter, Method indexedGetter,
+        T instance, Class<T> valueType, Class<E> elementType, Method getter, Method setter, Method indexedGetter,
         Method indexedSetter
     ) {
         super(valueType, elementType);
@@ -104,14 +101,14 @@ public class IndexedPropertySupport extends Node.IndexedProperty {
     * @exception IllegalArgumentException wrong argument
     * @exception InvocationTargetException an exception during invocation
     */
-    public Object getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public T getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (!canRead()) {
             throw new IllegalAccessException();
         }
 
         Object validInstance = Beans.getInstanceOf(instance, getter.getDeclaringClass());
 
-        return getter.invoke(validInstance, new Object[0]);
+        return PropertySupport.cast(getValueType(), getter.invoke(validInstance));
     }
 
     /* Can write the value of the property.
@@ -127,21 +124,22 @@ public class IndexedPropertySupport extends Node.IndexedProperty {
     * @exception IllegalArgumentException wrong argument
     * @exception InvocationTargetException an exception during invocation
     */
-    public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public void setValue(T val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (!canWrite()) {
             throw new IllegalAccessException();
         }
 
         Object validInstance = Beans.getInstanceOf(instance, setter.getDeclaringClass());
 
+        Object value = val;
         if (
             (val != null) && (setter.getParameterTypes()[0].getComponentType().isPrimitive()) &&
                 (!val.getClass().getComponentType().isPrimitive())
         ) {
-            val = Utilities.toPrimitiveArray((Object[]) val);
+            value = Utilities.toPrimitiveArray((Object[]) val);
         }
 
-        setter.invoke(validInstance, new Object[] { val });
+        setter.invoke(validInstance, value);
     }
 
     /* Can read the indexed value of the property.
@@ -157,7 +155,7 @@ public class IndexedPropertySupport extends Node.IndexedProperty {
     * @exception IllegalArgumentException wrong argument
     * @exception InvocationTargetException an exception during invocation
     */
-    public Object getIndexedValue(int index)
+    public E getIndexedValue(int index)
     throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (!canIndexedRead()) {
             throw new IllegalAccessException();
@@ -165,7 +163,7 @@ public class IndexedPropertySupport extends Node.IndexedProperty {
 
         Object validInstance = Beans.getInstanceOf(instance, indexedGetter.getDeclaringClass());
 
-        return indexedGetter.invoke(validInstance, new Object[] { new Integer(index) });
+        return PropertySupport.cast(getElementType(), indexedGetter.invoke(validInstance, index));
     }
 
     /* Can write the indexed value of the property.
@@ -181,7 +179,7 @@ public class IndexedPropertySupport extends Node.IndexedProperty {
     * @exception IllegalArgumentException wrong argument
     * @exception InvocationTargetException an exception during invocation
     */
-    public void setIndexedValue(int index, Object val)
+    public void setIndexedValue(int index, E val)
     throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (!canIndexedWrite()) {
             throw new IllegalAccessException();

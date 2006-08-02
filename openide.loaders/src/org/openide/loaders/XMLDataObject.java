@@ -262,10 +262,10 @@ public class XMLDataObject extends MultiDataObject {
      * @return a cookie (instanceof cls) that has been found in info or
      * super.getCookie(cls).
      */
-    public Node.Cookie getCookie (Class cls) {
+    public <T extends Node.Cookie> T getCookie(Class<T> cls) {
         getIP ().waitFinished();
 
-        Node.Cookie cake = (Node.Cookie)getIP ().lookupCookie (cls);
+        Object cake = getIP().lookupCookie(cls);
        
         if (ERR.isLoggable(Level.FINE)) {
             ERR.fine("Query for " + cls + " for " + this); // NOI18N
@@ -288,7 +288,7 @@ public class XMLDataObject extends MultiDataObject {
             ERR.fine("getCookie returns " + cake + " for " + this); // NOI18N
         }
         
-        return cake;
+        return cls.cast(cake);
     }
 
     /** Special support of InstanceCookie.Of. If the Info class
@@ -558,6 +558,7 @@ public class XMLDataObject extends MultiDataObject {
      * setting ns to false.
      * For more details see {@link #createParser() createParser}
      */
+    @Deprecated
     public static Parser createParser (boolean validate) {
         
         Parser parser = XMLDataObjectImpl.makeParser(validate);
@@ -989,13 +990,13 @@ public class XMLDataObject extends MultiDataObject {
          *
          * @param class to look for
          */
-        public Object lookupCookie (final Class clazz) {
+        public Object lookupCookie(final Class<?> clazz) {
             if (QUERY.get () == clazz) {
                 if (ERR.isLoggable(Level.FINE)) ERR.fine("Cyclic deps on queried class: " + clazz + " for " + XMLDataObject.this); // NOI18N
                 // somebody is querying for the same cookie in the same thread
                 // probably neverending-loop - ignore
                 return new InstanceCookie () {
-                    public Class instanceClass () {
+                    public Class<?> instanceClass () {
                         return clazz;
                     }
                     
@@ -1551,7 +1552,7 @@ public class XMLDataObject extends MultiDataObject {
         * @param proc the class to add to this info
         * @exception IllegalArgumentException if the class does not seem to be valid
         */
-        public synchronized void addProcessorClass (Class proc) {
+        public synchronized void addProcessorClass(Class<?> proc) {
             if (!Processor.class.isAssignableFrom (proc)) {
                 Constructor[] arr = proc.getConstructors();
                 for (int i = 0; i < arr.length; i++) {
@@ -1579,11 +1580,11 @@ public class XMLDataObject extends MultiDataObject {
         /** Remove processor class from info.
          * @return true if removed
          */
-        public boolean removeProcessorClass (Class proc) {
+        public boolean removeProcessorClass(Class<?> proc) {
             return processors.remove (proc);
         }
 
-        public Iterator processorClasses () {
+        public Iterator<Class<?>> processorClasses() {
             return processors.iterator();
         }
 

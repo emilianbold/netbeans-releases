@@ -521,9 +521,10 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     }
 
     /* Scans the orginal bundle */
-    public Node.Cookie getCookie (Class c) {
-        if (c.isInstance (this)) {
-            return this;
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> c) {
+        if (c.isInstance(this)) {
+            return c.cast(this);
         }
         return original.getCookie (this, c);
     }
@@ -888,8 +889,9 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         *
         * @return the cookie or null
         */
-        public Node.Cookie getCookie (Class cl) {
-            Node.Cookie c = obj.getCookie (cl);
+        @Override
+        public <T extends Node.Cookie> T getCookie(Class<T> cl) {
+            T c = obj.getCookie(cl);
             if (c != null) {
                 return c;
             } else {

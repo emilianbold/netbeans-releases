@@ -26,9 +26,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -38,6 +41,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.EventListenerList;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -119,13 +123,13 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     private static final Logger err = Logger.getLogger("org.openide.nodes.Node"); //NOI18N;
 
     /** cache of all created lookups */
-    private static WeakHashMap lookups = new WeakHashMap(37);
+    private static Map<EventListenerList,Reference<Lookup>> lookups = new WeakHashMap<EventListenerList,Reference<Lookup>>(37);
 
     /** class.property names we have warned about for #31413 */
-    private static final Set warnedBadProperties = new HashSet(100); // Set<String>
+    private static final Set<String> warnedBadProperties = new HashSet<String>(100);
 
     /** template for changes in cookies */
-    private static final Lookup.Template TEMPL_COOKIE = new Lookup.Template(Node.Cookie.class);
+    private static final Lookup.Template<Node.Cookie> TEMPL_COOKIE = new Lookup.Template<Node.Cookie>(Node.Cookie.class);
 
     /** Lock for initialization */
     private static final Object INIT_LOCK = new Object();
@@ -429,10 +433,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             hierarchy.attachTo(this);
 
             if (wasLeaf != (hierarchy == Children.LEAF)) {
-                fireOwnPropertyChange(
-                    PROP_LEAF, wasLeaf ? Boolean.TRUE : Boolean.FALSE,
-                    (hierarchy == Children.LEAF) ? Boolean.TRUE : Boolean.FALSE
-                );
+                fireOwnPropertyChange(PROP_LEAF, wasLeaf, hierarchy == Children.LEAF);
             }
 
             if ((oldNodes != null) && !wasLeaf) {
@@ -605,6 +606,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * @return system actions appropriate to the node
     * @deprecated Use getActions (false) instead.
     */
+    @Deprecated
     public SystemAction[] getActions() {
         return NodeOp.getDefaultActions();
     }
@@ -622,6 +624,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * @return actions for a context. In the default implementation, same as {@link #getActions}.
     * @deprecated Use getActions (true) instead.
     */
+    @Deprecated
     public SystemAction[] getContextActions() {
         return getActions();
     }
@@ -630,6 +633,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * @return <code>null</code> indicating there should be none default action
      * @deprecated Use {@link #getPreferredAction} instead.
      */
+    @Deprecated
     public SystemAction getDefaultAction() {
         return null;
     }
@@ -681,15 +685,11 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * @return a cookie assignable to that class, or <code>null</code> if this node has no such cookie
     * @see Lookup
     */
-    public Node.Cookie getCookie(Class type) {
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
         Lookup l = internalLookup(true);
 
         if (l != null) {
-            Object o = l.lookup(type);
-
-            if (o instanceof Node.Cookie) {
-                return (Node.Cookie) o;
-            }
+            return l.lookup(type);
         }
 
         return null;
@@ -756,7 +756,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     final void registerDelegatingLookup(NodeLookup l) {
         // to have just one thread accessing the static lookups variable
         synchronized (lookups) {
-            lookups.put(listeners, new WeakReference(l));
+            lookups.put(listeners, new WeakReference<Lookup>(l));
         }
     }
 
@@ -765,9 +765,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      *    lookup was GCed.
      */
     final Lookup findDelegatingLookup() {
-        WeakReference ref = (WeakReference) lookups.get(listeners);
+        Reference<Lookup> ref = lookups.get(listeners);
 
-        return (ref == null) ? null : (Lookup) ref.get();
+        return (ref == null) ? null : ref.get();
     }
 
     /** Obtain handle for this node (for serialization).
@@ -1164,7 +1164,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     */
     public static interface Handle extends java.io.Serializable {
         /** @deprecated Only public by accident. */
-
+        @Deprecated
         /* public static final */ long serialVersionUID = -4518262478987434353L;
 
         /** Reconstitute the node for this handle.
@@ -1203,7 +1203,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         *
         * @return the properties
         */
-        public abstract Property[] getProperties();
+        public abstract Property<?>[] getProperties();
 
         /* Compares just the names.
          * @param propertySet The object to compare to
@@ -1230,10 +1230,10 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
          * (font color, bold, italic and strikethrough supported; font
          * colors can be UIManager color keys if they are prefixed with
          * a ! character, i.e. &lt;font color=&amp;'controlShadow'&gt;).
-         * Enclosing html tags are not needed.
+         * Enclosing HTML tags are not needed.
          * <p><strong>This method should return either an HTML display name
-         * or null; it should not return the non-html display name if no
-         * markup is needed.
+         * or null; it should not return the non-HTML display name if no
+         * markup is needed.</strong>
          *
          * @see org.openide.awt.HtmlRenderer
          * @since 4.30
@@ -1253,8 +1253,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * <p><strong>Important:</strong> the {@link FeatureDescriptor#getName code name} you use for the
      * property is relevant not only for making properties of a node unique, but also for
      * {@link Node#firePropertyChange firing property changes}.
+     * @param T the type of bean
     */
-    public static abstract class Property extends FeatureDescriptor {
+    public static abstract class Property<T> extends FeatureDescriptor {
         /**
          * Contains classNames of incorrectly implemented properties which have
          * been already logged by an ErrorManager.<br>
@@ -1262,19 +1263,19 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
          * <a href="http://openide.netbeans.org/issues/show_bug.cgi?id=51907">
          * discussion in issuezilla</a>
          */
-        private static final Set /*<String>*/ warnedNames = new HashSet();
+        private static final Set<String> warnedNames = new HashSet<String>();
 
         /** type that this property works with */
-        private Class type;
+        private Class<T> type;
 
         //Soft caching of property editor references to improve JTable
         //property sheet performance
-        java.lang.ref.SoftReference edRef = null;
+        private Reference<PropertyEditor> edRef = null;
 
         /** Constructor.
         * @param valueType type of the property
         */
-        public Property(Class valueType) {
+        public Property(Class<T> valueType) {
             this.type = valueType;
             super.setName(""); // NOI18N
         }
@@ -1285,7 +1286,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         * In the latter case, {@link #getValue} and {@link #setValue} will still operate on the wrapper object.
         * @return the type
         */
-        public Class getValueType() {
+        public Class<T> getValueType() {
             return type;
         }
 
@@ -1299,7 +1300,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         * @exception IllegalAccessException cannot access the called method
         * @exception InvocationTargetException an exception during invocation
         */
-        public abstract Object getValue() throws IllegalAccessException, InvocationTargetException;
+        public abstract T getValue() throws IllegalAccessException, InvocationTargetException;
 
         /** Test whether the property is writable.
         * @return <CODE>true</CODE> if the read of the value is supported
@@ -1312,7 +1313,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         * @exception IllegalArgumentException wrong argument
         * @exception InvocationTargetException an exception during invocation
         */
-        public abstract void setValue(Object val)
+        public abstract void setValue(T val)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 
         /** Test whether the property had a default value.
@@ -1350,7 +1351,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
 
             // Issue 51907 backward compatibility
             if (supportsDefaultValue() && warnedNames.add(name)) {
-                Logger.getAnonymousLogger().log(
+                Logger.getLogger(Node.Property.class.getName()).log(
                     Level.WARNING,
                     "Class " + name + " must override isDefaultValue() since it " +
                     "overrides supportsDefaultValue() to be true"
@@ -1371,12 +1372,12 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             PropertyEditor result = null;
 
             if (edRef != null) {
-                result = (PropertyEditor) edRef.get();
+                result = edRef.get();
             }
 
             if (result == null) {
                 result = java.beans.PropertyEditorManager.findEditor(type);
-                edRef = new java.lang.ref.SoftReference(result);
+                edRef = new SoftReference<PropertyEditor>(result);
             }
 
             return result;
@@ -1386,6 +1387,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         * classes.
         * @param property The object to compare to
         */
+        @Override
         public boolean equals(Object property) {
             // fix #32845 - check for non-matching types and also for null values
             // coming in input parameter 'property'
@@ -1393,8 +1395,8 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 return false;
             }
 
-            Class propValueType = ((Property) property).getValueType();
-            Class valueType = getValueType();
+            Class<?> propValueType = ((Property) property).getValueType();
+            Class<?> valueType = getValueType();
 
             if (((propValueType == null) && (valueType != null)) || ((propValueType != null) && (valueType == null))) {
                 return false;
@@ -1408,8 +1410,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         *
         * @return int hashcode
         */
+        @Override
         public int hashCode() {
-            Class valueType = getValueType();
+            Class<?> valueType = getValueType();
 
             return getName().hashCode() * ((valueType == null) ? 1 : valueType.hashCode());
         }
@@ -1435,15 +1438,17 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     }
 
     /** Description of an indexed property and operations on it.
+     * @param T type of the whole property
+     * @param E type of one element
     */
-    public static abstract class IndexedProperty extends Node.Property {
+    public static abstract class IndexedProperty<T,E> extends Node.Property<T> {
         /** type of element that this property works with */
-        private Class elementType;
+        private Class<E> elementType;
 
         /** Constructor.
         * @param valueType type of the property
         */
-        public IndexedProperty(Class valueType, Class elementType) {
+        public IndexedProperty(Class<T> valueType, Class<E> elementType) {
             super(valueType);
             this.elementType = elementType;
         }
@@ -1456,7 +1461,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         /** Get the element type of the property (not the type of the whole property).
         * @return the type
         */
-        public Class getElementType() {
+        public Class<E> getElementType() {
             return elementType;
         }
 
@@ -1468,7 +1473,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         * @exception IllegalArgumentException wrong argument
         * @exception InvocationTargetException an exception during invocation
         */
-        public abstract Object getIndexedValue(int index)
+        public abstract E getIndexedValue(int index)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 
         /** Test whether the property is writable by index.
@@ -1484,7 +1489,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         * @exception IllegalArgumentException wrong argument
         * @exception InvocationTargetException an exception during invocation
         */
-        public abstract void setIndexedValue(int indx, Object val)
+        public abstract void setIndexedValue(int indx, E val)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 
         /** Get a property editor for individual elements in this property.
@@ -1498,14 +1503,15 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         * classes.
         * @param property The object to compare to
         */
+        @Override
         public boolean equals(Object property) {
             try {
                 if (!super.equals(property)) {
                     return false;
                 }
 
-                Class propElementType = ((IndexedProperty) property).getElementType();
-                Class elementType = getElementType();
+                Class<?> propElementType = ((IndexedProperty) property).getElementType();
+                Class<?> elementType = getElementType();
 
                 if (
                     ((propElementType == null) && (elementType != null)) ||
@@ -1524,8 +1530,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         *
         * @return int hashcode
         */
+        @Override
         public int hashCode() {
-            Class ementType = getElementType();
+            Class<?> ementType = getElementType();
 
             return super.hashCode() * ((elementType == null) ? 1 : elementType.hashCode());
         }
@@ -1534,9 +1541,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     /** Special subclass of EventListenerList that can also listen on changes in
      * a lookup.
      */
-    private final class LookupEventList extends javax.swing.event.EventListenerList implements LookupListener {
+    private final class LookupEventList extends EventListenerList implements LookupListener {
         public final Lookup lookup;
-        private Lookup.Result result;
+        private Lookup.Result<Node.Cookie> result;
 
         public LookupEventList(Lookup l) {
             this.lookup = l;
@@ -1561,7 +1568,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             return lookup;
         }
 
-        public void resultChanged(org.openide.util.LookupEvent ev) {
+        public void resultChanged(LookupEvent ev) {
             if (Node.this instanceof FilterNode) {
                 FilterNode f = (FilterNode) Node.this;
 

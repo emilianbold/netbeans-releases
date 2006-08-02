@@ -76,12 +76,12 @@ public abstract class CookieAction extends NodeAction {
     *
     * @return a list of cookies
     */
-    protected abstract Class[] cookieClasses();
+    protected abstract Class<?>[] cookieClasses(); // might not extend Node.Cookie; seems to work with Lookup
 
     /** Getter for cookies.
     * @return the set of cookies for this
     */
-    private Class[] getCookies() {
+    private Class<?>[] getCookies() {
         Class[] ret = (Class[]) getProperty(PROP_COOKIES);
 
         if (ret != null) {

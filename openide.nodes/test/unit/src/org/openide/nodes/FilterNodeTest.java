@@ -30,7 +30,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
-/** A test to check behaviour of filter node.
+/** A test to check behavior of filter node.
  *
  * @author Jaroslav Tulach
  */
@@ -40,7 +40,7 @@ public class FilterNodeTest extends NbTestCase {
         super(name);
     }
     
-    /** Demonstates a bug in FilterNode.changeOriginal.
+    /** Demonstrates a bug in FilterNode.changeOriginal.
      */
     public void testChangeOriginalLeafToArray () {
         AbstractNode a = new AbstractNode (Children.LEAF);
@@ -335,10 +335,9 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals ("B finished", -1, b.cnt);
     }
 
-    public void testIsLeafDoesNotChangeWhileInReadAcccess () throws Exception {
+    public void testIsLeafDoesNotChangeWhileInReadAccess() throws Exception {
 	AbstractNode a = new AbstractNode (Children.LEAF);
         final FilterNode fn = new FilterNode (a);
-        final RequestProcessor rp = new RequestProcessor ("Will deadlock");
         
         assertTrue ("Is leaf", fn.isLeaf ());
 
@@ -412,13 +411,6 @@ public class FilterNodeTest extends NbTestCase {
             class Sub extends FilterNode.Children {
                 public Sub (Node n) {
                     super (n);
-                }
-                
-                protected Node[] createNodes (Object key) {
-                    if (!(key instanceof Node)) {
-                        fail ("Key is not subclass of node: "+ key);
-                    }
-                    return super.createNodes (key);
                 }
             }
             fn = new FilterNode (an, new Sub (an));
@@ -599,7 +591,8 @@ public class FilterNodeTest extends NbTestCase {
                super (an);
             }
             
-            protected Node[] createNodes (Object o) {
+            @Override
+            protected Node[] createNodes(Node o) {
                 Node n = ch.getNodes()[1];
                 if (o == n) {
                     nodeFound = true;

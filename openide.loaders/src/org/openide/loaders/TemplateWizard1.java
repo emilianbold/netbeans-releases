@@ -199,7 +199,8 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         
         /** Creates nodes for nodes.
          */
-        protected Node[] createNodes (Object key) {
+        @Override
+        protected Node[] createNodes(Node key) {
             Node n = (Node)key;
             String nodeName = n.getDisplayName();
             

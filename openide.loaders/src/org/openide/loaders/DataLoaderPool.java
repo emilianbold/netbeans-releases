@@ -72,7 +72,7 @@ implements java.io.Serializable {
     /** Cache of loaders for faster toArray() method. */
     private transient DataLoader[] loaderArray;
     /** cache of loaders for allLoaders method */
-    private transient List/*<DataLoader>*/ allLoaders;
+    private transient List<DataLoader> allLoaders;
     /** counts number of changes in the loaders pool */
     private transient int cntchanges;
     
@@ -100,9 +100,9 @@ implements java.io.Serializable {
      * Must be overridden in subclasses to provide a list of additional loaders.
      * The list should <em>not</em> include the preferred loader.
      *
-     * @return enumeration of {@link DataLoader}s
+     * @return enumeration of loaders
      */
-    protected abstract Enumeration loaders ();
+    protected abstract Enumeration<DataLoader> loaders ();
     
     /** Add a new listener to the listener list. A listener is notified of
      * any change which was made to the loader pool (add, remove, or reorder).
@@ -232,8 +232,9 @@ implements java.io.Serializable {
      * rather the fact that this contains all the loaders which are
      * capable of recognizing files in the order in which they are
      * called.
-     * @return enumeration of {@link DataLoader}s */
-    public final Enumeration allLoaders () {
+     * @return enumeration of loaders
+     */
+    public final Enumeration<DataLoader> allLoaders () {
         List all;
         int oldcnt;
         synchronized (this) {
@@ -291,10 +292,10 @@ implements java.io.Serializable {
      * @return data loader or <CODE>null</CODE> if there is no loader that
      *   can produce the class
      */
-    public final DataLoader firstProducerOf (Class clazz) {
-        Enumeration en = allLoaders ();
+    public final DataLoader firstProducerOf(Class<? extends DataObject> clazz) {
+        Enumeration<DataLoader> en = allLoaders ();
         while (en.hasMoreElements ()) {
-            DataLoader dl = (DataLoader)en.nextElement ();
+            DataLoader dl = en.nextElement();
             if (dl.getRepresentationClass ().isAssignableFrom (clazz)) {
                 // representation class is super class of clazz
                 return dl;
@@ -307,13 +308,12 @@ implements java.io.Serializable {
      * @see #firstProducerOf
      *
      * @param clazz class to find producers for
-     * @return enumeration of {@link DataLoader}s
+     * @return enumeration of loaders
      */
-    public final Enumeration producersOf (final Class clazz) {
-        class ProducerOf implements Enumerations.Processor {
-            public Object process (Object o, java.util.Collection ignore) {
-                DataLoader dl = (DataLoader)o;
-                return clazz.isAssignableFrom( dl.getRepresentationClass() ) ? o : null;
+    public final Enumeration<DataLoader> producersOf(final Class<? extends DataObject> clazz) {
+        class ProducerOf implements Enumerations.Processor<DataLoader,DataLoader> {
+            public DataLoader process(DataLoader dl, java.util.Collection ignore) {
+                return clazz.isAssignableFrom( dl.getRepresentationClass() ) ? dl : null;
             }
         }
         
@@ -866,7 +866,7 @@ private static final class ShadowLoader extends UniFileLoader {
     }
 } // end of ShadowLoader
 
-/** Loader for folders, since 1.13 changed to UniFileLoader.
+/** Loader for folders.
  */
 static final class FolderLoader extends UniFileLoader {
     static final long serialVersionUID =-8325525104047820255L;
@@ -900,13 +900,13 @@ static final class FolderLoader extends UniFileLoader {
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new DataFolder (primaryFile);
+        return new DataFolder(primaryFile, this);
     }
 
     /** This method is used only in DataFolder.handleMove method.
      * For more comments see {@link org.openide.loaders.DataFolder#handleMove}.
      *
-     * @param primaryFile the primary file of the datafolder to be created
+     * @param primaryFile the primary file of the data folder to be created
      * @param original The original DataFolder. The returned MultiDataObject 
      *      delegates createNodeDelegate and getClonedNodeDelegate methods calls
      *      to the original DataFolder.
@@ -915,7 +915,7 @@ static final class FolderLoader extends UniFileLoader {
     MultiDataObject createMultiObject(FileObject primaryFile, final DataFolder original) throws DataObjectExistsException, IOException {
         class NodeSharingDataFolder extends DataFolder {
             public NodeSharingDataFolder(FileObject fo) throws DataObjectExistsException, IllegalArgumentException {
-                super(fo);
+                super(fo, FolderLoader.this);
             }
             protected Node createNodeDelegate() {
                 return new FilterNode(original.getNodeDelegate());

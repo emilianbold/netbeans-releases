@@ -82,7 +82,7 @@ public final class CookieSet extends Object {
     * @param clazz the representation class
     * @return a cookie assignable to the representation class, or <code>null</code> if there is none
     */
-    public Node.Cookie getCookie(Class clazz) {
+    public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
         Node.Cookie ret = null;
         Object queryMode = QUERY_MODE.get();
 
@@ -112,7 +112,7 @@ public final class CookieSet extends Object {
             }
         }
 
-        return ret;
+        return clazz.cast(ret);
     }
 
     /** Add a listener to changes in the cookie set.
@@ -252,7 +252,7 @@ public final class CookieSet extends Object {
     }
 
     /** Registers a Factory for given cookie class */
-    public void add(Class cookieClass, Factory factory) {
+    public void add(Class<? extends Node.Cookie> cookieClass, Factory factory) {
         if (factory == null) {
             throw new IllegalArgumentException();
         }
@@ -265,7 +265,7 @@ public final class CookieSet extends Object {
     }
 
     /** Registers a Factory for given cookie classes */
-    public void add(Class[] cookieClass, Factory factory) {
+    public void add(Class<? extends Node.Cookie>[] cookieClass, Factory factory) {
         if (factory == null) {
             throw new IllegalArgumentException();
         }
@@ -283,7 +283,7 @@ public final class CookieSet extends Object {
      * Unregisters a Factory for given cookie class
      * @since 2.6
      */
-    public void remove(Class cookieClass, Factory factory) {
+    public void remove(Class<? extends Node.Cookie> cookieClass, Factory factory) {
         if (factory == null) {
             throw new IllegalArgumentException();
         }
@@ -311,7 +311,7 @@ public final class CookieSet extends Object {
      * Unregisters a Factory for given cookie classes
      * @since 2.6
      */
-    public void remove(Class[] cookieClass, Factory factory) {
+    public void remove(Class<? extends Node.Cookie>[] cookieClass, Factory factory) {
         if (factory == null) {
             throw new IllegalArgumentException();
         }
@@ -339,7 +339,7 @@ public final class CookieSet extends Object {
 
     /** Finds a result in a map.
      */
-    private R findR(Class c) {
+    private R findR(Class<? extends Node.Cookie> c) {
         return (R) map.get(c);
     }
 
@@ -347,7 +347,7 @@ public final class CookieSet extends Object {
      * @param c cookie
      * @return base class
      */
-    private static Class baseForCookie(Node.Cookie c) {
+    private static Class<? extends Node.Cookie> baseForCookie(Node.Cookie c) {
         if (c instanceof CookieEntry) {
             return ((CookieEntry) c).klass;
         }
@@ -356,11 +356,11 @@ public final class CookieSet extends Object {
     }
 
     /** Factory for creating cookies of given Class */
-    public static interface Factory {
+    public interface Factory {
         /** Creates a Node.Cookie of given class. The method
          * may be called more than once.
          */
-        public Node.Cookie createCookie(Class klass);
+        <T extends Node.Cookie> T createCookie(Class<T> klass);
     }
 
     /** Entry for one Cookie */
@@ -369,26 +369,25 @@ public final class CookieSet extends Object {
         final Factory factory;
 
         /** Class of the cookie */
-        private final Class klass;
+        private final Class<? extends Node.Cookie> klass;
 
-        /** A Referenec to the cookie */
-        private Reference cookie;
+        private Reference<Node.Cookie> cookie;
 
         /** Constructs new FactoryEntry */
-        public CookieEntry(Factory factory, Class klass) {
+        public CookieEntry(Factory factory, Class<? extends Node.Cookie> klass) {
             this.factory = factory;
             this.klass = klass;
         }
 
         /** Getter for the cookie.
          * Synchronized because we don't want to run factory.createCookie
-         * symultaneously from two threads.
+         * simultaneously from two threads.
          */
         public synchronized Node.Cookie getCookie(boolean create) {
             Node.Cookie ret;
 
             if (create) {
-                if ((cookie == null) || ((ret = (Node.Cookie) cookie.get()) == null)) {
+                if ((cookie == null) || ((ret = cookie.get()) == null)) {
                     ret = factory.createCookie(klass);
 
                     if (ret == null) {
@@ -398,7 +397,7 @@ public final class CookieSet extends Object {
                     cookie = new WeakReference(ret);
                 }
             } else {
-                ret = (Node.Cookie) ((cookie == null) ? null : cookie.get());
+                ret = (cookie == null) ? null : cookie.get();
             }
 
             return ret;
@@ -457,7 +456,7 @@ public final class CookieSet extends Object {
      */
     private static final class R extends Object {
         /** list of registered cookies */
-        public List cookies;
+        public List<Node.Cookie> cookies;
 
         /** base class of the first cookie registered here */
         public Class base;
@@ -470,7 +469,7 @@ public final class CookieSet extends Object {
          */
         public void add(Node.Cookie cookie) {
             if (cookies == null) {
-                cookies = new ArrayList(1);
+                cookies = new ArrayList<Node.Cookie>(1);
                 cookies.add(cookie);
                 base = baseForCookie(cookie);
 
@@ -510,7 +509,7 @@ public final class CookieSet extends Object {
         /** @return the cookie for this result or null
          */
         public Node.Cookie cookie() {
-            return ((cookies == null) || cookies.isEmpty()) ? null : (Node.Cookie) cookies.get(0);
+            return ((cookies == null) || cookies.isEmpty()) ? null : cookies.get(0);
         }
     }
 }

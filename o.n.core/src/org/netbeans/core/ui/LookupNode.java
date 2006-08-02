@@ -234,7 +234,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     * @param node the original node
     */
     public final void refreshKey (Node node) {
-        ((Ch)getChildren ()).refreshKey (node);
+        ((Ch)getChildren()).refreshKey0(node);
     }
     
     public boolean canDestroy() {
@@ -319,18 +319,17 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
         }
 
         /** Overridden to provide package-private access. */
-        protected void refreshKey (Node node) {
-            super.refreshKey (node);
+        void refreshKey0(Node node) {
+            refreshKey(node);
         }
 
-        /** Overriden, returns LookupNode filters of original nodes.
+        /** Overridden, returns LookupNode filters of original nodes.
         *
         * @param node node to create copy of
         * @return LookupNode filter of the original node
         */
-        protected Node[] createNodes (Object n) {
-            Node node = (Node)n;
-            
+        @Override
+        protected Node[] createNodes(Node node) {
             DataObject obj = (DataObject)node.getCookie(DataObject.class);
             //System.err.println("obj="+obj+" node="+node+" hidden="+(obj==null?null:obj.getPrimaryFile ().getAttribute (EA_HIDDEN)));
             
@@ -343,7 +342,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             LookupNode parent = (LookupNode)getNode ();
             
             if (obj != null) {
-                if (obj instanceof DataFolder && n.equals (obj.getNodeDelegate ())) {
+                if (obj instanceof DataFolder && node.equals (obj.getNodeDelegate ())) {
                     node = parent.createChild ((DataFolder)obj);
                     return new Node[] { node };
                 } else if (obj instanceof DataShadow) {

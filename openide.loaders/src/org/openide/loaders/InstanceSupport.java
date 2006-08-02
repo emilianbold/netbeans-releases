@@ -91,12 +91,12 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     * @exception IOException an I/O error occured
     * @exception ClassNotFoundException the class has not been found
     */
-    public Class instanceClass ()
+    public Class<?> instanceClass()
     throws java.io.IOException, ClassNotFoundException {
         return instanceClass(null);
     }
     
-    final Class instanceClass (ClassLoader cl)
+    final Class<?> instanceClass(ClassLoader cl)
     throws java.io.IOException, ClassNotFoundException {
         if (clazzException != null) {
             if (clazzException instanceof IOException)
@@ -154,7 +154,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     * @param type the class type we want to check
     * @return true if this cookie can produce object of given type
     */
-    public boolean instanceOf (Class type) {
+    public boolean instanceOf(Class<?> type) {
         try {
             return type.isAssignableFrom (instanceClass ());
         } catch (IOException ex) {
@@ -518,8 +518,8 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
         * class before it is created.
         *
         * @return the class of the instance
-        */
-        public Class instanceClass () {
+         */
+        public Class<?> instanceClass() {
             return obj.getClass ();
         }
 
@@ -530,7 +530,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
             return obj;
         }
 
-        public boolean instanceOf (Class type) {
+        public boolean instanceOf(Class<?> type) {
             return type.isAssignableFrom (instanceClass ());
         }
     }

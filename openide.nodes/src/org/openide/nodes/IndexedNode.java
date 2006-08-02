@@ -64,6 +64,7 @@ public class IndexedNode extends AbstractNode {
     */
     public java.awt.Component getCustomizer() {
         java.awt.Container c = new JPanel();
+        @SuppressWarnings("deprecation")
         IndexedCustomizer customizer = new IndexedCustomizer(c, false);
         customizer.setObject(indexImpl);
 
@@ -75,17 +76,17 @@ public class IndexedNode extends AbstractNode {
     * @return the index implementation or children if these match the cookie class,
     * else using the superclass cookie lookup
     */
-    public Cookie getCookie(Class clazz) {
+    public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
         if (clazz.isInstance(indexImpl)) {
             // ok, Index implementor is enough
-            return (Cookie) indexImpl;
+            return clazz.cast(indexImpl);
         }
 
         Children ch = getChildren();
 
         if (clazz.isInstance(ch)) {
             // ok, children are enough
-            return (Cookie) ch;
+            return clazz.cast(ch);
         }
 
         return super.getCookie(clazz);

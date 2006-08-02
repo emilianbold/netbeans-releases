@@ -87,7 +87,7 @@ public class FolderLookup extends FolderInstance {
 
     /** The correct class that this folder recognizes.
      * @return Proxy.Lkp class. */
-    public final Class instanceClass () {
+    public final Class<?> instanceClass () {
         return ProxyLkp.class;
     }
     

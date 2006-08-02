@@ -250,7 +250,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     /** Getter for list of children.
     * @param filter filter to notify about addition of new objects
     */
-    final List getChildrenList () {
+    final List<DataObject> getChildrenList () {
         return list.getChildrenList ();
     }
 
@@ -265,7 +265,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     /** Get enumeration of children of this folder.
     * @return enumeration of {@link DataObject}s
     */
-    public Enumeration children () {
+    public Enumeration<DataObject> children () {
         return Collections.enumeration (getChildrenList ());
     }
 
@@ -275,7 +275,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @param rec whether to enumerate recursively
     * @return enumeration of type <code>DataObject</code>
     */
-    public Enumeration children (final boolean rec) {
+    public Enumeration<DataObject> children (final boolean rec) {
         if (!rec) {
             return children();
         }

@@ -208,7 +208,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     * @param clazz the class to create instance for (see class header for details)
     * @return the found instance data object or null if it does not exist
     */
-    public static InstanceDataObject find (DataFolder folder, String name, Class clazz) {
+    public static InstanceDataObject find(DataFolder folder, String name, Class<?> clazz) {
         return find (folder, name, clazz.getName ());
     }
 
@@ -262,7 +262,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     * @return the newly created or existing instance data object
     * @exception IOException if the file cannot be created
     */
-    public static InstanceDataObject create (DataFolder folder, String name, Class clazz) throws IOException {
+    public static InstanceDataObject create(DataFolder folder, String name, Class<?> clazz) throws IOException {
         return create (folder, name, clazz.getName ());
     }
 
@@ -384,7 +384,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     * @param clazz the class the object referred to (see class header for details)
     * @return <code>true</code> if the instance was succesfully removed, <code>false</code> if not
     */
-    public static boolean remove (DataFolder folder, String name, Class clazz) {
+    public static boolean remove(DataFolder folder, String name, Class<?> clazz) {
         return remove (folder, name, clazz.getName ());
     }
 
@@ -530,7 +530,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     }
 
     /** delegate .getCookie to Environment.Provider */
-    private Object getCookieFromEP(Class clazz) {
+    private <T> T getCookieFromEP(Class<T> clazz) {
         //updateLookup(false);
         return getCookiesLookup().lookup(clazz);
     }
@@ -545,15 +545,16 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     }
 
     /* Serve up editor cookies where requested. */
-    public Node.Cookie getCookie(Class clazz) {
-        Node.Cookie supe = null;
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
+        T supe = null;
         if (getPrimaryFile().hasExt(XML_EXT)) {
             // #24683 fix: do not return any cookie until the .settings file is written
             // successfully; PROP_COOKIE is fired when cookies are available.
             String filename = getPrimaryFile().getPath();
             if (createdIDOs.contains(filename)) return null;
 
-            supe = (Node.Cookie) getCookieFromEP(clazz);
+            supe = getCookieFromEP(clazz);
             if (InstanceCookie.class.isAssignableFrom(clazz)) return supe;
         }
         if (supe == null) supe = super.getCookie(clazz);
@@ -664,7 +665,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     * @exception IOException an I/O error occured
     * @exception ClassNotFoundException the class has not been found
     */
-    public Class instanceClass ()
+    public Class<?> instanceClass ()
     throws IOException, ClassNotFoundException {
         InstanceCookie delegateIC = delegateIC ();
         if (delegateIC == null) return this.getClass();

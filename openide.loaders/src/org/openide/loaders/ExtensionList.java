@@ -23,6 +23,7 @@ import java.io.*;
 import java.util.*;
 
 import org.openide.filesystems.FileObject;
+import org.openide.util.Enumerations;
 import org.openide.util.Utilities;
 
 /** Property class that collects a modifiable list of file extensions
@@ -39,9 +40,9 @@ public class ExtensionList extends Object
             (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
 
     /** set of extensions to recognize */
-    private TreeSet list;
+    private SortedSet<String> list;
     /** set of mime types to recognize */
-    private TreeSet mimeTypes;
+    private SortedSet<String> mimeTypes;
 
     static final long serialVersionUID =8868581349510386291L;
     /** Default constructor.
@@ -60,7 +61,10 @@ public class ExtensionList extends Object
                 l.list.addAll (list);
             }
             
-            l.mimeTypes = mimeTypes == null ? null : (TreeSet)mimeTypes.clone ();
+            if (mimeTypes != null) {
+                l.mimeTypes = createExtensionSet();
+                l.mimeTypes.addAll(mimeTypes);
+            }
             
             return l;
         } catch (CloneNotSupportedException ex) {
@@ -145,16 +149,16 @@ public class ExtensionList extends Object
     }
 
     /** Get all extensions.
-    * @return enumeration of <CODE>String</CODE>s
+    * @return enumeration of extensions
     */
-    public Enumeration extensions () {
+    public Enumeration<String> extensions() {
         return en (list);
     }
     
     /** Get all mime types.
-     * @return enumeration of <CODE>String</CODE>s
+     * @return enumeration of MIME types
      */
-    public Enumeration mimeTypes () {
+    public Enumeration<String> mimeTypes() {
         return en (mimeTypes);
     }
     
@@ -201,9 +205,9 @@ public class ExtensionList extends Object
     /** Enumeration from set
      * @param set set or null
      */
-    private static Enumeration en (Collection c) {
+    private static Enumeration<String> en(Collection<String> c) {
         if (c == null) {
-            return org.openide.util.Enumerations.empty();
+            return Enumerations.empty();
         } else {
             return Collections.enumeration(c);
         }
@@ -212,11 +216,11 @@ public class ExtensionList extends Object
     /** Creates a set for holding the extensions. It is platform 
     * dependent whether case sensitive or insensitive.
     */
-    private static TreeSet createExtensionSet () {
+    private static SortedSet<String> createExtensionSet () {
         if (CASE_INSENSITIVE) {
-            return new TreeSet (String.CASE_INSENSITIVE_ORDER);
+            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         } else {
-            return new TreeSet ();
+            return new TreeSet<String>();
         }
     }
     

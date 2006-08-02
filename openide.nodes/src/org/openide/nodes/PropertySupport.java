@@ -29,11 +29,9 @@ import org.openide.util.NbBundle;
 
 /** Support class for <code>Node.Property</code>.
 *
-* @see Node.Property
 * @author Jan Jancura, Jaroslav Tulach, Ian Formanek
-* @version 0.21, Mar 24, 1998
 */
-public abstract class PropertySupport extends Node.Property {
+public abstract class PropertySupport<T> extends Node.Property<T> {
     /** flag whether the property is readable */
     private boolean canR;
 
@@ -48,7 +46,7 @@ public abstract class PropertySupport extends Node.Property {
     * @param canW        whether the property is writable
     */
     public PropertySupport(
-        String name, Class type, String displayName, String shortDescription, boolean canR, boolean canW
+        String name, Class<T> type, String displayName, String shortDescription, boolean canR, boolean canW
     ) {
         super(type);
         this.setName(name);
@@ -74,8 +72,20 @@ public abstract class PropertySupport extends Node.Property {
         return canW;
     }
 
+    /**
+     * Like {@link Class#cast} but handles primitive types.
+     */
+    static <T> T cast(Class<T> c, Object o) {
+        if (c.isPrimitive()) {
+            // Could try to actually type-check it, but never mind.
+            return (T) o;
+        } else {
+            return c.cast(o);
+        }
+    }
+
     /** Support for properties from Java Reflection. */
-    public static class Reflection extends Node.Property {
+    public static class Reflection<T> extends Node.Property<T> {
         /** Instance of a bean. */
         protected Object instance;
 
@@ -86,7 +96,7 @@ public abstract class PropertySupport extends Node.Property {
         private Method getter;
 
         /** class of property editor */
-        private Class propertyEditorClass;
+        private Class<? extends PropertyEditor> propertyEditorClass;
 
         /** Create a support with method objects specified.
         * The methods must be public.
@@ -96,7 +106,7 @@ public abstract class PropertySupport extends Node.Property {
         * @param setter setter method, can be <code>null</code>
         * @throws IllegalArgumentException if the methods are not public
         */
-        public Reflection(Object instance, Class valueType, Method getter, Method setter) {
+        public Reflection(Object instance, Class<T> valueType, Method getter, Method setter) {
             super(valueType);
 
             if ((getter != null) && !Modifier.isPublic(getter.getModifiers())) {
@@ -122,7 +132,7 @@ public abstract class PropertySupport extends Node.Property {
         * @param setter name of setter method, can be <code>null</code>
         * @exception NoSuchMethodException if the getter or setter methods cannot be found
         */
-        public Reflection(Object instance, Class valueType, String getter, String setter)
+        public Reflection(Object instance, Class<T> valueType, String getter, String setter)
         throws NoSuchMethodException {
             this(
                 instance, valueType,
@@ -149,7 +159,7 @@ public abstract class PropertySupport extends Node.Property {
         * @param property name of property
         * @exception NoSuchMethodException if the getter or setter methods cannot be found
         */
-        public Reflection(Object instance, Class valueType, String property)
+        public Reflection(Object instance, Class<T> valueType, String property)
         throws NoSuchMethodException {
             this(
                 instance, valueType, findGetter(instance, valueType, property),
@@ -230,7 +240,7 @@ public abstract class PropertySupport extends Node.Property {
         * @exception IllegalArgumentException wrong argument
         * @exception InvocationTargetException an exception during invocation
         */
-        public Object getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        public T getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             if (getter == null) {
                 throw new IllegalAccessException();
             }
@@ -239,12 +249,12 @@ public abstract class PropertySupport extends Node.Property {
 
             try {
                 try {
-                    return getter.invoke(valideInstance, new Object[0]);
+                    return cast(getValueType(), getter.invoke(valideInstance));
                 } catch (IllegalAccessException ex) {
                     try {
                         getter.setAccessible(true);
 
-                        return getter.invoke(valideInstance, new Object[0]);
+                        return cast(getValueType(), getter.invoke(valideInstance));
                     } finally {
                         getter.setAccessible(false);
                     }
@@ -276,7 +286,7 @@ public abstract class PropertySupport extends Node.Property {
         * @exception IllegalArgumentException wrong argument
         * @exception InvocationTargetException an exception during invocation
         */
-        public void setValue(Object val)
+        public void setValue(T val)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             if (setter == null) {
                 throw new IllegalAccessException();
@@ -285,11 +295,11 @@ public abstract class PropertySupport extends Node.Property {
             Object valideInstance = Beans.getInstanceOf(instance, setter.getDeclaringClass());
 
             try {
-                setter.invoke(valideInstance, new Object[] { val });
+                setter.invoke(valideInstance, val);
             } catch (IllegalAccessException ex) {
                 try {
                     setter.setAccessible(true);
-                    setter.invoke(valideInstance, new Object[] { val });
+                    setter.invoke(valideInstance, val);
                 } finally {
                     setter.setAccessible(false);
                 }
@@ -303,7 +313,7 @@ public abstract class PropertySupport extends Node.Property {
         public PropertyEditor getPropertyEditor() {
             if (propertyEditorClass != null) {
                 try {
-                    return (PropertyEditor) propertyEditorClass.newInstance();
+                    return propertyEditorClass.newInstance();
                 } catch (InstantiationException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IllegalAccessException iex) {
@@ -317,7 +327,7 @@ public abstract class PropertySupport extends Node.Property {
         /** Set the property editor explicitly.
         * @param clazz class type of the property editor
         */
-        public void setPropertyEditorClass(Class clazz) {
+        public void setPropertyEditorClass(Class<? extends PropertyEditor> clazz) {
             propertyEditorClass = clazz;
         }
     }
@@ -326,14 +336,14 @@ public abstract class PropertySupport extends Node.Property {
     * Subclasses should implement
     * {@link #getValue} and {@link #setValue}.
     */
-    public static abstract class ReadWrite extends PropertySupport {
+    public static abstract class ReadWrite<T> extends PropertySupport<T> {
         /** Construct a new support.
         * @param name        the name of the property
         * @param type        the class type of the property
         * @param displayName the display name of the property
         * @param shortDescription a short description of the property
         */
-        public ReadWrite(String name, Class type, String displayName, String shortDescription) {
+        public ReadWrite(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription, true, true);
         }
     }
@@ -341,14 +351,14 @@ public abstract class PropertySupport extends Node.Property {
     /** A simple read-only property.
     * Subclasses should implement {@link #getValue}.
     */
-    public static abstract class ReadOnly extends PropertySupport {
+    public static abstract class ReadOnly<T> extends PropertySupport<T> {
         /** Construct a new support.
         * @param name        the name of the property
         * @param type        the class type of the property
         * @param displayName the display name of the property
         * @param shortDescription a short description of the property
         */
-        public ReadOnly(String name, Class type, String displayName, String shortDescription) {
+        public ReadOnly(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription, true, false);
         }
 
@@ -358,7 +368,8 @@ public abstract class PropertySupport extends Node.Property {
         * @exception IllegalArgumentException wrong argument
         * @exception InvocationTargetException an exception during invocation
         */
-        public void setValue(Object val)
+        @Override
+        public void setValue(T val)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             throw new IllegalAccessException("Cannot write to ReadOnly property"); // NOI18N
         }
@@ -367,14 +378,14 @@ public abstract class PropertySupport extends Node.Property {
     /** A simple write-only property.
     * Subclasses should implement {@link #setValue}.
     */
-    public static abstract class WriteOnly extends PropertySupport {
+    public static abstract class WriteOnly<T> extends PropertySupport<T> {
         /** Construct a new support.
         * @param name        the name of the property
         * @param type        the class type of the property
         * @param displayName the display name of the property
         * @param shortDescription a short description of the property
         */
-        public WriteOnly(String name, Class type, String displayName, String shortDescription) {
+        public WriteOnly(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription, false, true);
         }
 
@@ -384,16 +395,16 @@ public abstract class PropertySupport extends Node.Property {
         * @exception IllegalArgumentException wrong argument
         * @exception InvocationTargetException an exception during invocation
         */
-        public Object getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        @Override
+        public T getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             throw new IllegalAccessException("Cannod read from WriteOnly property"); // NOI18N
         }
     }
 
     /** Support for the name property of a node. Delegates {@link #setValue} and {@link #getValue}
     * to {@link Node#setName} and {@link Node#getName}.
-    * <p>(Final only for performance, can be unfinaled if desired).
     */
-    public static final class Name extends PropertySupport {
+    public static final class Name extends PropertySupport<String> {
         /** The node to which we delegate the work. */
         private final Node node;
 
@@ -420,21 +431,17 @@ public abstract class PropertySupport extends Node.Property {
         /* Getter for the value. Delegates to Node.getName().
         * @return the name
         */
-        public Object getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             return node.getName();
         }
 
         /* Setter for the value. Delegates to Node.setName().
         * @param val new name
         */
-        public void setValue(Object val)
+        public void setValue(String val)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            if (!(val instanceof String)) {
-                throw new IllegalAccessException();
-            }
-
             Object oldName = node.getName();
-            node.setName((String) val);
+            node.setName(val);
             node.firePropertyChange(Node.PROP_NAME, oldName, val);
         }
     }

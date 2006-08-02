@@ -27,7 +27,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Jiri Rechtacek
  */
-final class TemplateWizardPanel2 implements WizardDescriptor.FinishPanel {
+final class TemplateWizardPanel2 implements WizardDescriptor.FinishablePanel {
     private TemplateWizard2 templateWizard2UI;
     /** listener to changes in the wizard */
     private ChangeListener listener;
@@ -133,6 +133,10 @@ final class TemplateWizardPanel2 implements WizardDescriptor.FinishPanel {
     public void storeSettings(Object settings) {
         getPanelUI ().implStoreSettings (settings);
         this.settings = null;
+    }
+
+    public boolean isFinishPanel() {
+        return true;
     }
     
 }

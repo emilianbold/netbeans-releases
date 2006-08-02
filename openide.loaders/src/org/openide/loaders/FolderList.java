@@ -227,7 +227,7 @@ implements FileChangeListener, DataObject.Container {
     /** List all children.
     * @return array with children
     */
-    public List getChildrenList () {
+    public List<DataObject> getChildrenList () {
         ListTask lt;
         try {
             DataObjectPool.getPOOL().enterPrivilegedProcessor (PROCESSOR);
@@ -236,6 +236,7 @@ implements FileChangeListener, DataObject.Container {
         } finally {
             DataObjectPool.getPOOL().exitPrivilegedProcessor (PROCESSOR);
         }
+        assert lt.result != null;
         return lt.result;
     }
 
@@ -902,6 +903,7 @@ implements FileChangeListener, DataObject.Container {
             err.fine("ListTask.run 2");
 
             result = getObjects (filter);
+            assert result != null;
             err.fine("ListTask.run 3");
             
             folderCreated = true;

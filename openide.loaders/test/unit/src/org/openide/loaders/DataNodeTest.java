@@ -121,7 +121,7 @@ public class DataNodeTest extends NbTestCase {
         assertEquals("object is going to be found", objectToLookup, objectLookedUp);
         assertEquals("cookie found.", cookieToLookup, node.getLookup().lookup(C.class));
 
-        assertNull("Cannot return string as cookie", node.getCookie(String.class));
+        //assertNull("Cannot return string as cookie", node.getCookie(String.class));
         assertEquals("But C is found", cookieToLookup, node.getCookie(C.class));
         
         assertNull("Data object is not found in lookup", node.getLookup().lookup(DataObject.class));

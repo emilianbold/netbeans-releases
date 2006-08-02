@@ -155,7 +155,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         ResourceBundle bundle = NbBundle.getBundle (AntProjectNode.class);
         
         // Create the required properties (XML attributes) of the Ant project
-        Node.Property prop = new ProjectNameProperty("name"); // NOI18N
+        Node.Property<?> prop = new ProjectNameProperty("name"); // NOI18N
         // Cannot reuse 'name' because it conflicts with the DataObject.PROP_NAME:
         prop.setName ("projectName"); // NOI18N
         prop.setDisplayName (bundle.getString ("PROP_projectName"));

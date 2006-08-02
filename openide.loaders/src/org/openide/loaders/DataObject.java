@@ -77,7 +77,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     * ! Use syncModified for modifications instead !*/
     private static ModifiedRegistry modified = new ModifiedRegistry();
     /** sync modified data (for modification operations) */
-    private static Set syncModified = Collections.synchronizedSet(modified);
+    private static Set<DataObject> syncModified = Collections.synchronizedSet(modified);
 
     /** Modified flag */
     private boolean modif = false;
@@ -220,13 +220,13 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     }
 
     /** Get all contained files.
-     * These file objects should ideally have had the {@link FileObject#setImportant important flag} set appropriately.
+     * These file objects should ideally have had the {@linkplain FileObject#setImportant important flag} set appropriately.
     * <P>
     * The default implementation returns a set consisting only of the primary file.
     *
-    * @return set of {@link FileObject}s
+    * @return set of files
     */
-    public Set files () {
+    public Set<FileObject> files() {
         return java.util.Collections.singleton (getPrimaryFile ());
     }
 
@@ -877,9 +877,9 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     * @param c class of requested cookie
     * @return a cookie or <code>null</code> if such cookies are not supported
     */
-    public Node.Cookie getCookie (Class c) {
+    public <T extends Node.Cookie> T getCookie(Class<T> c) {
         if (c.isInstance (this)) {
-            return this;
+            return c.cast(this);
         }
         return null;
     }
@@ -897,7 +897,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
      *
      * @since 1.16
      */
-    protected Node.Cookie getCookie (DataShadow shadow, Class clazz) {
+    protected <T extends Node.Cookie> T getCookie(DataShadow shadow, Class<T> clazz) {
         return getCookie (clazz);
     }
 
@@ -1000,9 +1000,9 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         }
 
         /** Get a set of modified data objects.
-        * @return an unmodifiable set of {@link DataObject}s
+        * @return an unmodifiable set of data objects
         */
-        public Set getModifiedSet () {
+        public Set<DataObject> getModifiedSet() {
             return Collections.unmodifiableSet(syncModified);
         }
 
@@ -1010,15 +1010,15 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         * @return array of objects
         */
         public DataObject[] getModified () {
-            return (DataObject[])syncModified.toArray (new DataObject[0]);
+            return syncModified.toArray(new DataObject[0]);
         }
     }
 
-    private static final class ModifiedRegistry extends HashSet {
+    private static final class ModifiedRegistry extends HashSet<DataObject> {
         static final long serialVersionUID =-2861723614638919680L;
         
         /** Set of listeners listening to changes to the set of modified objs */
-        private HashSet listeners;
+        private Set<ChangeListener> listeners;
 
         ModifiedRegistry() {}
 
@@ -1026,7 +1026,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         * @param chl new listener
         */
         public final synchronized void addChangeListener (final ChangeListener chl) {
-            if (listeners == null) listeners = new HashSet(5);
+            if (listeners == null) listeners = new HashSet<ChangeListener>(5);
             listeners.add(chl);
         }
 
@@ -1040,13 +1040,14 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
 
         /***** overriding of methods which change content in order to notify
         * listeners about the content change */
-
-        public boolean add (Object o) {
+        @Override
+        public boolean add (DataObject o) {
             boolean result = super.add(o);
             if (result) fireChangeEvent(new ChangeEvent(this));
             return result;
         }
 
+        @Override
         public boolean remove (Object o) {
             boolean result = super.remove(o);
             if (result) fireChangeEvent(new ChangeEvent(this));
@@ -1058,14 +1059,13 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         */
         protected final void fireChangeEvent (ChangeEvent che) {
             if (listeners == null) return;
-            HashSet cloned;
-            // clone listener list
+            Set<ChangeListener> clones;
             synchronized (this) {
-                cloned = (HashSet)listeners.clone();
+                clones = new HashSet<ChangeListener>(listeners);
             }
             // fire on cloned list to prevent from modifications when firing
-            for (Iterator iter = cloned.iterator(); iter.hasNext(); ) {
-                ((ChangeListener)iter.next()).stateChanged(che);
+            for (ChangeListener l : clones) {
+                l.stateChanged(che);
             }
         }
 
@@ -1104,7 +1104,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         if (f != null) {
             String attrFromFO = (String)f.getAttribute(EA_ASSIGNED_LOADER);
             if (attrFromFO == null || (! attrFromFO.equals(getLoader().getClass().getName()))) {
-                java.util.HashSet single = new java.util.HashSet();
+                Set<FileObject> single = new HashSet<FileObject>(); // Collections.singleton is r/o, this must be writable
                 single.add(f);
                 if (!DataObjectPool.getPOOL().revalidate(single).isEmpty()) {
                     LOG.info("It was not possible to invalidate data object: " + this); // NOI18N

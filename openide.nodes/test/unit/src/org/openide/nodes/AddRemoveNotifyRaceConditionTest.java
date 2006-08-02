@@ -86,18 +86,19 @@ public class AddRemoveNotifyRaceConditionTest extends NbTestCase {
         assertEquals("Count is really one", 1, cnt);
     }
 
-    private static class Keys extends Children.Keys implements Runnable {
+    private static class Keys extends Children.Keys<Integer> implements Runnable {
         private Runnable run;
         private int removeNotify;
         private RequestProcessor.Task task = new RequestProcessor("blbni").create(this);
         
+        @Override
         protected void addNotify() {
             task.schedule(0);
         }
         
         public void run() {
             ErrorManager.getDefault().log("before setKeys");
-            setKeys(Collections.singleton(new Integer(1)));
+            setKeys(Collections.singleton(1));
             ErrorManager.getDefault().log("after setKeys");
             if (run != null) {
                 ErrorManager.getDefault().log("running inner runnable");
@@ -108,18 +109,20 @@ public class AddRemoveNotifyRaceConditionTest extends NbTestCase {
             }
         }
 
+        @Override
         protected void removeNotify() {
             ErrorManager.getDefault().log("removeNotify");
-            setKeys(Collections.EMPTY_LIST);
+            setKeys(Collections.<Integer>emptyList());
             ErrorManager.getDefault().log("removeNotifyEnd");
         }
 
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(Integer key) {
             AbstractNode an = new AbstractNode(Children.LEAF);
             an.setName(key.toString());
             return new Node[] { an };
         }
         
+        @Override
         public Node[] getNodes(boolean optimalResult) {
             Node[] res;
             if (optimalResult) {

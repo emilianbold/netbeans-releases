@@ -29,7 +29,7 @@ import org.openide.nodes.Node;
  *
  * @author Jaroslav Tulach
  */
-public interface InstanceCookie extends Node.Cookie {
+public interface InstanceCookie/*<T>*/ extends Node.Cookie {
 
     /**
      * The name of {@link #instanceClass}.
@@ -48,7 +48,7 @@ public interface InstanceCookie extends Node.Cookie {
      * @exception IOException if metadata about the instance could not be read, etc.
      * @exception ClassNotFoundException if the instance type could not be loaded
      */
-    public Class instanceClass() throws IOException, ClassNotFoundException;
+    public Class<?/*T*/> instanceClass() throws IOException, ClassNotFoundException;
 
     /**
      * Create an instance.
@@ -56,7 +56,7 @@ public interface InstanceCookie extends Node.Cookie {
      * @throws IOException for the same reasons as {@link #instanceClass}, or an object could not be deserialized, etc.
      * @throws ClassNotFoundException for the same reasons as {@link #instanceClass}
     */
-    public Object instanceCreate() throws IOException, ClassNotFoundException;
+    public Object/*T*/ instanceCreate() throws IOException, ClassNotFoundException;
 
     /**
      * Enhanced cookie that can answer queries about the type of the
@@ -77,7 +77,7 @@ public interface InstanceCookie extends Node.Cookie {
          * @param type the class type we want to check
          * @return true if this cookie will produce an instance of the given type
         */
-        public boolean instanceOf(Class type);
+        public boolean instanceOf(Class<?> type);
     }
 
 }

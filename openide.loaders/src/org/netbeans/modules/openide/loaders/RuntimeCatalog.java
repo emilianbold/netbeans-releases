@@ -40,11 +40,11 @@ public final class RuntimeCatalog extends EntityCatalog {
     public RuntimeCatalog() {}
     
     // table mapping public IDs to (local) URIs
-    private Map/*<String,String>*/ id2uri;
+    private Map<String,String> id2uri;
     
     // tables mapping public IDs to resources and classloaders
-    private Map/*<String,String>*/ id2resource;
-    private Map/*<String,ClassLoader>*/ id2loader;
+    private Map<String,String> id2resource;
+    private Map<String,ClassLoader> id2loader;
     
     /** SAX entity resolver */
     public InputSource resolveEntity(String name, String uri) throws IOException, SAXException {
@@ -61,7 +61,7 @@ public final class RuntimeCatalog extends EntityCatalog {
             
         } else if (stream != null) {
             // XXX unused var, what is it for?
-            uri = "java:resource:" + (String) id2resource.get(name); // NOI18N
+            uri = "java:resource:" + id2resource.get(name); // NOI18N
             retval = new InputSource(stream);
             retval.setPublicId(name);
             return retval;
@@ -73,7 +73,7 @@ public final class RuntimeCatalog extends EntityCatalog {
     
     public void registerCatalogEntry(String publicId, String uri) {
         if (id2uri == null) {
-            id2uri = new HashMap();
+            id2uri = new HashMap<String,String>();
         }
         id2uri.put(publicId, uri);
     }
@@ -81,13 +81,13 @@ public final class RuntimeCatalog extends EntityCatalog {
     /** Map publicid to a resource accessible by a classloader. */
     public void registerCatalogEntry(String publicId, String resourceName, ClassLoader loader) {
         if (id2resource == null) {
-            id2resource = new HashMap();
+            id2resource = new HashMap<String,String>();
         }
         id2resource.put(publicId, resourceName);
         
         if (loader != null) {
             if (id2loader == null) {
-                id2loader = new HashMap();
+                id2loader = new HashMap<String,ClassLoader>();
             }
             id2loader.put(publicId, loader);
         }
@@ -99,7 +99,7 @@ public final class RuntimeCatalog extends EntityCatalog {
         if (publicId == null || id2uri == null) {
             return null;
         }
-        return (String) id2uri.get(publicId);
+        return id2uri.get(publicId);
     }
     
     
@@ -109,7 +109,7 @@ public final class RuntimeCatalog extends EntityCatalog {
             return null;
         }
         
-        String resourceName = (String) id2resource.get(publicId);
+        String resourceName = id2resource.get(publicId);
         ClassLoader loader = null;
         
         if (resourceName == null) {
@@ -117,7 +117,7 @@ public final class RuntimeCatalog extends EntityCatalog {
         }
         
         if (id2loader != null) {
-            loader = (ClassLoader) id2loader.get(publicId);
+            loader = id2loader.get(publicId);
         }
         
         if (loader == null) {

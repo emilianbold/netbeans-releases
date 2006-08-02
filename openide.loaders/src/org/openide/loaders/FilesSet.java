@@ -34,7 +34,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author  Petr Hamernik
  */
-final class FilesSet implements Set {
+final class FilesSet implements Set<FileObject> {
 
     /** MDO which created this set */
     private MultiDataObject mymdo;
@@ -43,12 +43,12 @@ final class FilesSet implements Set {
     private boolean lazyWorkDone;
 
     /** Primary file. It is returned first. */
-    private Object primaryFile;
+    private FileObject primaryFile;
     
     /** The link to secondary variable of MultiDataObject. Reading of the content
      * must be synchronized on this map.
      */
-    private HashMap secondary;
+    private Map<FileObject,MultiDataObject.Entry> secondary;
 
     /** The set containing all files. It is <code>null</code> and is lazy initialized
      * when necessary.
@@ -68,7 +68,7 @@ final class FilesSet implements Set {
         this.secondary = null;
     }
 
-    /** Does the work which was originaly done in MDO.files() method. */
+    /** Does the work which was originally done in MDO.files() method. */
     private void doLazyWork() {
         synchronized (this) {
             if (!lazyWorkDone) {
@@ -86,14 +86,14 @@ final class FilesSet implements Set {
     
     /** Perform lazy initialization of delegate TreeSet.
      */
-    private Set getDelegate() {
+    private Set<FileObject> getDelegate() {
         doLazyWork();
         // This synchronized block was moved from MultiDataObject.files() method,
         // because of lazy initialization of delegate TreeSet.
         // Hopefully won't cause threading problems.
         synchronized (secondary) {
             if (delegate == null) {
-                delegate = new TreeSet(new FilesComparator());
+                delegate = new TreeSet<FileObject>(new FilesComparator());
                 delegate.add(primaryFile);
                 delegate.addAll(secondary.keySet());
             }
@@ -105,11 +105,11 @@ final class FilesSet implements Set {
     //   Implementation of Set interface methods
     // =====================================================================
     
-    public boolean add(Object obj) {
+    public boolean add(FileObject obj) {
         return getDelegate().add(obj);
     }
     
-    public boolean addAll(java.util.Collection collection) {
+    public boolean addAll(Collection<? extends FileObject> collection) {
         return getDelegate().addAll(collection);
     }
     
@@ -121,7 +121,7 @@ final class FilesSet implements Set {
         return getDelegate().contains(obj);
     }
     
-    public boolean containsAll(java.util.Collection collection) {
+    public boolean containsAll(Collection<?> collection) {
         return getDelegate().containsAll(collection);
     }
     
@@ -132,7 +132,7 @@ final class FilesSet implements Set {
         }
     }
     
-    public java.util.Iterator iterator() {
+    public Iterator<FileObject> iterator() {
         doLazyWork();
         synchronized (secondary) {
             return (delegate == null) ? new FilesIterator() : delegate.iterator();
@@ -143,11 +143,11 @@ final class FilesSet implements Set {
         return getDelegate().remove(obj);
     }
     
-    public boolean removeAll(java.util.Collection collection) {
+    public boolean removeAll(Collection<?> collection) {
         return getDelegate().removeAll(collection);
     }
     
-    public boolean retainAll(java.util.Collection collection) {
+    public boolean retainAll(Collection<?> collection) {
         return getDelegate().retainAll(collection);
     }
     
@@ -162,7 +162,7 @@ final class FilesSet implements Set {
         return getDelegate().toArray();
     }
     
-    public Object[] toArray(Object[] obj) {
+    public <T> T[] toArray(T[] obj) {
         return getDelegate().toArray(obj);
     }
 
@@ -181,7 +181,7 @@ final class FilesSet implements Set {
     /** Iterator for FilesSet. It returns the primaryFile first and 
      * then initialize the delegate iterator for secondary files.
      */
-    private final class FilesIterator implements Iterator {
+    private final class FilesIterator implements Iterator<FileObject> {
         /** Was the first element (primary file) already returned?
          */
         private boolean first = true;
@@ -189,7 +189,7 @@ final class FilesSet implements Set {
         /** Delegation iterator for secondary files. It is lazy initialized after
          * the first element is returned.
          */
-        private Iterator itDelegate = null;
+        private Iterator<FileObject> itDelegate = null;
         
         FilesIterator() {}
         
@@ -197,7 +197,7 @@ final class FilesSet implements Set {
             return first ? true : getIteratorDelegate().hasNext();
         }
         
-        public Object next() {
+        public FileObject next() {
             if (first) {
                 first = false;
                 return FilesSet.this.primaryFile;
@@ -213,7 +213,7 @@ final class FilesSet implements Set {
 
         /** Initialize the delegation iterator.
          */
-        private Iterator getIteratorDelegate() {
+        private Iterator<FileObject> getIteratorDelegate() {
             if (itDelegate == null) {
                 // this should return iterator of all files of the MultiDataObject...
                 itDelegate = FilesSet.this.getDelegate().iterator();
@@ -228,20 +228,18 @@ final class FilesSet implements Set {
      * so it is returned first. Other files are compared by getNameExt() method
      * result.
      */
-    private final class FilesComparator implements Comparator {
+    private final class FilesComparator implements Comparator<FileObject> {
         FilesComparator() {}
-        public int compare(Object obj1, Object obj2) {
-            if (obj1 == obj2)
+        public int compare(FileObject f1, FileObject f2) {
+            if (f1 == f2)
                 return 0;
             
-            if (obj1 == primaryFile)
+            if (f1 == primaryFile)
                 return -1;
             
-            if (obj2 == primaryFile)
+            if (f2 == primaryFile)
                 return 1;
             
-            FileObject f1 = (FileObject) obj1;
-            FileObject f2 = (FileObject) obj2;
             int res = f1.getNameExt().compareTo(f2.getNameExt());
             
             if (res == 0) {

@@ -21,6 +21,7 @@ package org.openide.actions;
 
 
 import java.io.IOException;
+import java.util.Set;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -34,6 +35,7 @@ import org.openide.util.actions.NodeAction;
 *
 * @deprecated Deprecated since 3.42. The use of this action should be avoided.
 */
+@Deprecated
 public class InstantiateAction extends NodeAction {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 1482795804240508824L;
@@ -77,7 +79,7 @@ public class InstantiateAction extends NodeAction {
     * @exception IOException on I/O error
     * @see DataObject#createFromTemplate
     */
-    public static java.util.Set instantiateTemplate (org.openide.loaders.DataObject obj)
+    public static Set<DataObject> instantiateTemplate(DataObject obj)
     throws IOException {
         // Create component for for file name input
         return NewTemplateAction.getWizard (null).instantiate (obj);

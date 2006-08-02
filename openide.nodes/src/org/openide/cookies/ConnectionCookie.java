@@ -18,6 +18,7 @@
  */
 package org.openide.cookies;
 
+import java.util.Set;
 import org.openide.nodes.Node;
 
 import java.io.IOException;
@@ -55,10 +56,10 @@ public interface ConnectionCookie extends Node.Cookie {
     */
     public void unregister(Type type, Node listener) throws IOException;
 
-    /** Unmutable set of types supported by this connection source.
-    * @return a set of Type objects
+    /** Immutable set of types supported by this connection source.
+    * @return a set of types
     */
-    public java.util.Set getTypes();
+    public Set<? extends ConnectionCookie.Type> getTypes();
 
     /** Cookie that must be provided by a node that is willing to register
     * itself as a listener to a ConnectionCookie.
@@ -82,7 +83,7 @@ public interface ConnectionCookie extends Node.Cookie {
         *
         * @return event class
         */
-        public Class getEventClass();
+        public Class<?> getEventClass();
 
         /** Getter whether the registration to this type of event  is persistent
         * or is valid only till the source disappears (the IDE shutdowns).

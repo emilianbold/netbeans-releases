@@ -101,7 +101,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
     }
     
     public void testDeadlock50379 () throws Exception {
-        class K extends Children.Keys implements Runnable {
+        class K extends Children.Keys<Object> implements Runnable {
             
             public void run () {
                 if (!MUTEX.isWriteAccess ()) {
@@ -123,6 +123,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
                 setKeys (java.util.Collections.singleton(this));
             }
             
+            @Override
             protected synchronized void addNotify () {
                 org.openide.util.RequestProcessor.getDefault().post (this);
                 try {

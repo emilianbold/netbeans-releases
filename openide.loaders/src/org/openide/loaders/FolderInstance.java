@@ -212,7 +212,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
     * @exception IOException an I/O error occured
     * @exception ClassNotFoundException the class has not been found
     */
-    public Class instanceClass ()
+    public Class<?> instanceClass ()
     throws java.io.IOException, ClassNotFoundException {
         Object object = this.object;
         if (object != null) {

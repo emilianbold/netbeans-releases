@@ -90,13 +90,13 @@ public class TemplateWizard extends WizardDescriptor {
     /** This is true if we have already set a value to the title format */
     private boolean titleFormatSet = false;
 
-    /** listenes on property (steps, index) changes and updates steps pane */
+    /** listens on property (steps, index) changes and updates steps pane */
     private PropertyChangeListener pcl;
     
     /** Component which we are listening on for changes of steps */
     private Component lastComp;
     
-    private Set newObjects = null;
+    private Set<DataObject> newObjects = null;
     
     /** Creates new TemplateWizard */
     public TemplateWizard () {
@@ -117,7 +117,7 @@ public class TemplateWizard extends WizardDescriptor {
         putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
         putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
         setTitle(NbBundle.getMessage(TemplateWizard.class,"CTL_TemplateTitle")); //NOI18N
-        setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
+        setTitleFormat(new MessageFormat("{0}")); // NOI18N
     }
 
     /** Constructor
@@ -319,7 +319,7 @@ public class TemplateWizard extends WizardDescriptor {
     *   or null if user canceled the dialog
     * @exception IOException I/O error
     */
-    public java.util.Set instantiate () throws IOException {
+    public Set<DataObject> instantiate() throws IOException {
         showTargetChooser = true;
         return instantiateImpl (null, null);
     }
@@ -331,7 +331,7 @@ public class TemplateWizard extends WizardDescriptor {
     *   or null if user canceled the dialog
     * @exception IOException I/O error
     */
-    public java.util.Set instantiate (DataObject template) throws IOException {
+    public Set<DataObject> instantiate(DataObject template) throws IOException {
         showTargetChooser = true;
         return instantiateImpl (template, null);
     }
@@ -345,14 +345,14 @@ public class TemplateWizard extends WizardDescriptor {
     *   or null if user canceled the dialog
     * @exception IOException I/O error
     */
-    public java.util.Set instantiate (
+    public Set<DataObject> instantiate(
         DataObject template, DataFolder targetFolder
     ) throws IOException {
         showTargetChooser = false;
         return instantiateImpl (template, targetFolder);
     }
     
-    Set instantiateNewObjects () throws IOException {
+    Set<DataObject> instantiateNewObjects() throws IOException {
         try {
             // #17341. The problem is handling ESC -> value is not
             // set to CANCEL_OPTION for such cases.
@@ -391,7 +391,7 @@ public class TemplateWizard extends WizardDescriptor {
     *   or null if user canceled the dialog
     * @exception IOException I/O error
     */
-    private java.util.Set instantiateImpl (
+    private Set<DataObject> instantiateImpl(
         DataObject template, DataFolder targetFolder
     ) throws IOException {
 
@@ -512,17 +512,19 @@ public class TemplateWizard extends WizardDescriptor {
     }
     
 
-    /** Overriden to be able to set own default value for the title format.
+    /** Overridden to be able to set own default value for the title format.
      * @param format message format
      */
-    public void setTitleFormat (MessageFormat format) {
+    @Override
+    public void setTitleFormat(MessageFormat format) {
         titleFormatSet = true; // someone have set the title format
         super.setTitleFormat(format);
     }
 
-    /** Overriden to be able to set a default value for the title format.
+    /** Overridden to be able to set a default value for the title format.
      * @return message format in title
      */
+    @Override
     public MessageFormat getTitleFormat () {
         if (!titleFormatSet) {
             // we want to call this just for the first time getTitleFormat was called
@@ -539,7 +541,7 @@ public class TemplateWizard extends WizardDescriptor {
      * @return set of data objects that have been created (should contain
      * at least one)
      */
-    protected java.util.Set handleInstantiate() throws IOException {
+    protected Set<DataObject> handleInstantiate() throws IOException {
         return iterator.getIterator ().instantiate (this);
     }
     
@@ -649,7 +651,7 @@ public class TemplateWizard extends WizardDescriptor {
             return it;
         }
         
-        return (Iterator)obj.getCookie (Iterator.class);
+        return obj.getCookie (Iterator.class);
     }
     
     // helper check for windows, its filesystem is case insensitive (workaround the bug #33612)
@@ -788,7 +790,7 @@ public class TemplateWizard extends WizardDescriptor {
          * @param wiz the wizard
          * @exception IOException if the instantiation fails
          */
-        public java.util.Set instantiate (TemplateWizard wiz)
+        public Set<DataObject> instantiate(TemplateWizard wiz)
             throws IOException;
         
         /** Initializes the iterator after it is constructed.
@@ -824,7 +826,7 @@ public class TemplateWizard extends WizardDescriptor {
         *   at least one) 
         * @exception IOException if the instantiation fails
         */
-        public java.util.Set instantiate(TemplateWizard wiz) throws IOException {
+        public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
             String n = wiz.getTargetName ();
             DataFolder folder = wiz.getTargetFolder ();
             DataObject template = wiz.getTemplate ();
@@ -844,7 +846,7 @@ public class TemplateWizard extends WizardDescriptor {
                 });
             }
 
-            return java.util.Collections.singleton(obj);
+            return Collections.singleton(obj);
         }
         
         /** No-op implementation.
@@ -950,13 +952,13 @@ public class TemplateWizard extends WizardDescriptor {
             instantiatingIterator.initialize (wiz);
         }
         
-        public Set/*<DataObject>*/ instantiate (TemplateWizard wiz) throws IOException {
+        public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException {
             // iterate Set and replace unexpected object with dataobjects
-            Set workSet = instantiatingIterator.instantiate ();
+            Set<Object> workSet = instantiatingIterator.instantiate();
             java.util.Iterator it = workSet.iterator ();
             Object obj;
             DataObject dobj;
-            Set/*<DataObject>*/ resultSet = new LinkedHashSet(workSet.size());
+            Set<DataObject> resultSet = new LinkedHashSet<DataObject>(workSet.size());
             while (it.hasNext ()) {
                 obj = it.next ();
                 assert obj != null;
@@ -972,7 +974,7 @@ public class TemplateWizard extends WizardDescriptor {
                         assert false : obj;
                     }
                 } else if (obj instanceof Node) {
-                    dobj = (DataObject)((Node)obj).getCookie (DataObject.class);
+                    dobj = ((Node) obj).getCookie(DataObject.class);
                     assert dobj != null : obj; // XXX assertions are not appropriate here!
                     resultSet.add (dobj);
                 }

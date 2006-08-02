@@ -38,9 +38,11 @@ public abstract class MultiFileLoader extends DataLoader {
 
     /** Creates new multi file loader.
      * @param representationClass the representation class
+     * @deprecated Use MultiFileLoader#MultiFileLoader(String) instead.
     */
-    protected MultiFileLoader (Class representationClass) {
-        this(representationClass.getName());
+    @Deprecated
+    protected MultiFileLoader(Class<? extends DataObject> representationClass) {
+        super(representationClass);
     }
 
     /** Creates new multi file loader.

@@ -33,6 +33,7 @@ import org.openide.nodes.Node;
 * @author Jaroslav Tulach, Petr Hamernik
  * @deprecated Should no longer be used.
 */
+@Deprecated
 public class ConnectionSupport extends Object implements ConnectionCookie {
     /** extended attribute to store (ArrayList of Type and Node.Handle) */
     private static final String EA_LISTENERS = "EA-OpenIDE-Connection"; // NOI18N
@@ -196,7 +197,7 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
     /** Unmutable set of types supported by this connection source.
     * @return a set of Type objects
     */
-    public java.util.Set getTypes () {
+    public Set<ConnectionCookie.Type> getTypes () {
         if (typesSet == null)
             typesSet = Collections.unmodifiableSet (new HashSet (Arrays.asList (types)));
         return typesSet;
@@ -207,7 +208,7 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
     *
     * @return the list of ConnectionCookie.Type objects
     */
-    public List getRegisteredTypes() {
+    public List<ConnectionCookie.Type> getRegisteredTypes() {
         LinkedList typesList = new LinkedList();
 
         LinkedList list = listeners;

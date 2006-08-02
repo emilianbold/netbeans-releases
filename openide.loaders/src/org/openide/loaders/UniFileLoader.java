@@ -40,8 +40,10 @@ public abstract class UniFileLoader extends MultiFileLoader {
     
     /** Constructor.
     * @param representationClass class that is produced by this loader
+     * @deprecated Use UniFileLoader#UniFileLoader(String) instead.
     */
-    protected UniFileLoader(Class representationClass) {
+    @Deprecated
+    protected UniFileLoader(Class<? extends DataObject> representationClass) {
         super (representationClass);
     }
 

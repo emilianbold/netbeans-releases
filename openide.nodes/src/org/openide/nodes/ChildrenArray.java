@@ -34,10 +34,9 @@ final class ChildrenArray extends NodeAdapter {
     /** nodes associated */
     private Node[] nodes;
 
-    /** mapping from the (Children.Info, Collection (Node)) */
-    private Map map;
+    private Map<Children.Info,Collection<Node>> map;
     /** the reference that points to us */
-    private Reference ref;
+    private Reference<ChildrenArray> ref;
 
     /** Creates new ChildrenArray */
     public ChildrenArray() {
@@ -54,7 +53,7 @@ final class ChildrenArray extends NodeAdapter {
     }
     
     /** Now points to me */
-    final void pointedBy(Reference ref) {
+    final void pointedBy(Reference<ChildrenArray> ref) {
         this.ref = ref;
     }
 
@@ -119,11 +118,11 @@ final class ChildrenArray extends NodeAdapter {
     * @param info the info
     * @return the nodes
     */
-    public synchronized Collection nodesFor(Children.Info info) {
+    public synchronized Collection<Node> nodesFor(Children.Info info) {
         if (map == null) {
-            map = new WeakHashMap(7);
+            map = new WeakHashMap<Children.Info,Collection<Node>>(7);
         }
-        Collection nodes = (Collection) map.get(info);
+        Collection<Node> nodes = map.get(info);
 
         if (nodes == null) {
             nodes = info.entry.nodes();
@@ -138,9 +137,9 @@ final class ChildrenArray extends NodeAdapter {
     * @param info the info
     * @return the nodes
     */
-    public synchronized void useNodes(Children.Info info, Collection list) {
+    public synchronized void useNodes(Children.Info info, Collection<Node> list) {
         if (map == null) {
-            map = new WeakHashMap(7);
+            map = new WeakHashMap<Children.Info,Collection<Node>>(7);
         }
         
         info.length = list.size();

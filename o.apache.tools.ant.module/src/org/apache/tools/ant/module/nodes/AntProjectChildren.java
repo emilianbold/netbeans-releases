@@ -37,7 +37,7 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ implements ChangeListener, Comparator<TargetLister.Target> {
+final class AntProjectChildren extends Children.Keys<TargetLister.Target> implements ChangeListener, Comparator<TargetLister.Target> {
     
     private static Collator SORTER = Collator.getInstance();
     
@@ -59,7 +59,7 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
     @Override
     protected void removeNotify () {
         super.removeNotify ();
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<TargetLister.Target>emptySet());
         synchronized (this) {
             allTargets = null;
         }
@@ -69,7 +69,7 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
     private void refreshKeys(boolean createKeys) {
         try {
             Set<TargetLister.Target> _allTargets = TargetLister.getTargets(cookie);
-            Collection keys;
+            Collection<TargetLister.Target> keys;
             synchronized (this) {
                 if (allTargets == null && !createKeys) {
                     // Aynch refresh after removeNotify; ignore. (#44428)
@@ -93,14 +93,12 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
         } catch (IOException e) {
             // XXX should mark the project node as being somehow in error
             AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<TargetLister.Target>emptySet());
         }
     }
     
-    @Override
-    protected Node[] createNodes (Object key) {
-        TargetLister.Target t = (TargetLister.Target) key;
-        return new Node[] {new AntTargetNode(cookie, t)};
+    protected Node[] createNodes(TargetLister.Target key) {
+        return new Node[] {new AntTargetNode(cookie, key)};
     }
     
     public void stateChanged (ChangeEvent ev) {

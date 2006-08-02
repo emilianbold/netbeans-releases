@@ -729,7 +729,8 @@ public class AbstractNode extends Node {
     * @param type the representation class
     * @return the cookie or <code>null</code>
     */
-    public Node.Cookie getCookie(Class type) {
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
         if (lookup instanceof CookieSet) {
             CookieSet c = (CookieSet) lookup;
 

@@ -48,6 +48,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
@@ -224,7 +225,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         }
         String[] attrs = new String[] {"name", "description", "depends"}; // NOI18N
         for (String attr : attrs) {
-            org.openide.nodes.Node.Property prop = new AntProperty(target.getElement(), attr);
+            org.openide.nodes.Node.Property<?> prop = new AntProperty(target.getElement(), attr);
             prop.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_" + attr));
             prop.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_" + attr));
             props.put (prop);
@@ -238,7 +239,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
     /**
      * Node displaying the sequence of all called targets when executing.
      */
-    private final class BuildSequenceProperty extends org.openide.nodes.PropertySupport.ReadOnly {
+    private final class BuildSequenceProperty extends PropertySupport.ReadOnly<String> {
         
         /** Creates new BuildSequenceProperty.
          */
@@ -345,7 +346,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         
         /** Returns the value of this property. */
         @Override
-        public Object getValue () {
+        public String getValue () {
             /*XXX
             return computeTargetDependencies(getTarget());
              */

@@ -313,9 +313,10 @@ public class DataObjectPanel extends JPanel {
             return new Node [] { new FilterNode(n, children) };
         }
         
-        protected Node [] createNodes(Object key) {
-            if ((key != null) && (key instanceof Node)) {
-                Node [] n = new Node [] {(Node) key};
+        @Override
+        protected Node[] createNodes(Node key) {
+            if (key != null) {
+                Node[] n = new Node[] {key};
                 if (dFilter != null) {
                     DataObject dObj =
                     (DataObject) n [0].getCookie(DataObject.class);

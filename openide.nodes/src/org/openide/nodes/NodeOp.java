@@ -231,19 +231,19 @@ public final class NodeOp extends Object {
 
     /** Traverse a path from a parent node down, by an enumeration of names.
     * @param start node to start searching at
-    * @param names enumeration of <code>String</code>s containing names of nodes
+    * @param names enumeration of names of nodes
     *   along the path
     * @return the node with such a path from the start node
     * @exception NodeNotFoundException if the node with such name
     *   does not exists; the exception contains additional information
     *   about the failure.
     */
-    public static Node findPath(Node start, Enumeration names)
+    public static Node findPath(Node start, Enumeration<String> names)
     throws NodeNotFoundException {
         int depth = 0;
 
         while (names.hasMoreElements()) {
-            String name = (String) names.nextElement();
+            String name = names.nextElement();
             Node next = findChild(start, name);
 
             if (next == null) {

@@ -67,8 +67,8 @@ public final class UIException {
             super(s, i);
         }
     } // end of UserLevel
-    private static final class AnnException extends Exception implements Callable/*<LogRecord[]>*/ {
-        private List/*<LogRecord>*/ records;
+    private static final class AnnException extends Exception implements Callable<LogRecord[]> {
+        private List<LogRecord> records;
 
         static AnnException findOrCreate(Throwable t, boolean create) {
             if (t instanceof AnnException) {
@@ -88,15 +88,15 @@ public final class UIException {
 
         public synchronized void addRecord(LogRecord rec) {
             if (records == null) {
-                records = new ArrayList/*<LogRecord>*/();
+                records = new ArrayList<LogRecord>();
             }
             records.add(rec);
         }
 
-        public Object/*LogRecord[]*/ call() {
-            List/*<LogRecord>*/ r = records;
+        public LogRecord[] call() {
+            List<LogRecord> r = records;
             LogRecord[] empty = new LogRecord[0];
-            return r == null ? empty : (LogRecord[])r.toArray(empty);
+            return r == null ? empty : r.toArray(empty);
         }
     } // end AnnException
 }

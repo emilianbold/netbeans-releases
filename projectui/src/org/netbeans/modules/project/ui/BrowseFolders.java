@@ -50,6 +50,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -193,7 +194,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
              // Try to find the node
              for ( int i = 0; i < nodes.length; i++ ) {            
                 try { 
-                    sel = NodeOp.findPath( nodes[i], new StringTokenizer( preselectedFileName, "/" ) );
+                    sel = NodeOp.findPath(nodes[i], NbCollections.checkedEnumerationByFilter(new StringTokenizer(preselectedFileName, "/"), String.class, true));
                     break;
                 }
                 catch ( NodeNotFoundException e ) {            

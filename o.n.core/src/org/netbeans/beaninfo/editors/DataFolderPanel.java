@@ -39,6 +39,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbCollections;
 import org.openide.windows.TopComponent;
 /**
  * A panel for selecting an existing data folder. 
@@ -506,7 +507,7 @@ class DataFolderPanel extends TopComponent implements
 
                 system = new WeakReference<FileSystem> (fs);
 
-                n = NodeOp.findPath (rootNode, st);
+                n = NodeOp.findPath(rootNode, NbCollections.checkedEnumerationByFilter(st, String.class, true));
 
                 exact = true;
                 
@@ -603,7 +604,7 @@ class DataFolderPanel extends TopComponent implements
         StringTokenizer st = new StringTokenizer (f, PATH_TOKEN_DELIMITER);
 
         try {
-            n = NodeOp.findPath (rootNode, st);
+            n = NodeOp.findPath(rootNode, NbCollections.checkedEnumerationByFilter(st, String.class, true));
         } catch (NodeNotFoundException ex) {
             if (!st.hasMoreElements ()) {
                 // a test for !hasMoreElements is here to be sure that

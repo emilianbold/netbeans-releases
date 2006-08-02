@@ -37,5 +37,6 @@ public interface DataFilter extends java.io.Serializable {
     /*public static final*/ DataFilter ALL = new DataFilterAll ();
 
     /** @deprecated Only public by accident. */
+    @Deprecated
     /* public static final */ long serialVersionUID = 0L;
 }

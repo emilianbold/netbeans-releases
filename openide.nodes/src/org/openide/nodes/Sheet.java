@@ -242,10 +242,10 @@ public final class Sheet extends Object {
     */
     public static final class Set extends Node.PropertySet {
         /** list of properties (Node.Property) */
-        private ArrayList props;
+        private List<Node.Property<?>> props;
 
         /** array of properties */
-        private Node.Property[] array;
+        private Node.Property<?>[] array;
 
         /** change listeners listening on this set */
         private PropertyChangeSupport supp = new PropertyChangeSupport(this);
@@ -253,12 +253,12 @@ public final class Sheet extends Object {
         /** Default constructor.
         */
         public Set() {
-            this(new ArrayList());
+            this(new ArrayList<Node.Property<?>>());
         }
 
         /** @param al array list to use for this property set
         */
-        private Set(ArrayList al) {
+        private Set(List<Node.Property<?>> al) {
             props = al;
         }
 
@@ -266,24 +266,24 @@ public final class Sheet extends Object {
         * @return the clone
         */
         public synchronized Set cloneSet() {
-            return new Set((ArrayList) props.clone());
+            return new Set(new ArrayList<Node.Property<?>>(props));
         }
 
         /** Get a property by name.
         * @param name name of the property
         * @return the first property in the list that has this name, <code>null</code> if not found
         */
-        public Node.Property get(String name) {
+        public Node.Property<?> get(String name) {
             int indx = findIndex(name);
 
-            return (indx == -1) ? null : (Node.Property) props.get(indx);
+            return (indx == -1) ? null : props.get(indx);
         }
 
         /** Get all properties in this set.
         * @return the properties
         */
-        public Node.Property[] getProperties() {
-            Node.Property[] l = array;
+        public Node.Property<?>[] getProperties() {
+            Node.Property<?>[] l = array;
 
             if (l != null) {
                 return l;
@@ -294,7 +294,7 @@ public final class Sheet extends Object {
                     return array;
                 }
 
-                array = new Node.Property[props.size()];
+                array = new Node.Property<?>[props.size()];
                 props.toArray(array);
 
                 return array;
@@ -305,13 +305,13 @@ public final class Sheet extends Object {
         * @param p the property to add
         * @return the property with the same name that was replaced, or <code>null</code> for a fresh insertion
         */
-        public synchronized Node.Property put(Node.Property p) {
+        public synchronized Node.Property<?> put(Node.Property<?> p) {
             int indx = findIndex(p.getName());
-            Node.Property removed;
+            Node.Property<?> removed;
 
             if (indx != -1) {
                 // replaces the original one
-                removed = (Node.Property) props.set(indx, p);
+                removed = props.set(indx, p);
             } else {
                 // adds this to the end
                 props.add(p);
@@ -328,9 +328,9 @@ public final class Sheet extends Object {
         *
         * @param ar properties to add
         */
-        public synchronized void put(Node.Property[] ar) {
+        public synchronized void put(Node.Property<?>[] ar) {
             for (int i = 0; i < ar.length; i++) {
-                Node.Property p = ar[i];
+                Node.Property<?> p = ar[i];
                 p = ar[i];
 
                 int indx = findIndex(p.getName());
@@ -352,12 +352,12 @@ public final class Sheet extends Object {
         * @param name name of the property to remove
         * @return the removed property, or <code>null</code> if it was not there to begin with
         */
-        public synchronized Node.Property remove(String name) {
+        public synchronized Node.Property<?> remove(String name) {
             int indx = findIndex(name);
 
             if (indx != -1) {
                 try {
-                    return (Node.Property) props.remove(indx);
+                    return props.remove(indx);
                 } finally {
                     // clears computed array and fires into about change of properties
                     refresh();
@@ -387,7 +387,7 @@ public final class Sheet extends Object {
             int s = props.size();
 
             for (int i = 0; i < s; i++) {
-                Node.Property p = (Node.Property) props.get(i);
+                Node.Property<?> p = props.get(i);
 
                 if (p.getName().equals(name)) {
                     return i;

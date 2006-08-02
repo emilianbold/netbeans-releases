@@ -55,8 +55,9 @@ import org.openide.util.actions.SystemAction;
 * as corresponding node properties. Thus, it serves as a compatibility wrapper.
 *
 * @author Jan Jancura, Ian Formanek, Jaroslav Tulach
+ * @param T the type of bean to be represented
 */
-public class BeanNode extends AbstractNode {
+public class BeanNode<T> extends AbstractNode {
     // static ..................................................................................................................
 
     /** Icon base for bean nodes */
@@ -65,7 +66,7 @@ public class BeanNode extends AbstractNode {
     // variables .............................................................................................................
 
     /** bean */
-    private final Object bean;
+    private final T bean;
 
     /** bean info for the bean */
     private BeanInfo beanInfo;
@@ -92,7 +93,7 @@ public class BeanNode extends AbstractNode {
     * @param bean the bean this node will be based on
     * @throws IntrospectionException if the bean cannot be analyzed
     */
-    public BeanNode(Object bean) throws IntrospectionException {
+    public BeanNode(T bean) throws IntrospectionException {
         this(bean, getChildren(bean));
     }
 
@@ -102,7 +103,7 @@ public class BeanNode extends AbstractNode {
     * @param children children for the node (default if null)
     * @throws IntrospectionException if the bean cannot be analyzed
     */
-    protected BeanNode(Object bean, Children children)
+    protected BeanNode(T bean, Children children)
     throws IntrospectionException {
         super((children == null) ? getChildren(bean) : children);
 
@@ -165,7 +166,7 @@ public class BeanNode extends AbstractNode {
     /** Provides access to the bean represented by this BeanNode.
     * @return instance of the bean represented by this BeanNode
     */
-    protected Object getBean() {
+    protected T getBean() {
         return bean;
     }
 
@@ -264,7 +265,7 @@ public class BeanNode extends AbstractNode {
     * @param bean bean to compute properties for
     * @param info information about the bean
     */
-    protected void createProperties(Object bean, BeanInfo info) {
+    protected void createProperties(T bean, BeanInfo info) {
         Descriptor d = computeProperties(bean, beanInfo);
 
         Sheet sets = getSheet();
@@ -492,7 +493,7 @@ public class BeanNode extends AbstractNode {
     //
     //
 
-    /** Performs initalization of the node
+    /** Performs initialization of the node
     */
     private void initialization() throws IntrospectionException {
         setIconBaseWithExtension(ICON_BASE);
@@ -580,7 +581,7 @@ public class BeanNode extends AbstractNode {
     * @param clazz the class to test
     * @return true if explicit bean info exists
     */
-    private boolean hasExplicitBeanInfo(Class clazz) {
+    private boolean hasExplicitBeanInfo(Class<?> clazz) {
         String className = clazz.getName();
         int indx = className.lastIndexOf('.');
         className = className.substring(indx + 1);
@@ -611,7 +612,7 @@ public class BeanNode extends AbstractNode {
     */
     private void registerName() {
         // [PENDING] ought to use introspection, rather than look up the methods by name  --jglick
-        Class clazz = bean.getClass();
+        Class<?> clazz = bean.getClass();
 
         // Do not want to use getName, even if public, on a private class:
         while (!Modifier.isPublic(clazz.getModifiers())) {
@@ -622,19 +623,17 @@ public class BeanNode extends AbstractNode {
             }
         }
 
-        Class[] param = new Class[0];
-
         // find getter for the name
         try {
             try {
-                nameGetter = clazz.getMethod("getName", param); // NOI18N
+                nameGetter = clazz.getMethod("getName"); // NOI18N
 
                 if (nameGetter.getReturnType() != String.class) {
                     throw new NoSuchMethodException();
                 }
             } catch (NoSuchMethodException e) {
                 try {
-                    nameGetter = clazz.getMethod("getDisplayName", param); // NOI18N
+                    nameGetter = clazz.getMethod("getDisplayName"); // NOI18N
 
                     if (nameGetter.getReturnType() != String.class) {
                         throw new NoSuchMethodException();
@@ -656,7 +655,7 @@ public class BeanNode extends AbstractNode {
         // invokable
         try {
             // make sure this is cast to String too:
-            String result = (String) nameGetter.invoke(bean, null);
+            String result = (String) nameGetter.invoke(bean);
         } catch (Exception e) {
             Exceptions.attachMessage(e,
                                      "Bad method: " + clazz.getName() + "." +
@@ -669,19 +668,17 @@ public class BeanNode extends AbstractNode {
         }
 
         // find the setter for the name
-        param = new Class[] { String.class };
-
         try {
             try {
                 // tries to find method setName (String)
-                nameSetter = clazz.getMethod("setName", param); // NOI18N
+                nameSetter = clazz.getMethod("setName", String.class); // NOI18N
 
                 if (nameSetter.getReturnType() != Void.TYPE) {
                     throw new NoSuchMethodException();
                 }
             } catch (NoSuchMethodException e) {
                 try {
-                    nameSetter = clazz.getMethod("setDisplayName", param); // NOI18N
+                    nameSetter = clazz.getMethod("setDisplayName", String.class); // NOI18N
 
                     if (nameSetter.getReturnType() != Void.TYPE) {
                         throw new NoSuchMethodException();
@@ -701,7 +698,7 @@ public class BeanNode extends AbstractNode {
     private String getNameForBean() {
         if (nameGetter != null) {
             try {
-                String name = (String) nameGetter.invoke(bean, null);
+                String name = (String) nameGetter.invoke(bean);
 
                 return (name != null) ? name : ""; // NOI18N
             } catch (Exception ex) {
@@ -714,7 +711,7 @@ public class BeanNode extends AbstractNode {
         return descriptor.getDisplayName();
     }
 
-    /** To allow innerclasses to access the super.setName method.
+    /** To allow inner classes to access the super.setName method.
     */
     void setNameSilently(String name) {
         super.setName(name);

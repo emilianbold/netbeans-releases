@@ -298,7 +298,7 @@ public interface Index extends Node.Cookie {
         /** Constructor.
         * @param ar the array
         */
-        private ArrayChildren(List ar) {
+        private ArrayChildren(List<Node> ar) {
             super(ar);
 
             // create support instance for delegation of common tasks
@@ -326,8 +326,9 @@ public interface Index extends Node.Cookie {
         *
         * @return any List collection.
         */
-        protected java.util.Collection initCollection() {
-            return new ArrayList();
+        @Override
+        protected java.util.List<Node> initCollection() {
+            return new ArrayList<Node>();
         }
 
         /* Reorders all children with given permutation.
@@ -338,8 +339,8 @@ public interface Index extends Node.Cookie {
             try {
                 PR.enterWriteAccess();
 
-                Object[] n = nodes.toArray();
-                List l = (List) nodes;
+                Node[] n = nodes.toArray(new Node[nodes.size()]);
+                List<Node> l = (List<Node>) nodes;
 
                 for (int i = 0; i < n.length; i++) {
                     l.set(perm[i], n[i]);
@@ -410,7 +411,7 @@ public interface Index extends Node.Cookie {
             try {
                 PR.enterReadAccess();
 
-                return ((List) nodes).indexOf(node);
+                return ((List<Node>) nodes).indexOf(node);
             } finally {
                 PR.exitReadAccess();
             }
@@ -439,17 +440,17 @@ public interface Index extends Node.Cookie {
     /** Implementation of index interface that operates on an list of
     * objects that are presented by given nodes.
     */
-    public abstract class KeysChildren extends Children.Keys {
+    public abstract class KeysChildren<T> extends Children.Keys<T> {
         /** Support instance for delegation of some <code>Index</code> methods. */
         private Index support; // JST: Maybe made protected 
 
         /** list of objects that should be manipulated with this keys */
-        protected final List list;
+        protected final List<T> list;
 
         /** Constructor.
         * @param ar the array of any objects
         */
-        public KeysChildren(List ar) {
+        public KeysChildren(List<T> ar) {
             list = ar;
             update();
         }
@@ -476,13 +477,13 @@ public interface Index extends Node.Cookie {
                     /** Returns only nodes that are indexable. Not any fixed ones.
                     */
                     public Node[] getNodes() {
-                        List l = Arrays.asList(KeysChildren.this.getNodes());
+                        List<Node> l = Arrays.asList(KeysChildren.this.getNodes());
 
                         if (KeysChildren.this.nodes != null) {
                             l.removeAll(KeysChildren.this.nodes);
                         }
 
-                        return (Node[]) l.toArray(new Node[l.size()]);
+                        return l.toArray(new Node[l.size()]);
                     }
 
                     public int getNodesCount() {
@@ -503,10 +504,10 @@ public interface Index extends Node.Cookie {
         */
         protected void reorder(final int[] perm) {
             synchronized (lock()) {
-                Object[] n = list.toArray();
+                List<T> n = new ArrayList<T>(list);
 
-                for (int i = 0; i < n.length; i++) {
-                    list.set(perm[i], n[i]);
+                for (int i = 0; i < n.size(); i++) {
+                    list.set(perm[i], n.get(i));
                 }
             }
         }
@@ -524,10 +525,10 @@ public interface Index extends Node.Cookie {
         /** Update the status of the list if it has changed.
         */
         public final void update() {
-            Object[] keys;
+            Collection<T> keys;
 
             synchronized (lock()) {
-                keys = list.toArray();
+                keys = new ArrayList<T>(list);
             }
 
             super.setKeys(keys);

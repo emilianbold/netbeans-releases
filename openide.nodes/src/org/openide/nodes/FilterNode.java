@@ -18,10 +18,13 @@
  */
 package org.openide.nodes;
 
+import java.lang.ref.Reference;
+import java.lang.reflect.Method;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -99,8 +102,8 @@ public class FilterNode extends Node {
     private static final int DELEGATE_ALL = DELEGATE_SET_NAME | DELEGATE_GET_NAME | DELEGATE_SET_DISPLAY_NAME |
         DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_SHORT_DESCRIPTION | DELEGATE_GET_SHORT_DESCRIPTION | DELEGATE_DESTROY |
         DELEGATE_GET_ACTIONS | DELEGATE_GET_CONTEXT_ACTIONS | DELEGATE_SET_VALUE | DELEGATE_GET_VALUE;
-    private static final WeakHashMap overridesGetDisplayNameCache = new WeakHashMap(27);
-    private static final WeakHashMap replaceProvidedLookupCache = new WeakHashMap(27);
+    private static final Map<Class<?>,Boolean> overridesGetDisplayNameCache = new WeakHashMap<Class<?>,Boolean>(27);
+    private static final Map<Class<?>,Boolean> replaceProvidedLookupCache = new WeakHashMap<Class<?>,Boolean>(27);
 
     /** Depth of stack trace.
      */
@@ -193,27 +196,27 @@ public class FilterNode extends Node {
      */
     final Lookup replaceProvidedLookup(Lookup lookup) {
         synchronized (replaceProvidedLookupCache) {
-            Boolean b = (Boolean) replaceProvidedLookupCache.get(getClass());
+            Boolean b = replaceProvidedLookupCache.get(getClass());
 
             if (b == null) {
-                b = overridesAMethod("getCookie", new Class[] { Class.class }) ? Boolean.FALSE : Boolean.TRUE; // NOI18N
+                b = !overridesAMethod("getCookie", Class.class); // NOI18N
                 replaceProvidedLookupCache.put(getClass(), b);
             }
 
-            return b.booleanValue() ? lookup : null;
+            return b ? lookup : null;
         }
     }
 
     /** Checks whether subclass overrides a method
      */
-    private boolean overridesAMethod(String name, Class[] arguments) {
+    private boolean overridesAMethod(String name, Class... arguments) {
         if (getClass() == FilterNode.class) {
             return false;
         }
 
         // we are subclass of FilterNode
         try {
-            java.lang.reflect.Method m = getClass().getMethod(name, arguments);
+            Method m = getClass().getMethod(name, arguments);
 
             if (m.getDeclaringClass() != FilterNode.class) {
                 // ok somebody overriden getCookie method
@@ -251,6 +254,7 @@ public class FilterNode extends Node {
     * but can be called by any subclass to stop reflecting changes
     * in the original node.
     */
+    @Override
     protected void finalize() {
         original.removePropertyChangeListener(getPropertyChangeListener());
         original.removeNodeListener(getNodeListener());
@@ -429,6 +433,7 @@ public class FilterNode extends Node {
     }
 
     // ------------- START OF DELEGATED METHODS ------------
+    @Override
     public void setValue(String attributeName, Object value) {
         if (delegating(DELEGATE_SET_VALUE)) {
             original.setValue(attributeName, value);
@@ -437,6 +442,7 @@ public class FilterNode extends Node {
         }
     }
 
+    @Override
     public Object getValue(String attributeName) {
         if (delegating(DELEGATE_GET_VALUE)) {
             return original.getValue(attributeName);
@@ -448,6 +454,7 @@ public class FilterNode extends Node {
     /* Setter for system name. Fires info about property change.
     * @param s the string
     */
+    @Override
     public void setName(String s) {
         if (delegating(DELEGATE_SET_NAME)) {
             original.setName(s);
@@ -458,6 +465,7 @@ public class FilterNode extends Node {
 
     /* @return the name of the original node
     */
+    @Override
     public String getName() {
         if (delegating(DELEGATE_GET_NAME)) {
             return original.getName();
@@ -469,6 +477,7 @@ public class FilterNode extends Node {
     /* Setter for display name. Fires info about property change.
     * @param s the string
     */
+    @Override
     public void setDisplayName(String s) {
         if (delegating(DELEGATE_SET_DISPLAY_NAME)) {
             original.setDisplayName(s);
@@ -479,6 +488,7 @@ public class FilterNode extends Node {
 
     /* @return the display name of the original node
     */
+    @Override
     public String getDisplayName() {
         if (delegating(DELEGATE_GET_DISPLAY_NAME)) {
             return original.getDisplayName();
@@ -490,6 +500,7 @@ public class FilterNode extends Node {
     /* Setter for short description. Fires info about property change.
     * @param s the string
     */
+    @Override
     public void setShortDescription(String s) {
         if (delegating(DELEGATE_SET_SHORT_DESCRIPTION)) {
             original.setShortDescription(s);
@@ -500,6 +511,7 @@ public class FilterNode extends Node {
 
     /* @return the description of the original node
     */
+    @Override
     public String getShortDescription() {
         if (delegating(DELEGATE_GET_SHORT_DESCRIPTION)) {
             return original.getShortDescription();
@@ -550,6 +562,7 @@ public class FilterNode extends Node {
 
     /* Degelates the delete operation to original.
     */
+    @Override
     public void destroy() throws java.io.IOException {
         if (delegating(DELEGATE_DESTROY)) {
             original.destroy();
@@ -649,6 +662,8 @@ public class FilterNode extends Node {
     *
     * @return array of system actions that should be in popup menu
     */
+    @Override
+    @Deprecated
     public SystemAction[] getActions() {
         if (delegating(DELEGATE_GET_ACTIONS)) {
             return original.getActions();
@@ -659,6 +674,8 @@ public class FilterNode extends Node {
 
     /* Delegates to original
     */
+    @Override
+    @Deprecated
     public SystemAction[] getContextActions() {
         if (delegating(DELEGATE_GET_CONTEXT_ACTIONS)) {
             return original.getContextActions();
@@ -670,18 +687,21 @@ public class FilterNode extends Node {
     /*
     * @return default action of the original node or null
     */
+    @Override
+    @Deprecated
     public SystemAction getDefaultAction() {
         return original.getDefaultAction();
     }
 
+    @Override
     public javax.swing.Action[] getActions(boolean context) {
         if (context) {
-            if (!delegating(DELEGATE_GET_ACTIONS) || overridesAMethod("getContextActions", new Class[0])) { // NOI18N
+            if (!delegating(DELEGATE_GET_ACTIONS) || overridesAMethod("getContextActions")) { // NOI18N
 
                 return super.getActions(context);
             }
         } else {
-            if (!delegating(DELEGATE_GET_CONTEXT_ACTIONS) || overridesAMethod("getActions", new Class[0])) { // NOI18N
+            if (!delegating(DELEGATE_GET_CONTEXT_ACTIONS) || overridesAMethod("getActions")) { // NOI18N
 
                 return super.getActions(context);
             }
@@ -693,10 +713,11 @@ public class FilterNode extends Node {
         return retValue;
     }
 
+    @Override
     public javax.swing.Action getPreferredAction() {
         javax.swing.Action retValue;
 
-        if (overridesAMethod("getDefaultAction", new Class[0])) { // NOI18N
+        if (overridesAMethod("getDefaultAction")) { // NOI18N
             retValue = super.getPreferredAction();
         } else {
             retValue = original.getPreferredAction();
@@ -722,6 +743,7 @@ public class FilterNode extends Node {
      * @see org.openide.nodes.Node#getHtmlDisplayName
      * @return An HTML display name, if available, or null if no display name
      * is available   */
+    @Override
     public String getHtmlDisplayName() {
         if (overridesGetDisplayName()) {
             return null;
@@ -732,14 +754,14 @@ public class FilterNode extends Node {
 
     private boolean overridesGetDisplayName() {
         synchronized (overridesGetDisplayNameCache) {
-            Boolean b = (Boolean) overridesGetDisplayNameCache.get(getClass());
+            Boolean b = overridesGetDisplayNameCache.get(getClass());
 
             if (b == null) {
-                b = overridesAMethod("getDisplayName", null) ? Boolean.TRUE : Boolean.FALSE; // NOI18N
+                b = overridesAMethod("getDisplayName"); // NOI18N
                 overridesGetDisplayNameCache.put(getClass(), b);
             }
 
-            return b.booleanValue() ? true : false;
+            return b;
         }
     }
 
@@ -766,15 +788,12 @@ public class FilterNode extends Node {
     *    is not supported
     * @see Node#getCookie
     */
-    public Node.Cookie getCookie(Class type) {
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
         Lookup l = internalLookup(true);
 
         if (l != null) {
-            Object o = l.lookup(type);
-
-            if (o instanceof Node.Cookie) {
-                return (Node.Cookie) o;
-            }
+            return l.lookup(type);
         }
 
         return original.getCookie(type);
@@ -820,6 +839,7 @@ public class FilterNode extends Node {
     * @param o something to compare to, presumably a node or <code>FilterNode</code> of one
     * @return true if this node's original node is the same as the parameter (or original node of parameter)
     */
+    @Override
     public boolean equals(Object o) {
         // VERY DANGEROUS! Completely messes up visualizers and often original node is displayed rather than filter.
         // Jst: I know that it is dangerous, but some code probably depends on it
@@ -1012,26 +1032,24 @@ public class FilterNode extends Node {
     /** An exception to be thrown from hashCode() to debug issue 46993.
      */
     private static class StackError extends StackOverflowError {
-        private java.util.IdentityHashMap nodes;
+        private IdentityHashMap<FilterNode,FilterNode> nodes;
 
         public void add(FilterNode n) {
             if (nodes == null) {
-                nodes = new java.util.IdentityHashMap();
+                nodes = new IdentityHashMap<FilterNode,FilterNode>();
             }
 
-            if (nodes.get(n) == null) {
+            if (!nodes.containsKey(n)) {
                 nodes.put(n, n);
             }
         }
 
+        @Override
         public String getMessage() {
             StringBuffer sb = new StringBuffer();
             sb.append("StackOver in FilterNodes:\n"); // NOI18N
 
-            Iterator it = nodes.keySet().iterator();
-
-            while (it.hasNext()) {
-                FilterNode f = (FilterNode) it.next();
+            for (FilterNode f : nodes.keySet()) {
                 sb.append("  class: "); // NOI18N
                 sb.append(f.getClass().getName());
                 sb.append(" id: "); // NOI18N
@@ -1047,28 +1065,27 @@ public class FilterNode extends Node {
     * and refires them in a proxy.
     * This adapter is created during
     * initialization in  {@link FilterNode#createPropertyChangeListener}. The method
-    * can be overriden and this class used as the super class for the
+    * can be overridden and this class used as the super class for the
     * new implementation.
     * <P>
     * A reference to the proxy is stored by weak reference, so it does not
     * prevent the node from being finalized.
     */
     protected static class PropertyChangeAdapter extends Object implements PropertyChangeListener {
-        /** weak reference to filter node */
-        private WeakReference fn;
+        private Reference<FilterNode> fn;
 
         /** Create a new adapter.
         * @param fn the proxy
         */
         public PropertyChangeAdapter(FilterNode fn) {
-            this.fn = new WeakReference(fn);
+            this.fn = new WeakReference<FilterNode>(fn);
         }
 
         /* Find the node we are attached to. If it is not null call property
         * change method with two arguments.
         */
         public final void propertyChange(PropertyChangeEvent ev) {
-            FilterNode fn = (FilterNode) this.fn.get();
+            FilterNode fn = this.fn.get();
 
             if (fn == null) {
                 return;
@@ -1092,21 +1109,20 @@ public class FilterNode extends Node {
     * @see FilterNode.PropertyChangeAdapter
     */
     protected static class NodeAdapter extends Object implements NodeListener {
-        /** weak reference to filter node */
-        private WeakReference fn;
+        private Reference<FilterNode> fn;
 
         /** Create an adapter.
         * @param fn the proxy
         */
         public NodeAdapter(FilterNode fn) {
-            this.fn = new WeakReference(fn);
+            this.fn = new WeakReference<FilterNode>(fn);
         }
 
         /* Tests if the reference to the node provided in costructor is
         * still valid (it has not been finalized) and if so, calls propertyChange (Node, ev).
         */
         public final void propertyChange(PropertyChangeEvent ev) {
-            FilterNode fn = (FilterNode) this.fn.get();
+            FilterNode fn = this.fn.get();
 
             if (fn == null) {
                 return;
@@ -1216,7 +1232,7 @@ public class FilterNode extends Node {
     }
 
     /** Children for a filter node. Listens on changes in subnodes of
-    * the original node and asks this filter node to creates representants for
+    * the original node and asks this filter node to creates representatives for
     * these subnodes.
     * <P>
     * This class is used as the default for subnodes of filter node, but
@@ -1233,7 +1249,7 @@ public class FilterNode extends Node {
      * keys that are useful to you, and keeping a <code>NodeListener</code> on the original
      * node to handle changes.
     */
-    public static class Children extends org.openide.nodes.Children.Keys implements Cloneable {
+    public static class Children extends org.openide.nodes.Children.Keys<Node> implements Cloneable {
         /** Original node. Should not be modified. */
         protected Node original;
 
@@ -1278,6 +1294,7 @@ public class FilterNode extends Node {
 
         /** Closes the listener, if any, on the original node.
         */
+        @Override
         protected void finalize() {
             if (nodeL != null) {
                 original.removeNodeListener(nodeL);
@@ -1288,12 +1305,14 @@ public class FilterNode extends Node {
 
         /* Clones the children object.
         */
+        @Override
         public Object clone() {
             return new Children(original);
         }
 
         /** Initializes listening to changes in original node.
         */
+        @Override
         protected void addNotify() {
             addNotifyImpl();
         }
@@ -1308,8 +1327,9 @@ public class FilterNode extends Node {
 
         /** Clears current keys, because all mirrored nodes disappeared.
         */
+        @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<Node>emptySet());
 
             if (nodeL != null) {
                 original.removeNodeListener(nodeL);
@@ -1333,6 +1353,7 @@ public class FilterNode extends Node {
         * @param name of node to find
         * @return the node or null
         */
+        @Override
         public Node findChild(String name) {
             original.getChildren().findChild(name);
 
@@ -1347,11 +1368,9 @@ public class FilterNode extends Node {
         * @param key the original child node
         * @return zero or more nodes representing the original child node
         */
-        protected Node[] createNodes(Object key) {
-            Node n = (Node) key;
-
+        protected Node[] createNodes(Node key) {
             // is run under read access lock so nobody can change children
-            return new Node[] { copyNode(n) };
+            return new Node[] { copyNode(key) };
         }
 
         /* Delegates to children of the original node.
@@ -1359,6 +1378,8 @@ public class FilterNode extends Node {
         * @param arr nodes to add
         * @return true/false
         */
+        @Override
+        @Deprecated
         public boolean add(Node[] arr) {
             return original.getChildren().add(arr);
         }
@@ -1367,6 +1388,8 @@ public class FilterNode extends Node {
         * @param arr nodes to remove
         * @return true/false
         */
+        @Override
+        @Deprecated
         public boolean remove(Node[] arr) {
             return original.getChildren().remove(arr);
         }
@@ -1418,6 +1441,7 @@ public class FilterNode extends Node {
          * until the original node is fully initialized.
          * @since 3.9
          */
+        @Override
         public Node[] getNodes(boolean optimalResult) {
             if (optimalResult) {
                 setKeys(original.getChildren().getNodes(true));
@@ -1436,19 +1460,19 @@ public class FilterNode extends Node {
         /** children object to notify about addition of children.
         * Can be null. Set from Children's initNodes method.
         */
-        private WeakReference children;
+        private Reference<Children> children;
 
         /** Create a new adapter.
         * @param ch the children list
         */
         public ChildrenAdapter(Children ch) {
-            this.children = new WeakReference(ch);
+            this.children = new WeakReference<Children>(ch);
         }
 
         /** Called to update the content of children.
          */
         public void run() {
-            Children ch = (Children) children.get();
+            Children ch = children.get();
 
             if (ch != null) {
                 Node[] arr = ch.original.getChildren().getNodes();
@@ -1466,7 +1490,7 @@ public class FilterNode extends Node {
         * @param ev event describing the action
         */
         public void childrenAdded(NodeMemberEvent ev) {
-            Children children = (Children) this.children.get();
+            Children children = this.children.get();
 
             if (children == null) {
                 return;
@@ -1522,6 +1546,7 @@ public class FilterNode extends Node {
             return new FilterNode(original.getNode());
         }
 
+        @Override
         public String toString() {
             return "FilterHandle[" + original + "]"; // NOI18N
         }
@@ -1529,7 +1554,7 @@ public class FilterNode extends Node {
 
     /** Special ProxyLookup
      */
-    private static final class FilterLookup extends org.openide.util.Lookup {
+    private static final class FilterLookup extends Lookup {
         /** node we belong to */
         private FilterNode node;
 
@@ -1537,7 +1562,7 @@ public class FilterNode extends Node {
         private Lookup delegate;
 
         /** set of all results associated to this lookup */
-        private org.openide.util.WeakSet results;
+        private Set<ProxyResult> results;
 
         FilterLookup() {
         }
@@ -1551,9 +1576,9 @@ public class FilterNode extends Node {
         /** A method that replaces instance of original node
          * with a new one
          */
-        private Object replaceNodes(Object orig, Class clazz) {
+        private <T> T replaceNodes(T orig, Class<T> clazz) {
             if (isNodeQuery(clazz) && (orig == node.getOriginal()) && clazz.isInstance(node)) {
-                return node;
+                return clazz.cast(node);
             } else {
                 return orig;
             }
@@ -1569,24 +1594,23 @@ public class FilterNode extends Node {
                 return l;
             }
 
-            Iterator toCheck = null;
+            Iterator<ProxyResult> toCheck = null;
 
             synchronized (this) {
                 if (l != delegate) {
                     this.delegate = l;
 
                     if (results != null) {
-                        toCheck = Arrays.asList(results.toArray()).iterator();
+                        toCheck = new ArrayList<ProxyResult>(results).iterator();
                     }
                 }
             }
 
             if (toCheck != null) {
                 // update
-                Iterator it = toCheck;
 
-                while (it.hasNext()) {
-                    ProxyResult p = (ProxyResult) it.next();
+                while (toCheck.hasNext()) {
+                    ProxyResult p = toCheck.next();
 
                     if (p.updateLookup(l)) {
                         p.resultChanged(null);
@@ -1597,12 +1621,12 @@ public class FilterNode extends Node {
             return delegate;
         }
 
-        public Result lookup(Template template) {
-            ProxyResult p = new ProxyResult(template);
+        public <T> Result<T> lookup(Template<T> template) {
+            ProxyResult<T> p = new ProxyResult<T>(template);
 
             synchronized (this) {
                 if (results == null) {
-                    results = new org.openide.util.WeakSet();
+                    results = new WeakSet<ProxyResult>();
                 }
 
                 results.add(p);
@@ -1611,11 +1635,11 @@ public class FilterNode extends Node {
             return p;
         }
 
-        public Object lookup(Class clazz) {
-            Object result = checkNode().lookup(clazz);
+        public <T> T lookup(Class<T> clazz) {
+            T result = checkNode().lookup(clazz);
 
             if (result == null && clazz.isInstance(node)) {
-                result = node;
+                result = clazz.cast(node);
             }
 
             return replaceNodes(result, clazz);
@@ -1625,13 +1649,14 @@ public class FilterNode extends Node {
          * by a state of the "nodes" lookup and whether we should
          * initialize listening
          */
-        private static boolean isNodeQuery(Class c) {
+        private static boolean isNodeQuery(Class<?> c) {
             return Node.class.isAssignableFrom(c) || c.isAssignableFrom(Node.class);
         }
 
-        public Item lookupItem(Template template) {
+        @Override
+        public <T> Item<T> lookupItem(Template<T> template) {
             boolean nodeQ = isNodeQuery(template.getType());
-            Item i = checkNode().lookupItem(template);
+            Item<T> i = checkNode().lookupItem(template);
 
             if (
                 nodeQ && 
@@ -1639,10 +1664,15 @@ public class FilterNode extends Node {
                 template.getType().isInstance(node) &&
                 (template.getInstance() == null || template.getInstance() == node)
             ) {
-                i = checkNode().lookupItem(new Lookup.Template(Node.class, template.getId(), template.getInstance()));
+                i = checkNode().lookupItem(wackohacko(template.getId(), template.getInstance()));
             }
 
-            return nodeQ && i != null ? new FilterItem(i, template.getType()) : i;
+            return nodeQ && i != null ? new FilterItem<T>(i, template.getType()) : i;
+        }
+        
+        @SuppressWarnings("unchecked") // cannot type-check this but ought to be safe
+        private static <T> Lookup.Template<T> wackohacko(String id, T instance) {
+            return new Lookup.Template(Node.class, id, instance);
         }
 
         /**
@@ -1650,24 +1680,24 @@ public class FilterNode extends Node {
          * passed in constructor. As the contents of this lookup result never
          * changes the addLookupListener and removeLookupListener are empty.
          */
-        private final class ProxyResult extends Result implements LookupListener {
+        private final class ProxyResult<T> extends Result<T> implements LookupListener {
             /** Template used for this result. It is never null.*/
-            private Template template;
+            private Template<T> template;
 
             /** result to delegate to */
-            private Lookup.Result delegate;
+            private Lookup.Result<T> delegate;
 
             /** listeners set */
             private javax.swing.event.EventListenerList listeners;
 
             /** Just remembers the supplied argument in variable template.*/
-            ProxyResult(Template template) {
+            ProxyResult(Template<T> template) {
                 this.template = template;
             }
 
             /** Checks state of the result
              */
-            private Result checkResult() {
+            private Result<T> checkResult() {
                 updateLookup(checkNode());
 
                 return this.delegate;
@@ -1677,7 +1707,7 @@ public class FilterNode extends Node {
              * @return true if the lookup really changed
              */
             public boolean updateLookup(Lookup l) {
-                Collection oldPairs = (delegate != null) ? delegate.allItems() : null;
+                Collection<? extends Item<T>> oldPairs = (delegate != null) ? delegate.allItems() : null;
 
                 synchronized (this) {
                     if (delegate != null) {
@@ -1687,7 +1717,7 @@ public class FilterNode extends Node {
                     delegate = l.lookup(template);
 
                     if (template.getType().isAssignableFrom(node.getClass()) && delegate.allItems().isEmpty()) {
-                        delegate = l.lookup(new Lookup.Template(Node.class, template.getId(), template.getInstance()));
+                        delegate = l.lookup(wackohacko(template.getId(), template.getInstance()));
                     }
 
                     delegate.addLookupListener(this);
@@ -1698,7 +1728,7 @@ public class FilterNode extends Node {
                     return false;
                 }
 
-                Collection newPairs = delegate.allItems();
+                Collection<? extends Item<T>> newPairs = delegate.allItems();
 
                 return !oldPairs.equals(newPairs);
             }
@@ -1717,15 +1747,13 @@ public class FilterNode extends Node {
                 }
             }
 
-            public java.util.Collection allInstances() {
-                java.util.Collection c = checkResult().allInstances();
+            public Collection<? extends T> allInstances() {
+                Collection<? extends T> c = checkResult().allInstances();
 
                 if (isNodeQuery(template.getType())) {
-                    ArrayList ll = new ArrayList(c.size());
-                    Iterator it = c.iterator();
-
-                    while (it.hasNext()) {
-                        ll.add(replaceNodes(it.next(), template.getType()));
+                    List<T> ll = new ArrayList<T>(c.size());
+                    for (T o : c) {
+                        ll.add(replaceNodes(o, template.getType()));
                     }
 
                     return ll;
@@ -1734,11 +1762,13 @@ public class FilterNode extends Node {
                 }
             }
 
-            public Set allClasses() {
+            @Override
+            public Set<Class<? extends T>> allClasses() {
                 return checkResult().allClasses();
             }
 
-            public Collection allItems() {
+            @Override
+            public Collection<? extends Item<T>> allItems() {
                 return checkResult().allItems();
             }
 
@@ -1770,11 +1800,11 @@ public class FilterNode extends Node {
          // end of ProxyResult
 
         /** Item that exchanges the original node for the FilterNode */
-        private final class FilterItem extends Lookup.Item {
-            private Item delegate;
-            private Class clazz;
+        private final class FilterItem<T> extends Lookup.Item<T> {
+            private Item<T> delegate;
+            private Class<T> clazz;
 
-            FilterItem(Item d, Class clazz) {
+            FilterItem(Item<T> d, Class<T> clazz) {
                 this.delegate = d;
                 this.clazz = clazz;
             }
@@ -1787,11 +1817,11 @@ public class FilterNode extends Node {
                 return delegate.getId();
             }
 
-            public Object getInstance() {
+            public T getInstance() {
                 return replaceNodes(delegate.getInstance(), clazz);
             }
 
-            public Class getType() {
+            public Class<? extends T> getType() {
                 return delegate.getType();
             }
         }

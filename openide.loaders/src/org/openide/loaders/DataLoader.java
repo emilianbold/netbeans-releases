@@ -74,7 +74,7 @@ public abstract class DataLoader extends SharedClassObject {
     *    to best identify the loader's data objects to listeners.
     * @deprecated Use {@link #DataLoader(String)} instead.
     */
-    protected DataLoader (Class representationClass) {
+    protected DataLoader(Class<? extends DataObject> representationClass) {
         putProperty (PROP_REPRESENTATION_CLASS, representationClass);
         putProperty (PROP_REPRESENTATION_CLASS_NAME, representationClass.getName());
         if (representationClass.getClassLoader() == getClass().getClassLoader()) {
@@ -104,13 +104,16 @@ public abstract class DataLoader extends SharedClassObject {
      * Get the representation class for this data loader, as passed to the constructor.
      * @return the representation class
      */
-    public final Class getRepresentationClass() {
-        Class cls = (Class)getProperty (PROP_REPRESENTATION_CLASS);
-        if (cls != null) return cls;
+    public final Class<? extends DataObject> getRepresentationClass() {
+        Class<?> _cls = (Class<?>) getProperty(PROP_REPRESENTATION_CLASS);
+        if (_cls != null) {
+            return _cls.asSubclass(DataObject.class);
+        }
 
+        Class<? extends DataObject> cls;
         String clsName = (String)getProperty (PROP_REPRESENTATION_CLASS_NAME);
         try {
-            cls = Class.forName (clsName, false, getClass().getClassLoader ());
+            cls = Class.forName(clsName, false, getClass().getClassLoader()).asSubclass(DataObject.class);
         } catch (ClassNotFoundException cnfe) {
             throw new IllegalStateException (cnfe.toString ());
         }
@@ -142,23 +145,23 @@ public abstract class DataLoader extends SharedClassObject {
     public final SystemAction[] getActions () {
         Action[] arr = getSwingActions ();
         
-        List list = new ArrayList();
+        List<SystemAction> list = new ArrayList<SystemAction>();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] instanceof SystemAction || arr[i] == null) {
-                list.add (arr[i]);
+                list.add((SystemAction) arr[i]);
             }
         }
         
-        return (SystemAction[]) list.toArray(new SystemAction[list.size()]);
+        return list.toArray(new SystemAction[list.size()]);
     }
     
     /** Swing actions getter, used from DataNode */
     final Action[] getSwingActions () {
         DataLdrActions mgr = findManager ();
         if (mgr != null) {
-            Object actions;
+            Action[] actions;
             try {
-                actions = mgr.instanceCreate ();
+                actions = (Action[]) mgr.instanceCreate();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 actions = null;
@@ -170,7 +173,7 @@ public abstract class DataLoader extends SharedClassObject {
                 return new Action[0];
             }
         
-            return (Action[])actions;
+            return actions;
         } else {
             // old behaviour, that stores actions in properties
             SystemAction[] actions = (SystemAction[])getProperty (PROP_ACTIONS);
@@ -421,7 +424,7 @@ public abstract class DataLoader extends SharedClassObject {
             oo.writeObject (null);
         } else {
             // convert actions to class names
-            LinkedList names = new LinkedList ();
+            List<String> names = new LinkedList<String>();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == null) {
                     names.add (null);
@@ -463,7 +466,7 @@ public abstract class DataLoader extends SharedClassObject {
         if ( version > 0 || ( version == 0 && arr.length != defactions.length ))
             isdefault = false;
         if (arr != null) {
-            List ll = new ArrayList (arr.length);
+            List<SystemAction> ll = new ArrayList<SystemAction>(arr.length);
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == null) {
                     ll.add (null);
@@ -473,16 +476,16 @@ public abstract class DataLoader extends SharedClassObject {
                 }
 
                 try {
-                    ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                    ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
                     if (loader == null) {
                         loader = getClass ().getClassLoader ();
                     }
-                    Class c = Class.forName (
+                    Class<? extends SystemAction> c = Class.forName (
                         Utilities.translate((String)arr[i]),
                         false, // why resolve?? --jglick
                         loader
-                    );
-                    SystemAction ac = SystemAction.get (c);
+                    ).asSubclass(SystemAction.class);
+                    SystemAction ac = SystemAction.get(c);
 
                     ll.add (ac);
                     if ( version == 0 && isdefault && !defactions[i].equals(ac))
@@ -501,7 +504,7 @@ public abstract class DataLoader extends SharedClassObject {
             }
             if (main == null && !isdefault) {
                 // Whole action list was successfully read.
-                setActions ((SystemAction[])ll.toArray(new SystemAction[ll.size()]));
+                setActions(ll.toArray(new SystemAction[ll.size()]));
             } // Else do not try to override the default action list if it is incomplete anyway.
         }
         
@@ -529,8 +532,8 @@ public abstract class DataLoader extends SharedClassObject {
      * @return the loader instance, or <code>null</code> if there is no such loader registered
      * @see DataLoaderPool#allLoaders
      */
-    public static DataLoader getLoader (Class loaderClass) {
-        return (DataLoader)findObject (loaderClass, true);
+    public static <T extends DataLoader> T getLoader(Class<T> loaderClass) {
+        return findObject(loaderClass, true);
     }
 
     // XXX huh? --jglick

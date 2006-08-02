@@ -737,7 +737,8 @@ public class NewTemplateAction extends NodeAction {
         
         /** Creates nodes for nodes.
          */
-        protected Node[] createNodes (Object key) {
+        @Override
+        protected Node[] createNodes(Node key) {
             Node n = (Node)key;
             String nodeName = n.getDisplayName();
             

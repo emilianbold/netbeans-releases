@@ -384,13 +384,12 @@ public class DataNode extends AbstractNode {
     *
     * @return the cookie or <code>null</code>
     */
-    public Node.Cookie getCookie (Class cl) {
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> cl) {
         if (ownLookup()) {
             return super.getCookie(cl);
         }
-        
-        
-        Node.Cookie c = obj.getCookie (cl);
+        T c = obj.getCookie(cl);
         if (c != null) {
             return c;
         } else {

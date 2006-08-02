@@ -91,6 +91,7 @@ public class MultiDataObject extends DataObject {
     * {@link #DataShadow} and {@link #DataFolder} only
     * @since 1.13
     */
+    @Deprecated
     MultiDataObject(FileObject fo, DataLoader loader) throws DataObjectExistsException {
         super(fo, loader);
         primary = createPrimaryEntry (this, getPrimaryFile ());
@@ -110,14 +111,8 @@ public class MultiDataObject extends DataObject {
         return (MultiFileLoader)loader;
     }
 
-    /* Method to access all FileObjects used by this DataObject.
-    * These file objects should have set the important flag to
-    * allow the requester to distingush between important and
-    * unimportant files.
-    *
-    * @return set of FileObjects
-    */
-    public Set files () {
+    @Override
+    public Set<FileObject> files () {
         // move lazy initialization to FilesSet
         return new FilesSet (this);
     }
@@ -131,10 +126,11 @@ public class MultiDataObject extends DataObject {
     
     private boolean existReadOnlySecondary() {
         synchronized ( synchObjectSecondary() ) {
-            Iterator it = getSecondary().keySet().iterator();
-            while (it.hasNext())
-                if ( ((FileObject)it.next()).isReadOnly() )
-                    return true;                
+            for (FileObject f : getSecondary().keySet()) {
+                if (f.isReadOnly()) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -142,7 +138,7 @@ public class MultiDataObject extends DataObject {
     /** Performs checks by calling checkFiles
      * @return getSecondary() method result
      */
-    private HashMap checkSecondary () {
+    private Map<FileObject,Entry> checkSecondary () {
         // enumeration of all files
         if (! checked) {
             checkFiles (this);
@@ -154,7 +150,7 @@ public class MultiDataObject extends DataObject {
     /** Lazy getter for secondary property
      * @return secondary object
      */
-    /* package-private */ HashMap getSecondary() {
+    /* package-private */ Map<FileObject,Entry> getSecondary() {
         synchronized (secondaryCreationLock) {
             if (secondary == null) {
                 secondary = new HashMap(4);
@@ -274,9 +270,7 @@ public class MultiDataObject extends DataObject {
     */
     final void markSecondaryEntriesRecognized (DataLoader.RecognizedFiles recognized) {
         synchronized (getSecondary()) {
-            Iterator it = getSecondary().keySet ().iterator ();
-            while (it.hasNext ()) {
-                FileObject fo=(FileObject)it.next ();
+            for (FileObject fo : getSecondary().keySet()) {
                 recognized.markRecognized (fo);
             }
         }
@@ -305,7 +299,7 @@ public class MultiDataObject extends DataObject {
                 return primary;
             }
 
-            Entry e = (Entry)getSecondary().get (fo);
+            Entry e = getSecondary().get(fo);
             if (e != null) {
                 return e;
             }
@@ -323,7 +317,7 @@ public class MultiDataObject extends DataObject {
      */
     final void removeFile (FileObject fo) {
         synchronized (getSecondary()) {
-            Entry e = (Entry)getSecondary().get (fo);
+            Entry e = getSecondary().get(fo);
             if (e != null) {
                 removeSecondaryEntry (e);
             }
@@ -338,13 +332,13 @@ public class MultiDataObject extends DataObject {
     }
 
     /** Get secondary entries.
-    * @return immutable set of {@link Entry}s
+    * @return immutable set of entries
     */
-    public final Set secondaryEntries () {
+    public final Set<Entry> secondaryEntries () {
         synchronized ( synchObjectSecondary() ) {
             removeAllInvalid ();
 
-            return new HashSet (getSecondary().values ());
+            return new HashSet<Entry>(getSecondary().values());
         }
     }
 
@@ -357,7 +351,7 @@ public class MultiDataObject extends DataObject {
         Entry e;
         synchronized ( synchObjectSecondary() ) {
             removeAllInvalid ();
-            e = (Entry)getSecondary().get (fo);
+            e = getSecondary().get(fo);
         }
         return e;
     }
@@ -467,25 +461,24 @@ public class MultiDataObject extends DataObject {
     * secondary entries and then deletes the getPrimaryEntry() entry.
     */
     protected void handleDelete() throws IOException {
-        ArrayList toRemove = new ArrayList();
-        Iterator it;
+        List<FileObject> toRemove = new ArrayList<FileObject>();
+        Iterator<Map.Entry<FileObject,Entry>> it;
         synchronized ( synchObjectSecondary() ) {
             removeAllInvalid ();
-            it = new ArrayList(getSecondary().entrySet ()).iterator();
+            it = new ArrayList<Map.Entry<FileObject,Entry>>(getSecondary().entrySet()).iterator();
         }
         
         while (it.hasNext ()) {
-            Map.Entry e = (Map.Entry)it.next ();
-            ((Entry)e.getValue ()).delete ();
+            Map.Entry<FileObject,Entry> e = it.next ();
+            e.getValue().delete();
             toRemove.add(e.getKey());
         }
         
         synchronized ( synchObjectSecondary() ) {
-            Object[] objects = toRemove.toArray();
-            for (int i = 0; i < objects.length; i++) {
-                getSecondary().remove(objects[i]);
+            for (FileObject f : toRemove) {
+                getSecondary().remove(f);
                 if (ERR.isLoggable(Level.FINE)) {
-                    ERR.fine("  handleDelete, removed entry: " + objects[i]);
+                    ERR.fine("  handleDelete, removed entry: " + f);
                 }
             }
         }
@@ -498,27 +491,27 @@ public class MultiDataObject extends DataObject {
     protected FileObject handleRename (String name) throws IOException {
         getPrimaryEntry ().changeFile (getPrimaryEntry().rename (name));
 
-        HashMap add = null;
+        Map<FileObject,Entry> add = null;
 
-        ArrayList toRemove = new ArrayList();
+        List<FileObject> toRemove = new ArrayList<FileObject>();
         
-        Iterator it;
+        Iterator<Map.Entry<FileObject,Entry>> it;
         synchronized ( synchObjectSecondary() ) {
             removeAllInvalid ();
-            it = new ArrayList(getSecondary().entrySet ()).iterator();
+            it = new ArrayList<Map.Entry<FileObject,Entry>>(getSecondary().entrySet ()).iterator();
         }
         
         while (it.hasNext ()) {
-            Map.Entry e = (Map.Entry)it.next ();
-            FileObject fo = ((Entry)e.getValue ()).rename (name);
+            Map.Entry<FileObject,Entry> e = it.next();
+            FileObject fo = e.getValue().rename(name);
             if (fo == null) {
                 // remove the entry
                 toRemove.add (e.getKey());
             } else {
                 if (!fo.equals (e.getKey ())) {
                     // put the new one into change table
-                    if (add == null) add = new HashMap ();
-                    Entry entry = (Entry)e.getValue ();
+                    if (add == null) add = new HashMap<FileObject,Entry>();
+                    Entry entry = e.getValue();
                     entry.changeFile (fo);
                     // using getFile to let the entry correctly annotate
                     // the file by isImportant flag
@@ -535,11 +528,10 @@ public class MultiDataObject extends DataObject {
             synchronized ( synchObjectSecondary() ) {
                 // remove entries
                 if (!toRemove.isEmpty()) {
-                    Object[] objects = toRemove.toArray();
-                    for (int i = 0; i < objects.length; i++) {
-                        getSecondary().remove(objects[i]);
+                    for (FileObject f : toRemove) {
+                        getSecondary().remove(f);
                         if (ERR.isLoggable(Level.FINE)) {
-                            ERR.fine("handleRename, removed: " + objects[i] + " for " + this); // NOI18N
+                            ERR.fine("handleRename, removed: " + f + " for " + this); // NOI18N
                         }
                     }
                 }
@@ -751,10 +743,11 @@ public class MultiDataObject extends DataObject {
     * @return an instance of that class, or <code>null</code> if this class of cookie
     *    is not supported
     */
-    public Node.Cookie getCookie (Class type) {
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
         CookieSet c = cookieSet;
         if (c != null) {
-            Node.Cookie cookie = c.getCookie (type);
+            T cookie = c.getCookie (type);
             if (cookie != null) return cookie;
         }
         return super.getCookie (type);

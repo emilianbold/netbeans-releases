@@ -35,20 +35,19 @@ import org.openide.util.*;
 final class DataObjectPool extends Object
 implements ChangeListener {
     /** set to null if the constructor is called from somewhere else than DataObject.find
-     * Otherwise contains Collection<Item> that have just been created in this thread and
+     * Otherwise contains items that have just been created in this thread and
      * shall be notified.
      */
-    private static final ThreadLocal FIND = new ThreadLocal ();
+    private static final ThreadLocal<Collection<Item>> FIND = new ThreadLocal<Collection<Item>>();
     /** validator */
     private static final Validator VALIDATOR = new Validator ();
 
-    private static final List TOKEN = Collections.unmodifiableList(new ArrayList());
+    private static final Collection<Item> TOKEN = Collections.unmodifiableList(new ArrayList<Item>());
     
-    /** hashtable that maps FileObject to DataObjectPool.Item */
-    private HashMap map = new HashMap (512);
+    private Map<FileObject,Item> map = new HashMap<FileObject,Item>(512);
     
-    /** Set<FileSystem> covering all FileSystems we're listening on */
-    private WeakSet knownFileSystems = new WeakSet();
+    /** covers all FileSystems we're listening on */
+    private Set<FileSystem> knownFileSystems = new WeakSet<FileSystem>();
     
     /** error manager to log what is happening here */
     private static final Logger err = Logger.getLogger("org.openide.loaders.DataObject.find"); // NOI18N
@@ -87,8 +86,8 @@ implements ChangeListener {
     /** Allows DataObject constructors to be called.
      * @return a key to pass to exitAllowConstructor
      */
-    private static Collection enterAllowContructor () {
-        Collection prev = (Collection)FIND.get ();
+    private static Collection<Item> enterAllowContructor() {
+        Collection<Item> prev = FIND.get();
         FIND.set (TOKEN);
         return prev;
     }
@@ -96,8 +95,8 @@ implements ChangeListener {
     /** Disallows DataObject constructors to be called and notifies 
      * all created DataObjects.
      */
-    private static void exitAllowConstructor (Collection previous) {
-        List l = (List)FIND.get ();
+    private static void exitAllowConstructor(Collection<Item> previous) {
+        Collection<Item> l = FIND.get ();
         FIND.set (previous);
         if (l != TOKEN) getPOOL ().notifyCreationAll(l);
     }
@@ -115,7 +114,7 @@ implements ChangeListener {
     throws java.io.IOException {
         DataObject ret;
         
-        Collection prev = enterAllowContructor ();
+        Collection<Item> prev = enterAllowContructor();
         try {
             // make sure this thread is allowed to recognize
             getPOOL ().enterRecognition(fo);
@@ -134,7 +133,7 @@ implements ChangeListener {
     throws java.io.IOException {
         MultiDataObject ret;
         
-        Collection prev = enterAllowContructor ();
+        Collection<Item> prev = enterAllowContructor();
         try {
             ret = loader.createMultiObject (fo);
         } finally {
@@ -150,7 +149,7 @@ implements ChangeListener {
     public static MultiDataObject createMultiObject(DataLoaderPool.FolderLoader loader, FileObject fo, DataFolder original) throws java.io.IOException {
         MultiDataObject ret;
         
-        Collection prev = enterAllowContructor ();
+        Collection<Item> prev = enterAllowContructor();
         try {
             ret = loader.createMultiObject (fo, original);
         } finally {
@@ -166,7 +165,7 @@ implements ChangeListener {
      */
     public void runAtomicActionSimple (FileObject fo, FileSystem.AtomicAction action) 
     throws java.io.IOException {
-        Collection prev = enterAllowContructor ();
+        Collection<Item> prev = enterAllowContructor();
         try {
             fo.getFileSystem ().runAtomicAction(action);
         } finally {
@@ -198,7 +197,7 @@ implements ChangeListener {
                     blocked = target;
                 }
 
-                Collection findPrev = enterAllowContructor ();
+                Collection<Item> findPrev = enterAllowContructor();
                 try {
                     action.run ();
                 } finally {
@@ -291,19 +290,13 @@ implements ChangeListener {
     /** Collection of all objects that has been created but their
     * creation has not been yet notified to OperationListener.postCreate
     * method.
-    *
-    * Set<Item>
     */
-    private HashSet toNotify = new HashSet();
-    
-    private static final Integer ONE = new Integer(1);
+    private Set<Item> toNotify = new HashSet<Item>();
     
     /** Constructor.
      */
     private DataObjectPool () {
     }
-
-    
 
     /** Checks whether there is a data object with primary file
     * passed thru the parameter.
@@ -313,7 +306,7 @@ implements ChangeListener {
     */
     public DataObject find (FileObject fo) {
         synchronized (this) {
-            Item doh = (Item)map.get (fo);
+            Item doh = map.get(fo);
             if (doh == null) {
                 return null;
             }
@@ -323,7 +316,7 @@ implements ChangeListener {
                 // special test for data objects calling this method from 
                 // their own constructor, those are ok to be returned if
                 // they exist
-                List l = (List)FIND.get ();
+                Collection<Item> l = FIND.get();
                 if (l == null || !l.contains (doh)) {
                     return null;
                 }
@@ -334,45 +327,43 @@ implements ChangeListener {
     }
     
     /** mapping of files to registration count */
-    private final Map registrationCounts = new WeakHashMap(); // Map<FileObject,int>
+    private final Map<FileObject,Integer> registrationCounts = new WeakHashMap<FileObject,Integer>();
     void countRegistration(FileObject fo) {
-        Integer i = (Integer)registrationCounts.get(fo);
+        Integer i = registrationCounts.get(fo);
         Integer i2;
         if (i == null) {
-            i2 = ONE;
+            i2 = 1;
         } else {
-            i2 = new Integer(i.intValue() + 1);
+            i2 = i + 1;
         }
         registrationCounts.put(fo, i2);
     }
     /** For use from FolderChildren. @see "#20699" */
     int registrationCount(FileObject fo) {
-        Integer i = (Integer)registrationCounts.get(fo);
+        Integer i = registrationCounts.get(fo);
         if (i == null) {
             return 0;
         } else {
-            return i.intValue();
+            return i;
         }
     }
     
     /** Refresh of all folders.
     */
     private void refreshAllFolders () {
-        Set files;
+        Set<FileObject> files;
         synchronized (this) {
-            files = new HashSet (map.keySet ());
+            files = new HashSet<FileObject>(map.keySet());
         }
 
-        Iterator it = files.iterator ();
-        while (it.hasNext ()) {
-            FileObject fo = (FileObject)it.next ();
+        for (FileObject fo : files) {
             if (fo.isFolder ()) {
                 DataObject obj = find (fo);
                 if (obj instanceof DataFolder) {
                     DataFolder df = (DataFolder)obj;
                     FileObject file = df.getPrimaryFile ();
                     synchronized (this) {
-                        if (toNotify.isEmpty() || !toNotify.contains((Item)map.get(file))) {
+                        if (toNotify.isEmpty() || !toNotify.contains(map.get(file))) {
                             FolderList.changedDataSystem (file);
                         }
                     }
@@ -385,7 +376,7 @@ implements ChangeListener {
     * @param s mutable set of FileObjects
     * @return set of DataObjects that refused to be revalidated
     */
-    public Set revalidate (Set s) {
+    public Set<DataObject> revalidate (Set<FileObject> s) {
         return VALIDATOR.revalidate (s);
     }
 
@@ -394,8 +385,8 @@ implements ChangeListener {
     *
     * @return set of DataObjects that refused to be revalidated
     */
-    public Set revalidate () {
-        Set files;
+    public Set<DataObject> revalidate () {
+        Set<FileObject> files;
         synchronized (this) {
             files = createSetOfAllFiles (map.values ());
         }
@@ -446,14 +437,9 @@ implements ChangeListener {
     }
     
     /** Notifies all objects in the list */
-    private void notifyCreationAll (List l) {
+    private void notifyCreationAll(Collection<Item> l) {
         if (l.isEmpty()) return;
-        
-        Iterator iter = l.iterator();
-
-        // iter has a lot of objects
-        while (iter.hasNext ()) {
-            DataObjectPool.Item i = (DataObjectPool.Item)iter.next ();
+        for (Item i : l) {
             notifyCreation (i);
         }
     }
@@ -473,7 +459,7 @@ implements ChangeListener {
                         return;
                     }
 
-                    List l = (List)FIND.get ();
+                    Collection<Item> l = FIND.get ();
                     if (l != null && l.contains (obj.item)) {
                         return;
                     }
@@ -525,8 +511,8 @@ implements ChangeListener {
      */
     private void notifyAdd (Item item) {
         toNotify.add (item);
-        List l = (List)FIND.get ();
-        if (l == TOKEN) FIND.set (l = new ArrayList());
+        Collection<Item> l = FIND.get ();
+        if (l == TOKEN) FIND.set(l = new ArrayList<Item>());
         l.add (item);
     }
     
@@ -549,39 +535,35 @@ implements ChangeListener {
      */
     private final class FSListener extends FileChangeAdapter {
         FSListener() {}
-        /**
-         * @return Iterator<Item>
-         */
-        private Iterator getTargets(FileEvent fe) {
+        private Collection<Item> getTargets(FileEvent fe) {
             FileObject fo = fe.getFile();
-            List toNotify = new LinkedList();
+            List<Item> toNotify = new LinkedList<Item>();
             // The FileSystem notifying us about the changes should
             // not hold any lock so we're safe here
             synchronized (DataObjectPool.this) {
-                Item itm = (Item)map.get (fo);
+                Item itm = map.get(fo);
                 if (itm != null) { // the file was someones' primary
                     toNotify.add(itm); // so notify only owner
                 } else { // unknown file or someone secondary
                     FileObject parent = fo.getParent();
                     if (parent != null) { // the fo is not root
-                        FileObject[] siblings = parent.getChildren();
                         // notify all in folder
-                        for (int i=0; i<siblings.length; i++) { 
-                            itm = (Item)map.get (siblings[i]);
+                        for (FileObject sibling : parent.getChildren()) {
+                            itm = map.get (sibling);
                             if (itm != null) toNotify.add(itm);
                         }
                     }
                 }
             }
-            return toNotify.iterator();
+            return toNotify;
         }
 
         public void fileChanged(FileEvent fe) {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileChanged: " + fe); // NOI18N
             }
-            for( Iterator it = getTargets(fe); it.hasNext(); ) {
-                DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+            for (Item item : getTargets(fe)) {
+                DataObject dobj = item.getDataObjectOrNull();
                 if (LISTENER.isLoggable(Level.FINE)) {
                     LISTENER.fine("  to: " + dobj); // NOI18N
                 }
@@ -593,8 +575,8 @@ implements ChangeListener {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileRenamed: " + fe); // NOI18N
             }
-            for( Iterator it = getTargets(fe); it.hasNext(); ) {
-                DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+            for (Item item : getTargets(fe)) {
+                DataObject dobj = item.getDataObjectOrNull();
                 if (LISTENER.isLoggable(Level.FINE)) {
                     LISTENER.fine("  to: " + dobj); // NOI18N
                 }
@@ -606,8 +588,8 @@ implements ChangeListener {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileDeleted: " + fe); // NOI18N
             }
-            for( Iterator it = getTargets(fe); it.hasNext(); ) {
-                DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+            for (Item item : getTargets(fe)) {
+                DataObject dobj = item.getDataObjectOrNull();
                 if (LISTENER.isLoggable(Level.FINE)) {
                     LISTENER.fine("  to: " + dobj); // NOI18N
                 }
@@ -619,8 +601,8 @@ implements ChangeListener {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileDataCreated: " + fe); // NOI18N
             }
-            for( Iterator it = getTargets(fe); it.hasNext(); ) {
-                DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+            for (Item item : getTargets(fe)) {
+                DataObject dobj = item.getDataObjectOrNull();
                 if (LISTENER.isLoggable(Level.FINE)) {
                     LISTENER.fine("  to: " + dobj); // NOI18N
                 }
@@ -633,8 +615,8 @@ implements ChangeListener {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileAttributeChanged: " + fe); // NOI18N
             }
-            for( Iterator it = getTargets(fe); it.hasNext(); ) {
-                DataObject dobj = ((Item)it.next()).getDataObjectOrNull();
+            for (Item item : getTargets(fe)) {
+                DataObject dobj = item.getDataObjectOrNull();
                 if (LISTENER.isLoggable(Level.FINE)) {
                     LISTENER.fine("  to: " + dobj); // NOI18N
                 }
@@ -679,7 +661,7 @@ implements ChangeListener {
         Item doh;
         DataObject obj;
         synchronized (this) {
-            doh = (Item)map.get (fo);
+            doh = map.get(fo);
             // if Item for this file has not been created yet
             if (doh == null) {
                 doh = new Item (fo);
@@ -714,7 +696,7 @@ implements ChangeListener {
             synchronized (this) {
                 // check if there isn't any new data object registered 
                 // when this thread left synchronization block.
-                Item doh2 = (Item)map.get (fo);
+                Item doh2 = map.get(fo);
                 if (doh2 == null) {
                     doh = new Item (fo);
                     map.put (fo, doh);
@@ -739,7 +721,7 @@ implements ChangeListener {
     private synchronized void deregister (Item item, boolean refresh) {
         FileObject fo = item.primaryFile;
 
-        Item previous = (Item)map.remove (fo);
+        Item previous = map.remove(fo);
 
         if (previous != null && previous != item) {
             // ops, mistake,
@@ -761,7 +743,7 @@ implements ChangeListener {
         if (refresh) {
             fo = fo.getParent ();
             if (fo != null) {
-                Item item2 = (Item)map.get (fo);
+                Item item2 = map.get (fo);
                 if (item2 != null) {
                     DataFolder df = (DataFolder) item2.getDataObjectOrNull();
                     if (df != null) {
@@ -788,25 +770,22 @@ implements ChangeListener {
     /** When the loader pool is changed, then all objects are rescanned.
     */
     public void stateChanged (javax.swing.event.ChangeEvent ev) {
-        Set set;
+        Set<Item> set;
         synchronized (this) {
             // copy the values synchronously
-            set = new HashSet (map.values ());
+            set = new HashSet<Item>(map.values());
         }
-        set = createSetOfAllFiles (set);
-        revalidate (set);
+        revalidate(createSetOfAllFiles(set));
     }
     
     /** Create list of all files for given collection of data objects.
     * @param c collection of DataObjectPool.Item
     * @return set of files
     */
-    private static Set createSetOfAllFiles (Collection c) {
-        HashSet set = new HashSet (c.size () * 7);
+    private static Set<FileObject> createSetOfAllFiles(Collection<Item> c) {
+        Set<FileObject> set = new HashSet<FileObject>(c.size() * 7);
         
-        Iterator it = c.iterator();
-        while (it.hasNext()) {
-            Item item = (Item)it.next ();
+        for (Item item : c) {
             DataObject obj = item.getDataObjectOrNull ();
             if (obj != null) {
                 getPOOL ().waitNotified (obj);
@@ -818,13 +797,10 @@ implements ChangeListener {
     
     /** Returns all currently existing data
     * objects.
-    *
-    * @return iterator of DataObjectPool.Item
     */    
-    Iterator getActiveDataObjects () {
+    Iterator<Item> getActiveDataObjects () {
         synchronized (this) {
-            ArrayList alist = new ArrayList(map.values());
-            return alist.iterator();
+            return new ArrayList<Item>(map.values()).iterator();
         }
     }
 
@@ -832,10 +808,10 @@ implements ChangeListener {
     */
     static final class Item extends Object {
         /** initial value of obj field. */
-        private static final Reference REFERENCE_NOT_SET = new WeakReference(null);
+        private static final Reference<DataObject> REFERENCE_NOT_SET = new WeakReference<DataObject>(null);
 
         /** weak reference data object with this primary file */
-        private Reference obj = REFERENCE_NOT_SET;
+        private Reference<DataObject> obj = REFERENCE_NOT_SET;
         
         /** primary file */
         FileObject primaryFile;
@@ -890,7 +866,7 @@ implements ChangeListener {
                 }
             }
             
-            return this.obj == null ? null : (DataObject)this.obj.get ();
+            return this.obj == null ? null : this.obj.get();
         }
         
         /** Getter for the data object.
@@ -932,7 +908,7 @@ implements ChangeListener {
         }
         
         public String toString () {
-            DataObject obj = (DataObject)this.obj.get ();
+            DataObject obj = this.obj.get ();
             if (obj == null) {
                 return "nothing[" + primaryFile + "]"; // NOI18N
             }
@@ -941,7 +917,7 @@ implements ChangeListener {
     }
 
     /** WeakReference - references a DataObject, strongly references an Item */
-    static final class ItemReference extends WeakReference 
+    static final class ItemReference extends WeakReference<DataObject>
     implements Runnable {
         /** Reference to an Item */
         private Item item;
@@ -974,12 +950,12 @@ implements ChangeListener {
         private int waiters;
         /** Number of calls to enter by current thread minus 1 */
         private int reenterCount;
-        /** set of files that has been marked recognized (FileObject) */
-        private HashSet recognizedFiles;
-        /** set with all objects that refused to be discarded (DataObject) */
-        private HashSet refusingObjects;
+        /** set of files that has been marked recognized */
+        private Set<FileObject> recognizedFiles;
+        /** set with all objects that refused to be discarded */
+        private Set<DataObject> refusingObjects;
         /** set of files that has been registered during revalidation */
-        private HashSet createdFiles;
+        private Set<FileObject> createdFiles;
 
 	Validator() {}
 
@@ -987,7 +963,7 @@ implements ChangeListener {
         * @param set mutable set of files that should be processed
         * @return the set of files concatenated with any previous sets
         */
-        private synchronized Set enter (Set set) {
+        private synchronized Set<FileObject> enter(Set<FileObject> set) {
             boolean log = err.isLoggable (Level.FINE);
             if (log) {
                 err.fine("enter: " + set + " on thread: " + Thread.currentThread ()); // NOI18N
@@ -1118,33 +1094,33 @@ implements ChangeListener {
         * @param s mutable set of FileObjects
         * @return set of objects that refused to be revalidated
         */
-        public Set revalidate (Set s) {
+        public Set<DataObject> revalidate (Set<FileObject> s) {
             
             // ----------------- fix of #30559 START
             if ((s.size() == 1) && (current == Thread.currentThread ())) {
                 if (files != null && files.contains(s.iterator().next())) {
-                    return new HashSet();
+                    return new HashSet<DataObject>();
                 }
             }
             // ----------------- fix of #30559 END
             
             // holds all created object, so they are not garbage
             // collected till this method ends
-            LinkedList createObjects = new LinkedList ();
+            List<DataObject> createObjects = new LinkedList<DataObject>();
             boolean log = err.isLoggable (Level.FINE);
             try {
                 
                 s = enter (s);
                 
-                recognizedFiles = new HashSet ();
-                refusingObjects = new HashSet ();
-                createdFiles = new HashSet ();
+                recognizedFiles = new HashSet<FileObject>();
+                refusingObjects = new HashSet<DataObject>();
+                createdFiles = new HashSet<FileObject>();
 
                 DataLoaderPool pool = lp;
-                Iterator it = s.iterator ();
+                Iterator<FileObject> it = s.iterator();
                 while (it.hasNext () && goOn ()) {
                     try {
-                        FileObject fo = (FileObject)it.next ();
+                        FileObject fo = it.next();
                         if (log) {
                             err.fine("Iterate: " + fo); // NOI18N
                         }

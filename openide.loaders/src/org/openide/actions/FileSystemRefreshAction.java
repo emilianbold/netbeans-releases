@@ -32,13 +32,13 @@ import org.openide.util.NbBundle;
 */
 public final class FileSystemRefreshAction extends CookieAction {
 
-    protected Class[] cookieClasses () {
-        return new Class[] { DataFolder.class };
+    protected Class<?>[] cookieClasses () {
+        return new Class<?>[] {DataFolder.class};
     }
 
     protected void performAction (Node[] nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            DataFolder df = (DataFolder)nodes[i].getCookie (DataFolder.class);
+        for (Node n : nodes) {
+            DataFolder df = n.getCookie(DataFolder.class);
             if (df != null) {
                 FileObject fo = df.getPrimaryFile ();
                 fo.refresh ();
@@ -55,7 +55,7 @@ public final class FileSystemRefreshAction extends CookieAction {
     }
 
     public String getName () {
-        return NbBundle.getBundle(org.openide.loaders.DataObject.class).getString ("LAB_Refresh");
+        return NbBundle.getBundle(DataObject.class).getString("LAB_Refresh");
     }
 
     public HelpCtx getHelpCtx () {

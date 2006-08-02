@@ -37,16 +37,14 @@ public class JavaChildren extends FilterNode.Children {
         super(parent);
     }
 
-    protected Node[] createNodes(Object original) {
-        Node originalNode = (Node) original;
+    @Override
+    protected Node[] createNodes(Node originalNode) {
         Node newNode;
         
-        Object cookie = originalNode.getCookie(DataObject.class);
-        if (cookie == null) {
+        DataObject dataObj = originalNode.getCookie(DataObject.class);
+        if (dataObj == null) {
             newNode = copyNode(originalNode);
         } else {
-            DataObject dataObj = (DataObject) cookie;
-            
             FileObject primaryFile = dataObj.getPrimaryFile();
             if (primaryFile.isFolder()) {
                 newNode = new FilterNode(originalNode, new JavaChildren(originalNode));

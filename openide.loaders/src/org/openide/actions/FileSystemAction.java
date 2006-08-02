@@ -49,14 +49,14 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     /** computes the nodes.
      */
     private static Node[] nodes (Lookup lookup) {
-        Collection c;
+        Collection<? extends Node> c;
 
         if (lookup != null) {
             c = lookup.lookupAll(Node.class);
         } else {
-            c = Collections.EMPTY_LIST;
+            c = Collections.emptyList();
         }
-        return (Node[])c.toArray(new Node[c.size()]);
+        return c.toArray(new Node[c.size()]);
     }
 
     /** Creates menu for currently selected nodes.
@@ -71,19 +71,19 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
         }
         
         
-        HashMap fsSet = new HashMap ();
+        Map<FileSystem,Set<FileObject>> fsSet = new HashMap<FileSystem,Set<FileObject>>();
 
         if (n != null) {
-            for (int i = 0; i < n.length; i++) {
-                 DataObject obj = (DataObject)n[i].getCookie (DataObject.class);
+            for (Node node : n) {
+                DataObject obj = node.getCookie(DataObject.class);
                  while (obj instanceof DataShadow)
                      obj = ((DataShadow) obj).getOriginal();
                  if (obj != null) {
                      try {
                          FileSystem fs = obj.getPrimaryFile ().getFileSystem ();
-                         Set foSet = (Set) fsSet.get (fs);
+                         Set<FileObject> foSet = fsSet.get(fs);
                          if (foSet == null ) {
-                             fsSet.put(fs, foSet = new LinkedHashSet());
+                             fsSet.put(fs, foSet = new LinkedHashSet<FileObject>());
                          }
                          foSet.addAll(obj.files ());
                      } catch (FileStateInvalidException ex) {continue;}
@@ -93,25 +93,19 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
              * If this restriction will be considered as right solution, then code of this method can be simplified
              */
             if (fsSet.size () == 0 || fsSet.size() > 1) {
-                return createMenu(Enumerations.empty(), popUp, lookup);
+                return createMenu(Enumerations.<Action>empty(), popUp, lookup);
             }
             
-            Iterator entrySetIt = fsSet.entrySet ().iterator();
-            LinkedList result = new LinkedList ();
-            Set backSet = new LinkedHashSet();
+            List<SystemAction> result = new LinkedList<SystemAction>();
+            Set<FileObject> backSet = new LinkedHashSet<FileObject>();
+            for (Map.Entry<FileSystem,Set<FileObject>> entry : fsSet.entrySet()) {
 
-            while (entrySetIt.hasNext()) {
-                Map.Entry entry = (Map.Entry)entrySetIt.next();
-                FileSystem fs = (FileSystem)entry.getKey();
-                Set  foSet = (Set) entry.getValue();
-                List backupList = new LinkedList();
-                Iterator itBackup = foSet.iterator();
-                while (itBackup.hasNext()) {
-                    backupList.add(itBackup.next());
-                }
-                Iterator it = backupList.iterator ();
+                FileSystem fs = entry.getKey();
+                Set<FileObject> foSet = entry.getValue();
+                List<FileObject> backupList = new LinkedList<FileObject>(foSet);
+                Iterator<FileObject> it = backupList.iterator ();
                 while (it.hasNext ()) {
-                    FileObject fo = (FileObject)it.next ();
+                    FileObject fo = it.next ();
                     try {
                         if (fo.getFileSystem () != fs) {
                             it.remove ();
@@ -130,7 +124,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
         return NONE;
     }
 
-    private static ProxyLookup createProxyLookup(final Lookup lookup, final Set backSet) {
+    private static ProxyLookup createProxyLookup(final Lookup lookup, final Set<FileObject> backSet) {
         return new ProxyLookup(new Lookup[] {lookup, Lookups.fixed(backSet.toArray(new FileObject [backSet.size()]))});
     }
 
@@ -139,12 +133,12 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     * @param en enumeration of SystemAction that should be added
     *   into the menu if enabled and if not duplicated
     */
-    static JMenuItem[] createMenu (Enumeration en, boolean popUp, Lookup lookup) {
+    static JMenuItem[] createMenu(Enumeration<? extends Action> en, boolean popUp, Lookup lookup) {
         en = Enumerations.removeDuplicates (en);
 
-        ArrayList items = new ArrayList ();
+        List<JMenuItem> items = new ArrayList<JMenuItem>();
         while (en.hasMoreElements ()) {
-            Action a = (Action)en.nextElement ();
+            Action a = en.nextElement();
             
             // Retrieve context sensitive action instance if possible.
             if(lookup != null && a instanceof ContextAwareAction) {                

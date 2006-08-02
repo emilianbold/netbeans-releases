@@ -23,7 +23,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 
-class AntProperty extends Node.Property {
+class AntProperty extends Node.Property<String> {
 
     private Element el;
     private String name;
@@ -44,7 +44,7 @@ class AntProperty extends Node.Property {
     }
 
     @Override
-    public Object getValue() {
+    public String getValue() {
         Element el = getElement();
         if (el == null) { // #9675
             return NbBundle.getMessage(AntProperty.class, "LBL_property_invalid_no_element");
@@ -63,7 +63,7 @@ class AntProperty extends Node.Property {
     }
     
     @Override
-    public void setValue(Object val) throws IllegalArgumentException{
+    public void setValue(String val) throws IllegalArgumentException{
         throw new IllegalArgumentException();
     }
     

@@ -241,7 +241,7 @@ public abstract class NodeTransfer extends Object {
     *
     * @return cookie or <code>null</code> if it does not exist
     */
-    public static Node.Cookie cookie(Transferable t, int action, Class cookie) {
+    public static <T extends Node.Cookie> T cookie(Transferable t, int action, Class<T> cookie) {
         Node n = node(t, action);
 
         return (n == null) ? null : n.getCookie(cookie);
