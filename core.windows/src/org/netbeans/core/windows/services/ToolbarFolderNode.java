@@ -402,7 +402,13 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             super.setShortDescription(NbBundle.getBundle (ToolbarFolderNode.class).getString("CTL_Toolbars_hint"));
             super.setIconBase ("org/netbeans/core/resources/toolbars"); // NOI18N
 
-            ToolbarPool.getDefault().addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(this, ToolbarPool.getDefault()));
+            //prevent deadlock
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    ToolbarPool pool = ToolbarPool.getDefault();
+                    pool.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(ToolbarNode.this, pool));
+                }
+            });
             attachConfigListener();
         }
 
