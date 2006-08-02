@@ -80,6 +80,7 @@ class CvsLiteFileHandler extends DefaultFileHandler {
 
     public void removeLocalFile(String pathname) throws IOException {
         File fileToDelete = new File(pathname);
+        fileToDelete = FileUtil.normalizeFile(fileToDelete);
         FileObject fo = FileUtil.toFileObject(fileToDelete);
         if (fo == null) {
             // #69639: Try File I/O instead
