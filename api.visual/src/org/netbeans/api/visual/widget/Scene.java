@@ -111,7 +111,7 @@ public class Scene extends Widget {
 
     // TODO - maybe it could improve the perfomance, if bounds != null then do nothing
     // WARNING - you have to asure that there will be no component/widget will change its location/bounds between this and validate method calls
-    public final void revalidateWidget (Widget widget) {
+    final void revalidateWidget (Widget widget) {
         Rectangle widgetBounds = widget.getBounds ();
         if (widgetBounds != null) {
             Rectangle sceneBounds = widget.convertLocalToScene (widgetBounds);

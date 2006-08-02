@@ -73,7 +73,7 @@ public class ObjectScene extends Scene {
         objects.remove (object);
     }
 
-    public Set<Object> getObjects () {
+    public Set<?> getObjects () {
         return objectsUm;
     }
 
@@ -81,11 +81,11 @@ public class ObjectScene extends Scene {
         return objects.containsKey (object);
     }
 
-    public Set<Object> getSelectedObjects () {
+    public Set<?> getSelectedObjects () {
         return selectedObjectsUm;
     }
 
-    public void setSelectedObjects (Set<? extends Object> selectedObjects) {
+    public void setSelectedObjects (Set<?> selectedObjects) {
         for (Iterator<Object> iterator = this.selectedObjects.iterator (); iterator.hasNext ();) {
             Object object = iterator.next ();
             if (! selectedObjects.contains (object)) {
@@ -107,11 +107,11 @@ public class ObjectScene extends Scene {
         }
     }
 
-    public Set<Object> getHighlightedObjects () {
+    public Set<?> getHighlightedObjects () {
         return highlightedObjectsUm;
     }
 
-    public void setHighlightedObjects (Set<? extends Object> highlightedObjects) {
+    public void setHighlightedObjects (Set<?> highlightedObjects) {
         for (Iterator<Object> iterator = this.highlightedObjects.iterator (); iterator.hasNext ();) {
             Object object = iterator.next ();
             if (! highlightedObjects.contains (object)) {
@@ -196,20 +196,40 @@ public class ObjectScene extends Scene {
         return objectStates.get (object);
     }
 
-    public void userSelectionSuggested (Set<? extends Object> suggestedSelectedObjects) {
-        setSelectedObjects (suggestedSelectedObjects);
+    public void userSelectionSuggested (Set<?> suggestedSelectedObjects, boolean invertSelection) {
+        if (invertSelection) {
+            HashSet<Object> objects = new HashSet<Object> (getSelectedObjects ());
+            for (Object o : suggestedSelectedObjects) {
+                if (objects.contains (o))
+                    objects.remove (o);
+                else {
+                    Widget widget = findWidget (o);
+                    if (widget != null)
+                        widget.bringToFront ();
+                    objects.add (o);
+                }
+            }
+            setSelectedObjects (objects);
+        } else {
+            for (Object o : suggestedSelectedObjects) {
+                Widget widget = findWidget (o);
+                if (widget != null)
+                    widget.bringToFront ();
+            }
+            setSelectedObjects (suggestedSelectedObjects);
+        }
     }
 
     private class ObjectSelectAction extends SelectAction {
-        public void doSelect (Widget widget, Point localLocation) {
+        public void doSelect (Widget widget, Point localLocation, boolean invertSelection) {
             Object object = findObject (widget);
 
             if (object != null) {
                 if (getSelectedObjects ().contains (object))
                     return;
-                userSelectionSuggested (Collections.singleton (object));
+                userSelectionSuggested (Collections.singleton (object), invertSelection);
             } else
-                userSelectionSuggested (Collections.emptySet ());
+                userSelectionSuggested (Collections.emptySet (), invertSelection);
         }
     }
 
