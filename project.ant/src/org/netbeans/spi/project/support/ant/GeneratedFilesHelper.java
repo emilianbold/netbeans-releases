@@ -20,10 +20,10 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -678,18 +678,24 @@ public final class GeneratedFilesHelper {
     }
 
      // #45373 - workaround: on Windows make sure that all lines end with CRLF.
-    private static class EolFilterOutputStream extends FilterOutputStream {
+     // marcow: Use at least some buffered output!
+    private static class EolFilterOutputStream extends BufferedOutputStream {
 
         private boolean isActive = Utilities.isWindows();
         private int last = -1;
         
         public EolFilterOutputStream(OutputStream os) {
-            super(os);
+            super(os, 4096);
         }
         
         public void write(byte[] b, int off, int len) throws IOException {
-            for (int i=off; i<off+len; i++) {
-                write(b[i]);
+            if (isActive) {
+                for (int i = off; i < off + len; i++) {
+                    write(b[i]);
+                }
+            }
+            else {
+                super.write(b, off, len);
             }
         }
 
