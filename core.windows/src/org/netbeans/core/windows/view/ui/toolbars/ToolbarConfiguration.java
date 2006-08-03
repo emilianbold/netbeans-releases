@@ -824,7 +824,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         
         menu.add( new JPopupMenu.Separator() );
 
-        JMenuItem menuItem = new JMenuItem(getBundleString( "CTL_CustomizeToolbars" ) );
+        JMenuItem menuItem = new JMenuItem( new ResetToolbarsAction() );
+        menu.add( menuItem );
+        
+        menuItem = new JMenuItem(getBundleString( "CTL_CustomizeToolbars" ) );
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed (ActionEvent event) {
                 ConfigureToolbarPanel.showConfigureDialog();
