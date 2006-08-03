@@ -92,6 +92,20 @@ public class ProjectUtilsTest extends NbTestCase {
         assertTrue("cycle introduced by c -> a in a -> b -> c", ProjectUtils.hasSubprojectCycles(c, a));
         c.subprojs = null;
         assertTrue("cycle introduced by c -> a in a -> b -> c (no explicit subprojects in c)", ProjectUtils.hasSubprojectCycles(c, a));
+        // Performance check.
+        a = new TestProj("a");
+        b = new TestProj("b");
+        c = new TestProj("c");
+        d = new TestProj("d");
+        a.subprojs = new Project[] {b, c};
+        b.subprojs = new Project[] {d};
+        c.subprojs = new Project[] {d};
+        d.subprojs = new Project[] {};
+        assertFalse("diamond, no cycles", ProjectUtils.hasSubprojectCycles(a, null));
+        assertEquals("A asked for subprojects just once", 1, a.getSubprojectsCalled());
+        assertEquals("B asked for subprojects just once", 1, b.getSubprojectsCalled());
+        assertEquals("C asked for subprojects just once", 1, c.getSubprojectsCalled());
+        assertEquals("D asked for subprojects just once", 1, d.getSubprojectsCalled());
     }
     
     public void testGenericSources() throws Exception {
@@ -132,6 +146,7 @@ public class ProjectUtilsTest extends NbTestCase {
          * Use null to not have a SubprojectProvider at all.
          */
         public Project[] subprojs = null;
+        private int getSubprojectsCalled;
 
         /**
          * Create a fake project.
@@ -149,14 +164,24 @@ public class ProjectUtilsTest extends NbTestCase {
             }
         }
         
-        public Set getSubprojects() {
+        public Set<? extends Project> getSubprojects() {
+            getSubprojectsCalled++;
             assert subprojs != null;
-            return new HashSet(Arrays.asList(subprojs));
+            return new HashSet<Project>(Arrays.asList(subprojs));
         }
         
+        /**
+         * Number of times {@link #getSubprojects} was called since last check.
+         */
+        public int getSubprojectsCalled() {
+            int c = getSubprojectsCalled;
+            getSubprojectsCalled = 0;
+            return c;
+        }
+
         public FileObject getProjectDirectory() {
             // irrelevant
-            return null;
+            return FileUtil.createMemoryFileSystem().getRoot();
         }
         
         public void addChangeListener(ChangeListener l) {}

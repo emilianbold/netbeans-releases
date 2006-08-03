@@ -20,7 +20,10 @@
 package org.netbeans.api.project;
 
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -112,7 +115,7 @@ public class ProjectUtils {
     public static boolean hasSubprojectCycles(final Project master, final Project candidate) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
-                return visit(new HashSet<Project>(), master, master, candidate);
+                return visit(new HashSet<Project>(), new HashMap<Project,Set<? extends Project>>(), master, master, candidate);
             }
         });
     }
@@ -124,23 +127,26 @@ public class ProjectUtils {
      * @param master the original master project (for use with candidate param)
      * @param candidate a candidate added subproject for master, or null
      */
-    private static boolean visit(Set<Project> encountered, Project curr, Project master, Project candidate) {
+    private static boolean visit(Set<Project> encountered, Map<Project,Set<? extends Project>> cache, Project curr, Project master, Project candidate) {
         if (!encountered.add(curr)) {
             return true;
         }
-        SubprojectProvider spp = curr.getLookup().lookup(SubprojectProvider.class);
-        if (spp != null) {
-            for (Project child : spp.getSubprojects()) {
-                if (candidate == child) {
-                    candidate = null;
-                }
-                if (visit(encountered, child, master, candidate)) {
-                    return true;
-                }
+        Set<? extends Project> subprojects = cache.get(curr);
+        if (subprojects == null) {
+            SubprojectProvider spp = curr.getLookup().lookup(SubprojectProvider.class);
+            subprojects = spp != null ? spp.getSubprojects() : Collections.<Project>emptySet();
+            cache.put(curr, subprojects);
+        }
+        for (Project child : subprojects) {
+            if (candidate == child) {
+                candidate = null;
+            }
+            if (visit(encountered, cache, child, master, candidate)) {
+                return true;
             }
         }
         if (candidate != null && curr == master) {
-            if (visit(encountered, candidate, master, candidate)) {
+            if (visit(encountered, cache, candidate, master, candidate)) {
                 return true;
             }
         }
