@@ -40,6 +40,7 @@ public final class SceneAnimator {
     private PreferredLocationAnimator preferredLocationAnimator = new PreferredLocationAnimator (this);
     private PreferredBoundsAnimator preferredBoundsAnimator = new PreferredBoundsAnimator (this);
     private ZoomAnimator zoomAnimator = new ZoomAnimator (this);
+    private ColorAnimator colorAnimator = new ColorAnimator (this);
 
     public SceneAnimator (Scene scene) {
         this.scene = scene;
@@ -96,6 +97,22 @@ public final class SceneAnimator {
 
     public void animateZoomFactor (double targetZoomFactor) {
         zoomAnimator.setZoomFactor (targetZoomFactor);
+    }
+
+    public boolean isAnimatingBackgroundColor (Widget widget) {
+        return isRunning (colorAnimator);
+    }
+
+    public void animateBackgroundColor (Widget widget, Color targetBackgroundColor) {
+        colorAnimator.setBackgroundColor (widget, targetBackgroundColor);
+    }
+
+    public boolean isAnimatingForegroundColor (Widget widget) {
+        return isRunning (colorAnimator);
+    }
+
+    public void animateForegroundColor (Widget widget, Color targetForegroundColor) {
+        colorAnimator.setForegroundColor (widget, targetForegroundColor);
     }
 
     @Deprecated
