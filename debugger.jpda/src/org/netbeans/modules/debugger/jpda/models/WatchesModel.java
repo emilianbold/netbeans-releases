@@ -64,7 +64,7 @@ public class WatchesModel implements TreeModel {
     private Vector              listeners = new Vector ();
     private ContextProvider     lookupProvider;
     // Watch to Expression or Exception
-    private Map                 watchToValue = new WeakHashMap(); // <node (expression), JPDAWatch>
+    private Map<Watch, JPDAWatchEvaluating>  watchToValue = new WeakHashMap<Watch, JPDAWatchEvaluating>(); // <node (expression), JPDAWatch>
 
     
     public WatchesModel (ContextProvider lookupProvider) {
@@ -103,12 +103,12 @@ public class WatchesModel implements TreeModel {
             for (i = 0; i < k; i++) {
                 
                 
-                JPDAWatch jw = (JPDAWatch) watchToValue.get(fws[i]);
+                JPDAWatchEvaluating jw = watchToValue.get(fws[i]);
                 if (jw == null) {
                     jw = new JPDAWatchEvaluating(this, fws[i], debugger);
+                    watchToValue.put(fws[i], jw);
                 }
                 jws[i] = jw;
-                watchToValue.put(fws[i], jw);
                 
                 // The actual expressions are computed on demand in JPDAWatchEvaluating
             }
@@ -166,7 +166,9 @@ public class WatchesModel implements TreeModel {
     
     private void fireTreeChanged () {
         synchronized (watchToValue) {
-            watchToValue.clear();
+            for (Iterator<JPDAWatchEvaluating> it = watchToValue.values().iterator(); it.hasNext(); ) {
+                it.next().setEvaluated(null);
+            }
         }
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
@@ -184,17 +186,7 @@ public class WatchesModel implements TreeModel {
     }
     
     void fireTableValueChangedChanged (Object node, String propertyName) {
-        synchronized (watchToValue) {
-            for (Iterator it = watchToValue.keySet().iterator(); it.hasNext(); ) {
-                Object w = it.next();
-                if (node.equals(watchToValue.get(w))) {
-                    watchToValue.remove(w);
-                    ((JPDAWatchEvaluating) node).setEvaluated(null);
-                    break;
-                }
-            }
-            //watchToValue.remove(node);
-        }
+        ((JPDAWatchEvaluating) node).setEvaluated(null);
         fireTableValueChangedComputed(node, propertyName);
     }
         
