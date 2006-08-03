@@ -86,6 +86,11 @@ public class SubprojectProviderImplTest extends TestBase {
         checkSubprojects("apisupport/samples/PaintApp-suite/ColorChooser", new String[0]);
     }
     
+    /** @see "#81878" */
+    public void testInclusionOfHigherBin() throws Exception {
+        checkSubprojects("httpserver/servletapi", new String[0]);
+    }
+    
     private void checkSubprojects(String project, String[] subprojects) throws Exception {
         Project p = project(project);
         SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);

@@ -30,6 +30,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
@@ -125,10 +127,12 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
                 continue;
             }
             File jar = project.getHelper().resolveFile(eval);
-            // Could also use AntArtifactQuery but this should suffice:
-            Project owner = FileOwnerQuery.getOwner(jar.toURI());
-            if (owner != null && /* #77533 */ owner != project) {
-                s.add(owner);
+            AntArtifact aa = AntArtifactQuery.findArtifactFromFile(jar);
+            if (aa != null) {
+                Project owner = aa.getProject();
+                if (owner != null) {
+                    s.add(owner);
+                }
             }
         }
         String eval = project.evaluator().getProperty("cp.extra"); // NOI18N
