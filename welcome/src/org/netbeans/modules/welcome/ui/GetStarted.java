@@ -23,6 +23,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.lang.reflect.Method;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -102,13 +103,31 @@ public class GetStarted extends ContentPanel {
         OpenCookie oc = (OpenCookie)dob.getCookie( InstanceCookie.class );
         if( null != oc ) {
             LinkAction la = new LinkAction( dob );
-            LinkButton lb = new LinkButton( la, true );
+            LinkButton lb = new LinkButton( la, true, getUrlString( dob ) );
             lb.setForeground( HEADER_TEXT_COLOR );
             panel.add( lb, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
                 new Insets(row==1? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,0,2*TEXT_INSETS_RIGHT), 0, 0 ) );
         }
         return row;
+    }
+
+    /**
+     * Try to extract the URL from the given DataObject using reflection.
+     * (The DataObject should be URLDataObject in most cases)
+     */
+    private String getUrlString(DataObject dob) {
+        try {
+            Method m = dob.getClass().getDeclaredMethod( "getURLString", new Class[] {} );
+            m.setAccessible( true );
+            Object res = m.invoke( dob, new Class[] {} );
+            if( null != res ) {
+                return res.toString();
+            }
+        } catch (Exception ex) {
+            //ignore
+        }
+        return null;
     }
 
     private static class LinkAction extends AbstractAction {

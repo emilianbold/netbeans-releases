@@ -19,16 +19,20 @@
 package org.netbeans.modules.welcome.content;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.openide.awt.StatusDisplayer;
 
 public class LinkButton extends HtmlTextLinkButton {
 
     private Action action;
+    private String urlString;
 
-    public LinkButton( Action a, boolean showBullet ) {
+    public LinkButton( Action a, boolean showBullet, String urlString ) {
         this( a.getValue( Action.NAME ).toString(), showBullet );
         this.action = a;
+        this.urlString = urlString;
         Object icon = a.getValue( Action.SMALL_ICON );
         if( null != icon && icon instanceof Icon )
             setIcon( (Icon)icon );
@@ -44,6 +48,18 @@ public class LinkButton extends HtmlTextLinkButton {
     public void actionPerformed(ActionEvent e) {
         if( null != action ) {
             action.actionPerformed( e );
+        }
+    }
+
+    protected void onMouseExited(MouseEvent e) {
+        if( null != urlString ) {
+            StatusDisplayer.getDefault().setStatusText( "" ); //NOI18N
+        }
+    }
+
+    protected void onMouseEntered(MouseEvent e) {
+        if( null != urlString ) {
+            StatusDisplayer.getDefault().setStatusText( urlString );
         }
     }
 

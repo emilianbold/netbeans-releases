@@ -20,6 +20,8 @@
 package org.netbeans.modules.welcome.content;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import org.openide.awt.StatusDisplayer;
 
 /**
  *
@@ -42,4 +44,13 @@ public class WebLink extends HtmlTextLinkButton {
     public void actionPerformed(ActionEvent e) {
         Utils.showURL( url );
     }
+    
+    protected void onMouseExited(MouseEvent e) {
+        StatusDisplayer.getDefault().setStatusText( "" );
+    }
+
+    protected void onMouseEntered(MouseEvent e) {
+        StatusDisplayer.getDefault().setStatusText( url );
+    }
 }
+
