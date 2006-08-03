@@ -20,12 +20,14 @@
 package org.netbeans.core.startup.layers;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.*;
@@ -89,7 +91,16 @@ public final class LocalFileSystemEx extends LocalFileSystem {
 
     /** Creates new LocalFileSystemEx */
     public LocalFileSystemEx () {
-        super ();
+        this( false );
+    }
+    
+    /**
+     * @since 1.8
+     */
+    LocalFileSystemEx( boolean supportRemoveWritablesAttr ) {
+        if( supportRemoveWritablesAttr ) {
+            attr = new DelegatingAttributes( attr );
+        }
     }
 
     protected void lock (String name) throws IOException {
@@ -125,5 +136,53 @@ public final class LocalFileSystemEx extends LocalFileSystem {
             }
         }
         super.unlock (name);
+    }
+    
+    private class DelegatingAttributes implements AbstractFileSystem.Attr {
+        
+        private AbstractFileSystem.Attr a;
+        
+        public DelegatingAttributes( AbstractFileSystem.Attr a ) {
+            this.a = a;
+        }
+
+        public Object readAttribute(String name, String attrName) {
+            if( "removeWritables".equals( attrName ) ) {
+                return new WritableRemover( name );
+            }
+            return a.readAttribute( name, attrName );
+        }
+
+        public void writeAttribute(String name, String attrName, Object value) throws IOException {
+            a.writeAttribute( name, attrName, value );
+        }
+
+        public Enumeration<String> attributes(String name) {
+            return a.attributes( name );
+        }
+
+        public void renameAttributes(String oldName, String newName) {
+            a.readAttribute( oldName, newName );
+        }
+
+        public void deleteAttributes(String name) {
+            a.deleteAttributes( name );
+        }
+    }
+
+    private class WritableRemover implements Callable {
+        private String name;
+        public WritableRemover( String name ) {
+            this.name = name;
+        }
+        
+        public Object call() throws Exception {
+            FileObject fo = findResource( name );
+            if( null != fo ) {
+                fo.delete();
+            }
+            return null;
+        }
+        
     }
 }

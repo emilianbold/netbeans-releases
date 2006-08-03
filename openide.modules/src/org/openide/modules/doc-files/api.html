@@ -725,6 +725,21 @@ unattractive.</p>
 
 </div>
 
+<h4>Reverting user's modifications</h4>
+
+<p>When a user makes any changes in the installation layer - usually through
+the user interface by changing the default values for some application options
+or any other customizations - it may be desirable to revert these changes back
+to their defaults as defined in XML layers. There changes are stored in user's 
+working dir.</p>
+<p>Since version 7.2 the <code>FileObject</code> supports a new attribute 
+<code>"removeWritable"</code> returning an instance of
+<code>Callable</code> which removes the local writable version of the
+given <code>FileObject</code> thus reverting the folder or file to
+its initial state as defined in XML layers. Please note that is <strong>*not*</strong>
+possible to reset <code>FileObject</code>'s attributes.
+</p>
+
 <h3><a name="how-vers">Using versioning</a></h3>
 
 Module <em>versioning</em> provides a way for modules to specify

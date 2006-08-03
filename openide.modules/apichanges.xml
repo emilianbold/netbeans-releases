@@ -24,6 +24,22 @@ Microsystems, Inc. All Rights Reserved.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="removeWritables">
+        <api name="modules"/>
+        <summary>An option to revert user's modifications to XML layer files</summary>
+        <version major="7" minor="2"/>
+        <date day="1" month="8" year="2006"/>
+        <author login="saubrecht"/>
+        <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="yes" deletion="no" modification="no"/>
+        <description>
+            <code>FileObject</code>s created on XML layer now support a new 
+            attribute <code>"removeWritables"</code> returning an instance of
+            <code>Callable</code> which removes the local writable version of the
+            given <code>FileObject</code> thus reverting the folder or file to
+            its initial state as defined in XML layers. Please note that is *not*
+            possible to reset <code>FileObject</code>'s attributes.
+        </description>
+    </change>
     <change id="needs">
         <api name="modules"/>
         <summary>Requires/Provides and Needs</summary>

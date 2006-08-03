@@ -248,7 +248,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
             if (!userDir.exists ()) {
                 userDir.mkdirs ();
             }
-            LocalFileSystem l = new LocalFileSystemEx ();
+            LocalFileSystem l = new LocalFileSystemEx ( true );
             l.setRootDirectory (userDir);
             user = l;
         } else {
@@ -301,6 +301,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
         new NotSerializableException ("WARNING - SystemFileSystem is not designed to be serialized").printStackTrace (); // NOI18N
         return new SingletonSerializer ();
     }
+    
     private static final class SingletonSerializer extends Object implements Serializable {
         private static final long serialVersionUID = 6436781994611L;
         SingletonSerializer() {}
