@@ -265,16 +265,18 @@ public class RADVisualComponent extends RADComponent {
             };
             component.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    String propName = evt.getPropertyName();
                     RADComponentNode node = getNodeReference();
-                    if (LayoutConstants.PROP_HORIZONTAL_PREF_SIZE.equals(propName)) {
-                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_SIZE, null, null);
-                    } else if (LayoutConstants.PROP_VERTICAL_PREF_SIZE.equals(propName)) {
-                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_VERTICAL_SIZE, null, null);
-                    } else if (LayoutConstants.PROP_HORIZONTAL_MAX_SIZE.equals(propName)) {
-                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
-                    } else if (LayoutConstants.PROP_VERTICAL_MAX_SIZE.equals(propName)) {
-                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_VERTICAL_RESIZABLE, null, null);
+                    if (node != null) {
+                        String propName = evt.getPropertyName();
+                        if (LayoutConstants.PROP_HORIZONTAL_PREF_SIZE.equals(propName)) {
+                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_SIZE, null, null);
+                        } else if (LayoutConstants.PROP_VERTICAL_PREF_SIZE.equals(propName)) {
+                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_VERTICAL_SIZE, null, null);
+                        } else if (LayoutConstants.PROP_HORIZONTAL_MAX_SIZE.equals(propName)) {
+                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
+                        } else if (LayoutConstants.PROP_VERTICAL_MAX_SIZE.equals(propName)) {
+                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_VERTICAL_RESIZABLE, null, null);
+                        }
                     }
                 }
             });
