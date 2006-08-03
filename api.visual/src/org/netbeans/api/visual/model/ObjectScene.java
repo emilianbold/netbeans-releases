@@ -202,20 +202,11 @@ public class ObjectScene extends Scene {
             for (Object o : suggestedSelectedObjects) {
                 if (objects.contains (o))
                     objects.remove (o);
-                else {
-                    Widget widget = findWidget (o);
-                    if (widget != null)
-                        widget.bringToFront ();
+                else
                     objects.add (o);
-                }
             }
             setSelectedObjects (objects);
         } else {
-            for (Object o : suggestedSelectedObjects) {
-                Widget widget = findWidget (o);
-                if (widget != null)
-                    widget.bringToFront ();
-            }
             setSelectedObjects (suggestedSelectedObjects);
         }
     }

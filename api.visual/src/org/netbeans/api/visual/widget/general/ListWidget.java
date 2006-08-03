@@ -49,7 +49,7 @@ public class ListWidget extends Widget {
         setState (ObjectState.NORMAL);
     }
 
-    public void notifyStateChanged (ObjectState state) {
+    public void notifyStateChanged (ObjectState previousState, ObjectState state) {
         LookFeel lookFeel = getScene ().getLookFeel ();
         header.setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (2), lookFeel.getBorder (state)));
         labelWidget.setForeground (lookFeel.getForeground (state));

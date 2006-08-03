@@ -110,7 +110,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
 
         topLayer.addChild (minimizeWidget);
 
-        notifyStateChanged (ObjectState.NORMAL);
+        notifyStateChanged (ObjectState.NORMAL, ObjectState.NORMAL);
     }
 
     /**
@@ -142,7 +142,9 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
                 getScene ().getSceneAnimator ().animatePreferredBounds (widget, rectangle);
     }
 
-    protected void notifyStateChanged (ObjectState state) {
+    protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
+        if (! previousState.isSelected ()  ||  state.isSelected ())
+            bringToFront ();
         if (state.isHovered ())
             setBorder (BORDER_SHADOW_HOVERED);
         else if (state.isSelected ())

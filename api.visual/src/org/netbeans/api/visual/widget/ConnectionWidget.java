@@ -73,7 +73,7 @@ public class ConnectionWidget extends Widget {
         targetEntry = new ConnectionEntry (false);
     }
 
-    public void notifyStateChanged (ObjectState state) {
+    public void notifyStateChanged (ObjectState previousState, ObjectState state) {
         setForeground (getScene ().getLookFeel ().getLineColor (state));
         setPaintControlPoints (state.isSelected ());
     }

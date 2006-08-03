@@ -38,10 +38,10 @@ public class VMDPinWidget extends Widget {
         addChild (nameWidget = new LabelWidget (scene));
         addChild (glyphsWidget = new VMDGlyphSetWidget (scene));
 
-        notifyStateChanged (ObjectState.NORMAL);
+        notifyStateChanged (ObjectState.NORMAL, ObjectState.NORMAL);
     }
 
-    protected void notifyStateChanged (ObjectState state) {
+    protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
         LookFeel lookFeel = getScene ().getLookFeel ();
         setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
         setForeground (lookFeel.getForeground (state));
