@@ -20,13 +20,18 @@
 
 package org.netbeans.modules.palette;
 
+import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import java.awt.event.ActionEvent;
 import java.awt.datatransfer.*;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.modules.palette.ui.PalettePanel;
@@ -51,6 +56,8 @@ public final class Utils {
 
     private static FileObject paletteFolder;
     private static DataFolder paletteDataFolder;
+    
+    private static Logger ERR = Logger.getLogger( "org.netbeans.modules.palette" ); // NOI18N
 
     private Utils() {
     }
@@ -97,8 +104,19 @@ public final class Utils {
         popup.addSeparator();
         popup.add( new ShowNamesAction( settings ) );
         popup.add( new ChangeIconSizeAction( settings ) );
+        addResetMenuItem( popup, controller, settings );
         popup.addSeparator();
         popup.add( new ShowCustomizerAction( controller ) );
+    }
+    
+    static void addResetMenuItem( JPopupMenu popup, final PaletteController controller, final Settings settings ) {
+        JMenuItem item = new JMenuItem( getBundleString( "CTL_ResetPalettePopup" ) );
+        item.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                resetPalette( controller, settings );
+            }
+        });
+        popup.add( item );
     }
     
     /**
@@ -111,6 +129,41 @@ public final class Utils {
     public static Node findCategoryNode( Node root, String categoryName ) {
         Node category = root.getChildren().findChild( categoryName );
         return category;
+    }
+    
+    public static void resetPalette( final PaletteController controller, final Settings settings ) {
+        Node rootNode = (Node)controller.getRoot().lookup( Node.class );
+        if( null != rootNode )
+            resetPalette( rootNode, controller, settings );
+    }
+    
+    public static void resetPalette( Node rootNode, PaletteController controller, Settings settings ) {
+        // first user confirmation...
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+            getBundleString("MSG_ConfirmPaletteReset"), // NOI18N
+            getBundleString("CTL_ConfirmResetTitle"), // NOI18N
+            NotifyDescriptor.YES_NO_OPTION);
+
+        if( NotifyDescriptor.YES_OPTION.equals(
+                    DialogDisplayer.getDefault().notify(desc)) ) {
+            
+            settings.reset();
+            DataObject dob = (DataObject)rootNode.getLookup().lookup( DataObject.class );
+            if( null != dob ) {
+                FileObject primaryFile = dob.getPrimaryFile();
+                if( null != primaryFile && primaryFile.isFolder() ) {
+                    final Object cleaner = primaryFile.getAttribute( "removeWritables" ); //NOI18N
+                    if( null != cleaner && (cleaner instanceof Callable) ) {
+                        try {
+                            ((Callable)cleaner).call();
+                        } catch (Exception ex) {
+                            ERR.log( Level.INFO, ex.getLocalizedMessage(), ex );
+                        }
+                    }
+                }
+            }
+            controller.refresh();
+        }
     }
 
     /**
@@ -133,8 +186,8 @@ public final class Utils {
                 if( null != newTypes && newTypes.length > 0 ) {
                     newTypes[0].create();
                 }
-            } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(e);
+            } catch( IOException ioE ) {
+                ERR.log( Level.INFO, ioE.getLocalizedMessage(), ioE );
             }
         }
     }
@@ -269,7 +322,7 @@ public final class Utils {
                 try {
                     categoryNode.destroy();
                 } catch (java.io.IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    ERR.log( Level.INFO, e.getLocalizedMessage(), e );
                 }
             }
         }
@@ -303,7 +356,7 @@ public final class Utils {
                     if (!"".equals(newName)) // NOI18N
                     categoryNode.setName(newName);
                 } catch (IllegalArgumentException e) {
-                    ErrorManager.getDefault().notify(e);
+                    ERR.log( Level.INFO, e.getLocalizedMessage(), e );
                 }
             }
         }
@@ -370,7 +423,7 @@ public final class Utils {
                         clipboard.setContents(trans, owner);
                     }
                 } catch (java.io.IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    ERR.log( Level.INFO, e.getLocalizedMessage(), e );
                 }
             }
         }
@@ -412,7 +465,7 @@ public final class Utils {
                     clipboard.setContents(trans, new StringSelection("")); // NOI18N
                 }
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                ERR.log( Level.INFO, e.getLocalizedMessage(), e );
             }
         }
         
@@ -438,7 +491,7 @@ public final class Utils {
                     clipboard.setContents(trans, new StringSelection("")); // NOI18N
                 }
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                ERR.log( Level.INFO, e.getLocalizedMessage(), e );
             }
         }
         
@@ -469,7 +522,7 @@ public final class Utils {
                 try {
                     itemNode.destroy();
                 } catch (java.io.IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    ERR.log( Level.INFO, e.getLocalizedMessage(), e );
                 }
             }
         }

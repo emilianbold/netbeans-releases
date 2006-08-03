@@ -56,4 +56,6 @@ public interface Settings {
     int getIconSize();
     
     int getItemWidth();
+    
+    void reset();
 }

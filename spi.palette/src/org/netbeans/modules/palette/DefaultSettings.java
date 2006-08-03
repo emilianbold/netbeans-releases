@@ -25,14 +25,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.palette.PaletteController;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -86,6 +82,9 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
     private FileLock settingsFileLock;
     
     private RequestProcessor requestProcessor = new RequestProcessor( "PaletteSettings" ); //NOI18N
+    
+    private static Logger ERR = Logger.getLogger("org.netbeans.modules.palette"); // NOI18N
+
     
     public DefaultSettings( Model model ) {
         this.model = model;
@@ -280,9 +279,9 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
             stream.close();
             
         } catch( SAXException saxE ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, saxE );
+            ERR.log( Level.INFO, Utils.getBundleString("Err_LoadSettings"), saxE ); //NOI18N
         } catch( IOException ioE ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+            ERR.log( Level.INFO, Utils.getBundleString("Err_LoadSettings"), ioE ); //NOI18N
         }
     }
     
@@ -318,7 +317,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
             writer.println( "</root>" );
             writer.close();
         } catch( IOException ioE ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+            ERR.log( Level.INFO, Utils.getBundleString("Err_StoreSettings"), ioE ); //NOI18N
         } finally {
             if( null != settingsFileLock )
                 settingsFileLock.releaseLock();

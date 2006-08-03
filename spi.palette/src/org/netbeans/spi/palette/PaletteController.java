@@ -224,7 +224,7 @@ public final class PaletteController {
      * contents, especially add/import new items to palette.
      */
     public void showCustomizer() {
-        model.showCustomizer( settings );
+        model.showCustomizer( this, settings );
     }
     
     /**

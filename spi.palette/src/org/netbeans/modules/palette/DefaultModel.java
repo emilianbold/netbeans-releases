@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import javax.swing.Action;
 import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteActions;
+import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFilter;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -229,8 +230,8 @@ public class DefaultModel implements Model, NodeListener {
         rootNode.refreshChildren();
     }
     
-    public void showCustomizer( Settings settings ) {
-        Customizer.show( rootNode, settings );
+    public void showCustomizer( PaletteController controller, Settings settings ) {
+        Customizer.show( rootNode, controller, settings );
     }
     
     public Lookup getRoot() {
