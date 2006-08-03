@@ -144,13 +144,13 @@ public final class AntProjectHelper {
      * Also server as a monitor for {@link #projectXml} and {@link #privateXml} accesses;
      * Xerces' DOM is not thread-safe <em>even for reading<em> (#50198).
      */
-    private final Set/*<String>*/ modifiedMetadataPaths = new HashSet();
+    private final Set<String> modifiedMetadataPaths = new HashSet<String>();
     
     /**
      * Registered listeners.
      * Access must be directly synchronized.
      */
-    private final List/*<AntProjectListener>*/ listeners = new ArrayList();
+    private final List<AntProjectListener> listeners = new ArrayList<AntProjectListener>();
     
     /**
      * List of loaded properties.
@@ -401,8 +401,8 @@ public final class AntProjectHelper {
      * @param path path to the changed file (XML or properties)
      */
     void fireExternalChange(final String path) {
-        final Mutex.Action action = new Mutex.Action() {
-            public Object run() {
+        final Mutex.Action<Void> action = new Mutex.Action<Void>() {
+            public Void run() {
                 fireChange(path, false);
                 return null;
             }
@@ -436,12 +436,12 @@ public final class AntProjectHelper {
             if (listeners.isEmpty()) {
                 return;
             }
-            _listeners = (AntProjectListener[])listeners.toArray(new AntProjectListener[listeners.size()]);
+            _listeners = listeners.toArray(new AntProjectListener[listeners.size()]);
         }
         final AntProjectEvent ev = new AntProjectEvent(this, path, expected);
         final boolean xml = path.equals(PROJECT_XML_PATH) || path.equals(PRIVATE_XML_PATH);
-        ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 for (int i = 0; i < _listeners.length; i++) {
                     try {
                         if (xml) {
@@ -516,7 +516,7 @@ public final class AntProjectHelper {
      */
     private void save() throws IOException {
         assert ProjectManager.mutex().isWriteAccess();
-        Set/*<FileLock>*/ locks = new HashSet();
+        Set<FileLock> locks = new HashSet<FileLock>();
         try {
             synchronized (modifiedMetadataPaths) {
                 assert !modifiedMetadataPaths.isEmpty();
@@ -524,7 +524,7 @@ public final class AntProjectHelper {
                 if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
                     // Saving project.xml so look for that hook.
                     Project p = AntBasedProjectFactorySingleton.getProjectFor(this);
-                    pendingHook = (ProjectXmlSavedHook)p.getLookup().lookup(ProjectXmlSavedHook.class);
+                    pendingHook = p.getLookup().lookup(ProjectXmlSavedHook.class);
                     // might still be null
                 }
                 Iterator it = modifiedMetadataPaths.iterator();
@@ -556,9 +556,8 @@ public final class AntProjectHelper {
         } finally {
             // #57791: release locks outside synchronized block.
             locks.remove(null);
-            Iterator it = locks.iterator();
-            while (it.hasNext()) {
-                ((FileLock) it.next()).releaseLock();
+            for (FileLock lock : locks) {
+                lock.releaseLock();
             }
             // More #57794.
             if (pendingHookCount == 0) {
@@ -576,8 +575,8 @@ public final class AntProjectHelper {
         //eg. only project.properties is being saved:
         if (pendingHookCount == 0 && pendingHook != null) {
             try {
-                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                    public Object run() throws IOException {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public Void run() throws IOException {
                         pendingHook.projectXmlSaved();
                         return null;
                     }
@@ -615,8 +614,8 @@ public final class AntProjectHelper {
         if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
             throw new IllegalArgumentException("Attempt to load properties from a project XML file"); // NOI18N
         }
-        return (EditableProperties) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<EditableProperties>() {
+            public EditableProperties run() {
                 return properties.getProperties(path);
             }
         });
@@ -642,8 +641,8 @@ public final class AntProjectHelper {
         if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
             throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 if (properties.putProperties(path, props)) {
                     modifying(path);
                 }
@@ -664,8 +663,8 @@ public final class AntProjectHelper {
         if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
             throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
-        return (PropertyProvider) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<PropertyProvider>() {
+            public PropertyProvider run() {
                 return properties.getPropertyProvider(path);
             }
         });
@@ -689,8 +688,8 @@ public final class AntProjectHelper {
         assert name.indexOf(':') == -1;
         final String namespace = type.getPrimaryConfigurationDataElementNamespace(shared);
         assert namespace != null && namespace.length() > 0;
-        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
+            public Element run() {
                 synchronized (modifiedMetadataPaths) {
                     Element el = getConfigurationFragment(name, namespace, shared);
                     if (el != null) {
@@ -784,8 +783,8 @@ public final class AntProjectHelper {
      * @return (a clone of) the named configuration fragment, or null if it does not exist
      */
     Element getConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
-        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
+            public Element run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
                     Element data = Util.findElement(root, elementName, namespace);
@@ -822,8 +821,8 @@ public final class AntProjectHelper {
      * @param shared to use project.xml vs. private.xml
      */
     void putConfigurationFragment(final Element fragment, final boolean shared) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
                     Element existing = Util.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
@@ -864,21 +863,21 @@ public final class AntProjectHelper {
      * @return true if anything was actually removed
      */
     boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
-        return ((Boolean) ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
                     Element data = Util.findElement(root, elementName, namespace);
                     if (data != null) {
                         root.removeChild(data);
                         modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
-                        return Boolean.TRUE;
+                        return true;
                     } else {
-                        return Boolean.FALSE;
+                        return false;
                     }
                 }
             }
-        })).booleanValue();
+        });
     }
     
     /**

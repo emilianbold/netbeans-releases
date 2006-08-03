@@ -218,8 +218,8 @@ public final class GeneratedFilesHelper {
             throw new IllegalArgumentException("Null stylesheet"); // NOI18N
         }
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     if (h != null && h.isProjectXmlModified()) {
                         throw new IllegalStateException("Cannot generate build scripts from a modified project"); // NOI18N
                     }
@@ -421,14 +421,14 @@ public final class GeneratedFilesHelper {
      */
     public int getBuildScriptState(final String path, final URL stylesheet) throws IllegalStateException {
         try {
-            return ((Integer)ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Integer>() {
+                public Integer run() throws IOException {
                     if (h != null && h.isProjectXmlModified()) {
                         throw new IllegalStateException("Cannot generate build scripts from a modified project"); // NOI18N
                     }
                     FileObject script = dir.getFileObject(path);
                     if (script == null || /* #55164 */script.isVirtual()) {
-                        return new Integer(FLAG_MISSING);
+                        return FLAG_MISSING;
                     }
                     int flags = 0;
                     Properties p = new Properties();
@@ -436,8 +436,8 @@ public final class GeneratedFilesHelper {
                     if (genfiles == null || /* #55164 */genfiles.isVirtual()) {
                         // Who knows? User deleted it; anything might be wrong. Safest to assume
                         // that everything is.
-                        return new Integer(FLAG_UNKNOWN | FLAG_MODIFIED |
-                                           FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET);
+                        return FLAG_UNKNOWN | FLAG_MODIFIED |
+                                FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET;
                     }
                     InputStream is = new BufferedInputStream(genfiles.getInputStream());
                     try {
@@ -463,9 +463,9 @@ public final class GeneratedFilesHelper {
                     if (!crc.equals(p.getProperty(path + KEY_SUFFIX_SCRIPT_CRC))) {
                         flags |= FLAG_MODIFIED;
                     }
-                    return new Integer(flags);
+                    return flags;
                 }
-            })).intValue();
+            });
         } catch (MutexException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, (IOException)e.getException());
             return FLAG_UNKNOWN | FLAG_MODIFIED | FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET;
@@ -502,16 +502,16 @@ public final class GeneratedFilesHelper {
     
     // #50440 - cache CRC32's for various files to save time esp. during startup.
     
-    private static final Map/*<URL,String>*/ crcCache = new HashMap();
-    private static final Map/*<URL,Long>*/ crcCacheTimestampsXorSizes = new HashMap();
+    private static final Map<URL,String> crcCache = new HashMap<URL,String>();
+    private static final Map<URL,Long> crcCacheTimestampsXorSizes = new HashMap<URL,Long>();
 
     /** Try to find a CRC in the cache according to location of file and last mod time xor size. */
     private static synchronized String findCachedCrc32(URL u, long footprint) {
-        String crc = (String) crcCache.get(u);
+        String crc = crcCache.get(u);
         if (crc != null) {
-            Long l = (Long) crcCacheTimestampsXorSizes.get(u);
+            Long l = crcCacheTimestampsXorSizes.get(u);
             assert l != null;
-            if (l.longValue() == footprint) {
+            if (l == footprint) {
                 // Cache hit.
                 return crc;
             }
@@ -523,7 +523,7 @@ public final class GeneratedFilesHelper {
     /** Cache a known CRC for a file, using current last mod time xor size. */
     private static synchronized void cacheCrc32(String crc, URL u, long footprint) {
         crcCache.put(u, crc);
-        crcCacheTimestampsXorSizes.put(u, new Long(footprint));
+        crcCacheTimestampsXorSizes.put(u, footprint);
     }
     
     /** Find (maybe cached) CRC for a file, using a preexisting input stream (not closed by this method). */
@@ -640,17 +640,17 @@ public final class GeneratedFilesHelper {
      */
     public boolean refreshBuildScript(final String path, final URL stylesheet, final boolean checkForProjectXmlModified) throws IOException, IllegalStateException {
         try {
-            return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                public Boolean run() throws IOException {
                     int flags = getBuildScriptState(path, stylesheet);
                     if (shouldGenerateBuildScript(flags, checkForProjectXmlModified)) {
                         generateBuildScriptFromStylesheet(path, stylesheet);
-                        return Boolean.TRUE;
+                        return true;
                     } else {
-                        return Boolean.FALSE;
+                        return false;
                     }
                 }
-            })).booleanValue();
+            });
         } catch (MutexException e) {
             throw (IOException)e.getException();
         }

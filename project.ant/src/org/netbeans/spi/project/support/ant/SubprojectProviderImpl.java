@@ -45,19 +45,16 @@ final class SubprojectProviderImpl implements SubprojectProvider {
         this.helper = helper;
     }
     
-    public Set/*<Project>*/ getSubprojects() {
-        return (Set/*<Project>*/)ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
-                ReferenceHelper.RawReference[] refs = helper.getRawReferences();
+    public Set<? extends Project> getSubprojects() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Set<? extends Project>>() {
+            public Set<? extends Project> run() {
                 // XXX could use a special set w/ lazy isEmpty() - cf. #58639 for freeform
-                Set/*<String>*/ foreignProjectNames = new HashSet();
-                for (int i = 0; i < refs.length; i++) {
-                    foreignProjectNames.add(refs[i].getForeignProjectName());
+                Set<String> foreignProjectNames = new HashSet<String>();
+                for (ReferenceHelper.RawReference ref : helper.getRawReferences()) {
+                    foreignProjectNames.add(ref.getForeignProjectName());
                 }
-                Set/*<Project>*/ foreignProjects = new HashSet();
-                Iterator it = foreignProjectNames.iterator();
-                while (it.hasNext()) {
-                    String foreignProjectName = (String)it.next();
+                Set<Project> foreignProjects = new HashSet<Project>();
+                for (String foreignProjectName : foreignProjectNames) {
                     String prop = "project." + foreignProjectName; // NOI18N
                     AntProjectHelper h = helper.getAntProjectHelper();
                     String foreignProjectDirS = helper.eval.getProperty(prop);

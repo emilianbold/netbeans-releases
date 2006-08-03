@@ -50,7 +50,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
-import org.openide.util.WeakSet;
 
 // XXX should perhaps be legal to call add* methods at any time (should update things)
 // and perhaps also have remove* methods
@@ -108,9 +107,9 @@ public final class SourcesHelper {
     
     private final AntProjectHelper project;
     private final PropertyEvaluator evaluator;
-    private final List/*<SourceRoot>*/ principalSourceRoots = new ArrayList();
-    private final List/*<Root>*/ nonSourceRoots = new ArrayList();
-    private final List/*<TypedSourceRoot>*/ typedSourceRoots = new ArrayList();
+    private final List<SourceRoot> principalSourceRoots = new ArrayList<SourceRoot>();
+    private final List<Root> nonSourceRoots = new ArrayList<Root>();
+    private final List<TypedSourceRoot> typedSourceRoots = new ArrayList<TypedSourceRoot>();
     private int registeredRootAlgorithm;
     /**
      * If not null, external roots that we registered the last time.
@@ -118,7 +117,7 @@ public final class SourcesHelper {
      * roots might have changed. Hold the actual files (not e.g. URLs); see
      * {@link #registerExternalRoots} for the reason why.
      */
-    private Set/*<FileObject>*/ lastRegisteredRoots;
+    private Set<FileObject> lastRegisteredRoots;
     private PropertyChangeListener propChangeL;
     
     /**
@@ -249,28 +248,26 @@ public final class SourcesHelper {
     }
     
     private void remarkExternalRoots() throws IllegalArgumentException {
-        List/*<Root>*/ allRoots = new ArrayList(principalSourceRoots);
+        List<Root> allRoots = new ArrayList<Root>(principalSourceRoots);
         allRoots.addAll(nonSourceRoots);
         Project p = getProject();
         FileObject pdir = project.getProjectDirectory();
         // First time: register roots and add to lastRegisteredRoots.
         // Subsequent times: add to newRootsToRegister and maybe add them later.
-        Set/*<FileObject>*/ newRootsToRegister;
+        Set<FileObject> newRootsToRegister;
         if (lastRegisteredRoots == null) {
             // First time.
             newRootsToRegister = null;
-            lastRegisteredRoots = new HashSet();
+            lastRegisteredRoots = new HashSet<FileObject>();
             propChangeL = new PropChangeL(); // hold a strong ref
             evaluator.addPropertyChangeListener(WeakListeners.propertyChange(propChangeL, evaluator));
         } else {
-            newRootsToRegister = new HashSet();
+            newRootsToRegister = new HashSet<FileObject>();
         }
         // XXX might be a bit more efficient to cache for each root the actualLocation value
         // that was last computed, and just check if that has changed... otherwise we wind
         // up calling APH.resolveFileObject repeatedly (for each property change)
-        Iterator it = allRoots.iterator();
-        while (it.hasNext()) {
-            Root r = (Root)it.next();
+        for (Root r : allRoots) {
             File locF = r.getActualLocation();
             FileObject loc = locF != null ? FileUtil.toFileObject(locF) : null;
             if (loc == null) {
@@ -305,17 +302,13 @@ public final class SourcesHelper {
         }
         if (newRootsToRegister != null) {
             // Just check for changes since the last time.
-            Set/*<FileObject>*/ toUnregister = new HashSet(lastRegisteredRoots);
+            Set<FileObject> toUnregister = new HashSet<FileObject>(lastRegisteredRoots);
             toUnregister.removeAll(newRootsToRegister);
-            Iterator rootIt = toUnregister.iterator();
-            while (rootIt.hasNext()) {
-                FileObject loc = (FileObject)rootIt.next();
+            for (FileObject loc : toUnregister) {
                 FileOwnerQuery.markExternalOwner(loc, null, registeredRootAlgorithm);
             }
             newRootsToRegister.removeAll(lastRegisteredRoots);
-            rootIt = newRootsToRegister.iterator();
-            while (rootIt.hasNext()) {
-                FileObject loc = (FileObject)rootIt.next();
+            for (FileObject loc : newRootsToRegister) {
                 FileOwnerQuery.markExternalOwner(loc, p, registeredRootAlgorithm);
             }
         }
@@ -366,28 +359,26 @@ public final class SourcesHelper {
     
     private final class SourcesImpl implements Sources, PropertyChangeListener, FileChangeSupportListener {
         
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
-        private final Set/*<FileObject>*/ rootsListenedTo = new WeakSet();
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final Set<File> rootsListenedTo = new HashSet<File>();
         /**
          * The root URLs which were computed last, keyed by group type.
          */
-        private final Map/*<String,List<URL>>*/ lastComputedRoots = new HashMap();
+        private final Map<String,List<URL>> lastComputedRoots = new HashMap<String,List<URL>>();
         
         public SourcesImpl() {
             evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         }
         
         public SourceGroup[] getSourceGroups(String type) {
-            List/*<SourceGroup>*/ groups = new ArrayList();
+            List<SourceGroup> groups = new ArrayList<SourceGroup>();
             if (type.equals(Sources.TYPE_GENERIC)) {
-                List/*<SourceRoot>*/ roots = new ArrayList(principalSourceRoots);
+                List<SourceRoot> roots = new ArrayList<SourceRoot>(principalSourceRoots);
                 // Always include the project directory itself as a default:
                 roots.add(new SourceRoot("", ProjectUtils.getInformation(getProject()).getDisplayName(), null, null)); // NOI18N
-                Iterator it = roots.iterator();
-                Map/*<FileObject,SourceRoot>*/ rootsByDir = new LinkedHashMap();
+                Map<FileObject,SourceRoot> rootsByDir = new LinkedHashMap<FileObject,SourceRoot>();
                 // First collect all non-redundant existing roots.
-                while (it.hasNext()) {
-                    SourceRoot r = (SourceRoot)it.next();
+                for (SourceRoot r : roots) {
                     File locF = r.getActualLocation();
                     if (locF == null) {
                         continue;
@@ -403,9 +394,9 @@ public final class SourcesHelper {
                     rootsByDir.put(loc, r);
                 }
                 // Remove subroots.
-                it = rootsByDir.keySet().iterator();
+                Iterator<FileObject> it = rootsByDir.keySet().iterator();
                 while (it.hasNext()) {
-                    FileObject loc = (FileObject)it.next();
+                    FileObject loc = it.next();
                     FileObject parent = loc.getParent();
                     while (parent != null) {
                         if (rootsByDir.containsKey(parent)) {
@@ -417,18 +408,12 @@ public final class SourcesHelper {
                     }
                 }
                 // Everything else is kosher.
-                it = rootsByDir.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry entry = (Map.Entry)it.next();
-                    FileObject loc = (FileObject)entry.getKey();
-                    SourceRoot r = (SourceRoot)entry.getValue();
-                    groups.add(r.toGroup(loc));
+                for (Map.Entry<FileObject,SourceRoot> entry : rootsByDir.entrySet()) {
+                    groups.add(entry.getValue().toGroup(entry.getKey()));
                 }
             } else {
-                Iterator it = typedSourceRoots.iterator();
-                Set/*<FileObject>*/ dirs = new HashSet();
-                while (it.hasNext()) {
-                    TypedSourceRoot r = (TypedSourceRoot)it.next();
+                Set<FileObject> dirs = new HashSet<FileObject>();
+                for (TypedSourceRoot r : typedSourceRoots) {
                     if (!r.getType().equals(type)) {
                         continue;
                     }
@@ -449,10 +434,8 @@ public final class SourcesHelper {
                 }
             }
             // Remember what we computed here so we know whether to fire changes later.
-            List/*<URL>*/ rootURLs = new ArrayList(groups.size());
-            Iterator/*<SourceGroup>*/ it = groups.iterator();
-            while (it.hasNext()) {
-                SourceGroup g = (SourceGroup) it.next();
+            List<URL> rootURLs = new ArrayList<URL>(groups.size());
+            for (SourceGroup g : groups) {
                 try {
                     rootURLs.add(g.getRootFolder().getURL());
                 } catch (FileStateInvalidException e) {
@@ -488,11 +471,11 @@ public final class SourcesHelper {
                 if (listeners.isEmpty()) {
                     return;
                 }
-                _listeners = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
+                _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             ChangeEvent ev = new ChangeEvent(this);
-            for (int i = 0; i < _listeners.length; i++) {
-                _listeners[i].stateChanged(ev);
+            for (ChangeListener l : _listeners) {
+                l.stateChanged(ev);
             }
         }
         
@@ -500,12 +483,10 @@ public final class SourcesHelper {
             // #47451: check whether anything really changed.
             boolean change = false;
             // Cannot iterate over entrySet, as the map will be modified by getSourceGroups.
-            Iterator it = new HashSet(lastComputedRoots.keySet()).iterator();
-            while (it.hasNext()) {
-                String type = (String) it.next();
-                List/*<URL>*/ previous = new ArrayList((List) lastComputedRoots.get(type));
+            for (String type : new HashSet<String>(lastComputedRoots.keySet())) {
+                List<URL> previous = new ArrayList<URL>(lastComputedRoots.get(type));
                 getSourceGroups(type);
-                List/*<URL>*/ nue = (List) lastComputedRoots.get(type);
+                List<URL> nue = lastComputedRoots.get(type);
                 if (!nue.equals(previous)) {
                     change = true;
                     break;

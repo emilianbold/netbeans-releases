@@ -329,7 +329,7 @@ public class AntBasedTestUtil {
      */
     public static final class TestListener implements AntProjectListener {
         
-        private final List/*<AntProjectEvent>*/ events = new ArrayList();
+        private final List<AntProjectEvent> events = new ArrayList<AntProjectEvent>();
         
         /** Create a new listener. */
         public TestListener() {}
@@ -340,7 +340,7 @@ public class AntBasedTestUtil {
          * @return an ordered list of Ant project events
          */
         public AntProjectEvent[] events() {
-            AntProjectEvent[] evs = (AntProjectEvent[])events.toArray(new AntProjectEvent[0]);
+            AntProjectEvent[] evs = events.toArray(new AntProjectEvent[0]);
             events.clear();
             return evs;
         }
@@ -497,9 +497,9 @@ public class AntBasedTestUtil {
     
     public static final class TestPCL implements PropertyChangeListener {
         
-        public final Set/*<String>*/ changed = new HashSet();
-        public final Map/*<String,String*/ newvals = new HashMap();
-        public final Map/*<String,String*/ oldvals = new HashMap();
+        public final Set<String> changed = new HashSet<String>();
+        public final Map<String,String> newvals = new HashMap<String,String>();
+        public final Map<String,String> oldvals = new HashMap<String,String>();
         
         public TestPCL() {}
         

@@ -61,8 +61,8 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         });
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
-        h = (AntProjectHelper)p.getLookup().lookup(AntProjectHelper.class);
-        gfh = (GeneratedFilesHelper)p.getLookup().lookup(GeneratedFilesHelper.class);
+        h = p.getLookup().lookup(AntProjectHelper.class);
+        gfh = p.getLookup().lookup(GeneratedFilesHelper.class);
         assertNotNull(gfh);
     }
     

@@ -39,6 +39,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -63,18 +64,18 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
     /** Construct the singleton. */
     public AntBasedProjectFactorySingleton() {}
     
-    private static final Map/*<Project,Reference<AntProjectHelper>>*/ project2Helper = new WeakHashMap();
-    private static final Map/*<AntProjectHelper,Reference<Project>>*/ helper2Project = new WeakHashMap();
-    private static final Map/*<AntBasedProjectType, List<Reference<AntProjectHelper>>>*/ type2Projects = new HashMap(); //for second part of #42738
-    private static final Lookup.Result/*<AntBasedProjectType>*/ antBasedProjectTypes;
-    private static Map/*<String,AntBasedProjectType>*/ antBasedProjectTypesByType = null;
+    private static final Map<Project,Reference<AntProjectHelper>> project2Helper = new WeakHashMap<Project,Reference<AntProjectHelper>>();
+    private static final Map<AntProjectHelper,Reference<Project>> helper2Project = new WeakHashMap<AntProjectHelper,Reference<Project>>();
+    private static final Map<AntBasedProjectType,List<Reference<AntProjectHelper>>> type2Projects = new HashMap<AntBasedProjectType,List<Reference<AntProjectHelper>>>(); //for second part of #42738
+    private static final Lookup.Result<AntBasedProjectType> antBasedProjectTypes;
+    private static Map<String,AntBasedProjectType> antBasedProjectTypesByType = null;
     static {
         antBasedProjectTypes = Lookup.getDefault().lookupResult(AntBasedProjectType.class);
         antBasedProjectTypes.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent ev) {
                 synchronized (AntBasedProjectFactorySingleton.class) {
-                    Set/*<AntBasedProjectType>*/ oldTypes = type2Projects.keySet();
-                    Set/*<AntBasedProjectType>*/ removed  = new HashSet(oldTypes);
+                    Set<AntBasedProjectType> oldTypes = type2Projects.keySet();
+                    Set<AntBasedProjectType> removed  = new HashSet<AntBasedProjectType>(oldTypes);
                     
                     removed.removeAll(antBasedProjectTypes.allInstances());
                     
@@ -86,43 +87,34 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         });
     }
     
-    private static void antBasedProjectTypesRemoved(Set/*<AntBasedProjectType>*/ removed) {
-        for (Iterator/*<AntBasedProjectType>*/ i = removed.iterator(); i.hasNext(); ){
-            AntBasedProjectType type = (AntBasedProjectType) i.next();
-            List/*<Reference<AntProjectHelper>>*/ projects = (List/*<Reference<AntProjectHelper>>*/) type2Projects.get(type);
-            
+    private static void antBasedProjectTypesRemoved(Set<AntBasedProjectType> removed) {
+        for (AntBasedProjectType type : removed) {
+            List<Reference<AntProjectHelper>> projects = type2Projects.get(type);
             if (projects != null) {
-                for (Iterator/*<Reference<AntProjectHelper>>*/ prjs = projects.iterator(); prjs.hasNext(); ) {
-                    Reference/*<AntProjectHelper>*/ r = (Reference/*<AntProjectHelper>*/) prjs.next();
-                    Object instance = r.get();
-                    
-                    if (instance != null) {
-                        AntProjectHelper helper = (AntProjectHelper) instance;
-                        
+                for (Reference<AntProjectHelper> r : projects) {
+                    AntProjectHelper helper = r.get();
+                    if (helper != null) {
                         helper.notifyDeleted();
                     }
                 }
             }
-            
             type2Projects.remove(type);
         }
     }
     
     private static synchronized AntBasedProjectType findAntBasedProjectType(String type) {
         if (antBasedProjectTypesByType == null) {
-            Iterator it = new ArrayList(antBasedProjectTypes.allInstances()).iterator();
+            antBasedProjectTypesByType = new HashMap<String,AntBasedProjectType>();
             // No need to synchronize similar calls since this is called only inside
             // ProjectManager.mutex. However dkonecny says that allInstances can
             // trigger a LookupEvent which would clear antBasedProjectTypesByType,
             // so need to initialize that later; and who knows then Lookup changes
             // might be fired.
-            antBasedProjectTypesByType = new HashMap();
-            while (it.hasNext()) {
-                AntBasedProjectType abpt = (AntBasedProjectType)it.next();
+            for (AntBasedProjectType abpt : antBasedProjectTypes.allInstances()) {
                 antBasedProjectTypesByType.put(abpt.getType(), abpt);
             }
         }
-        return (AntBasedProjectType)antBasedProjectTypesByType.get(type);
+        return antBasedProjectTypesByType.get(type);
     }
     
     public boolean isProject(FileObject dir) {
@@ -155,7 +147,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
             projectXml = XMLUtil.parse(new InputSource(projectDiskFile.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(projectDiskFile + ": " + e.toString()).initCause(e);
-            ErrorManager.getDefault().annotate(ioe, NbBundle.getMessage(AntBasedProjectFactorySingleton.class,
+            Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(AntBasedProjectFactorySingleton.class,
                                                                         "AntBasedProjectFactorySingleton.parseError",
                                                                         projectDiskFile.getAbsolutePath(), e.getMessage()));
             throw ioe;
@@ -178,25 +170,25 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         }
         AntProjectHelper helper = HELPER_CALLBACK.createHelper(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
-        project2Helper.put(project, new WeakReference(helper));
-        helper2Project.put(helper, new WeakReference(project));
-        List/*<Reference<AntProjectHelper>>*/ l = (List/*<Reference<AntProjectHelper>>*/) type2Projects.get(provider);
+        project2Helper.put(project, new WeakReference<AntProjectHelper>(helper));
+        helper2Project.put(helper, new WeakReference<Project>(project));
+        List<Reference<AntProjectHelper>> l = type2Projects.get(provider);
         
         if (l == null) {
-            type2Projects.put(provider, l = new ArrayList/*<Reference<AntProjectHelper>>*/());
+            type2Projects.put(provider, l = new ArrayList<Reference<AntProjectHelper>>());
         }
         
-        l.add(new WeakReference(helper));
+        l.add(new WeakReference<AntProjectHelper>(helper));
         
         return project;
     }
     
     public void saveProject(Project project) throws IOException, ClassCastException {
-        Reference/*<AntProjectHelper>*/ helperRef = (Reference) project2Helper.get(project);
+        Reference<AntProjectHelper> helperRef = project2Helper.get(project);
         if (helperRef == null) {
             throw new ClassCastException(project.getClass().getName());
         }
-        AntProjectHelper helper = (AntProjectHelper) helperRef.get();
+        AntProjectHelper helper = helperRef.get();
         assert helper != null : "AntProjectHelper collected for " + project;
         HELPER_CALLBACK.save(helper);
     }
@@ -208,9 +200,9 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
      * @return the corresponding project
      */
     public static Project getProjectFor(AntProjectHelper helper) {
-        Reference/*<Project>*/ projectRef = (Reference) helper2Project.get(helper);
+        Reference<Project> projectRef = helper2Project.get(helper);
         assert projectRef != null : "Found a Project reference for " + helper;
-        Project p = (Project) projectRef.get();
+        Project p = projectRef.get();
         assert p != null : "Found a non-null Project for " + helper;
         return p;
     }
@@ -222,8 +214,8 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
      * @return the corresponding Ant project helper object, or null if it is unknown
      */
     public static AntProjectHelper getHelperFor(Project p) {
-        Reference/*<AntProjectHelper>*/ helperRef = (Reference) project2Helper.get(p);
-        return helperRef != null ? (AntProjectHelper) helperRef.get() : null;
+        Reference<AntProjectHelper> helperRef = project2Helper.get(p);
+        return helperRef != null ? helperRef.get() : null;
     }
     
     /**
@@ -236,7 +228,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
     /** Defined in AntProjectHelper's static initializer. */
     public static AntProjectHelperCallback HELPER_CALLBACK;
     static {
-        Class c = AntProjectHelper.class;
+        Class<?> c = AntProjectHelper.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (ClassNotFoundException e) {

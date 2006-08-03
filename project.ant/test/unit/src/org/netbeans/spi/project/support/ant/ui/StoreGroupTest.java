@@ -214,7 +214,7 @@ public class StoreGroupTest extends NbTestCase {
             // NOP
         }
 
-        public Map getProperties() {
+        public Map<String,String> getProperties() {
             return properties;
         }
         

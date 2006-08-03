@@ -60,7 +60,7 @@ public interface PropertyEvaluator {
      * @return an immutable map from property names to values, or null if the
      *         mapping could not be computed (e.g. due to a circular definition)
      */
-    Map/*<String,String>*/ getProperties();
+    Map<String,String> getProperties();
     
     /**
      * Add a listener to changes in particular property values.

@@ -58,14 +58,14 @@ import java.util.Set;
  * This class is not thread-safe; use only from a single thread, or use {@link java.util.Collections#synchronizedMap}.
  * @author Jesse Glick, David Konecny
  */
-public final class EditableProperties extends AbstractMap/*<String,String>*/ implements Cloneable {
+public final class EditableProperties extends AbstractMap<String,String> implements Cloneable {
     
     /** List of Item instances as read from the properties file. Order is important.
      * Saving properties will save then in this order. */
-    private final LinkedList/*<Item>*/ items;
+    private final LinkedList<Item> items;
 
     /** Map of [property key, Item instance] for faster access. */
-    private final Map/*<String,Item>*/ itemIndex;
+    private final Map<String,Item> itemIndex;
 
     private final boolean alphabetize;
     
@@ -96,8 +96,8 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
      */
     public EditableProperties(boolean alphabetize) {
         this.alphabetize = alphabetize;
-        items = new LinkedList();
-        itemIndex = new HashMap();
+        items = new LinkedList<Item>();
+        itemIndex = new HashMap<String,Item>();
     }
     
     /**
@@ -106,7 +106,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
      * and further additions will not be alphabetized.
      * @param map a map from String to String
      */
-    public EditableProperties(Map/*<String,String>*/ map) {
+    public EditableProperties(Map<String,String> map) {
         this(false);
         putAll(map);
     }
@@ -118,11 +118,10 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
     private EditableProperties(EditableProperties ep) {
         // #64174: use a simple deep copy for speed
         alphabetize = ep.alphabetize;
-        items = new LinkedList();
-        itemIndex = new HashMap(ep.items.size() * 4 / 3 + 1);
-        Iterator it = ep.items.iterator();
-        while (it.hasNext()) {
-            Item i = (Item) ((Item) it.next()).clone();
+        items = new LinkedList<Item>();
+        itemIndex = new HashMap<String,Item>(ep.items.size() * 4 / 3 + 1);
+        for (Item _i : ep.items) {
+            Item i = (Item) _i.clone();
             items.add(i);
             itemIndex.put(i.getKey(), i);
         }
@@ -131,10 +130,10 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
     /**
      * Returns a set view of the mappings ordered according to their file 
      * position.  Each element in this set is a Map.Entry. See
-     * {@link AbstractMap#entrySet} for more dertails.
+     * {@link AbstractMap#entrySet} for more details.
      * @return set with Map.Entry instances.
      */
-    public Set entrySet() {
+    public Set<Map.Entry<String,String>> entrySet() {
         return new SetImpl(this);
     }
     
@@ -146,7 +145,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
     public void load(InputStream stream) throws IOException {
         int state = WAITING_FOR_KEY_VALUE;
         BufferedReader input = new BufferedReader(new InputStreamReader(stream, "ISO-8859-1"));
-        LinkedList tempList = new LinkedList();
+        List<String> tempList = new LinkedList<String>();
         String line;
         int commentLinesCount = 0;
         // Read block of lines and create instance of Item for each.
@@ -193,16 +192,14 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
     public void store(OutputStream stream) throws IOException {
         boolean previousLineWasEmpty = true;
         BufferedWriter output = new BufferedWriter(new OutputStreamWriter(stream, "ISO-8859-1"));
-        Iterator it = items.iterator();
-        while (it.hasNext()) {
-            Item item = (Item)it.next();
+        for (Item item : items) {
             if (item.isSeparate() && !previousLineWasEmpty) {
                 output.newLine();
             }
-            Iterator it2 = item.getRawData().iterator();
             String line = null;
-            while (it2.hasNext()) {
-                line = (String)it2.next();
+            Iterator<String> it = item.getRawData().iterator();
+            while (it.hasNext()) {
+                line = it.next();
                 output.write(line);
                 output.newLine();
             }
@@ -212,18 +209,19 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         }
         output.flush();
     }
-    
-    public Object put(Object key, Object value) {
+
+    @Override
+    public String put(String key, String value) {
         if (key == null || value == null) {
             throw new NullPointerException();
         }
-        Item item = (Item)itemIndex.get((String) key);
+        Item item = itemIndex.get(key);
         String result = null;
         if (item != null) {
             result = item.getValue();
-            item.setValue((String) value);
+            item.setValue(value);
         } else {
-            item = new Item((String) key, (String) value);
+            item = new Item(key, value);
             addItem(item, alphabetize);
         }
         return result;
@@ -231,26 +229,23 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
 
     /**
      * Convenience method to get a property as a string.
-     * Same behavior as {@link #get} but has the correct return type.
+     * Same as {@link #get}; only here because of pre-generic code.
      * @param key a property name; cannot be null nor empty
      * @return the property value, or null if it was not defined
      */
     public String getProperty(String key) {
-        return (String)get(key);
+        return get(key);
     }
     
     /**
      * Convenience method to set a property.
-     * Same behavior as {@link #put} but has the correct argument types.
-     * (Slightly slower however.)
+     * Same as {@link #put}; only here because of pre-generic code.
      * @param key a property name; cannot be null nor empty
      * @param value the desired value; cannot be null
      * @return previous value of the property or null if there was not any
      */
     public String setProperty(String key, String value) {
-        String result = getProperty(key);
-        put(key, value);
-        return result;
+        return put(key, value);
     }
 
     /**
@@ -265,12 +260,12 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
      * @return previous value of the property or null if there was not any
      */
     public String setProperty(String key, String[] value) {
-        String result = getProperty(key);
+        String result = get(key);
         if (key == null || value == null) {
             throw new NullPointerException();
         }
-        List/*<String>*/ valueList = Arrays.asList(value);
-        Item item = (Item) itemIndex.get(key);
+        List<String> valueList = Arrays.asList(value);
+        Item item = itemIndex.get(key);
         if (item != null) {
             item.setValue(valueList);
         } else {
@@ -290,7 +285,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
      *    delimiter character is included
      */
     public String[] getComment(String key) {
-        Item item = (Item)itemIndex.get(key);
+        Item item = itemIndex.get(key);
         if (item == null) {
             return new String[0];
         }
@@ -311,13 +306,14 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
      */
     public void setComment(String key, String[] comment, boolean separate) {
         // XXX: check validity of comment parameter
-        Item item = (Item)itemIndex.get(key);
+        Item item = itemIndex.get(key);
         if (item == null) {
             throw new IllegalArgumentException("Cannot set comment for non-existing property "+key);
         }
         item.setComment(comment, separate);
     }
-    
+
+    @Override
     public Object clone() {
         return cloneProperties();
     }
@@ -331,10 +327,10 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
     }
 
     // non-key item is block of empty lines/comment not associated with any property
-    private void createNonKeyItem(List/*<String>*/ lines) {
+    private void createNonKeyItem(List<String> lines) {
         // First check that previous item is not non-key item.
         if (!items.isEmpty()) {
-            Item item = (Item) items.getLast();
+            Item item = items.getLast();
             if (item.getKey() == null) {
                 // it is non-key item:  merge them
                 item.addCommentLines(lines);
@@ -350,7 +346,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
 
     // opposite to non-key item: item with valid property declaration and 
     // perhaps some comment lines
-    private void createKeyItem(List/*<String>*/ lines, int commentLinesCount) {
+    private void createKeyItem(List<String> lines, int commentLinesCount) {
         Item item = new Item(lines.subList(0, commentLinesCount), lines.subList(commentLinesCount, lines.size()));
         addItem(item, false);
         lines.clear();
@@ -360,9 +356,9 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         String key = item.getKey();
         if (sort) {
             assert key != null;
-            ListIterator it = items.listIterator();
+            ListIterator<Item> it = items.listIterator();
             while (it.hasNext()) {
-                String k = ((Item) it.next()).getKey();
+                String k = it.next().getKey();
                 if (k != null && k.compareToIgnoreCase(key) > 0) {
                     it.previous();
                     it.add(item);
@@ -433,11 +429,11 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
 
         /** Lines of comment as read from properties file and as they will be
          * written back to properties file. */
-        private List/*<String>*/ commentLines;
+        private List<String> commentLines;
 
         /** Lines with property name and value declaration as read from 
          * properties file and as they will be written back to properties file. */
-        private List/*<String>*/ keyValueLines;
+        private List<String> keyValueLines;
 
         /** Property key */
         private String key;
@@ -457,17 +453,17 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
          * Create instance which does not have any key and value - just 
          * some empty or comment lines. This item is READ-ONLY.
          */
-        public Item(List/*<String>*/ commentLines) {
-            this.commentLines = new ArrayList(commentLines);
+        public Item(List<String> commentLines) {
+            this.commentLines = new ArrayList<String>(commentLines);
         }
 
         /**
          * Create instance from the lines of comment and property declaration.
          * Property name and value will be split.
          */
-        public Item(List/*<String>*/ commentLines, List/*<String>*/ keyValueLines) {
-            this.commentLines = new ArrayList(commentLines);
-            this.keyValueLines = new ArrayList(keyValueLines);
+        public Item(List<String> commentLines, List<String> keyValueLines) {
+            this.commentLines = new ArrayList<String>(commentLines);
+            this.keyValueLines = new ArrayList<String>(keyValueLines);
             parse(keyValueLines);
         }
 
@@ -482,13 +478,13 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         /**
          * Create new instance with key and value.
          */
-        public Item(String key, List/*<String>*/ value) {
+        public Item(String key, List<String> value) {
             this.key = key;
             setValue(value);
         }
 
         // backdoor for merging non-key items
-        void addCommentLines(List/*<String>*/ lines) {
+        void addCommentLines(List<String> lines) {
             assert key == null;
             commentLines.addAll(lines);
         }
@@ -497,14 +493,14 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
             String[] res = new String[commentLines.size()];
             for (int i = 0; i < res.length; i++) {
                 // #60249: the comment might have Unicode chars in escapes.
-                res[i] = decodeUnicode((String) commentLines.get(i));
+                res[i] = decodeUnicode(commentLines.get(i));
             }
             return res;
         }
         
         public void setComment(String[] commentLines, boolean separate) {
             this.separate = separate;
-            this.commentLines = new ArrayList(commentLines.length);
+            this.commentLines = new ArrayList<String>(commentLines.length);
             for (int i = 0; i < commentLines.length; i++) {
                 // #60249 again - write only ISO-8859-1.
                 this.commentLines.add(encodeUnicode(commentLines[i]));
@@ -524,14 +520,14 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
             keyValueLines = null;
         }
 
-        public void setValue(List/*<String>*/ value) {
+        public void setValue(List<String> value) {
             StringBuffer val = new StringBuffer();
-            List/*<String>*/ l = new ArrayList();
+            List<String> l = new ArrayList<String>();
             if (!value.isEmpty()) {
                 l.add(encode(key, true) + "=\\"); // NOI18N
-                Iterator it = value.iterator();
+                Iterator<String> it = value.iterator();
                 while (it.hasNext()) {
-                    String s = (String)it.next();
+                    String s = it.next();
                     val.append(s);
                     s = encode(s, false);
                     l.add(it.hasNext() ? INDENT + s + '\\' : INDENT + s); // NOI18N
@@ -551,15 +547,15 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         /**
          * Returns persistent image of this property.
          */
-        public List/*<String>*/ getRawData() {
-            ArrayList l = new ArrayList();
+        public List<String> getRawData() {
+            List<String> l = new ArrayList<String>();
             if (commentLines != null) {
                 l.addAll(commentLines);
             }
             if (keyValueLines != null) {
                 l.addAll(keyValueLines);
             } else {
-                keyValueLines = new ArrayList();
+                keyValueLines = new ArrayList<String>();
                 if (key != null && value != null) {
                     keyValueLines.add(encode(key, true)+"="+encode(value, false));
                 }
@@ -568,18 +564,18 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
             return l;
         }
         
-        private void parse(List/*<String>*/ keyValueLines) {
+        private void parse(List<String> keyValueLines) {
             // merge lines into one:
             String line = mergeLines(keyValueLines);
             // split key and value
             splitKeyValue(line);
         }
         
-        private String mergeLines(List/*<String>*/ lines) {
-            String line = "";
-            Iterator it = lines.iterator();
+        private String mergeLines(List<String> lines) {
+            String line = ""; // XXX use StringBuilder instead
+            Iterator<String> it = lines.iterator();
             while (it.hasNext()) {
-                String l = trimLeft((String)it.next());
+                String l = trimLeft(it.next());
                 // if this is not the last line then remove last backslash
                 if (it.hasNext()) {
                     assert l.endsWith("\\") : lines;
@@ -758,14 +754,15 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
             }
             return output.toString();
         }
-        
+
+        @Override
         public Object clone() {
             Item item = new Item();
             if (keyValueLines != null) {
-                item.keyValueLines = new ArrayList(keyValueLines);
+                item.keyValueLines = new ArrayList<String>(keyValueLines);
             }
             if (commentLines != null) {
-                item.commentLines = new ArrayList(commentLines);
+                item.commentLines = new ArrayList<String>(commentLines);
             }
             item.key = key;
             item.value = value;
@@ -775,7 +772,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
     
     }
     
-    private static class SetImpl extends AbstractSet/*<Map.Entry<String,String>>*/ {
+    private static class SetImpl extends AbstractSet<Map.Entry<String,String>> {
 
         private EditableProperties props;
         
@@ -783,7 +780,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
             this.props = props;
         }
         
-        public Iterator iterator() {
+        public Iterator<Map.Entry<String,String>> iterator() {
             return new IteratorImpl(props);
         }
         
@@ -793,10 +790,10 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         
     }
     
-    private static class IteratorImpl implements Iterator/*<Map.Entry<String,String>>*/ {
+    private static class IteratorImpl implements Iterator<Map.Entry<String,String>> {
 
         private final EditableProperties props;
-        private ListIterator/*<Item>*/ delegate;
+        private ListIterator<Item> delegate;
         
         public IteratorImpl(EditableProperties props) {
             this.props = props;
@@ -807,7 +804,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
             return findNext() != null;
         }
         
-        public Object next() {
+        public Map.Entry<String,String> next() {
             Item item = findNext();
             if (item == null) {
                 throw new NoSuchElementException();
@@ -830,7 +827,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         
         private Item findNext() {
             while (delegate.hasNext()) {
-                Item item = (Item) delegate.next();
+                Item item = delegate.next();
                 if (item.getKey() != null && item.getValue() != null) {
                     // Found one. Back up!
                     delegate.previous();
@@ -842,7 +839,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         
     }
     
-    private static class MapEntryImpl implements Map.Entry/*<String,String>*/ {
+    private static class MapEntryImpl implements Map.Entry<String,String> {
         
         private Item item;
         
@@ -850,17 +847,17 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
             this.item = item;
         }
         
-        public Object getKey() {
+        public String getKey() {
             return item.getKey();
         }
         
-        public Object getValue() {
+        public String getValue() {
             return item.getValue();
         }
         
-        public Object setValue(Object value) {
+        public String setValue(String value) {
             String result = item.getValue();
-            item.setValue((String)value);
+            item.setValue(value);
             return result;
         }
         

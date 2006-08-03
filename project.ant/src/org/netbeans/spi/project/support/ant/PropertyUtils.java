@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -53,10 +55,13 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
+import org.openide.util.Union2;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -81,7 +86,7 @@ public class PropertyUtils {
         }
     }
     
-    private static Map/*<File,Reference<GlobalPropertyProvider>>*/ globalPropertyProviders = new HashMap();
+    private static Map<File,Reference<PropertyProvider>> globalPropertyProviders = new HashMap<File,Reference<PropertyProvider>>();
     
     /**
      * Load global properties defined by the IDE in the user directory.
@@ -93,8 +98,8 @@ public class PropertyUtils {
      * @return user properties (empty if missing or malformed)
      */
     public static EditableProperties getGlobalProperties() {
-        return (EditableProperties)ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<EditableProperties>() {
+            public EditableProperties run() {
                 File ubp = userBuildProperties();
                 if (ubp != null && ubp.isFile() && ubp.canRead()) {
                     try {
@@ -107,7 +112,7 @@ public class PropertyUtils {
                             is.close();
                         }
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Logger.getLogger(PropertyUtils.class.getName()).log(Level.INFO, null, e);
                     }
                 }
                 // Missing or erroneous.
@@ -126,8 +131,8 @@ public class PropertyUtils {
      */
     public static void putGlobalProperties(final EditableProperties properties) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     File ubp = userBuildProperties();
                     if (ubp != null) {
                         FileObject bp = FileUtil.toFileObject(ubp);
@@ -182,18 +187,18 @@ public class PropertyUtils {
     public static synchronized PropertyProvider globalPropertyProvider() {
         File ubp = userBuildProperties();
         if (ubp != null) {
-            Reference/*<PropertyProvider>*/ globalPropertyProvider = (Reference) globalPropertyProviders.get(ubp);
+            Reference<PropertyProvider> globalPropertyProvider = globalPropertyProviders.get(ubp);
             if (globalPropertyProvider != null) {
-                PropertyProvider pp = (PropertyProvider) globalPropertyProvider.get();
+                PropertyProvider pp = globalPropertyProvider.get();
                 if (pp != null) {
                     return pp;
                 }
             }
             PropertyProvider gpp = propertiesFilePropertyProvider(ubp);
-            globalPropertyProviders.put(ubp, new SoftReference(gpp));
+            globalPropertyProviders.put(ubp, new SoftReference<PropertyProvider>(gpp));
             return gpp;
         } else {
-            return fixedPropertyProvider(Collections.EMPTY_MAP);
+            return fixedPropertyProvider(Collections.<String,String>emptyMap());
         }
     }
 
@@ -218,8 +223,8 @@ public class PropertyUtils {
         private static final RequestProcessor RP = new RequestProcessor("PropertyUtils.FilePropertyProvider.RP"); // NOI18N
         
         private final File properties;
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
-        private Map/*<String,String>*/ cached = null;
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private Map<String,String> cached = null;
         private long cachedTime = 0L;
         
         public FilePropertyProvider(File properties) {
@@ -227,7 +232,7 @@ public class PropertyUtils {
             FileChangeSupport.DEFAULT.addListener(this, properties);
         }
         
-        public Map/*<String,String>*/ getProperties() {
+        public Map<String,String> getProperties() {
             long currTime = properties.lastModified();
             if (cached == null || cachedTime != currTime) {
                 cachedTime = currTime;
@@ -236,7 +241,7 @@ public class PropertyUtils {
             return cached;
         }
         
-        private Map/*<String,String>*/ loadProperties() {
+        private Map<String,String> loadProperties() {
             // XXX does this need to run in PM.mutex.readAccess?
             if (properties.isFile() && properties.canRead()) {
                 try {
@@ -244,16 +249,16 @@ public class PropertyUtils {
                     try {
                         Properties props = new Properties();
                         props.load(is);
-                        return props;
+                        return NbCollections.checkedMapByFilter(props, String.class, String.class, true);
                     } finally {
                         is.close();
                     }
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger(PropertyUtils.class.getName()).log(Level.INFO, null, e);
                 }
             }
             // Missing or erroneous.
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
         
         private void fireChange() {
@@ -263,13 +268,13 @@ public class PropertyUtils {
                 if (listeners.isEmpty()) {
                     return;
                 }
-                ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+                ls = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             final ChangeEvent ev = new ChangeEvent(this);
-            final Mutex.Action action = new Mutex.Action() {
-                public Object run() {
-                    for (int i = 0; i < ls.length; i++) {
-                        ls[i].stateChanged(ev);
+            final Mutex.Action<Void> action = new Mutex.Action<Void>() {
+                public Void run() {
+                    for (ChangeListener l : ls) {
+                        l.stateChanged(ev);
                     }
                     return null;
                 }
@@ -328,34 +333,29 @@ public class PropertyUtils {
      * @param predefs an unevaluated set of initial definitions
      * @return values for all defined properties, or null if a circularity error was detected
      */
-    private static Map/*<String,String>*/ evaluateAll(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
-        Map/*<String,String>*/ m = new HashMap(predefs);
-        Iterator it = defs.iterator();
-        while (it.hasNext()) {
-            Map/*<String,String>*/ curr = (Map/*<String,String>*/)it.next();
+    private static Map<String,String> evaluateAll(Map<String,String> predefs, List<Map<String,String>> defs) {
+        Map<String,String> m = new HashMap<String,String>(predefs);
+        for (Map<String,String> curr : defs) {
             // Set of properties which we are deferring because they subst sibling properties:
-            Map/*<String,Set<String>>*/ dependOnSiblings = new HashMap();
-            Iterator it2 = curr.entrySet().iterator();
-            while (it2.hasNext()) {
-                Map.Entry entry = (Map.Entry)it2.next();
-                String prop = (String)entry.getKey();
+            Map<String,Set<String>> dependOnSiblings = new HashMap<String,Set<String>>();
+            for (Map.Entry<String,String> entry : curr.entrySet()) {
+                String prop = entry.getKey();
                 if (!m.containsKey(prop)) {
-                    String rawval = (String)entry.getValue();
+                    String rawval = entry.getValue();
                     //System.err.println("subst " + prop + "=" + rawval + " with " + m);
-                    Object o = subst(rawval, m, curr.keySet());
-                    if (o instanceof String) {
-                        m.put(prop, (String)o);
+                    Union2<String,Set<String>> o = substitute(rawval, m, curr.keySet());
+                    if (o.hasFirst()) {
+                        m.put(prop, o.first());
                     } else {
-                        dependOnSiblings.put(prop, (Set)o);
+                        dependOnSiblings.put(prop, o.second());
                     }
                 }
             }
-            Set/*<String>*/ toSort = new HashSet(dependOnSiblings.keySet());
-            it2 = dependOnSiblings.values().iterator();
-            while (it2.hasNext()) {
-                toSort.addAll((Set)it2.next());
+            Set<String> toSort = new HashSet<String>(dependOnSiblings.keySet());
+            for (Set<String> s : dependOnSiblings.values()) {
+                toSort.addAll(s);
             }
-            List/*<String>*/ sorted;
+            List<String> sorted;
             try {
                 sorted = Utilities.topologicalSort(toSort, dependOnSiblings);
             } catch (TopologicalSortException e) {
@@ -363,12 +363,10 @@ public class PropertyUtils {
                 return null;
             }
             Collections.reverse(sorted);
-            it2 = sorted.iterator();
-            while (it2.hasNext()) {
-                String prop = (String)it2.next();
+            for (String prop : sorted) {
                 if (!m.containsKey(prop)) {
-                    String rawval = (String)curr.get(prop);
-                    m.put(prop, (String)subst(rawval, m, /*Collections.EMPTY_SET*/curr.keySet()));
+                    String rawval = curr.get(prop);
+                    m.put(prop, substitute(rawval, m, /*Collections.EMPTY_SET*/curr.keySet()).first());
                 }
             }
         }
@@ -384,19 +382,19 @@ public class PropertyUtils {
      *         or a Set<String> of elements from siblingProperties in case those properties
      *         need to be defined in order to evaluate this one
      */
-    private static Object subst(String rawval, Map/*<String,String>*/ predefs, Set/*<String>*/ siblingProperties) {
+    private static Union2<String,Set<String>> substitute(String rawval, Map<String,String> predefs, Set<String> siblingProperties) {
         assert rawval != null : "null rawval passed in";
         if (rawval.indexOf('$') == -1) {
             // Shortcut:
             //System.err.println("shortcut");
-            return rawval;
+            return Union2.createFirst(rawval);
         }
         // May need to subst something.
         int idx = 0;
         // Result in progress, if it is to be a String:
         StringBuffer val = new StringBuffer();
         // Or, result in progress, if it is to be a Set<String>:
-        Set/*<String>*/ needed = new HashSet();
+        Set<String> needed = new HashSet<String>();
         while (true) {
             int shell = rawval.indexOf('$', idx);
             if (shell == -1 || shell == rawval.length() - 1) {
@@ -404,9 +402,9 @@ public class PropertyUtils {
                 //System.err.println("no more $");
                 if (needed.isEmpty()) {
                     val.append(rawval.substring(idx));
-                    return val.toString();
+                    return Union2.createFirst(val.toString());
                 } else {
-                    return needed;
+                    return Union2.createSecond(needed);
                 }
             }
             char c = rawval.charAt(shell + 1);
@@ -428,7 +426,7 @@ public class PropertyUtils {
                         // Well-defined.
                         if (needed.isEmpty()) {
                             val.append(rawval.substring(idx, shell));
-                            val.append((String)predefs.get(otherprop));
+                            val.append(predefs.get(otherprop));
                         }
                         idx = end + 1;
                     } else if (siblingProperties.contains(otherprop)) {
@@ -446,9 +444,9 @@ public class PropertyUtils {
                     // Unclosed ${ sequence, leave as is.
                     if (needed.isEmpty()) {
                         val.append(rawval.substring(idx));
-                        return val.toString();
+                        return Union2.createFirst(val.toString());
                     } else {
-                        return needed;
+                        return Union2.createSecond(needed);
                     }
                 }
             } else {
@@ -579,7 +577,7 @@ public class PropertyUtils {
      * @return a tokenization of that path into components
      */
     public static String[] tokenizePath(String path) {
-        List/*<String>*/ l = new ArrayList();
+        List<String> l = new ArrayList<String>();
         StringTokenizer tok = new StringTokenizer(path, ":;", true); // NOI18N
         char dosHack = '\0';
         char lastDelim = '\0';
@@ -630,7 +628,7 @@ public class PropertyUtils {
             //Fix for issue #57304
             l.add(Character.toString(dosHack));
         }
-        return (String[])l.toArray(new String[l.size()]);
+        return l.toArray(new String[l.size()]);
     }
 
     private static final Pattern VALID_PROPERTY_NAME = Pattern.compile("[-._a-zA-Z0-9]"); // NOI18N
@@ -671,19 +669,19 @@ public class PropertyUtils {
      *             after passing it to this method)
      * @return a matching property producer
      */
-    public static PropertyProvider fixedPropertyProvider(Map/*<String,String>*/ defs) {
+    public static PropertyProvider fixedPropertyProvider(Map<String,String> defs) {
         return new FixedPropertyProvider(defs);
     }
     
     private static final class FixedPropertyProvider implements PropertyProvider {
         
-        private final Map/*<String,String>*/ defs;
+        private final Map<String,String> defs;
         
-        public FixedPropertyProvider(Map/*<String,String>*/ defs) {
+        public FixedPropertyProvider(Map<String,String> defs) {
             this.defs = defs;
         }
         
-        public Map getProperties() {
+        public Map<String,String> getProperties() {
             return defs;
         }
         
@@ -709,7 +707,7 @@ public class PropertyUtils {
      * @param providers a sequential list of property groups
      * @return an evaluator
      */
-    public static PropertyEvaluator sequentialPropertyEvaluator(PropertyProvider preprovider, PropertyProvider[] providers) {
+    public static PropertyEvaluator sequentialPropertyEvaluator(PropertyProvider preprovider, PropertyProvider... providers) {
         return new SequentialPropertyEvaluator(preprovider, providers);
     }
     
@@ -717,15 +715,15 @@ public class PropertyUtils {
         
         private final PropertyProvider preprovider;
         private final PropertyProvider[] providers;
-        private Map/*<String,String>*/ defs;
-        private final List/*<PropertyChangeListener>*/ listeners = new ArrayList();
+        private Map<String,String> defs;
+        private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
         
         public SequentialPropertyEvaluator(final PropertyProvider preprovider, final PropertyProvider[] providers) {
             this.preprovider = preprovider;
             this.providers = providers;
             // XXX defer until someone asks for them
-            defs = (Map) ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            defs = ProjectManager.mutex().readAccess(new Mutex.Action<Map<String,String>>() {
+                public Map<String,String> run() {
                     return compose(preprovider, providers);
                 }
             });
@@ -733,18 +731,18 @@ public class PropertyUtils {
             if (preprovider != null) {
                 preprovider.addChangeListener(WeakListeners.change(this, preprovider));
             }
-            for (int i = 0; i < providers.length; i++) {
-                providers[i].addChangeListener(WeakListeners.change(this, providers[i]));
+            for (PropertyProvider pp : providers) {
+                pp.addChangeListener(WeakListeners.change(this, pp));
             }
         }
         
         public String getProperty(final String prop) {
-            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+                public String run() {
                     if (defs == null) {
                         return null;
                     }
-                    return (String) defs.get(prop);
+                    return defs.get(prop);
                 }
             });
         }
@@ -753,21 +751,21 @@ public class PropertyUtils {
             if (text == null) {
                 throw new NullPointerException("Attempted to pass null to PropertyEvaluator.evaluate"); // NOI18N
             }
-            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+                public String run() {
                     if (defs == null) {
                         return null;
                     }
-                    Object result = subst(text, defs, Collections.EMPTY_SET);
-                    assert result instanceof String : "Unexpected result " + result + " from " + text + " on " + defs;
-                    return (String) result;
+                    Union2<String,Set<String>> result = substitute(text, defs, Collections.<String>emptySet());
+                    assert result.hasFirst() : "Unexpected result " + result + " from " + text + " on " + defs;
+                    return result.first();
                 }
             });
         }
         
-        public Map/*<String,String>*/ getProperties() {
-            return (Map) ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+        public Map<String,String> getProperties() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<Map<String,String>>() {
+                public Map<String,String> run() {
                     return defs;
                 }
             });
@@ -787,20 +785,18 @@ public class PropertyUtils {
         
         public void stateChanged(ChangeEvent e) {
             assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-            Map/*<String,String>*/ newdefs = compose(preprovider, providers);
+            Map<String,String> newdefs = compose(preprovider, providers);
             // compose() may return null upon circularity errors
-            Map/*<String,String>*/ _defs = defs != null ? defs : Collections.EMPTY_MAP;
-            Map/*<String,String>*/ _newdefs = newdefs != null ? newdefs : Collections.EMPTY_MAP;
+            Map<String,String> _defs = defs != null ? defs : Collections.<String,String>emptyMap();
+            Map<String,String> _newdefs = newdefs != null ? newdefs : Collections.<String,String>emptyMap();
             if (!_defs.equals(_newdefs)) {
-                Set/*<String>*/ props = new HashSet(_defs.keySet());
+                Set<String> props = new HashSet<String>(_defs.keySet());
                 props.addAll(_newdefs.keySet());
-                List/*<PropertyChangeEvent>*/ events = new LinkedList();
-                Iterator it = props.iterator();
-                while (it.hasNext()) {
-                    String prop = (String) it.next();
+                List<PropertyChangeEvent> events = new LinkedList<PropertyChangeEvent>();
+                for (String prop : props) {
                     assert prop != null;
-                    String oldval = (String) _defs.get(prop);
-                    String newval = (String) _newdefs.get(prop);
+                    String oldval = _defs.get(prop);
+                    String newval = _newdefs.get(prop);
                     if (newval != null) {
                         if (newval.equals(oldval)) {
                             continue;
@@ -814,52 +810,31 @@ public class PropertyUtils {
                 defs = newdefs;
                 PropertyChangeListener[] _listeners;
                 synchronized (listeners) {
-                    _listeners = (PropertyChangeListener[])listeners.toArray(new PropertyChangeListener[listeners.size()]);
+                    _listeners = listeners.toArray(new PropertyChangeListener[listeners.size()]);
                 }
-                for (int i = 0; i < _listeners.length; i++) {
-                    Iterator it3 = events.iterator();
-                    while (it3.hasNext()) {
-                        _listeners[i].propertyChange((PropertyChangeEvent)it3.next());
+                for (PropertyChangeListener l : _listeners) {
+                    for (PropertyChangeEvent ev : events) {
+                        l.propertyChange(ev);
                     }
                 }
             }
         }
         
-        private static Map/*<String,String>*/ compose(PropertyProvider preprovider, PropertyProvider[] providers) {
+        private static Map<String,String> compose(PropertyProvider preprovider, PropertyProvider[] providers) {
             assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-            Map/*<String,String>*/ predefs;
+            Map<String,String> predefs;
             if (preprovider != null) {
                 predefs = preprovider.getProperties();
-                assert isStringStringMap(predefs) : "Bad map " + predefs + " from " + preprovider;
             } else {
-                predefs = Collections.EMPTY_MAP;
+                predefs = Collections.emptyMap();
             }
-            Map/*<String,String>*/[] defs = new Map[providers.length];
-            for (int i = 0; i < providers.length; i++) {
-                defs[i] = providers[i].getProperties();
-                assert isStringStringMap(defs[i]) : "Bad map " + defs[i] + " from " + providers[i];
+            List<Map<String,String>> defs = new ArrayList<Map<String,String>>(providers.length);
+            for (PropertyProvider pp : providers) {
+                defs.add(pp.getProperties());
             }
-            Map/*<String,String>*/ result = evaluateAll(predefs, Arrays.asList(defs));
-            assert result == null || isStringStringMap(result) : "Bad map " + result + " from evaluateAll(" + predefs + ", " + defs + ")";
-            return result;
+            return evaluateAll(predefs, defs);
         }
 
-        private static boolean isStringStringMap(Map m) {
-            Iterator i = m.entrySet().iterator();
-            while (i.hasNext()) {
-                Map.Entry e = (Map.Entry) i.next();
-                Object k = e.getKey();
-                if (k == null || !(k instanceof String)) {
-                    return false;
-                }
-                Object v = e.getValue();
-                if (v == null || !(v instanceof String)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        
     }
     
     /**
@@ -869,7 +844,7 @@ public class PropertyUtils {
     static abstract class DelegatingPropertyProvider implements PropertyProvider, ChangeListener {
         
         private PropertyProvider delegate;
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         private ChangeListener weakListener = null; // #50572: must be weak
         
         protected DelegatingPropertyProvider(PropertyProvider delegate) {
@@ -891,7 +866,7 @@ public class PropertyUtils {
             fireChange();
         }
 
-        public final Map getProperties() {
+        public final Map<String,String> getProperties() {
             return delegate.getProperties();
         }
 
@@ -910,11 +885,11 @@ public class PropertyUtils {
                 if (listeners.isEmpty()) {
                     return;
                 }
-                ls = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
+                ls = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             ChangeEvent ev = new ChangeEvent(this);
-            for (int i = 0; i < ls.length; i++) {
-                ls[i].stateChanged(ev);
+            for (ChangeListener l : ls) {
+                l.stateChanged(ev);
             }
         }
 

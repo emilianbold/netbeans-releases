@@ -42,7 +42,7 @@ public class StandardAntArtifactQueryImpl implements AntArtifactQueryImplementat
         if (p == null) {
             return null;
         }
-        AntArtifactProvider prov = (AntArtifactProvider)p.getLookup().lookup(AntArtifactProvider.class);
+        AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
         if (prov == null) {
             return null;
         }

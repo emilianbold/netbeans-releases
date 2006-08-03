@@ -46,6 +46,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 
 /**
@@ -59,53 +60,54 @@ public class PropertyUtilsTest extends NbTestCase {
     }
     
     public void run(final TestResult result) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 PropertyUtilsTest.super.run(result);
                 return null;
             }
         });
     }
     
-    private static PropertyEvaluator evaluator(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
+    private static PropertyEvaluator evaluator(Map<String,String> predefs, List<Map<String,String>> defs) {
         PropertyProvider[] mainProviders = new PropertyProvider[defs.size()];
-        Iterator it = defs.iterator();
         int i = 0;
-        while (it.hasNext()) {
-            mainProviders[i++] = PropertyUtils.fixedPropertyProvider((Map/*<String,String>*/) it.next());
+        for (Map<String,String> def : defs) {
+            mainProviders[i++] = PropertyUtils.fixedPropertyProvider(def);
         }
         return PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.fixedPropertyProvider(predefs), mainProviders);
     }
     
-    private static String evaluate(String prop, Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
+    private static String evaluate(String prop, Map<String,String> predefs, List<Map<String,String>> defs) {
         return evaluator(predefs, defs).getProperty(prop);
     }
     
-    private static Map/*<String,String>*/ evaluateAll(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
+    private static Map<String,String> evaluateAll(Map<String,String> predefs, List<Map<String,String>> defs) {
         return evaluator(predefs, defs).getProperties();
     }
     
-    private static String evaluateString(String text, Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
+    private static String evaluateString(String text, Map<String,String> predefs, List<Map<String,String>> defs) {
         return evaluator(predefs, defs).evaluate(text);
     }
     
     public void testEvaluate() throws Exception {
         // XXX check override order, property name evaluation, $$ escaping, bare or final $,
         // cyclic errors, undef'd property substitution, no substs in predefs, etc.
-        Map/*<String,String>*/ m1 = Collections.singletonMap("y", "val");
-        Map/*<String,String>*/ m2 = new HashMap();
+        Map<String,String> m1 = Collections.singletonMap("y", "val");
+        Map<String,String> m2 = new HashMap<String,String>();
         m2.put("x", "${y}");
         m2.put("y", "y-${x}");
-        List/*<Map<String,String>>*/ m1m2 = Arrays.asList(new Map/*<String,String>*/[] {m1, m2});
-        assertEquals("x evaluates to former y", "val", evaluate("x", Collections.EMPTY_MAP, m1m2));
-        assertEquals("first y defines it", "val", evaluate("y", Collections.EMPTY_MAP, m1m2));
-        assertEquals("circularity error", null, evaluate("x", Collections.EMPTY_MAP, Collections.singletonList(m2)));
-        assertEquals("circularity error", null, evaluate("y", Collections.EMPTY_MAP, Collections.singletonList(m2)));
+        List<Map<String,String>> m1m2 = new ArrayList<Map<String,String>>();
+        m1m2.add(m1);
+        m1m2.add(m2);
+        assertEquals("x evaluates to former y", "val", evaluate("x", Collections.<String,String>emptyMap(), m1m2));
+        assertEquals("first y defines it", "val", evaluate("y", Collections.<String,String>emptyMap(), m1m2));
+        assertEquals("circularity error", null, evaluate("x", Collections.<String,String>emptyMap(), Collections.singletonList(m2)));
+        assertEquals("circularity error", null, evaluate("y", Collections.<String,String>emptyMap(), Collections.singletonList(m2)));
         m2.clear();
         m2.put("y", "yval_${z}");
         m2.put("x", "xval_${y}");
         m2.put("z", "zval");
-        Map all = evaluateAll(Collections.EMPTY_MAP, Collections.singletonList(m2));
+        Map<String,String> all = evaluateAll(Collections.<String,String>emptyMap(), Collections.singletonList(m2));
         assertNotNull("no circularity error", all);
         assertEquals("have three properties", 3, all.size());
         assertEquals("double substitution", "xval_yval_zval", all.get("x"));
@@ -114,7 +116,7 @@ public class PropertyUtilsTest extends NbTestCase {
         // Yuck. But it failed once, so check it now.
         Properties p = new Properties();
         p.load(new ByteArrayInputStream("project.mylib=../mylib\njavac.classpath=${project.mylib}/build/mylib.jar\nrun.classpath=${javac.classpath}:build/classes".getBytes("US-ASCII")));
-        all = evaluateAll(Collections.EMPTY_MAP, Collections.singletonList(p));
+        all = evaluateAll(Collections.<String,String>emptyMap(), Collections.singletonList(NbCollections.checkedMapByFilter(p, String.class, String.class, true)));
         assertNotNull("no circularity error", all);
         assertEquals("javac.classpath correctly substituted", "../mylib/build/mylib.jar", all.get("javac.classpath"));
         assertEquals("run.classpath correctly substituted", "../mylib/build/mylib.jar:build/classes", all.get("run.classpath"));
@@ -301,20 +303,23 @@ public class PropertyUtilsTest extends NbTestCase {
     }
     
     public void testEvaluateString() throws Exception {
-        Map predefs = new HashMap();
+        Map<String,String> predefs = new HashMap<String,String>();
         predefs.put("homedir", "/home/me");
-        Map defs1 = new HashMap();
+        Map<String,String> defs1 = new HashMap<String,String>();
         defs1.put("outdirname", "foo");
         defs1.put("outdir", "${homedir}/${outdirname}");
-        Map defs2 = new HashMap();
+        Map<String,String> defs2 = new HashMap<String,String>();
         defs2.put("outdir2", "${outdir}/subdir");
+        List<Map<String,String>> defs12 = new ArrayList<Map<String,String>>();
+        defs12.add(defs1);
+        defs12.add(defs2);
         assertEquals("correct evaluated string",
             "/home/me/foo/subdir is in /home/me",
-            evaluateString("${outdir2} is in ${homedir}", predefs, Arrays.asList(new Map[] {defs1, defs2})));
+            evaluateString("${outdir2} is in ${homedir}", predefs, defs12));
     }
     
     public void testFixedPropertyProvider() throws Exception {
-        Map defs = new HashMap();
+        Map<String,String> defs = new HashMap<String,String>();
         defs.put("key1", "val1");
         defs.put("key2", "val2");
         PropertyProvider pp = PropertyUtils.fixedPropertyProvider(defs);
@@ -365,30 +370,29 @@ public class PropertyUtilsTest extends NbTestCase {
         } finally {
             lock.releaseLock();
         }
-        Map m = new HashMap();
+        Map<String,String> m = new HashMap<String,String>();
         m.put("a", "aval");
         m.put("b", "bval");
         assertTrue("got a change when file was changed", l.expect());
         assertEquals("right properties", m, pp.getProperties());
         testProperties[0].delete();
         assertTrue("got a change when file was deleted", l.expect());
-        assertEquals("no defs again (file deleted)", Collections.EMPTY_MAP, pp.getProperties());
+        assertEquals("no defs again (file deleted)", Collections.emptyMap(), pp.getProperties());
     }
     
     public void testSequentialEvaluatorBasic() throws Exception {
-        Map defs1 = new HashMap();
+        Map<String,String> defs1 = new HashMap<String,String>();
         defs1.put("key1", "val1");
         defs1.put("key2", "val2");
         defs1.put("key5", "5=${key1}");
         defs1.put("key6", "6=${key3}");
-        Map defs2 = new HashMap();
+        Map<String,String> defs2 = new HashMap<String,String>();
         defs2.put("key3", "val3");
         defs2.put("key4", "4=${key1}:${key3}");
         defs2.put("key7", "7=${undef}");
-        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {
+        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null,
             PropertyUtils.fixedPropertyProvider(defs1),
-            PropertyUtils.fixedPropertyProvider(defs2),
-        });
+            PropertyUtils.fixedPropertyProvider(defs2));
         String[] vals = {
             "val1",
             "val2",
@@ -398,7 +402,7 @@ public class PropertyUtilsTest extends NbTestCase {
             "6=${key3}",
             "7=${undef}",
         };
-        Map all = eval.getProperties();
+        Map<String,String> all = eval.getProperties();
         assertEquals("right # of props", vals.length, all.size());
         for (int i = 1; i <= vals.length; i++) {
             assertEquals("key" + i + " is correct", vals[i - 1], eval.getProperty("key" + i));
@@ -406,11 +410,10 @@ public class PropertyUtilsTest extends NbTestCase {
         }
         assertEquals("evaluate works", "5=val1 x ${undef}", eval.evaluate("${key5} x ${undef}"));
         // And test the preprovider...
-        Map predefs = Collections.singletonMap("key3", "preval3");
-        eval = PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.fixedPropertyProvider(predefs), new PropertyProvider[] {
+        Map<String,String> predefs = Collections.singletonMap("key3", "preval3");
+        eval = PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.fixedPropertyProvider(predefs),
             PropertyUtils.fixedPropertyProvider(defs1),
-            PropertyUtils.fixedPropertyProvider(defs2),
-        });
+            PropertyUtils.fixedPropertyProvider(defs2));
         vals = new String[] {
             "val1",
             "val2",
@@ -430,9 +433,9 @@ public class PropertyUtilsTest extends NbTestCase {
     }
     
     public void testSequentialEvaluatorChanges() throws Exception {
-        TestMutablePropertyProvider predefs = new TestMutablePropertyProvider(new HashMap());
-        TestMutablePropertyProvider defs1 = new TestMutablePropertyProvider(new HashMap());
-        TestMutablePropertyProvider defs2 = new TestMutablePropertyProvider(new HashMap());
+        TestMutablePropertyProvider predefs = new TestMutablePropertyProvider(new HashMap<String,String>());
+        TestMutablePropertyProvider defs1 = new TestMutablePropertyProvider(new HashMap<String,String>());
+        TestMutablePropertyProvider defs2 = new TestMutablePropertyProvider(new HashMap<String,String>());
         predefs.defs.put("x", "xval1");
         predefs.defs.put("y", "yval1");
         defs1.defs.put("a", "aval1");
@@ -441,13 +444,10 @@ public class PropertyUtilsTest extends NbTestCase {
         defs2.defs.put("m", "mval1");
         defs2.defs.put("n", "nval1=${x}:${b}");
         defs2.defs.put("o", "oval1=${z}");
-        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefs, new PropertyProvider[] {
-            defs1,
-            defs2,
-        });
+        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefs, defs1, defs2);
         AntBasedTestUtil.TestPCL l = new AntBasedTestUtil.TestPCL();
         eval.addPropertyChangeListener(l);
-        Map/*<String,String>*/ result = new HashMap();
+        Map<String,String> result = new HashMap<String,String>();
         result.put("x", "xval1");
         result.put("y", "yval1");
         result.put("a", "aval1");
@@ -457,15 +457,15 @@ public class PropertyUtilsTest extends NbTestCase {
         result.put("n", "nval1=xval1:bval1=xval1");
         result.put("o", "oval1=${z}");
         assertEquals("correct initial vals", result, eval.getProperties());
-        assertEquals("no changes yet", Collections.EMPTY_SET, l.changed);
+        assertEquals("no changes yet", Collections.emptySet(), l.changed);
         // Change predefs.
         predefs.defs.put("x", "xval2");
         predefs.mutated();
-        Map/*<String,String>*/ oldvals = new HashMap();
+        Map<String,String> oldvals = new HashMap<String,String>();
         oldvals.put("x", result.get("x"));
         oldvals.put("b", result.get("b"));
         oldvals.put("n", result.get("n"));
-        Map/*<String,String>*/ newvals = new HashMap();
+        Map<String,String> newvals = new HashMap<String,String>();
         newvals.put("x", "xval2");
         newvals.put("b", "bval1=xval2");
         newvals.put("n", "nval1=xval2:bval1=xval2");
@@ -540,19 +540,19 @@ public class PropertyUtilsTest extends NbTestCase {
         // #48449: too many String instances.
         // String constants used in the test are interned; make sure the results are the same.
         // Not necessary for the provider to intern strings, just to not copy them.
-        Map/*<String,String>*/ defs = new HashMap();
+        Map<String,String> defs = new HashMap<String,String>();
         defs.put("pre-a", "pre-a-val");
         defs.put("pre-b", "pre-b-val");
         PropertyProvider preprovider = PropertyUtils.fixedPropertyProvider(defs);
-        defs = new HashMap();
+        defs = new HashMap<String,String>();
         defs.put("main-1-a", "main-1-a-val");
         defs.put("main-1-b", "main-1-b-val+${pre-b}");
         PropertyProvider provider1 = PropertyUtils.fixedPropertyProvider(defs);
-        defs = new HashMap();
+        defs = new HashMap<String,String>();
         defs.put("main-2-a", "main-2-a-val");
         defs.put("main-2-b", "main-2-b-val+${main-1-b}");
         PropertyProvider provider2 = PropertyUtils.fixedPropertyProvider(defs);
-        PropertyEvaluator pp = PropertyUtils.sequentialPropertyEvaluator(preprovider, new PropertyProvider[] {provider1, provider2});
+        PropertyEvaluator pp = PropertyUtils.sequentialPropertyEvaluator(preprovider, provider1, provider2);
         defs = pp.getProperties();
         assertSame("uncopied pre-a", "pre-a-val", defs.get("pre-a"));
         assertSame("uncopied pre-b", "pre-b-val", defs.get("pre-b"));
@@ -564,16 +564,16 @@ public class PropertyUtilsTest extends NbTestCase {
     
     public void testDelegatingPropertyProvider() throws Exception {
         // Used only by ProjectProperties, not publically, but still worth testing.
-        TestMutablePropertyProvider mpp = new TestMutablePropertyProvider(new HashMap());
+        TestMutablePropertyProvider mpp = new TestMutablePropertyProvider(new HashMap<String,String>());
         DPP dpp = new DPP(mpp);
         AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
         dpp.addChangeListener(l);
-        assertEquals("initially empty", Collections.EMPTY_MAP, dpp.getProperties());
+        assertEquals("initially empty", Collections.emptyMap(), dpp.getProperties());
         mpp.defs.put("foo", "bar");
         mpp.mutated();
         assertTrue("got a change", l.expect());
         assertEquals("now right contents", Collections.singletonMap("foo", "bar"), dpp.getProperties());
-        TestMutablePropertyProvider mpp2 = new TestMutablePropertyProvider(new HashMap());
+        TestMutablePropertyProvider mpp2 = new TestMutablePropertyProvider(new HashMap<String,String>());
         mpp2.defs.put("foo", "bar2");
         dpp.setDelegate_(mpp2);
         assertTrue("got a change from new delegate", l.expect());
@@ -582,10 +582,10 @@ public class PropertyUtilsTest extends NbTestCase {
         mpp2.mutated();
         assertTrue("got a change in new delegate", l.expect());
         assertEquals("right contents", Collections.singletonMap("foo", "bar3"), dpp.getProperties());
-        Reference r = new WeakReference(mpp);
+        Reference<?> r = new WeakReference<Object>(mpp);
         mpp = null;
         assertGC("old delegates can be collected", r);
-        r = new WeakReference(dpp);
+        r = new WeakReference<Object>(dpp);
         dpp = null; // but not mpp2
         assertGC("delegating PP can be collected when delegate is not", r); // #50572
     }
@@ -600,22 +600,21 @@ public class PropertyUtilsTest extends NbTestCase {
     
     private static final class TestMutablePropertyProvider implements PropertyProvider {
         
-        public final Map/*<String,String>*/ defs;
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        public final Map<String,String> defs;
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         
-        public TestMutablePropertyProvider(Map/*<String,String>*/ defs) {
+        public TestMutablePropertyProvider(Map<String,String> defs) {
             this.defs = defs;
         }
         
         public void mutated() {
             ChangeEvent ev = new ChangeEvent(this);
-            Iterator it = listeners.iterator();
-            while (it.hasNext()) {
-                ((ChangeListener)it.next()).stateChanged(ev);
+            for (ChangeListener l : listeners) {
+                l.stateChanged(ev);
             }
         }
         
-        public Map getProperties() {
+        public Map<String,String> getProperties() {
             return defs;
         }
         

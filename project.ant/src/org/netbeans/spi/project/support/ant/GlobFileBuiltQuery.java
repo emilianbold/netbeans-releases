@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileBuiltQuery;
@@ -45,6 +47,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -64,8 +67,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     private final String[] fromSuffixes;
     private final String[] toPrefixes;
     private final String[] toSuffixes;
-    private static final Object NONE = "NONE"; // NOI18N
-    private final Map/*<FileObject,Reference<StatusImpl>|NONE>*/ statuses = new WeakHashMap();
+    private static final Reference<StatusImpl> NONE = new WeakReference<StatusImpl>(null);
+    private final Map<FileObject,Reference<StatusImpl>> statuses = new WeakHashMap<FileObject,Reference<StatusImpl>>();
 
     /**
      * Create a new query implementation based on an Ant-based project.
@@ -104,16 +107,15 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     }
     
     public synchronized FileBuiltQuery.Status getStatus(FileObject file) {
-        Object o = statuses.get(file);
-        if (o == NONE) {
+        Reference<StatusImpl> r = statuses.get(file);
+        if (r == NONE) {
             return null;
         }
-        Reference r = (Reference)o;
-        StatusImpl status = (r != null) ? (StatusImpl)r.get() : null;
+        StatusImpl status = (r != null) ? r.get() : null;
         if (status == null) {
             status = createStatus(file);
             if (status != null) {
-                statuses.put(file, new WeakReference(status));
+                statuses.put(file, new WeakReference<StatusImpl>(status));
             } else {
                 statuses.put(file, NONE);
             }
@@ -192,7 +194,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 
                 return new StatusImpl(source, file, target);
             } catch (DataObjectNotFoundException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(GlobFileBuiltQuery.class.getName()).log(Level.FINE, null, e);
                 return null;
             }   
         } else {
@@ -202,7 +204,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     
     private final class StatusImpl implements FileBuiltQuery.Status, PropertyChangeListener/*<DataObject>*/, FileChangeListener, FileChangeSupportListener, Runnable {
         
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         private Boolean built = null;
         private final DataObject source;
         private File target;
@@ -284,11 +286,11 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 if (listeners.isEmpty()) {
                     return;
                 }
-                _listeners = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
+                _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             ChangeEvent ev = new ChangeEvent(this);
-            for (int i = 0; i < _listeners.length; i++) {
-                _listeners[i].stateChanged(ev);
+            for (ChangeListener l : _listeners) {
+                l.stateChanged(ev);
             }
         }
         

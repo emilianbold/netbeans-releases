@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
@@ -65,7 +66,7 @@ final class ProjectProperties {
      * Keys are project-relative paths such as {@link #PROJECT_PROPERTIES_PATH}.
      * Values are loaded property providers.
      */
-    private final Map/*<String,PP>*/ properties = new HashMap();
+    private final Map<String,PP> properties = new HashMap<String,PP>();
     
     /** @see #getStockPropertyPreprovider */
     private PropertyProvider stockPropertyPreprovider = null;
@@ -124,7 +125,7 @@ final class ProjectProperties {
     }
     
     private PP getPP(String path) {
-        PP pp = (PP)properties.get(path);
+        PP pp = properties.get(path);
         if (pp == null) {
             pp = new PP(path, helper);
             properties.put(path, pp);
@@ -143,7 +144,7 @@ final class ProjectProperties {
         private final AntProjectHelper helper;
         private EditableProperties properties = null;
         private boolean loaded = false;
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         private boolean writing = false;
         
         public PP(String path, AntProjectHelper helper) {
@@ -288,12 +289,12 @@ final class ProjectProperties {
             return _lock[0];
         }
         
-        public Map getProperties() {
-            Map/*<String,String>*/ props = getEditablePropertiesOrNull();
+        public Map<String,String> getProperties() {
+            Map<String,String> props = getEditablePropertiesOrNull();
             if (props != null) {
                 return Collections.unmodifiableMap(props);
             } else {
-                return Collections.EMPTY_MAP;
+                return Collections.emptyMap();
             }
         }
         
@@ -311,13 +312,13 @@ final class ProjectProperties {
                 if (listeners.isEmpty()) {
                     return;
                 }
-                ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+                ls = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             final ChangeEvent ev = new ChangeEvent(this);
-            final Mutex.Action action = new Mutex.Action() {
-                public Object run() {
-                    for (int i = 0; i < ls.length; i++) {
-                        ls[i].stateChanged(ev);
+            final Mutex.Action<Void> action = new Mutex.Action<Void>() {
+                public Void run() {
+                    for (ChangeListener l : ls) {
+                        l.stateChanged(ev);
                     }
                     return null;
                 }
@@ -368,18 +369,17 @@ final class ProjectProperties {
      */
     public PropertyProvider getStockPropertyPreprovider() {
         if (stockPropertyPreprovider == null) {
-            Map/*<String,String>*/ m = new HashMap();
+            Map<String,String> m = new HashMap<String,String>();
             Properties p = System.getProperties();
             synchronized (p) {
-                Iterator it = p.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry entry = (Map.Entry) it.next();
-                    if (!(entry.getValue() instanceof String) || !(entry.getKey() instanceof String)) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING, "WARNING: removing non-String-valued system property " + entry.getKey() + "=" + entry.getValue() + " (cf. #45788)");
-                        it.remove();
+                for (Map.Entry<Object,Object> entry : p.entrySet()) {
+                    try {
+                        m.put((String) entry.getKey(), (String) entry.getValue());
+                    } catch (ClassCastException e) {
+                        Logger.getLogger(ProjectProperties.class.getName()).warning(
+                                "WARNING: removing non-String-valued system property " + entry.getKey() + "=" + entry.getValue() + " (cf. #45788)");
                     }
                 }
-                m.putAll(p);
             }
             m.put("basedir", FileUtil.toFile(helper.getProjectDirectory()).getAbsolutePath()); // NOI18N
             File antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N
@@ -399,19 +399,13 @@ final class ProjectProperties {
         if (standardPropertyEvaluator == null) {
             PropertyEvaluator findUserPropertiesFile = PropertyUtils.sequentialPropertyEvaluator(
                 getStockPropertyPreprovider(),
-                new PropertyProvider[] {
-                    getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-                }
-            );
+                getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
             PropertyProvider globalProperties = new UserPropertiesProvider(findUserPropertiesFile);
             standardPropertyEvaluator = PropertyUtils.sequentialPropertyEvaluator(
                 getStockPropertyPreprovider(),
-                new PropertyProvider[] {
-                    getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-                    globalProperties,
-                    getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
-                }
-            );
+                getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                globalProperties,
+                getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         }
         return standardPropertyEvaluator;
     }

@@ -141,9 +141,9 @@ public class ReferenceHelperTest extends NbTestCase {
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
         assertNotNull("found project in " + projdir, p);
-        h = (AntProjectHelper)p.getLookup().lookup(AntProjectHelper.class);
+        h = p.getLookup().lookup(AntProjectHelper.class);
         assertNotNull("found helper for " + p, h);
-        r = (ReferenceHelper)p.getLookup().lookup(ReferenceHelper.class);
+        r = p.getLookup().lookup(ReferenceHelper.class);
         assertNotNull("found ref helper for " + p, r);
         sisterprojdir = FileUtil.createFolder(scratch, "proj2");
         assertTrue("projdir and sisterprojdir collocated",
@@ -203,6 +203,7 @@ public class ReferenceHelperTest extends NbTestCase {
      * Check that the raw add, get, and remove calls work.
      * @throws Exception in case of unexpected failures
      */
+    @SuppressWarnings("deprecation")
     public void testRawReferenceManipulation() throws Exception {
         assertEquals("starting with no raw references", Collections.EMPTY_LIST, Arrays.asList(r.getRawReferences()));
         // Test simple adding of a reference.
@@ -376,6 +377,7 @@ public class ReferenceHelperTest extends NbTestCase {
      * Check that the adding and removing artifact objects updates everything it should.
      * @throws Exception in case of unexpected failures
      */
+    @SuppressWarnings("deprecation")
     public void testAddRemoveArtifact() throws Exception {
         // Add one artifact. Check that the raw reference is there.
         assertFalse("project not initially modified", pm.isModified(p));
@@ -556,6 +558,7 @@ public class ReferenceHelperTest extends NbTestCase {
         pm.saveProject(p);
     }
     
+    @SuppressWarnings("deprecation")
     public void testReferenceEscaping() throws Exception {
         // check that artifact reference is correctly escaped. All dot characters
         // in project name or artifact ID must be escaped, etc.
@@ -563,7 +566,7 @@ public class ReferenceHelperTest extends NbTestCase {
         AntProjectHelper proj4Helper = ProjectGenerator.createProject(proj4Folder, "test");
         setCodeNameOfTestProject(proj4Helper, "pro-ject.4");
         Project p = pm.findProject(projdir);
-        ReferenceHelper referenceHelperProj4 = (ReferenceHelper)p.getLookup().lookup(ReferenceHelper.class);
+        ReferenceHelper referenceHelperProj4 = p.getLookup().lookup(ReferenceHelper.class);
         AntArtifact art = proj4Helper.createSimpleAntArtifact("jar", "build.jar", proj4Helper.getStandardPropertyEvaluator(), "do.jar", "clean");
         String ref = referenceHelperProj4.addReference(art, art.getArtifactLocations()[0]);
         assertEquals("Project reference was not correctly escaped", "${reference.pro-ject_4.do_jar}", ref);
@@ -600,8 +603,9 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct script location", "${project.proj2}/build.xml", ref.getScriptLocationValue());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
-        assertEquals("correct property keys", new TreeSet(Arrays.asList(new String[]{"configuration", "empty"})), ref.getProperties().keySet());
-        assertEquals("correct property values", new TreeSet(Arrays.asList(new String[]{"debug", ""})), new TreeSet(ref.getProperties().values()));
+        assertEquals("correct property keys", new TreeSet<String>(Arrays.asList(new String[]{"configuration", "empty"})), ref.getProperties().keySet());
+        assertEquals("correct property values", new TreeSet<String>(Arrays.asList(new String[]{"debug", ""})),
+                new TreeSet<Object>(ref.getProperties().values()));
     }
 
     /**
@@ -616,9 +620,9 @@ public class ReferenceHelperTest extends NbTestCase {
         art = seph.createSimpleAntArtifact("jar", "build.jar", seph.getStandardPropertyEvaluator(), "dojar", "clean");
         assertNotNull("added a ref to proj3.dojar", r.addReference(art, art.getArtifactLocations()[0]));
         SubprojectProvider sp = r.createSubprojectProvider();
-        Set/*<Project>*/ subprojs = sp.getSubprojects();
+        Set<? extends Project> subprojs = sp.getSubprojects();
         assertEquals("two subprojects", 2, subprojs.size());
-        Project[] subprojsA = (Project[])subprojs.toArray(new Project[2]);
+        Project[] subprojsA = subprojs.toArray(new Project[2]);
         Project proj2, proj3;
         if (ProjectUtils.getInformation(subprojsA[0]).getName().equals("proj2")) {
             proj2 = subprojsA[0];
@@ -635,6 +639,7 @@ public class ReferenceHelperTest extends NbTestCase {
      * Check that methods to add foreign file references really work.
      * @throws Exception in case of unexpected failure
      */
+    @SuppressWarnings("deprecation")
     public void testForeignFileReferences() throws Exception {        
         // test collocated foreign project reference
         File f = new File(new File(FileUtil.toFile(sisterprojdir), "dist"), "proj2.jar");
@@ -861,13 +866,13 @@ public class ReferenceHelperTest extends NbTestCase {
                 return sisterh.resolveFile("build.xml");
             }
             public URI[] getArtifactLocations() {
-                List/*<URI>*/ locs = new ArrayList();
+                List<URI> locs = new ArrayList<URI>();
                 for (int i = 0; i < locations.length; i++) {
                     if (includeLocations[i]) {
                         locs.add(locations[i]);
                     }
                 }
-                return (URI[]) locs.toArray(new URI[locs.size()]);
+                return locs.toArray(new URI[locs.size()]);
             }
         }
         AntArtifact art = new MultiAntArtifact();
@@ -891,7 +896,7 @@ public class ReferenceHelperTest extends NbTestCase {
         }
         // Make sure proj2 actually reports our special provider:
         Project sisterproj = ProjectManager.getDefault().findProject(sisterprojdir);
-        ((AntBasedTestUtil.AntArtifactProviderMutable) sisterproj.getLookup().lookup(AntBasedTestUtil.AntArtifactProviderMutable.class)).
+        sisterproj.getLookup().lookup(AntBasedTestUtil.AntArtifactProviderMutable.class).
             setBuildArtifacts(new AntArtifact[] {art});
         // Now check findArtifactAndLocation usage.
         assertEquals("output1.jar found",
@@ -995,9 +1000,9 @@ public class ReferenceHelperTest extends NbTestCase {
 	
 	Project nue = pm.findProject(testProject);
 	assertNotNull("found project in " + testProject, nue);
-        AntProjectHelper h = (AntProjectHelper) nue.getLookup().lookup(AntProjectHelper.class);
+        AntProjectHelper h = nue.getLookup().lookup(AntProjectHelper.class);
         assertNotNull("found helper for " + nue, h);
-        ReferenceHelper r = (ReferenceHelper)nue.getLookup().lookup(ReferenceHelper.class);
+        ReferenceHelper r = nue.getLookup().lookup(ReferenceHelper.class);
         assertNotNull("found ref helper for " + p, r);
 	
 	r.fixReferences(FileUtil.toFile(originalProject));

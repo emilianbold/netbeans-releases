@@ -151,12 +151,12 @@ public class FileChangeSupportTest extends NbTestCase {
     
     private static final class L implements FileChangeSupportListener {
         
-        private final List/*<String>*/ events = new ArrayList();
+        private final List<String> events = new ArrayList<String>();
         
         public L() {}
         
-        public List/*<String>*/ check() {
-            List toret = new ArrayList(events);
+        public List<String> check() {
+            List<String> toret = new ArrayList<String>(events);
             events.clear();
             return toret;
         }

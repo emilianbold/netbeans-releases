@@ -78,8 +78,8 @@ public class ProjectGeneratorTest extends NbTestCase {
      */
     public void testCreateNewProject() throws Exception {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     // Create the new project.
                     AntProjectHelper h = ProjectGenerator.createProject(projdir, "test");
                     assertNotNull("Returned some project helper", h);

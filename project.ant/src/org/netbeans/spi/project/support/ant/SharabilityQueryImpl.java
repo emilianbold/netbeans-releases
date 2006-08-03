@@ -64,16 +64,16 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, Prop
     
     /** Compute a list of absolute paths based on some abstract names. */
     private String[] computeFrom(String[] list) {
-        List/*<String>*/ result = new ArrayList(list.length);
-        for (int i = 0; i < list.length; i++) {
-            String val = eval.evaluate(list[i]);
+        List<String> result = new ArrayList<String>(list.length);
+        for (String s : list) {
+            String val = eval.evaluate(s);
             if (val != null) {
                 File f = h.resolveFile(val);
                 result.add(f.getAbsolutePath());
             }
         }
         // XXX should remove overlaps somehow
-        return (String[])result.toArray(new String[result.size()]);
+        return result.toArray(new String[result.size()]);
     }
     
     public synchronized int getSharability(File file) {
@@ -95,11 +95,11 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, Prop
      * @return true if the file matches some item
      */
     private static boolean contains(String path, String[] list, boolean reverse) {
-        for (int i = 0; i < list.length; i++) {
-            if (path.equals(list[i])) {
+        for (String s : list) {
+            if (path.equals(s)) {
                 return true;
             } else {
-                if (reverse ? list[i].startsWith(path + File.separatorChar) : path.startsWith(list[i] + File.separatorChar)) {
+                if (reverse ? s.startsWith(path + File.separatorChar) : path.startsWith(s + File.separatorChar)) {
                     return true;
                 }
             }

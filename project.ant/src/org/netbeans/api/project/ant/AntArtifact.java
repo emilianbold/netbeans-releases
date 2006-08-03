@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -104,11 +105,12 @@ public abstract class AntArtifact {
      *         may be either relative, or an absolute <code>file</code>-protocol URI
      * @deprecated use {@link #getArtifactLocations} instead
      */
+    @Deprecated
     public URI getArtifactLocation() {
         return getArtifactLocations()[0];
     }
 
-    private static final Set/*<String>*/ warnedClasses = Collections.synchronizedSet(new HashSet());
+    private static final Set<String> warnedClasses = Collections.synchronizedSet(new HashSet<String>());
     /**
      * Get the locations of the build artifacts relative to the Ant script.
      * For example, <samp>dist/mylib.jar</samp>. The method is not defined 
@@ -143,6 +145,7 @@ public abstract class AntArtifact {
      * @return the artifact file on disk, or null if it could not be found
      * @deprecated use {@link #getArtifactFiles} instead
      */
+    @Deprecated
     public final FileObject getArtifactFile() {
         FileObject fos[] = getArtifactFiles();
         if (fos.length > 0) {
@@ -185,14 +188,14 @@ public abstract class AntArtifact {
      */
     public final FileObject[] getArtifactFiles() {
         URI artifactLocations[] = getArtifactLocations();
-        ArrayList l = new ArrayList();
+        List<FileObject> l = new ArrayList<FileObject>();
         for (int i=0; i<artifactLocations.length; i++) {
             FileObject fo = getArtifactFile(artifactLocations[i]);
             if (fo != null) {
                 l.add(fo);
             }
         }
-        return (FileObject[])l.toArray(new FileObject[l.size()]);
+        return l.toArray(new FileObject[l.size()]);
     }
     
     /**

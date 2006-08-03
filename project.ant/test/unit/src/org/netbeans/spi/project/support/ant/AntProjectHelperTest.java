@@ -96,7 +96,7 @@ public class AntProjectHelperTest extends NbTestCase {
         });
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
-        h = (AntProjectHelper)p.getLookup().lookup(AntProjectHelper.class);
+        h = p.getLookup().lookup(AntProjectHelper.class);
         l = new AntBasedTestUtil.TestListener();
     }
     
@@ -200,8 +200,8 @@ public class AntProjectHelperTest extends NbTestCase {
      */
     public void testStandardPropertyEvaluator() throws Exception {
         // Make sure any callbacks happen inside a lock, so changes are not posted asynch:
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws Exception {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
         PropertyEvaluator pev = h.getStandardPropertyEvaluator();
         assertEquals("shared.prop correct", "value1", pev.getProperty("shared.prop"));
         assertEquals("private.prop correct", "value2", pev.getProperty("private.prop"));
@@ -233,7 +233,7 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"global.prop", "global.prop.2"})), l.changed);
+        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"global.prop", "global.prop.2"})), l.changed);
         l.reset();
         assertEquals("global.prop is correct", "value5a", pev.getProperty("global.prop"));
         assertEquals("global.prop.2 is correct", "globalvalue2", pev.getProperty("global.prop.2"));
@@ -249,7 +249,7 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"shared.prop", "derived.prop"})), l.changed);
+        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"shared.prop", "derived.prop"})), l.changed);
         l.reset();
         assertEquals("shared.prop is correct", "value1a", pev.getProperty("shared.prop"));
         assertEquals("derived.prop correct", "value2:value1a:${undefined.prop}", pev.getProperty("derived.prop"));
@@ -265,13 +265,13 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"private.prop", "derived.prop"})), l.changed);
+        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"private.prop", "derived.prop"})), l.changed);
         l.reset();
         assertEquals("private.prop is correct", "value2a", pev.getProperty("private.prop"));
         assertEquals("derived.prop correct", "value2a:value1a:${undefined.prop}", pev.getProperty("derived.prop"));
         // Try deleting project.properties and make sure its values are cleared.
         projectProperties.delete();
-        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"shared.prop", "derived.prop"})), l.changed);
+        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"shared.prop", "derived.prop"})), l.changed);
         l.reset();
         assertEquals("shared.prop is gone", null, pev.getProperty("shared.prop"));
         assertEquals("derived.prop is gone", null, pev.getProperty("derived.prop"));
@@ -307,7 +307,7 @@ public class AntProjectHelperTest extends NbTestCase {
         p.store(os, null);
         os.close();
         lock.releaseLock();
-        assertEquals("two properties fired", new HashSet(Arrays.asList(new String[] {"user.properties.file", "global.prop"})), l.changed);
+        assertEquals("two properties fired", new HashSet<String>(Arrays.asList(new String[] {"user.properties.file", "global.prop"})), l.changed);
         l.reset();
         assertEquals("user.properties.file is correct", "../userdir/build2.properties", pev.getProperty("user.properties.file"));
         assertEquals("global.prop is correct", "value5b", pev.getProperty("global.prop"));
@@ -418,8 +418,8 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNotNull("project.properties still exists", props);
         assertEquals("project.properties now contains testprop", "testval", props.getProperty("testprop"));
         // #42147: changes made on disk should fire changes to AntProjectListener, not just to the PropertyEvaluator
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws Exception {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
                 TestUtil.createFileFromContent(null, h.getProjectDirectory(), AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 return null;
             }
@@ -483,8 +483,8 @@ public class AntProjectHelperTest extends NbTestCase {
         nue = Util.findElement(data, "misc", "urn:test:shared");
         assertNotNull("<misc/> now on disk", nue);
         // #42147: changes made on disk should result in firing of an AntProjectEvent
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws Exception {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
                 TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project-modified.xml"), projdir, AntProjectHelper.PROJECT_XML_PATH);
                 return null;
             }
@@ -498,7 +498,7 @@ public class AntProjectHelperTest extends NbTestCase {
         data = h.getPrimaryConfigurationData(true);
         Element stuff = Util.findElement(data, "other-shared-stuff", "urn:test:shared");
         assertNotNull("have <other-shared-stuff/> now", stuff);
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) p.getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
         data = aux.getConfigurationFragment("data", "urn:test:shared-aux", true);
         assertNotNull("have aux <data>", data);
         stuff = Util.findElement(data, "other-aux-shared-stuff", "urn:test:shared-aux");
@@ -514,9 +514,9 @@ public class AntProjectHelperTest extends NbTestCase {
      * @throws Exception if anything unexpected happens
      */
     public void testExtensibleMetadataProviderImpl() throws Exception {
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)p.getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
         assertNotNull("AuxiliaryConfiguration present", aux);
-        CacheDirectoryProvider cdp = (CacheDirectoryProvider)p.getLookup().lookup(CacheDirectoryProvider.class);
+        CacheDirectoryProvider cdp = p.getLookup().lookup(CacheDirectoryProvider.class);
         assertNotNull("CacheDirectoryProvider present", cdp);
         // Check cache dir.
         FileObject cache = cdp.getCacheDirectory();
@@ -660,7 +660,7 @@ public class AntProjectHelperTest extends NbTestCase {
     }
     
     public void test68872() throws Exception {
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)p.getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
         assertNotNull("AuxiliaryConfiguration present", aux);
 
         Element data = aux.getConfigurationFragment("data", "urn:test:private-aux", false);

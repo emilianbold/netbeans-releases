@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.ButtonModel;
 import javax.swing.JToggleButton;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -61,38 +62,38 @@ import org.openide.ErrorManager;
  */
 public class StoreGroup {
 
-    /** The object array serves as holder for various infos about models
-     * first is allways the model. The rest depends on the model type
-     * 1) Buttion model kind, inverted
+    /** The object array serves as holder for various information about models
+     * first is always the model. The rest depends on the model type
+     * 1) Button model kind, inverted
      * 2) String model (not used)
      */
-    private Map /*<String,Object[]|Document>*/ models;
-    private Set /*Document*/ modifiedDocuments;
+    private Map<String,Object[]> models;
+    private Set<Document> modifiedDocuments;
 
-    private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
-    private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
-    private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+    private static final int BOOLEAN_KIND_TF = 0;
+    private static final int BOOLEAN_KIND_YN = 1;
+    private static final int BOOLEAN_KIND_ED = 2;
     
     
     private DocumentListener documentListener = new DocumentListener () {
         
-        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+        public void insertUpdate(DocumentEvent e) {
             documentModified (e.getDocument());
         }
 
-        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+        public void removeUpdate(DocumentEvent e) {
             documentModified (e.getDocument());
         }
 
-        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+        public void changedUpdate(DocumentEvent e) {
             documentModified (e.getDocument());
         }
         
     };
 
     public StoreGroup() {
-        models = new HashMap();
-        modifiedDocuments = new HashSet ();
+        models = new HashMap<String,Object[]>();
+        modifiedDocuments = new HashSet<Document>();
     }
 
     // Public methods ------------------------------------------------------
@@ -103,10 +104,9 @@ public class StoreGroup {
      *        values.
      */
     public void store( EditableProperties editableProperties ) {
-
-        for( Iterator it = models.keySet().iterator(); it.hasNext(); ) {
-            String key = (String)it.next();
-            Object[] params = (Object[])models.get( key );
+        for (Map.Entry<String,Object[]> entry : models.entrySet()) {
+            String key = entry.getKey();
+            Object[] params = entry.getValue();
 
             if ( params[0] instanceof ButtonModel ) {
                 ButtonModel model = (ButtonModel)params[0];
@@ -131,9 +131,9 @@ public class StoreGroup {
 
     }
 
-    /** Creates toogle button model representing a boolean in the StoreGroup. <BR>
+    /** Creates toggle button model representing a boolean in the StoreGroup. <BR>
      * In case the value is one of "true", "yes" "on" the button model 
-     * will be "selcted". If the property does not exist or is set
+     * will be "selected". If the property does not exist or is set
      * to some other value the result of isPressed will be false.<BR>
      * Call to the store() method stores the model in appropriate form
      * e.g "true/false", "yes/no", "on/off".<BR>
@@ -235,7 +235,7 @@ public class StoreGroup {
 
         JToggleButton.ToggleButtonModel bm = new JToggleButton.ToggleButtonModel();
         bm.setSelected( invert ? !isSelected : isSelected );
-        models.put( propName, new Object[] { bm, kind, Boolean.valueOf( invert ) } );
+        models.put(propName, new Object[] {bm, kind, invert});
         return bm;
     }
 

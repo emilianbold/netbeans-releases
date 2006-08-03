@@ -38,7 +38,7 @@ public interface PropertyProvider {
      * The values might contain Ant-style property references.
      * @return all properties defined in this block
      */
-    Map/*<String,String>*/ getProperties();
+    Map<String,String> getProperties();
     
     /**
      * Add a change listener.

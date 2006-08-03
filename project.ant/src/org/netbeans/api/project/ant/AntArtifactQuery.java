@@ -70,7 +70,7 @@ public class AntArtifactQuery {
      *         or null if none such can be found
      */
     public static AntArtifact findArtifactByID(Project p, String id) {
-        AntArtifactProvider prov = (AntArtifactProvider)p.getLookup().lookup(AntArtifactProvider.class);
+        AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
         if (prov == null) {
             return null;
         }
@@ -92,18 +92,18 @@ public class AntArtifactQuery {
      *         (may be an empty list)
      */
     public static AntArtifact[] findArtifactsByType(Project p, String type) {
-        AntArtifactProvider prov = (AntArtifactProvider)p.getLookup().lookup(AntArtifactProvider.class);
+        AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
         if (prov == null) {
             return new AntArtifact[0];
         }
         AntArtifact[] artifacts = prov.getBuildArtifacts();
-        List/*<AntArtifact>*/ l = new ArrayList(artifacts.length);
-        for (int i = 0; i < artifacts.length; i++) {
-            if (artifacts[i].getType().equals(type)) {
-                l.add(artifacts[i]);
+        List<AntArtifact> l = new ArrayList<AntArtifact>(artifacts.length);
+        for (AntArtifact aa : artifacts) {
+            if (aa.getType().equals(type)) {
+                l.add(aa);
             }
         }
-        return (AntArtifact[])l.toArray(new AntArtifact[l.size()]);
+        return l.toArray(new AntArtifact[l.size()]);
     }
     
 }

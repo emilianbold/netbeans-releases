@@ -51,7 +51,7 @@ public final class FileChangeSupport {
     
     private FileChangeSupport() {}
     
-    private final Map/*<FileChangeSupportListener,Map<File,Holder>>*/ holders = new WeakHashMap();
+    private final Map<FileChangeSupportListener,Map<File,Holder>> holders = new WeakHashMap<FileChangeSupportListener,Map<File,Holder>>();
     
     /**
      * Add a listener to changes in a given path.
@@ -62,9 +62,9 @@ public final class FileChangeSupport {
      */
     public void addListener(FileChangeSupportListener listener, File path) {
         assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + " before passing to FCS!";
-        Map/*<File,Holder>*/ f2H = (Map) holders.get(listener);
+        Map<File,Holder> f2H = holders.get(listener);
         if (f2H == null) {
-            f2H = new HashMap();
+            f2H = new HashMap<File,Holder>();
             holders.put(listener, f2H);
         }
         if (f2H.containsKey(path)) {
@@ -78,7 +78,7 @@ public final class FileChangeSupport {
      */
     public void removeListener(FileChangeSupportListener listener, File path) {
         assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + " before passing to FCS!";
-        Map/*<File,Holder>*/ f2H = (Map) holders.get(listener);
+        Map<File,Holder> f2H = holders.get(listener);
         if (f2H == null) {
             throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
         }
@@ -88,7 +88,7 @@ public final class FileChangeSupport {
         f2H.remove(path);
     }
     
-    private static final class Holder extends WeakReference implements FileChangeListener, Runnable {
+    private static final class Holder extends WeakReference<FileChangeSupportListener> implements FileChangeListener, Runnable {
         
         private final File path;
         private FileObject current;
@@ -135,7 +135,7 @@ public final class FileChangeSupport {
                 if (current == null) {
                     return;
                 }
-                listener = (FileChangeSupportListener) get();
+                listener = get();
                 if (listener == null) {
                     return;
                 }

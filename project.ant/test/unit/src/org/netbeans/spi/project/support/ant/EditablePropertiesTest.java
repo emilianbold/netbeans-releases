@@ -45,7 +45,7 @@ public class EditablePropertiesTest extends NbTestCase {
     }
     
     public void testLoad() throws Exception {
-        HashMap content = new HashMap();
+        Map<String,String> content = new HashMap<String,String>();
         for (int i=1; i<=26; i++) {
             content.put("key"+i, "value"+i);
         }
@@ -352,33 +352,33 @@ public class EditablePropertiesTest extends NbTestCase {
     // test that iterator implementation is OK
     public void testIterator() throws Exception {
         EditableProperties ep = loadTestProperties();
-        Iterator it = ep.entrySet().iterator();
-        while (it.hasNext()) {
-            it.next();
+        Iterator<Map.Entry<String,String>> it1 = ep.entrySet().iterator();
+        while (it1.hasNext()) {
+            it1.next();
         }
-        it = ep.keySet().iterator();
-        while (it.hasNext()) {
-            it.next();
+        Iterator<String> it2 = ep.keySet().iterator();
+        while (it2.hasNext()) {
+            it2.next();
         }
-        it = ep.keySet().iterator();
-        while (it.hasNext()) {
-            it.next();
-            it.remove();
+        it2 = ep.keySet().iterator();
+        while (it2.hasNext()) {
+            it2.next();
+            it2.remove();
         }
         ep.put("a", "aval");
         ep.remove("a");
         ep = loadTestProperties();
-        it = ep.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
+        it1 = ep.entrySet().iterator();
+        while (it1.hasNext()) {
+            Map.Entry<String,String> entry = it1.next();
             assertNotNull("Property key cannot be null", entry.getKey());
             assertNotNull("Property value cannot be null", entry.getValue());
             entry.setValue(entry.getValue()+"-something-new");
         }
-        it = ep.entrySet().iterator();
-        while (it.hasNext()) {
-            it.next();
-            it.remove();
+        it1 = ep.entrySet().iterator();
+        while (it1.hasNext()) {
+            it1.next();
+            it1.remove();
         }
     }
     

@@ -81,8 +81,8 @@ public class ProjectGenerator {
     
     private static AntProjectHelper createProject0(final FileObject directory, final String type, final String name) throws IOException, IllegalArgumentException {
         try {
-            return (AntProjectHelper)ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<AntProjectHelper>() {
+                public AntProjectHelper run() throws IOException {
                     if (ProjectManager.getDefault().findProject(directory) != null) {
                         throw new IllegalArgumentException("Already a project in " + directory); // NOI18N
                     }

@@ -75,9 +75,9 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         getAntBasedProjectTypeMethod.setAccessible(true);
         
         Project p = ProjectManager.getDefault().findProject(projdir);
-        AntProjectHelper helper = (AntProjectHelper) p.getLookup().lookup(AntProjectHelper.class);
+        AntProjectHelper helper = p.getLookup().lookup(AntProjectHelper.class);
         
-        assertTrue(getAntBasedProjectTypeMethod.invoke(helper, null) == type2);
+        assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
         
         TestUtil.setLookup(Lookups.fixed(new Object[] {
             factory,
@@ -85,9 +85,9 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         }));
         
         p = ProjectManager.getDefault().findProject(projdir);
-        helper = (AntProjectHelper) p.getLookup().lookup(AntProjectHelper.class);
+        helper = p.getLookup().lookup(AntProjectHelper.class);
         
-        assertTrue(getAntBasedProjectTypeMethod.invoke(helper, null) == type1);
+        assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type1);
         
         TestUtil.setLookup(Lookups.fixed(new Object[] {
             factory,
@@ -95,9 +95,9 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         }));
         
         p = ProjectManager.getDefault().findProject(projdir);
-        helper = (AntProjectHelper) p.getLookup().lookup(AntProjectHelper.class);
+        helper = p.getLookup().lookup(AntProjectHelper.class);
         
-        assertTrue(getAntBasedProjectTypeMethod.invoke(helper, null) == type2);
+        assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
         
         TestUtil.setLookup(Lookups.fixed(new Object[] {
             factory,
@@ -111,7 +111,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
             type2,
         }));
         
-        assertTrue(getAntBasedProjectTypeMethod.invoke(helper, null) == type2);
+        assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
     }
     
 }

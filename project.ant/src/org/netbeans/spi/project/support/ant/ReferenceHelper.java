@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -50,6 +51,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -103,7 +105,7 @@ public final class ReferenceHelper {
     
     /** Set of property names which values can be used as additional base
      * directories. */
-    private Set/*<String>*/ extraBaseDirectories = new HashSet();
+    private Set<String> extraBaseDirectories = new HashSet<String>();
     
     private final AntProjectHelper h;
     final PropertyEvaluator eval;
@@ -175,6 +177,7 @@ public final class ReferenceHelper {
      *   to check whether reference exist or not use {@link #isReferenced(AntArtifact, URI)}.
      *   This method creates reference for the first artifact location only.
      */
+    @Deprecated
     public boolean addReference(final AntArtifact artifact) throws IllegalArgumentException {
         Object ret[] = addReference0(artifact, artifact.getArtifactLocations()[0]);
         return ((Boolean)ret[0]).booleanValue();
@@ -182,8 +185,8 @@ public final class ReferenceHelper {
 
     // @return array of two elements: [Boolean - any modification, String - reference]
     private Object[] addReference0(final AntArtifact artifact, final URI location) throws IllegalArgumentException {
-        return ((List)ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().writeAccess(new Mutex.Action<Object[]>() {
+            public Object[] run() {
                 int index = findLocationIndex(artifact, location);
                 Project forProj = artifact.getProject();
                 if (forProj == null) {
@@ -252,12 +255,9 @@ public final class ReferenceHelper {
                     h.putProperties(propertiesFile, props);
                     success = true;
                 }
-                ArrayList l = new ArrayList();
-                l.add(Boolean.valueOf(success));
-                l.add("${"+refPathProp+"}"); // NOI18N
-                return l;
+                return new Object[] {success, "${" + refPathProp + "}"}; // NOI18N
             }
-        })).toArray(new Object[2]);
+        });
     }
     
     private int findLocationIndex(final AntArtifact artifact, final URI location) throws IllegalArgumentException {
@@ -415,8 +415,8 @@ public final class ReferenceHelper {
      * @since 1.5
      */
     public boolean isReferenced(final AntArtifact artifact, final URI location) throws IllegalArgumentException {
-        return ((Boolean)ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 int index = findLocationIndex(artifact, location);
                 Project forProj = artifact.getProject();
                 if (forProj == null) {
@@ -427,11 +427,11 @@ public final class ReferenceHelper {
                 String projName = getUsableReferenceID(ProjectUtils.getInformation(forProj).getName());
                 String forProjName = findReferenceID(projName, "project.", forProjDir.getAbsolutePath());
                 if (forProjName == null) {
-                    return Boolean.FALSE;
+                    return false;
                 }
                 RawReference ref = getRawReference(forProjName, getUsableReferenceID(artifact.getID()));
                 if (ref == null) {
-                    return Boolean.FALSE;
+                    return false;
                 }
                 File script = h.resolveFile(eval.evaluate(ref.getScriptLocationValue()));
                 if (!artifact.getType().equals(ref.getArtifactType()) ||
@@ -440,16 +440,16 @@ public final class ReferenceHelper {
                         !artifact.getProperties().equals(ref.getProperties()) ||
                         !artifact.getTargetName().equals(ref.getTargetName()) ||
                         !artifact.getCleanTargetName().equals(ref.getCleanTargetName())) {
-                    return Boolean.FALSE;
+                    return false;
                 }
                 
                 String reference = "reference." + forProjName + '.' + getUsableReferenceID(artifact.getID()); // NOI18N
                 if (index > 0) {
                     reference += "."+index;
                 }
-                return Boolean.valueOf(eval.getProperty(reference) != null);
+                return eval.getProperty(reference) != null;
             }
-        })).booleanValue();
+        });
     }
     
     /**
@@ -472,16 +472,16 @@ public final class ReferenceHelper {
      *         false if it already existed and was not modified
      */
     public boolean addRawReference(final RawReference ref) {
-        return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 try {
-                    return Boolean.valueOf(addRawReference0(ref));
+                    return addRawReference0(ref);
                 } catch (IllegalArgumentException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    return Boolean.FALSE;
+                    return false;
                 }
             }
-        })).booleanValue();
+        });
     }
     
     private boolean addRawReference0(final RawReference ref) throws IllegalArgumentException {
@@ -517,10 +517,9 @@ public final class ReferenceHelper {
         // Linear search; always keeping references sorted first by foreign project
         // name, then by target name.
         Element nextRefEl = null;
-        List/*<Element>*/subEls = Util.findSubElements(references);
-        Iterator it = subEls.iterator();
+        Iterator<Element> it = Util.findSubElements(references).iterator();
         while (it.hasNext()) {
-            Element testRefEl = (Element)it.next();
+            Element testRefEl = it.next();
             RawReference testRef = RawReference.create(testRefEl);
             if (testRef.getForeignProjectName().compareTo(ref.getForeignProjectName()) > 0) {
                 // gone too far, go back
@@ -547,7 +546,7 @@ public final class ReferenceHelper {
                     // Delete the old ref and set nextRef to the next item in line.
                     references.removeChild(testRefEl);
                     if (it.hasNext()) {
-                        nextRefEl = (Element)it.next();
+                        nextRefEl = it.next();
                     } else {
                         nextRefEl = null;
                     }
@@ -580,6 +579,7 @@ public final class ReferenceHelper {
      *         false if the reference was not there and no property was removed
      * @deprecated use {@link #destroyReference} instead; was unused anyway
      */
+    @Deprecated
     public boolean removeReference(final String foreignProjectName, final String id) {
         return removeReference(foreignProjectName, id, false, null);
     }
@@ -611,8 +611,8 @@ public final class ReferenceHelper {
     }
     
     private boolean removeReference(final String foreignProjectName, final String id, final boolean escaped, final String reference) {
-        return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 boolean success = false;
                 try {
                     if (isLastReference("${"+reference+"}")) {
@@ -620,7 +620,7 @@ public final class ReferenceHelper {
                     }
                 } catch (IllegalArgumentException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    return Boolean.FALSE;
+                    return false;
                 }
                 // Note: try to delete obsoleted properties from both project.properties
                 // and private.properties, just in case.
@@ -663,22 +663,22 @@ public final class ReferenceHelper {
                 }
                 // remove also build script property if exist any:
                 String buildScriptProperty = "build.script.reference." + foreignProjectName;
-                for (int i = 0; i < PROPS_PATHS.length; i++) {
-                    EditableProperties props = h.getProperties(PROPS_PATHS[i]);
+                for (String path : PROPS_PATHS) {
+                    EditableProperties props = h.getProperties(path);
                     if (props.containsKey(refProp)) {
                         props.remove(refProp);
-                        h.putProperties(PROPS_PATHS[i], props);
+                        h.putProperties(path, props);
                         success = true;
                     }
                     if (props.containsKey(buildScriptProperty)) {
                         props.remove(buildScriptProperty);
-                        h.putProperties(PROPS_PATHS[i], props);
+                        h.putProperties(path, props);
                         success = true;
                     }
                 }
-                return Boolean.valueOf(success);
+                return success;
             }
-        })).booleanValue();
+        });
     }
     
     /**
@@ -692,13 +692,14 @@ public final class ReferenceHelper {
      * @return true if the reference was actually removed; otherwise false
      * @deprecated use {@link #destroyReference} instead; was unused anyway
      */
+    @Deprecated
     public boolean removeReference(final String fileReference) {
         return removeFileReference(fileReference);
     }
     
     private boolean removeFileReference(final String fileReference) {
-        return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 boolean success = false;
                 // Note: try to delete obsoleted properties from both project.properties
                 // and private.properties, just in case.
@@ -710,17 +711,17 @@ public final class ReferenceHelper {
                 if (refProp.startsWith("${") && refProp.endsWith("}")) {
                     refProp = refProp.substring(2, refProp.length()-1);
                 }
-                for (int i = 0; i < PROPS_PATHS.length; i++) {
-                    EditableProperties props = h.getProperties(PROPS_PATHS[i]);
+                for (String path : PROPS_PATHS) {
+                    EditableProperties props = h.getProperties(path);
                     if (props.containsKey(refProp)) {
                         props.remove(refProp);
-                        h.putProperties(PROPS_PATHS[i], props);
+                        h.putProperties(path, props);
                         success = true;
                     }
                 }
-                return Boolean.valueOf(success);
+                return success;
             }
-        })).booleanValue();
+        });
     }
     
     /**
@@ -737,16 +738,16 @@ public final class ReferenceHelper {
      * @return true if a reference was actually removed, false if it was not there
      */
     public boolean removeRawReference(final String foreignProjectName, final String id) {
-        return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
                 try {
-                    return Boolean.valueOf(removeRawReference0(foreignProjectName, id, false));
+                    return removeRawReference0(foreignProjectName, id, false);
                 } catch (IllegalArgumentException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    return Boolean.FALSE;
+                    return false;
                 }
             }
-        })).booleanValue();
+        });
     }
     
     private boolean removeRawReference0(final String foreignProjectName, final String id, boolean escaped) throws IllegalArgumentException {
@@ -763,10 +764,7 @@ public final class ReferenceHelper {
     
     private static boolean removeRawReferenceElement(String foreignProjectName, String id, Element references, boolean escaped) throws IllegalArgumentException {
         // As with addRawReference, do a linear search through.
-        List/*<Element>*/subEls = Util.findSubElements(references);
-        Iterator it = subEls.iterator();
-        while (it.hasNext()) {
-            Element testRefEl = (Element)it.next();
+        for (Element testRefEl : Util.findSubElements(references)) {
             RawReference testRef = RawReference.create(testRefEl);
             String refID = testRef.getID();
             String refName = testRef.getForeignProjectName();
@@ -803,8 +801,8 @@ public final class ReferenceHelper {
      * @return a (possibly empty) list of raw references from this project
      */
     public RawReference[] getRawReferences() {
-        return (RawReference[])ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<RawReference[]>() {
+            public RawReference[] run() {
                 Element references = loadReferences();
                 if (references != null) {
                     try {
@@ -819,13 +817,12 @@ public final class ReferenceHelper {
     }
     
     private static RawReference[] getRawReferences(Element references) throws IllegalArgumentException {
-        List/*<Element>*/subEls = Util.findSubElements(references);
-        List/*<RawReference>*/ refs = new ArrayList(subEls.size());
-        Iterator it = subEls.iterator();
-        while (it.hasNext()) {
-            refs.add(RawReference.create((Element)it.next()));
+        List<Element> subEls = Util.findSubElements(references);
+        List<RawReference> refs = new ArrayList<RawReference>(subEls.size());
+        for (Element subEl : subEls) {
+            refs.add(RawReference.create(subEl));
         }
-        return (RawReference[])refs.toArray(new RawReference[refs.size()]);
+        return refs.toArray(new RawReference[refs.size()]);
     }
     
     /**
@@ -846,8 +843,8 @@ public final class ReferenceHelper {
     
     // not private only to allow unit testing
     RawReference getRawReference(final String foreignProjectName, final String id, final boolean escaped) {
-        return (RawReference)ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<RawReference>() {
+            public RawReference run() {
                 Element references = loadReferences();
                 if (references != null) {
                     try {
@@ -862,10 +859,8 @@ public final class ReferenceHelper {
     }
     
     private static RawReference getRawReference(String foreignProjectName, String id, Element references, boolean escaped) throws IllegalArgumentException {
-        List/*<Element>*/subEls = Util.findSubElements(references);
-        Iterator it = subEls.iterator();
-        while (it.hasNext()) {
-            RawReference ref = RawReference.create((Element)it.next());
+        for (Element subEl : Util.findSubElements(references)) {
+            RawReference ref = RawReference.create(subEl);
             String refID = ref.getID();
             String refName = ref.getForeignProjectName();
             if (escaped) {
@@ -900,8 +895,8 @@ public final class ReferenceHelper {
             throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
                 "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
         }
-        return (String)ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().writeAccess(new Mutex.Action<String>() {
+            public String run() {
                 AntArtifact art = AntArtifactQuery.findArtifactFromFile(file);
                 if (art != null && art.getType().equals(expectedArtifactType) && art.getProject() != null) {
                     try {
@@ -940,9 +935,7 @@ public final class ReferenceHelper {
     private String relativizeFileToExtraBaseFolders(File f) {
         File base = FileUtil.toFile(h.getProjectDirectory());
         String fileToRelativize = f.getAbsolutePath();
-        Iterator it = extraBaseDirectories.iterator();
-        while (it.hasNext()) {
-            String prop = (String)it.next();
+        for (String prop : extraBaseDirectories) {
             String path = eval.getProperty(prop);
             File extraBase = PropertyUtils.resolveFile(base, path);
             path = extraBase.getAbsolutePath();
@@ -1012,10 +1005,10 @@ public final class ReferenceHelper {
                     EditableProperties propPriv = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     boolean modifiedProj = false;
                     boolean modifiedPriv = false;
-                    Iterator it = propProj.entrySet().iterator();
+                    Iterator<Map.Entry<String,String>> it = propProj.entrySet().iterator();
                     while (it.hasNext()) {
-                        Map.Entry entry = (Map.Entry)it.next();
-                        String val = (String)entry.getValue();
+                        Map.Entry<String,String> entry = it.next();
+                        String val = entry.getValue();
                         int index;
                         if ((index = val.indexOf(tag)) != -1) {
                             val = val.substring(0, index) +value + val.substring(index+tag.length());
@@ -1052,12 +1045,11 @@ public final class ReferenceHelper {
      * @return found reference ID or null
      */
     private String findReferenceID(String property, String prefix, String path) {
-        Map m = h.getStandardPropertyEvaluator().getProperties();
-        Iterator it = m.keySet().iterator();
-        while (it.hasNext()) {
-            String key = (String)it.next();
+        Map<String,String> m = h.getStandardPropertyEvaluator().getProperties();
+        for (Map.Entry<String,String> e : m.entrySet()) {
+            String key = e.getKey();
             if (key.startsWith(prefix+property)) {
-                String v = h.resolvePath((String)m.get(key));
+                String v = h.resolvePath(e.getValue());
                 if (path.equals(v)) {
                     return key.substring(prefix.length());
                 }
@@ -1098,6 +1090,7 @@ public final class ReferenceHelper {
      * @throws IllegalArgumentException if the artifact is not associated with a project
      * @deprecated use {@link #addReference(AntArtifact, URI)} instead
      */
+    @Deprecated
     public String createForeignFileReference(AntArtifact artifact) throws IllegalArgumentException {
         Object ret[] = addReference0(artifact, artifact.getArtifactLocations()[0]);
         return (String)ret[1];
@@ -1126,6 +1119,7 @@ public final class ReferenceHelper {
      * @return a corresponding Ant artifact object if there is one, else null
      * @deprecated use {@link #findArtifactAndLocation} instead
      */
+    @Deprecated
     public AntArtifact getForeignFileReferenceAsArtifact(final String reference) {
         Object ret[] = findArtifactAndLocation(reference);
         return (AntArtifact)ret[0];
@@ -1145,9 +1139,8 @@ public final class ReferenceHelper {
      * @since 1.5
      */
     public Object[] findArtifactAndLocation(final String reference) {
-        return ((List)ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
-                ArrayList l = new ArrayList();
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Object[]>() {
+            public Object[] run() {
                 AntArtifact aa = null;
                 Matcher m = FOREIGN_FILE_REFERENCE.matcher(reference);
                 boolean matches = m.matches();
@@ -1172,22 +1165,16 @@ public final class ReferenceHelper {
                     }
                 }
                 if (aa == null) {
-                    l.add(null);
-                    l.add(null);
-                    return l;
+                    return new Object[] {null, null};
                 }
                 if (index >= aa.getArtifactLocations().length) {
                     // #55413: we no longer have that many items...treat it as dead.
-                    l.add(null);
-                    l.add(null);
-                    return l;
+                    return new Object[] {null, null};
                 }
                 URI uri = aa.getArtifactLocations()[index];
-                l.add(aa);
-                l.add(uri);
-                return l;
+                return new Object[] {aa, uri};
             }
-        })).toArray(new Object[2]);
+        });
     }
     
     /**
@@ -1199,6 +1186,7 @@ public final class ReferenceHelper {
      * @deprecated use {@link #destroyReference} instead which does exactly 
      *   the same but has more appropriate name
      */
+    @Deprecated
     public void destroyForeignFileReference(String reference) {
         destroyReference(reference);
     }
@@ -1274,18 +1262,17 @@ public final class ReferenceHelper {
         
         File projectDir = FileUtil.toFile(h.getProjectDirectory());
         
-        List pubRemove = new ArrayList();
-        List privRemove = new ArrayList();
-        Map pubAdd = new HashMap();
-        Map privAdd = new HashMap();
+        List<String> pubRemove = new ArrayList<String>();
+        List<String> privRemove = new ArrayList<String>();
+        Map<String,String> pubAdd = new HashMap<String,String>();
+        Map<String,String> privAdd = new HashMap<String,String>();
         
-        for (Iterator i = pub.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry e    = (Map.Entry) i.next();
-            String    key  = (String) e.getKey();
+        for (Map.Entry<String,String> e : pub.entrySet()) {
+            String    key  = e.getKey();
             boolean   cont = false;
             
-            for (int cntr = 0; cntr < prefixesToFix.length; cntr++) {
-                if (key.startsWith(prefixesToFix[cntr])) {
+            for (String prefix : prefixesToFix) {
+                if (key.startsWith(prefix)) {
                     cont = true;
                     break;
                 }
@@ -1293,7 +1280,7 @@ public final class ReferenceHelper {
             if (!cont)
                 continue;
             
-            String    value = (String) e.getValue();
+            String    value = e.getValue();
             
             File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
             
@@ -1304,13 +1291,12 @@ public final class ReferenceHelper {
             }
         }
         
-        for (Iterator i = priv.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry e    = (Map.Entry) i.next();
-            String    key  = (String) e.getKey();
+        for (Map.Entry<String,String> e : pub.entrySet()) {
+            String    key  = e.getKey();
             boolean   cont = false;
             
-            for (int cntr = 0; cntr < prefixesToFix.length; cntr++) {
-                if (key.startsWith(prefixesToFix[cntr])) {
+            for (String prefix : prefixesToFix) {
+                if (key.startsWith(prefix)) {
                     cont = true;
                     break;
                 }
@@ -1318,7 +1304,7 @@ public final class ReferenceHelper {
             if (!cont)
                 continue;
             
-            String    value = (String) e.getValue();
+            String    value = e.getValue();
             
             File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
             
@@ -1338,12 +1324,12 @@ public final class ReferenceHelper {
             }
         }
         
-        for (Iterator i = pubRemove.iterator(); i.hasNext(); ) {
-            pub.remove(i.next());
+        for (String s : pubRemove) {
+            pub.remove(s);
         }
         
-        for (Iterator i = privRemove.iterator(); i.hasNext(); ) {
-            priv.remove(i.next());
+        for (String s : privRemove) {
+            priv.remove(s);
         }
         
         pub.putAll(pubAdd);
@@ -1509,11 +1495,9 @@ public final class ReferenceHelper {
                 if (!"properties".equals(el.getLocalName())) { // NOI18N
                     throw new IllegalArgumentException("bad subelement. expected 'properties': " + el); // NOI18N
                 }
-                Iterator it = Util.findSubElements(el).iterator();
-                while (it.hasNext()) {
-                    el = (Element)it.next();
-                    String key = el.getAttribute("name");
-                    String value = Util.findText(el);
+                for (Element el2 : Util.findSubElements(el)) {
+                    String key = el2.getAttribute("name");
+                    String value = Util.findText(el2);
                     // #53553: NPE
                     if (value == null) {
                         value = ""; // NOI18N
@@ -1547,11 +1531,7 @@ public final class ReferenceHelper {
                 assert namespace.equals(REFS_NS2) : "can happen only in /2"; // NOI18N
                 Element propEls = ownerDocument.createElementNS(namespace, "properties"); // NOI18N
                 el.appendChild(propEls);
-                List keys = new ArrayList(props.keySet());
-                Collections.sort(keys);
-                Iterator it = keys.iterator();
-                while (it.hasNext()) {
-                    String key = (String)it.next();
+                for (String key : new TreeSet<String>(NbCollections.checkedSetByFilter(props.keySet(), String.class, true))) {
                     Element propEl = ownerDocument.createElementNS(namespace, "property"); // NOI18N
                     propEl.appendChild(ownerDocument.createTextNode(props.getProperty(key)));
                     propEl.setAttribute("name", key); // NOI18N
@@ -1597,6 +1577,7 @@ public final class ReferenceHelper {
          * @return the script location
          * @deprecated use {@link #getScriptLocationValue} instead; may return null now
          */
+        @Deprecated
         public URI getScriptLocation() {
             return scriptLocation;
         }
@@ -1661,8 +1642,8 @@ public final class ReferenceHelper {
          * @return the actual Ant artifact object, or null if it could not be located
          */
         public AntArtifact toAntArtifact(final ReferenceHelper helper) {
-            return (AntArtifact)ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<AntArtifact>() {
+                public AntArtifact run() {
                     AntProjectHelper h = helper.h;
                     String path = helper.eval.getProperty("project." + foreignProjectName); // NOI18N
                     if (path == null) {
