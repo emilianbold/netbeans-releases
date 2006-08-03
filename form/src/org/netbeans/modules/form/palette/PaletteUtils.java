@@ -508,6 +508,9 @@ public final class PaletteUtils {
         boolean isValidItem(PaletteItem item) {
             if (classPath == null)
                 return true;
+            
+            if (item == null) // Issue 81506
+                return false;
 
             if (item.getComponentClassSource().getCPRootCount() > 0
                 || "chooseBean".equals(item.getExplicitComponentType()) // NOI18N
