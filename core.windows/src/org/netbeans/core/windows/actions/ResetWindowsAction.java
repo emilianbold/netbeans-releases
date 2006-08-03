@@ -1,0 +1,97 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.core.windows.actions;
+
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
+import org.netbeans.core.NbTopManager;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.persistence.PersistenceManager;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
+
+/**
+ * Resets the window system to its default state.
+ *
+ * @author S. Aubrecht
+ */
+public class ResetWindowsAction extends AbstractAction {
+    
+    /** Creates a new instance of ResetWindowsAction */
+    public ResetWindowsAction() {
+        putValue(NAME, NbBundle.getMessage(CloneDocumentAction.class, "CTL_ResetWindows" ) ); // NOI18N
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        final NbTopManager.WindowSystem ws = (NbTopManager.WindowSystem)Lookup.getDefault().lookup( NbTopManager.WindowSystem.class );
+        if( null == ws ) {
+            //unsupported window system implementation
+            //TODO log a warning
+            return;
+        }
+        
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        //get a list of editor windows that should stay open even after the reset
+        final TopComponent[] editors = wm.getEditorTopComponents();
+        
+        //hide the main window to hide some window operations before the actual reset is performed
+        wm.getMainWindow().setVisible( false );
+        
+        //find an editor window that will be activated after the reset (may be null)
+        final TopComponent activeEditor = wm.getArbitrarySelectedEditorTopComponent();
+        //make sure that componentHidden() gets called on all opened and selected editors
+        //so that they can reset their respective states and/or release some listeners
+        wm.deselectEditorTopComponents();
+        //close all other windows just in case they hold some references to editor windows
+        wm.closeNonEditorViews();
+        
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                //find the local folder that must be deleted
+                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+                FileObject rootFolder = fs.getRoot().getFileObject( PersistenceManager.ROOT_LOCAL_FOLDER );
+                if( null != rootFolder ) {
+                    try {
+                        rootFolder.delete();
+                    } catch( IOException ioE ) {
+                        ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+                    }
+                }
+                
+                //reset the window system
+                ws.clear();
+
+                //re-open editor windows that were opened before the reset
+                for( int i=0; i<editors.length; i++ ) {
+                    editors[i].open();
+                }
+                //activate some editor window
+                if( null != activeEditor ) {
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            activeEditor.requestActive();
+                        }
+                    });
+                }
+            }
+        });
+    }
+}

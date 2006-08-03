@@ -96,7 +96,8 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener, M
      * Right place to detach, remove listeners from data context.
      */
     public void panelDeactivated () {
-        curContext.removeLookupListener(this);
+        if( null != curContext )
+            curContext.removeLookupListener(this);
         curContext = null;
         detachFromModel(curModel);
         curModel = null;
@@ -212,8 +213,10 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener, M
     }
     
     private void detachFromModel (ClassMemberModel model) {
-        model.removeBusyListener(this);
-        model.removeNotify();
+        if( null != model ) {
+            model.removeBusyListener(this);
+            model.removeNotify();
+        }
     }
     
     private ClassMemberPanelUI getPanelUI () {

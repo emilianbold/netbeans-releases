@@ -1141,5 +1141,87 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
 
+    /**
+     * @return An array of TopComponents that are opened in editor modes (i.e. editor windows).
+     */
+    public TopComponent[] getEditorTopComponents() {
+        Set editors = new HashSet();
+        Set modes = getModes();
+        for( Iterator i=modes.iterator(); i.hasNext(); ) {
+            Mode mode = (Mode)i.next();
+            ModeImpl modeImpl = findModeImpl( mode.getName() );
+            if( modeImpl.getKind() == Constants.MODE_KIND_EDITOR ) {
+                editors.addAll( modeImpl.getOpenedTopComponents() );
+            }
+        }
+        return (TopComponent[])editors.toArray( new TopComponent[editors.size()] );
+    }
+
+    /**
+     * @return TopComponent that is selected in an arbitrary editor-type mode
+     * or null if editor mode(s) is empty.
+     */
+    public TopComponent getArbitrarySelectedEditorTopComponent() {
+        Set modes = getModes();
+        for( Iterator i=modes.iterator(); i.hasNext(); ) {
+            Mode mode = (Mode)i.next();
+            ModeImpl modeImpl = findModeImpl( mode.getName() );
+            if( modeImpl.getKind() == Constants.MODE_KIND_EDITOR ) {
+                return mode.getSelectedTopComponent();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Send componentHidden() event to all selected TopComponents in editor modes.
+     */
+    public void deselectEditorTopComponents() {
+        Set modes = getModes();
+        for( Iterator i=modes.iterator(); i.hasNext(); ) {
+            Mode mode = (Mode)i.next();
+            ModeImpl modeImpl = findModeImpl( mode.getName() );
+            if( modeImpl.getKind() == Constants.MODE_KIND_EDITOR ) {
+                //not a pretty hack - add an empty TopComponent into the mode
+                //and make it the selected one so that componentHidden() gets called
+                //on the previously selected TopComponent
+                TopComponent dummy = new DummyTopComponent();
+                modeImpl.addOpenedTopComponent( dummy );
+                modeImpl.setSelectedTopComponent( dummy );
+            }
+        }
+    }
+
+    /**
+     * Calls close() on all TopComponents that are opened in noneditor-type modes.
+     *
+     */
+    public void closeNonEditorViews() {
+        Set modes = getModes();
+        for( Iterator i=modes.iterator(); i.hasNext(); ) {
+            Mode mode = (Mode)i.next();
+            ModeImpl modeImpl = findModeImpl( mode.getName() );
+            if( null != modeImpl && modeImpl.getKind() != Constants.MODE_KIND_EDITOR ) {
+                java.util.List tcs = modeImpl.getOpenedTopComponents();
+                for( Iterator j=tcs.iterator(); j.hasNext(); ) {
+                    TopComponent tc = (TopComponent)j.next();
+                    tc.close();
+                }
+            }
+        }
+    }
+    
+    /**
+     * An empty TopComponent needed for deselectEditorTopComponents()
+     */
+    private static class DummyTopComponent extends TopComponent {
+        protected String preferredID() {
+            return "temp";
+        }
+
+        public int getPersistenceType() {
+            return PERSISTENCE_NEVER;
+        }
+    }
 }
 

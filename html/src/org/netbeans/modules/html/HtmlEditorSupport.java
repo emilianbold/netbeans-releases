@@ -292,7 +292,8 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                     PaletteController pc = HTMLPaletteFactory.getPalette();
 //                    associateLookup(Lookups.fixed(new Object[] { pc }));
                     Lookup pcl = Lookups.singleton(pc);
-                    Lookup anl = getActivatedNodes()[0].getLookup();
+                    Node nodes[] = {((DataEditorSupport)cloneableEditorSupport()).getDataObject().getNodeDelegate()};
+                    Lookup anl = nodes[0].getLookup();
                     Lookup actionMap = Lookups.singleton(getActionMap());
                     ProxyLookup l = new ProxyLookup(new Lookup[] { anl, actionMap, pcl });
                     associateLookup(l);
@@ -312,8 +313,8 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
         private void initialize() {
             Node nodes[] = {((DataEditorSupport)cloneableEditorSupport()).getDataObject().getNodeDelegate()};
-            setActivatedNodes(nodes);
             associatePalette((HtmlEditorSupport)cloneableEditorSupport());
+            setActivatedNodes(nodes);
         }
         
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

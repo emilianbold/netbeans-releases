@@ -81,7 +81,7 @@ public final class PersistenceManager implements PropertyChangeListener {
 
     /** Constants for default root folder name for winsys data representation */
     static final String ROOT_MODULE_FOLDER = "Windows2"; // NOI18N
-    static final String ROOT_LOCAL_FOLDER = "Windows2Local"; // NOI18N
+    public static final String ROOT_LOCAL_FOLDER = "Windows2Local"; // NOI18N
     static final String WINDOWMANAGER_FOLDER = "WindowManager"; // NOI18N
     static final String GROUPS_FOLDER = "Groups"; // NOI18N
     static final String MODES_FOLDER = "Modes"; // NOI18N
