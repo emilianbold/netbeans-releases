@@ -260,7 +260,7 @@ final class ViewHierarchy {
                     mv = new ModeView(controller, windowDnDManager, ma.getResizeWeight(), ma.getKind(), 
                             ma.getOpenedTopComponents(), ma.getSelectedTopComponent());
                 } else {
-                    mv = new ModeView(controller, windowDnDManager, ma.getBounds(), ma.getFrameState(),
+                    mv = new ModeView(controller, windowDnDManager, ma.getBounds(), ma.getKind(), ma.getFrameState(), 
                             ma.getOpenedTopComponents(), ma.getSelectedTopComponent());
                 }
                 accessor2view.put(patternAccessor, mv);
@@ -295,15 +295,14 @@ final class ViewHierarchy {
         separateModeViews.clear();
         separateModeViews.putAll(newViews);
         
-        // PENDING Close all old views.
+        // Close all old views.
         for(Iterator it = oldViews.iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
             Component comp = mv.getComponent();
             if(comp.isVisible()) {
                 comp.setVisible(false);
             }
-//            // PENDING
-//            ((java.awt.Window)mv.getComponent()).dispose();
+            ((Window) comp).dispose();
         }
         
         // Open all new views.

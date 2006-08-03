@@ -132,7 +132,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
             return true;
 
         Window w = SwingUtilities.windowForComponent(ev.getComponent());        
-        if (w instanceof Dialog)
+        if (w instanceof Dialog && !WindowManagerImpl.isSeparateWindow(w))
             return false;
         
         JFrame mw = (JFrame)WindowManagerImpl.getInstance().getMainWindow();
@@ -190,8 +190,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
             ) {
             Object source = ev.getSource();
             if (source instanceof Component) {
-                Window w = SwingUtilities.windowForComponent((Component)source);
-                Component focused = SwingUtilities.findFocusOwner(w);
+                Component focused = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
                 System.err.println("*** ShortcutAndMenuKeyEventProcessor: current focus owner = " + focused); // NOI18N
             }
             ev.consume();
@@ -283,8 +282,11 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
             return true;
         
         // don't let action keystrokes to propagate from both
-        // modal and nonmodal dialogs
-        if ((w instanceof Dialog) && !isTransmodalAction(ks)) {
+        // modal and nonmodal dialogs, but propagate from separate floating windows,
+        // even if they are backed by JDialog
+        if ((w instanceof Dialog) &&
+            !WindowManagerImpl.getInstance().isSeparateWindow(w) &&
+            !isTransmodalAction(ks)) {
             return false;
         }
         
@@ -342,4 +344,5 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         Object val = a.getValue ("OpenIDE-Transmodal-Action"); // NOI18N
         return val != null && val.equals (Boolean.TRUE);
     }
+
 }

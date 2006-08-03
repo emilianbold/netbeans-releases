@@ -969,6 +969,8 @@ final class DefaultModel implements Model {
         }
         
         setModeSelectedTopComponent(mode, tc);
+
+
     }
     
     public void setMainWindowBoundsUserSeparatedHelp(Rectangle bounds) {

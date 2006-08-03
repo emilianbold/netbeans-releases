@@ -61,13 +61,13 @@ public class ModeView extends ViewElement {
     }
     
     // Separate mode view constructor
-    public ModeView(Controller controller, WindowDnDManager windowDnDManager, Rectangle bounds, int frameState,
+    public ModeView(Controller controller, WindowDnDManager windowDnDManager, Rectangle bounds, int kind, int frameState,
     TopComponent[] topComponents, TopComponent selectedTopComponent) {
         super(controller, 0D);
         
         this.frameState = frameState;
         
-        container = new DefaultSeparateContainer(this, windowDnDManager, bounds);
+        container = new DefaultSeparateContainer(this, windowDnDManager, bounds, kind);
         
         setTopComponents(topComponents, selectedTopComponent);
     }

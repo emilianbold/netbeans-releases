@@ -58,12 +58,6 @@ public final class ModeImpl implements Mode {
     
     /** Factory method which creates <code>ModeImpl</code> instances. */
     public static ModeImpl createModeImpl(String name, int state, int kind, boolean permanent) {
-        // PENDING Validate values.
-        if(state == Constants.MODE_STATE_SEPARATED
-        && kind == Constants.MODE_KIND_EDITOR) {
-            // PENDING Repairing. Editor can be only in split now.
-            state = Constants.MODE_STATE_JOINED;
-        }
         return new ModeImpl(name, state, kind, permanent);
     }
     

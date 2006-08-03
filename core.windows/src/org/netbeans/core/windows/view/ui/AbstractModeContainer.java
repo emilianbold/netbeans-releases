@@ -52,15 +52,11 @@ public abstract class AbstractModeContainer implements ModeContainer {
     
     // PENDING
     protected final WindowDnDManager windowDnDManager;
-    // XXX
+    
+    // kind of mode, editor or view
     private final int kind;
     
 
-    /** Creates a DefaultSeparateContainer. */
-    public AbstractModeContainer(ModeView modeView, WindowDnDManager windowDnDManager) {
-        this(modeView, windowDnDManager, Constants.MODE_KIND_VIEW);
-    }
-    
     public AbstractModeContainer(ModeView modeView, WindowDnDManager windowDnDManager, int kind) {
         this.modeView = modeView;
         this.windowDnDManager = windowDnDManager;
@@ -134,42 +130,49 @@ public abstract class AbstractModeContainer implements ModeContainer {
     public void focusSelectedTopComponent() {
         // PENDING focus gets main window sometimes, investgate and refine (jdk1.4.1?).
         final TopComponent selectedTopComponent = tabbedHandler.getSelectedTopComponent();
-        if(selectedTopComponent != null) {
-            if (WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED) {
-                selectedTopComponent.requestFocus();
-                
+
+        if (selectedTopComponent == null) {
+            return;
+        }
+
+        Window oldFocusedW = FocusManager.getCurrentManager().getFocusedWindow();
+        Window newFocusedW = SwingUtilities.getWindowAncestor(selectedTopComponent);
+        
+        if (newFocusedW != null && newFocusedW.equals(oldFocusedW)) {
+            // focus transfer inside one window, so requestFocusInWindow call is enough
+            if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+                selectedTopComponent.requestFocusInWindow();
             } else {
                 //#60235 - on macosx 1.5 there seems to be a bug with requesting focus.
                 // this piece of code seems to workaround most of the usecases in 60235
-                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            //#62947 another workaround for macosx 1.5 focus behaviour.
-                            // when maximizing the mode, the old and new focused component is the same, but removed from
-                            // awt hierarchy and added elsewhere.
-                            // the DefautlkeyboardFocusmanager doen't do it's job then and locks the keyboard.
-                            // hack it by make it believe the focus changed.
-                            try {
-                                Field fld = KeyboardFocusManager.class.getDeclaredField("focusOwner");//NOI8N
-                                fld.setAccessible(true);
-                                fld.set(KeyboardFocusManager.getCurrentKeyboardFocusManager(), null);
-                            } catch (IllegalArgumentException ex) {
-                                ex.printStackTrace();
-                            } catch (SecurityException ex) {
-                                ex.printStackTrace();
-                            } catch (NoSuchFieldException ex) {
-                                ex.printStackTrace();
-                            } catch (IllegalAccessException ex) {
-                                ex.printStackTrace();
-                            }
-                            //#62947 hack finished.
-                            selectedTopComponent.requestFocusInWindow();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        //#62947 another workaround for macosx 1.5 focus behaviour.
+                        // when maximizing the mode, the old and new focused component is the same, but removed from
+                        // awt hierarchy and added elsewhere.
+                        // the DefautlkeyboardFocusmanager doen't do it's job then and locks the keyboard.
+                        // hack it by make it believe the focus changed.
+                        try {
+                            Field fld = KeyboardFocusManager.class.getDeclaredField("focusOwner");//NOI8N
+                            fld.setAccessible(true);
+                            fld.set(KeyboardFocusManager.getCurrentKeyboardFocusManager(), null);
+                        } catch (IllegalArgumentException ex) {
+                            ex.printStackTrace();
+                        } catch (SecurityException ex) {
+                            ex.printStackTrace();
+                        } catch (NoSuchFieldException ex) {
+                            ex.printStackTrace();
+                        } catch (IllegalAccessException ex) {
+                            ex.printStackTrace();
                         }
-                    });
-                } else {
-                    selectedTopComponent.requestFocusInWindow();
-                }
+                        //#62947 hack finished.
+                        selectedTopComponent.requestFocusInWindow();
+                    }
+                });
             }
+        } else {
+            // focus transfer between different windows
+            selectedTopComponent.requestFocus();
         }
     }
 

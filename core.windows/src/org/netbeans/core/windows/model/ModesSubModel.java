@@ -113,7 +113,8 @@ final class ModesSubModel {
         }
 
         boolean result;
-        if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
+        if(mode.getKind() == Constants.MODE_KIND_EDITOR &&
+           mode.getState() == Constants.MODE_STATE_JOINED) {
             result = editorSplitSubModel.getEditorArea().addMode(mode, constraints);
         } else {
             result = editorSplitSubModel.addMode(mode, constraints);
@@ -268,11 +269,6 @@ final class ModesSubModel {
     public Set createSeparateModeSnapshots() {
         Set s = new HashSet();
         
-        // In joined mode no separate modes are allowed.
-        if(parentModel.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            return s;
-        }
-        
         s.addAll(editorSplitSubModel.createSeparateSnapshots());
         
         return s;
@@ -306,10 +302,8 @@ final class ModesSubModel {
         }
     }
     
-    
     // Controller updates <<
     ///////////////////////////////
-    
-    
+
 }
 

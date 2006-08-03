@@ -277,7 +277,7 @@ final class PersistenceHandler implements PersistenceObserver {
             mode = WindowManagerImpl.getInstance().createSlidingMode(mc.name, mc.permanent, mc.side);
         } else {
              mode = WindowManagerImpl.getInstance().createMode(
-                mc.name, mc.kind, mc.permanent, mc.constraints);
+                mc.name, mc.kind, mc.state, mc.permanent, mc.constraints);
         }
         name2mode.put(mc.name, mode);
         

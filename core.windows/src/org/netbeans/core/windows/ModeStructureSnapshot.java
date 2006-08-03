@@ -328,8 +328,7 @@ public class ModeStructureSnapshot {
                 return false;
             }
 
-            if(getKind() == Constants.MODE_KIND_VIEW
-            && getState() == Constants.MODE_STATE_SEPARATED) {
+            if(getState() == Constants.MODE_STATE_SEPARATED) {
                 return false;
             }
 
@@ -341,8 +340,7 @@ public class ModeStructureSnapshot {
                 return false;
             }
             
-            if(getKind() == Constants.MODE_KIND_EDITOR
-            || getState() == Constants.MODE_STATE_JOINED) {
+            if(getState() == Constants.MODE_STATE_JOINED) {
                 return false;
             }
             

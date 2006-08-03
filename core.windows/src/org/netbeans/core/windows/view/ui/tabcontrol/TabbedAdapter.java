@@ -441,10 +441,10 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         if (TabbedContainer.TYPE_EDITOR == getType()) {
             return defaultActions;
         }
-        boolean isMDI = isMDI();
-        Action[] result = new Action[defaultActions.length + (isMDI ? 1 : 0)];
+        boolean isDocked = WindowManagerImpl.getInstance().isDocked(getTopComponentAt(tabIndex));
+        Action[] result = new Action[defaultActions.length + (isDocked ? 1 : 0)];
         System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
-        if (isMDI) {
+        if (isDocked) {
             result[defaultActions.length] = 
                 new ActionUtils.AutoHideWindowAction(this, tabIndex, false);
         }
@@ -466,19 +466,19 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     public Rectangle getTabBounds(int tabIndex) {
         return getTabRect(tabIndex, new Rectangle());
     }
-    
-    private static boolean isMDI() {
-        return WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
-    }
+
     /********* implementation of LocationInformer ********/
     
     static class LocInfo implements LocationInformer {
     
         public Object getOrientation(Component comp) {
-            if (! isMDI()) {
+            WindowManagerImpl wmi = WindowManagerImpl.getInstance();
+            // don't show pin button in separate views
+            if (!wmi.isDocked((TopComponent)comp)) {
                 return TabDisplayer.ORIENTATION_INVISIBLE;
             }
-            String side = WindowManagerImpl.getInstance().guessSlideSide((TopComponent)comp);
+
+            String side = wmi.guessSlideSide((TopComponent)comp);
             Object result = null;
             if (side.equals(Constants.LEFT)) {
                 result = TabDisplayer.ORIENTATION_WEST;

@@ -35,7 +35,7 @@ import java.awt.*;
 
 
 /**
- * Implementation of <code>ModeContainer</code> for separate mode kind.
+ * Implementation of <code>ModeContainer</code> for joined mode kind.
  *
  * @author  Peter Zavadsky
  */

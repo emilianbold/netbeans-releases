@@ -45,14 +45,13 @@ final class TopComponentContextSubModel {
 
     /** Mapping <TopComponentID, Context> between top component and context holding
      its previous location */
-    private final Map tcID2Contexts = new HashMap(10);
-
+    private final Map<String, Context> tcID2Contexts = new HashMap<String, Context> (10);
     
     public TopComponentContextSubModel() {
     }
 
     public void setTopComponentPreviousConstraints(String tcID, SplitConstraint[] constraints) {
-        Context context = (Context)tcID2Contexts.get(tcID);
+        Context context = tcID2Contexts.get(tcID);
         if (context == null) {
             context = new Context();
             tcID2Contexts.put(tcID, context);
@@ -61,7 +60,7 @@ final class TopComponentContextSubModel {
     }
     
     public void setTopComponentPreviousMode(String tcID, ModeImpl mode) {
-        Context context = (Context)tcID2Contexts.get(tcID);
+        Context context = tcID2Contexts.get(tcID);
         if (context == null) {
             context = new Context();
             tcID2Contexts.put(tcID, context);
@@ -70,12 +69,12 @@ final class TopComponentContextSubModel {
     }
     
     public SplitConstraint[] getTopComponentPreviousConstraints(String tcID) {
-        Context context = (Context)tcID2Contexts.get(tcID);
+        Context context = tcID2Contexts.get(tcID);
         return context == null ? null : context.constraints;
     }
     
     public ModeImpl getTopComponentPreviousMode(String tcID) {
-        Context context = (Context)tcID2Contexts.get(tcID);
+        Context context = tcID2Contexts.get(tcID);
         return context == null ? null : context.mode;
     }
     

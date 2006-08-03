@@ -18,11 +18,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <!-- XML Layer for core-windows -->
 
 <filesystem>
-
     <!--
     Use this folder and subfolders in your XML layer to define
     desktop layout, modes and groups.
@@ -32,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <!-- Winsys implementation requires editor mode to be always defined. -->
         <folder name="Modes">
-            <file name="editor.wsmode" url="windowmanager/editor.wsmode" />
+            <file name="editor.wsmode" url="windowmanager/editor.wsmode"/>
             <folder name="editor">
             </folder>
         </folder>
@@ -50,10 +48,10 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <folder name="Actions">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         
         <folder name="Window">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <file name="org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
             <file name="org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
             <file name="org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
@@ -65,6 +63,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             <file name="org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
             <file name="org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-UndockWindowAction.instance"/>
             <file name="org-netbeans-core-windows-actions-ResetWindowsAction.instance"/>
         </folder>    
     </folder>
@@ -73,6 +72,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="OS-ENTER.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
 	</file>
+        <file name="OS-D.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-UndockWindowAction.instance"/>
+        </file>
     </folder>
 
     <folder name="Menu">
@@ -80,17 +82,17 @@ Microsystems, Inc. All Rights Reserved.
             
         <attr name="Edit/View" boolvalue="true" />
         <folder name="View">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <file name="Separator1.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator1.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
+            <attr name="Separator1.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true"/>
 
             <file name="Separator2.instance">
               <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
             
-            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Separator2.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Separator2.instance" boolvalue="true"/>
             
             <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance"/>
             <attr name="Separator2.instance/org-netbeans-core-windows-actions-ToolbarsListAction.instance" boolvalue="true" />
@@ -108,8 +110,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <folder name="GoTo">
-            <file name="org-netbeans-core-windows-actions-RecentViewListAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance" />
+            <file name="org-netbeans-core-windows-actions-RecentViewListAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
             </file>
             <attr name="org-netbeans-core-windows-actions-RecentViewListAction.shadow/core-windows-SeparatorAfterRecentList.instance" boolvalue="true"/>
 
@@ -119,46 +121,51 @@ Microsystems, Inc. All Rights Reserved.
                         
         </folder>
 
-        <attr name="Tools/Window" boolvalue="true" />
+        <attr name="Tools/Window" boolvalue="true"/>
         <folder name="Window">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
 
-            <attr name="InspectorAction.shadow/SwitchToRecentDocumentAction.shadow" boolvalue="true" />
+            <attr name="InspectorAction.shadow/SwitchToRecentDocumentAction.shadow" boolvalue="true"/>
             <file name="SwitchToRecentDocumentAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance" />
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
             </file>
-            <attr name="SwitchToRecentDocumentAction.shadow/ProgressListAction.shadow" boolvalue="true" />
-            <attr name="Debug/Separator3.instance" boolvalue="true" />
+            <attr name="SwitchToRecentDocumentAction.shadow/ProgressListAction.shadow" boolvalue="true"/>
+            <attr name="Debug/Separator3.instance" boolvalue="true"/>
             <file name="Separator3.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator3.instance/CloseWindowAction.shadow" boolvalue="true" />
-            <file name="CloseWindowAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance" />
+            <attr name="Separator3.instance/CloseWindowAction.shadow" boolvalue="true"/>
+            <file name="CloseWindowAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
             </file>
-            <attr name="CloseWindowAction.shadow/MaximizeWindowAction.shadow" boolvalue="true" />
-            <file name="MaximizeWindowAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance" />
+            <attr name="CloseWindowAction.shadow/MaximizeWindowAction.shadow" boolvalue="true"/>
+            <file name="MaximizeWindowAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
             </file>
-            <attr name="MaximizeWindowAction.shadow/Separator4.instance" boolvalue="true" />
+            <attr name="MaximizeWindowAction.shadow/Separator4.instance" boolvalue="true"/>
+            <attr name="MaximizeWindowAction.shadow/org-netbeans-core-windows-actions-UndockAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-core-windows-actions-UndockAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-UndockWindowAction.instance"/>
+            </file>
+            <attr name="org-netbeans-core-windows-actions-UndockAction.shadow/Separator4.instance" boolvalue="true"/>
             <file name="Separator4.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator4.instance/CloneDocumentAction.shadow" boolvalue="true" />
-            <file name="CloneDocumentAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloneDocumentAction.instance" />
+            <attr name="Separator4.instance/CloneDocumentAction.shadow" boolvalue="true"/>
+            <file name="CloneDocumentAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloneDocumentAction.instance"/>
             </file>
-            <attr name="CloneDocumentAction.shadow/CloseAllDocumentsAction.shadow" boolvalue="true" />
-            <file name="CloseAllDocumentsAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance" />
+            <attr name="CloneDocumentAction.shadow/CloseAllDocumentsAction.shadow" boolvalue="true"/>
+            <file name="CloseAllDocumentsAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
             </file>
-            <attr name="CloseAllDocumentsAction.shadow/CloseAllButThisAction.shadow" boolvalue="true" />
-            <file name="CloseAllButThisAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance" />
+            <attr name="CloseAllDocumentsAction.shadow/CloseAllButThisAction.shadow" boolvalue="true"/>
+            <file name="CloseAllButThisAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
             </file>
-            <attr name="CloseAllButThisAction.shadow/DocumentsAction.shadow" boolvalue="true" />
-            <file name="DocumentsAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance" />
+            <attr name="CloseAllButThisAction.shadow/DocumentsAction.shadow" boolvalue="true"/>
+            <file name="DocumentsAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
             </file>
             
             <file name="Separator5.instance">
@@ -182,7 +189,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- public ID defined by XMLDataObject -->
                 <file name="DTD_toolbar.instance">
                     <attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
-                    <attr name="instanceCreate" newvalue="org.netbeans.core.windows.view.ui.toolbars.ToolbarProcessor" />
+                    <attr name="instanceCreate" newvalue="org.netbeans.core.windows.view.ui.toolbars.ToolbarProcessor"/>
                 </file>
             </folder>
         </folder>
@@ -190,7 +197,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="entities">
             <folder name="NetBeans_IDE">
                 <!-- public ID defined by XMLDataObject -->
-                <file name="DTD_toolbar" url="nbres:/org/netbeans/core/windows/resources/toolbar.dtd" >
+                <file name="DTD_toolbar" url="nbres:/org/netbeans/core/windows/resources/toolbar.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans IDE//DTD toolbar//EN"/>
                 </file>
             </folder>

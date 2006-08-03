@@ -25,6 +25,7 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
+import org.netbeans.core.windows.actions.MaximizeWindowAction;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -299,7 +300,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             } else if (TabbedContainer.COMMAND_POPUP_REQUEST == cmd) {
                 handlePopupMenuShowing(tae.getMouseEvent(), tae.getTabIndex());
             } else if (TabbedContainer.COMMAND_MAXIMIZE == cmd) {
-                handleMaximization(tae.getMouseEvent(), tae.getTabIndex());
+                handleMaximization(tae);
             } else if (TabbedContainer.COMMAND_CLOSE_ALL == cmd) {
                 ActionUtils.closeAllDocuments();
             } else if (TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS == cmd) {
@@ -383,26 +384,19 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     }
 
     /** Possibly invokes the (un)maximization. */
-    public static void handleMaximization(MouseEvent e, int idx) {
-        Component c = (Component) e.getSource();
+    public static void handleMaximization(TabActionEvent tae) {
+        Component c = (Component) tae.getMouseEvent().getSource();
         while (c != null && !(c instanceof Tabbed))
             c = c.getParent();
         if (c == null) {
             return;
         }
+        
         final Tabbed tab = (Tabbed) c;
-
-        TopComponent tc = tab.getTopComponentAt(idx);
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        ModeImpl mode = (ModeImpl)wm.findMode(tc);
-        if(mode != null) {
-            ModeImpl maximizedMode = wm.getMaximizedMode();
-            if(maximizedMode == null) {
-                wm.setMaximizedMode(mode);
-            } else if(mode == maximizedMode) {
-                wm.setMaximizedMode(null);
-            }
-        }
+        TopComponent tc = tab.getTopComponentAt(tae.getTabIndex());
+        // perform action
+        MaximizeWindowAction mwa = new MaximizeWindowAction(tc);
+        mwa.actionPerformed(tae);
     }
 
     /** Well, we can't totally get rid of AWT event listeners - this is what

@@ -20,7 +20,9 @@
 package org.netbeans.core.windows.view.ui;
 
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -28,11 +30,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import javax.swing.AbstractAction;
+import javax.swing.JWindow;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.core.IDESettings;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.RecentViewListAction;
 import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
@@ -61,7 +65,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
      * Reference to the popup object currently showing the default instance, if
      * it is visible
      */
-    private static Popup popup;
+    private static JWindow popup;
     
     /** Indicating whether a popup is shown? */
     private static boolean shown;
@@ -112,11 +116,13 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
      * was successfully processed/consumed.
      */
     public static boolean processShortcut(KeyEvent kev) {
-        // don't perform in MDI only when main window is not focused
-        if (settings.getUIMode() == 2 &&
-                !WindowManager.getDefault().getMainWindow().isFocused()) {
+        WindowManagerImpl wmi = WindowManagerImpl.getInstance();
+        // don't perform when focus is dialog
+        if (!wmi.getMainWindow().isFocused() &&
+            !wmi.isSeparateWindow(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow())) {
             return false;
         }
+
         boolean isCtrlTab = kev.getKeyCode() == KeyEvent.VK_TAB &&
                 kev.getModifiers() == InputEvent.CTRL_MASK;
         boolean isCtrlShiftTab = kev.getKeyCode() == KeyEvent.VK_TAB &&
@@ -241,10 +247,15 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     
     private void showPopup() {
         if (!isShown()) {
-            popup = PopupFactory.getSharedInstance().getPopup(
-                    WindowManager.getDefault().getMainWindow(), pTable, x, y);
+            // set popup to be always on top to be in front of all
+            // floating separate windows
+            popup = new JWindow((Window)null);
+            popup.setAlwaysOnTop(true);
+            popup.getContentPane().add(pTable);
+            popup.setLocation(x, y);
+            popup.pack();
             WindowManager.getDefault().getMainWindow().addWindowFocusListener( this );
-            popup.show();
+            popup.setVisible(true);
             shown = true;
         }
     }
@@ -394,13 +405,13 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=41121
      */
     private class PopupHider implements Runnable {
-        private Popup toHide;
-        public PopupHider(Popup popup) {
+        private JWindow toHide;
+        public PopupHider(JWindow popup) {
             toHide = popup;
         }
         
         public void run() {
-            toHide.hide();
+            toHide.setVisible(false);
             shown = false;
             hits = 0;
         }

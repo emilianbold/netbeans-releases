@@ -238,7 +238,8 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             }
         }
 
-        protected Node[] createNodes(Object key) {
+        @Override
+        protected Node[] createNodes(Node key) {
             Node[] retValue;
             
             retValue = super.createNodes(key);

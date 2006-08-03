@@ -315,10 +315,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return the new mode */
     public Mode createMode(String name, String displayName, URL icon) {
         if(getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            return new WrapMode (createMode(name, Constants.MODE_KIND_EDITOR, false, null));
+            return new WrapMode (createMode(name, Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, null));
         } else {
             // #36945 In 'separate' ui mode create new mode.
-            return createMode(name, Constants.MODE_KIND_VIEW, false,
+            return createMode(name, Constants.MODE_KIND_VIEW, Constants.MODE_STATE_SEPARATED, false,
                 new SplitConstraint[] { new SplitConstraint(Constants.HORIZONTAL, 1, 0.2)});
         }
     }
@@ -443,7 +443,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /** Creates new mode.
      * @param name a unique programmatic name of the mode 
      * @param permanent true if mode has to remain in model even it is emptied */
-    public ModeImpl createMode(String name, int kind, boolean permanent, SplitConstraint[] constraints) {
+    public ModeImpl createMode(String name, int kind, int state, boolean permanent, SplitConstraint[] constraints) {
         // It gets existing mode with the same name.
         ModeImpl mode = (ModeImpl)findMode(name);
         if(mode != null) {
@@ -459,7 +459,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             }
         }
 
-        mode = createModeImpl(name, kind, permanent);
+        mode = createModeImpl(name, kind, state, permanent);
         addMode(mode, constraints);
         return mode;
     }
@@ -477,15 +477,18 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     
-    
-    /** */
     /*private*/ ModeImpl createModeImpl(String name, int kind, boolean permanent) {
-        if(name == null) {
-            name = ModeImpl.getUnusedModeName();
-        }
         int state = getEditorAreaState() == Constants.EDITOR_AREA_JOINED
                                                 ? Constants.MODE_STATE_JOINED
                                                 : Constants.MODE_STATE_SEPARATED;
+        return createModeImpl(name, kind, state, permanent);
+    }
+    
+    /** */
+    /*private*/ ModeImpl createModeImpl(String name, int kind, int state, boolean permanent) {
+        if(name == null) {
+            name = ModeImpl.getUnusedModeName();
+        }
         ModeImpl toReturn =  ModeImpl.createModeImpl(name, state, kind, permanent);
         return toReturn;
     }
@@ -848,8 +851,45 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public String guessSlideSide(TopComponent tc) {
         return central.guessSlideSide(tc);
     }
-    
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isDocked (TopComponent comp) {
+        return central.isDocked(comp);
+    }
+
+    /** Takes given top component out of the main window and puts it in
+     * new separate floating window.
+     *
+     * @param tc TopComponent to make floating
+     * @param modeKind kind of mode where TopComponent currently lives (before undock)
+     *
+     * @throws IllegalStateException when given top component is already floating
+     */
+    public void userUndockedTopComponent(TopComponent tc, int modeKind) {
+        if (!isDocked(tc)) {
+            throw new IllegalStateException("TopComponent is already in floating state: " + tc);
+        }
+
+        central.userUndockedTopComponent(tc, modeKind);
+    }
+
+    /** Puts given top component back into main window.
+     *
+     * @param tc TopComponent to put back into main window
+     * @param modeKind kind of mode where TopComponent currently lives (before dock)
+     *
+     * @throws IllegalStateException when given top component is already inside main window
+     */
+    public void userDockedTopComponent(TopComponent tc, int modeKind) {
+        if (isDocked(tc)) {
+            throw new IllegalStateException("TopComponent is already inside main window: " + tc);
+        }
+
+        central.userDockedTopComponent(tc, modeKind);
+    }
+
     // PENDING>>
     public void setRecentViewList(TopComponent[] tcs) {
         recentViewList.setTopComponents(tcs);
@@ -905,6 +945,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     // Registry notifications
     static void notifyRegistryTopComponentActivated(final TopComponent tc) {
         ((RegistryImpl)getDefault().getRegistry()).topComponentActivated(tc);
+
         
         // #37457 It is needed to ensure the activation calls are in AWT thread.
         if(SwingUtilities.isEventDispatchThread()) {
@@ -1122,8 +1163,20 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public void setPreviousModeForTopComponent(String tcID, ModeImpl slidingMode, ModeImpl prevMode) {
         getCentral().setModeTopComponentPreviousMode(tcID, slidingMode, prevMode);
     }
-    
-    
+
+    /** Finds out if given Window is used as separate floating window or not.
+     *
+     * @return true if Window is separate floating window, false if window
+     * is used for other purposes such as independent dialog/window, main window etc. 
+     */
+    public static boolean isSeparateWindow (Window w) {
+        // work only in Swing environment
+        if (!(w instanceof RootPaneContainer)) {
+            return false;
+        }
+        return ((RootPaneContainer) w).getRootPane().getClientProperty(Constants.SEPARATE_WINDOW_PROPERTY) != null;
+    }
+
     private static final String ASSERTION_ERROR_MESSAGE = "WindowsAPI is required to be called from AWT thread only, see " // NOI18N
         // XXX new link?
         + "http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/threading.html"; // NOI18N

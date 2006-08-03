@@ -100,6 +100,8 @@ implements AWTEventListener, DragSourceListener {
      * the same like {@link #CURSOR_COPY_NO} with the diff name
      * to be recognized correctly when switching action over drop target */
     private static final int CURSOR_COPY_NO_MOVE = 4;
+    /** Move to free area cursor type */
+    private static final int CURSOR_MOVE_FREE = 5;
 
     /** Name for 'Copy window' cursor. */
     private static final String NAME_CURSOR_COPY         = "CursorTopComponentCopy"; // NOI18N
@@ -111,7 +113,9 @@ implements AWTEventListener, DragSourceListener {
     private static final String NAME_CURSOR_MOVE_NO      = "CursorTopComponentMoveNo"; // NOI18N
     /** */
     private static final String NAME_CURSOR_COPY_NO_MOVE = "CursorTopComponentCopyNoMove"; // NOI18N
-    
+    /** Name for cursor to drop to free area. */
+    private static final String NAME_CURSOR_MOVE_FREE    = "CursorTopComponentMoveFree"; // NOI18N
+
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(TopComponentDragSupport.class);
     
@@ -177,7 +181,6 @@ implements AWTEventListener, DragSourceListener {
         if(evt.getID() != MouseEvent.MOUSE_DRAGGED) {
             return;
         }
-        
         if(windowDnDManager.isDragging()) {
             return;
         }
@@ -337,18 +340,8 @@ implements AWTEventListener, DragSourceListener {
                 ? getDragCursor(startingComp, CURSOR_COPY)
                 : getDragCursor(startingComp, CURSOR_COPY_NO_MOVE));
 
-        
-        Container con = SwingUtilities.getAncestorOfClass(
-                ModeComponent.class, startingComp);
-                        
-        if(con == null) {
-            // TopComponent not in mode container. Can not start drag!
-            windowDnDManager.resetDragSource();
-            return;
-        }
-        
         // Sets listnening for ESC key.
-        addListening(con);
+        addListening();
         hackESC = false;
         
         Tabbed tabbed = (Tabbed) SwingUtilities.getAncestorOfClass (Tabbed.class,
@@ -364,7 +357,6 @@ implements AWTEventListener, DragSourceListener {
             int idx = tabbed.indexOf(firstTC);
             img = tabbed.createImageOfTab(idx);
         }
-
         try {
             evt.startDrag(
                 cursor,
@@ -398,7 +390,7 @@ implements AWTEventListener, DragSourceListener {
         };
     /** Adds <code>KeyListener</code> to container and its component
      * hierarchy to listen for ESC key. */
-    private void addListening(Container con) {
+    private void addListening() {
         Toolkit.getDefaultToolkit().addAWTEventListener(keyListener, AWTEvent.KEY_EVENT_MASK);
     }
     
@@ -634,8 +626,9 @@ implements AWTEventListener, DragSourceListener {
     /** Hacks problems with <code>dragEnter</code> wrong method calls.
      * It plays its role. Sets the cursor from 'no-drop' state
      * to its 'drop' state sibling.
+     * @param freeArea true when mouse pointer in free screen area
      * @see #dragEnter */
-    void setSuccessCursor() {
+    void setSuccessCursor (boolean freeArea) {
         int dropAction = hackUserDropAction;
         DragSourceContext ctx = (DragSourceContext)dragContextWRef.get();
         
@@ -645,7 +638,7 @@ implements AWTEventListener, DragSourceListener {
 
         int type;
         if(dropAction == DnDConstants.ACTION_MOVE) {
-            type = CURSOR_MOVE;
+            type = freeArea ? CURSOR_MOVE_FREE : CURSOR_MOVE;
         } else if(dropAction == DnDConstants.ACTION_COPY) {
             if(canCopy) {
                 type = CURSOR_COPY;
@@ -664,7 +657,7 @@ implements AWTEventListener, DragSourceListener {
         if(getDragCursorName(type).equals(ctx.getCursor().getName())) {
             return;
         }
-        
+
         ctx.setCursor(getDragCursor(ctx.getComponent(),type));
     }
     
@@ -708,7 +701,7 @@ implements AWTEventListener, DragSourceListener {
     // Helpers>>
     /** Gets window drag <code>Cursor</code> of specified type. Utility method.
      * @param type valid one of {@link #CURSOR_COPY}, {@link #CURSOR_COPY_NO}, 
-     *             {@link #CURSOR_MOVE}, {@link #CURSOR_MOVE_NO} */
+     *             {@link #CURSOR_MOVE}, {@link #CURSOR_MOVE_NO}, {@link #CURSOR_MOVE_FREE} */
     private static String getDragCursorName(int type) {
         if(type == CURSOR_COPY) {
             return NAME_CURSOR_COPY;
@@ -720,6 +713,8 @@ implements AWTEventListener, DragSourceListener {
             return NAME_CURSOR_MOVE_NO;
         } else if(type == CURSOR_COPY_NO_MOVE) {
             return NAME_CURSOR_COPY_NO_MOVE;
+        } else if(type == CURSOR_MOVE_FREE) {
+            return NAME_CURSOR_MOVE_FREE;
         } else {
             return null;
         }
@@ -727,7 +722,7 @@ implements AWTEventListener, DragSourceListener {
     
     /** Gets window drag <code>Cursor</code> of specified type. Utility method.
      * @param type valid one of {@link #CURSOR_COPY}, {@link #CURSOR_COPY_NO}, 
-     *             {@link #CURSOR_MOVE}, {@link #CURSOR_MOVE_NO}
+     *             {@link #CURSOR_MOVE}, {@link #CURSOR_MOVE_NO}, {@link #CURSOR_MOVE_FREE}
      * @exception IllegalArgumentException if invalid type parameter passed in */
     private static Cursor getDragCursor( Component comp, int type ) {
         Image image = null;
@@ -753,6 +748,10 @@ implements AWTEventListener, DragSourceListener {
             image = Utilities.loadImage(
                 "org/netbeans/core/resources/topComponentDragCopyNo.gif"); // NOI18N
             name = NAME_CURSOR_COPY_NO_MOVE;
+        } else if(type == CURSOR_MOVE_FREE) {
+            image = Utilities.loadImage(
+                "org/netbeans/core/windows/resources/topComponentDragMoveFreeArea.gif"); // NOI18N
+            name = NAME_CURSOR_MOVE_FREE;
         } else {
             throw new IllegalArgumentException("Unknown cursor type=" + type); // NOI18N
         }

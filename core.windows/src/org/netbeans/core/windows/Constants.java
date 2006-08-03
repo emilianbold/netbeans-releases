@@ -84,11 +84,16 @@ public abstract class Constants {
      * to be docked anywhere (even crossing view-editor border). */
     public static final String TOPCOMPONENT_ALLOW_DOCK_ANYWHERE = "TopComponentAllowDockAnywhere"; // NOI18N
 
+    /** Client property to distinguish JWindows/JDialogs used as ui elements
+     * for separate modes - floating windows.
+     */
+    public static final String SEPARATE_WINDOW_PROPERTY = "SeparateWindow";
 
     // System properties (switches):
     /** Allows user to move <code>TopComponent</code>S between document and view modes, 
      * which is restricted otherwise. */
     public static final boolean SWITCH_MODE_ADD_NO_RESTRICT = Boolean.getBoolean("netbeans.winsys.allow.dock.anywhere"); // NOI18N
+    //public static final boolean SWITCH_MODE_ADD_NO_RESTRICT = Boolean.TRUE;
     /** Disables DnD of <code>TopComponent</code>S. */
     public static final boolean SWITCH_DND_DISABLE          = Boolean.getBoolean("netbeans.winsys.disable_dnd"); // NOI18N
     /** During DnD it provides nicer feedback (fading of possible drop), however performance is worsen in that case. */
@@ -121,6 +126,10 @@ public abstract class Constants {
 
     /** File name whose InstanceCookie can contain custom status line component.*/
     public static final String CUSTOM_STATUS_LINE_PATH = System.getProperty("netbeans.winsys.status_line.path"); // NOI18N
+
+    /** Automatic shift size of top component's location when undocked */
+    public static final int UNDOCK_LOCATION_SHIFT_X = 20;
+    public static final int UNDOCK_LOCATION_SHIFT_Y = 20;
     
     private Constants() {}
 }

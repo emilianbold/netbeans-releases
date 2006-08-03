@@ -52,7 +52,6 @@ public abstract class ActionUtils {
         ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
         int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
         
-        
         List actions = new ArrayList();
         if(kind == Constants.MODE_KIND_EDITOR) {
             actions.add(new CloseAllDocumentsAction(false));
@@ -67,11 +66,14 @@ public abstract class ActionUtils {
             actions.add(null); // Separator
             actions.add(new CloseWindowAction(tc));
             actions.add(new MaximizeWindowAction(tc));
+            actions.add(new UndockWindowAction(tc));
         } else if (kind == Constants.MODE_KIND_VIEW) {
             actions.add(new CloseWindowAction(tc));
             actions.add(new MaximizeWindowAction(tc));
+            actions.add(new UndockWindowAction(tc));
         } else if (kind == Constants.MODE_KIND_SLIDING) {
             actions.add(new CloseWindowAction(tc));
+            actions.add(new UndockWindowAction(tc));
         }
         
         return (Action[])actions.toArray(new Action[actions.size()]);

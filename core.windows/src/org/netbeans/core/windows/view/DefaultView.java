@@ -118,7 +118,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             debugLog(""); // NOI18N
         }
 
-        // Update accessors.
+        // Update view hierarchy from accessors info
         if(wsa != null) { // wsa == null during hiding.
             hierarchy.updateViewHierarchy(wsa.getModeStructureAccessor());
         }
@@ -819,7 +819,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponentsAroundEditor(tcs, side);
     }
     
-    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds) {
+    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds, int draggedKind) {
         if(tcs.length == 0) {
             return;
         }
@@ -828,9 +828,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             debugLog("User dropped TopComponent's into free area, bounds=" + bounds); // NOI18N
         }
         
-        controllerHandler.userDroppedTopComponentsIntoFreeArea(tcs, bounds);
+        controllerHandler.userDroppedTopComponentsIntoFreeArea(tcs, bounds, draggedKind);
     }
-    
+
     // Sliding
 
     public void userDisabledAutoHide(ModeView modeView, TopComponent tc) {
@@ -974,7 +974,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         Debug.log(DefaultView.class, message);
     }
 
-    
     
 }
 

@@ -61,7 +61,7 @@ public interface Controller {
     public void userMovedSplit(SplitView splitView, ViewElement[] childrenViews, double[] splitWeights);
     
     public void userClosedTopComponent(ModeView modeView, TopComponent tc);
-    
+
     // DnD
     public void userDroppedTopComponents(ModeView modeView, TopComponent[] tcs);
     
@@ -75,8 +75,8 @@ public interface Controller {
     
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side);
     
-    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds);
-    
+    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds, int modeKind);
+
     // Sliding
     public void userEnabledAutoHide(ModeView modeView, TopComponent tc);
     

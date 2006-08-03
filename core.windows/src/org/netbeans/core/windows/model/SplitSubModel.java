@@ -1015,8 +1015,7 @@ class SplitSubModel {
                 return false;
             }
 
-            if(mode.getKind() == Constants.MODE_KIND_VIEW
-            && mode.getState() == Constants.MODE_STATE_SEPARATED) {
+            if(mode.getState() == Constants.MODE_STATE_SEPARATED) {
                 return false;
             }
 
@@ -1028,8 +1027,7 @@ class SplitSubModel {
                 return false;
             }
             
-            if(mode.getKind() == Constants.MODE_KIND_EDITOR
-            || mode.getState() == Constants.MODE_STATE_JOINED) {
+            if(mode.getState() == Constants.MODE_STATE_JOINED) {
                 return false;
             }
             

@@ -84,9 +84,14 @@ public interface ControllerHandler {
     
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side);
     
-    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds);
+    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds, int modeKind);
     // DnD<<
-    
+
+    // undock/dock
+    public void userUndockedTopComponent(TopComponent tc, int modeKind);
+
+    public void userDockedTopComponent(TopComponent tc, int modeKind);
+
     // Sliding>>
     public void userEnabledAutoHide(TopComponent tc, ModeImpl source, String target);
     

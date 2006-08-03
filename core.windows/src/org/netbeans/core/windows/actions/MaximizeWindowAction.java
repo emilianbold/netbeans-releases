@@ -69,10 +69,13 @@ public class MaximizeWindowAction extends AbstractAction {
         updateState();
     }
     /**
-     * alternate constructor for use in the context menu, invoked from ActionUtils.java
+     * Alternate constructor to maximize given specific TopComponent.
+     * For use in the context menu and maximization on demand,
+     * invoked from ActionUtils and TabbedHandler.
+     *
      * see #38801 for details
      */
-    MaximizeWindowAction(TopComponent tc) {
+    public MaximizeWindowAction (TopComponent tc) {
         topComponent = tc;
         propListener = null;
         isPopup = true;
@@ -80,51 +83,31 @@ public class MaximizeWindowAction extends AbstractAction {
     }
     
     /** Perform the action. Sets/unsets maximzed mode. */
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
+    public void actionPerformed (java.awt.event.ActionEvent ev) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        TopComponent curTC = getTCToWorkWith();
         
-        if(wm.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            if (topComponent != null) {
-                ModeImpl mode = getModeToMaximize(topComponent);
-                // maximize only non-sliding windows..
-                if ( mode == null || mode.getKind() != Constants.MODE_KIND_SLIDING) {
-                    wm.setMaximizedMode(mode);
+        if(wm.isDocked(curTC)) {
+            // inside main window
+            ModeImpl previousMax = wm.getMaximizedMode();
+            if (previousMax == null) {
+                // maximize, but only non-sliding windows..
+                ModeImpl curMax = (ModeImpl)wm.findMode(curTC);
+                if (curMax != null && curMax.getKind() != Constants.MODE_KIND_SLIDING) {
+                    wm.setMaximizedMode(curMax);
                 }
             } else {
-                ModeImpl activeMode = wm.getActiveMode();
-                ModeImpl mode = wm.getMaximizedMode();
-                // maximize only non-sliding windows..
-                if(activeMode != null && activeMode.getKind() != Constants.MODE_KIND_SLIDING) {
-                    if(mode != null) {
-                        wm.setMaximizedMode(null);
-                    } else {
-                        wm.setMaximizedMode(activeMode);
-                    }
-                }
+                // restore
+                wm.setMaximizedMode(null);
             }
         } else {
-            ModeImpl activeMode;
-            if (topComponent != null) {
-                activeMode = (ModeImpl)wm.findMode(topComponent);
-            }
-            else {
-                activeMode = wm.getActiveMode();
-            }
-            if(activeMode != null) {
-                if(activeMode.getKind() == Constants.MODE_KIND_EDITOR) {
-                    if(wm.getEditorAreaFrameState() == Frame.NORMAL) {
-                        wm.setEditorAreaFrameState(Frame.MAXIMIZED_BOTH);
-                    } else {
-                        wm.setEditorAreaFrameState(Frame.NORMAL);
-                    }
-                } else if (activeMode.getKind() == Constants.MODE_KIND_VIEW) {
-                    if(activeMode.getFrameState() == Frame.NORMAL) {
-                        activeMode.setFrameState(Frame.MAXIMIZED_BOTH);
-                    } else {
-                        activeMode.setFrameState(Frame.NORMAL);
-                    }
+            // separate windows
+            ModeImpl curMax = (ModeImpl)wm.findMode(curTC);
+            if (curMax != null) {
+                if(curMax.getFrameState() == Frame.NORMAL) {
+                    curMax.setFrameState(Frame.MAXIMIZED_BOTH);
                 } else {
-                    // do nothing for slidinbg windows..maximize only non-sliding windows..
+                    curMax.setFrameState(Frame.NORMAL);
                 }
             }
         }
@@ -150,27 +133,19 @@ public class MaximizeWindowAction extends AbstractAction {
     /** Updates state and text of this action.
      */
     private void doUpdateState() {
-        TopComponent active = null;
-        if (topComponent != null) {
-            active = topComponent;
-        } else {
-            active = TopComponent.getRegistry().getActivated();
-        }
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        TopComponent active = getTCToWorkWith();
         Object param = active == null ? "" : active.getName(); // NOI18N
         boolean maximize;
-        ModeImpl activeMode = (ModeImpl)WindowManagerImpl.getInstance().findMode(active);
-        if (WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            maximize = WindowManagerImpl.getInstance().getMaximizedMode() == null;
+        ModeImpl activeMode = (ModeImpl)wm.findMode(active);
+        if (activeMode == null) {
+            return;
+        }
+
+        if (wm.isDocked(active)) {
+            maximize = wm.getMaximizedMode() == null;
         } else {
-            if(activeMode != null) {
-                if(activeMode.getKind() == Constants.MODE_KIND_EDITOR) {
-                    maximize = WindowManagerImpl.getInstance().getEditorAreaFrameState() == Frame.NORMAL;
-                } else {
-                    maximize = activeMode.getFrameState() == Frame.NORMAL;
-                }
-            } else {
-                return;
-            }
+            maximize = activeMode.getFrameState() == Frame.NORMAL;
         }
 
         String label;
@@ -186,15 +161,11 @@ public class MaximizeWindowAction extends AbstractAction {
         setEnabled(activeMode != null && activeMode.getKind() != Constants.MODE_KIND_SLIDING);
     }
     
-    private static ModeImpl getModeToMaximize(TopComponent tc) {
-         WindowManagerImpl wm = WindowManagerImpl.getInstance();
-         ModeImpl mode = (ModeImpl)wm.findMode(tc);
-         ModeImpl maximizedMode = wm.getMaximizedMode();
-         if(mode == maximizedMode) {
-             return null;
-         } else {
-             return mode;
-         }
+    private TopComponent getTCToWorkWith () {
+        if (topComponent != null) {
+            return topComponent;
+        }
+        return TopComponent.getRegistry().getActivated();
     }
     
     /** Overriden to share accelerator between instances of this action.

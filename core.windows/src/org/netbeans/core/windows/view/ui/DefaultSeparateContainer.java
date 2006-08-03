@@ -26,20 +26,26 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.CharConversionException;
+import java.text.MessageFormat;
+import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicHTML;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
+import org.netbeans.core.windows.view.dnd.ZOrderManager;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 
 
@@ -50,60 +56,26 @@ import org.openide.xml.XMLUtil;
  */
 public final class DefaultSeparateContainer extends AbstractModeContainer {
 
-    /** JFrame instance representing the separated mode. */
-    private final JFrame frame;
+    /** Separate mode represented by JFrame or null if dialog is used */
+    private final ModeFrame modeFrame;
+    /** Separate mode represented by JDialog or null if frame is used */
+    private final ModeDialog modeDialog;
 
     /** Creates a DefaultSeparateContainer. */
-    public DefaultSeparateContainer(final ModeView modeView, WindowDnDManager windowDnDManager, Rectangle bounds) {
-        super(modeView, windowDnDManager); // NOI18N
-
-        frame = new ModeFrame(this, modeView);
-        frame.getContentPane().add(tabbedHandler.getComponent());
-        frame.setBounds(bounds);
-
-        frame.addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent evt) {
-                if(DefaultSeparateContainer.this.frame.getExtendedState() == Frame.MAXIMIZED_BOTH) {
-                    // Ignore changes when the frame is in maximized state.
-                    return;
-                }
-                
-                modeView.getController().userResizedModeBounds(
-                    modeView, DefaultSeparateContainer.this.frame.getBounds());
-            }
-            
-            public void componentMoved(ComponentEvent evt) {
-                if(DefaultSeparateContainer.this.frame.getExtendedState() == Frame.MAXIMIZED_BOTH) {
-                    // Ignore changes when the frame is in maximized state.
-                    return;
-                }
-                
-                modeView.getController().userResizedModeBounds(
-                        modeView, DefaultSeparateContainer.this.frame.getBounds());
-            }
-        });
-        
-        
-        frame.addWindowStateListener(new WindowStateListener() {
-            
-            
-            public void windowStateChanged(WindowEvent evt) {
-     // All the timestamping is a a workaround beause of buggy GNOME and of its kind who iconify the windows on leaving the desktop.
-                Component comp = modeView.getComponent();
-                if (comp instanceof Frame /*&& comp.isVisible() */) {
-                    long currentStamp = System.currentTimeMillis();
-                    if (currentStamp > (modeView.getUserStamp() + 500) && currentStamp > (modeView.getMainWindowStamp() + 1000)) {
-                        modeView.getController().userChangedFrameStateMode(modeView, evt.getNewState());
-                    } else {
-                        modeView.setUserStamp(0);
-                        modeView.setMainWindowStamp(0);
-                        modeView.updateFrameState();
-                    }
-                    long stamp = System.currentTimeMillis();
-                    modeView.setUserStamp(stamp);
-                } 
-            }
-        });
+    public DefaultSeparateContainer(final ModeView modeView, WindowDnDManager windowDnDManager, Rectangle bounds, int kind) {
+        super(modeView, windowDnDManager, kind);
+        // JFrame or JDialog according to the mode kind
+        if (kind == Constants.MODE_KIND_EDITOR) {
+            modeFrame = new ModeFrame(this, modeView);
+            modeFrame.setIconImage(MainWindow.createIDEImage());
+            modeDialog = null;
+        } else {
+            modeDialog = new ModeDialog(WindowManager.getDefault().getMainWindow(), this, modeView);
+            modeFrame = null;
+        }
+        Window w = getModeUIWindow();
+        ((RootPaneContainer) w).getContentPane().add(tabbedHandler.getComponent());
+        w.setBounds(bounds);
     }
     
     public void requestAttention (TopComponent tc) {
@@ -116,7 +88,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
 
     /** */
     protected Component getModeComponent() {
-        return frame;
+        return getModeUIWindow();
     }
     
     protected Tabbed createTabbed() {
@@ -129,43 +101,21 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         return tabbed;    
     }    
     
-    protected void updateTitle(String title) {
-        if (BasicHTML.isHTMLString(title)) {
-            //Output window (and soon others) use HTML - looks
-            //nasty in window frame titles
-            char[] c = title.toCharArray();
-            StringBuffer sb = new StringBuffer(title.length());
-            boolean inTag = false;
-            boolean inEntity = false;
-            for (int i=0; i < c.length; i++) {
-                if (inTag && c[i] == '>') { //NOI18N
-                    inTag = false;
-                    continue;
-                }
-                if (!inTag && c[i] == '<') { //NOI18N
-                    inTag = true;
-                    continue;
-                }
-                if (!inTag) {
-                    sb.append(c[i]);
-                }
-            }
-            //XXX, would be nicer to support the full complement of entities...
-            title = Utilities.replaceString(sb.toString(), "&nbsp;", " "); //NOI18N
-        }
-        frame.setTitle(title);
+    protected void updateTitle (String title) {
+        getModeUIBase().updateTitle(title);
     }
     
-    protected void updateActive(boolean active) {
+    protected void updateActive (boolean active) {
+        Window w = getModeUIWindow();
         if(active) {
-            if (frame.isVisible() && !frame.isActive()) {
-                frame.toFront();
+            if (w.isVisible() && !w.isActive()) {
+                w.toFront();
             }
         } 
     }
     
-    public boolean isActive() {
-        return frame.isActive();
+    public boolean isActive () {
+        return getModeUIWindow().isActive();
     }
     
     protected boolean isAttachingPossible() {
@@ -173,29 +123,212 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
     }
     
     protected TopComponentDroppable getModeDroppable() {
-        return (ModeFrame)frame;
+        return getModeUIBase();
     }
 
-    /** */
-    private static class ModeFrame extends JFrame
-    implements ModeComponent, TopComponentDroppable {
+    private Window getModeUIWindow () {
+        return modeFrame != null ? modeFrame : modeDialog;
+    }
+
+    private ModeUIBase getModeUIBase () {
+        return (ModeUIBase)getModeUIWindow();
+    }
+
+    /** Separate mode UI backed by JFrame.
+     *
+     * [dafe] Whole DnD of window system expects that ModeComponent and
+     * TopComponentDroppable implementation must exist in AWT hierarchy,
+     * so I have to extend Swing class here, not just use it. That's why all this
+     * delegating stuff.     
+     */
+    private static class ModeFrame extends JFrame implements ModeUIBase {
+
+        /** Base helper to delegate to for common things */
+        private SharedModeUIBase modeBase;
+   
+        public ModeFrame (AbstractModeContainer abstractModeContainer, ModeView view) {
+            super();
+            // To be able to activate on mouse click.
+            enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
+            modeBase = new SharedModeUIBaseImpl(abstractModeContainer, view, this);
+        }
+
+        public ModeView getModeView() {
+            return modeBase.getModeView();
+        }
+
+        public int getKind() {
+            return modeBase.getKind();
+        }
+
+        public Shape getIndicationForLocation(Point location) {
+            return modeBase.getIndicationForLocation(location);
+        }
+
+        public Object getConstraintForLocation(Point location) {
+            return modeBase.getConstraintForLocation(location);
+        }
+
+        public Component getDropComponent() {
+            return modeBase.getDropComponent();
+        }
+
+        public ViewElement getDropViewElement() {
+            return modeBase.getDropViewElement();
+        }
+
+        public boolean canDrop(TopComponent transfer, Point location) {
+            return modeBase.canDrop(transfer, location);
+        }
+
+        public boolean supportsKind(int kind, TopComponent transfer) {
+            return modeBase.supportsKind(kind, transfer);
+        }
+
+        /** Actually sets title for the frame
+         */
+        public void updateTitle(String title) {
+            // extract HTML from text - Output window (and soon others) uses it
+            if (BasicHTML.isHTMLString(title)) {
+                char[] c = title.toCharArray();
+                StringBuffer sb = new StringBuffer(title.length());
+                boolean inTag = false;
+                boolean inEntity = false;
+                for (int i=0; i < c.length; i++) {
+                    if (inTag && c[i] == '>') { //NOI18N
+                        inTag = false;
+                        continue;
+                    }
+                    if (!inTag && c[i] == '<') { //NOI18N
+                        inTag = true;
+                        continue;
+                    }
+                    if (!inTag) {
+                        sb.append(c[i]);
+                    }
+                }
+                //XXX, would be nicer to support the full complement of entities...
+                title = Utilities.replaceString(sb.toString(), "&nbsp;", " "); //NOI18N
+            }
+            String completeTitle = MessageFormat.format(
+                    NbBundle.getMessage(DefaultSeparateContainer.class, "CTL_SeparateEditorTitle"),
+                    title);
+            setTitle(completeTitle);
+        }
+
+    } // end of ModeFrame
+
+    /** Separate mode UI backed by JFrame.
+     *
+     * [dafe] Whole DnD of window system expects that ModeComponent and
+     * TopComponentDroppable implementation must exist in AWT hierarchy,
+     * so I have to extend Swing class here, not just use it. That's why all this
+     * delegating stuff.
+     */     
+    private static class ModeDialog extends JDialog implements ModeUIBase {
+
+        /** Base helper to delegate to for common things */
+        private SharedModeUIBase modeBase;
+    
+        public ModeDialog (Frame owner, AbstractModeContainer abstractModeContainer, ModeView view) {
+            super(owner);
+            // To be able to activate on mouse click.
+            enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
+            modeBase = new SharedModeUIBaseImpl(abstractModeContainer, view, this);
+        }
+
+        public ModeView getModeView() {
+            return modeBase.getModeView();
+        }
+
+        public int getKind() {
+            return modeBase.getKind();
+        }
+
+        public Shape getIndicationForLocation(Point location) {
+            return modeBase.getIndicationForLocation(location);
+        }
+
+        public Object getConstraintForLocation(Point location) {
+            return modeBase.getConstraintForLocation(location);
+        }
+
+        public Component getDropComponent() {
+            return modeBase.getDropComponent();
+        }
+
+        public ViewElement getDropViewElement() {
+            return modeBase.getDropViewElement();
+        }
+
+        public boolean canDrop(TopComponent transfer, Point location) {
+            return modeBase.canDrop(transfer, location);
+        }
+
+        public boolean supportsKind(int kind, TopComponent transfer) {
+            return modeBase.supportsKind(kind, transfer);
+        }
+
+        public void updateTitle(String title) {
+            // noop - no title for dialogs
+        }
+
+    } // end of ModeDialog
+
+    /** Defines shared common attributes of UI element for separate mode. */
+    public interface SharedModeUIBase extends ModeComponent, TopComponentDroppable {
+    }
+
+    /** Defines base of UI element for separate mode, containing extras
+     * in which JDialog and JFrame separate mode differs
+     */
+    public interface ModeUIBase extends ModeComponent, TopComponentDroppable {
+        public void updateTitle (String title);
+    }
+
+    /** Base impl of separate UI element, used as delegatee for shared things.
+     */
+    private static class SharedModeUIBaseImpl implements SharedModeUIBase {
         
         private final AbstractModeContainer abstractModeContainer;
         private final ModeView modeView;
         private long frametimestamp = 0;
+
+        /** UI representation of separate window */
+        private Window window;
         
-        public ModeFrame(AbstractModeContainer abstractModeContainer, ModeView view) {
-            super(""); // NOI18N
+        public SharedModeUIBaseImpl (AbstractModeContainer abstractModeContainer, ModeView view, Window window) {
             this.abstractModeContainer = abstractModeContainer;
-            modeView = view;
-            // To be able to activate on mouse click.
-            enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
-            setIconImage(MainWindow.createIDEImage());
-            addWindowListener(new WindowAdapter() {
+            this.modeView = view;
+            this.window = window;
+            initWindow(window);
+            attachListeners(window);
+        }
+
+        /** Creates and returns window appropriate for type of dragged TC;
+         * either frame or dialog.
+         */
+        private void initWindow (Window w) {
+            // mark this as separate window, so that ShortcutAndMenuKeyEventProcessor
+            // allows normal shorcut processing like inside main window
+            ((RootPaneContainer)w).getRootPane().putClientProperty(
+                    Constants.SEPARATE_WINDOW_PROPERTY, Boolean.TRUE);
+
+            // register in z-order mng
+            ZOrderManager.getInstance().attachWindow((RootPaneContainer)w);
+        }
+
+        private void attachListeners (Window w) {
+            w.addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent evt) {
                     modeView.getController().userClosingMode(modeView);
+                    ZOrderManager.getInstance().detachWindow((RootPaneContainer)window);
                 }
-            
+
+                public void windowClosed (WindowEvent evt) {
+                    ZOrderManager.getInstance().detachWindow((RootPaneContainer)window);
+                }
+
                 public void windowActivated(WindowEvent event) {
                     if (frametimestamp != 0 && System.currentTimeMillis() > frametimestamp + 500) {
                         modeView.getController().userActivatedModeWindow(modeView);
@@ -205,18 +338,59 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
                 public void windowOpened(WindowEvent event) {
                     frametimestamp = System.currentTimeMillis();
                 }
-            });
-            
-        }
+            });  // end of WindowListener
+
+            w.addComponentListener(new ComponentAdapter() {
+                public void componentResized(ComponentEvent evt) {
+                    /*if(DefaultSeparateContainer.this.frame.getExtendedState() == Frame.MAXIMIZED_BOTH) {
+                        // Ignore changes when the frame is in maximized state.
+                        return;
+                    }*/
+
+                    modeView.getController().userResizedModeBounds(modeView, window.getBounds());
+                }
+
+                public void componentMoved(ComponentEvent evt) {
+                    /*if(DefaultSeparateContainer.this.frame.getExtendedState() == Frame.MAXIMIZED_BOTH) {
+                        // Ignore changes when the frame is in maximized state.
+                        return;
+                    }*/
+
+                    modeView.getController().userResizedModeBounds(modeView, window.getBounds());
+                }
+
+            }); // end of ComponentListener
         
+        
+            window.addWindowStateListener(new WindowStateListener() {
+                public void windowStateChanged(WindowEvent evt) {
+         // All the timestamping is a a workaround beause of buggy GNOME and of its kind who iconify the windows on leaving the desktop.
+                    Component comp = modeView.getComponent();
+                    if (comp instanceof Frame /*&& comp.isVisible() */) {
+                        long currentStamp = System.currentTimeMillis();
+                        if (currentStamp > (modeView.getUserStamp() + 500) && currentStamp > (modeView.getMainWindowStamp() + 1000)) {
+                            modeView.getController().userChangedFrameStateMode(modeView, evt.getNewState());
+                        } else {
+                            modeView.setUserStamp(0);
+                            modeView.setMainWindowStamp(0);
+                            modeView.updateFrameState();
+                        }
+                        long stamp = System.currentTimeMillis();
+                        modeView.setUserStamp(stamp);
+                    }
+                }
+            }); // end of WindowStateListener
+
+        }
+
         public void setVisible(boolean visible) {
             frametimestamp = System.currentTimeMillis();
-            super.setVisible(visible);
+            window.setVisible(visible);
         }
         
         public void toFront() {
             frametimestamp = System.currentTimeMillis();
-            super.toFront();
+            window.toFront();
         }
         
         public ModeView getModeView() {
@@ -226,8 +400,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         public int getKind() {
             return abstractModeContainer.getKind();
         }
-        
-        
+
         // TopComponentDroppable>>
         public Shape getIndicationForLocation(Point location) {
             return abstractModeContainer.getIndicationForLocation(location);
@@ -250,15 +423,22 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         }
         
         public boolean supportsKind(int kind, TopComponent transfer) {
-            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
+            // this is not a typo, yes it should be the same as canDrop
+            return abstractModeContainer.canDrop(transfer);
+            //return true;
+            /*
+             if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
             || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
                 return true;
             }
 
             return kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
+             */
         }
         // TopComponentDroppable<<
-    } // End of ModeFrame.
+
+
+    } // End of ModeWindow.
     
 }
 
