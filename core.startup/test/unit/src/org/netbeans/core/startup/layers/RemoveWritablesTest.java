@@ -39,7 +39,7 @@ import org.openide.filesystems.Repository;
 
 /**
  *
- * @author Jaroslav Tulach
+ * @author Stanislav Aubrecht
  */
 public class RemoveWritablesTest extends NbTestCase {
     SystemFileSystem sfs;
