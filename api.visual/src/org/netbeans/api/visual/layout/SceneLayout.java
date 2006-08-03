@@ -12,7 +12,7 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public abstract class SceneLayout {
 
-    private Scene.ValidateListener listener = new LayoutValidateListener ();
+    private Scene.SceneListener listener = new LayoutSceneListener ();
     private Scene scene;
     private volatile boolean attached;
 
@@ -27,7 +27,7 @@ public abstract class SceneLayout {
                 return;
             attached = true;
         }
-        scene.addValidateListener (listener);
+        scene.addSceneListener (listener);
     }
 
     private void deatach () {
@@ -36,7 +36,7 @@ public abstract class SceneLayout {
                 return;
             attached = false;
         }
-        scene.removeValidateListener (listener);
+        scene.removeSceneListener (listener);
     }
 
     public void invokeLayout () {
@@ -46,7 +46,10 @@ public abstract class SceneLayout {
 
     protected abstract void performLayout ();
 
-    private final class LayoutValidateListener implements Scene.ValidateListener {
+    private final class LayoutSceneListener implements Scene.SceneListener {
+
+        public void sceneRepaint () {
+        }
 
         public void sceneValidating () {
         }

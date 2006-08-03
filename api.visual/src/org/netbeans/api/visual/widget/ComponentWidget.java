@@ -26,23 +26,23 @@ public final class ComponentWidget extends Widget {
     private Component component;
     private boolean componentAdded;
     private double zoomFactor = Double.MIN_VALUE;
-    private ComponentValidateListener validateListener;
+    private ComponentSceneListener validateListener;
     private ComponentComponentListener componentListener;
 
     public ComponentWidget (Scene scene, Component component) {
         super (scene);
         this.component = component;
-        validateListener = new ComponentValidateListener ();
+        validateListener = new ComponentSceneListener ();
         componentListener = new ComponentComponentListener ();
         attach ();
     }
 
     public final void attach () {
-        getScene ().addValidateListener (validateListener);
+        getScene ().addSceneListener (validateListener);
     }
 
     public final void detach () {
-        getScene ().removeValidateListener (validateListener);
+        getScene ().removeSceneListener (validateListener);
     }
 
     public final Component getComponent () {
@@ -89,7 +89,10 @@ public final class ComponentWidget extends Widget {
         }
     }
 
-    private final class ComponentValidateListener implements Scene.ValidateListener {
+    private final class ComponentSceneListener implements Scene.SceneListener {
+
+        public void sceneRepaint () {
+        }
 
         public void sceneValidating () {
             if (getScene ().getZoomFactor () - zoomFactor != 0.0)

@@ -18,15 +18,14 @@ import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.laf.DefaultLookFeel;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.util.GeomUtil;
-import org.openide.util.WeakSet;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * @author David Kaspar
@@ -40,7 +39,6 @@ public class Scene extends Widget {
 
     private JComponent component;
     private Graphics2D graphics;
-    private WeakSet satelites;
 
     private Font defaultFont;
     private Rectangle repaintRegion = null;
@@ -48,7 +46,7 @@ public class Scene extends Widget {
     private LookFeel lookFeel = new DefaultLookFeel ();
     private String activeTool;
 
-    private final ArrayList<ValidateListener> validateListeners = new ArrayList<ValidateListener> ();
+    private final ArrayList<SceneListener> sceneListeners = new ArrayList<SceneListener> ();
 
     private WidgetAction widgetHoverAction;
 
@@ -62,7 +60,6 @@ public class Scene extends Widget {
         setBackground (lookFeel.getBackground ());
         setForeground (lookFeel.getForeground ());
         sceneAnimator = new SceneAnimator (this);
-        satelites = new WeakSet ();
     }
 
     public JComponent createView () {
@@ -88,9 +85,7 @@ public class Scene extends Widget {
 
     @SuppressWarnings("unchecked")
     public JComponent createSateliteView () {
-        SateliteComponent sateliteComponent = new SateliteComponent (this);
-        satelites.add (sateliteComponent);
-        return sateliteComponent;
+        return new SateliteComponent (this);
     }
 
     public final Graphics2D getGraphics () {
@@ -187,14 +182,13 @@ public class Scene extends Widget {
     public final void validate () {
         if (graphics == null)
             return;
-        ValidateListener[] ls;
-        synchronized (validateListeners) {
-            ls = validateListeners.toArray (new ValidateListener[validateListeners.size ()]);
+        SceneListener[] ls;
+        synchronized (sceneListeners) {
+            ls = sceneListeners.toArray (new SceneListener[sceneListeners.size ()]);
         }
 
-        for (ValidateListener listener : ls)
-            if (listener != null)
-                listener.sceneValidating ();
+        for (SceneListener listener : ls)
+            listener.sceneValidating ();
 
         layoutScene ();
 
@@ -218,9 +212,8 @@ public class Scene extends Widget {
         }
 //        System.out.println ("time: " + System.currentTimeMillis ());
 
-        for (ValidateListener listener : ls)
-            if (listener != null)
-                listener.sceneValidated ();
+        for (SceneListener listener : ls)
+            listener.sceneValidated ();
     }
 
     public final Rectangle calculateRepaintBounds (Widget widget) {
@@ -241,8 +234,13 @@ public class Scene extends Widget {
     }
 
     private void repaintSatelite () {
-        for (Object view : satelites)
-            ((JComponent) view).repaint ();
+        SceneListener[] ls;
+        synchronized (sceneListeners) {
+            ls = sceneListeners.toArray (new SceneListener[sceneListeners.size ()]);
+        }
+
+        for (SceneListener listener : ls)
+            listener.sceneRepaint ();
     }
 
     public final double getZoomFactor () {
@@ -274,15 +272,16 @@ public class Scene extends Widget {
         this.activeTool = activeTool;
     }
 
-    public final void addValidateListener (ValidateListener listener) {
-        synchronized (validateListeners) {
-            validateListeners.add (listener);
+    public final void addSceneListener (SceneListener listener) {
+        assert listener != null;
+        synchronized (sceneListeners) {
+            sceneListeners.add (listener);
         }
     }
 
-    public final void removeValidateListener (ValidateListener listener) {
-        synchronized (validateListeners) {
-            validateListeners.remove (listener);
+    public final void removeSceneListener (SceneListener listener) {
+        synchronized (sceneListeners) {
+            sceneListeners.remove (listener);
         }
     }
 
@@ -323,7 +322,9 @@ public class Scene extends Widget {
 
     }
 
-    public interface ValidateListener {
+    public interface SceneListener {
+
+        void sceneRepaint ();
 
         void sceneValidating ();
 
