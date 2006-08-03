@@ -459,7 +459,6 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
 
         private SwingBrowser() {
             setEditable(false);
-            setEditorKitForContentType("text/html", new HTMLEditorKit()); // NOI18N
             addHyperlinkListener(
                 new HyperlinkListener() {
                     public void hyperlinkUpdate(HyperlinkEvent e) {

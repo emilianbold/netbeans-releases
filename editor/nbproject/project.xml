@@ -22,6 +22,48 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.editor</code-name-base>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.text</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.editor.lib</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.editor.lib</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.editor</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
@@ -33,39 +75,23 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
+                    <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.4</specification-version>
+                        <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.modules</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.nodes</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.explorer</code-name-base>
+                    <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -89,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.options</code-name-base>
+                    <code-name-base>org.openide.explorer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -97,7 +123,39 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.windows</code-name-base>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>4.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.options</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -109,11 +167,19 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.3</specification-version>
+                        <specification-version>6.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.actions</code-name-base>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -121,39 +187,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                     <code-name-base>org.openidex.util</code-name-base>
-                     <build-prerequisite/>
-                     <compile-dependency/>
-                     <run-dependency>
-                         <release-version>3</release-version>
-                         <specification-version>3.3</specification-version>
-                     </run-dependency>
-                 </dependency>
-                 <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
+                    <code-name-base>org.openidex.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>4.11</specification-version>
+                        <release-version>3</release-version>
+                        <specification-version>3.3</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>                
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>                
-           </module-dependencies>
+            </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.editor</package>
                 <package>org.netbeans.modules.editor.options</package>

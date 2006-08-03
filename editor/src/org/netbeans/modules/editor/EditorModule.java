@@ -27,10 +27,15 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.rtf.RTFEditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.BaseKit;
@@ -45,14 +50,10 @@ import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.BasePrintOptions;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
+import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openidex.search.SearchHistory;
 import org.openidex.search.SearchPattern;
@@ -64,6 +65,8 @@ import org.openidex.search.SearchPattern;
  */
 public class EditorModule extends ModuleInstall {
 
+    private static final Logger LOG = Logger.getLogger(EditorModule.class.getName());
+    
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
 
     static boolean inited = false;
@@ -127,8 +130,16 @@ public class EditorModule extends ModuleInstall {
                 }
             } );
 
-
+        // ------------------------------------------------------------
         // Autoregistration
+            
+        // First, initialize JDK's editor kit types registry
+        initAndCheckEditorKitTypeRegistry("text/plain", null);
+        initAndCheckEditorKitTypeRegistry("text/html", HTMLEditorKit.class.getName());
+        initAndCheckEditorKitTypeRegistry("text/rtf", RTFEditorKit.class.getName());
+        initAndCheckEditorKitTypeRegistry("application/rtf", RTFEditorKit.class.getName());
+            
+        // Now hook up to the JDK's editor kit registry
         try {
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
             keyField.setAccessible(true);
@@ -149,6 +160,7 @@ public class EditorModule extends ModuleInstall {
 //            );
 //        }
 
+        // ------------------------------------------------------------
          
          searchSelectedPatternListener = new PropertyChangeListener(){
              
@@ -314,27 +326,22 @@ public class EditorModule extends ModuleInstall {
             delegate = h;
             
             if (debug) {
-                if (h != null) {
-                    System.err.println("Original kit mappings: " + h);
-                }
+                LOG.log(Level.INFO, "Original kit mappings: " + h); //NOI18N
 
                 try {
                     Field keyField = JEditorPane.class.getDeclaredField("kitTypeRegistryKey");  // NOI18N
                     keyField.setAccessible(true);
                     Object key = keyField.get(JEditorPane.class);
                     Hashtable kitTypeMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
-                    sun.awt.AppContext.getAppContext().put(key, new DebugHashtable(kitTypeMapping));
+                    if (kitTypeMapping != null) {
+                        sun.awt.AppContext.getAppContext().put(key, new DebugHashtable(kitTypeMapping));
+                    }
                 } catch (Throwable t) {
                     t.printStackTrace();
                 }
             }
         }
 
-        private Object findKit(String type) {
-            MimeLookup lookup = MimeLookup.getMimeLookup(type);
-            return lookup.lookup(EditorKit.class);
-        }
-        
         private String getKitClassName(String type) {
             try {
                 Field keyField = JEditorPane.class.getDeclaredField("kitTypeRegistryKey");  // NOI18N
@@ -350,42 +357,46 @@ public class EditorModule extends ModuleInstall {
             
             return null;
         }
-            
         
         public synchronized Object get(Object key) {
+            if (debug) LOG.log(Level.INFO, "HackMap.get key=" + key); //NOI18N
+            
             Object retVal = null;
             
             if (delegate != null) {
                 retVal = delegate.get(key);
                 if (debug && retVal != null) {
-                    System.err.println("Found cached instance kit=" + retVal + " for mimeType=" + key);
+                    LOG.log(Level.INFO, "Found cached instance kit=" + retVal + " for mimeType=" + key); //NOI18N
                 }
             }
 
-	    if ((retVal == null || retVal.getClass().getName().startsWith("javax.swing.")) // NOI18N
-                && key instanceof String
-            ) {
-                // first check the type registry
-                String kitClassName = getKitClassName((String)key);
-                if (debug) {
-                    System.err.println("Found kitClassName=" + kitClassName + " for mimeType=" + key);
-                }
-                
-                if (kitClassName == null || kitClassName.startsWith("javax.swing.")) { // prefer layers // NOI18N
-                    Object kit = findKit((String)key);
-                    if (kit != null) {
-                        retVal = kit;
-                        if (debug) {
-                            System.err.println("Found kit=" + retVal + " in xml layers for mimeType=" + key);
+            if (key instanceof String) {
+                String mimeType = (String) key;
+                if (retVal == null || shouldUseNbKit(retVal.getClass().getName(), mimeType)) {
+                    // first check the type registry
+                    String kitClassName = getKitClassName(mimeType);
+                    if (debug) {
+                        LOG.log(Level.INFO, "Found kitClassName=" + kitClassName + " for mimeType=" + mimeType); //NOI18N
+                    }
+
+                    if (kitClassName == null || shouldUseNbKit(kitClassName, mimeType)) {
+                        Object kit = findKit(mimeType);
+                        if (kit != null) {
+                            retVal = kit;
+                            if (debug) {
+                                LOG.log(Level.INFO, "Found kit=" + retVal + " in xml layers for mimeType=" + mimeType); //NOI18N
+                            }
                         }
                     }
                 }
-	    }
-
+            }
+            
             return retVal;
         }
         
         public synchronized Object put(Object key, Object value) {
+            if (debug) LOG.log(Level.INFO, "HackMap.put key=" + key + " value=" + value); //NOI18N
+            
             if (delegate == null) {
                 delegate = new Hashtable();
             }
@@ -393,7 +404,7 @@ public class EditorModule extends ModuleInstall {
             Object ret = delegate.put(key,value);
             
             if (debug) {
-                System.err.println("registering mimeType=" + key
+                LOG.log(Level.INFO, "registering mimeType=" + key //NOI18N
                     + " -> kitInstance=" + value // NOI18N
                     + " original was " + ret); // NOI18N
             }
@@ -402,10 +413,12 @@ public class EditorModule extends ModuleInstall {
         }
 
         public synchronized Object remove(Object key) {
+            if (debug) LOG.log(Level.INFO, "HackMap.remove key=" + key); //NOI18N
+            
             Object ret = (delegate != null) ? delegate.remove(key) : null;
             
             if (debug) {
-                System.err.println("removing kitInstance=" + ret
+                LOG.log(Level.INFO, "removing kitInstance=" + ret //NOI18N
                     + " for mimeType=" + key); // NOI18N
             }
             
@@ -416,6 +429,24 @@ public class EditorModule extends ModuleInstall {
             return delegate;
         }
 
+        private boolean shouldUseNbKit(String kitClass, String mimeType) {
+            if (mimeType.startsWith("text/html") || //NOI18N
+                mimeType.startsWith("text/rtf") || //NOI18N
+                mimeType.startsWith("application/rtf")) //NOI18N
+            {
+                return false;
+            } else {
+                return kitClass.startsWith("javax.swing."); //NOI18N
+            }
+        }
+
+        // Don't use CloneableEditorSupport.getEditorKit so that it can safely
+        // fallback to JEP.createEKForCT if it doesn't find Netbeans kit.
+        private EditorKit findKit(String mimeType) {
+            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
+            EditorKit kit = (EditorKit) lookup.lookup(EditorKit.class);
+            return kit == null ? null : (EditorKit) kit.clone();
+        }
     }
     
     private static final class DebugHashtable extends Hashtable {
@@ -423,13 +454,13 @@ public class EditorModule extends ModuleInstall {
         DebugHashtable(Hashtable h) {
             if (h != null) {
                 putAll(h);
-                System.err.println("Existing kit classNames mappings: " + this);
+                LOG.log(Level.INFO, "Existing kit classNames mappings: " + this); //NOI18N
             }
         }
         
         public Object put(Object key, Object value) {
             Object ret = super.put(key, value);
-            System.err.println("registering mimeType=" + key
+            LOG.log(Level.INFO, "registering mimeType=" + key //NOI18N
                 + " -> kitClassName=" + value // NOI18N
                 + " original was " + ret); // NOI18N
             return ret;
@@ -437,12 +468,21 @@ public class EditorModule extends ModuleInstall {
         
         public Object remove(Object key) {
             Object ret = super.remove(key);
-            System.err.println("removing kitClassName=" + ret
+            LOG.log(Level.INFO, "removing kitClassName=" + ret //NOI18N
                 + " for mimeType=" + key); // NOI18N
             return ret;
         }
         
     }
 
-    
+    private void initAndCheckEditorKitTypeRegistry(String mimeType, String expectedKitClass) {
+        String kitClass = JEditorPane.getEditorKitClassNameForContentType(mimeType);
+        if (kitClass == null) {
+            LOG.log(Level.WARNING, "Can't find JDK editor kit class for " + mimeType); //NOI18N
+        } else if (expectedKitClass != null && !expectedKitClass.equals(kitClass)) {
+            LOG.log(Level.WARNING, "Wrong JDK editor kit class for " + mimeType + //NOI18N
+                ". Expecting: " + expectedKitClass + //NOI18N
+                ", but was: " + kitClass); //NOI18N
+        }
+    }
 }

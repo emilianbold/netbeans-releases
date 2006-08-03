@@ -436,7 +436,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
          */
         infoTextArea.setFocusable(false);
         infoTextArea.setFocusCycleRoot(false);
-        infoTextArea.setEditorKit(new HTMLEditorKit());
         infoTextArea.setContentType("text/html");
         infoTextArea.addHyperlinkListener(this);
         
@@ -452,7 +451,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         messagePanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
         
         messageTextArea.setEditable(false);
-        messageTextArea.setEditorKit(new HTMLEditorKit());
         messageTextArea.setContentType("text/html");
         messageTextArea.setToolTipText(NbBundle.getMessage(AddWebServiceDlg.class, "TOOLTIP_MESSAGEAREA"));
         messageTextScrollPane.setViewportView(messageTextArea);

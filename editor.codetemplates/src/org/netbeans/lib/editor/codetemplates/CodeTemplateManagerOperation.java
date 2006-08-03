@@ -23,7 +23,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -41,11 +40,11 @@ import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.lib.editor.codetemplates.spi.*;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 
 /**
  * Code template allows the client to paste itself into the given
@@ -319,7 +318,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     private Collection updateDescriptionInstances(Collection descriptionsInstances) {
         descriptionsInstances = new ArrayList();
-        javax.swing.text.EditorKit kit = javax.swing.JEditorPane.createEditorKitForContentType(mimeType);
+        javax.swing.text.EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
         if (kit instanceof org.netbeans.editor.BaseKit) {
             org.netbeans.modules.editor.options.BaseOptions baseOptions
                     = org.netbeans.modules.editor.options.BaseOptions.getOptions(kit.getClass());

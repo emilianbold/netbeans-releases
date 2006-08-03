@@ -1447,7 +1447,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             kit = (EditorKit) lookup.lookup(EditorKit.class);
         }
         
-        return kit != null ? kit : new PlainEditorKit();
+        // Don't use the prototype instance straightaway
+        return kit != null ? (EditorKit) kit.clone() : new PlainEditorKit();
     }
     
     /** Creates editor kit for this source.

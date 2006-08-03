@@ -44,6 +44,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  *
@@ -233,14 +234,14 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         
         EditorKit kit;
         // try the content language support
-        kit = JEditorPane.createEditorKitForContentType(JspUtils.getContentLanguage());
+        kit = CloneableEditorSupport.getEditorKit(JspUtils.getContentLanguage());
         if (kit instanceof BaseKit) {
             support = ((BaseKit)kit).createSyntaxSupport(getDocument());
             if (support != null)
                 return support;
         }
         // try the scripting language support
-        kit = JEditorPane.createEditorKitForContentType(JspUtils.getScriptingLanguage());
+        kit = CloneableEditorSupport.getEditorKit(JspUtils.getScriptingLanguage());
         if (kit instanceof BaseKit) {
             support = ((BaseKit)kit).createSyntaxSupport(getDocument());
             if (support != null)
@@ -257,7 +258,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         }
         
         EditorKit kit =
-            JEditorPane.createEditorKitForContentType(JspUtils.getContentLanguage());
+            CloneableEditorSupport.getEditorKit(JspUtils.getContentLanguage());
         if (kit instanceof BaseKit) {
             SyntaxSupport support = ((BaseKit)kit).createSyntaxSupport(getDocument());
             if (support != null && support instanceof ExtSyntaxSupport) {

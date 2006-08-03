@@ -63,6 +63,7 @@ import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 public class ColorModel {
@@ -376,7 +377,7 @@ public class ColorModel {
             String internalMimeType = languageToInternalMimeType (language);
             Document document = editorPane.getDocument ();
             document.putProperty ("mimeType", internalMimeType);
-            editorPane.setContentType (internalMimeType);
+            editorPane.setEditorKit (CloneableEditorSupport.getEditorKit(internalMimeType));
             document = editorPane.getDocument ();
             document.putProperty ("mimeType", internalMimeType);
             editorPane.addCaretListener (new CaretListener () {

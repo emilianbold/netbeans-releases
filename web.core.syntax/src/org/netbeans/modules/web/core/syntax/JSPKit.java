@@ -41,6 +41,7 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
 import org.openide.ErrorManager;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
@@ -183,7 +184,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     }
     
     public static Syntax getSyntaxForLanguage(Document doc, String language) {
-        EditorKit kit = JEditorPane.createEditorKitForContentType(language);
+        EditorKit kit = CloneableEditorSupport.getEditorKit(language);
         if (kit instanceof JavaKit) {
             JavaKit jkit = (JavaKit)kit;
             String sourceLevel = jkit.getSourceLevel((BaseDocument)doc);

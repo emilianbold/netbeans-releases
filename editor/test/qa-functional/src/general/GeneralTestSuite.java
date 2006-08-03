@@ -34,6 +34,7 @@ import org.netbeans.junit.NbTestSuite;
         super("General Editing Tests");
 
         addTestSuite(GeneralTypingTest.class);
+        addTestSuite(EditorKitsRegistryTest.class);
     }
 
 

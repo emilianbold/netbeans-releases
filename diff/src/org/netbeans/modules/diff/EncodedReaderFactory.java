@@ -258,10 +258,10 @@ public class EncodedReaderFactory {
     
     /** @return The reader or <code>null</code>. */
     private Reader getReaderFromKit(File file, FileObject fo, String mimeType) throws FileNotFoundException {
-        EditorKit kit = JEditorPane.createEditorKitForContentType(mimeType);
-        if (kit == null && "text/x-dtd".equalsIgnoreCase(mimeType)) {
+        EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
+        if (kit.getContentType().equalsIgnoreCase("text/plain") && "text/x-dtd".equalsIgnoreCase(mimeType)) {
              // Use XML kit for DTDs if not defined otherwise
-            kit = JEditorPane.createEditorKitForContentType("text/xml");
+            kit = CloneableEditorSupport.getEditorKit("text/xml");
         }
         //System.out.println("  KIT for "+mimeType+" = "+kit);
         if (kit != null) {
@@ -300,10 +300,10 @@ public class EncodedReaderFactory {
     
     /** @return The writer or <code>null</code>. */
     private Writer getWriterFromKit(File file, FileObject fo, FileLock lock, String mimeType) throws FileNotFoundException {
-        EditorKit kit = JEditorPane.createEditorKitForContentType(mimeType);
-        if (kit == null && "text/x-dtd".equalsIgnoreCase(mimeType)) {
+        EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
+        if (kit.getContentType().equalsIgnoreCase("text/plain") && "text/x-dtd".equalsIgnoreCase(mimeType)) {
              // Use XML kit for DTDs if not defined otherwise
-            kit = JEditorPane.createEditorKitForContentType("text/xml");
+            kit = CloneableEditorSupport.getEditorKit("text/xml");
         }
         //System.out.println("  KIT for "+mimeType+" = "+kit);
         if (kit != null) {

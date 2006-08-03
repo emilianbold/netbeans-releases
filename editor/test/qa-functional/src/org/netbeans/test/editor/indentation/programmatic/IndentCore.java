@@ -32,6 +32,7 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
 
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.IndentEngine;
 import java.util.Map;
 import java.lang.reflect.Method;
@@ -142,13 +143,7 @@ public class IndentCore extends java.lang.Object {
     }
     
     private static EditorKit createEditorKit(String mimeType) {
-        EditorKit kit;
-        
-        kit = JEditorPane.createEditorKitForContentType(mimeType);
-        if (kit == null) {
-            kit = new javax.swing.text.DefaultEditorKit();
-        }
-        return kit;
+        return CloneableEditorSupport.getEditorKit(mimeType);
     }
     
     private static StyledDocument createDocument(EditorKit kit) {

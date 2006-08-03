@@ -34,6 +34,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.test.editor.app.Main;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  *
@@ -142,7 +143,7 @@ public class EventLoggingEditorPane extends JEditorPane {
     }
     
     private void poorSetEditorKit(int index) {
-        EditorKit kit = getEditorKitForContentType(TestSetKitAction.kitsTypes[index]);
+        EditorKit kit = CloneableEditorSupport.getEditorKit(TestSetKitAction.kitsTypes[index]);
         setDocument(new NbEditorDocument(kit.getClass()));
         super.setEditorKit(kit);
         actions = null;

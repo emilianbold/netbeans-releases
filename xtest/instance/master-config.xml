@@ -174,6 +174,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="core/windows" testtypes="unit" attributes="commit" />
       <module name="core/javahelp" testtypes="unit" attributes="commit" />
       <module name="ide" testtypes="qa-functional" attributes="commit"/>
+      <module name="editor" testtypes="qa-functional" attributes="commit" />
   </config>
 
 </testconfig>

@@ -41,6 +41,7 @@ import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.ErrorManager;
+import org.openide.text.CloneableEditorSupport;
 //import org.openide.windows.Workspace;
 //import org.openide.windows.Mode;
 
@@ -795,22 +796,14 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
     }
     
     public void setMimeType1(String mime) {
-        jEditorPane1.setContentType(mime);
-        EditorKit kit = JEditorPane.createEditorKitForContentType(mime);
-        if (kit == null) {
-            kit = JEditorPane.createEditorKitForContentType(PLAIN_TEXT_MIME);
-        }
+        EditorKit kit = CloneableEditorSupport.getEditorKit(mime);
         jEditorPane1.setEditorKit(kit);
         //Document doc = jEditorPane1.getDocument();
         //if (!(doc instanceof StyledDocument)) jEditorPane1.setDocument(new DefaultStyledDocument());
     }
     
     public void setMimeType2(String mime) {
-        jEditorPane2.setContentType(mime);
-        EditorKit kit = JEditorPane.createEditorKitForContentType(mime);
-        if (kit == null) {
-            kit = JEditorPane.createEditorKitForContentType(PLAIN_TEXT_MIME);
-        }
+        EditorKit kit = CloneableEditorSupport.getEditorKit(mime);
         jEditorPane2.setEditorKit(kit);
         //Document doc = jEditorPane2.getDocument();
         //if (!(doc instanceof StyledDocument)) jEditorPane2.setDocument(new DefaultStyledDocument());

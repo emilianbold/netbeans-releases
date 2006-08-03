@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -42,6 +41,7 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.diff.builtin.visualizer.LinesComponent;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  * This class displays two editor panes with two files and marks the differences
@@ -1347,33 +1347,21 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
     }
     
     public void setMimeType1(String mime) {
-        jEditorPane1.setContentType(mime);
-        EditorKit kit = JEditorPane.createEditorKitForContentType(mime);
-        if (kit == null) {
-            kit = JEditorPane.createEditorKitForContentType(PLAIN_TEXT_MIME);
-        }
+        EditorKit kit = CloneableEditorSupport.getEditorKit(mime);
         jEditorPane1.setEditorKit(kit);
         //Document doc = jEditorPane1.getDocument();
         //if (!(doc instanceof StyledDocument)) jEditorPane1.setDocument(new DefaultStyledDocument());
     }
     
     public void setMimeType2(String mime) {
-        jEditorPane2.setContentType(mime);
-        EditorKit kit = JEditorPane.createEditorKitForContentType(mime);
-        if (kit == null) {
-            kit = JEditorPane.createEditorKitForContentType(PLAIN_TEXT_MIME);
-        }
+        EditorKit kit = CloneableEditorSupport.getEditorKit(mime);
         jEditorPane2.setEditorKit(kit);
         //Document doc = jEditorPane2.getDocument();
         //if (!(doc instanceof StyledDocument)) jEditorPane2.setDocument(new DefaultStyledDocument());
     }
     
     public void setMimeType3(String mime) {
-        jEditorPane3.setContentType(mime);
-        EditorKit kit = JEditorPane.createEditorKitForContentType(mime);
-        if (kit == null) {
-            kit = JEditorPane.createEditorKitForContentType(PLAIN_TEXT_MIME);
-        }
+        EditorKit kit = CloneableEditorSupport.getEditorKit(mime);
         jEditorPane3.setEditorKit(kit);
     }
     

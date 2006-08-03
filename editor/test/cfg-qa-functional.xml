@@ -23,6 +23,15 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Editor Test Application's Tests -->
 
     <!-- Validation tests-->
+    <testbag testattribs="commit" name="Editor Commit Validation">
+        <testset dir="qa-functional/src">
+        <patternset>
+            <include name="general/EditorKitsRegistryTest.class"/>
+        </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Validation tests-->
    <testbag testattribs="validation" name="Editor Validation">
          <testset dir="qa-functional/src">
              <patternset>

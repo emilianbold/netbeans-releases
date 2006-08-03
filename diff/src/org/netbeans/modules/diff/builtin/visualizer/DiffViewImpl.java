@@ -28,15 +28,12 @@ import java.awt.event.FocusListener;
 import java.awt.Dimension;
 import java.awt.Component;
 import java.awt.Color;
-import java.beans.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -49,13 +46,13 @@ import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Lookup;
 import org.openide.ErrorManager;
-import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.diff.DiffVisualizer;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  * Panel that shows differences between two files. The code here was originally distributed among DiffPanel and
@@ -860,20 +857,12 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
     }
     
     public void setMimeType1(String mime) {
-        jEditorPane1.setContentType(mime);
-        EditorKit kit = JEditorPane.createEditorKitForContentType(mime);
-        if (kit == null) {
-            kit = JEditorPane.createEditorKitForContentType(PLAIN_TEXT_MIME);
-        }
+        EditorKit kit = CloneableEditorSupport.getEditorKit(mime);
         jEditorPane1.setEditorKit(kit);
     }
     
     public void setMimeType2(String mime) {
-        jEditorPane2.setContentType(mime);
-        EditorKit kit = JEditorPane.createEditorKitForContentType(mime);
-        if (kit == null) {
-            kit = JEditorPane.createEditorKitForContentType(PLAIN_TEXT_MIME);
-        }
+        EditorKit kit = CloneableEditorSupport.getEditorKit(mime);
         jEditorPane2.setEditorKit(kit);
     }
     
