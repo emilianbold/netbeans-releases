@@ -45,6 +45,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     public static final String PLATFORM_J2SE = "j2se";                      //NOI18N
 
     protected static final String PLAT_PROP_ANT_NAME="platform.ant.name";             //NOI18N
+    protected static final String PLAT_PROP_ARCH_FOLDER="platform.arch.folder";       //NOI18N
     protected static final String SYSPROP_BOOT_CLASSPATH = "sun.boot.class.path";     // NOI18N
     protected static final String SYSPROP_JAVA_CLASS_PATH = "java.class.path";        // NOI18N
     protected static final String SYSPROP_JAVA_EXT_PATH = "java.ext.dirs";            //NOI18N
@@ -166,6 +167,13 @@ public class J2SEPlatformImpl extends JavaPlatform {
         this.properties.put(PLAT_PROP_ANT_NAME, antName);
         this.firePropertyChange (PROP_ANT_NAME,null,null);
     }
+    
+    public void setArchFolder (final String folder) {
+        if (folder == null || folder.length() == 0) {
+            throw new IllegalArgumentException ();
+        }
+        this.properties.put (PLAT_PROP_ARCH_FOLDER, folder);
+    }
 
 
     public ClassPath getBootstrapLibraries() {
@@ -220,7 +228,15 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
 
     public final FileObject findTool(final String toolName) {
-        return Util.findTool (toolName, this.getInstallFolders());
+        String archFolder = (String) getProperties().get(PLAT_PROP_ARCH_FOLDER);        
+        FileObject tool = null;
+        if (archFolder != null) {
+            tool = Util.findTool (toolName, this.getInstallFolders(), archFolder);            
+        }
+        if (tool == null) {
+            tool = Util.findTool (toolName, this.getInstallFolders());
+        }
+        return tool;
     }
 
 

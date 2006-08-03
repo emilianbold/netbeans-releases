@@ -106,14 +106,24 @@ public class Util {
          return makeSpec(version);
     }
 
-
+    
     public static FileObject findTool (String toolName, Collection installFolders) {
+        return findTool (toolName, installFolders, null);
+    }
+
+    public static FileObject findTool (String toolName, Collection installFolders, String archFolderName) {
         assert toolName != null;
         for (Iterator it = installFolders.iterator(); it.hasNext();) {
             FileObject root = (FileObject) it.next();
             FileObject bin = root.getFileObject("bin");             //NOI18N
             if (bin == null) {
                 continue;
+            }
+            if (archFolderName != null) {
+                bin = bin.getFileObject(archFolderName);
+                if (bin == null) {
+                    continue;
+                }
             }
             FileObject tool = bin.getFileObject(toolName, Utilities.isWindows() ? "exe" : null);    //NOI18N
             if (tool!= null) {

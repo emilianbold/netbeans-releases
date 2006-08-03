@@ -23,13 +23,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
@@ -53,17 +57,31 @@ import org.openide.util.NbBundle;
  * @author Svata Dedic, Tomas Zezula
  */
 public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterator {
+    
+    private static final String[] SOLARIS_64_FOLDERS = {"sparcv9","amd64"};     //NOI18N
 
     DataFolder                  installFolder;
     DetectPanel.WizardPanel     detectPanel;
     Collection                  listeners;
     NewJ2SEPlatform             platform;
+    NewJ2SEPlatform             secondaryPlatform;
     WizardDescriptor            wizard;
     int                         currentIndex;
 
     public J2SEWizardIterator(FileObject installFolder) throws IOException {
         this.installFolder = DataFolder.findFolder(installFolder);
-        this.platform  = NewJ2SEPlatform.create (installFolder);
+        this.platform = NewJ2SEPlatform.create (installFolder);        
+        String archFolder = null;
+        for (int i = 0; i< SOLARIS_64_FOLDERS.length; i++) {
+            if (Util.findTool("java",Collections.singleton(installFolder),SOLARIS_64_FOLDERS[i]) != null) {
+                archFolder = SOLARIS_64_FOLDERS[i];
+                break;
+            }
+        }
+        if (archFolder != null) {
+            this.secondaryPlatform  = NewJ2SEPlatform.create (installFolder);
+            this.secondaryPlatform.setArchFolder(archFolder);
+        }
     }
 
     FileObject getInstallFolder() {
@@ -105,17 +123,24 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
     public java.util.Set instantiate() throws IOException {
         //Workaround #44444
         this.detectPanel.storeSettings (this.wizard);
-        final String systemName = ((J2SEPlatformImpl)getPlatform()).getAntName();
-        FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource(
-                "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
-        if (platformsFolder.getFileObject(systemName,"xml")!=null) {   //NOI18N
-            String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName");
-            throw (IllegalStateException)ErrorManager.getDefault().annotate(
-                new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
-        }
-        DataObject dobj = PlatformConvertor.create(getPlatform(), DataFolder.findFolder(platformsFolder),systemName);
-        JavaPlatform platform = (JavaPlatform) dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class);
-        return Collections.singleton(platform);
+        Set result = new HashSet ();
+        for (Iterator it = getPlatforms().iterator(); it.hasNext();) {        
+            NewJ2SEPlatform platform = (NewJ2SEPlatform) it.next();
+            if (platform.isValid()) {
+                final String systemName = platform.getAntName();
+                FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource(
+                        "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
+                if (platformsFolder.getFileObject(systemName,"xml")!=null) {   //NOI18N
+                    String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName");
+                    throw (IllegalStateException)ErrorManager.getDefault().annotate(
+                        new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
+                }                       
+                DataObject dobj = PlatformConvertor.create(platform, DataFolder.findFolder(platformsFolder),systemName);
+                result.add((JavaPlatform) dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class));
+            }
+        }        
+        return Collections.unmodifiableSet(result);
+        
     }
 
     public String name() {
@@ -140,6 +165,19 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
     }
 
     public NewJ2SEPlatform getPlatform() {
-        return platform;
+        return this.platform;
     }      
+    
+    public NewJ2SEPlatform getSecondaryPlatform () {
+        return this.secondaryPlatform;
+    }
+    
+    private List getPlatforms () {
+        List result = new ArrayList ();
+        result.add(this.platform);
+        if (this.secondaryPlatform != null) {
+            result.add(this.secondaryPlatform);
+        }
+        return result;
+    }
 }

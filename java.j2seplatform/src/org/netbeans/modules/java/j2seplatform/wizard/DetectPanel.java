@@ -26,6 +26,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.event.*;
 import javax.swing.*;
@@ -62,7 +63,7 @@ import org.openide.WizardDescriptor;
  */
 public class DetectPanel extends javax.swing.JPanel {
 
-    private NewJ2SEPlatform platform;
+    private NewJ2SEPlatform primaryPlatform;
     private ArrayList listeners;
 
     /**
@@ -70,14 +71,14 @@ public class DetectPanel extends javax.swing.JPanel {
      * start the task and update on its completion
      * @param p the platform being customized.
      */
-    public DetectPanel(NewJ2SEPlatform p) {
+    public DetectPanel(NewJ2SEPlatform primaryPlatform) {
         initComponents();
         postInitComponents ();
         putClientProperty("WizardPanel_contentData",
             new String[] {
                 NbBundle.getMessage(DetectPanel.class,"TITLE_PlatformName"),
         });
-        this.platform = p;
+        this.primaryPlatform = primaryPlatform;
         this.setName (NbBundle.getMessage(DetectPanel.class,"TITLE_PlatformName"));
     }
 
@@ -323,7 +324,7 @@ public class DetectPanel extends javax.swing.JPanel {
      * Updates static information from the detected platform's properties
      */
     void updateData() {
-        Map m = platform.getSystemProperties();        
+        Map m = primaryPlatform.getSystemProperties();        
         // if the name is empty, fill something in:
         if ("".equals(jdkName.getText())) {
             jdkName.setText(getInitialName (m));
@@ -410,10 +411,19 @@ public class DetectPanel extends javax.swing.JPanel {
 
         public java.awt.Component getComponent() {
             if (component == null) {
-                NewJ2SEPlatform platform = this.iterator.getPlatform();
-                component = new DetectPanel(platform);
+                final NewJ2SEPlatform primaryPlatform = this.iterator.getPlatform();
+                final NewJ2SEPlatform secondaryPlatform = this.iterator.getSecondaryPlatform();
+                component = new DetectPanel(primaryPlatform);
                 component.addChangeListener (this);
-                task = RequestProcessor.getDefault().create(platform);
+                task = RequestProcessor.getDefault().create(
+                    new Runnable() {
+                        public void run() {
+                            primaryPlatform.run();
+                            if (secondaryPlatform != null) {
+                                secondaryPlatform.run();
+                            }
+                        }
+                });
                 task.addTaskListener(this);
             }
             return component;
@@ -528,12 +538,8 @@ public class DetectPanel extends javax.swing.JPanel {
 	 has entered. Stores user-customized display name into the Platform.
 	 */
         public void storeSettings(Object settings) {
-            if (isValid()) {                
-                J2SEPlatformImpl platform = this.iterator.getPlatform();
-                String name = component.getPlatformName();
-                platform.setDisplayName (name);
-                String antName = createAntName (name);
-                platform.setAntName (antName);
+            if (isValid()) {                                
+                String name = component.getPlatformName();                
                 List src = new ArrayList ();
                 List jdoc = new ArrayList ();
                 String srcPath = this.component.getSources();
@@ -577,8 +583,21 @@ public class DetectPanel extends javax.swing.JPanel {
                         ErrorManager.getDefault().notify (mue);
                     }
                 }
-                ((J2SEPlatformImpl)platform).setSourceFolders (ClassPathSupport.createClassPath(src));
-                ((J2SEPlatformImpl)platform).setJavadocFolders (jdoc);
+                
+                NewJ2SEPlatform platform = this.iterator.getPlatform();
+                platform.setDisplayName (name);
+                platform.setAntName (createAntName (name));
+                platform.setSourceFolders (ClassPathSupport.createClassPath(src));
+                platform.setJavadocFolders (jdoc);
+                
+                platform = this.iterator.getSecondaryPlatform();
+                if (platform != null) {
+                    name = MessageFormat.format(NbBundle.getMessage(DetectPanel.class,"FMT_64BIT"), new String[] {name});
+                    platform.setDisplayName (name);
+                    platform.setAntName (createAntName(name));
+                    platform.setSourceFolders (ClassPathSupport.createClassPath(src));
+                    platform.setJavadocFolders (jdoc);
+                }                                
             }
         }
 
@@ -593,8 +612,8 @@ public class DetectPanel extends javax.swing.JPanel {
                     assert progressHandle != null;
                     progressHandle.finish ();
                     component.progressPanel.setVisible (false);
-                    component.progressLabel.setVisible (false);
-                    detected = iterator.getPlatform().isValid();
+                    component.progressLabel.setVisible (false);                    
+                    detected = iterator.getPlatform().isValid();                    
                     checkValid ();
                 }
             });            
