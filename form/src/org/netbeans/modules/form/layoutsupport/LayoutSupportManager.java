@@ -881,10 +881,10 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
             if (metacomp.getNodeReference() != null) // propagate the change to node
                 metacomp.getNodeReference().firePropertyChangeHelper(
-                                                     null, null, null);
-//                                              ev.getPropertyName(),
-//                                              ev.getOldValue(),
-//                                              ev.getNewValue());
+//                                                     null, null, null);
+                                              ev.getPropertyName(),
+                                              ev.getOldValue(),
+                                              ev.getNewValue());
         }
         else {
             if (metacomp.getNodeReference() != null) // propagate the change to node
