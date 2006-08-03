@@ -178,6 +178,18 @@ final class Subprojects implements SubprojectProvider {
         public Object[] toArray() {
             return getDelegateTo().toArray();
         }
+
+        public int hashCode() {
+            return getDelegateTo().hashCode();
+        }
+
+        public boolean equals(Object obj) {
+            return getDelegateTo().equals(obj);
+        }
+
+        public String toString() {
+            return getDelegateTo().toString();
+        }
         
     }
     
