@@ -56,12 +56,12 @@ public final class AttachingDICookie extends AbstractDICookie {
     public static final String ID = "netbeans-jpda-AttachingDICookie";
 
     private AttachingConnector attachingConnector;
-    private Map args;
+    private Map<String,? extends Argument> args;
 
     
     private AttachingDICookie (
         AttachingConnector attachingConnector,
-        Map args
+        Map<String,? extends Argument> args
     ) {
         this.attachingConnector = attachingConnector;
         this.args = args;
@@ -76,7 +76,7 @@ public final class AttachingDICookie extends AbstractDICookie {
      */
     public static AttachingDICookie create (
         AttachingConnector attachingConnector,
-        Map args
+        Map<String,? extends Argument> args
     ) {
         return new AttachingDICookie (
             attachingConnector, 
@@ -137,7 +137,7 @@ public final class AttachingDICookie extends AbstractDICookie {
      *
      * @return map of arguments
      */
-    public Map getArgs () {
+    public Map<String,? extends Argument> getArgs () {
         return args;
     }
 
@@ -147,7 +147,7 @@ public final class AttachingDICookie extends AbstractDICookie {
      * @return port number
      */
     public int getPortNumber () {
-        Argument a = (Argument) args.get ("port");
+        Argument a = args.get ("port");
         if (a == null) return -1;
         String pn = a.value ();
         if (pn == null) return -1;
@@ -160,7 +160,7 @@ public final class AttachingDICookie extends AbstractDICookie {
      * @return name of computer
      */
     public String getHostName () {
-        Argument a = (Argument) args.get ("hostname");
+        Argument a = args.get ("hostname");
         if (a == null) return null;
         return a.value ();
     }
@@ -171,7 +171,7 @@ public final class AttachingDICookie extends AbstractDICookie {
      * @return shared memory block name
      */
     public String getSharedMemoryName () {
-        Argument a = (Argument) args.get ("name");
+        Argument a = args.get ("name");
         if (a == null) return null;
         return a.value ();
     }
@@ -189,31 +189,31 @@ public final class AttachingDICookie extends AbstractDICookie {
     
     // private helper methods ..................................................
 
-    private static Map getArgs (
+    private static Map<String,? extends Argument> getArgs (
         AttachingConnector attachingConnector,
         String hostName,
         int portNumber
     ) {
-        Map args = attachingConnector.defaultArguments ();
-        ((Argument) args.get ("hostname")).setValue (hostName);
-        ((Argument) args.get ("port")).setValue ("" + portNumber);
+        Map<String,? extends Argument> args = attachingConnector.defaultArguments ();
+        args.get ("hostname").setValue (hostName);
+        args.get ("port").setValue ("" + portNumber);
         return args;
     }
 
-    private static Map getArgs (
+    private static Map<String,? extends Argument> getArgs (
         AttachingConnector attachingConnector,
         String name
     ) {
-        Map args = attachingConnector.defaultArguments ();
-        ((Argument) args.get ("name")).setValue (name);
+        Map<String,? extends Argument> args = attachingConnector.defaultArguments ();
+        args.get ("name").setValue (name);
         return args;
     }
     
     private static AttachingConnector findAttachingConnector (String s) {
-        Iterator iter = Bootstrap.virtualMachineManager ().
+        Iterator<AttachingConnector> iter = Bootstrap.virtualMachineManager ().
             attachingConnectors ().iterator ();
         while (iter.hasNext ()) {
-            AttachingConnector ac = (AttachingConnector) iter.next ();
+            AttachingConnector ac = iter.next ();
             if (ac.transport() != null && ac.transport ().name ().toLowerCase ().indexOf (s) > -1)
                 return ac;
         }

@@ -70,7 +70,7 @@ public interface CallStackFrame {
     *
     * @return name of default stratumn
     */
-    public abstract List getAvailableStrata ();
+    public abstract List<String> getAvailableStrata ();
 
     /**
      * Returns name of file this stack frame is stopped in.

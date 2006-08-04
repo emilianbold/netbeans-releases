@@ -135,7 +135,7 @@ public abstract class JPDADebugger {
      */
     public static JPDADebugger listen (
         ListeningConnector        connector,
-        Map                       args,
+        Map<String, ? extends Argument>  args,
         Object[]                  services
     ) throws DebuggerStartException {
         Object[] s = new Object [services.length + 1];
@@ -174,7 +174,7 @@ public abstract class JPDADebugger {
      */
     public static void startListening (
         ListeningConnector        connector,
-        Map                       args,
+        Map<String, ? extends Argument>  args,
         Object[]                  services
     ) throws DebuggerStartException {
         Object[] s = new Object [services.length + 1];
@@ -361,7 +361,7 @@ public abstract class JPDADebugger {
      *
      * @param classes a map from class names to be fixed to byte[] 
      */
-    public abstract void fixClasses (Map classes);
+    public abstract void fixClasses (Map<String, byte[]> classes);
     
     /** 
      * Returns instance of SmartSteppingFilter.

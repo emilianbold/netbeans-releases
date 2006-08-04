@@ -48,14 +48,14 @@ public interface SmartSteppingFilter {
      *
      * @param patterns a set of class exclusion filters to be added
      */
-    public void addExclusionPatterns (Set patterns);
+    public void addExclusionPatterns (Set<String> patterns);
 
     /**
      * Removes given set of class exclusion filters from filter.
      *
      * @param patterns a set of class exclusion filters to be added
      */
-    public void removeExclusionPatterns (Set patterns);
+    public void removeExclusionPatterns (Set<String> patterns);
     
     /**
      * Returns list of all exclusion patterns.

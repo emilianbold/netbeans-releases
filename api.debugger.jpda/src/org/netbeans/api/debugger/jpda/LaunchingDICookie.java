@@ -60,7 +60,7 @@ public final class LaunchingDICookie extends AbstractDICookie {
     public static final String ID = "netbeans-jpda-LaunchingDICookie";
 
     private LaunchingConnector  launchingConnector;
-    private Map                 args;
+    private Map<String, ? extends Argument> args;
 
     private String              mainClassName;
     private boolean             suspend;
@@ -68,7 +68,7 @@ public final class LaunchingDICookie extends AbstractDICookie {
 
     private LaunchingDICookie (
         LaunchingConnector launchingConnector,
-        Map args,
+        Map<String, ? extends Argument> args,
         String mainClassName,
         boolean suspend
     ) {
@@ -194,21 +194,21 @@ public final class LaunchingDICookie extends AbstractDICookie {
     
     // private helper methods ..................................................
 
-    private static Map getArgs (
+    private static Map<String, ? extends Argument> getArgs (
         String commandLine,
         String address
     ) {
-        Map args = findLaunchingConnector ().defaultArguments ();
-        ((Argument) args.get ("command")).setValue (commandLine);
-        ((Argument) args.get ("address")).setValue (address);
+        Map<String, ? extends Argument> args = findLaunchingConnector ().defaultArguments ();
+        args.get ("command").setValue (commandLine);
+        args.get ("address").setValue (address);
         return args;
     }
     
     private static LaunchingConnector findLaunchingConnector () {
-        Iterator iter = Bootstrap.virtualMachineManager ().
+        Iterator<LaunchingConnector> iter = Bootstrap.virtualMachineManager ().
             launchingConnectors ().iterator ();
         while (iter.hasNext ()) {
-            LaunchingConnector lc = (LaunchingConnector) iter.next ();
+            LaunchingConnector lc = iter.next ();
             if (lc.name ().indexOf ("RawCommandLineLaunch") > -1)
                 return lc;
         }

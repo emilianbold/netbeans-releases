@@ -21,6 +21,7 @@ package org.netbeans.api.debugger.jpda;
 
 import com.sun.jdi.request.EventRequest;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -59,7 +60,7 @@ public class JPDABreakpoint extends Breakpoint {
     private boolean                     hidden = false;
     private int                         suspend = SUSPEND_ALL;
     private String                      printText;
-    private HashSet                     breakpointListeners = new HashSet ();
+    private Collection<JPDABreakpointListener>  breakpointListeners = new HashSet<JPDABreakpointListener>();
     
    
     JPDABreakpoint () {
@@ -188,8 +189,9 @@ public class JPDABreakpoint extends Breakpoint {
      * @param event a event to be fired
      */
     void fireJPDABreakpointChange (JPDABreakpointEvent event) {
-        Iterator i = ((HashSet) breakpointListeners.clone ()).iterator ();
+        Iterator<JPDABreakpointListener> i =
+                new HashSet<JPDABreakpointListener>(breakpointListeners).iterator();
         while (i.hasNext ())
-            ((JPDABreakpointListener) i.next ()).breakpointReached (event);
+            i.next().breakpointReached (event);
     }
 }

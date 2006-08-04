@@ -56,11 +56,11 @@ public final class ListeningDICookie extends AbstractDICookie {
     public static final String ID = "netbeans-jpda-ListeningDICookie";
 
     private ListeningConnector listeningConnector;
-    private Map args;
+    private Map<String, ? extends Argument> args;
 
     private ListeningDICookie (
         ListeningConnector listeningConnector,
-        Map args
+        Map<String, ? extends Argument> args
     ) {
         this.listeningConnector = listeningConnector;
         this.args = args;
@@ -75,7 +75,7 @@ public final class ListeningDICookie extends AbstractDICookie {
      */
     public static ListeningDICookie create (
         ListeningConnector listeningConnector,
-        Map args
+        Map<String, ? extends Argument> args
     ) {
         return new ListeningDICookie (
             listeningConnector,
@@ -130,21 +130,21 @@ public final class ListeningDICookie extends AbstractDICookie {
         return null;
     }
 
-    private static Map getArgs (
+    private static Map<String, ? extends Argument> getArgs (
         ListeningConnector listeningConnector,
         int portNumber
     ) {
-        Map args = listeningConnector.defaultArguments ();
-        ((Argument) args.get ("port")).setValue ("" + portNumber);
+        Map<String, ? extends Argument> args = listeningConnector.defaultArguments ();
+        args.get ("port").setValue ("" + portNumber);
         return args;
     }
 
-    private static Map getArgs (
+    private static Map<String, ? extends Argument> getArgs (
         ListeningConnector listeningConnector,
         String name
     ) {
-        Map args = listeningConnector.defaultArguments ();
-        ((Argument) args.get ("name")).setValue (name);
+        Map<String, ? extends Argument> args = listeningConnector.defaultArguments ();
+        args.get ("name").setValue (name);
         return args;
     }
 
@@ -162,7 +162,7 @@ public final class ListeningDICookie extends AbstractDICookie {
      *
      * @return map of arguments to be used
      */
-    public Map getArgs () {
+    public Map<String, ? extends Argument> getArgs () {
         return args;
     }
 
