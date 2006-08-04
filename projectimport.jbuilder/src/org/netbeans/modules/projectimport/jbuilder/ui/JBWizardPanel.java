@@ -149,6 +149,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
     
     private void fieldUpdate() {
         String errorMessage = null;
+        boolean isUserHomeInvalid = false;
         File destFolder = (isEmpty(destDirTextField)) ? null : getFile(destDirTextField);
         boolean isDesttDirValid = false;
         for(File tempFolder = destFolder; tempFolder != null ; tempFolder = tempFolder.getParentFile()) {
@@ -180,7 +181,8 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
                             parseProjectFile(projectFile);
                             return;
                         } else if (isEmpty(userHomeTextField) || !f.exists() || f.getName().indexOf("jbuilder") == -1 ) {
-                            errorMessage = NbBundle.getMessage(JBWizardPanel.class, "MSG_NotRegularUserHome", userHomeTextField.getText()); // NOI18N
+                            //errorMessage = NbBundle.getMessage(JBWizardPanel.class, "MSG_NotRegularUserHome", userHomeTextField.getText()); // NOI18N
+                            isUserHomeInvalid = true;
                         } else if (jbDirTextField.isEnabled()) {
                             changedInstallDir();
                         }
@@ -196,7 +198,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         
         if (errorMessage == null) {
             markValid();
-            if (jbDirTextField.isEnabled()) {
+            if (jbDirTextField.isEnabled() || isUserHomeInvalid) {
                 setWarning(getMessage("LBL_Warning"));
             }            
         } else {
