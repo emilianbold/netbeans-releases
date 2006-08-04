@@ -3,7 +3,6 @@
  */
 package org.netbeans.api.visual.layout;
 
-import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -75,20 +74,12 @@ public abstract class SceneLayout {
         }
 
         protected void performLayout () {
-            Layout oldLayout = widget.getLayout ();
-            try {
-                widget.setLayout (devolveLayout);
-                Scene scene = widget.getScene ();
-                scene.validate ();
-                SceneAnimator sceneAnimator = scene.getSceneAnimator ();
-                for (Widget child : widget.getChildren ()) {
-                    if (animate)
-                        sceneAnimator.animatePreferredLocation (child, child.getLocation ());
-                    else
-                        child.setPreferredLocation (child.getLocation ());
-                }
-            } finally {
-                widget.setLayout (oldLayout);
+            devolveLayout.layout (widget);
+            for (Widget child : widget.getChildren ()) {
+                if (animate)
+                    widget.getScene ().getSceneAnimator ().animatePreferredLocation (child, child.getLocation ());
+                else
+                    child.setPreferredLocation (child.getLocation ());
             }
         }
     }

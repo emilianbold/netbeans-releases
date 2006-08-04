@@ -50,11 +50,13 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
     public void addNotify () {
         super.addNotify ();
         scene.setGraphics ((Graphics2D) getGraphics ());
+        scene.revalidate ();
         scene.validate ();
     }
 
     public void setSize (int width, int height) {
         super.setSize (width, height);
+        scene.revalidate ();
         scene.validate ();
     }
 
