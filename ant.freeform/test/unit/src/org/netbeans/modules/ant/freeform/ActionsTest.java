@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.TreeSet;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
@@ -70,7 +72,7 @@ public class ActionsTest extends TestBase {
             AntTargetInvocation other = (AntTargetInvocation) obj;
             return other.scriptFile == scriptFile &&
                 Utilities.compareObjects(other.targetNameArray, targetNameArray) &&
-                other.props.equals(props);
+                other.normalizedProps().equals(normalizedProps());
         }
         public int hashCode() {
             int x = scriptFile.hashCode() ^ props.hashCode();
@@ -78,6 +80,16 @@ public class ActionsTest extends TestBase {
                 x ^= Arrays.asList(targetNameArray).hashCode();
             }
             return x;
+        }
+        private Map/*<String,String>*/ normalizedProps() {
+            Map m = new HashMap();
+            Iterator it = props.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry e = (java.util.Map.Entry) it.next();
+                String origval = (String) e.getValue();
+                m.put(e.getKey(), new TreeSet(Arrays.asList(origval.split(","))));
+            }
+            return m;
         }
     }
     
