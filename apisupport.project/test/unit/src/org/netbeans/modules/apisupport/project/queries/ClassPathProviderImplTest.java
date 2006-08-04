@@ -185,6 +185,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForDir("ant/build/classes"));
         // And #70206: transitive runtime deps too.
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-modules-queries.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-modules-editor-mimelookup.jar"));
         assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots.toString(), urlsOfCp(cp).toString());
         cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
@@ -308,6 +309,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-core.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-api-progress.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/core/core.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-modules-editor-mimelookup.jar"));
         // cp.extra:
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/ext/updater.jar"));
         // module JAR:
