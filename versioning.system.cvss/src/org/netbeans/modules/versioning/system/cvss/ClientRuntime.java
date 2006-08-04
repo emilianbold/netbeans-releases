@@ -240,6 +240,15 @@ public class ClientRuntime {
             }
         }
         
+        // we must not run commands from within folders that are not yet in CVS, try to find the closest uptodate parent
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        for (File versionedCommonParent = commonParent; versionedCommonParent != null; versionedCommonParent = versionedCommonParent.getParentFile()) {
+            FileInformation info = cache.getStatus(versionedCommonParent);
+            if (info.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
+                commonParent = versionedCommonParent;
+                break;
+            }
+        }
         client.setLocalPath(commonParent.getAbsolutePath());
     }
 
