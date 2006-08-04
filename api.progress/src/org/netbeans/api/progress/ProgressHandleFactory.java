@@ -21,6 +21,7 @@ package org.netbeans.api.progress;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import org.netbeans.progress.spi.InternalHandle;
 import org.openide.util.Cancellable;
 
@@ -91,6 +92,26 @@ public final class ProgressHandleFactory {
      */
     public static JComponent createProgressComponent(ProgressHandle handle) {
         return handle.extractComponent();
+    }
+    
+    /**
+     * Get the task title component for use in custom dialogs, the task won't 
+     * show in the progress bar anymore. The text of the label is changed by calls to <code>ProgressHandle.setDisplayName()</code> method
+     * @return the component to use in custom UI.
+     * @since org.netbeans.api.progress 1.8
+     */
+    public static JLabel createMainLabelComponent(ProgressHandle handle) {
+        return handle.extractMainLabel();
+    }
+    
+    /**
+     * Get the detail messages component for use in custom dialogs, the task won't 
+     * show in the progress bar anymore. The text of the label is changed by calls to <code>ProgressHandle.progress(String)</code> method.
+     * @return the component to use in custom UI.
+     * @since org.netbeans.api.progress 1.8
+     */
+    public static JLabel createDetailLabelComponent(ProgressHandle handle) {
+        return handle.extractDetailLabel();
     }
     
     /**

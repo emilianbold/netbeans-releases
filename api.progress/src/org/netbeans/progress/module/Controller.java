@@ -86,6 +86,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         return defaultInstance;
     }
     
+    // to be called on the default instance only..
     Component getVisualComponent() {
         if (component instanceof Component) {
             return (Component)component;

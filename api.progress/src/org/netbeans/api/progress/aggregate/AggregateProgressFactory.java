@@ -21,7 +21,8 @@ package org.netbeans.api.progress.aggregate;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
-import org.netbeans.progress.spi.InternalHandle;
+import javax.swing.JLabel;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.util.Cancellable;
 
 /**
@@ -77,11 +78,31 @@ public final class AggregateProgressFactory {
     /**
      * Get the progress bar component for use in custom dialogs, the task won't 
      * show in the progress bar anymore.
-     * @since 1.3
+     * @since org.netbeans.api.progress 1.3
      * @return the component to use in custom UI.
      */
     public static JComponent createProgressComponent(AggregateProgressHandle handle) {
         return handle.extractComponent();
     }    
+    
+    /**
+     * Get the task title component for use in custom dialogs, the task won't 
+     * show in the progress bar anymore. The text of the label is changed by calls to handle's <code>setDisplayName()</code> method.
+     * @return the component to use in custom UI.
+     * @since org.netbeans.api.progress 1.8
+     */
+    public static JLabel createMainLabelComponent(AggregateProgressHandle handle) {
+        return handle.extractMainLabel();
+    }
+    
+    /**
+     * Get the detail messages component for use in custom dialogs, the task won't 
+     * show in the progress bar anymore.The text of the label is changed by calls to contributors' <code>progress(String)</code> methods.
+     * @return the component to use in custom UI.
+     * @since org.netbeans.api.progress 1.8
+     */
+    public static JLabel createDetailLabelComponent(AggregateProgressHandle handle) {
+        return handle.extractDetailLabel();
+    }
     
 }

@@ -21,8 +21,11 @@ package org.netbeans.modules.progress.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.UIManager;
+import org.netbeans.progress.spi.ExtractedProgressUIWorker;
 import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.ProgressUIWorker;
 import org.netbeans.progress.spi.ProgressEvent;
@@ -33,9 +36,12 @@ import org.netbeans.progress.spi.ProgressEvent;
 
  * @author mkleint
  */
-public class NbProgressBar extends JProgressBar implements ProgressUIWorker {
+public class NbProgressBar extends JProgressBar implements ExtractedProgressUIWorker {
     boolean isSetup = false;
     boolean usedInStatusBar = false;
+    //TODO these two ought to be created only when the the bar is used externally..
+    private JLabel detailLabel = new JLabel();
+    private JLabel mainLabel = new JLabel();
     
     /** Creates a new instance of NbProgressBar */
     public NbProgressBar() {
@@ -72,6 +78,7 @@ public class NbProgressBar extends JProgressBar implements ProgressUIWorker {
     public void processProgressEvent(ProgressEvent event) {
         if (event.getType() == ProgressEvent.TYPE_START || !isSetup  || event.isSwitched()) {
             setupBar(event.getSource(), this);
+            mainLabel.setText(event.getSource().getDisplayName());
             isSetup = true;
         } 
         if (event.getType() == ProgressEvent.TYPE_PROGRESS) {
@@ -79,6 +86,13 @@ public class NbProgressBar extends JProgressBar implements ProgressUIWorker {
                 setValue(event.getWorkunitsDone());
             }
             setString(StatusLineComponent.getBarString(event.getPercentageDone(), event.getEstimatedCompletion()));
+            if (event.getDisplayName() != null) {
+                mainLabel.setText(event.getDisplayName());
+            }
+            if (event.getMessage() != null) {
+                detailLabel.setText(event.getMessage());
+            }
+            
         } else if (event.getType() == ProgressEvent.TYPE_FINISH) {
             boolean wasIndetermenite = isIndeterminate();
             setIndeterminate(false);
@@ -113,4 +127,16 @@ public class NbProgressBar extends JProgressBar implements ProgressUIWorker {
         }
         bar.setString(" ");
     }    
+
+    public JComponent getProgressComponent() {
+        return this;
+    }
+
+    public JLabel getMainLabelComponent() {
+        return mainLabel;
+    }
+
+    public JLabel getDetailLabelComponent() {
+        return detailLabel;
+    }
 }

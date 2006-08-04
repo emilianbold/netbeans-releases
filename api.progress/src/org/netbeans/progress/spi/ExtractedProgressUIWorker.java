@@ -13,19 +13,22 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.progress.spi;
 
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+
 /**
  *
  * @author mkleint
  */
-public interface ProgressUIWorkerProvider {
+public interface ExtractedProgressUIWorker extends ProgressUIWorker {
     
-    public ProgressUIWorkerWithModel getDefaultWorker();
-    
-    public ExtractedProgressUIWorker getExtractedComponentWorker();
+    JComponent getProgressComponent();
+    JLabel getMainLabelComponent();
+    JLabel getDetailLabelComponent();
 }

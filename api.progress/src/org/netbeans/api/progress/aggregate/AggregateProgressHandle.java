@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
@@ -226,4 +227,12 @@ public final class AggregateProgressHandle {
     JComponent extractComponent() {
         return ProgressHandleFactory.createProgressComponent(handle);
     }    
+
+    JLabel extractDetailLabel() {
+        return ProgressHandleFactory.createDetailLabelComponent(handle);
+    }
+
+    JLabel extractMainLabel() {
+        return ProgressHandleFactory.createMainLabelComponent(handle);
+    }
 }

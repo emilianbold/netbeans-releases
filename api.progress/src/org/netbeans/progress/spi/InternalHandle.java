@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import org.netbeans.progress.module.*;
@@ -45,7 +46,9 @@ public final class InternalHandle {
     private String displayName;
     private boolean allowCancel;
     private boolean allowBackground;
-    private boolean customPlaced = false;
+    private boolean customPlaced1 = false;
+    private boolean customPlaced2 = false;
+    private boolean customPlaced3 = false;
     private int state;
     private int totalUnits;
     private int currentUnit;
@@ -58,6 +61,7 @@ public final class InternalHandle {
     private final boolean userInitiated;
     private int initialDelay = Controller.INITIAL_DELAY;
     private Controller controller;
+    private ExtractedProgressUIWorker component;
     
     public static final int STATE_INITIALIZED = 0;
     public static final int STATE_RUNNING = 1;
@@ -103,7 +107,7 @@ public final class InternalHandle {
     
     
     public boolean isCustomPlaced() {
-        return customPlaced;
+        return component != null;
     }
     
     public boolean isUserInitialized() {
@@ -180,7 +184,7 @@ public final class InternalHandle {
         timeStarted = System.currentTimeMillis();
         timeLastProgress = timeStarted;
 
-        if (! customPlaced) {
+        if (controller == null) {
             controller = Controller.getDefault();
         }
         
@@ -294,25 +298,53 @@ public final class InternalHandle {
                             (initialEstimate == -1 ? -1 : calculateFinishEstimate()));
     }
     
+    private void createExtractedWorker() {
+        if (component == null) {
+            ProgressUIWorkerProvider prov = (ProgressUIWorkerProvider)Lookup.getDefault().lookup(ProgressUIWorkerProvider.class); 
+            assert prov != null;
+            component = prov.getExtractedComponentWorker();
+            controller = new Controller(component);
+        }
+    }
     /**
      * have the component in custom location, don't include in the status bar.
      */
     public synchronized JComponent extractComponent() {
-        if (customPlaced) {
+        if (customPlaced1) {
             throw new IllegalStateException("Cannot retrieve progress component multiple times");
         }
         if (state != STATE_INITIALIZED) {
             throw new IllegalStateException("You can request custom placement of progress component only before starting the task");
         }
-        customPlaced = true;
-        ProgressUIWorkerProvider prov = (ProgressUIWorkerProvider)Lookup.getDefault().lookup(ProgressUIWorkerProvider.class); 
-        assert prov != null;
-        ProgressUIWorker component = prov.getExtractedComponentWorker();
-        controller = new Controller(component);
-        return (JComponent)component;
+        customPlaced1 = true;
+        createExtractedWorker();
+        return component.getProgressComponent();
     }
     
-    
+    public JLabel extractDetailLabel() {
+        if (customPlaced2) {
+            throw new IllegalStateException("Cannot retrieve progress detail label component multiple times");
+        }
+        if (state != STATE_INITIALIZED) {
+            throw new IllegalStateException("You can request custom placement of progress component only before starting the task");
+        }
+        customPlaced2 = true;
+        createExtractedWorker();
+        return component.getDetailLabelComponent();
+    }
+
+    public JLabel extractMainLabel() {
+        if (customPlaced3) {
+            throw new IllegalStateException("Cannot retrieve progress main label component multiple times");
+        }
+        if (state != STATE_INITIALIZED) {
+            throw new IllegalStateException("You can request custom placement of progress component only before starting the task");
+        }
+        customPlaced3 = true;
+        createExtractedWorker();
+        return component.getMainLabelComponent();
+    }
+
     long calculateFinishEstimate() {
         
         // we are interested in seconds only

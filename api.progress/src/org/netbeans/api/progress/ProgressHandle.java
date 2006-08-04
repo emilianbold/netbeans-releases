@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import org.netbeans.progress.spi.InternalHandle;
 
@@ -148,7 +149,7 @@ public final class ProgressHandle {
     /**
      * change the display name of the progress task. Use with care, please make sure the changed name is not completely different,
      * or otherwise it might appear to the user as a different task.
-     * @since 1.5
+     * @since org.netbeans.api.progress 1.5
      */
     public void setDisplayName(String newDisplayName) {
         internal.requestDisplayNameChange(newDisplayName);
@@ -167,6 +168,14 @@ public final class ProgressHandle {
      */
     InternalHandle getInternalHandle() {
         return internal;
+    }
+
+    JLabel extractDetailLabel() {
+        return internal.extractDetailLabel();
+    }
+
+    JLabel extractMainLabel() {
+        return internal.extractMainLabel();
     }
     
 

@@ -22,6 +22,7 @@ package org.netbeans.api.progress;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.progress.module.Controller;
@@ -115,6 +116,13 @@ public class ProgressHandleTest extends NbTestCase {
         assertFalse(handle.isCustomPlaced());
         JComponent comp = ProgressHandleFactory.createProgressComponent(proghandle);
         assertTrue(handle.isCustomPlaced());
+        JLabel main = ProgressHandleFactory.createMainLabelComponent(proghandle);
+        assertTrue(handle.isCustomPlaced());
+        assertNotNull(main);
+        JLabel detail = ProgressHandleFactory.createDetailLabelComponent(proghandle);
+        assertTrue(handle.isCustomPlaced());
+        assertNotNull(detail);
+                
         boolean ok = false;
         try {
             // cannot get the custom component multiple times..
@@ -125,6 +133,28 @@ public class ProgressHandleTest extends NbTestCase {
         
         assertTrue(ok);
     }
+    
+    /**
+     * Test of custom placed labels of class org.netbeans.progress.api.ProgressHandle.
+     */
+    public void testCustomPlacedLabels() {
+        assertFalse(handle.isCustomPlaced());
+        JComponent comp = ProgressHandleFactory.createProgressComponent(proghandle);
+        JLabel main = ProgressHandleFactory.createMainLabelComponent(proghandle);
+        JLabel detail = ProgressHandleFactory.createDetailLabelComponent(proghandle);
+        proghandle.start();
+        proghandle.setDisplayName("test1");
+        proghandle.progress("message1");
+        // kind of bad to have the wait here to overcome the scheduling..
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException exc) {
+            System.out.println("interrupted");
+        }
+        assertEquals("test1", main.getText());
+        assertEquals("message1", detail.getText());
+    }
+    
     
     // tasks shorter than the InternalHandle.INITIAL_DELAY should be discarded.
     public void testIfShortOnesGetDiscarded() throws Exception {
