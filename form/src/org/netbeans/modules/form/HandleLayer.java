@@ -2700,12 +2700,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         
         public void dragEnter(DropTargetDragEvent dtde) {
             try {
-                DropTargetContext context = dtde.getDropTargetContext();
-                // getTransferable() method on DropTargetDragEvent should be used
-                // when it is possible to drop support of JDK 1.4
-                java.lang.reflect.Method method = context.getClass().getDeclaredMethod("getTransferable", new Class[0]); // NOI18N
-                method.setAccessible(true);
-                Transferable transferable = (Transferable)method.invoke(context, new Object[0]);
+                Transferable transferable = dtde.getTransferable();
                 PaletteItem item = null;
                 if (dtde.isDataFlavorSupported(PaletteController.ITEM_DATA_FLAVOR)) {
                     Lookup itemLookup = (Lookup)transferable.getTransferData(PaletteController.ITEM_DATA_FLAVOR);
