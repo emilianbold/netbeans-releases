@@ -182,38 +182,41 @@ public class Scene extends Widget {
     public final void validate () {
         if (graphics == null)
             return;
-        SceneListener[] ls;
-        synchronized (sceneListeners) {
-            ls = sceneListeners.toArray (new SceneListener[sceneListeners.size ()]);
+
+        while (! isValidated ()) {
+            SceneListener[] ls;
+            synchronized (sceneListeners) {
+                ls = sceneListeners.toArray (new SceneListener[sceneListeners.size ()]);
+            }
+
+            for (SceneListener listener : ls)
+                listener.sceneValidating ();
+
+            layoutScene ();
+
+            for (Widget widget : repaintWidgets) {
+                Rectangle repaintBounds = calculateRepaintBounds (widget);
+                if (repaintBounds == null)
+                    continue;
+                if (repaintRegion != null)
+                    repaintRegion.add (repaintBounds);
+                else
+                    repaintRegion = repaintBounds;
+            }
+            repaintWidgets.clear ();
+    //        System.out.println ("r = " + r);
+
+            // NOTE - maybe improves performance when component.repaint will be called for all widgets/rectangles separately
+            if (repaintRegion != null) {
+                component.repaint (convertSceneToView (repaintRegion));
+                repaintSatelite ();
+                repaintRegion = null;
+            }
+    //        System.out.println ("time: " + System.currentTimeMillis ());
+
+            for (SceneListener listener : ls)
+                listener.sceneValidated ();
         }
-
-        for (SceneListener listener : ls)
-            listener.sceneValidating ();
-
-        layoutScene ();
-
-        for (Widget widget : repaintWidgets) {
-            Rectangle repaintBounds = calculateRepaintBounds (widget);
-            if (repaintBounds == null)
-                continue;
-            if (repaintRegion != null)
-                repaintRegion.add (repaintBounds);
-            else
-                repaintRegion = repaintBounds;
-        }
-        repaintWidgets.clear ();
-//        System.out.println ("r = " + r);
-
-        // NOTE - maybe improves performance when component.repaint will be called for all widgets/rectangles separately
-        if (repaintRegion != null) {
-            component.repaint (convertSceneToView (repaintRegion));
-            repaintSatelite ();
-            repaintRegion = null;
-        }
-//        System.out.println ("time: " + System.currentTimeMillis ());
-
-        for (SceneListener listener : ls)
-            listener.sceneValidated ();
     }
 
     public final Rectangle calculateRepaintBounds (Widget widget) {
