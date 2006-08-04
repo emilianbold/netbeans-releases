@@ -360,6 +360,7 @@ public final class SourcesHelper {
     private final class SourcesImpl implements Sources, PropertyChangeListener, FileChangeSupportListener {
         
         private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private boolean haveAttachedListeners;
         private final Set<File> rootsListenedTo = new HashSet<File>();
         /**
          * The root URLs which were computed last, keyed by group type.
@@ -443,17 +444,23 @@ public final class SourcesHelper {
                 }
             }
             lastComputedRoots.put(type, rootURLs);
-            return (SourceGroup[])groups.toArray(new SourceGroup[groups.size()]);
+            return groups.toArray(new SourceGroup[groups.size()]);
         }
         
         private void listen(File rootLocation) {
             // #40845. Need to fire changes if a source root is added or removed.
-            if (rootsListenedTo.add(rootLocation)) {
+            if (rootsListenedTo.add(rootLocation) && /* be lazy */ haveAttachedListeners) {
                 FileChangeSupport.DEFAULT.addListener(this, rootLocation);
             }
         }
         
         public void addChangeListener(ChangeListener listener) {
+            if (!haveAttachedListeners) {
+                haveAttachedListeners = true;
+                for (File rootLocation : rootsListenedTo) {
+                    FileChangeSupport.DEFAULT.addListener(this, rootLocation);
+                }
+            }
             synchronized (listeners) {
                 listeners.add(listener);
             }
