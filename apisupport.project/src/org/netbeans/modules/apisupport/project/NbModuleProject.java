@@ -104,10 +104,6 @@ public final class NbModuleProject implements Project {
     private final GeneratedFilesHelper genFilesHelper;
     private final NbModuleTypeProviderImpl typeProvider;
     
-    private LocalizedBundleInfo bundleInfo;
-    
-    private boolean manifestChanged;
-
     NbModuleProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         genFilesHelper = new GeneratedFilesHelper(helper);
@@ -189,25 +185,8 @@ public final class NbModuleProject implements Project {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        Manifest mf = getManifest();
-        FileObject srcFO = getSourceDirectory();
-        if (mf != null && srcFO != null) {
-            bundleInfo = Util.findLocalizedBundleInfo(srcFO, getManifest());
-        }
-        Info info = new Info();
-        if (bundleInfo != null) {
-            bundleInfo.addPropertyChangeListener(info);
-        }
-        if (mf != null) {
-            getManifestFile().addFileChangeListener(new FileChangeAdapter() {
-                public void fileChanged(FileEvent fe) {
-                    // cannot reload manifest-depended things immediatelly (see 67961 for more details)
-                    manifestChanged = true;
-                }
-            });
-        }
         lookup = Lookups.fixed(new Object[] {
-            info,
+            new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
@@ -586,7 +565,7 @@ public final class NbModuleProject implements Project {
      * LocalizedBundleInfo} for this project.
      */
     public LocalizedBundleInfo getBundleInfo() {
-        return bundleInfo;
+        return ((LocalizedBundleInfo.Provider) getLookup().lookup(LocalizedBundleInfo.Provider.class)).getLocalizedBundleInfo();
     }
     
     
@@ -601,14 +580,7 @@ public final class NbModuleProject implements Project {
 
         private String displayName;
         
-        Info() {
-            if (bundleInfo != null) {
-                displayName = bundleInfo.getDisplayName();
-            }
-            if (/* #70490 */displayName == null) {
-                displayName = getName();
-            }
-        }
+        Info() {}
         
         public String getName() {
             String cnb = getCodeNameBase();
@@ -616,12 +588,21 @@ public final class NbModuleProject implements Project {
         }
         
         public String getDisplayName() {
+            if (displayName == null) {
+                LocalizedBundleInfo bundleInfo = getBundleInfo();
+                if (bundleInfo != null) {
+                    displayName = bundleInfo.getDisplayName();
+                }
+            }
+            if (/* #70490 */displayName == null) {
+                displayName = getName();
+            }
             assert displayName != null : NbModuleProject.this;
             return displayName;
         }
         
         private void setDisplayName(String newDisplayName) {
-            String oldDisplayName = displayName;
+            String oldDisplayName = getDisplayName();
             displayName = newDisplayName == null ? getName() : newDisplayName;
             firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldDisplayName, displayName);
         }
@@ -836,13 +817,27 @@ public final class NbModuleProject implements Project {
     }    
 
     private final class LocalizedBundleInfoProvider implements LocalizedBundleInfo.Provider {
+
+        private LocalizedBundleInfo bundleInfo;
+
         public LocalizedBundleInfo getLocalizedBundleInfo() {
-            if (manifestChanged) {
-                bundleInfo = Util.findLocalizedBundleInfo(getSourceDirectory(), getManifest());
+            if (bundleInfo == null) {
+                Manifest mf = getManifest();
+                FileObject srcFO = getSourceDirectory();
+                if (mf != null && srcFO != null) {
+                    bundleInfo = Util.findLocalizedBundleInfo(srcFO, getManifest());
+                }
                 if (bundleInfo != null) {
                     bundleInfo.addPropertyChangeListener((Info) getLookup().lookup(Info.class));
                 }
-                manifestChanged = false;
+                if (mf != null) {
+                    getManifestFile().addFileChangeListener(new FileChangeAdapter() {
+                        public void fileChanged(FileEvent fe) {
+                            // cannot reload manifest-dependent things immediately (see 67961 for more details)
+                            bundleInfo = null;
+                        }
+                    });
+                }
             }
             return bundleInfo;
         }
