@@ -30,7 +30,7 @@ import java.util.List;
 public final class TargetDescriptor {
 
     private String actionName;
-    private List/*<String>*/ defaultTargets;
+    private List<String> defaultTargets;
     private String actionLabel;
     private String accessibleLabel;
 
@@ -39,10 +39,10 @@ public final class TargetDescriptor {
      * @param actionName IDE action name (see {@link org.netbeans.spi.project.ActionProvider})
      * @param defaultTargets list of regular expressions to match name of the 
      *   Ant target to which this IDE action usually maps
-     * @param actionLabel localized label of this action. To be shown in UI csutomizer
-     * @param accessibleLabel accessible label. Used togerther with actionLabel
+     * @param actionLabel localized label of this action. To be shown in UI customizer
+     * @param accessibleLabel accessible label. Used together with actionLabel
      */
-    public TargetDescriptor(String actionName, List/*<String>*/ defaultTargets, String actionLabel, String accessibleLabel) {
+    public TargetDescriptor(String actionName, List<String> defaultTargets, String actionLabel, String accessibleLabel) {
         this.actionName = actionName;
         this.defaultTargets = defaultTargets;
         this.actionLabel = actionLabel;
@@ -62,7 +62,7 @@ public final class TargetDescriptor {
      * given order so it is recommended to list the most specific ones first.
      * @return cannot be null; can be empty array
      */
-    public List/*<String>*/ getDefaultTargets() {
+    public List<String> getDefaultTargets() {
         return defaultTargets;
     }
 

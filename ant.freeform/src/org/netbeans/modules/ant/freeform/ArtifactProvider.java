@@ -51,19 +51,17 @@ final class ArtifactProvider implements AntArtifactProvider {
 
     public AntArtifact[] getBuildArtifacts() {
         Element data = project.helper().getPrimaryConfigurationData(true);
-        Iterator/*<Element>*/ exports = Util.findSubElements(data).iterator();
-        List/*<AntArtifact>*/ artifacts = new ArrayList();
-        Set/*<String>*/ ids = new HashSet();
-        HashMap/*<String,AntArtifact>*/ uniqueArtifacts = new HashMap();
-        while (exports.hasNext()) {
-            Element export = (Element) exports.next();
+        List<AntArtifact> artifacts = new ArrayList<AntArtifact>();
+        Set<String> ids = new HashSet<String>();
+        HashMap<String,FreeformArtifact> uniqueArtifacts = new HashMap<String,FreeformArtifact>();
+        for (Element export : Util.findSubElements(data)) {
             if (!export.getLocalName().equals("export")) { // NOI18N
                 continue;
             }
             FreeformArtifact artifact = new FreeformArtifact(export);
             
             String artifactKey = artifact.getType() + artifact.getTargetName() + artifact.getScriptLocation().getAbsolutePath();
-            FreeformArtifact alreadyHasArtifact = (FreeformArtifact)uniqueArtifacts.get(artifactKey);
+            FreeformArtifact alreadyHasArtifact = uniqueArtifacts.get(artifactKey);
             if (alreadyHasArtifact != null) {
                 alreadyHasArtifact.addLocation(readArtifactLocation(export, project.evaluator()));
                 continue;
@@ -88,7 +86,7 @@ final class ArtifactProvider implements AntArtifactProvider {
             artifact.configureId(id);
             artifacts.add(artifact);
         }
-        return (AntArtifact[]) artifacts.toArray(new AntArtifact[artifacts.size()]);
+        return artifacts.toArray(new AntArtifact[artifacts.size()]);
     }
     
     public static URI readArtifactLocation(Element export, PropertyEvaluator eval) {
@@ -118,7 +116,7 @@ final class ArtifactProvider implements AntArtifactProvider {
         
         private final Element export;
         private String id = null;
-        private final Set/*<URI>*/ locations = new LinkedHashSet();
+        private final Set<URI> locations = new LinkedHashSet<URI>();
         
         public FreeformArtifact(Element export) {
             this.export = export;
@@ -161,13 +159,9 @@ final class ArtifactProvider implements AntArtifactProvider {
                 Element genldata = project.helper().getPrimaryConfigurationData(true);
                 Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
                 if (actionsEl != null) {
-                    Iterator/*<Element>*/ actions = Util.findSubElements(actionsEl).iterator();
-                    while (actions.hasNext()) {
-                        Element actionEl = (Element) actions.next();
+                    for (Element actionEl : Util.findSubElements(actionsEl)) {
                         if (actionEl.getAttribute("name").equals("clean")) { // NOI18N
-                            Iterator/*<Element>*/ targets = Util.findSubElements(actionEl).iterator();
-                            while (targets.hasNext()) {
-                                Element actionTargetEl = (Element) targets.next();
+                            for (Element actionTargetEl : Util.findSubElements(actionEl)) {
                                 if (!actionTargetEl.getLocalName().equals("target")) { // NOI18N
                                     continue;
                                 }
@@ -220,7 +214,7 @@ final class ArtifactProvider implements AntArtifactProvider {
         }
 
         public URI[] getArtifactLocations() {
-            return (URI[])locations.toArray(new URI[locations.size()]);
+            return locations.toArray(new URI[locations.size()]);
         }
         
         private void addLocation(URI u) {

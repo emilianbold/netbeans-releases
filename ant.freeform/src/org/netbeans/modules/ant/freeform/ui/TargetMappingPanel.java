@@ -45,6 +45,7 @@ import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -61,21 +62,21 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
     public static final String RUN_ACTION = "run"; // NOI18N
     public static final String TEST_ACTION = "test"; // NOI18N
 
-    private static final List DEFAULT_BUILD_TARGETS = Arrays.asList(new String[]{"build", "compile", "jar", "dist", "all", ".*jar.*"}); // NOI18N
-    private static final List DEFAULT_CLEAN_TARGETS = Arrays.asList(new String[]{"clean", ".*clean.*"}); // NOI18N
-    private static final List DEFAULT_REBUILD_TARGETS = Arrays.asList(new String[]{"rebuild", ".*rebuild.*"}); // NOI18N
-    private static final List DEFAULT_JAVADOC_TARGETS = Arrays.asList(new String[]{"javadoc", "javadocs", "docs", "doc", ".*javadoc.*", ".*doc.*"}); // NOI18N
-    private static final List DEFAULT_RUN_TARGETS = Arrays.asList(new String[]{"run", "start", ".*run.*", ".*start.*"}); // NOI18N
-    private static final List DEFAULT_TEST_TARGETS = Arrays.asList(new String[]{"test", ".*test.*"}); // NOI18N
+    private static final List<String> DEFAULT_BUILD_TARGETS = Arrays.asList("build", "compile", "jar", "dist", "all", ".*jar.*"); // NOI18N
+    private static final List<String> DEFAULT_CLEAN_TARGETS = Arrays.asList("clean", ".*clean.*"); // NOI18N
+    private static final List<String> DEFAULT_REBUILD_TARGETS = Arrays.asList("rebuild", ".*rebuild.*"); // NOI18N
+    private static final List<String> DEFAULT_JAVADOC_TARGETS = Arrays.asList("javadoc", "javadocs", "docs", "doc", ".*javadoc.*", ".*doc.*"); // NOI18N
+    private static final List<String> DEFAULT_RUN_TARGETS = Arrays.asList("run", "start", ".*run.*", ".*start.*"); // NOI18N
+    private static final List<String> DEFAULT_TEST_TARGETS = Arrays.asList("test", ".*test.*"); // NOI18N
     
-    private List/*<String>*/ targetNames;
-    private List/*<TargetMapping>*/ targetMappings;
-    private List/*<FreeformProjectGenerator.CustomTarget>*/ custTargets;
+    private List<String> targetNames;
+    private List<FreeformProjectGenerator.TargetMapping> targetMappings;
+    private List<FreeformProjectGenerator.CustomTarget> custTargets;
     private CustomTargetsModel customTargetsModel;
     private String antScript;
     
-    private ArrayList combos = new ArrayList();
-    private ArrayList targetDescs = new ArrayList();
+    private List<JComboBox> combos = new ArrayList<JComboBox>();
+    private List<TargetDescriptor> targetDescs = new ArrayList<TargetDescriptor>();
     
     /** Any change in standard tasks which needs to be persisted? */
     private boolean dirtyRegular;
@@ -86,14 +87,14 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
     private AntProjectHelper helper;
     
     public TargetMappingPanel(boolean advancedPart) {
-        this(new ArrayList(), advancedPart);
+        this(new ArrayList<TargetDescriptor>(), advancedPart);
     }
     
-    public TargetMappingPanel(List extraTargets, boolean advancedPart) {
+    public TargetMappingPanel(List<TargetDescriptor> extraTargets, boolean advancedPart) {
         initComponents();
-        targetMappings = new ArrayList();
+        targetMappings = new ArrayList<FreeformProjectGenerator.TargetMapping>();
 
-        custTargets = new ArrayList();
+        custTargets = new ArrayList<FreeformProjectGenerator.CustomTarget>();
         customTargetsModel = new CustomTargetsModel();
         customTargets.setModel(customTargetsModel);
         customTargets.getTableHeader().setReorderingAllowed(false);
@@ -102,12 +103,12 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         showAdvancedPart(advancedPart);
     }
 
-    public TargetMappingPanel(List extraTargets, PropertyEvaluator evaluator, AntProjectHelper helper) {
+    public TargetMappingPanel(List<TargetDescriptor> extraTargets, PropertyEvaluator evaluator, AntProjectHelper helper) {
         this(extraTargets, true);
         this.helper = helper;
         
         FileObject as = FreeformProjectGenerator.getAntScript(helper, evaluator);
-        List l = null;
+        List<String> l = null;
         // #50933 - script can be null
         if (as != null) {
             l = Util.getAntScriptTargetNames(as);
@@ -143,7 +144,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
     }
 
     
-    private void addTargets(List extraTargets) {
+    private void addTargets(List<TargetDescriptor> extraTargets) {
         combos.add(buildCombo);
         targetDescs.add(new TargetDescriptor(BUILD_ACTION, DEFAULT_BUILD_TARGETS, null, null));
         combos.add(cleanCombo);
@@ -155,9 +156,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         combos.add(testCombo);
         targetDescs.add(new TargetDescriptor(TEST_ACTION, DEFAULT_TEST_TARGETS, null, null));
         int y = 5;
-        Iterator it = extraTargets.iterator();
-        while (it.hasNext()) {
-            TargetDescriptor desc = (TargetDescriptor)it.next();
+        for (TargetDescriptor desc : extraTargets) {
             targetDescs.add(desc);
 
             JComboBox combo = new JComboBox();
@@ -172,7 +171,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
 
             JLabel label = new JLabel();
             label.setLabelFor(combo);
-            org.openide.awt.Mnemonics.setLocalizedText(label, desc.getIDEActionLabel());
+            Mnemonics.setLocalizedText(label, desc.getIDEActionLabel());
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = y;
@@ -201,23 +200,21 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         specialRemainder.setVisible(!show);
     }
     
-    private void initAntTargetEditor(List targets) {
+    private void initAntTargetEditor(List<String> targets) {
         DefaultCellEditor antTargetsEditor;
         JComboBox combo = new JComboBox();
         combo.setEditable(true);
-        Iterator it = targets.iterator();
-        while (it.hasNext()) {
-            String target = (String)it.next();
+        for (String target : targets) {
             combo.addItem(target);
         }
         customTargets.setDefaultEditor(JComboBox.class, new DefaultCellEditor(combo));
     }
     
     private FreeformProjectGenerator.CustomTarget getItem(int index) {
-        return (FreeformProjectGenerator.CustomTarget)custTargets.get(index);
+        return custTargets.get(index);
     }
 
-    public void setTargetNames(List list, boolean selectDefaults) {
+    public void setTargetNames(List<String> list, boolean selectDefaults) {
         targetNames = list;
         targetNames.add(0, ""); // NOI18N
         updateCombos(selectDefaults);
@@ -225,24 +222,18 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
 
     public void setScript(String script) {
         this.antScript = script;
-        Iterator it = targetMappings.iterator();
-        while (it.hasNext()) {
-            FreeformProjectGenerator.TargetMapping tm = (FreeformProjectGenerator.TargetMapping)it.next();
+        for (FreeformProjectGenerator.TargetMapping tm : targetMappings) {
             tm.script = script;
         }
     }
 
     private void updateCombos(boolean selectDefaults) {
         // In case you go back and choose a different script:
-        Iterator it = combos.iterator();
-        Iterator it3 = targetDescs.iterator();
-        while (it.hasNext()) {
-            JComboBox combo = (JComboBox)it.next();
-            TargetDescriptor desc = (TargetDescriptor)it3.next();
+        Iterator<TargetDescriptor> descriptors = targetDescs.iterator();
+        for (JComboBox combo : combos) {
+            TargetDescriptor desc = descriptors.next();
             combo.removeAllItems();
-            Iterator it2 = targetNames.iterator();
-            while (it2.hasNext()) {
-                String name = (String)it2.next();
+            for (String name : targetNames) {
                 combo.addItem(name);
             }
             if (selectDefaults) {
@@ -255,11 +246,9 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
      * @param items concrete item to be selected (or added) or list of
      *  regular expressions to match
      */
-    private void selectItem(JComboBox combo, List items, boolean add) {
+    private void selectItem(JComboBox combo, List<String> items, boolean add) {
         ComboBoxModel model = combo.getModel();
-        Iterator it = items.iterator();
-        while (it.hasNext()) {
-            String item = (String)it.next();
+        for (String item : items) {
             Pattern pattern = Pattern.compile(item);
             for (int i=0; i<model.getSize(); i++) {
                 String target = (String)model.getElementAt(i);
@@ -279,16 +268,11 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         }
     }
 
-    private void initMappings(List/*<FreeformProjectGenerator.TargetMapping>*/ list, String antScript) {
-        Iterator it = list.iterator();
-        while (it.hasNext()) {
-            FreeformProjectGenerator.TargetMapping tm = (FreeformProjectGenerator.TargetMapping)it.next();
-            Iterator it2 = targetDescs.iterator();
-            Iterator it3 = combos.iterator();
-            while (it2.hasNext()) {
-                TargetDescriptor desc = (TargetDescriptor)it2.next();
-                assert it3.hasNext();
-                JComboBox combo = (JComboBox)it3.next();
+    private void initMappings(List<FreeformProjectGenerator.TargetMapping> list, String antScript) {
+        for (FreeformProjectGenerator.TargetMapping tm : list) {
+            Iterator<JComboBox> combosIt = combos.iterator();
+            for (TargetDescriptor desc : targetDescs) {
+                JComboBox combo = combosIt.next();
                 if (tm.name.equals(desc.getIDEActionName())) {
                     selectItem(combo, Collections.singletonList(getListAsString(tm.targets)), true);
                     checkAntScript(combo, antScript, tm.script);
@@ -307,12 +291,12 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         }
     }
 
-    private static String getListAsString(List list) {
+    private static String getListAsString(List<String> list) {
         assert list != null;
         StringBuffer sb = new StringBuffer();
-        Iterator it = list.iterator();
+        Iterator<String> it = list.iterator();
         while (it.hasNext()) {
-            sb.append((String)it.next());
+            sb.append(it.next());
             if (it.hasNext()) {
                 sb.append(" "); // NOI18N
             }
@@ -320,8 +304,8 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         return sb.toString();
     }
 
-    static List getStringAsList(String str) {
-        ArrayList l = new ArrayList(2);
+    static List<String> getStringAsList(String str) {
+        List<String> l = new ArrayList<String>(2);
         StringTokenizer tok = new StringTokenizer(str, " "); // NOI18N
         while (tok.hasMoreTokens()) {
             String target = tok.nextToken().trim();
@@ -340,7 +324,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         }
         FreeformProjectGenerator.TargetMapping tm = getTargetMapping(key);
         String value = (String)combo.getModel().getSelectedItem();
-        List l = getStringAsList(value);
+        List<String> l = getStringAsList(value);
         if (!l.equals(tm.targets)) {
             dirtyRegular = true;
         }
@@ -349,9 +333,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
     }
 
     private FreeformProjectGenerator.TargetMapping getTargetMapping(String key) {
-        Iterator it = targetMappings.iterator();
-        while (it.hasNext()) {
-            FreeformProjectGenerator.TargetMapping tm = (FreeformProjectGenerator.TargetMapping)it.next();
+        for (FreeformProjectGenerator.TargetMapping tm : targetMappings) {
             if (tm.name.equals(key)) {
                 return tm;
             }
@@ -365,10 +347,9 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
     }
 
     private void removeTargetMapping(String key) {
-        Iterator it = targetMappings.iterator();
+        Iterator<FreeformProjectGenerator.TargetMapping> it = targetMappings.iterator();
         while (it.hasNext()) {
-            FreeformProjectGenerator.TargetMapping tm = (FreeformProjectGenerator.TargetMapping)it.next();
-            if (tm.name.equals(key)) {
+            if (it.next().name.equals(key)) {
                 it.remove();
                 dirtyRegular = true;
                 return;
@@ -376,12 +357,10 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         }
     }
 
-    public List/*<FreeformProjectGenerator.TargetMapping>*/ getMapping() {
-        Iterator it2 = targetDescs.iterator();
-        Iterator it3 = combos.iterator();
-        while (it2.hasNext()) {
-            TargetDescriptor desc = (TargetDescriptor)it2.next();
-            JComboBox combo = (JComboBox)it3.next();
+    public List<FreeformProjectGenerator.TargetMapping> getMapping() {
+        Iterator<JComboBox> combosIt = combos.iterator();
+        for (TargetDescriptor desc : targetDescs) {
+            JComboBox combo = combosIt.next();
             storeTarget(desc.getIDEActionName(), combo);
         }
         // update rebuilt:
@@ -633,7 +612,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
 
     private void addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addActionPerformed
         FreeformProjectGenerator.CustomTarget ct = new FreeformProjectGenerator.CustomTarget();
-        ct.targets = new ArrayList();
+        ct.targets = new ArrayList<String>();
         ct.script = antScript;
         custTargets.add(ct);
         customTargetsModel.fireTableDataChanged();
@@ -647,12 +626,12 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
     
     public static class Panel implements ProjectPropertiesPanel {
         
-        private List extraTargets;
+        private List<TargetDescriptor> extraTargets;
         private PropertyEvaluator evaluator;
         private AntProjectHelper helper;
         private TargetMappingPanel panel;
         
-        public Panel(List extraTargets, PropertyEvaluator evaluator, AntProjectHelper helper) {
+        public Panel(List<TargetDescriptor> extraTargets, PropertyEvaluator evaluator, AntProjectHelper helper) {
             this.helper = helper;
             this.extraTargets = extraTargets;
             this.evaluator = evaluator;
@@ -663,24 +642,24 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
             if (panel == null) {
                 return;
             }
-            List mapping = panel.getMapping();
+            List<FreeformProjectGenerator.TargetMapping> mapping = panel.getMapping();
             if (panel.dirtyRegular) {
                 FreeformProjectGenerator.putTargetMappings(helper, mapping);
                 FreeformProjectGenerator.putContextMenuAction(helper, mapping);
             }
 
             if (panel.dirtyCustom) {
-                ArrayList l = new ArrayList(panel.custTargets);
-                Iterator it = l.iterator();
+                List<FreeformProjectGenerator.CustomTarget> l = new ArrayList<FreeformProjectGenerator.CustomTarget>(panel.custTargets);
+                Iterator<FreeformProjectGenerator.CustomTarget> it = l.iterator();
                 while (it.hasNext()) {
-                    FreeformProjectGenerator.CustomTarget ct = (FreeformProjectGenerator.CustomTarget)it.next();
+                    FreeformProjectGenerator.CustomTarget ct = it.next();
                     // ignore row if target was not set
                     if (ct.targets == null || ct.targets.size() == 0) {
                         it.remove();
                         continue;
                     }
                     if (ct.label == null || ct.label.length() == 0) {
-                        ct.label = (String)ct.targets.get(0);
+                        ct.label = ct.targets.get(0);
                     }
                 }
                 FreeformProjectGenerator.putCustomContextMenuActions(helper, l);
@@ -737,8 +716,8 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         
         public String getColumnName(int column) {
             switch (column) {
-                case 0: return org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_Target");
-                default: return org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_Label");
+                case 0: return NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_Target");
+                default: return NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_Label");
             }
         }
         
@@ -762,7 +741,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
             return true;
         }
         
-        public Class getColumnClass(int column) {
+        public Class<?> getColumnClass(int column) {
             switch (column) {
                 case 0: return JComboBox.class;
                 default: return String.class;
@@ -786,14 +765,15 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
                 return ;
             }
             FreeformProjectGenerator.CustomTarget ct = getItem(rowIndex);
+            String v = (String) val;
             if (columnIndex == 0) {
-                if (((String)val).length() > 0) {
-                    ct.targets = Collections.singletonList(val);
+                if (v.length() > 0) {
+                    ct.targets = Collections.singletonList(v);
                 } else {
                     ct.targets = null;
                 }
             } else {
-                ct.label = (String)val;
+                ct.label = v;
             }
             dirtyCustom = true;
         }
@@ -807,7 +787,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
             JDialog dlg = new JDialog((Frame) null, "advancedMode=" + adv[j], false); // NOI18N
             dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             TargetMappingPanel panel = new TargetMappingPanel(adv[j]);
-            panel.setTargetNames(new ArrayList(Arrays.asList(new String[] {"build", "clean", "test"})), true); // NOI18N
+            panel.setTargetNames(new ArrayList<String>(Arrays.asList("build", "clean", "test")), true); // NOI18N
             dlg.getContentPane().add(panel);
             dlg.pack();
             dlg.setSize(700, 500);

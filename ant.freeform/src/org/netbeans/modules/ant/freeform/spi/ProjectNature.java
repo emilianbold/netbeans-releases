@@ -52,7 +52,7 @@ public interface ProjectNature {
      * {@link ProjectPropertiesPanel#getPreferredPosition} will be used for ordering.
      * @return a list of {@link ProjectPropertiesPanel}s (can be empty but not null)
      */
-    Set/*<ProjectPropertiesPanel>*/ getCustomizerPanels(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux);
+    Set<ProjectPropertiesPanel> getCustomizerPanels(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux);
     
     /**
      * Check project and provide additional build targets to be shown in 
@@ -60,19 +60,19 @@ public interface ProjectNature {
      * of targets is important.
      * @return a list of {@link TargetDescriptor}s (can be empty but not null)
      */
-    List/*<TargetDescriptor>*/ getExtraTargets(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux);
+    List<TargetDescriptor> getExtraTargets(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux);
     
     /**
      * Returns set of XML schemas describing syntax of <code>project.xml</code> defined by this project extension.
      * @return set of <code>String</code>s whose value is URL of XML schema file
      */
-    Set/*<String>*/ getSchemas();
+    Set<String> getSchemas();
     
     /**
      * Get a set of view styles supported by the nature for displaying source folders in the logical view.
      * @return a set of <code>String</code> style names (may be empty but not null)
      */
-    Set/*<String>*/ getSourceFolderViewStyles();
+    Set<String> getSourceFolderViewStyles();
     
     /**
      * Produce a logical view of a source folder in a style supported by the nature.

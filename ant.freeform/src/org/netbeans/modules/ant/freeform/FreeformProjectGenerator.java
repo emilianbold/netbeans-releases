@@ -92,7 +92,7 @@ public class FreeformProjectGenerator {
                         ioe[0] = e;
                         return;
                     }
-                    AuxiliaryConfiguration aux = (AuxiliaryConfiguration)p.getLookup().lookup(AuxiliaryConfiguration.class);
+                    AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
                     assert aux != null;
 
                     Element data = h[0].getPrimaryConfigurationData(true);
@@ -107,7 +107,7 @@ public class FreeformProjectGenerator {
                     Element props = doc.createElementNS(FreeformProjectType.NS_GENERAL, "properties"); // NOI18N
                     File locationF = FileUtil.toFile(locationFO);
                     File dirF = FileUtil.toFile(dirFO);
-                    Map properties = new HashMap();
+                    Map<String,String> properties = new HashMap<String,String>();
                     if (!locationFO.equals(dirFO)) {
                         Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); // NOI18N
                         property.setAttribute("name", ProjectConstants.PROP_PROJECT_LOCATION); // NOI18N
@@ -179,26 +179,20 @@ public class FreeformProjectGenerator {
      * @param helper AntProjectHelper instance
      * @return list of TargetMapping instances
      */
-    public static List/*<TargetMapping>*/ getTargetMappings(AntProjectHelper helper) {
+    public static List<TargetMapping> getTargetMappings(AntProjectHelper helper) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
+        List<TargetMapping> list = new ArrayList<TargetMapping>();
         Element genldata = helper.getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             return list;
         }
-        List/*<Element>*/ actions = Util.findSubElements(actionsEl);
-        Iterator it = actions.iterator();
-        while (it.hasNext()) {
-            Element actionEl = (Element)it.next();
+        for (Element actionEl : Util.findSubElements(actionsEl)) {
             TargetMapping tm = new TargetMapping();
             tm.name = actionEl.getAttribute("name"); // NOI18N
-            List/*<Element>*/ subElems = Util.findSubElements(actionEl);
-            List/*<String>*/ targetNames = new ArrayList(subElems.size());
+            List<String> targetNames = new ArrayList<String>();
             EditableProperties props = new EditableProperties(false);
-            Iterator it2 = subElems.iterator();
-            while (it2.hasNext()) {
-                Element subEl = (Element)it2.next();
+            for (Element subEl : Util.findSubElements(actionEl)) {
                 if (subEl.getLocalName().equals("target")) { // NOI18N
                     targetNames.add(Util.findText(subEl));
                     continue;
@@ -209,9 +203,7 @@ public class FreeformProjectGenerator {
                 }
                 if (subEl.getLocalName().equals("context")) { // NOI18N
                     TargetMapping.Context ctx = new TargetMapping.Context();
-                    Iterator it3 = Util.findSubElements(subEl).iterator();
-                    while (it3.hasNext()) {
-                        Element contextSubEl = (Element)it3.next();
+                    for (Element contextSubEl : Util.findSubElements(subEl)) {
                         if (contextSubEl.getLocalName().equals("property")) { // NOI18N
                             ctx.property = Util.findText(contextSubEl);
                             continue;
@@ -264,7 +256,7 @@ public class FreeformProjectGenerator {
      * @param helper AntProjectHelper instance
      * @param mappings list of <TargetMapping> instances to store
      */
-    public static void putTargetMappings(AntProjectHelper helper, List/*<TargetMapping>*/ mappings) {
+    public static void putTargetMappings(AntProjectHelper helper, List<TargetMapping> mappings) {
         //assert ProjectManager.mutex().isWriteAccess();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -274,9 +266,7 @@ public class FreeformProjectGenerator {
         }
         
         actions = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-actions"); // NOI18N
-        Iterator it = mappings.iterator();
-        while (it.hasNext()) {
-            TargetMapping tm = (TargetMapping)it.next();
+        for (TargetMapping tm : mappings) {
             Element action = doc.createElementNS(FreeformProjectType.NS_GENERAL, "action"); //NOI18N
             action.setAttribute("name", tm.name); // NOI18N
             if (tm.script != null) {
@@ -285,9 +275,7 @@ public class FreeformProjectGenerator {
                 action.appendChild(script);
             }
             if (tm.targets != null) {
-                Iterator it2 = tm.targets.iterator();
-                while (it2.hasNext()) {
-                    String targetName = (String)it2.next();
+                for (String targetName : tm.targets) {
                     Element target = doc.createElementNS(FreeformProjectType.NS_GENERAL, "target"); //NOI18N
                     target.appendChild(doc.createTextNode(targetName));
                     action.appendChild(target);
@@ -334,13 +322,10 @@ public class FreeformProjectGenerator {
     }
     
     private static void writeProperties(EditableProperties props, Document doc, Element element) {
-        Iterator it2 = props.keySet().iterator();
-        while (it2.hasNext()) {
-            String key = (String)it2.next();
-            String value = props.getProperty(key);
+        for (Map.Entry<String,String> entry : props.entrySet()) {
             Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); //NOI18N
-            property.setAttribute("name", key); // NOI18N
-            property.appendChild(doc.createTextNode(value));
+            property.setAttribute("name", entry.getKey()); // NOI18N
+            property.appendChild(doc.createTextNode(entry.getValue()));
             element.appendChild(property);
         }
     }
@@ -354,7 +339,7 @@ public class FreeformProjectGenerator {
      * @param mappings list of <TargetMapping> instances for which the context
      *     menu actions will be created
      */
-    public static void putContextMenuAction(AntProjectHelper helper, List/*<TargetMapping>*/ mappings) {
+    public static void putContextMenuAction(AntProjectHelper helper, List<TargetMapping> mappings) {
         //assert ProjectManager.mutex().isWriteAccess();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -368,18 +353,13 @@ public class FreeformProjectGenerator {
             contextMenuEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context-menu"); // NOI18N
             Util.appendChildElement(viewEl, contextMenuEl, viewElementsOrder);
         }
-        List/*<Element>*/ contextMenuElements = Util.findSubElements(contextMenuEl);
-        Iterator it = contextMenuElements.iterator();
-        while (it.hasNext()) {
-            Element ideActionEl = (Element)it.next();
+        for (Element ideActionEl : Util.findSubElements(contextMenuEl)) {
             if (!ideActionEl.getLocalName().equals("ide-action")) { // NOI18N
                 continue;
             }
             contextMenuEl.removeChild(ideActionEl);
         }
-        it = mappings.iterator();
-        while (it.hasNext()) {
-            TargetMapping tm = (TargetMapping)it.next();
+        for (TargetMapping tm : mappings) {
             if (tm.context != null) {
                 // ignore context sensitive actions
                 continue;
@@ -396,9 +376,9 @@ public class FreeformProjectGenerator {
      * @param helper AntProjectHelper instance
      * @return list of CustomTarget instances
      */
-    public static List/*<CustomTarget>*/ getCustomContextMenuActions(AntProjectHelper helper) {
+    public static List<CustomTarget> getCustomContextMenuActions(AntProjectHelper helper) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
+        List<CustomTarget> list = new ArrayList<CustomTarget>();
         Element genldata = helper.getPrimaryConfigurationData(true);
         Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl == null) {
@@ -408,20 +388,14 @@ public class FreeformProjectGenerator {
         if (contextMenuEl == null) {
             return list;
         }
-        List/*<Element>*/ actions = Util.findSubElements(contextMenuEl);
-        Iterator it = actions.iterator();
-        while (it.hasNext()) {
-            Element actionEl = (Element)it.next();
+        for (Element actionEl : Util.findSubElements(contextMenuEl)) {
             if (!actionEl.getLocalName().equals("action")) { // NOI18N
                 continue;
             }
             CustomTarget ct = new CustomTarget();
-            List/*<Element>*/ subElems = Util.findSubElements(actionEl);
-            List/*<String>*/ targetNames = new ArrayList(subElems.size());
+            List<String> targetNames = new ArrayList<String>();
             EditableProperties props = new EditableProperties(false);
-            Iterator it2 = subElems.iterator();
-            while (it2.hasNext()) {
-                Element subEl = (Element)it2.next();
+            for (Element subEl : Util.findSubElements(actionEl)) {
                 if (subEl.getLocalName().equals("target")) { // NOI18N
                     targetNames.add(Util.findText(subEl));
                     continue;
@@ -456,7 +430,7 @@ public class FreeformProjectGenerator {
      * @param helper AntProjectHelper instance
      * @param list of <CustomTarget> instances to store
      */
-    public static void putCustomContextMenuActions(AntProjectHelper helper, List/*<CustomTarget>*/ customTargets) {
+    public static void putCustomContextMenuActions(AntProjectHelper helper, List<CustomTarget> customTargets) {
         //assert ProjectManager.mutex().isWriteAccess();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -470,18 +444,13 @@ public class FreeformProjectGenerator {
             contextMenuEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context-menu"); // NOI18N
             Util.appendChildElement(viewEl, contextMenuEl, viewElementsOrder);
         }
-        List/*<Element>*/ contextMenuElements = Util.findSubElements(contextMenuEl);
-        Iterator it = contextMenuElements.iterator();
-        while (it.hasNext()) {
-            Element actionEl = (Element)it.next();
+        for (Element actionEl : Util.findSubElements(contextMenuEl)) {
             if (!actionEl.getLocalName().equals("action")) { // NOI18N
                 continue;
             }
             contextMenuEl.removeChild(actionEl);
         }
-        it = customTargets.iterator();
-        while (it.hasNext()) {
-            CustomTarget ct = (CustomTarget)it.next();
+        for (CustomTarget ct : customTargets) {
             Element action = doc.createElementNS(FreeformProjectType.NS_GENERAL, "action"); //NOI18N
             if (ct.script != null) {
                 Element script = doc.createElementNS(FreeformProjectType.NS_GENERAL, "script"); //NOI18N
@@ -492,9 +461,7 @@ public class FreeformProjectGenerator {
             label.appendChild(doc.createTextNode(ct.label)); // NOI18N
             action.appendChild(label);
             if (ct.targets != null) {
-                Iterator it2 = ct.targets.iterator();
-                while (it2.hasNext()) {
-                    String targetName = (String)it2.next();
+                for (String targetName : ct.targets) {
                     Element target = doc.createElementNS(FreeformProjectType.NS_GENERAL, "target"); //NOI18N
                     target.appendChild(doc.createTextNode(targetName)); // NOI18N
                     action.appendChild(target);
@@ -513,7 +480,7 @@ public class FreeformProjectGenerator {
      * Data in the struct are in the same format as they are stored in XML.
      */
     public static final class CustomTarget {
-        public List/*<String>*/ targets;
+        public List<String> targets;
         public String label;
         public String script;
         public EditableProperties properties;
@@ -525,7 +492,7 @@ public class FreeformProjectGenerator {
      */
     public static final class TargetMapping {
         public String script;
-        public List/*<String>*/ targets;
+        public List<String> targets;
         public String name;
         public EditableProperties properties;
         public Context context; // may be null

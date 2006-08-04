@@ -77,20 +77,19 @@ public final class Actions implements ActionProvider {
      * Some routine global actions for which we can supply a display name.
      * These are IDE-specific.
      */
-    private static final Set/*<String>*/ COMMON_IDE_GLOBAL_ACTIONS = new HashSet(Arrays.asList(new String[] {
+    private static final Set<String> COMMON_IDE_GLOBAL_ACTIONS = new HashSet<String>(Arrays.asList(
         ActionProvider.COMMAND_DEBUG,
         ActionProvider.COMMAND_DELETE,
         ActionProvider.COMMAND_COPY,
         ActionProvider.COMMAND_MOVE,
-        ActionProvider.COMMAND_RENAME,
-    }));
+        ActionProvider.COMMAND_RENAME));
     /**
      * Similar to {@link #COMMON_IDE_GLOBAL_ACTIONS}, but these are not IDE-specific.
      * We also mark all of these as bound in the project; if the user
      * does not really have a binding, they are prompted for one when
      * the action is "run".
      */
-    private static final Set/*<String>*/ COMMON_NON_IDE_GLOBAL_ACTIONS = new HashSet(Arrays.asList(new String[] {
+    private static final Set<String> COMMON_NON_IDE_GLOBAL_ACTIONS = new HashSet<String>(Arrays.asList(
         ActionProvider.COMMAND_BUILD,
         ActionProvider.COMMAND_CLEAN,
         ActionProvider.COMMAND_REBUILD,
@@ -100,8 +99,7 @@ public final class Actions implements ActionProvider {
         "javadoc", // NOI18N
         // XXX WebProjectConstants.COMMAND_REDEPLOY
         // XXX should this really be here? perhaps not, once web part of #46886 is implemented...
-        "redeploy", // NOI18N
-    }));
+        "redeploy")); // NOI18N
     
     private final FreeformProject project;
     
@@ -115,12 +113,9 @@ public final class Actions implements ActionProvider {
         if (actionsEl == null) {
             return new String[0];
         }
-        List/*<Element>*/ actions = Util.findSubElements(actionsEl);
         // Use a set, not a list, since when using context you can define one action several times:
-        Set/*<String>*/ names = new LinkedHashSet(actions.size());
-        Iterator it = actions.iterator();
-        while (it.hasNext()) {
-            Element actionEl = (Element)it.next();
+        Set<String> names = new LinkedHashSet<String>();
+        for (Element actionEl : Util.findSubElements(actionsEl)) {
             names.add(actionEl.getAttribute("name")); // NOI18N
         }
         // #46886: also always enable all common global actions, in case they should be selected:
@@ -129,7 +124,7 @@ public final class Actions implements ActionProvider {
         names.add(COMMAND_MOVE);
         names.add(COMMAND_COPY);
         names.add(COMMAND_DELETE);
-        return (String[])names.toArray(new String[names.size()]);
+        return names.toArray(new String[names.size()]);
     }
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
@@ -151,11 +146,8 @@ public final class Actions implements ActionProvider {
         if (actionsEl == null) {
             throw new IllegalArgumentException("No commands supported"); // NOI18N
         }
-        List/*<Element>*/ actions = Util.findSubElements(actionsEl);
-        Iterator it = actions.iterator();
         boolean foundAction = false;
-        while (it.hasNext()) {
-            Element actionEl = (Element)it.next();
+        for (Element actionEl : Util.findSubElements(actionsEl)) {
             if (actionEl.getAttribute("name").equals(command)) { // NOI18N
                 foundAction = true;
                 // XXX perhaps check also existence of script
@@ -163,7 +155,7 @@ public final class Actions implements ActionProvider {
                 if (contextEl != null) {
                     // Check whether the context contains files all in this folder,
                     // matching the pattern if any, and matching the arity (single/multiple).
-                    Map/*<String,FileObject>*/ selection = findSelection(contextEl, context, project);
+                    Map<String,FileObject> selection = findSelection(contextEl, context, project);
                     if (selection.size() == 1) {
                         // Definitely enabled.
                         return true;
@@ -217,11 +209,8 @@ public final class Actions implements ActionProvider {
         if (actionsEl == null) {
             throw new IllegalArgumentException("No commands supported"); // NOI18N
         }
-        List/*<Element>*/ actions = Util.findSubElements(actionsEl);
-        Iterator it = actions.iterator();
         boolean foundAction = false;
-        while (it.hasNext()) {
-            Element actionEl = (Element)it.next();
+        for (Element actionEl : Util.findSubElements(actionsEl)) {
             if (actionEl.getAttribute("name").equals(command)) { // NOI18N
                 foundAction = true;
                 runConfiguredAction(project, actionEl, context);
@@ -246,19 +235,19 @@ public final class Actions implements ActionProvider {
      * and match any optional pattern declaration, then they are returned as a map from relative
      * path to actual file object. Otherwise an empty map is returned.
      */
-    private static Map/*<String,FileObject>*/ findSelection(Element contextEl, Lookup context, FreeformProject project) {
-        Collection/*<FileObject>*/ files = context.lookupAll(FileObject.class);
+    private static Map<String,FileObject> findSelection(Element contextEl, Lookup context, FreeformProject project) {
+        Collection<? extends FileObject> files = context.lookupAll(FileObject.class);
         if (files.isEmpty()) {
             // Try again with DataObject's.
-            Collection/*<DataObject>*/ filesDO = context.lookupAll(DataObject.class);
+            Collection<? extends DataObject> filesDO = context.lookupAll(DataObject.class);
             if (filesDO.isEmpty()) {
-                 return Collections.EMPTY_MAP;
+                 return Collections.emptyMap();
             }
-            files = new ArrayList(filesDO.size());
-            Iterator it = filesDO.iterator();
-            while (it.hasNext()) {
-                files.add(((DataObject) it.next()).getPrimaryFile());
+            Collection<FileObject> _files = new ArrayList<FileObject>(filesDO.size());
+            for (DataObject d : filesDO) {
+                _files.add(d.getPrimaryFile());
             }
+            files = _files;
         }
         Element folderEl = Util.findElement(contextEl, "folder", FreeformProjectType.NS_GENERAL); // NOI18N
         assert folderEl != null : "Must have <folder> in <context>";
@@ -266,11 +255,11 @@ public final class Actions implements ActionProvider {
         assert rawtext != null : "Must have text contents in <folder>";
         String evaltext = project.evaluator().evaluate(rawtext);
         if (evaltext == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
         FileObject folder = project.helper().resolveFileObject(evaltext);
         if (folder == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
         Pattern pattern = null;
         Element patternEl = Util.findElement(contextEl, "pattern", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -282,19 +271,17 @@ public final class Actions implements ActionProvider {
             } catch (PatternSyntaxException e) {
                 org.netbeans.modules.ant.freeform.Util.err.annotate(e, ErrorManager.UNKNOWN, "From <pattern> in " + FileUtil.getFileDisplayName(project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH)), null, null, null); // NOI18N
                 org.netbeans.modules.ant.freeform.Util.err.notify(e);
-                return Collections.EMPTY_MAP;
+                return Collections.emptyMap();
             }
         }
-        Map/*<String,FileObject>*/ result = new HashMap();
-        Iterator it = files.iterator();
-        while (it.hasNext()) {
-            FileObject file = (FileObject) it.next();
+        Map<String,FileObject> result = new HashMap<String,FileObject>();
+        for (FileObject file : files) {
             String path = FileUtil.getRelativePath(folder, file);
             if (path == null) {
-                return Collections.EMPTY_MAP;
+                return Collections.emptyMap();
             }
             if (pattern != null && !pattern.matcher(path).find()) {
-                return Collections.EMPTY_MAP;
+                return Collections.emptyMap();
             }
             result.put(path, file);
         }
@@ -321,11 +308,9 @@ public final class Actions implements ActionProvider {
             DialogDisplayer.getDefault().notify(nd);
             return;
         }
-        List/*<Element>*/ targets = Util.findSubElements(actionEl);
-        List/*<String>*/ targetNames = new ArrayList(targets.size());
-        Iterator it2 = targets.iterator();
-        while (it2.hasNext()) {
-            Element targetEl = (Element)it2.next();
+        List<Element> targets = Util.findSubElements(actionEl);
+        List<String> targetNames = new ArrayList<String>(targets.size());
+        for (Element targetEl : targets) {
             if (!targetEl.getLocalName().equals("target")) { // NOI18N
                 continue;
             }
@@ -333,7 +318,7 @@ public final class Actions implements ActionProvider {
         }
         String[] targetNameArray;
         if (!targetNames.isEmpty()) {
-            targetNameArray = (String[])targetNames.toArray(new String[targetNames.size()]);
+            targetNameArray = targetNames.toArray(new String[targetNames.size()]);
         } else {
             // Run default target.
             targetNameArray = null;
@@ -341,7 +326,7 @@ public final class Actions implements ActionProvider {
         Properties props = new Properties();
         Element contextEl = Util.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
         if (contextEl != null) {
-            Map/*<String,FileObject>*/ selection = findSelection(contextEl, context, project);
+            Map<String,FileObject> selection = findSelection(contextEl, context, project);
             if (selection.isEmpty()) {
                 return;
             }
@@ -361,20 +346,20 @@ public final class Actions implements ActionProvider {
             assert formatEl != null : "No <format> in <context> for " + actionEl.getAttribute("name");
             String format = Util.findText(formatEl);
             StringBuffer buf = new StringBuffer();
-            Iterator it = selection.entrySet().iterator();
+            Iterator<Map.Entry<String,FileObject>> it = selection.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
+                Map.Entry<String,FileObject> entry = it.next();
                 if (format.equals("absolute-path")) { // NOI18N
-                    File f = FileUtil.toFile((FileObject) entry.getValue());
+                    File f = FileUtil.toFile(entry.getValue());
                     if (f == null) {
                         // Not a disk file??
                         return;
                     }
                     buf.append(f.getAbsolutePath());
                 } else if (format.equals("relative-path")) { // NOI18N
-                    buf.append((String) entry.getKey());
+                    buf.append(entry.getKey());
                 } else if (format.equals("absolute-path-noext")) { // NOI18N
-                    File f = FileUtil.toFile((FileObject) entry.getValue());
+                    File f = FileUtil.toFile(entry.getValue());
                     if (f == null) {
                         // Not a disk file??
                         return;
@@ -386,7 +371,7 @@ public final class Actions implements ActionProvider {
                     }
                     buf.append(path);
                 } else if (format.equals("relative-path-noext")) { // NOI18N
-                    String path = (String) entry.getKey();
+                    String path = entry.getKey();
                     int dot = path.lastIndexOf('.');
                     if (dot > path.lastIndexOf('/')) {
                         path = path.substring(0, dot);
@@ -394,7 +379,7 @@ public final class Actions implements ActionProvider {
                     buf.append(path);
                 } else {
                     assert format.equals("java-name") : format;
-                    String path = (String) entry.getKey();
+                    String path = entry.getKey();
                     int dot = path.lastIndexOf('.');
                     String dotless;
                     if (dot == -1 || dot < path.lastIndexOf('/')) {
@@ -416,9 +401,7 @@ public final class Actions implements ActionProvider {
             assert prop != null : "Must have text contents in <property>";
             props.setProperty(prop, buf.toString());
         }
-        it2 = targets.iterator();
-        while (it2.hasNext()) {
-            Element propEl = (Element)it2.next();
+        for (Element propEl : targets) {
             if (!propEl.getLocalName().equals("property")) { // NOI18N
                 continue;
             }
@@ -436,7 +419,7 @@ public final class Actions implements ActionProvider {
     }
     
     public static Action[] createContextMenu(FreeformProject p) {
-        List/*<Action>*/ actions = new ArrayList();
+        List<Action> actions = new ArrayList<Action>();
         actions.add(CommonProjectActions.newFileAction());
         // Requested actions.
         Element genldata = p.helper().getPrimaryConfigurationData(true);
@@ -445,10 +428,7 @@ public final class Actions implements ActionProvider {
             Element contextMenuEl = Util.findElement(viewEl, "context-menu", FreeformProjectType.NS_GENERAL); // NOI18N
             if (contextMenuEl != null) {
                 actions.add(null);
-                List/*<Element>*/ actionEls = Util.findSubElements(contextMenuEl);
-                Iterator it = actionEls.iterator();
-                while (it.hasNext()) {
-                    Element actionEl = (Element)it.next();
+                for (Element actionEl : Util.findSubElements(contextMenuEl)) {
                     if (actionEl.getLocalName().equals("ide-action")) { // NOI18N
                         String cmd = actionEl.getAttribute("name");
                         String displayName;
@@ -488,7 +468,7 @@ public final class Actions implements ActionProvider {
         actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
-        return (Action[])actions.toArray(new Action[actions.size()]);
+        return actions.toArray(new Action[actions.size()]);
     }
     
     private static final class CustomAction extends AbstractAction {

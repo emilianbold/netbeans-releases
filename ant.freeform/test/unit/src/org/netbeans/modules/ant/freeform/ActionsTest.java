@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
@@ -41,6 +42,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -55,15 +57,15 @@ public class ActionsTest extends TestBase {
     private static final class AntTargetInvocation {
         public final FileObject scriptFile;
         public final String[] targetNameArray;
-        public final Map/*<String,String>*/ props;
-        public AntTargetInvocation(FileObject scriptFile, String[] targetNameArray, Map/*<String,String>*/ props) {
+        public final Map<String,String> props;
+        public AntTargetInvocation(FileObject scriptFile, String[] targetNameArray, Map<String,String> props) {
             assert scriptFile != null;
             this.scriptFile = scriptFile;
             this.targetNameArray = targetNameArray;
-            this.props = props != null ? new HashMap(props) : Collections.EMPTY_MAP;
+            this.props = props != null ? new HashMap<String,String>(props) : Collections.<String,String>emptyMap();
         }
         public String toString() {
-            return "invocation<script=" + scriptFile + ",targets=" + (targetNameArray != null ? Arrays.asList(targetNameArray) : null) + ",props=" + props + ">";
+            return "invocation<script=" + scriptFile + ",targets=" + (targetNameArray != null ? Arrays.toString(targetNameArray) : null) + ",props=" + props + ">";
         }
         public boolean equals(Object obj) {
             if (!(obj instanceof AntTargetInvocation)) {
@@ -81,24 +83,22 @@ public class ActionsTest extends TestBase {
             }
             return x;
         }
-        private Map/*<String,String>*/ normalizedProps() {
-            Map m = new HashMap();
-            Iterator it = props.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry e = (java.util.Map.Entry) it.next();
-                String origval = (String) e.getValue();
-                m.put(e.getKey(), new TreeSet(Arrays.asList(origval.split(","))));
+        private Map<String,Set<String>> normalizedProps() {
+            Map<String,Set<String>> m = new HashMap<String,Set<String>>();
+            for (Map.Entry<String,String> e : props.entrySet()) {
+                m.put(e.getKey(), new TreeSet<String>(Arrays.asList(e.getValue().split(","))));
             }
             return m;
         }
     }
     
-    private static final List/*<AntTargetInvocation>*/ targetsRun = new ArrayList();
+    private static final List<AntTargetInvocation> targetsRun = new ArrayList<AntTargetInvocation>();
     
     static {
         Actions.TARGET_RUNNER = new Actions.TargetRunner() {
             public void runTarget(FileObject scriptFile, String[] targetNameArray, Properties props) {
-                targetsRun.add(new AntTargetInvocation(scriptFile, targetNameArray, props));
+                targetsRun.add(new AntTargetInvocation(scriptFile, targetNameArray,
+                        NbCollections.checkedMapByFilter(props, String.class, String.class, true)));
             }
         };
     }
@@ -140,9 +140,9 @@ public class ActionsTest extends TestBase {
     }
     
     public void testBasicActions() throws Exception {
-        List/*<String>*/ actionNames = new ArrayList(Arrays.asList(ap.getSupportedActions()));
+        List<String> actionNames = new ArrayList<String>(Arrays.asList(ap.getSupportedActions()));
         Collections.sort(actionNames);
-        assertEquals("right action names", Arrays.asList(new String[] {
+        assertEquals("right action names", Arrays.asList(
             "build",
             "clean",
             "compile.single",
@@ -157,8 +157,8 @@ public class ActionsTest extends TestBase {
             "run",
             "run.single",
             // #46886 again
-            "test",
-        }), actionNames);
+            "test"),
+            actionNames);
         assertTrue("clean is enabled", ap.isActionEnabled("clean", Lookup.EMPTY));
         try {
             ap.isActionEnabled("frobnitz", Lookup.EMPTY);
@@ -181,7 +181,7 @@ public class ActionsTest extends TestBase {
         Action[] actions = lvp.createLogicalView().getActions(false);
         assertNotNull("have some context actions", actions);
         ResourceBundle bundle = NbBundle.getBundle(Actions.class);
-        assertEquals("correct labels", Arrays.asList(new String[] {
+        assertEquals("correct labels", Arrays.asList(
             (String) CommonProjectActions.newFileAction().getValue(Action.NAME),
             null,
             bundle.getString("CMD_build"),
@@ -208,8 +208,8 @@ public class ActionsTest extends TestBase {
             null,
             (String) SystemAction.get(ToolsAction.class).getValue(Action.NAME),
             null,
-            (String) CommonProjectActions.customizeProjectAction().getValue(Action.NAME),
-        }), findActionLabels(actions));
+            (String) CommonProjectActions.customizeProjectAction().getValue(Action.NAME)),
+            findActionLabels(actions));
         Action javadocAction = actions[8];
         assertEquals("this is Run Javadoc", bundle.getString("CMD_javadoc"), javadocAction.getValue(Action.NAME));
         runContextMenuAction(javadocAction, simple);
@@ -223,7 +223,7 @@ public class ActionsTest extends TestBase {
         assertEquals("ran right target", Collections.singletonList(inv), targetsRun);
     }
     
-    private static List/*<String>*/ findActionLabels(Action[] actions) {
+    private static List<String> findActionLabels(Action[] actions) {
         String[] labels = new String[actions.length];
         for (int i = 0; i < actions.length; i++) {
             if (actions[i] != null) {
@@ -256,14 +256,14 @@ public class ActionsTest extends TestBase {
         assertTrue("c.s enabled on SomeFile.java (FileObject)", ap.isActionEnabled("compile.single", Lookups.singleton(someFileJavaDO.getPrimaryFile())));
         assertTrue("c.s enabled on SpecialTask.java", ap.isActionEnabled("compile.single", Lookups.singleton(specialTaskJavaDO)));
         assertFalse("c.s disabled on some-resource.txt", ap.isActionEnabled("compile.single", Lookups.singleton(someResourceTxtDO)));
-        assertTrue("c.s enabled on similar *.java", ap.isActionEnabled("compile.single", Lookups.fixed(new DataObject[] {someFileJavaDO, myAppJavaDO})));
-        assertFalse("c.s disabled on mixed *.java", ap.isActionEnabled("compile.single", Lookups.fixed(new DataObject[] {someFileJavaDO, specialTaskJavaDO})));
-        assertFalse("c.s disabled on mixed types", ap.isActionEnabled("compile.single", Lookups.fixed(new DataObject[] {someFileJavaDO, someResourceTxtDO})));
+        assertTrue("c.s enabled on similar *.java", ap.isActionEnabled("compile.single", Lookups.fixed(someFileJavaDO, myAppJavaDO)));
+        assertFalse("c.s disabled on mixed *.java", ap.isActionEnabled("compile.single", Lookups.fixed(someFileJavaDO, specialTaskJavaDO)));
+        assertFalse("c.s disabled on mixed types", ap.isActionEnabled("compile.single", Lookups.fixed(someFileJavaDO, someResourceTxtDO)));
         assertFalse("r.s disabled on empty selection", ap.isActionEnabled("run.single", Lookup.EMPTY));
         assertTrue("r.s enabled on SomeFile.java", ap.isActionEnabled("run.single", Lookups.singleton(someFileJavaDO)));
         assertFalse("r.s disabled on SpecialTask.java", ap.isActionEnabled("run.single", Lookups.singleton(specialTaskJavaDO)));
         assertFalse("r.s disabled on some-resource.txt", ap.isActionEnabled("run.single", Lookups.singleton(someResourceTxtDO)));
-        assertFalse("r.s disabled on multiple files", ap.isActionEnabled("run.single", Lookups.fixed(new DataObject[] {someFileJavaDO, myAppJavaDO})));
+        assertFalse("r.s disabled on multiple files", ap.isActionEnabled("run.single", Lookups.fixed(someFileJavaDO, myAppJavaDO)));
         ap.invokeAction("compile.single", Lookups.singleton(someFileJavaDO));
         AntTargetInvocation inv = new AntTargetInvocation(buildXml, new String[] {"compile-some-files"}, Collections.singletonMap("files", "org/foo/myapp/SomeFile.java"));
         assertEquals("compiled one file in src", Collections.singletonList(inv), targetsRun);
@@ -276,7 +276,7 @@ public class ActionsTest extends TestBase {
         inv = new AntTargetInvocation(buildXml, new String[] {"ant-compile-some-files"}, Collections.singletonMap("files", "org/foo/ant/SpecialTask.java"));
         assertEquals("compiled one file in antsrc", Collections.singletonList(inv), targetsRun);
         targetsRun.clear();
-        ap.invokeAction("compile.single", Lookups.fixed(new DataObject[] {someFileJavaDO, myAppJavaDO}));
+        ap.invokeAction("compile.single", Lookups.fixed(someFileJavaDO, myAppJavaDO));
         inv = new AntTargetInvocation(buildXml, new String[] {"compile-some-files"}, Collections.singletonMap("files", "org/foo/myapp/SomeFile.java,org/foo/myapp/MyApp.java"));
         assertEquals("compiled two files in src", Collections.singletonList(inv), targetsRun);
         targetsRun.clear();

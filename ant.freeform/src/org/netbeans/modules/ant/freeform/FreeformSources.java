@@ -51,11 +51,11 @@ final class FreeformSources implements Sources, AntProjectListener {
     }
     
     private Sources delegate;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     public SourceGroup[] getSourceGroups(final String type) {
-        return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
+            public SourceGroup[] run() {
                 if (delegate == null) {
                     delegate = initSources();
                 }
@@ -69,10 +69,7 @@ final class FreeformSources implements Sources, AntProjectListener {
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element foldersE = Util.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
         if (foldersE != null) {
-            List/*<Element>*/ folders = Util.findSubElements(foldersE);
-            Iterator it = folders.iterator();
-            while (it.hasNext()) {
-                Element folderE = (Element)it.next();
+            for (Element folderE : Util.findSubElements(foldersE)) {
                 Element locationE = Util.findElement(folderE, "location", FreeformProjectType.NS_GENERAL); // NOI18N
                 String location = Util.findText(locationE);
                 if (folderE.getLocalName().equals("build-folder")) { // NOI18N
@@ -118,11 +115,11 @@ final class FreeformSources implements Sources, AntProjectListener {
             if (listeners.isEmpty()) {
                 return;
             }
-            _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+            _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        for (int i = 0; i < _listeners.length; i++) {
-            _listeners[i].stateChanged(ev);
+        for (ChangeListener l : _listeners) {
+            l.stateChanged(ev);
         }
     }
     

@@ -84,7 +84,7 @@ public class Util {
             return null;
         }
         assert dob != null;
-        AntProjectCookie apc = (AntProjectCookie) dob.getCookie(AntProjectCookie.class);
+        AntProjectCookie apc = dob.getCookie(AntProjectCookie.class);
         if (apc == null && fo.getMIMEType().equals("text/xml")) { // NOI18N
             // Some file that *could* be an Ant script and just wasn't recognized
             // as such? Cf. also TargetLister.getAntProjectCookie, which has the
@@ -108,7 +108,7 @@ public class Util {
      * @return sorted list of target names or null if fo does not represent 
      * valid Ant script
      */
-    public static List/*<String>*/ getAntScriptTargetNames(FileObject fo) {
+    public static List<String> getAntScriptTargetNames(FileObject fo) {
         if (fo == null) {
             throw new IllegalArgumentException("Cannot call Util.getAntScriptTargetNames with null"); // NOI18N
         }
@@ -116,17 +116,15 @@ public class Util {
         if (apc == null) {
             return null;
         }
-        Set/*TargetLister.Target*/ allTargets;
+        Set<TargetLister.Target> allTargets;
         try {
             allTargets = TargetLister.getTargets(apc);
         } catch (IOException e) {
             err.notify(ErrorManager.INFORMATIONAL, e);
             return null;
         }
-        SortedSet targetNames = new TreeSet(Collator.getInstance());
-        Iterator it = allTargets.iterator();
-        while (it.hasNext()) {
-            TargetLister.Target target = (TargetLister.Target) it.next();
+        SortedSet<String> targetNames = new TreeSet<String>(Collator.getInstance());
+        for (TargetLister.Target target : allTargets) {
             if (target.isOverridden()) {
                 // Cannot call it directly.
                 continue;
@@ -137,7 +135,7 @@ public class Util {
             }
             targetNames.add(target.getName());
         }
-        return new ArrayList(targetNames);
+        return new ArrayList<String>(targetNames);
     }
     
     /**

@@ -40,14 +40,14 @@ public class LookupMergerImpl implements LookupMerger {
 
     public LookupMergerImpl() {}
     
-    public Class[] getMergeableClasses() {
-        return new Class[] {
+    public Class<?>[] getMergeableClasses() {
+        return new Class<?>[] {
             PrivilegedTemplates.class,
             ActionProvider.class,
         };
     }
     
-    public Object merge(Lookup lookup, Class clazz) throws IllegalArgumentException {
+    public Object merge(Lookup lookup, Class<?> clazz) throws IllegalArgumentException {
         if (clazz == PrivilegedTemplates.class) {
             return new PrivilegedTemplatesImpl(lookup);
         } else if (clazz == ActionProvider.class) {
@@ -66,13 +66,11 @@ public class LookupMergerImpl implements LookupMerger {
         }
         
         public String[] getPrivilegedTemplates() {
-            LinkedHashSet templates = new LinkedHashSet();
-            Iterator it = lkp.lookupAll(PrivilegedTemplates.class).iterator();
-            while (it.hasNext()) {
-                PrivilegedTemplates pt = (PrivilegedTemplates)it.next();
+            Set<String> templates = new LinkedHashSet<String>();
+            for (PrivilegedTemplates pt : lkp.lookupAll(PrivilegedTemplates.class)) {
                 templates.addAll(Arrays.asList(pt.getPrivilegedTemplates()));
             }
-            return (String[])templates.toArray(new String[templates.size()]);
+            return templates.toArray(new String[templates.size()]);
         }
         
     }
@@ -88,19 +86,17 @@ public class LookupMergerImpl implements LookupMerger {
             this.lkp = lkp;
         }
         
-        private Iterator/*<ActionProvider>*/ delegates() {
-            Collection/*<ActionProvider>*/ all = lkp.lookupAll(ActionProvider.class);
+        private Collection<? extends ActionProvider> delegates() {
+            Collection<? extends ActionProvider> all = lkp.lookupAll(ActionProvider.class);
             assert !all.contains(this) : all;
-            return all.iterator();
+            return all;
         }
         
         // XXX delegate directly to single impl if only one
 
         public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
             boolean supported = false;
-            Iterator/*<ActionProvider>*/ it = delegates();
-            while (it.hasNext()) {
-                ActionProvider ap = (ActionProvider) it.next();
+            for (ActionProvider ap : delegates()) {
                 if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
                     return ap.isActionEnabled(command, context);
                 }
@@ -110,9 +106,7 @@ public class LookupMergerImpl implements LookupMerger {
         }
 
         public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-            Iterator/*<ActionProvider>*/ it = delegates();
-            while (it.hasNext()) {
-                ActionProvider ap = (ActionProvider) it.next();
+            for (ActionProvider ap : delegates()) {
                 if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
                     ap.invokeAction(command, context);
                     return;
@@ -122,13 +116,11 @@ public class LookupMergerImpl implements LookupMerger {
         }
 
         public String[] getSupportedActions() {
-            Set/*<String>*/ actions = new HashSet();
-            Iterator/*<ActionProvider>*/ it = delegates();
-            while (it.hasNext()) {
-                ActionProvider ap = (ActionProvider) it.next();
+            Set<String> actions = new HashSet<String>();
+            for (ActionProvider ap : delegates()) {
                 actions.addAll(Arrays.asList(ap.getSupportedActions()));
             }
-            return (String[]) actions.toArray(new String[actions.size()]);
+            return actions.toArray(new String[actions.size()]);
         }
         
     }

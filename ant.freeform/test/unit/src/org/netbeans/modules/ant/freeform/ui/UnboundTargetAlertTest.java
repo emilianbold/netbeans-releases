@@ -54,7 +54,7 @@ public class UnboundTargetAlertTest extends TestBase {
     public void testGenerateBindingAndAddContextMenuItem() throws Exception {
         uta.simulateTargetSelection("twiddle-this");
         uta.generateBindingAndAddContextMenuItem();
-        List/*<FreeformProjectGenerator.TargetMapping>*/ mappings = FreeformProjectGenerator.getTargetMappings(prj.helper());
+        List<FreeformProjectGenerator.TargetMapping> mappings = FreeformProjectGenerator.getTargetMappings(prj.helper());
         // Will add it to the end, so just look there.
         FreeformProjectGenerator.TargetMapping lastMapping = (FreeformProjectGenerator.TargetMapping) mappings.get(mappings.size() - 1);
         assertEquals("debug", lastMapping.name);
@@ -68,10 +68,10 @@ public class UnboundTargetAlertTest extends TestBase {
         uta.simulateTargetSelection("  twiddle-this extra-step ");
         uta.generateBindingAndAddContextMenuItem();
         mappings = FreeformProjectGenerator.getTargetMappings(prj.helper());
-        lastMapping = (FreeformProjectGenerator.TargetMapping) mappings.get(mappings.size() - 1);
+        lastMapping = mappings.get(mappings.size() - 1);
         assertEquals("debug", lastMapping.name);
         assertEquals(null, lastMapping.script);
-        assertEquals(Arrays.asList(new String[] {"twiddle-this", "extra-step"}), lastMapping.targets);
+        assertEquals(Arrays.asList("twiddle-this", "extra-step"), lastMapping.targets);
         assertEquals(null, lastMapping.properties);
         assertEquals(null, lastMapping.context);
         // Also check the context menu.
@@ -80,16 +80,14 @@ public class UnboundTargetAlertTest extends TestBase {
         assertNotNull(view);
         Element contextMenu = Util.findElement(view, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull(contextMenu);
-        Set/*<String>*/ actionNames = new TreeSet();
-        Iterator/*<Element>*/ actions = Util.findSubElements(contextMenu).iterator();
-        while (actions.hasNext()) {
-            Element action = (Element) actions.next();
+        Set<String> actionNames = new TreeSet<String>();
+        for (Element action : Util.findSubElements(contextMenu)) {
             if (action.getLocalName().equals("ide-action")) {
                 actionNames.add(action.getAttribute("name"));
             }
         }
         assertEquals("Correct context menu IDE actions",
-            new TreeSet(Arrays.asList(new String[] {"build", "clean", "rebuild", "run", "javadoc", /*added*/ "debug"})),
+            new TreeSet<String>(Arrays.asList("build", "clean", "rebuild", "run", "javadoc", /*added*/ "debug")),
             actionNames);
     }
     

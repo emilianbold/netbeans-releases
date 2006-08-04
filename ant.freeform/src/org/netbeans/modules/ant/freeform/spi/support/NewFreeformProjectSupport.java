@@ -23,10 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
+import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel;
 import org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbCollections;
 
 /**
  * Support for New Project Wizard.
@@ -103,7 +105,7 @@ public class NewFreeformProjectSupport {
      * @param targets list of additional targets to be shown in wizard panel. List
      * of TargetDescriptor instances. Order is relevant.
      */
-    public static final WizardDescriptor.Panel createTargetMappingWizardPanel(List/*TargetDescriptor*/ targets) {
+    public static final WizardDescriptor.Panel createTargetMappingWizardPanel(List<TargetDescriptor> targets) {
         return new TargetMappingWizardPanel(targets);
     }
     
@@ -112,7 +114,9 @@ public class NewFreeformProjectSupport {
      * The method must to be called under ProjectManager.writeMutex.
      */
     public static final void instantiateTargetMappingWizardPanel(AntProjectHelper helper, WizardDescriptor wiz) {
-        List mappings = (List)wiz.getProperty(TargetMappingWizardPanel.PROP_TARGET_MAPPINGS);
+        List<FreeformProjectGenerator.TargetMapping> mappings = NbCollections.checkedListByCopy(
+                (List) wiz.getProperty(TargetMappingWizardPanel.PROP_TARGET_MAPPINGS),
+                FreeformProjectGenerator.TargetMapping.class, true);
         
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);

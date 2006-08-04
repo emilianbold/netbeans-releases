@@ -73,8 +73,8 @@ public class FreeformEvaluatorTest extends TestBase {
                 p.store(os);
             } finally {
                 // close file under ProjectManager.readAccess so that events are fired synchronously
-                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-                    public Object run() throws Exception {
+                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                    public Void run() throws Exception {
                         os.close();
                         return null;
                     }
@@ -159,8 +159,8 @@ public class FreeformEvaluatorTest extends TestBase {
                 p.store(os);
             } finally {
                 // close file under ProjectManager.readAccess so that events are fired synchronously
-                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-                    public Object run() throws Exception {
+                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                    public Void run() throws Exception {
                         os.close();
                         return null;
                     }
@@ -170,7 +170,7 @@ public class FreeformEvaluatorTest extends TestBase {
             lock.releaseLock();
         }
         // Check that the change took.
-        Set/*<String>*/ exact = new HashSet(Arrays.asList(new String[] {"src.dir", "build.properties"}));
+        Set<String> exact = new HashSet<String>(Arrays.asList("src.dir", "build.properties"));
         // OK to just return null for the property name instead.
         assertTrue("got a change from properties file in src.dir: " + l.changed, l.changed.contains(null) || l.changed.equals(exact));
         l.reset();

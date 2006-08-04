@@ -112,15 +112,15 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertNotNull("Project was not created", p);
         assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
         
-        ActionProvider ap = (ActionProvider)p.getLookup().lookup(ActionProvider.class);
+        ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
         assertNotNull("Project does not have ActionProvider", ap);
         assertEquals("Project cannot have any action", 0, ap.getSupportedActions().length);
         
-        List list = FreeformProjectGenerator.getTargetMappings(helper);
+        List<FreeformProjectGenerator.TargetMapping> list = FreeformProjectGenerator.getTargetMappings(helper);
         assertNotNull("getTargetMappings() cannot return null", list);
         assertEquals("Project cannot have any action", 0, list.size());
         
-        list = new ArrayList();
+        list = new ArrayList<FreeformProjectGenerator.TargetMapping>();
         FreeformProjectGenerator.TargetMapping tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "clean";
         tm.targets = Collections.singletonList("clean-target");
@@ -132,21 +132,22 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         list.add(tm);
         tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "rebuild";
-        tm.targets = Arrays.asList(new String[]{"clean-target", "build-target"});
+        tm.targets = Arrays.asList("clean-target", "build-target");
         tm.script = "${ant.script.three}";
         list.add(tm);
         tm = new FreeformProjectGenerator.TargetMapping();
         FreeformProjectGenerator.putTargetMappings(helper, list);
-        List list2 = FreeformProjectGenerator.getTargetMappings(helper);
+        List<FreeformProjectGenerator.TargetMapping> list2 = FreeformProjectGenerator.getTargetMappings(helper);
         // once again: put and get
         FreeformProjectGenerator.putTargetMappings(helper, list2);
         list2 = FreeformProjectGenerator.getTargetMappings(helper);
         assertNotNull("getTargetMappings() cannot return null", list2);
         assertEquals("Project must have 3 actions", 3, list2.size());
-        assertEquals("Script was not correctly saved", null, ((FreeformProjectGenerator.TargetMapping)list2.get(0)).script);
-        assertEquals("Script was not correctly saved", "${ant.script.two}", ((FreeformProjectGenerator.TargetMapping)list2.get(1)).script);
-        assertEquals("Script was not correctly saved", "${ant.script.three}", ((FreeformProjectGenerator.TargetMapping)list2.get(2)).script);
-        assertEquals("Project must have 3 actions plus 4 extras (run, javadoc, test, redeploy) plus 4 project operations (copy, rename, move, delete): " + Arrays.asList(ap.getSupportedActions()), 11, ap.getSupportedActions().length);
+        assertEquals("Script was not correctly saved", null, list2.get(0).script);
+        assertEquals("Script was not correctly saved", "${ant.script.two}", list2.get(1).script);
+        assertEquals("Script was not correctly saved", "${ant.script.three}", list2.get(2).script);
+        assertEquals("Project must have 3 actions plus 4 extras (run, javadoc, test, redeploy) plus 4 project operations (copy, rename, move, delete): " +
+                Arrays.asList(ap.getSupportedActions()), 11, ap.getSupportedActions().length);
         assertTrue("Action clean must be enabled", ap.isActionEnabled("clean", Lookup.EMPTY));
         assertTrue("Action build must be enabled", ap.isActionEnabled("build", Lookup.EMPTY));
         assertTrue("Action rebuild must be enabled", ap.isActionEnabled("rebuild", Lookup.EMPTY));
@@ -169,11 +170,11 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         
         // check that all data are correctly persisted
         
-        List mappings = new ArrayList();
+        List<FreeformProjectGenerator.TargetMapping> mappings = new ArrayList<FreeformProjectGenerator.TargetMapping>();
         FreeformProjectGenerator.TargetMapping tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "first-targetName";
         tm.script = "antScript";
-        tm.targets = new ArrayList();
+        tm.targets = new ArrayList<String>();
         tm.targets.add("target-1");
         tm.targets.add("target-2");
         tm.targets.add("target-3");
@@ -190,7 +191,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "second-targetName";
         tm.script = "second-antScript";
-        tm.targets = new ArrayList();
+        tm.targets = new ArrayList<String>();
         tm.targets.add("second-target-1");
         tm.targets.add("second-target-2");
         tm.targets.add("second-target-3");
@@ -212,46 +213,46 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         Element el = helper.getPrimaryConfigurationData(true);
         el = Util.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        List subElements = Util.findSubElements(el);
+        List<Element> subElements = Util.findSubElements(el);
         assertEquals(2, subElements.size());
         // compare first target mapping
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "action", null, "name", "first-targetName");
-        List l1 = Util.findSubElements(el2);
+        List<Element> l1 = Util.findSubElements(el2);
         assertEquals(7, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "target", "target", "target", "property", "property", "context"}, 
             new String[]{"antScript", "target-1", "target-2", "target-3", "v1", "v2", null});
-        el2 = (Element)l1.get(4);
+        el2 = l1.get(4);
         assertElement(el2, "property", "v1", "name", "k1");
-        el2 = (Element)l1.get(5);
+        el2 = l1.get(5);
         assertElement(el2, "property", "v2", "name", "k2");
-        el2 = (Element)l1.get(6);
-        List l2 = Util.findSubElements(el2);
+        el2 = l1.get(6);
+        List<Element> l2 = Util.findSubElements(el2);
         assertEquals(5, l2.size());
         assertElementArray(l2, 
             new String[]{"property", "folder", "pattern", "format", "arity"}, 
             new String[]{"someProperty1", "someFolder1", "somePattern1", "relative-path", null});
-        assertNotNull("have <one-file-only>", Util.findElement((Element) l2.get(4), "one-file-only", FreeformProjectType.NS_GENERAL));
+        assertNotNull("have <one-file-only>", Util.findElement(l2.get(4), "one-file-only", FreeformProjectType.NS_GENERAL));
         // compare second target mapping
-        el2 = (Element)subElements.get(1);
+        el2 = subElements.get(1);
         assertElement(el2, "action", null, "name", "second-targetName");
         l1 = Util.findSubElements(el2);
         assertEquals(7, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "target", "target", "target", "property", "property", "context"},
             new String[]{"second-antScript", "second-target-1", "second-target-2", "second-target-3", "second-v1", "second-v2", null});
-        el2 = (Element)l1.get(4);
+        el2 = l1.get(4);
         assertElement(el2, "property", "second-v1", "name", "second-k1");
-        el2 = (Element)l1.get(5);
+        el2 = l1.get(5);
         assertElement(el2, "property", "second-v2", "name", "second-k2");
-        el2 = (Element)l1.get(6);
+        el2 = l1.get(6);
         l2 = Util.findSubElements(el2);
         assertEquals(4, l2.size());
         assertElementArray(l2, 
             new String[]{"property", "folder", "format", "arity"}, 
             new String[]{"second-someProperty1", "second-someFolder1", "java-name", null});
-        Element sepFilesEl = Util.findElement((Element) l2.get(3), "separated-files", FreeformProjectType.NS_GENERAL);
+        Element sepFilesEl = Util.findElement(l2.get(3), "separated-files", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <separated-files>", sepFilesEl);
         assertEquals("right separator", "someSeparator1", Util.findText(sepFilesEl));
         // validate against schema:
@@ -260,11 +261,11 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
             
         // test updating
             
-        mappings = new ArrayList();
+        mappings = new ArrayList<FreeformProjectGenerator.TargetMapping>();
         tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "foo";
         tm.script = "antScript";
-        tm.targets = new ArrayList();
+        tm.targets = new ArrayList<String>();
         tm.targets.add("target-1");
         tm.targets.add("target-2");
         mappings.add(tm);
@@ -279,22 +280,22 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         subElements = Util.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare first target mapping
-        el2 = (Element)subElements.get(0);
+        el2 = subElements.get(0);
         assertElement(el2, "action", null, "name", "foo");
         l1 = Util.findSubElements(el2);
         assertEquals(5, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "target", "target", "property", "property"}, 
             new String[]{"antScript", "target-1", "target-2", "value1", "value2"});
-        el2 = (Element)l1.get(3);
+        el2 = l1.get(3);
         assertElement(el2, "property", "value1", "name", "key1");
-        el2 = (Element)l1.get(4);
+        el2 = l1.get(4);
         assertElement(el2, "property", "value2", "name", "key2");
-        mappings = new ArrayList();
+        mappings = new ArrayList<FreeformProjectGenerator.TargetMapping>();
         tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "foo";
         tm.script = "diff-script";
-        tm.targets = new ArrayList();
+        tm.targets = new ArrayList<String>();
         tm.targets.add("target-1");
         tm.targets.add("target-B");
         tm.properties = new EditableProperties(false);
@@ -309,16 +310,16 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         subElements = Util.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare first target mapping
-        el2 = (Element)subElements.get(0);
+        el2 = subElements.get(0);
         assertElement(el2, "action", null, "name", "foo");
         l1 = Util.findSubElements(el2);
         assertEquals(5, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "target", "target", "property", "property"}, 
             new String[]{"diff-script", "target-1", "target-B", "value-1", "value-2"});
-        el2 = (Element)l1.get(3);
+        el2 = l1.get(3);
         assertElement(el2, "property", "value-1", "name", "key-1");
-        el2 = (Element)l1.get(4);
+        el2 = l1.get(4);
         assertElement(el2, "property", "value-2", "name", "key-2");
         // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
@@ -334,7 +335,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         
         // check that all data are correctly persisted
         
-        List mappings = new ArrayList();
+        List<FreeformProjectGenerator.TargetMapping> mappings = new ArrayList<FreeformProjectGenerator.TargetMapping>();
         FreeformProjectGenerator.TargetMapping tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "first-targetName";
         mappings.add(tm);
@@ -352,7 +353,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertNotNull("Target mapping were not saved correctly",  el);
         el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        List subElements = Util.findSubElements(el);
+        List<Element> subElements = Util.findSubElements(el);
         assertEquals(2, subElements.size());
         assertElementArray(subElements, 
             new String[]{"ide-action", "ide-action"}, 
@@ -401,11 +402,11 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         
         // check that all data are correctly persisted
         
-        List customActions = new ArrayList();
+        List<FreeformProjectGenerator.CustomTarget> customActions = new ArrayList<FreeformProjectGenerator.CustomTarget>();
         FreeformProjectGenerator.CustomTarget ct = new FreeformProjectGenerator.CustomTarget();
         ct.label = "customAction1";
         ct.script = "customScript1";
-        ct.targets = new ArrayList();
+        ct.targets = new ArrayList<String>();
         ct.targets.add("customTarget1");
         ct.targets.add("customTarget2");
         ct.properties = new EditableProperties(false);
@@ -415,7 +416,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         ct = new FreeformProjectGenerator.CustomTarget();
         ct.label = "customAction2";
         ct.script = "customScript2";
-        ct.targets = new ArrayList();
+        ct.targets = new ArrayList<String>();
         ct.targets.add("second-customTarget1");
         ct.targets.add("second-customTarget2");
         ct.properties = new EditableProperties(false);
@@ -432,32 +433,32 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertNotNull("Target mapping were not saved correctly",  el);
         el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        List subElements = Util.findSubElements(el);
+        List<Element> subElements = Util.findSubElements(el);
         assertEquals(2, subElements.size());
         assertElementArray(subElements, 
             new String[]{"action", "action"}, 
             new String[]{null, null});
         // compare first custom action
-        Element el2 = (Element)subElements.get(0);
-        List l1 = Util.findSubElements(el2);
+        Element el2 = subElements.get(0);
+        List<Element> l1 = Util.findSubElements(el2);
         assertEquals(6, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "label", "target", "target", "property", "property"}, 
             new String[]{"customScript1", "customAction1", "customTarget1", "customTarget2", "v1", "v2"});
-        el2 = (Element)l1.get(4);
+        el2 = l1.get(4);
         assertElement(el2, "property", "v1", "name", "k1");
-        el2 = (Element)l1.get(5);
+        el2 = l1.get(5);
         assertElement(el2, "property", "v2", "name", "k2");
         // compare second custom action
-        el2 = (Element)subElements.get(1);
+        el2 = subElements.get(1);
         l1 = Util.findSubElements(el2);
         assertEquals(6, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "label", "target", "target", "property", "property"}, 
             new String[]{"customScript2", "customAction2", "second-customTarget1", "second-customTarget2", "vv1", "vv2"});
-        el2 = (Element)l1.get(4);
+        el2 = l1.get(4);
         assertElement(el2, "property", "vv1", "name", "kk1");
-        el2 = (Element)l1.get(5);
+        el2 = l1.get(5);
         assertElement(el2, "property", "vv2", "name", "kk2");
         // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
@@ -465,7 +466,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
             
         // test updating
             
-        customActions = new ArrayList();
+        customActions = new ArrayList<FreeformProjectGenerator.CustomTarget>();
         ct = new FreeformProjectGenerator.CustomTarget();
         ct.label = "fooLabel";
         customActions.add(ct);
@@ -485,14 +486,14 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
             new String[]{"action", "action"}, 
             new String[]{null, null});
         // compare first custom action
-        el2 = (Element)subElements.get(0);
+        el2 = subElements.get(0);
         l1 = Util.findSubElements(el2);
         assertEquals(1, l1.size());
         assertElementArray(l1, 
             new String[]{"label"}, 
             new String[]{"fooLabel"});
         // compare second custom action
-        el2 = (Element)subElements.get(1);
+        el2 = subElements.get(1);
         l1 = Util.findSubElements(el2);
         assertEquals(1, l1.size());
         assertElementArray(l1, 
@@ -521,9 +522,9 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
      * See {@link #assertElement(Element, String, String)} for more details. This 
      * method does exactly the same just on the list of elements and expected names. 
      */
-    public static void assertElementArray(List/*<Element>*/ elements, String[] expectedNames, String[] expectedValues) {
+    public static void assertElementArray(List<Element> elements, String[] expectedNames, String[] expectedValues) {
         for (int i=0; i<elements.size(); i++) {
-            assertElement((Element)elements.get(i), expectedNames[i], expectedValues[i]);
+            assertElement(elements.get(i), expectedNames[i], expectedValues[i]);
         }
     }
     
@@ -552,10 +553,10 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
      * method does exactly the same just on the list of elements and expected names
      * and expected attributes.
      */
-    public static void assertElementArray(List/*<Element>*/ elements, String[] expectedNames, String[] expectedValues, String[] expectedAttrName, String[] expectedAttrValue) {
+    public static void assertElementArray(List<Element> elements, String[] expectedNames, String[] expectedValues, String[] expectedAttrName, String[] expectedAttrValue) {
         assertEquals(expectedNames.length, elements.size());
         for (int i=0; i<elements.size(); i++) {
-            assertElement((Element)elements.get(i), expectedNames[i], expectedValues[i], expectedAttrName[i], expectedAttrValue[i]);
+            assertElement(elements.get(i), expectedNames[i], expectedValues[i], expectedAttrName[i], expectedAttrValue[i]);
         }
     }
 

@@ -54,7 +54,7 @@ public class ViewTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        lvp = (LogicalViewProvider) extsrcroot.getLookup().lookup(LogicalViewProvider.class);
+        lvp = extsrcroot.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("found a LogicalViewProvider", lvp);
     }
     
@@ -145,7 +145,7 @@ public class ViewTest extends TestBase {
     }
     
     private static final class TestNL implements NodeListener {
-        private final Set/*<String>*/ changes = new HashSet();
+        private final Set<String> changes = new HashSet<String>();
         public TestNL() {}
         public synchronized void childrenRemoved(NodeMemberEvent ev) {
             changes.add("childrenRemoved");
@@ -163,8 +163,8 @@ public class ViewTest extends TestBase {
             changes.add(propertyChangeEvent.getPropertyName());
         }
         /** Get a set of all change event names since the last call. Clears set too. */
-        public synchronized Set/*<String>*/ probeChanges() {
-            Set/*<String>*/ _changes = new HashSet(changes);
+        public synchronized Set<String> probeChanges() {
+            Set<String> _changes = new HashSet<String>(changes);
             changes.clear();
             return _changes;
         }

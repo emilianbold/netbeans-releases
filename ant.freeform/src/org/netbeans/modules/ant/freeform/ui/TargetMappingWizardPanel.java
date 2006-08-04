@@ -32,6 +32,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
+import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -48,10 +49,10 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
     
     private TargetMappingPanel component;
     private WizardDescriptor wizardDescriptor;
-    private List targets;
-    private List targetNames;
+    private List<TargetDescriptor> targets;
+    private List<String> targetNames;
     
-    public TargetMappingWizardPanel(List targets) {
+    public TargetMappingWizardPanel(List<TargetDescriptor> targets) {
         this.targets = targets;
         getComponent().setName(NbBundle.getMessage(TargetMappingWizardPanel.class, "WizardPanel_BuildAndRunActions"));
     }
@@ -59,7 +60,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
     public Component getComponent() {
         if (component == null) {
             component = new TargetMappingPanel(targets, false);
-            ((JComponent)component).getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(TargetMappingWizardPanel.class, "ACSD_TargetMappingWizardPanel")); // NOI18N
+            component.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TargetMappingWizardPanel.class, "ACSD_TargetMappingWizardPanel"));
         }
         return component;
     }
@@ -73,7 +74,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         return true;
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -85,13 +86,13 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        Set<ChangeListener> ls;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            ls = new HashSet<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
     
@@ -102,10 +103,10 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         FileObject fo = FileUtil.toFileObject(f);
         // Util.getAntScriptTargetNames can return null when script is 
         // invalid but first panel checks script validity so it is OK here.
-        List l = Util.getAntScriptTargetNames(fo);
+        List<String> l = Util.getAntScriptTargetNames(fo);
         // #47784 - update panel only once or when Ant script has changed
         if (targetNames == null || !targetNames.equals(l)) {
-            targetNames = new ArrayList(l);
+            targetNames = new ArrayList<String>(l);
             component.setTargetNames(l, true);
         }
         File projDir = (File)wizardDescriptor.getProperty(NewFreeformProjectSupport.PROP_PROJECT_FOLDER);

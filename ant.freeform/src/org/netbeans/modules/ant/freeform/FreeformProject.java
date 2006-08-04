@@ -21,6 +21,7 @@ package org.netbeans.modules.ant.freeform;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +60,7 @@ import org.w3c.dom.NodeList;
  */
 public final class FreeformProject implements Project {
     
-    public static final Lookup.Result/*<ProjectNature>*/ PROJECT_NATURES = Lookup.getDefault().lookupResult(ProjectNature.class);
+    public static final Lookup.Result<ProjectNature> PROJECT_NATURES = Lookup.getDefault().lookupResult(ProjectNature.class);
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -79,7 +80,7 @@ public final class FreeformProject implements Project {
     
     private Lookup initLookup() throws IOException {
         aux = helper().createAuxiliaryConfiguration(); // AuxiliaryConfiguration
-        Lookup baseLookup = Lookups.fixed(new Object[] {
+        Lookup baseLookup = Lookups.fixed(
             new Info(), // ProjectInformation
             new FreeformSources(this), // Sources
             new Actions(this), // ActionProvider
@@ -92,8 +93,8 @@ public final class FreeformProject implements Project {
             new LookupMergerImpl(), // LookupMerger
             new FreeformProjectOperations(this),
 	    new FreeformSharabilityQuery(helper()), //SharabilityQueryImplementation
-            new ProjectAccessor(this), //Access to AntProjectHelper and PropertyEvaluator
-        });
+            new ProjectAccessor(this) //Access to AntProjectHelper and PropertyEvaluator
+        );
         return new FreeformLookup(baseLookup, this, helper, eval, aux);
     }
     
@@ -115,8 +116,8 @@ public final class FreeformProject implements Project {
     
     /** Store configured project name. */
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(FreeformProjectType.NS_GENERAL, "name");
@@ -147,8 +148,8 @@ public final class FreeformProject implements Project {
         }
         
         public String getDisplayName() {
-            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+                public String run() {
                     Element genldata = helper.getPrimaryConfigurationData(true);
                     Element nameEl = Util.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
                     if (nameEl == null) {
@@ -185,22 +186,22 @@ public final class FreeformProject implements Project {
         private final PropertyEvaluator evaluator;
         private final FreeformProject project;
         private final AuxiliaryConfiguration aux;
-        private Lookup.Result/*<LookupMerger>*/ mergers;
-        private WeakReference listenerRef;
+        private Lookup.Result<LookupMerger> mergers;
+        private Reference<LookupListener> listenerRef;
         
         //#68623: the proxy lookup fires changes only if someone listens on a particular template:
-        private List/*<Lookup.Result>*/ results;
+        private List<Lookup.Result<?>> results;
         
         public FreeformLookup(Lookup baseLookup, FreeformProject project, AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
-            super(new Lookup[0]);
+            super();
             this.baseLookup = baseLookup;
             this.project = project;
             this.helper = helper;
             this.evaluator = evaluator;
             this.aux = aux;
-            this.results = Collections.EMPTY_LIST;
+            this.results = Collections.emptyList();
             updateLookup();
-            PROJECT_NATURES.addLookupListener((LookupListener) WeakListeners.create(LookupListener.class, this, PROJECT_NATURES));
+            PROJECT_NATURES.addLookupListener(WeakListeners.create(LookupListener.class, this, PROJECT_NATURES));
         }
         
         public void resultChanged (LookupEvent ev) {
@@ -209,55 +210,50 @@ public final class FreeformProject implements Project {
         
         private void updateLookup() {
             //unregister listeners from the old results:
-            for (Iterator i = results.iterator(); i.hasNext(); ) {
-                ((Lookup.Result) i.next()).removeLookupListener(this);
+            for (Lookup.Result<?> r : results) {
+                r.removeLookupListener(this);
             }
             
-            results = new ArrayList();
+            results = new ArrayList<Lookup.Result<?>>();
             
-            List/*<Lookup>*/ lookups = new ArrayList();
+            List<Lookup> lookups = new ArrayList<Lookup>();
             lookups.add(baseLookup);
-            Iterator/*<ProjectNature>*/ it = PROJECT_NATURES.allInstances().iterator();
-            while (it.hasNext()) {
-                ProjectNature pn  = (ProjectNature) it.next();
+            for (ProjectNature pn : PROJECT_NATURES.allInstances()) {
                 lookups.add(pn.getLookup(project, helper, evaluator, aux));
             }
-            Lookup lkp = new ProxyLookup((Lookup[]) lookups.toArray(new Lookup[lookups.size()]));
+            Lookup lkp = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
             
             //merge:
-            ArrayList filtredClasses = new ArrayList();
-            ArrayList mergedInstances = new ArrayList();
-            LookupListener l = listenerRef != null ? (LookupListener)listenerRef.get() : null;
+            List<Class<?>> filteredClasses = new ArrayList<Class<?>>();
+            List<Object> mergedInstances = new ArrayList<Object>();
+            LookupListener l = listenerRef != null ? listenerRef.get() : null;
             if (l != null) {
                 mergers.removeLookupListener(l);
             }
             mergers = lkp.lookupResult(LookupMerger.class);
-            l = (LookupListener) WeakListeners.create(LookupListener.class, this, mergers);
-            listenerRef = new WeakReference(l);
+            l = WeakListeners.create(LookupListener.class, this, mergers);
+            listenerRef = new WeakReference<LookupListener>(l);
             mergers.addLookupListener(l);
-            it = mergers.allInstances().iterator();
-            while (it.hasNext()) {
-                LookupMerger lm = (LookupMerger)it.next();
-                Class[] classes = lm.getMergeableClasses();
-                for (int i=0; i<classes.length; i++) {
-                    if (filtredClasses.contains(classes[i])) {
+            for (LookupMerger lm : mergers.allInstances()) {
+                for (Class<?> c : lm.getMergeableClasses()) {
+                    if (filteredClasses.contains(c)) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                            "Two LookupMerger registered for class "+classes[i]+
+                            "Two LookupMerger registered for class " + c +
                             ". Only first one will be used"); // NOI18N
                         continue;
                     }
-                    filtredClasses.add(classes[i]);
-                    mergedInstances.add(lm.merge(lkp, classes[i]));
+                    filteredClasses.add(c);
+                    mergedInstances.add(lm.merge(lkp, c));
                     
-                    Lookup.Result result = lkp.lookupResult(classes[i]);
+                    Lookup.Result<?> result = lkp.lookupResult(c);
                     
                     result.addLookupListener(this);
                     results.add(result);
                 }
             }
-            lkp = Lookups.exclude(lkp, (Class[])filtredClasses.toArray(new Class[filtredClasses.size()]));
+            lkp = Lookups.exclude(lkp, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
             Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
-            setLookups(new Lookup[]{fixed, lkp});
+            setLookups(fixed, lkp);
         }
         
     }

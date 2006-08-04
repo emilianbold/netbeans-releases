@@ -54,7 +54,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
     
     private DialogDescriptor dialogDescriptor;
-    private Map customizerPerProject = new WeakHashMap (); // Is weak needed here?
+    private Map<FreeformProject,Dialog> customizerPerProject = new WeakHashMap<FreeformProject,Dialog>(); // Is weak needed here?
     
     public ProjectCustomizerProvider(FreeformProject project) {
         this.project = project;
@@ -63,7 +63,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     public void showCustomizer() {
         
         if (customizerPerProject.containsKey (project)) {
-            Dialog dlg = (Dialog)customizerPerProject.get (project);
+            Dialog dlg = customizerPerProject.get(project);
             
             // check if the project is being customized
             if (dlg.isShowing ()) {

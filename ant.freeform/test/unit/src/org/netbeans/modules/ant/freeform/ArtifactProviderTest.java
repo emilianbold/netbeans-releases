@@ -68,7 +68,7 @@ public class ArtifactProviderTest extends TestBase {
     
     public void testGetBuildArtifacts() throws Exception {
         AntProjectHelper helper = simple.helper();
-        List exports = new ArrayList();
+        List<Export> exports = new ArrayList<Export>();
         Export e = new Export();
         e.type = "jar";
         e.location = "path/smth.jar";
@@ -112,22 +112,18 @@ public class ArtifactProviderTest extends TestBase {
         // XXX test ordering perhaps? not critical
     }
 
-    private static void putExports(AntProjectHelper helper, List/*<Export>*/ exports) {
+    private static void putExports(AntProjectHelper helper, List<Export> exports) {
         //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Iterator it = Util.findSubElements(data).iterator();
-        while (it.hasNext()) {
-            Element exportEl = (Element)it.next();
+        for (Element exportEl : Util.findSubElements(data)) {
             if (!exportEl.getLocalName().equals("export")) { // NOI18N
                 continue;
             }
             data.removeChild(exportEl);
         }
-        Iterator it2 = exports.iterator();
-        while (it2.hasNext()) {
-            Export export = (Export)it2.next();
+        for (Export export : exports) {
             Element exportEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "export"); // NOI18N
             Element el;
             el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "type"); // NOI18N

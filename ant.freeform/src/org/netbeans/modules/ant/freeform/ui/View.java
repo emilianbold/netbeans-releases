@@ -53,6 +53,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -79,19 +80,17 @@ public final class View implements LogicalViewProvider {
     public Node findPath(Node root, Object target) {
         // Check each child node in turn.
         Node[] kids = root.getChildren().getNodes(true);
-        for (int i = 0; i < kids.length; i++) {
+        for (Node kid : kids) {
             // First ask natures.
-            Iterator/*<ProjectNature>*/ natures = Lookup.getDefault().lookupAll(ProjectNature.class).iterator();
-            while (natures.hasNext()) {
-                ProjectNature nature = (ProjectNature) natures.next();
-                Node n = nature.findSourceFolderViewPath(project, kids[i], target);
+            for (ProjectNature nature : Lookup.getDefault().lookupAll(ProjectNature.class)) {
+                Node n = nature.findSourceFolderViewPath(project, kid, target);
                 if (n != null) {
                     return n;
                 }
             }
             // Otherwise, check children and look for <source-folder>/<source-file> matches.
             if (target instanceof DataObject || target instanceof FileObject) {
-                DataObject d = (DataObject) kids[i].getLookup().lookup(DataObject.class);
+                DataObject d = kid.getLookup().lookup(DataObject.class);
                 if (d == null) {
                     continue;
                 }
@@ -99,14 +98,14 @@ public final class View implements LogicalViewProvider {
                 FileObject kidFO = d.getPrimaryFile();
                 FileObject targetFO = target instanceof DataObject ? ((DataObject) target).getPrimaryFile() : (FileObject) target;
                 if (kidFO == targetFO) {
-                    return kids[i];
+                    return kid;
                 } else if (FileUtil.isParentOf(kidFO, targetFO)) {
                     String relPath = FileUtil.getRelativePath(kidFO, targetFO);
-                    List/*<String>*/ path = Collections.list(new StringTokenizer(relPath, "/")); // NOI18N
+                    List<String> path = Collections.list(NbCollections.checkedEnumerationByFilter(new StringTokenizer(relPath, "/"), String.class, true)); // NOI18N
                     // XXX see original code for justification
                     path.set(path.size() - 1, targetFO.getName());
                     try {
-                        return NodeOp.findPath(kids[i], Collections.enumeration(path));
+                        return NodeOp.findPath(kid, Collections.enumeration(path));
                     } catch (NodeNotFoundException e) {
                         return null;
                     }
@@ -116,7 +115,7 @@ public final class View implements LogicalViewProvider {
         return null;
     }
     
-    private static final class RootChildren extends Children.Keys/*<Element>*/ implements AntProjectListener {
+    private static final class RootChildren extends Children.Keys<Element> implements AntProjectListener {
         
         private final FreeformProject p;
         
@@ -132,7 +131,7 @@ public final class View implements LogicalViewProvider {
         }
         
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<Element>emptySet());
             p.helper().removeAntProjectListener(this);
             super.removeNotify();
         }
@@ -142,7 +141,7 @@ public final class View implements LogicalViewProvider {
             Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
             if (viewEl != null) {
                 Element itemsEl = Util.findElement(viewEl, "items", FreeformProjectType.NS_GENERAL); // NOI18N
-                final List keys = Util.findSubElements(itemsEl);
+                final List<Element> keys = Util.findSubElements(itemsEl);
                 if (fromListener) {
                     // #50328 - post setKeys to different thread to prevent deadlocks
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -158,17 +157,16 @@ public final class View implements LogicalViewProvider {
                     // #58491 - post setKeys to different thread to prevent deadlocks
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
-                            setKeys(Collections.EMPTY_SET);
+                            setKeys(Collections.<Element>emptySet());
                         }
                     });
                 } else {
-                    setKeys(Collections.EMPTY_SET);
+                    setKeys(Collections.<Element>emptySet());
                 }
             }
         }
         
-        protected Node[] createNodes(Object key) {
-            Element itemEl = (Element)key;
+        protected Node[] createNodes(Element itemEl) {
             Element locationEl = Util.findElement(itemEl, "location", FreeformProjectType.NS_GENERAL); // NOI18N
             String location = Util.findText(locationEl);
             String locationEval = p.evaluator().evaluate(location);
@@ -193,9 +191,7 @@ public final class View implements LogicalViewProvider {
                     return null;
                 }
                 String style = itemEl.getAttribute("style"); // NOI18N
-                Iterator/*<ProjectNature>*/ natures = Lookup.getDefault().lookupAll(ProjectNature.class).iterator();
-                while (natures.hasNext()) {
-                    ProjectNature nature = (ProjectNature) natures.next();
+                for (ProjectNature nature : Lookup.getDefault().lookupAll(ProjectNature.class)) {
                     if (nature.getSourceFolderViewStyles().contains(style)) {
                         return new Node[] {nature.createSourceFolderView(p, file, style, location, label)};
                     }

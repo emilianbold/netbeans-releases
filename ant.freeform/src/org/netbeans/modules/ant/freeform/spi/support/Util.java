@@ -113,9 +113,9 @@ public class Util {
      * @return a list of direct child elements (may be empty)
      * @throws IllegalArgumentException if there are non-element children besides whitespace
      */
-    public static List/*<Element>*/ findSubElements(Element parent) throws IllegalArgumentException {
+    public static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
         NodeList l = parent.getChildNodes();
-        List/*<Element>*/ elements = new ArrayList(l.getLength());
+        List<Element> elements = new ArrayList<Element>(l.getLength());
         for (int i = 0; i < l.getLength(); i++) {
             Node n = l.item(i);
             if (n.getNodeType() == Node.ELEMENT_NODE) {

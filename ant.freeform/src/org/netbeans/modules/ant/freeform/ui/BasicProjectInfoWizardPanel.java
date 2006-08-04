@@ -43,7 +43,7 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
 
     private BasicProjectInfoPanel component;
     private WizardDescriptor wizardDescriptor;
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     public BasicProjectInfoWizardPanel() {
         getComponent().setName(NbBundle.getMessage(BasicProjectInfoWizardPanel.class, "WizardPanel_NameAndLocation"));
@@ -52,7 +52,7 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     public Component getComponent() {
         if (component == null) {
             component = new BasicProjectInfoPanel("", "", "", "", this); // NOI18N
-            ((JComponent)component).getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(BasicProjectInfoWizardPanel.class, "ACSD_BasicProjectInfoWizardPanel")); // NOI18N
+            component.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicProjectInfoWizardPanel.class, "ACSD_BasicProjectInfoWizardPanel")); // NOI18N
         }
         return component;
     }
@@ -85,13 +85,13 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     }
     
     final void fireChangeEvent() {
-        Iterator it;
+        Set<ChangeListener> ls;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            ls = new HashSet<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
     

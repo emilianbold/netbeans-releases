@@ -49,7 +49,7 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
         this.project = project;
     }
     
-    private static void addFile(FileObject projectDirectory, String fileName, List/*<FileObject>*/ result) {
+    private static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
         FileObject file = projectDirectory.getFileObject(fileName);
         
         if (file != null) {
@@ -57,24 +57,22 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
         }
     }
     
-    public List/*<FileObject>*/ getMetadataFiles() {
+    public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        List/*<FileObject>*/ files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         
         return files;
     }
     
-    public List/*<FileObject>*/ getDataFiles() {
+    public List<FileObject> getDataFiles() {
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element foldersEl = Util.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
-        List/*<Element>*/ folders = foldersEl != null ? Util.findSubElements(foldersEl) : Collections.EMPTY_LIST;
-        List/*<FileObject>*/ result = new ArrayList/*<FileObject>*/();
+        List<Element> folders = foldersEl != null ? Util.findSubElements(foldersEl) : Collections.<Element>emptyList();
+        List<FileObject> result = new ArrayList<FileObject>();
 
-        for (Iterator i = folders.iterator(); i.hasNext(); ) {
-            Element el = (Element) i.next();
-            
+        for (Element el : folders) {
             if ("source-folder".equals(el.getLocalName()) && FreeformProjectType.NS_GENERAL.equals(el.getNamespaceURI())) { // NOI18N
                 addFile(el, result);
             }
@@ -85,7 +83,7 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
         return result;
     }
     
-    private void addFile(Element folder, List/*<FileObject>*/ result) {
+    private void addFile(Element folder, List<FileObject> result) {
         Element location = Util.findElement(folder, "location", FreeformProjectType.NS_GENERAL); // NOI18N
         
         if (location == null) {

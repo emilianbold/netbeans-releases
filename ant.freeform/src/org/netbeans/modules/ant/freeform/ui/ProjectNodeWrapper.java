@@ -72,14 +72,14 @@ import org.openide.util.WeakListeners;
  */
 public final class ProjectNodeWrapper extends FilterNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
     
-    private Set files;
-    private Map fileSystemListeners;
+    private Set<FileObject> files;
+    private Map<FileSystem,FileStatusListener> fileSystemListeners;
     private RequestProcessor.Task task;
     private final Object privateLock = new Object();
     private boolean iconChange;
     private boolean nameChange;
     private ChangeListener sourcesListener;
-    private Map groupsListeners;
+    private Map<SourceGroup,PropertyChangeListener> groupsListeners;
     
     public static final Action GENERIC_PROJECTS_ACTIONS_MARKER = new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
@@ -94,7 +94,7 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
     public Action[] getActions(boolean context) {
         Action[] actions = super.getActions(context);
         
-        List result = new ArrayList();
+        List<Action> result = new ArrayList<Action>();
         
         for (int cntr = 0; cntr < actions.length; cntr++) {
             if (actions[cntr] != GENERIC_PROJECTS_ACTIONS_MARKER) {
@@ -109,14 +109,14 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
                         DataObject dobj = DataObject.find(fo);
                         FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
                         Lookup lookup = actionRegistry.getLookup();
-                        Iterator it = lookup.lookupAll(Object.class).iterator();
+                        Iterator<? extends Object> it = lookup.lookupAll(Object.class).iterator();
                         if (it.hasNext()) {
                             result.add(null);
                         }
                         while (it.hasNext()) {
                             Object next = it.next();
                             if (next instanceof Action) {
-                                result.add(next);
+                                result.add((Action) next);
                             } else if (next instanceof JSeparator) {
                                 result.add(null);
                             }
@@ -129,12 +129,12 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
             }
         }
         
-        return (Action []) result.toArray(new Action[result.size()]);
+        return result.toArray(new Action[result.size()]);
     }
     
     
     protected final void setProjectFiles() {
-        Project prj = (Project) getLookup().lookup(Project.class);
+        Project prj = getLookup().lookup(Project.class);
         
         if (prj != null) {
             setProjectFiles(prj);
@@ -152,20 +152,15 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
         setGroups(Arrays.asList(sources.getSourceGroups(Sources.TYPE_GENERIC)));
     }
     
-    private final void setGroups(Collection groups) {
+    private final void setGroups(Collection<SourceGroup> groups) {
         if (groupsListeners != null) {
-            Iterator it = groupsListeners.keySet().iterator();
-            while (it.hasNext()) {
-                SourceGroup group = (SourceGroup) it.next();
-                PropertyChangeListener pcl = (PropertyChangeListener) groupsListeners.get(group);
-                group.removePropertyChangeListener(pcl);
+            for (Map.Entry<SourceGroup,PropertyChangeListener> entry : groupsListeners.entrySet()) {
+                entry.getKey().removePropertyChangeListener(entry.getValue());
             }
         }
-        groupsListeners = new HashMap();
-        Set roots = new HashSet();
-        Iterator it = groups.iterator();
-        while (it.hasNext()) {
-            SourceGroup group = (SourceGroup) it.next();
+        groupsListeners = new HashMap<SourceGroup,PropertyChangeListener>();
+        Set<FileObject> roots = new HashSet<FileObject>();
+        for (SourceGroup group : groups) {
             PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
             groupsListeners.put(group, pcl);
             group.addPropertyChangeListener(pcl);
@@ -175,24 +170,19 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
         setFiles(roots);
     }
     
-    protected final void setFiles(Set files) {
+    protected final void setFiles(Set<FileObject> files) {
         if (fileSystemListeners != null) {
-            Iterator it = fileSystemListeners.keySet().iterator();
-            while (it.hasNext()) {
-                FileSystem fs = (FileSystem) it.next();
-                FileStatusListener fsl = (FileStatusListener) fileSystemListeners.get(fs);
-                fs.removeFileStatusListener(fsl);
+            for (Map.Entry<FileSystem,FileStatusListener> entry : fileSystemListeners.entrySet()) {
+                entry.getKey().removeFileStatusListener(entry.getValue());
             }
         }
         
-        fileSystemListeners = new HashMap();
+        fileSystemListeners = new HashMap<FileSystem,FileStatusListener>();
         this.files = files;
         if (files == null) return;
         
-        Iterator it = files.iterator();
-        Set hookedFileSystems = new HashSet();
-        while (it.hasNext()) {
-            FileObject fo = (FileObject) it.next();
+        Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
+        for (FileObject fo : files) {
             try {
                 FileSystem fs = fo.getFileSystem();
                 if (hookedFileSystems.contains(fs)) {
@@ -253,7 +243,7 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
         
         if (files != null && files.iterator().hasNext()) {
             try {
-                FileObject fo = (FileObject) files.iterator().next();
+                FileObject fo = files.iterator().next();
                 img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -268,7 +258,7 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
         
         if (files != null && files.iterator().hasNext()) {
             try {
-                FileObject fo = (FileObject) files.iterator().next();
+                FileObject fo = files.iterator().next();
                 img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -303,9 +293,7 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
         
         synchronized (privateLock) {
             if ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange())) {
-                Iterator it = files.iterator();
-                while (it.hasNext()) {
-                    FileObject fo = (FileObject) it.next();
+                for (FileObject fo : files) {
                     if (event.hasChanged(fo)) {
                         iconChange |= event.isIconChange();
                         nameChange |= event.isNameChange();

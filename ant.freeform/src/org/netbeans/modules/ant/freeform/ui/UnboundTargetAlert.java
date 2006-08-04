@@ -42,6 +42,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  * Alert in case a common global action is invoked by the user but there is no binding.
@@ -91,9 +92,9 @@ public final class UnboundTargetAlert extends JPanel {
     private void listTargets() {
         FileObject script = FreeformProjectGenerator.getAntScript(project.helper(), project.evaluator());
         if (script != null) {
-            List/*<String>*/ targets = Util.getAntScriptTargetNames(script);
+            List<String> targets = Util.getAntScriptTargetNames(script);
             if (targets != null) {
-                selectCombo.setModel(new DefaultComboBoxModel((String[]) targets.toArray(new String[targets.size()])));
+                selectCombo.setModel(new DefaultComboBoxModel(targets.toArray(new String[targets.size()])));
                 selectCombo.setSelectedItem("");
             }
         }
@@ -132,8 +133,8 @@ public final class UnboundTargetAlert extends JPanel {
         String projectDisplayName = ProjectUtils.getInformation(project).getDisplayName();
         if (displayAlert(projectDisplayName)) {
             try {
-                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                    public Object run() throws IOException {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public Void run() throws IOException {
                         generateBindingAndAddContextMenuItem();
                         ProjectManager.getDefault().saveProject(project);
                         return null;
@@ -153,11 +154,11 @@ public final class UnboundTargetAlert extends JPanel {
      * Also add the context menu item for the new command.
      */
     void generateBindingAndAddContextMenuItem() {
-        List/*<FreeformProjectGenerator.TargetMapping>*/ mappings = FreeformProjectGenerator.getTargetMappings(project.helper());
+        List<FreeformProjectGenerator.TargetMapping> mappings = FreeformProjectGenerator.getTargetMappings(project.helper());
         FreeformProjectGenerator.TargetMapping mapping = new FreeformProjectGenerator.TargetMapping();
         mapping.name = command;
         mapping.script = TargetMappingPanel.defaultAntScript(project.evaluator());
-        mapping.targets = Collections.list(new StringTokenizer((String) selectCombo.getSelectedItem()));
+        mapping.targets = Collections.list(NbCollections.checkedEnumerationByFilter(new StringTokenizer((String) selectCombo.getSelectedItem()), String.class, true));
         mappings.add(mapping);
         FreeformProjectGenerator.putTargetMappings(project.helper(), mappings);
         FreeformProjectGenerator.putContextMenuAction(project.helper(), mappings);

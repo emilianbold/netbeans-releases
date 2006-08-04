@@ -47,9 +47,8 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
 
     private final FreeformProject project;
     private PropertyEvaluator delegate;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
-    /** Not used for anything, just held strongly so they are not collected prematurely. */
-    private final Set/*<PropertyEvaluator>*/ intermediateEvaluators = new HashSet();
+    private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+    private final Set<PropertyEvaluator> intermediateEvaluators = new HashSet<PropertyEvaluator>();
     
     public FreeformEvaluator(FreeformProject project) throws IOException {
         this.project = project;
@@ -70,21 +69,17 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
     
     private PropertyEvaluator initEval() throws IOException {
         // Stop listening to old intermediate evaluators.
-        Iterator ieIt = intermediateEvaluators.iterator();
+        Iterator<PropertyEvaluator> ieIt = intermediateEvaluators.iterator();
         while (ieIt.hasNext()) {
-            PropertyEvaluator intermediate = (PropertyEvaluator) ieIt.next();
-            intermediate.removePropertyChangeListener(this);
+            ieIt.next().removePropertyChangeListener(this);
             ieIt.remove();
         }
         PropertyProvider preprovider = project.helper().getStockPropertyPreprovider();
-        List/*<PropertyProvider>*/ defs = new ArrayList();
+        List<PropertyProvider> defs = new ArrayList<PropertyProvider>();
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element properties = Util.findElement(genldata, "properties", FreeformProjectType.NS_GENERAL); // NOI18N
         if (properties != null) {
-            List/*<Element>*/ props = Util.findSubElements(properties);
-            Iterator it = props.iterator();
-            while (it.hasNext()) {
-                Element e = (Element)it.next();
+            for (Element e : Util.findSubElements(properties)) {
                 if (e.getLocalName().equals("property")) { // NOI18N
                     String val = Util.findText(e);
                     if (val == null) {
@@ -96,7 +91,7 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
                     String fname = Util.findText(e);
                     if (fname.contains("${")) { // NOI18N
                         // Tricky (#48230): need to listen to changes in the location of the file as well as its contents.
-                        PropertyEvaluator intermediate = PropertyUtils.sequentialPropertyEvaluator(preprovider, (PropertyProvider[]) defs.toArray(new PropertyProvider[defs.size()]));
+                        PropertyEvaluator intermediate = PropertyUtils.sequentialPropertyEvaluator(preprovider, defs.toArray(new PropertyProvider[defs.size()]));
                         fname = intermediate.evaluate(fname);
                         // Listen to changes in it, too.
                         intermediate.addPropertyChangeListener(this);
@@ -106,7 +101,7 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
                 }
             }
         }
-        return PropertyUtils.sequentialPropertyEvaluator(preprovider, (PropertyProvider[]) defs.toArray(new PropertyProvider[defs.size()]));
+        return PropertyUtils.sequentialPropertyEvaluator(preprovider, defs.toArray(new PropertyProvider[defs.size()]));
     }
     
     public String getProperty(String prop) {
@@ -117,7 +112,7 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
         return delegate.evaluate(text);
     }
     
-    public Map/*<String,String>*/ getProperties() {
+    public Map<String,String> getProperties() {
         return delegate.getProperties();
     }
     
@@ -135,11 +130,11 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
             if (listeners.isEmpty()) {
                 return;
             }
-            _listeners = (PropertyChangeListener[])listeners.toArray(new PropertyChangeListener[listeners.size()]);
+            _listeners = listeners.toArray(new PropertyChangeListener[listeners.size()]);
         }
         PropertyChangeEvent ev = new PropertyChangeEvent(this, prop, null, null);
-        for (int i = 0; i < _listeners.length; i++) {
-            _listeners[i].propertyChange(ev);
+        for (PropertyChangeListener l : _listeners) {
+            l.propertyChange(ev);
         }
     }
     

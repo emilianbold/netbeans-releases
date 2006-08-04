@@ -48,7 +48,7 @@ final class Subprojects implements SubprojectProvider {
         this.project = project;
     }
 
-    public Set/*<Project>*/ getSubprojects() {
+    public Set<? extends Project> getSubprojects() {
         return new LazySubprojectsSet();
     }
     
@@ -64,14 +64,11 @@ final class Subprojects implements SubprojectProvider {
      *
      * This method never allocates a new set.
      */
-    private Set/*<Project>*/ createSubprojects(Set/*<Project>*/ subprojects) {
+    private Set<Project> createSubprojects(Set<Project> subprojects) {
         Element config = project.helper().getPrimaryConfigurationData(true);
         Element subprjsEl = Util.findElement(config, "subprojects", FreeformProjectType.NS_GENERAL); // NOI18N
         if (subprjsEl != null) {
-            List/*<Element>*/ kids = Util.findSubElements(subprjsEl);
-            Iterator it = kids.iterator();
-            while (it.hasNext()) {
-                Element prjEl = (Element) it.next();
+            for (Element prjEl : Util.findSubElements(subprjsEl)) {
                 assert prjEl.getLocalName().equals("project") : "Bad element " + prjEl + " in <subprojects> for " + project;
                 String rawtext = Util.findText(prjEl);
                 assert rawtext != null : "Need text content for <project> in " + project;
@@ -87,7 +84,7 @@ final class Subprojects implements SubprojectProvider {
                     Project p = ProjectManager.getDefault().findProject(subprjDir);
                     if (p != null) {
                         if (subprojects == null)
-                            return Collections.EMPTY_SET;
+                            return Collections.emptySet();
                         else
                             subprojects.add(p);
                     }
@@ -111,13 +108,13 @@ final class Subprojects implements SubprojectProvider {
     /**Fix for #58639: the subprojects should be loaded lazily, so invoking the popup menu
      * with "Open Required Projects" is fast.
      */
-    private final class LazySubprojectsSet implements Set {
+    private final class LazySubprojectsSet implements Set<Project> {
         
-        private Set/*<Project>*/ delegateTo = null;
+        private Set<Project> delegateTo = null;
         
-        private synchronized Set/*<Project>*/ getDelegateTo() {
+        private synchronized Set<Project> getDelegateTo() {
             if (delegateTo == null) {
-                delegateTo = createSubprojects(new HashSet());
+                delegateTo = createSubprojects(new HashSet<Project>());
             }
             
             return delegateTo;
@@ -127,7 +124,7 @@ final class Subprojects implements SubprojectProvider {
             return getDelegateTo().contains(o);
         }
         
-        public boolean add(Object o) {
+        public boolean add(Project p) {
             throw new UnsupportedOperationException();
         }
         
@@ -143,7 +140,7 @@ final class Subprojects implements SubprojectProvider {
             throw new UnsupportedOperationException();
         }
         
-        public boolean addAll(Collection c) {
+        public boolean addAll(Collection<? extends Project> c) {
             throw new UnsupportedOperationException();
         }
         
@@ -151,7 +148,7 @@ final class Subprojects implements SubprojectProvider {
             return getDelegateTo().containsAll(c);
         }
         
-        public Object[] toArray(Object[] a) {
+        public <T> T[] toArray(T[] a) {
             return getDelegateTo().toArray(a);
         }
         
@@ -171,7 +168,7 @@ final class Subprojects implements SubprojectProvider {
             }
         }
         
-        public Iterator/*<Project>*/ iterator() {
+        public Iterator<Project> iterator() {
             return getDelegateTo().iterator();
         }
         
