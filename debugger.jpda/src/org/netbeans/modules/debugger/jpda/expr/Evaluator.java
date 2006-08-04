@@ -799,9 +799,9 @@ public class Evaluator implements JavaParserVisitor {
         ReferenceType typeContext;
         ObjectReference instanceContext;
         Method  method;
-        List    args;
+        List<Value> args;
 
-        public MethodCall(ReferenceType typeContext, ObjectReference instanceContext, Method method, List args) {
+        public MethodCall(ReferenceType typeContext, ObjectReference instanceContext, Method method, List<Value> args) {
             this.typeContext = typeContext;
             this.instanceContext = instanceContext;
             this.method = method;
@@ -976,7 +976,7 @@ public class Evaluator implements JavaParserVisitor {
             Assert.error(currentNode, "methodCallOnNull", ctx.identifier);
         }
 
-        List methods = getMethodsByName(type, ctx.identifier);
+        List<Method> methods = getMethodsByName(type, ctx.identifier);
         
         //Try outer classes
         ReferenceType origType = type;
@@ -1021,10 +1021,10 @@ public class Evaluator implements JavaParserVisitor {
             }
         }
 
-        List possibleMethods = new ArrayList();
+        List<MethodCall> possibleMethods = new ArrayList<MethodCall>();
 
-        for (Iterator i = methods.iterator(); i.hasNext();) {
-            Method method = (Method) i.next();
+        for (Iterator<Method> i = methods.iterator(); i.hasNext();) {
+            Method method = i.next();
             if (!isAccessible(method)) continue;
 
             List argTypes = null;
@@ -1042,7 +1042,7 @@ public class Evaluator implements JavaParserVisitor {
                 }
             }
 
-            List newArgs = prepareArguments(args, argTypes);
+            List<Value> newArgs = prepareArguments(args, argTypes);
             if (newArgs == null) continue;
             possibleMethods.add(new MethodCall(type, object, method, newArgs));
         }
@@ -1052,7 +1052,7 @@ public class Evaluator implements JavaParserVisitor {
         return call;
     }
     
-    private static List getMethodsByName(ReferenceType type, String name) {
+    private static List<Method> getMethodsByName(ReferenceType type, String name) {
         if (type instanceof ArrayType) { // There are no methods by JDI definition ?!?
             type = type.classObject().referenceType();
             if ("toString".equals(name)) { // NOI18N
@@ -1060,18 +1060,18 @@ public class Evaluator implements JavaParserVisitor {
                 type = ((ClassType) type).superclass();
             }
         }
-        List methods = type.methodsByName(name);
+        List<Method> methods = type.methodsByName(name);
         return methods;
     }
 
-    private MethodCall mostSpecific(List possibleMethods, Value [] args) {
+    private MethodCall mostSpecific(List<MethodCall> possibleMethods, Value [] args) {
         if (possibleMethods.size() == 0) return null;
-        if (possibleMethods.size() == 1) return (MethodCall) possibleMethods.get(0);
+        if (possibleMethods.size() == 1) return possibleMethods.get(0);
 
         MethodCall mostSpecific = null;
         int conversions = Integer.MAX_VALUE;
-        for (Iterator i = possibleMethods.iterator(); i.hasNext();) {
-            MethodCall methodCall = (MethodCall) i.next();
+        for (Iterator<MethodCall> i = possibleMethods.iterator(); i.hasNext();) {
+            MethodCall methodCall = i.next();
             List methodArguments = null;
             try {
                 methodArguments = methodCall.method.argumentTypes();
@@ -1117,7 +1117,7 @@ public class Evaluator implements JavaParserVisitor {
         return wrapperSignature(primitiveType.charAt(0)).equals(classType);
     }
 
-    private List prepareArguments(Value [] args, List argTypes) {
+    private List<Value> prepareArguments(Value [] args, List argTypes) {
 
         boolean ellipsis;
         try {
@@ -1137,7 +1137,7 @@ public class Evaluator implements JavaParserVisitor {
             if (args.length != argTypes.size()) return null;
         }
 
-        List newArgs = new ArrayList();
+        List<Value> newArgs = new ArrayList<Value>();
         int idx = 0;
         for (Iterator i = argTypes.iterator(); i.hasNext(); idx++) {
             Type type = (Type) i.next();
@@ -1294,7 +1294,7 @@ public class Evaluator implements JavaParserVisitor {
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("STARTED : "+reference+"."+toCall+" () in thread "+frameThread);
             }
-            return (PrimitiveValue) reference.invokeMethod(frameThread, toCall, new ArrayList(0), ObjectReference.INVOKE_SINGLE_THREADED);
+            return (PrimitiveValue) reference.invokeMethod(frameThread, toCall, new ArrayList<Value>(0), ObjectReference.INVOKE_SINGLE_THREADED);
         } catch (UnsupportedOperationException uoex) {
             evaluationContext.setCanInvokeMethods(false);
             // this can happen on VMs that can not invoke methods...
@@ -1579,14 +1579,14 @@ public class Evaluator implements JavaParserVisitor {
         return (Value) Assert.error(currentNode, "unknownVariable", ctx);
     }
 
-    private Iterator staticImportsIterator(String identifier) {
+    private Iterator<String> staticImportsIterator(String identifier) {
         return iterator(evaluationContext.getStaticImports(), identifier);
     }
 
-    private Iterator iterator(List imports, String identifier) {
-        List filteredList = new ArrayList();
-        for (Iterator i = imports.iterator(); i.hasNext();) {
-            String statement = (String) i.next();
+    private Iterator<String> iterator(List<String> imports, String identifier) {
+        List<String> filteredList = new ArrayList<String>();
+        for (Iterator<String> i = imports.iterator(); i.hasNext();) {
+            String statement = i.next();
             int idx = statement.lastIndexOf('.');
             String qualifier = statement.substring(idx + 1);
             if (qualifier.equals("*") || qualifier.equals(identifier)) {
@@ -1750,7 +1750,7 @@ public class Evaluator implements JavaParserVisitor {
         ObjectReference objectReference, 
         Method method, 
         ThreadReference evaluationThread, 
-        List args
+        List<Value> args
      ) throws InvalidExpressionException {
         
         if (verbose)

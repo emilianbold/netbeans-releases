@@ -87,7 +87,7 @@ implements Executor, PropertyChangeListener {
     // ActionProviderSupport ...................................................
     
     public Set getActions () {
-        return new HashSet (Arrays.asList (new Object[] {
+        return new HashSet<Object>(Arrays.asList (new Object[] {
             ActionsManager.ACTION_STEP_INTO,
         }));
     }
@@ -160,7 +160,7 @@ implements Executor, PropertyChangeListener {
                         System.out.println("\nSS:    add exclusion patterns:");
                 }
                 addPatternsToRequest ((String[]) 
-                    ((Set) ev.getNewValue ()).toArray (
+                    ((Set<String>) ev.getNewValue ()).toArray (
                         new String [((Set) ev.getNewValue ()).size()]
                     )
                 );

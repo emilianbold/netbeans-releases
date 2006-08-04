@@ -35,6 +35,7 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -69,9 +70,9 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
-    private Vector              listeners = new Vector ();
-    private Map                 cachedLocals = new WeakHashMap();
-    private Map                 cachedArrayChildren = new WeakHashMap();
+    private List<ModelListener> listeners = new ArrayList<ModelListener>();
+    //private Map                 cachedLocals = new WeakHashMap();
+    private Map<Value, ArrayChildrenNode> cachedArrayChildren = new WeakHashMap<Value, ArrayChildrenNode>();
     
     
     public LocalsTreeModel (ContextProvider lookupProvider) {
@@ -115,7 +116,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 }
                 if (isArray && (to - from) > ARRAY_CHILDREN_NESTED_LENGTH) {
                     ArrayChildrenNode achn =
-                            (ArrayChildrenNode) cachedArrayChildren.get(abstractVariable.getInnerValue ());
+                            cachedArrayChildren.get(abstractVariable.getInnerValue ());
                     if (achn == null) {
                         achn = new ArrayChildrenNode(abstractVariable);
                         cachedArrayChildren.put(abstractVariable.getInnerValue (), achn);
@@ -223,33 +224,43 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
 
 
     public void addModelListener (ModelListener l) {
-        listeners.add (l);
-        if (listener == null)
-            listener = new Listener (this, debugger);
+        synchronized (listeners) {
+            listeners.add (l);
+            if (listener == null)
+                listener = new Listener (this, debugger);
+        }
     }
 
     public void removeModelListener (ModelListener l) {
-        listeners.remove (l);
-        if (listeners.size () == 0) {
-            listener.destroy ();
-            listener = null;
+        synchronized (listeners) {
+            listeners.remove (l);
+            if (listeners.size () == 0) {
+                listener.destroy ();
+                listener = null;
+            }
         }
     }
     
     void fireTreeChanged () {
-        Vector v = (Vector) listeners.clone ();
-        int i, k = v.size ();
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        int i, k = ls.size ();
         for (i = 0; i < k; i++)
-            ((ModelListener) v.get (i)).modelChanged (
+            ls.get(i).modelChanged (
                 new ModelEvent.TreeChanged (this)
             );
     }
     
     private void fireTableValueChangedChanged (Object node, String propertyName) {
-        Vector v = (Vector) listeners.clone ();
-        int i, k = v.size ();
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        int i, k = ls.size ();
         for (i = 0; i < k; i++)
-            ((ModelListener) v.get (i)).modelChanged (
+            ls.get(i).modelChanged (
                 new ModelEvent.TableValueChanged (this, node, propertyName)
             );
     }
@@ -412,14 +423,14 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     private static class Listener implements PropertyChangeListener {
         
         private JPDADebugger debugger;
-        private WeakReference model;
+        private WeakReference<LocalsTreeModel> model;
         
         public Listener (
             LocalsTreeModel tm,
             JPDADebugger debugger
         ) {
             this.debugger = debugger;
-            model = new WeakReference (tm);
+            model = new WeakReference<LocalsTreeModel>(tm);
             debugger.addPropertyChangeListener (this);
         }
         
@@ -435,7 +446,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         }
         
         private LocalsTreeModel getModel () {
-            LocalsTreeModel tm = (LocalsTreeModel) model.get ();
+            LocalsTreeModel tm = model.get ();
             if (tm == null) {
                 destroy ();
             }

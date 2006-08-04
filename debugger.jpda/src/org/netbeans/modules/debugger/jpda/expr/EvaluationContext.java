@@ -38,8 +38,8 @@ public class EvaluationContext {
      * The runtime context of a JVM is represented by a stack frame.
      */
     private StackFrame frame;
-    private List       sourceImports;
-    private List       staticImports;
+    private List<String> sourceImports;
+    private List<String> staticImports;
     private boolean canInvokeMethods;
     private Runnable methodInvokePreproc;
     private JPDADebuggerImpl debugger;
@@ -51,7 +51,7 @@ public class EvaluationContext {
      * @param imports list of imports
      * @param staticImports list of static imports
      */
-    public EvaluationContext(StackFrame frame, List imports, List staticImports,
+    public EvaluationContext(StackFrame frame, List<String> imports, List<String> staticImports,
                              boolean canInvokeMethods, Runnable methodInvokePreproc,
                              JPDADebuggerImpl debugger) {
         if (frame == null) throw new IllegalArgumentException("Frame argument must not be null");
@@ -65,11 +65,11 @@ public class EvaluationContext {
         this.debugger = debugger;
     }
 
-    public List getStaticImports() {
+    public List<String> getStaticImports() {
         return staticImports;
     }
 
-    public List getImports() {
+    public List<String> getImports() {
         return sourceImports;
     }
 

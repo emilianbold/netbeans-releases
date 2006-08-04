@@ -140,16 +140,16 @@ public class CallStackFrameImpl implements CallStackFrame {
     *
     * @return name of default stratumn
     */
-    public synchronized List getAvailableStrata () {
-        if (!valid) return Collections.EMPTY_LIST;
+    public synchronized List<String> getAvailableStrata () {
+        if (!valid) return Collections.emptyList();
         try {
             return getStackFrame().location ().declaringType ().availableStrata ();
         } catch (InvalidStackFrameException ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } catch (VMDisconnectedException ex) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
 

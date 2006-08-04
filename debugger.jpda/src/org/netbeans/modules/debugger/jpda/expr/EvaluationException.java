@@ -156,6 +156,6 @@ public class EvaluationException extends RuntimeException {
     private String formatMessage(String msg, String [] params) {
         ResourceBundle bundle = NbBundle.getBundle (EvaluationException.class);
         msg = bundle.getString(msg);
-        return MessageFormat.format(msg, params);
+        return MessageFormat.format(msg, (Object[]) params);
     }
 }

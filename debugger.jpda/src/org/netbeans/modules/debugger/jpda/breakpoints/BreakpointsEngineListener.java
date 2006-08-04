@@ -139,7 +139,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     // helper methods ..........................................................
     
-    private HashMap breakpointToImpl = new HashMap ();
+    private HashMap<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
     
     
     private void createBreakpointImpls () {
@@ -157,9 +157,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
     }
     
     public void fixBreakpointImpls () {
-        Iterator i = breakpointToImpl.values ().iterator ();
+        Iterator<BreakpointImpl> i = breakpointToImpl.values ().iterator ();
         while (i.hasNext ())
-            ((BreakpointImpl) i.next ()).fixed ();
+            i.next ().fixed ();
     }
 
     private void createBreakpointImpl (Breakpoint b) {
@@ -230,7 +230,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
     }
 
     private void removeBreakpointImpl (Breakpoint b) {
-        BreakpointImpl impl = (BreakpointImpl) breakpointToImpl.get (b);
+        BreakpointImpl impl = breakpointToImpl.get (b);
         if (impl == null) return;
         logger.finer("BreakpointsEngineListener: removed impl "+impl+" for "+b);
         impl.remove ();

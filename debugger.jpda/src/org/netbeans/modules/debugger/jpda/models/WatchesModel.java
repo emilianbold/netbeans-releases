@@ -61,7 +61,7 @@ public class WatchesModel implements TreeModel {
 
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
-    private Vector              listeners = new Vector ();
+    private Vector<ModelListener> listeners = new Vector<ModelListener>();
     private ContextProvider     lookupProvider;
     // Watch to Expression or Exception
     private Map<Watch, JPDAWatchEvaluating>  watchToValue = new WeakHashMap<Watch, JPDAWatchEvaluating>(); // <node (expression), JPDAWatch>
@@ -409,15 +409,15 @@ public class WatchesModel implements TreeModel {
     private static class Listener extends DebuggerManagerAdapter implements 
     PropertyChangeListener {
         
-        private WeakReference model;
-        private WeakReference debugger;
+        private WeakReference<WatchesModel> model;
+        private WeakReference<JPDADebuggerImpl> debugger;
         
         private Listener (
             WatchesModel tm,
             JPDADebuggerImpl debugger
         ) {
-            model = new WeakReference (tm);
-            this.debugger = new WeakReference (debugger);
+            model = new WeakReference<WatchesModel>(tm);
+            this.debugger = new WeakReference<JPDADebuggerImpl>(debugger);
             DebuggerManager.getDebuggerManager ().addDebuggerListener (
                 DebuggerManager.PROP_WATCHES,
                 this
@@ -431,7 +431,7 @@ public class WatchesModel implements TreeModel {
         }
         
         private WatchesModel getModel () {
-            WatchesModel m = (WatchesModel) model.get ();
+            WatchesModel m = model.get ();
             if (m == null) destroy ();
             return m;
         }
@@ -498,7 +498,7 @@ public class WatchesModel implements TreeModel {
                 DebuggerManager.PROP_WATCHES,
                 this
             );
-            JPDADebugger d = (JPDADebugger) debugger.get ();
+            JPDADebugger d = debugger.get ();
             if (d != null)
                 d.removePropertyChangeListener (this);
 

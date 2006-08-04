@@ -133,7 +133,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
             getBreakpoints ();
         int i, k = bs.length;
-        ArrayList bb = new ArrayList ();
+        ArrayList<Breakpoint> bb = new ArrayList<Breakpoint>();
         for (i = 0; i < k; i++)
             // Don't store hidden breakpoints
             if ( bs[i] instanceof JPDABreakpoint &&
@@ -141,6 +141,6 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             )
                 bb.add (bs [i]);
         bs = new Breakpoint [bb.size ()];
-        return (Breakpoint[]) bb.toArray (bs);
+        return bb.toArray (bs);
     }
 }

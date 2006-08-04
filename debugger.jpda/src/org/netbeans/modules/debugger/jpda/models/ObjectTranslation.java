@@ -49,7 +49,7 @@ public final class ObjectTranslation {
     private int translationID;
     
     /* original Object to a new one.*/
-    private WeakHashMap cache = new WeakHashMap ();
+    private WeakHashMap<Mirror, WeakReference<Object>> cache = new WeakHashMap<Mirror, WeakReference<Object>>();
     
     
     /**
@@ -123,12 +123,12 @@ public final class ObjectTranslation {
     public Object translate (Mirror o) {
         Object r = null;
         synchronized (cache) {
-            WeakReference wr = (WeakReference) cache.get (o);
+            WeakReference wr = cache.get (o);
             if (wr != null)
                 r = wr.get ();
             if (r == null) {
                 r = createTranslation (o);
-                cache.put (o, new WeakReference (r));
+                cache.put (o, new WeakReference<Object>(r));
             }
         }
         return r;
@@ -144,12 +144,12 @@ public final class ObjectTranslation {
      */
     public Object translate (Mirror o, Object v) {
         Object r = null;
-        WeakReference wr = (WeakReference) cache.get (o);
+        WeakReference wr = cache.get (o);
         if (wr != null)
             r = wr.get ();
         if (r == null) {
             r = createTranslation (o, v);
-            cache.put (o, new WeakReference (r));
+            cache.put (o, new WeakReference<Object>(r));
         }
         return r;
     }

@@ -67,7 +67,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     private BreakpointsReader   reader;
     private final Session       session;
     private Expression          compiledCondition;
-    private List                requests = new ArrayList ();
+    private List<EventRequest>  requests = new ArrayList<EventRequest>();
 
 
     protected BreakpointImpl (JPDABreakpoint p, BreakpointsReader reader, JPDADebuggerImpl debugger, Session session) {
@@ -173,7 +173,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         int i, k = requests.size ();
         try {
             for (i = 0; i < k; i++) { 
-                EventRequest r = (EventRequest) requests.get (i);
+                EventRequest r = requests.get (i);
                 logger.fine("BreakpointImpl removeEventRequest: " + r);
                 vm.eventRequestManager().deleteEventRequest(r);
                 getDebugger ().getOperator ().unregister (r);
@@ -182,7 +182,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         } catch (VMDisconnectedException e) {
         } catch (com.sun.jdi.InternalException e) {
         }
-        requests = new LinkedList ();
+        requests = new LinkedList<EventRequest>();
     }
 
     public boolean perform (

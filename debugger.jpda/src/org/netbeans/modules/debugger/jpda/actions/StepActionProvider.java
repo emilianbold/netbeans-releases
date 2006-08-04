@@ -89,7 +89,7 @@ implements Executor {
     // ActionProviderSupport ...................................................
     
     public Set getActions () {
-        return new HashSet (Arrays.asList (new Object[] {
+        return new HashSet<Object>(Arrays.asList (new Object[] {
             ActionsManager.ACTION_STEP_OUT,
             ActionsManager.ACTION_STEP_OVER
         }));

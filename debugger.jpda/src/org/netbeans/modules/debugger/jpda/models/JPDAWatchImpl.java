@@ -41,7 +41,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
     private JPDADebuggerImpl    debugger;
     private Watch               watch;
     private String              exceptionDescription;
-    private java.lang.ref.Reference nodeRef;
+    private java.lang.ref.Reference<Object> nodeRef;
     
     
     JPDAWatchImpl (JPDADebuggerImpl debugger, Watch watch, Value v, Object node) {
@@ -53,7 +53,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         );
         this.debugger = debugger;
         this.watch = watch;
-        this.nodeRef = new java.lang.ref.WeakReference(node);
+        this.nodeRef = new java.lang.ref.WeakReference<Object>(node);
     }
     
     JPDAWatchImpl (
@@ -72,7 +72,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         this.exceptionDescription = exception.getLocalizedMessage ();
         if (exceptionDescription == null)
             exceptionDescription = exception.getMessage ();
-        this.nodeRef = new java.lang.ref.WeakReference(node);
+        this.nodeRef = new java.lang.ref.WeakReference<Object>(node);
     }
     
     /**

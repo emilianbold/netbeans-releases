@@ -156,8 +156,8 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         Iterator methods = referenceType.methods ().iterator ();
         MethodEntryRequest entryReq = null;
         MethodExitRequest exitReq = null;
-        Set entryMethodNames = null;
-        Set exitMethodNames = null;
+        Set<String> entryMethodNames = null;
+        Set<String> exitMethodNames = null;
         while (methods.hasNext ()) {
             Method method = (Method) methods.next ();
             if ( (match (method.name (), breakpoint.getMethodName ()) ||
@@ -177,7 +177,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                             entryReq = getEventRequestManager().
                                     createMethodEntryRequest();
                             entryReq.addClassFilter(referenceType);
-                            entryMethodNames = new HashSet();
+                            entryMethodNames = new HashSet<String>();
                             entryReq.putProperty("methodNames", entryMethodNames);
                         }
                         entryMethodNames.add(method.name ());
@@ -188,7 +188,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                         exitReq = getEventRequestManager().
                                 createMethodExitRequest();
                         exitReq.addClassFilter(referenceType);
-                        exitMethodNames = new HashSet();
+                        exitMethodNames = new HashSet<String>();
                         exitReq.putProperty("methodNames", exitMethodNames);
                     }
                     exitMethodNames.add(method.name());

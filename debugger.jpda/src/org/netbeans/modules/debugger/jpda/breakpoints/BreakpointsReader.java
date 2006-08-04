@@ -39,8 +39,8 @@ import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
  */
 public class BreakpointsReader implements Properties.Reader {
     
-    private Map cachedClassNames = new WeakHashMap();
-    private Map cachedSourceRoots = new WeakHashMap();
+    private Map<JPDABreakpoint, String> cachedClassNames = new WeakHashMap<JPDABreakpoint, String>();
+    private Map<JPDABreakpoint, String> cachedSourceRoots = new WeakHashMap<JPDABreakpoint, String>();
     
     
     public String [] getSupportedClassNames () {
@@ -50,11 +50,11 @@ public class BreakpointsReader implements Properties.Reader {
     }
     
     synchronized String findCachedClassName(JPDABreakpoint b) {
-        return (String) cachedClassNames.get(b);
+        return cachedClassNames.get(b);
     }
     
     synchronized String findCachedSourceRoot(JPDABreakpoint b) {
-        return (String) cachedSourceRoots.get(b);
+        return cachedSourceRoots.get(b);
     }
     
     void storeCachedClassName(JPDABreakpoint b, String className) {

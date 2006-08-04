@@ -61,7 +61,7 @@ public class ClassesTreeModel implements TreeModel {
     
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
-    private Vector              listeners = new Vector ();
+    private Vector<ModelListener> listeners = new Vector<ModelListener>();
     
     
     public ClassesTreeModel(ContextProvider lookupProvider) {
@@ -167,8 +167,8 @@ public class ClassesTreeModel implements TreeModel {
     
     // private methods .........................................................
 
-    private List classes = null; // name of class -> ReferenceType
-    private List names = null; // list on names of all clases
+    private List<ReferenceType> classes = null; // name of class -> ReferenceType
+    private List<String> names = null; // list on names of all clases
     private HashMap cache = new HashMap ();
         // null => list of class loaders
         // ClassLoaderReference -> list of packages & ReferenceTypes
@@ -178,15 +178,15 @@ public class ClassesTreeModel implements TreeModel {
     static final Integer NULL_CLASS_LOADER = new Integer (11);
     
     
-    private List getNames () {
+    private List<String> getNames () {
         if (classes == null) {
 	    VirtualMachine vm = debugger.getVirtualMachine ();
             List referenceTypes = new ArrayList ();
             if (vm != null) 
                 referenceTypes = vm.allClasses ();
             int i, k = referenceTypes.size ();
-            names = new ArrayList ();
-            classes = new ArrayList ();
+            names = new ArrayList<String>();
+            classes = new ArrayList<ReferenceType>();
             for (i = 0; i < k; i++) {
                 ReferenceType rt = (ReferenceType) referenceTypes.get (i);
                 if (rt instanceof ArrayType) continue;
@@ -200,13 +200,13 @@ public class ClassesTreeModel implements TreeModel {
     private Object[] getLoaders () {
         Object[] ch = (Object[]) cache.get (null);
         if (ch != null) return ch;
-        List names = getNames ();
+        List<String> names = getNames ();
         Set loaders = new TreeSet (comparator1);
         int i, k = names.size ();
         for (i = 0; i < k; i++) {
             try {
-            String name = (String) names.get (i);
-            ReferenceType rt = (ReferenceType) classes.get (i);
+            String name = names.get (i);
+            ReferenceType rt = classes.get (i);
             ClassLoaderReference clr = rt.classLoader ();
             if (clr == null)
                 loaders.add (NULL_CLASS_LOADER);
@@ -228,19 +228,19 @@ public class ClassesTreeModel implements TreeModel {
             (Object[]) cache.get (NULL_CLASS_LOADER) :
             (Object[]) cache.get (clr);
         if (ch != null) return ch;
-        List names = getNames ();
+        List<String> names = getNames ();
         Set objects = new TreeSet (comparator);
         int i, k = names.size ();
         for (i = 0; i < k; i++) {
-            String name = (String) names.get (i);
-            ReferenceType rt = (ReferenceType) classes.get (i);
+            String name = names.get (i);
+            ReferenceType rt = classes.get (i);
             if (rt.classLoader () != clr) continue;
             int start = 0;
             int end = name.indexOf ('.', start);
             if (end < 0) {
                 // ReferenceType found
                 if (name.indexOf ('$', start) < 0) {
-                    ReferenceType tr = (ReferenceType) classes.get (i);
+                    ReferenceType tr = classes.get (i);
                     objects.add (tr);
                 }
             } else
@@ -257,12 +257,12 @@ public class ClassesTreeModel implements TreeModel {
     private Object[] getChildren (Object[] parent) {
         Object[] ch = (Object[]) cache.get (parent);
         if (ch != null) return ch;
-        List names = getNames ();
+        List<String> names = getNames ();
         Set objects = new TreeSet (comparator);
         int i, k = names.size ();
         for (i = 0; i < k; i++) {
-            String name = (String) names.get (i);
-            ReferenceType rt = (ReferenceType) classes.get (i);
+            String name = names.get (i);
+            ReferenceType rt = classes.get (i);
             if (rt.classLoader () != parent [1]) continue;
             String parentN = ((String) parent [0]) + '.';
             if (!name.startsWith (parentN)) continue;
@@ -297,14 +297,14 @@ public class ClassesTreeModel implements TreeModel {
     private static class Listener implements PropertyChangeListener {
         
         private JPDADebugger debugger;
-        private WeakReference model;
+        private WeakReference<ClassesTreeModel> model;
         
         public Listener (
             ClassesTreeModel tm,
             JPDADebugger debugger
         ) {
             this.debugger = debugger;
-            model = new WeakReference (tm);
+            model = new WeakReference<ClassesTreeModel>(tm);
             debugger.addPropertyChangeListener (this);
         }
         
@@ -320,7 +320,7 @@ public class ClassesTreeModel implements TreeModel {
         }
         
         private ClassesTreeModel getModel () {
-            ClassesTreeModel tm = (ClassesTreeModel) model.get ();
+            ClassesTreeModel tm = model.get ();
             if (tm == null) {
                 destroy ();
             }

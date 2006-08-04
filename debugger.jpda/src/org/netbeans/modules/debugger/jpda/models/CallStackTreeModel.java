@@ -52,9 +52,9 @@ public class CallStackTreeModel implements TreeModel {
         (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
         (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('c') >= 0);
     
-    private JPDADebuggerImpl    debugger;
-    private Collection          listeners = new HashSet();
-    private Listener            listener;
+    private JPDADebuggerImpl            debugger;
+    private Collection<ModelListener>   listeners = new HashSet<ModelListener>();
+    private Listener                    listener;
     
    
     public CallStackTreeModel (ContextProvider lookupProvider) {
@@ -168,13 +168,13 @@ public class CallStackTreeModel implements TreeModel {
     }
     
     public void fireTreeChanged () {
-        Object[] ls;
+        ModelListener[] ls;
         synchronized (listeners) {
-            ls = listeners.toArray();
+            ls = listeners.toArray(new ModelListener[0]);
         }
         ModelEvent ev = new ModelEvent.TreeChanged(this);
         for (int i = 0; i < ls.length; i++) {
-            ((ModelListener) ls[i]).modelChanged (ev);
+            ls[i].modelChanged (ev);
         }
     }
     
@@ -185,14 +185,14 @@ public class CallStackTreeModel implements TreeModel {
     private static class Listener implements PropertyChangeListener {
         
         private JPDADebugger debugger;
-        private WeakReference model;
+        private WeakReference<CallStackTreeModel> model;
         
         public Listener (
             CallStackTreeModel tm,
             JPDADebugger debugger
         ) {
             this.debugger = debugger;
-            model = new WeakReference (tm);
+            model = new WeakReference<CallStackTreeModel>(tm);
             debugger.addPropertyChangeListener (this);
             JPDAThreadImpl lastCurrentThread = (JPDAThreadImpl) debugger.getCurrentThread();
             if (lastCurrentThread != null) {
@@ -202,7 +202,7 @@ public class CallStackTreeModel implements TreeModel {
         }
         
         private CallStackTreeModel getModel () {
-            CallStackTreeModel tm = (CallStackTreeModel) model.get ();
+            CallStackTreeModel tm = model.get ();
             if (tm == null) {
                 destroy ();
             }

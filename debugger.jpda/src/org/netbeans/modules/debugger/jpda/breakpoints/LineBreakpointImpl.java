@@ -228,7 +228,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         return Collections.EMPTY_LIST;
     }
     
-    private static List locationsOfLineInClass(
+    private static List<Location> locationsOfLineInClass(
         ReferenceType referenceType,
         String stratum,
         String sourceName,
@@ -236,7 +236,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         int lineNumber,
         String[] reason) throws AbsentInformationException, ObjectCollectedException,
                                 ClassNotPreparedException, InternalException {
-        List list = referenceType.locationsOfLine (
+        List<Location> list = referenceType.locationsOfLine (
             stratum,
             sourceName,
             lineNumber
@@ -253,9 +253,9 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             if (bpSourcePath == null)
                 return list;
             bpSourcePath = bpSourcePath.replace(java.io.File.separatorChar, '/');
-            ArrayList locations = new ArrayList(list.size());
-            for (Iterator it = list.iterator(); it.hasNext();) {
-                Location l = (Location)it.next();
+            ArrayList<Location> locations = new ArrayList<Location>(list.size());
+            for (Iterator<Location> it = list.iterator(); it.hasNext();) {
+                Location l = it.next();
                 String lSourcePath = l.sourcePath().replace(java.io.File.separatorChar, '/');
                 lSourcePath = normalize(lSourcePath);
                 if (lSourcePath.equals(bpSourcePath)) {
@@ -270,7 +270,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             if (!locations.isEmpty())
                 return locations;
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
     
     /**

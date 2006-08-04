@@ -56,9 +56,9 @@ public class ThreadsTreeModel implements TreeModel {
         (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('t') >= 0);
     
     private JPDADebuggerImpl    debugger;
-    private Map                 childrenCache = new WeakHashMap();
+    private Map<Object, ChildrenTree> childrenCache = new WeakHashMap<Object, ChildrenTree>();
     private Listener            listener;
-    private Collection          listeners = new HashSet();
+    private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     
     
     public ThreadsTreeModel (ContextProvider lookupProvider) {
@@ -109,7 +109,7 @@ public class ThreadsTreeModel implements TreeModel {
         Object[] ch;
         synchronized (childrenCache) {
             //ch = (List) childrenCache.get(o);
-            ChildrenTree cht = (ChildrenTree) childrenCache.get(o);
+            ChildrenTree cht = childrenCache.get(o);
             if (cht != null) {
                 ch = cht.getChildren();
             } else {
@@ -186,7 +186,7 @@ public class ThreadsTreeModel implements TreeModel {
     }
     
     private void recomputeChildren(Object node) {
-        ChildrenTree cht = (ChildrenTree) childrenCache.get(node);
+        ChildrenTree cht = childrenCache.get(node);
         if (cht != null) {
             Set keys = childrenCache.keySet();
             Object[] oldCh = cht.getChildren();
@@ -221,7 +221,7 @@ public class ThreadsTreeModel implements TreeModel {
     public int getChildrenCount (Object node) throws UnknownTypeException {
         Object[] ch;
         synchronized (childrenCache) {
-            ChildrenTree cht = (ChildrenTree) childrenCache.get(node);
+            ChildrenTree cht = childrenCache.get(node);
             if (cht != null) {
                 ch = cht.getChildren();
             } else {
@@ -296,13 +296,13 @@ public class ThreadsTreeModel implements TreeModel {
     
     public void fireTreeChanged () {
         recomputeChildren();
-        Object[] ls;
+        ModelListener[] ls;
         synchronized (listeners) {
-            ls = listeners.toArray();
+            ls = listeners.toArray(new ModelListener[0]);
         }
         ModelEvent ev = new ModelEvent.TreeChanged(this);
         for (int i = 0; i < ls.length; i++) {
-            ((ModelListener) ls[i]).modelChanged (ev);
+            ls[i].modelChanged (ev);
         }
     }
 
@@ -312,7 +312,7 @@ public class ThreadsTreeModel implements TreeModel {
     private static class Listener implements PropertyChangeListener {
         
         private JPDADebugger debugger;
-        private WeakReference model;
+        private WeakReference<ThreadsTreeModel> model;
         // currently waiting / running refresh task
         // there is at most one
         private RequestProcessor.Task task;
@@ -322,7 +322,7 @@ public class ThreadsTreeModel implements TreeModel {
             JPDADebugger debugger
         ) {
             this.debugger = debugger;
-            model = new WeakReference (tm);
+            model = new WeakReference<ThreadsTreeModel>(tm);
             debugger.addPropertyChangeListener (this);
             if (debugger.getState() == debugger.STATE_RUNNING) {
                 task = createTask();
@@ -331,7 +331,7 @@ public class ThreadsTreeModel implements TreeModel {
         }
         
         private ThreadsTreeModel getModel () {
-            ThreadsTreeModel tm = (ThreadsTreeModel) model.get ();
+            ThreadsTreeModel tm = model.get ();
             if (tm == null) {
                 destroy ();
             }

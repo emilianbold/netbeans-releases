@@ -62,8 +62,8 @@ public class Operator {
 
     private Thread            thread;
     private boolean           breakpointsDisabled;
-    private List              staledEvents = new ArrayList();
-    private List              staledRequests = new ArrayList();
+    private List<EventSet>    staledEvents = new ArrayList<EventSet>();
+    private List<EventRequest> staledRequests = new ArrayList<EventRequest>();
     private boolean           stop;
 
     /**
@@ -105,9 +105,9 @@ public class Operator {
                              if (staledEvents.size() == 0) {
                                  processStaledEvents = false;
                              } else {
-                                eventSet = (EventSet) staledEvents.remove(0);
+                                eventSet = staledEvents.remove(0);
                                 while (staledRequests.size() > 0) {
-                                    EventRequest request = (EventRequest) staledRequests.remove(0);
+                                    EventRequest request = staledRequests.remove(0);
                                     request.virtualMachine().eventRequestManager().deleteEventRequest(request);
                                 }
                                 //eventSet.virtualMachine.suspend();
@@ -260,10 +260,10 @@ public class Operator {
         req.putProperty ("executor", e); // NOI18N
         if (staledEvents.size() > 0 && req instanceof StepRequest) {
             boolean addAsStaled = false;
-            for (Iterator it = staledEvents.iterator(); it.hasNext(); ) {
-                EventSet evSet = (EventSet) it.next();
-                for (Iterator itSet = evSet.iterator(); itSet.hasNext(); ) {
-                    Event ev = (Event) itSet.next();
+            for (Iterator<EventSet> it = staledEvents.iterator(); it.hasNext(); ) {
+                EventSet evSet = it.next();
+                for (Iterator<Event> itSet = evSet.iterator(); itSet.hasNext(); ) {
+                    Event ev = itSet.next();
                     EventRequest evReq = ev.request();
                     if (!(evReq instanceof StepRequest)) {
                         addAsStaled = true;

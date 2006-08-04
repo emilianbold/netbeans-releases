@@ -28,9 +28,9 @@ import com.sun.jdi.request.StepRequest;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -54,7 +54,7 @@ implements PropertyChangeListener {
     /** The ReqeustProcessor used by action performers. */
     private static RequestProcessor actionsRequestProcessor;
     
-    private static Set providersToDisableOnLazyActions = new WeakSet();
+    private static Set<JPDADebuggerActionProvider> providersToDisableOnLazyActions = new WeakSet<JPDADebuggerActionProvider>();
     
     private volatile boolean disabled;
     
@@ -94,10 +94,10 @@ implements PropertyChangeListener {
             VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
             if (vm == null) return;
             EventRequestManager erm = vm.eventRequestManager ();
-            ArrayList l = new ArrayList (erm.stepRequests ());
-            Iterator it = l.iterator ();
+            List<StepRequest> l = erm.stepRequests ();
+            Iterator<StepRequest> it = l.iterator ();
             while (it.hasNext ()) {
-                StepRequest stepRequest = (StepRequest) it.next ();
+                StepRequest stepRequest = it.next ();
                 if (stepRequest.thread ().equals (tr)) {
                     //S ystem.out.println("  remove request " + stepRequest);
                     erm.deleteEventRequest (stepRequest);
@@ -127,15 +127,15 @@ implements PropertyChangeListener {
      * @param run The action to perform.
      */
     protected final void doLazyAction(final Runnable run) {
-        final Set disabledActions;
+        final Set<JPDADebuggerActionProvider> disabledActions;
         synchronized (JPDADebuggerActionProvider.class) {
             if (actionsRequestProcessor == null) {
                 actionsRequestProcessor = new RequestProcessor("JPDA Processor", 1); // NOI18N
             }
-            disabledActions = new HashSet(providersToDisableOnLazyActions);
+            disabledActions = new HashSet<JPDADebuggerActionProvider>(providersToDisableOnLazyActions);
         }
-        for (Iterator it = disabledActions.iterator(); it.hasNext(); ) {
-            JPDADebuggerActionProvider ap = (JPDADebuggerActionProvider) it.next();
+        for (Iterator<JPDADebuggerActionProvider> it = disabledActions.iterator(); it.hasNext(); ) {
+            JPDADebuggerActionProvider ap = it.next();
             Set actions = ap.getActions();
             ap.disabled = true;
             for (Iterator ait = actions.iterator(); ait.hasNext(); ) {
@@ -148,8 +148,8 @@ implements PropertyChangeListener {
             public void run() {
                 try {
                     run.run();
-                    for (Iterator it = disabledActions.iterator(); it.hasNext(); ) {
-                        JPDADebuggerActionProvider ap = (JPDADebuggerActionProvider) it.next();
+                    for (Iterator<JPDADebuggerActionProvider> it = disabledActions.iterator(); it.hasNext(); ) {
+                        JPDADebuggerActionProvider ap = it.next();
                         Set actions = ap.getActions();
                         ap.disabled = false;
                         ap.checkEnabled (debugger.getState ());

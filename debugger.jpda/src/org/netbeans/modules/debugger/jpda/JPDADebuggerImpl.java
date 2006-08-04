@@ -119,7 +119,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private final Object                LOCK2 = new Object ();
     private boolean                     starting;
     private JavaEngineProvider          javaEngineProvider;
-    private Set                         languages;
+    private Set<String>                 languages;
     private String                      lastStratumn;
     private ContextProvider             lookupProvider;
     private ObjectTranslation           threadsTranslation;
@@ -140,7 +140,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (javaEngineProvider == null)
             throw new IllegalArgumentException
                 ("JavaEngineProvider have to be used to start JPDADebugger!");
-        languages = new HashSet ();
+        languages = new HashSet<String>();
         languages.add ("Java");
         threadsTranslation = ObjectTranslation.createThreadTranslation(this);
         localsTranslation = ObjectTranslation.createLocalsTranslation(this);
@@ -290,23 +290,23 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @param classes a map from class names to be fixed to byte[] 
      */
-    public void fixClasses (Map classes) {
+    public void fixClasses (Map<String, byte[]> classes) {
         synchronized (LOCK) {
             
             // 1) redefine classes
-            Map map = new HashMap ();
-            Iterator i = classes.keySet ().iterator ();
+            Map<ReferenceType, byte[]> map = new HashMap<ReferenceType, byte[]>();
+            Iterator<String> i = classes.keySet ().iterator ();
             VirtualMachine vm = getVirtualMachine();
             if (vm == null) {
                 return ; // The session has finished
             }
             while (i.hasNext ()) {
-                String className = (String) i.next ();
-                List classRefs = vm.classesByName (className);
+                String className = i.next ();
+                List<ReferenceType> classRefs = vm.classesByName (className);
                 int j, jj = classRefs.size ();
                 for (j = 0; j < jj; j++)
                     map.put (
-                        (ReferenceType) classRefs.get (j), 
+                        classRefs.get (j), 
                         classes.get (className)
                     );
             }
@@ -586,15 +586,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 throw new InvalidExpressionException ("No current context");
 
             // TODO: get imports from the source file
-            List imports = new ArrayList ();
-            List staticImports = new ArrayList ();
+            List<String> imports = new ArrayList<String>();
+            List<String> staticImports = new ArrayList<String>();
             imports.add ("java.lang.*");
             try {
                 imports.addAll (Arrays.asList (EditorContextBridge.getImports (
                     getEngineContext ().getURL (frame, "Java")
                 )));
                 final ThreadReference tr = frame.thread();
-                final List[] disabledBreakpoints = new List[] { null };
+                final List<EventRequest>[] disabledBreakpoints =
+                        new List[] { null };
                 final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
                 EvaluationContext context;
                 org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = 
@@ -657,7 +658,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (methodCallsUnsupportedExc != null) {
                 throw methodCallsUnsupportedExc;
             }
-            List l = disableAllBreakpoints ();
+            List<EventRequest> l = disableAllBreakpoints ();
             ThreadReference tr = getEvaluationThread();
             JPDAThreadImpl thread = (JPDAThreadImpl) getThread(tr);
             boolean threadSuspended = thread.isSuspended();
@@ -857,8 +858,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
             virtualMachine = null;
             setState (STATE_DISCONNECTED);
             if (jsr45EngineProviders != null) {
-                for (Iterator i = jsr45EngineProviders.iterator(); i.hasNext();) {
-                    JSR45DebuggerEngineProvider provider = (JSR45DebuggerEngineProvider) i.next();
+                for (Iterator<JSR45DebuggerEngineProvider> i = jsr45EngineProviders.iterator(); i.hasNext();) {
+                    JSR45DebuggerEngineProvider provider = i.next();
                     provider.getDesctuctor().killEngine();
                 }
                 jsr45EngineProviders = null;
@@ -1039,8 +1040,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
-    private List disableAllBreakpoints () {
-        List l = new ArrayList ();
+    private List<EventRequest> disableAllBreakpoints () {
+        List<EventRequest> l = new ArrayList<EventRequest>();
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return l;
         EventRequestManager erm = vm.eventRequestManager ();
@@ -1057,20 +1058,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
         l.addAll (erm.threadStartRequests ());
         int i = l.size () - 1;
         for (; i >= 0; i--)
-            if (!((EventRequest) l.get (i)).isEnabled ())
+            if (!l.get (i).isEnabled ())
                 l.remove (i);
             else
-                ((EventRequest) l.get (i)).disable ();
+                l.get (i).disable ();
         operator.breakpointsDisabled();
         return l;
     }
     
-    private void enableAllBreakpoints (List l) {
+    private void enableAllBreakpoints (List<EventRequest> l) {
         operator.breakpointsEnabled();
         int i, k = l.size ();
         for (i = 0; i < k; i++)
             try {
-                ((EventRequest) l.get (i)).enable ();
+                l.get (i).enable ();
             } catch (IllegalThreadStateException ex) {
                 // see #53163
                 // this can occurre if there is some "old" StepRequest and
@@ -1106,11 +1107,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
     }
  
-    private Set jsr45EngineProviders;
+    private Set<JSR45DebuggerEngineProvider> jsr45EngineProviders;
 
     private DebuggerInfo createJSR45DI (final String language) {
         if (jsr45EngineProviders == null) {
-            jsr45EngineProviders = new HashSet(1);
+            jsr45EngineProviders = new HashSet<JSR45DebuggerEngineProvider>(1);
         }
         JSR45DebuggerEngineProvider provider = new JSR45DebuggerEngineProvider(language);
         jsr45EngineProviders.add(provider);

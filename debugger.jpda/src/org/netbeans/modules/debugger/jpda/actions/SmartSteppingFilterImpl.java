@@ -35,10 +35,10 @@ import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
  */
 public class SmartSteppingFilterImpl implements SmartSteppingFilter {
 
-    private HashSet filter = new HashSet ();
-    private ArrayList exact = new ArrayList ();
-    private ArrayList start = new ArrayList ();
-    private ArrayList end = new ArrayList ();
+    private HashSet<String> filter = new HashSet<String>();
+    private ArrayList<String> exact = new ArrayList<String>();
+    private ArrayList<String> start = new ArrayList<String>();
+    private ArrayList<String> end = new ArrayList<String>();
     private PropertyChangeSupport pcs;
     {pcs = new PropertyChangeSupport (this);}
 
@@ -62,8 +62,8 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      *
      * @param patterns a set of class exclusion filters to be added
      */
-    public void addExclusionPatterns (Set patterns) {
-        Set reallyNew = new HashSet (patterns);
+    public void addExclusionPatterns (Set<String> patterns) {
+        Set<String> reallyNew = new HashSet<String>(patterns);
         reallyNew.removeAll (filter);
         if (reallyNew.size () < 1) return;
 
@@ -78,11 +78,11 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      *
      * @param patterns a set of class exclusion filters to be added
      */
-    public void removeExclusionPatterns (Set patterns) {
+    public void removeExclusionPatterns (Set<String> patterns) {
         filter.removeAll (patterns);
-        exact = new ArrayList ();
-        start = new ArrayList ();
-        end = new ArrayList ();
+        exact = new ArrayList<String>();
+        start = new ArrayList<String>();
+        end = new ArrayList<String>();
         refreshFilters (filter);
 
         pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, patterns, null);
@@ -93,7 +93,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      */
     public String[] getExclusionPatterns () {
         String[] ef = new String [filter.size ()];
-        return (String[]) filter.toArray (ef);
+        return filter.toArray (ef);
     }
 
     public boolean stopHere (String className) {
@@ -103,11 +103,11 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
         }
         k = start.size ();
         for (i = 0; i < k; i++) {
-            if (className.startsWith ((String) start.get (i))) return false;
+            if (className.startsWith (start.get (i))) return false;
         }
         k = end.size ();
         for (i = 0; i < k; i++) {
-            if (className.endsWith ((String) end.get (i))) return false;
+            if (className.endsWith (end.get (i))) return false;
         }
         return true;
     }
@@ -135,10 +135,10 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
     /**
      * Updates exact, start and end filter lists.
      */
-    private void refreshFilters (Set newFilters) {
-        Iterator i = newFilters.iterator ();
+    private void refreshFilters (Set<String> newFilters) {
+        Iterator<String> i = newFilters.iterator ();
         while (i.hasNext ()) {
-            String p = (String) i.next ();
+            String p = i.next ();
             if (p.startsWith ("*"))
                 end.add (p.substring (1));
             else

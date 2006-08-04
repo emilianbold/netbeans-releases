@@ -65,7 +65,7 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
     private Field[]         inheritedFields;
     private volatile boolean refreshFields;
     
-    private Set listeners = new HashSet();
+    private Set<PropertyChangeListener> listeners = new HashSet<PropertyChangeListener>();
     private DebuggetStateListener stateChangeListener = new DebuggetStateListener();
 
     
@@ -652,16 +652,16 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
         ReferenceType rt,
         String parentID)
     {
-        List fields = new ArrayList();
-        List staticFields = new ArrayList();
-        List allInheretedFields = new ArrayList();
+        List<Field> fields = new ArrayList<Field>();
+        List<Field> staticFields = new ArrayList<Field>();
+        List<Field> allInheretedFields = new ArrayList<Field>();
         
-        List l = rt.allFields ();
-        Set s = new HashSet (rt.fields ());
+        List<com.sun.jdi.Field> l = rt.allFields ();
+        Set<com.sun.jdi.Field> s = new HashSet<com.sun.jdi.Field>(rt.fields ());
 
         int i, k = l.size();
         for (i = 0; i < k; i++) {
-            com.sun.jdi.Field f = (com.sun.jdi.Field) l.get (i);
+            com.sun.jdi.Field f = l.get (i);
             Field field = this.getField (f, or, this.getID());
             if (f.isStatic ())
                 staticFields.add(field);
@@ -672,12 +672,12 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
                     allInheretedFields.add(field);
             }
         }
-        this.fields = (Field[]) fields.toArray (new Field [fields.size ()]);
-        this.inheritedFields = (Field[]) allInheretedFields.toArray (
+        this.fields = fields.toArray (new Field [fields.size ()]);
+        this.inheritedFields = allInheretedFields.toArray (
             new Field [allInheretedFields.size ()]
         );
-        this.staticFields = (Field[]) staticFields.toArray 
-            (new Field [staticFields.size ()]);
+        this.staticFields = staticFields.toArray
+                (new Field [staticFields.size ()]);
     }
     
     FieldVariable getField (
