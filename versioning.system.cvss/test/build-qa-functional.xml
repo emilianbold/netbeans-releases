@@ -20,6 +20,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="javacvs/cvsmodule/test-qa-functional" basedir="." default="all">
 
+    <!-- <property name="xtest.debug.port" value="5060"/> -->
+    
     <target name="qa-functional-compiler" depends="init,init-cp">
         <buildTests srcdir="qa-functional/src">
             <classpath refid="test.qa-functional.compile.cp"/>
