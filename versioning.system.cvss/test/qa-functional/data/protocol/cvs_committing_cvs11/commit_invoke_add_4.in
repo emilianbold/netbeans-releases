@@ -3,20 +3,20 @@ Valid-requests Root Valid-responses valid-requests Repository Directory Max-dotd
 ok
 Wrapper-rcsOption *.jar -k 'b'
 ok
-E cvs server: scheduling file `NewClass.java' for addition
-Checked-in ./
+E cvs server: scheduling file `xx/NewClass.java' for addition
+Checked-in xx/
 /cvs/ForImport/src/xx/NewClass.java
 /NewClass.java/0///
-E cvs server: scheduling file `NewClass4.java' for addition
-Checked-in ./
+E cvs server: scheduling file `xx/NewClass4.java' for addition
+Checked-in xx/
 /cvs/ForImport/src/xx/NewClass4.java
 /NewClass4.java/0///
-E cvs server: scheduling file `NewClass2.java' for addition
-Checked-in ./
+E cvs server: scheduling file `xx/NewClass2.java' for addition
+Checked-in xx/
 /cvs/ForImport/src/xx/NewClass2.java
 /NewClass2.java/0///
-E cvs server: scheduling file `NewClass3.java' for addition
-Checked-in ./
+E cvs server: scheduling file `xx/NewClass3.java' for addition
+Checked-in xx/
 /cvs/ForImport/src/xx/NewClass3.java
 /NewClass3.java/0///
 E cvs server: use 'cvs commit' to add these files permanently

@@ -3,38 +3,38 @@ Valid-requests Root Valid-responses valid-requests Repository Directory Max-dotd
 ok
 M RCS file: /cvs/ForImport/src/xx/NewClass4.java,v
 M done
-M Checking in NewClass4.java;
+M Checking in xx/NewClass4.java;
 M /cvs/ForImport/src/xx/NewClass4.java,v  <--  NewClass4.java
 M initial revision: 1.1
 M done
-Checked-in ./
+Checked-in xx/
 /cvs/ForImport/src/xx/NewClass4.java
 /NewClass4.java/1.1///
 M RCS file: /cvs/ForImport/src/xx/NewClass3.java,v
 M done
-M Checking in NewClass3.java;
+M Checking in xx/NewClass3.java;
 M /cvs/ForImport/src/xx/NewClass3.java,v  <--  NewClass3.java
 M initial revision: 1.1
 M done
-Checked-in ./
+Checked-in xx/
 /cvs/ForImport/src/xx/NewClass3.java
 /NewClass3.java/1.1///
 M RCS file: /cvs/ForImport/src/xx/NewClass2.java,v
 M done
-M Checking in NewClass2.java;
+M Checking in xx/NewClass2.java;
 M /cvs/ForImport/src/xx/NewClass2.java,v  <--  NewClass2.java
 M initial revision: 1.1
 M done
-Checked-in ./
+Checked-in xx/
 /cvs/ForImport/src/xx/NewClass2.java
 /NewClass2.java/1.1///
 M RCS file: /cvs/ForImport/src/xx/NewClass.java,v
 M done
-M Checking in NewClass.java;
+M Checking in xx/NewClass.java;
 M /cvs/ForImport/src/xx/NewClass.java,v  <--  NewClass.java
 M initial revision: 1.1
 M done
-Checked-in ./
+Checked-in xx/
 /cvs/ForImport/src/xx/NewClass.java
 /NewClass.java/1.1///
 ok
