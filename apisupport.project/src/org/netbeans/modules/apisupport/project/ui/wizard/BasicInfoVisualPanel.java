@@ -348,7 +348,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             public void insertUpdate(DocumentEvent e) { updateAndCheck(); }
         };
         nameValue.getDocument().addDocumentListener(fieldsDL);
-        locationValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+        nameValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { nameUpdated = true; }
         });
         locationValue.getDocument().addDocumentListener(fieldsDL);
@@ -818,7 +818,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }//GEN-LAST:event_typeChanged
     
     private void browseLocation(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocation
-        JFileChooser chooser = new JFileChooser(locationValue.getText());
+        JFileChooser chooser = new JFileChooser(getLocationValue());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
