@@ -1625,6 +1625,14 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             }
             if (draggedComponent == null) {
                 // first move event, pre-create visual component to be added
+                if ((item.getComponentClassName().indexOf('.') == -1) // Issue 79573
+                    && (!FormJavaSource.isInDefaultPackage(getFormModel()))) {
+                    String message = FormUtils.getBundleString("MSG_DefaultPackageBean"); // NOI18N
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                    formDesigner.toggleSelectionMode();
+                    return;
+                }
                 draggedComponent = new NewComponentDrag( item );
             }
             draggedComponent.move(e);
@@ -2717,9 +2725,14 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
                 if (item != null) {
-                    draggedComponent = new NewComponentDrag(item);
-                    draggedComponent.move(dtde.getLocation(), 0);
-                    repaint();                    
+                    if ((item.getComponentClassName().indexOf('.') != -1) // Issue 79573
+                        || FormJavaSource.isInDefaultPackage(getFormModel())) {
+                        draggedComponent = new NewComponentDrag(item);
+                        draggedComponent.move(dtde.getLocation(), 0);
+                        repaint();
+                    } else {
+                        dtde.rejectDrag();
+                    }
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();

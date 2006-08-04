@@ -22,6 +22,7 @@ package org.netbeans.modules.form;
 import java.io.IOException;
 import java.awt.datatransfer.*;
 
+import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
@@ -370,8 +371,15 @@ class CopySupport {
         }
 
         private Transferable doPaste() throws IOException {
-            targetForm.getComponentCreator().createComponent(
+            if ((classSource.getClassName().indexOf('.') == -1) // Issue 79573
+                && !FormJavaSource.isInDefaultPackage(targetForm)) {
+                String message = FormUtils.getBundleString("MSG_DefaultPackageBean"); // NOI18N
+                NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+            } else {
+                targetForm.getComponentCreator().createComponent(
                                         classSource, targetComponent, null);
+            }
             return transferable;
         }
     }

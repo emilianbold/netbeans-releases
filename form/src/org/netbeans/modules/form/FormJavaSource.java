@@ -291,6 +291,13 @@ public class FormJavaSource {
 	} else return "V"; // NOI18N	
     }
 
+    public static boolean isInDefaultPackage(FormModel formModel) {
+        FormDataObject fdo = FormEditor.getFormDataObject(formModel);
+        ClassDefinition cd = new FormJavaSource(fdo).getClassDefinition();
+        String name = getPackageName(cd);
+        return "".equals(name); // NOI18N
+    }
+
     private abstract class ChildrenFilter {		
 	public List getNames() {
             List values = new ArrayList();            
