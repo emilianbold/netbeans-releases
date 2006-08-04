@@ -22,7 +22,9 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -78,7 +80,6 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -87,6 +88,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -195,9 +197,9 @@ public final class UIUtil {
     public static String keyStrokesToString(final KeyStroke[] keyStrokes) {
         StringBuffer sb = new StringBuffer(UIUtil.keyStrokeToString(keyStrokes [0]));
         int i, k = keyStrokes.length;
-        for (i = 1; i < k; i++)
+        for (i = 1; i < k; i++) {
             sb.append(' ').append(UIUtil.keyStrokeToString(keyStrokes [i]));
-        
+        }
         String newShortcut = sb.toString();
         return newShortcut;
     }
@@ -205,9 +207,9 @@ public final class UIUtil {
     public static String keyStrokesToLogicalString(final KeyStroke[] keyStrokes) {
         StringBuffer sb = new StringBuffer(UIUtil.keyToLogicalString(keyStrokes [0]));
         int i, k = keyStrokes.length;
-        for (i = 1; i < k; i++)
+        for (i = 1; i < k; i++) {
             sb.append(' ').append(UIUtil.keyToLogicalString((keyStrokes [i])));
-        
+        }
         String newShortcut = sb.toString();
         return newShortcut;
     }
@@ -239,7 +241,7 @@ public final class UIUtil {
     
     /**
      * Set the <code>text</code> for the <code>textComp</code> and set its
-     * carret position to the end of the text.
+     * caret position to the end of the text.
      */
     public static void setText(JTextComponent textComp, String text) {
         textComp.setText(text);
@@ -247,11 +249,11 @@ public final class UIUtil {
     }
     
     /**
-     * Convenient class for listening to document changes. Use it if you don't
+     * Convenient class for listening on document changes. Use it if you do not
      * care what exact change really happened. {@link #removeUpdate} and {@link
-     * #changedUpdate} just delegates to {@link #insertUpdate}. So everything
-     * what is need to be notified about document changes is to override {@link
-     * #insertUpdate} method.
+     * #changedUpdate} just delegate to {@link #insertUpdate}. So everything
+     * what is needed in order to be notified about document changes is to
+     * override {@link #insertUpdate} method.
      */
     public abstract static class DocumentAdapter implements DocumentListener {
         public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
@@ -442,9 +444,9 @@ public final class UIUtil {
     public static class LayerItemPresenter implements Comparable {
         
         private String displayName;
-        private FileObject item;
-        private FileObject root;
-        private boolean contentType;
+        private final FileObject item;
+        private final FileObject root;
+        private final boolean contentType;
         
         public LayerItemPresenter(final FileObject item,
                 final FileObject root,
@@ -511,7 +513,7 @@ public final class UIUtil {
             StringBuffer sb = new StringBuffer();
             sb.append(s.pop());
             while (!s.empty()) {
-                sb.append(displaySeparator + s.pop());
+                sb.append(displaySeparator).append(s.pop());
             }
             return sb.toString();
         }
@@ -710,7 +712,7 @@ public final class UIUtil {
     
     private static File getSuiteDirectory(Project suiteComp) {
         File suiteDir = SuiteUtils.getSuiteDirectory(suiteComp);
-        assert suiteDir != null : "Invalid suite provider for: " // NOI18N
+        assert suiteDir != null : "Invalid suite provider for: "
                 + suiteComp.getProjectDirectory();
         return suiteDir;
     }
@@ -775,7 +777,7 @@ public final class UIUtil {
     }
     
     private static class IconFileChooser extends JFileChooser {
-        private final JTextField iconInfo = new javax.swing.JTextField();        
+        private final JTextField iconInfo = new JTextField();        
         private  IconFileChooser() {
             JPanel accessoryPanel = getAccesoryPanel(iconInfo);
             setDialogTitle(NbBundle.getMessage(UIUtil.class, "TITLE_IconDialog"));//NOI18N
@@ -802,8 +804,8 @@ public final class UIUtil {
                         Icon icon = new ImageIcon(f2.getAbsolutePath());
                         StringBuffer sb = new StringBuffer();
                         sb.append(f2.getName()).append(" [");//NOI18N
-                        sb.append(icon.getIconWidth()).append("x").append(icon.getIconHeight());
-                        sb.append("]");
+                        sb.append(icon.getIconWidth()).append('x').append(icon.getIconHeight());
+                        sb.append(']');
                         setApproveButtonToolTipText(sb.toString());
                         iconInfo.setText(sb.toString());
                     } else {
@@ -819,15 +821,15 @@ public final class UIUtil {
             iconInfo.setColumns(15);
             iconInfo.setEditable(false);
             
-            JPanel accessoryPanel = new javax.swing.JPanel();
-            JPanel inner = new javax.swing.JPanel();
-            JLabel iconInfoLabel = new javax.swing.JLabel();
-            accessoryPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 0));
+            JPanel accessoryPanel = new JPanel();
+            JPanel inner = new JPanel();
+            JLabel iconInfoLabel = new JLabel();
+            accessoryPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 6, 0));
             
-            inner.setLayout(new java.awt.GridLayout(2, 1, 0, 6));
+            inner.setLayout(new GridLayout(2, 1, 0, 6));
             
             iconInfoLabel.setLabelFor(iconInfo);
-            org.openide.awt.Mnemonics.setLocalizedText(iconInfoLabel, NbBundle.getMessage(UIUtil.class, "LBL_IconInfo"));//NOI18N
+            Mnemonics.setLocalizedText(iconInfoLabel, NbBundle.getMessage(UIUtil.class, "LBL_IconInfo"));
             inner.add(iconInfoLabel);
             
             inner.add(iconInfo);
