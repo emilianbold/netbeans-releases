@@ -53,6 +53,15 @@ Microsystems, Inc. All Rights Reserved.
                 excludesfile="${xtest.home}/standard-test-excludes.txt"
                 excludes="${package.tests.excludes}"/>
         </copy>
+        <!-- Copy ${xtest.testtype}/data to compile.destdir.root. It is needed 
+             because data are used when test is run from IDE (see NBTestCase.getDataDir()). -->
+        <copy todir="${compile.destdir.root}">
+            <fileset dir="${basedir}">
+                <include name="**/data/**"/>
+                <!-- ignore ${xtest.testype}/src handled above -->
+                <exclude name="*/src/**"/>
+            </fileset>
+        </copy>
     </target>
     
     <!-- =============== -->
