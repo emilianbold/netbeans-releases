@@ -1,0 +1,9 @@
+MicroEdition-Profile: MIDP-1.0
+MicroEdition-Configuration: CLDC-1.0
+MIDlet-Version: 1.0
+MIDlet-Name: MIDletSuite
+MIDlet-Vendor: Lukas
+MIDlet-Jar-URL: MIDletSuite.jar
+MIDlet-Jar-Size: 1610
+MIDlet-1: HelloMIDlet, , HelloMIDlet
+MIDlet-2: MIDlet, , Midlet

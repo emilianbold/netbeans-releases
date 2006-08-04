@@ -1,0 +1,7 @@
+-dontusemixedcaseclassnames
+-defaultpackage ''
+-overloadaggressively
+-keep class ** {
+    protected *;
+    public *;
+}

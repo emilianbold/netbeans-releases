@@ -1,0 +1,18 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Templates.MIDP;
+
+import javax.microedition.midlet.*;
+
+/**
+ *
+ * @author  __USER__
+ * @version 
+ */
+public class Class {
+
+}

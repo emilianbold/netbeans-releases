@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>MIDP Project Properties: Push Registry</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>MIDP Project Properties: Push Registry</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the Push Registry page in the Project Properties to register
+  MIDlets with a suite's push registry. The push registry allows MIDlets to
+  be launched in response to an incoming network connection. When a MIDlet registers
+  for push notifications, the device software is instructed to listen for incoming
+  network connections and launch the MIDlet, if appropriate. </p>
+<ul class="note">
+    <li>If your project's profile version is set to MDP
+      1.0, this tab is not available in the Suite Editor. </li>
+  </ul>
+<p>If you are setting the properties for a project configuration other
+  than the default configuration (<code>DefaultConfiguration</code>), you must
+  uncheck the Use Values from &quot;DefaultConfiguration&quot; checkbox at the
+top of the page to customize these options.</p>
+<p>You can add, remove, and copy push registry attributes using the buttons on
+  the right of the tab. For each MIDlet you register, you can set the following
+  options: </p>
+<ul>
+  <li><strong>MIDlet Cla<b>ss.</b></strong> The MIDlet's class name.</li>
+  <li><strong> Sender IP<b>.</b></strong> A valid sender that can launch
+    the associated MIDlet. If the value is the wildcard (<code>*</code>), connections
+    from any source are accepted. If datagram or socket connections are used,
+    the value of Allowed Sender can be a numeric IP address. For example, <code>129.70.40.*</code></li>
+  <li><strong>Connection Strin<b>g.</b></strong> A connection string that identifies
+    the connection protocol and port number. For example, <code>sms://:50000</code></li>
+</ul>
+<p>For more information about push registry, see:</p>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+  <param name="content" value="http://developers.sun.com/techtopics/mobility/midp/articles/pushreg/">
+  <param name="text" value="<html><u>http://developers.sun.com/techtopics/mobility/midp/articles/pushreg/</u></html>">
+  <param name="textFontSize" value="medium">
+  <param name="textColor" value="blue">
+</object>
+
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../properties/pushregistry_about.html">About Push Registry</a></dd>
+  <dd>    <a href="../properties/prop_setpushregistry.html">Adding Push Registry Entries</a>      </dd>
+  <dd>    <a href="../deploy/about_ota.html">About Over-The-Air Provisioning (OTA)</a></dd>
+      </dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

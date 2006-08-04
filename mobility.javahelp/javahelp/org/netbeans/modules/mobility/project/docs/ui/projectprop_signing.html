@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>MIDP Project Properties: Signing</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>MIDP Project Properties: Signing</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the Signing properties page to set up <a href="../security/signing_about.html">security</a> for your MIDlet
+  suite. In this page you enable signing and assign key pairs to a MIDlet suite.</p>
+<p>You open the Signing properties page by choosing File &gt; <em>&lt;active project 
+  name&gt;</em> Properties. In the Project Properties dialog, select Build &gt; 
+  Signing.</p>
+<ul class="note">
+  <li>
+    If you are setting the properties for
+      a <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_deviceconfiguration.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="project configuration">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>
+ other than the default configuration (<code>DefaultConfiguration</code>),
+      you must uncheck the Use Values from &quot;DefaultConfiguration&quot; checkbox
+      at the top of the page to customize these options.</li>
+  </ul>
+<p>The Signing page enables you to define the following for your MIDlet suite:</p>
+<ul>
+  <li><strong>Sign Distribution.</strong> If checked, signing is enabled for the MIDlet suite. If
+    unchecked, this page is disabled. </li>
+  <li><strong>Keystore</strong>. A file that stores one or more key pairs as
+    a keystore (<code>.ks</code>) file. The dropdown menu lists all available
+    keystores. Click the Unlock button to unlock a
+    keystore
+    for use.</li>
+  <li><strong>Alias. </strong>A name assigned to a key pair within a keystore.
+    The dropdown menu lists
+    the aliases available for the selected keystore. Click the Unlock button
+    to unlock a key pair for use. </li>
+</ul>
+<p>The Certificate Details window provides information about the certificate
+  assigned to the key pair.</p>
+<p>Click the Export Key into Java ME SDK/Platform/Emulator button to export a key
+  into the emulator platform you intend to use to test the MIDlet.</p>
+<dl><dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../security/signing_about.html">Setting Security Through MIDlet 
+    Signing</a></dd>
+<dd>      <a href="../security/signing_about.html">      About  MIDP Signing
+      and Security</a></dd>
+<dd>      <a href="../security/signing_createkeystore.html">Adding or Creating a Keystore</a></dd>
+ <dd>     <a href="../security/signing_createkeypair.html">Creating a New Key Pair</a></dd>
+ <dd>     <a href="../security/signing_exportkey.html">Exporting a Key</a>      </dd>
+    </dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<map version="1.0">
+	<mapID target="me.welcome" url="getstarted/welcome.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.SourcesPanel" url="ui/wizard_importexisting_specifysource.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.WtkPanel" url="ui/wizard_importwtk_specifysource.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.SuitePanel" url="ui/wizard_importsuite_specifysource.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.PlatformSelectionPanel" url="ui/wizard_importsuite_platformselection.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformInstallPanel" url="ui/wizard_newproject_installplatform.html"/>
+	<mapID target="org.netbeans.modules.java.platform.wizard.SelectorPanel" url="ui/wizard_addplatform_choosefolder.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel" url="ui/wizard_newproject_name.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanel" url="ui/wizard_newproject_platformselection.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.MIDPTargetChooserPanel" url="ui/wizard_newfile_name.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.i18n.LocalizationSupportPanel" url="ui/wizard_newlocalization_name.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.J2MECustomizerProvider" url="ui/dialog_platformmanager.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerGeneral" url="ui/projectprop_general.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDP" url="ui/projectprop_platform.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJad" url="ui/projectprop_appdescriptor.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddAttributePanel" url="ui/dialog_addattribute.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDlets" url="ui/projectprop_midlets.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddMIDletPanel" url="ui/dialog_addmidlet.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerPushReg" url="ui/projectprop_pushregistry.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddPushRegistryPanel" url="ui/dialog_addpushregistry.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerPermissions" url="ui/projectprop_apipermissions.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddAPIPanel" url="ui/dialog_addapi.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerLibraries" url="ui/projectprop_libraries.html"/>
+	<mapID target="org.netbeans.modules.project.support.customizer.LibrariesChooser" url="ui/dialog_addlibrary.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerFiltering" url="ui/projectprop_filtering.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerObfuscate" url="ui/projectprop_obfuscating.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJar" url="ui/projectprop_createjar.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerSign" url="ui/projectprop_signing.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.security.SecurityManagerPanel" url="ui/dialog_securitymanager.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.security.ExportPanel" url="ui/dialog_exportkey.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.security.AddKeystorePanel" url="ui/dialog_addkeystore.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJavadoc" url="ui/projectprop_javadoc.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun" url="ui/projectprop_running.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" url="ui/node_project.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel" url="ui/dialog_addconfiguration.html"/>
+	<mapID target="me.gloss_cldc" url="glossary/gloss_cldc.html"/>
+	<mapID target="me.gloss_attributes" url="glossary/gloss_attributes.html"/>
+	<mapID target="me.gloss_configuration" url="glossary/gloss_configuration.html"/>
+	<mapID target="me.gloss_deviceconfiguration" url="glossary/gloss_deviceconfiguration.html"/>
+	<mapID target="me.gloss_devicefragmentation" url="glossary/gloss_devicefragmentation.html"/>
+	<mapID target="me.gloss_emulator" url="glossary/gloss_emulator.html"/>
+	<mapID target="me.gloss_manifest" url="glossary/gloss_manifest.html"/>
+	<mapID target="me.gloss_jad" url="glossary/gloss_jad.html"/>
+	<mapID target="me.gloss_midlet" url="glossary/gloss_midlet.html"/>
+	<mapID target="me.gloss_midletsuite" url="glossary/gloss_midletsuite.html"/>
+	<mapID target="me.gloss_midp" url="glossary/gloss_midp.html"/>
+	<mapID target="me.gloss_platform" url="glossary/gloss_platform.html"/>
+	<mapID target="me.gloss_project" url="glossary/gloss_project.html"/>
+	<mapID target="me.gloss_appmgmtsoftware" url="glossary/gloss_appmgmtsoftware.html"/>
+	<mapID target="me.importprojects" url="getstarted/importprojects.html"/>
+	<mapID target="me.installingexamples" url="getstarted/installingexamples.html"/>
+	<mapID target="me.guides" url="getstarted/guides.html"/>
+	<mapID target="me.gloss_profile" url="glossary/gloss_profile.html"/>
+	<mapID target="me.config_working" url="configuration/config_working.html"/>
+	<mapID target="me.config_add" url="configuration/config_add.html"/>
+	<mapID target="me.config_about" url="configuration/config_about.html"/>
+	<mapID target="me.proj_working" url="projects/proj_working.html"/>
+	<mapID target="me.proj_templates" url="projects/proj_templates.html"/>
+	<mapID target="me.proj_creating" url="projects/proj_creating.html"/>
+	<mapID target="me.preprocess_about" url="configuration/preprocess_about.html"/>
+	<mapID target="me.config_setdefault" url="configuration/config_setdefault.html"/>
+	<mapID target="me.preprocess_manage" url="configuration/preprocess_manage.html"/>
+	<mapID target="me.emulator_adding" url="emulator/emulator_adding.html"/>
+	<mapID target="me.emulator_about" url="emulator/emulator_about.html"/>
+	<mapID target="me.config_customizing" url="configuration/config_customizing.html"/>
+	<mapID target="me.prop_viewgeneral" url="properties/prop_viewgeneral.html"/>
+	<mapID target="me.prop_set_jad" url="properties/prop_set_jad.html"/>
+	<mapID target="me.jad_about" url="properties/jad_about.html"/>
+	<mapID target="me.prop_setplatform" url="properties/prop_setplatform.html"/>
+	<mapID target="me.prop_setMIDlet" url="properties/prop_setMIDlet.html"/>
+	<mapID target="me.prop_setpushregistry" url="properties/prop_setpushregistry.html"/>
+	<mapID target="me.prop_customize_build" url="properties/prop_customize_build.html"/>
+	<mapID target="me.prop_addAPI" url="properties/prop_addAPI.html"/>
+	<mapID target="me.prop_addlibrary" url="properties/prop_addlibrary.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerCompile" url="ui/projectprop_compiling.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.J2MECustomizer$BuildPanel" url="ui/projectprop_build.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.J2MECustomizer$JadPanel" url="ui/projectprop_jad.html"/>
+	<mapID target="me.support" url="getstarted/support.html"/>
+	<mapID target="me.proj_quickref" url="projects/proj_quickref.html"/>
+	<mapID target="me.midlet_about" url="midlets/midlet_about.html"/>
+	<mapID target="me.midlet_working" url="midlets/midlet_working.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerConfigManager" url="ui/dialog_projectconfigurationmanager.html"/>
+	<mapID target="me.l10n_addsupport" url="l10n/l10n_addsupport.html"/>
+	<mapID target="me.l10n_about" url="l10n/l10n_about.html"/>
+	<mapID target="me.credits" url="getstarted/credits.html"/>
+	<mapID target="me.prop_setobfuscation" url="properties/prop_setobfuscation.html"/>
+	<mapID target="me.prop_setjar" url="properties/prop_setjar.html"/>
+	<mapID target="me.prop_customizesecurity" url="properties/prop_customizesecurity.html"/>
+	<mapID target="me.prop_setjavadoc" url="properties/prop_setjavadoc.html"/>
+	<mapID target="me.obfuscation_about" url="properties/obfuscation_about.html"/>
+	<mapID target="me.prop_setfiltering" url="properties/prop_setfiltering.html"/>
+	<mapID target="me.dialog_createkeypair" url="ui/dialog_createkeypair.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.security.EnterPasswordPanel " url="ui/dialog_enterpassword.html"/>
+	<mapID target="me.signing_about" url="security/signing_about.html"/>
+	<mapID target="me.signing_setdomain" url="security/signing_setdomain.html"/>
+	<mapID target="me.signing_createkeystore" url="security/signing_createkeystore.html"/>
+	<mapID target="me.signing_createkeypair" url="security/signing_createkeypair.html"/>
+	<mapID target="me.about_ota" url="deploy/about_ota.html"/>
+	<mapID target="me.run_runapps" url="running/run_runapps.html"/>
+	<mapID target="me.run_inota" url="running/run_inota.html"/>
+	<mapID target="me.gloss_jwti" url="glossary/gloss_jwti.html"/>
+	<mapID target="me.api_about" url="properties/api_about.html"/>
+	<mapID target="me.pushregistry_about" url="properties/pushregistry_about.html"/>
+	<mapID target="me.signing_exportkey" url="security/signing_exportkey.html"/>
+	<mapID target="me.prop_setrun" url="properties/prop_setrun.html"/>
+	<mapID target="me.gloss_uei" url="glossary/gloss_uei.html"/>
+	<mapID target="me.toolkit_using" url="toolkit/toolkit_using.html"/>
+	<mapID target="me.about_toolkit" url="toolkit/about_toolkit.html"/>
+	<mapID target="org.netbeans.modules.mvd.ui.wizard.MIDPTargetChooserPanel" url="ui/wizard_vdfname.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.J2MEActionProvider" url="ui/dialog_quickprojectrun.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.SaveConfigurationPanel" url="ui/dialog_configtemplate.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities" url="ui/projectprop_abilities.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddAbilityPanel" url="ui/dialog_addability.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerDeploy" url="ui/projectprop_deploy.html"/>
+	<mapID target="me.mvd_quickref" url="mvd/mvd_quickref.html"/>
+	<mapID target="me.mvd_about" url="mvd/mvd_about.html"/>
+	<mapID target="me.mvd_working" url="mvd/mvd_working.html"/>
+	<mapID target="j2me.designer.flow " url="ui/mvd_flowdesigner.html"/>
+	<mapID target="j2me.designer.palette" url="ui/mvd_componentpallette.html"/>
+	<mapID target="j2me.designer.palette_manager " url="ui/mvd_componentpallettemanager.html"/>
+	<mapID target="j2me.designer.screen" url="ui/mvd_screendesigner.html"/>
+	<mapID target="j2me.designer.inspector " url="ui/mvd_inspector.html"/>
+	<mapID target="me.wcw_creating" url="wcw/wcw_creating.html"/>
+	<mapID target="me.config_quickref" url="configuration/config_quickref.html"/>
+	<mapID target="me.proj_about" url="projects/proj_about.html"/>
+	<mapID target="me.about_deployment" url="deploy/about_deployment.html"/>
+	<mapID target="me.deploy_copy" url="deploy/deploy_copy.html"/>
+	<mapID target="me.deploy_deploying" url="deploy/deploy_deploying.html"/>
+	<mapID target="me.deploy_ftp" url="deploy/deploy_ftp.html"/>
+	<mapID target="me.deploy_webdav" url="deploy/deploy_webdav.html"/>
+	<mapID target="me.deploy_scp" url="deploy/deploy_scp.html"/>
+	<mapID target="org.netbeans.modules.mvd.ui.palette.wizard.SelectProjectPanel" url="ui/wizard_addcomponent_selectproject.html"/>
+	<mapID target="org.netbeans.modules.mvd.ui.palette.wizard.SelectClassesPanel" url="ui/wizard_addcomponent_selectclasses.html"/>
+	<mapID target="j2me.designer.property.CommandAction" url="ui/mvd_actioneditor.html"/>
+	<mapID target="me.abilities_about" url="configuration/abilities_about.html"/>
+	<mapID target="me.abilities_add" url="configuration/abilities_add.html"/>
+	<mapID target="me.mvd_addcustomcomponent" url="mvd/mvd_addcustomcomponent.html"/>
+	<mapID target="me.mvd_stringeditor" url="ui/mvd_stringeditor.html"/>
+	<mapID target="me.deploy_increment" url="deploy/deploy_increment.html"/>
+	<mapID target="me.midlet_addproj" url="midlets/midlet_addproj.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanel" url="ui/wizard_newproject_moreconfigurations.html"/>
+	<mapID target="org.netbeans.modules.mobility.cldcplatform.wizard.DetectWizardPanel" url="ui/wizard_addplatform_platforms.html"/>
+	<mapID target="org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel" url="ui/wizard_addplatform_gi.html"/>
+	<mapID target="org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel" url="ui/wizard_addplatform_bootstrap.html"/>
+	<mapID target="org.netbeans.modules.mobility.cldcplatform.SrcDocPathsPanel" url="ui/wizard_addplatform_sources.html"/>
+	<mapID target="me.preprocessor_directives_about" url="configuration/preprocessor_directives_about.html"/>
+	<mapID target="me.preprocess_comparison" url="configuration/preprocess_comparison.html"/>
+	<mapID target="me.gloss_jsr172" url="glossary/gloss_jsr172.html"/>
+	<mapID target="me.wcw_jsr172" url="wcw/wcw_jsr172.html"/>
+	<mapID target="me.wcw_updatingjsr172" url="wcw/wcw_updatingjsr172.html"/>
+	<mapID target="me.wcw_wsdl" url="wcw/wcw_wsdl.html"/>
+	<mapID target="me.run_runheadlessapps" url="running/run_runheadlessapps.html"/>
+	<mapID target="me.deploy_se" url="deploy/deploy_se.html"/>
+	<mapID target="me.emulator_se_remote" url="emulator/emulator_se_remote.html"/>
+	<mapID target="me.wcb_clientinformation" url="ui/wizard_wcb_clientinformation.html"/>
+	<mapID target="me.wcb_webappselection" url="ui/wizard_wcb_webappselection.html"/>
+	<mapID target="me.wcb_serviceselection" url="ui/wizard_wcb_serviceselection.html"/>
+	<mapID target="me.wcb_clientoptions" url="ui/wizard_wcb_clientoptions.html"/>
+	<mapID target="warn" url="images/warn.gif"/>
+	<mapID target="arrow" url="images/arrow.gif"/>
+	<mapID target="blue-ball-mid" url="images/blue-ball-mid.gif"/>
+	<mapID target="blue-sqr-mid" url="images/blue-sqr-mid.gif"/>
+	<mapID target="circle1" url="images/circle1.gif"/>
+	<mapID target="circle2" url="images/circle2.gif"/>
+	<mapID target="circle3" url="images/circle3.gif"/>
+	<mapID target="circle4" url="images/circle4.gif"/>
+	<mapID target="circle5" url="images/circle5.gif"/>
+	<mapID target="circle6" url="images/circle6.gif"/>
+	<mapID target="circle7" url="images/circle7.gif"/>
+	<mapID target="circle8" url="images/circle8.gif"/>
+	<mapID target="circle9" url="images/circle9.gif"/>
+	<mapID target="expand" url="images/expand.gif"/>
+	<mapID target="projectFolder" url="images/projectFolder.gif"/>
+	<mapID target="tip" url="images/tip.gif"/>
+	<mapID target="block-twoconfigurations" url="images/block-twoconfigurations.gif"/>
+	<mapID target="block-preprocessor" url="images/block-preprocessor.gif"/>
+	<mapID target="midpprojectnode" url="images/midpprojectnode.gif"/>
+	<mapID target="collapseall" url="images/collapseall.gif"/>
+	<mapID target="expandall" url="images/expandall.gif"/>
+	<mapID target="icon-midlet" url="images/icon-midlet.gif"/>
+	<mapID target="icon-visualmidlet" url="images/icon-visualmidlet.gif"/>
+	<mapID target="icon-propplatform" url="images/icon-propplatform.gif"/>
+	<mapID target="icon-componentpalettemanager" url="images/icon-componentpalettemanager.gif"/>
+	<mapID target="icon-mobiledevice" url="images/icon-mobiledevice.gif"/>
+	<mapID target="block-inverted" url="images/block-inverted.gif"/>
+	<mapID target="block-ifelse" url="images/block-ifelse.gif"/>
+	<mapID target="alertifelseblock" url="images/alertifelseblock.gif"/>
+	<mapID target="wcw-serverscript" url="images/wcw-serverscript.gif"/>
+	<mapID target="includestatement" url="images/includestatement.gif"/>
+</map>

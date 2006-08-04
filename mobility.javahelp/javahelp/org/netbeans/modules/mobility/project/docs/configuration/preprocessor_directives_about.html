@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>About Preprocessor Directives</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+
+<body>
+<h2>About Preprocessor Directives</h2>
+<p>Most <a href="preprocess_about.html">preprocessing </a>is controlled by preprocessor
+  directives.  Directives are specified
+  within the source code by creating a commented line that starts with the <code>//#</code> character
+  sequence, immediately followed by the directive. For example, <code>//#ifdef</code>.  </p>
+<p>Like the XML language, preprocessor directives  must be <em>well-formed</em>.
+  That is, they must have a beginning directive and an ending directive. For
+  example,
+  when a block is started with one of
+  the <code>//#if</code> directives,
+  it must be closed by an <code>//#endif</code> directive. Blocks can be nested,
+  which means that inside an <code>if/elif/else/endif</code> block can
+be any number of additional <code>if/elif/else/endif</code> blocks. </p>
+<p>Directives define actions and conditions. The preprocessor decides upon whether 
+  to comment or uncomment the block of code. Symbols in directive expressions 
+  can be either defined or not defined. Identifiers and variables, however, must 
+  always contain a value that can be used or compared during preprocessing. The 
+  preprocessor supports three types of variables: strings, integers, and booleans. 
+</p>
+<p>Variable names must start with characters/tokens which are same as start characters/tokens of valid Java
+  identifiers but in addition, consequentive characters can also be '.' '\' and '/'. . You can compare different variable
+  types using common comparison syntax (<code>&lt;=, &lt;, &gt;=, &gt; </code>and<code> ==</code>).
+  You can also use boolean operations, such as <code>&amp;&amp;, ||, ! </code>and<code> ^</code>. You can also
+  use &lt;variable name&gt;:defined or defined(&lt;variable name&gt;) functions to check for variable defintions.  This
+  is not neccessary and should not be used when creating new code blocks but is built in for easy imports from J2ME Polish.
+  For more information, see <a href="preprocess_comparison.html">Comparing Preprocessor
+  Variables</a>. </p>
+<p>The following example shows <code>If/Else</code> block with a nested <code>elif</code> directive.
+<pre>//#if mmedia 
+   //#if nokia
+        //#if s60_ver==&quot;1.0&quot;
+        import com.nokia.mmapi.v1
+        //#elif s60_ver==&quot;2.0&quot; 
+        import com.nokia.mmapi.v2
+       //#else
+       import com.nokia.mmapi.def
+       //#endif
+  //#else
+      import javax.microedition.mmapi
+  //#endif
+//#endif </pre>
+<li>
+The NetBeans IDE supports all directives of the Antenna preprocessor 
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://antenna.sourceforge.net">
+    <param name="text" value="<html><u>http://antenna.sourceforge.net</u></html>">
+    <param name="textFontSize" value="small">
+    <param name="textColor" value="blue">
+  </object>
+,  so you can migrate Antenna projects into the NetBeans IDE and retain your
+preprocessor code.
+</li> 
+</ul>
+<h3>Directive Syntax</h3>
+<p>See the following table for a description of preprocessor directives. </p>
+<table width="95%" border="1">
+  <tr>
+    <td><div align="center"><strong>Directive</strong></div></td>
+    <td><div align="center"><strong>Description</strong></div></td>
+  </tr>
+  <tr>
+    <td width="34%"><code>#ifdef </code>[identifier]</td>
+    <td width="66%">The identifier represents a variable of any type (boolean,
+      string, or integer) and checks whether or not the variable is defined.
+      If true (the variable is defined), the code that
+      follows is processed.  Nested blocks are processed as well.
+      If false (the variable is not defined),
+      the
+      code
+      that follows
+      is commented and nested blocks are not evaluated. The directive
+      must be closed with <code>#endif</code>.      </td>
+  </tr>
+  <tr>
+    <td><code>#ifndef </code>[identifier]</td>
+    <td>Works in the same manner as <code> ifdef, </code>but returns &quot;True&quot;
+      if the variable is not defined. The directive must be closed with <code>#endif</code>.</td>
+  </tr>
+  <tr>
+    <td><code>#elifdef </code>[identifier]</td>
+    <td>Works as a standard <code>else if</code> statement, but automatically
+      checks whether or not the identifier is defined. The directive can only
+      complement inside blocks started
+    by <code>ifdef/ifndef</code>.</td>
+  </tr>
+  <tr>
+    <td><code>#elifndef </code>[identifier]</td>
+    <td>Works as a standard <code>else if</code> statement but automatically
+      checks whether the identifier is not defined. The directive can only complement
+      inside blocks started
+    by <code>ifdef/ifndef.</code></td>
+  </tr>
+  <tr>
+    <td><code>#if </code>[expression]</td>
+    <td>Evaluates an expression passed to it and fires the appropriate action.
+      The directive must be closed with
+    <code>endif</code>.</td>
+  </tr>
+  <tr>
+    <td><code>#elif </code>[expression]</td>
+    <td>Works as a standard <code>else if </code>statement and can complement
+      only in blocks started by <code>an if</code> statement. The directive preprocesses
+      the code that follows based on the result of the expression.</td>
+  </tr>
+  <tr>
+    <td><code>#else</code></td>
+    <td>Works as a standard <code>else</code> statement only preprocesses
+      the code that follows when none of the previous conditions in the defining
+      block
+      were true. Complements
+    inside any block started with the <code>if/ifdef/ifndef</code> directive.</td>
+  </tr>
+  <tr>
+    <td><code>#endif</code></td>
+    <td>This directive must be used to close any block started with <code>if/ifdef/ifndef</code>.</td>
+  </tr>
+  <tr>
+    <td><code>#condition </code>[expression]</td>
+    <td>Must be on the first line in a file. This directive determines if the
+    file should be included in the build based on the result of the expression.</td>
+  </tr>
+  <tr>
+    <td><code>#debug</code> [level]</td>
+    <td>Determines if the line following the directive should be commented or
+      uncommented based on the debug level set in <a href="../ui/projectprop_compiling.html">Compiling
+      page</a> of the project
+      properties. If the debug level is omitted and the debug level is not set
+      to &quot;Off&quot; in
+      the project properties, the preprocessor will automatically debug the line
+      in question. Used
+      for debugging
+      purposes
+    with expressions such as <code>System.out.println</code>,
+    for example. This directive can be nested.</td>
+  </tr>
+  <tr>
+    <td><code>#mdebug</code> [level]</td>
+    <td>Behaves the same as<code> #debug, </code>but instead comments or uncomments
+      a whole block of lines following the line it is on until it reaches <code>#enddebug</code>.
+      This directive is used for debugging purposes  with expressions
+      such as <code>System.out.println</code>,
+      for example. This directive can be nested.      If the <code>mdebug</code> block
+      partially intersects an <code>if/ifdef/ifndef</code> block (for example,
+      <code>enddebug</code> is outside a closed <code>if </code>block in which <code>mdebug</code> is
+      called) the preprocessor will generate errors.</td>
+  </tr>
+  <tr>
+    <td><code>#enddebug</code></td>
+    <td>Must terminate <code>#mdebug</code> block.</td>
+  </tr>
+  <tr>
+    <td><code>#define [identifier] #define [identifier=value] #define [identifier value]</code></td>
+    <td>Adds temporary abilities or variables to the preprocessor memory.  Can
+      not be used in nested blocks. Global variables defined in
+      the project configuration properties override these temporary variables.</td>
+  </tr>
+  <tr>
+    <td>#undefine [identifier]</td>
+    <td>Removes temporary abilities/variables from the memory. This declaration
+      can also be used to remove global variables defined in the project configuration
+      properties from
+      the preprocessor memory, but will not remove the variables from the list
+      of project or configuration variables.</td>
+  </tr>
+</table>
+  <dl><dt>See Also</a></dt>
+<dd><a href="config_about.html">About Project Configurations</a></dd>
+ <dd>         <a href="abilities_about.html">About Abilities</a></dd>
+ <dd>         <a href="preprocess_about.html">
+        About Preprocessing</a></dd>     
+  <dd>      <a href="config_working.html">Working with Project Configurations</a></dd>
+  <dd><a href="preprocess_manage.html">Managing Preprocessor Blocks</a></dd>
+  <dd><a href="preprocess_comparison.html">Comparison Syntax in Preprocessor Directives</a> </dd>
+  </dl>
+  <hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project default="deploy-webdav">
+    <target name="init">
+        <fail unless="deployment.webdav.server">Property deployment.webdav.server is not set.</fail>
+        <property name="deployment.webdav.port" value="80"/>
+        <property name="deployment.webdav.remotedir" value=""/>
+        <fail unless="deployment.jad">Property deployment.jad is not set.</fail>
+        <fail unless="deployment.jar">Property deployment.jar is not set.</fail>
+        <fail unless="libs.jakarta_slide_ant_webdav.classpath">Property libs.jakarta_slide_ant_webdav.classpath is not set. Please go to Library Manager and set the correct classpath for Jakarta Slide Ant WebDAV library.</fail>
+        <condition property="skip-connection-input">
+            <and>
+                <isset property="deployment.webdav.userid"/>
+                <isset property="deployment.webdav.password"/>
+                <not><equals arg1="${deployment.webdav.userid}" arg2="" trim="true"/></not>
+                <not><equals arg1="${deployment.webdav.password}" arg2="" trim="true"/></not>
+            </and>
+        </condition>
+        <taskdef resource="org/apache/webdav/ant/taskdefs.properties">
+            <classpath>
+                <pathelement path="${libs.jakarta_slide_ant_webdav.classpath}"/>
+            </classpath>
+        </taskdef>
+    </target>
+    <target name="set-password" depends="init" if="netbeans.home" unless="skip-connection-input">
+        <property name="deployment.webdav.userid" value=""/>
+        <nb-enter-password connectionid="http://${deployment.webdav.server}:${deployment.webdav.port}" usernameproperty="deployment.webdav.userid.eval" username="${deployment.webdav.userid}" passwordproperty="deployment.webdav.password.eval"/>
+    </target>
+    <target name="deploy-webdav" depends="init,set-password">
+        <property name="deployment.webdav.userid.eval" value="${deployment.webdav.userid}"/>
+        <property name="deployment.webdav.password.eval" value="${deployment.webdav.password}"/>
+        <mkcol url="http://${deployment.webdav.server}:${deployment.webdav.port}/${deployment.webdav.remotedir}"
+             userid="${deployment.webdav.userid.eval}" 
+             password="${deployment.webdav.password.eval}"/>
+        <davput url="http://${deployment.webdav.server}:${deployment.webdav.port}/${deployment.webdav.remotedir}"
+             userid="${deployment.webdav.userid.eval}" 
+             password="${deployment.webdav.password.eval}"
+             overwrite="true"
+             lock="false">
+             <fileset file="${deployment.jad}"/>
+             <fileset file="${deployment.jar}"/>
+         </davput>
+     </target>
+</project>

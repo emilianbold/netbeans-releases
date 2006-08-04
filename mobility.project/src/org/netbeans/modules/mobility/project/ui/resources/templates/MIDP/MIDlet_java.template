@@ -1,0 +1,26 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Templates.MIDP;
+
+import javax.microedition.midlet.*;
+import javax.microedition.lcdui.*;
+
+/**
+ *
+ * @author  __USER__
+ * @version 
+ */
+public class Midlet extends MIDlet {
+    public void startApp() {
+    }
+
+    public void pauseApp() {
+    }
+
+    public void destroyApp(boolean unconditional) {
+    }
+}

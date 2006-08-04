@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project default="deploy-scp">
+    <target name="init">
+        <fail unless="deployment.scp.server">Property deployment.scp.server is not set.</fail>
+        <property name="deployment.scp.port" value="22"/>
+        <property name="deployment.scp.remotedir" value=""/>
+        <fail unless="deployment.jad">Property deployment.jad is not set.</fail>
+        <fail unless="deployment.jar">Property deployment.jar is not set.</fail>
+        <condition property="deployment.scp.usekeyfile.eval">
+            <istrue value="${deployment.scp.usekeyfile}"/>
+        </condition>
+        <condition property="skip-password-input">
+            <or>
+                <not><isset property="netbeans.home"/></not>
+                <isset property="deployment.scp.usekeyfile.eval"/>
+                <and>
+                    <isset property="deployment.scp.userid"/>
+                    <isset property="deployment.scp.password"/>
+                    <not><equals arg1="${deployment.scp.userid}" arg2="" trim="true"/></not>
+                    <not><equals arg1="${deployment.scp.password}" arg2="" trim="true"/></not>
+                </and>
+            </or>
+        </condition>
+        <condition property="skip-passphrase-input">
+            <or>
+                <not><isset property="netbeans.home"/></not>
+                <not><isset property="deployment.scp.usekeyfile.eval"/></not>
+                <and>
+                    <isset property="deployment.scp.passphrase"/>
+                    <not><equals arg1="${deployment.scp.passphrase}" arg2="" trim="true"/></not>
+                </and>
+            </or>
+        </condition>
+    </target>
+    <target name="set-password" depends="init" unless="skip-password-input">
+        <property name="deployment.scp.userid" value=""/>
+        <nb-enter-password connectionid="scp://${deployment.scp.server}:${deployment.scp.port}" usernameproperty="deployment.scp.userid.eval" username="${deployment.scp.userid}" passwordproperty="deployment.scp.password.eval"/>
+    </target>
+    <target name="deploy-scp-1" depends="init,set-password" unless="deployment.scp.usekeyfile.eval">
+        <property name="deployment.scp.userid.eval" value="${deployment.scp.userid}"/>
+        <property name="deployment.scp.password.eval" value="${deployment.scp.password}"/>
+        <sshexec username="${deployment.scp.userid.eval}"
+             host="${deployment.scp.server}"
+             command="mkdir -p ${deployment.scp.remotedir}"
+             port="${deployment.scp.port}"
+             password="${deployment.scp.password.eval}"
+             trust="yes">
+         </sshexec>
+        <scp todir="${deployment.scp.userid.eval}@${deployment.scp.server}:${deployment.scp.remotedir}"
+             port="${deployment.scp.port}"
+             password="${deployment.scp.password.eval}"
+             trust="yes">
+             <fileset file="${deployment.jad}"/>
+             <fileset file="${deployment.jar}"/>
+         </scp>
+    </target>
+    <target name="set-passphrase" depends="init" unless="skip-passphrase-input">
+        <fail unless="deployment.scp.keyfile">Property deployment.scp.keyfile is not set.</fail>
+        <fail unless="deployment.scp.userid">Property deployment.scp.userid is not set.</fail>
+        <nb-enter-password keyfile="${deployment.scp.keyfile}" passwordproperty="deployment.scp.passphrase.eval"/>
+    </target>
+    <target name="deploy-scp-2" depends="init,set-passphrase" if="deployment.scp.usekeyfile.eval">
+        <fail unless="deployment.scp.keyfile">Property deployment.scp.keyfile is not set.</fail>
+        <fail unless="deployment.scp.userid">Property deployment.scp.userid is not set.</fail>
+        <property name="deployment.scp.passphrase.eval" value="${deployment.scp.passphrase}"/>
+        <sshexec username="${deployment.scp.userid}"
+             host="${deployment.scp.server}"
+             command="mkdir -p ${deployment.scp.remotedir}"
+             port="${deployment.scp.port}"
+             keyfile="${deployment.scp.keyfile}"
+             passphrase="${deployment.scp.passphrase.eval}"
+             trust="yes">
+        </sshexec>
+        <scp todir="${deployment.scp.userid}@${deployment.scp.server}:${deployment.scp.remotedir}"
+             port="${deployment.scp.port}"
+             keyfile="${deployment.scp.keyfile}"
+             passphrase="${deployment.scp.passphrase.eval}"
+             trust="yes">
+             <fileset file="${deployment.jad}"/>
+             <fileset file="${deployment.jar}"/>
+         </scp>
+    </target>
+    <target name="deploy-scp" depends="deploy-scp-1,deploy-scp-2"/>
+</project>

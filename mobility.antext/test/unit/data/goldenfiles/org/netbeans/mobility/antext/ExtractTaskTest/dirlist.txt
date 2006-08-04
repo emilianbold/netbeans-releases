@@ -1,0 +1,4 @@
+\contents.txt
+\dirlist.txt
+\test.jar
+\test.zip

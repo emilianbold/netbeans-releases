@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="deployment/webdav/test-qa-functional" basedir="." default="all">
+
+    <path id="jemmy.and.jelly.path">
+        <pathelement location="../../../../nb_all/jemmy/builds/jemmy.jar"/>
+        <pathelement location="../../../../nb_all/jellytools/builds/jelly2-nb.jar"/>
+    </path>
+    
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+
+    <!-- You can override default qa-functional-compiler if you need something special -->
+    <target name="qa-functional-compiler">
+        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>  
+                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            </classpath>
+        </buildTests>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
+         If you need to customize it, you can uncomment the following and override it.
+      -->   
+    <target name="runidetest">        
+        <executeTests  pluginName="ide">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>  
+            </classpath>
+        </executeTests>
+    </target>
+
+    <target name="runidetest-reuse">
+        <property name="xtest.ide.reuse.userdir" value="true"/>
+        <executeTests  pluginName="ide">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>  
+            </classpath>
+        </executeTests>
+    </target>
+    
+</project>
+

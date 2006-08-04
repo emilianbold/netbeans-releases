@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>Importing MIDP Projects</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</HEAD>
+<BODY>
+
+<h2>Importing MIDP Projects</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>There are four project templates you can use to import
+  a Java ME MIDP project:</p>
+<ul>
+  <li><strong><a href="#wtk">Import  Wireless Toolkit Project</a>.</strong> Use
+    this project template if the project was created using the Java ME Wireless
+  Toolkit.</li>
+  <li><a href="#studio"> <strong>Import Mobility Studio Project</strong>.</a> Use
+        this project template if the project was created using the Mobility Modules
+        for NetBeans, Sun Java Studio Mobility, or Sun ONE
+    Studio Mobility.</li>
+  <li><strong><a href="#exist"> Mobile Project from Existing MIDP Sources</a></strong><a href="#exist">.</a> Use
+    this project template if you are importing source code created outside of
+    an IDE. You can also use this template to import <a href="#antenna">Antenna
+    projects</a>.</li>
+</ul>
+ 
+    <ul class="note">
+	<li>Each MIDP project supports only a single source
+      root. If the project you are importing has multiple source roots, you need
+      to create one project for each source root and then create dependencies
+      between the projects. </li>
+  </ul>
+<p><strong>To import a J2ME Wireless Toolkit project:</strong><a name="wtk"></a></p>
+<ol>
+  <li>Choose File &gt; New
+    Project.</li>
+  <li>Under Categories, select Mobile. Under Projects, select Import Wireless
+        Toolkit Project and click Next.</li>
+  <li>In the Specify WTK Toolkit project page, Choose
+        the project you want to import. Click Next.</li>
+  <li>In the Project Name and Location
+        page, choose a home and a location for the new project. If you want the
+    project to be your main project, leave
+          the Set
+            as Main Project check box checked. Click Next.</li>
+  <li>Use the Platform Selection
+        page to set the emulator platform that the IDE will use to compile and
+    run the project. Click Finish.</li>
+  <li>To test the Project, right-click the project node
+        in the projects tab, and choose Run Project.</li>
+</ol>
+<p><a name="studio"></a><strong>To import a Mobility Studio project: </strong></p>
+<ol>
+  <li>Choose File &gt; New
+    Project.</li>
+  <li>Under Categories, select Mobile.
+      Under Projects, select Import Mobility Studio Project and click Next.</li>
+  <li> Use the
+          Specify Suite page to locate the MIDlet suite you want to import. Mobility
+      project definition files have the extension <tt>.adcontent</tt>. Click Next.</li>
+  <li>Use
+        the Project Name and Location page to define a new name and location
+    for your NetBeans project. Click Next.</li>
+  <li>Use the Platform Selection page to select
+        the platform emulator that will be used to emulate device performance
+    when the project is executed. Click
+          Finish.</li>
+</ol>
+<p><a name="exist"></a><strong>To import a mobile project from existing MIDP
+    sources:</strong></p>
+<ol>
+  <li>Choose File &gt; New
+    Project.</li>
+  <li>Under Categories, select Mobile.
+        Under Projects, select Mobile Project from Existing MIDP Sources and
+    click Next.</li>
+  <li>Use the Specify Sources page to locate
+          the source directory for the source code and <code>.jad</code> file
+          you want to import. Click Next.</li>
+  <li>Use the Project Name and Location
+        page to define a new name and location for your NetBeans project. Click
+    Next.</li>
+  <li>Use the Platform Selection page to select
+        the platform emulator that will be used to emulate device performance
+    when the project is executed. Click Finish.</li>
+</ol>
+
+  <p><a name="antenna"></a><strong>To Import Antenna Projects:</strong></p>
+
+  
+<p>The Mobility Pack preprocessor is almost fully compatible with the Antenna 
+  preprocessor, so you can import Antenna projects and preserve the preprocessing 
+  code from the original project. </p>
+  <p>To import an Antenna project, follow these steps.</p>
+<ol>
+  <li>Create a new project 
+    <ol>
+      <li>Choose File &gt; New Project (Ctrl-Shift-N). </li>
+      <li>Under Categories, select Mobile. Under Projects, select Mobile Project 
+        from Existing MIDP Sources and click Next. </li>
+      <li>Use the Specify MIDP Sources page to locate the source directory for 
+        the source code and (optionally) the .<code>jad</code> file you want to 
+        import. </li>
+      <li>Click Next. Use the Project Name and Location page to define a new name 
+        and location for your NetBeans project. Click Finish. <br>
+      </li>
+    </ol>
+  </li>
+  <li>Create project configurations for each of the symbols (mobile devices) listed 
+    in your original project. For example, for the following line of code in the 
+    <code>build.xml</code> file:<br>
+    <code>&lt;wtkpreprocess srcdir=&quot;src&quot; destdir=&quot;src_colorphone&quot; 
+    symbols=&quot;colorphone,JSR185,JSR172,&quot; verbose=&quot;true&quot;/&gt;</code> 
+    <br>
+    you would create a configuration for the symbol (mobile device) &quot;colorphone.&quot; 
+    <br>
+    <ol>
+      <li>In the Projects view, right click on the project node and choose Properties 
+        from the pop-up menu.</li>
+      <li>Click the Manage Configurations button.<br />
+        This opens the the Project Configuration Manager. </li>
+      <li>Click the Add button. <br />
+        This opens the Add Project Configuration dialog. </li>
+      <li>Add the name of a symbol (mobile device) listed in the<code> build.xml</code> 
+        file, in this case &quot;colorphone&quot;. Be sure to match the symbol names precisely. Click OK to create 
+        the configuration.</li>
+      <li>Repeat as necessary.<br />
+      </li>
+    </ol>
+  </li>
+  <li>Add <a href="../configuration/abilities_about.html">abilities</a> to each 
+    configuration. 
+    <ol>
+      <li>In the Properties window, under Categories, click the Abilities node. 
+      </li>
+      <li>Uncheck the Use Values from &quot;DefaultConfiguration&quot; check box. 
+      </li>
+      <li>Click the Add button and add abilities for each configuration so that 
+        they correspond to the non-device symbols listed in your <code>build.xml</code> 
+        file. <br />
+        For example, if you are in the <code> colorphone</code> configuration 
+        and the <code>build.xml</code> file has the code<br />
+        <code>&lt;wtkpreprocess srcdir=&quot;src&quot; destdir=&quot;src_colorphone&quot; 
+        symbols=&quot;colorphone,JSR185,JSR172,&quot; verbose=&quot;true&quot;/&gt;</code> 
+        <br />
+        you would add abilities for JSR185 and JSR172.</li>
+      <li>Delete excess abilities that have nothing to do with the antenna sources 
+        just imported.</li>
+    </ol> 
+</ol>
+ 
+<ul class="note">
+  <li>The<code> #include</code> directive is not supported by the Mobility preprocessor. 
+    Instead, the preprocessor inserts "hints" that identify the files that need 
+    to be inserted into the source code. For example, the Antenna code <br>
+    <code>//#include ConverterMIDlet.java</code><br>
+    is identified in the source code editor as: <br>
+    <img src="../images/includestatement.gif" width="238" height="41"> </li>
+  </ul>
+  
+  <p>You can now build and run your applications in the IDE. </p>
+  <dl>
+<dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../projects/proj_working.html">Working with Projects</a></dd>
+        <dd><a href="../projects/proj_templates.html">Java ME MIDP Project and File Templates</a></dd>
+        <dd><a href="../configuration/config_about.html">About Project Configurations</a></dd>
+        <dd><a href="../configuration/preprocess_about.html">About Preprocessing</a></dd>
+</dl>
+<hr>
+<a href="credits.html"><small>Legal Notices</small></a> 
+</body>
+</html>

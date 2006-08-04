@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Creating a Java ME Web Services Client (JSR 172)</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>Creating a Java ME Web Services (JSR-172) Client </h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+
+<p>With the Web Services Client wizard, you can create stub (client proxy) files 
+  and a sample client MIDlet that directly calls a Web Service using the Simple 
+  Object Access Protocol. The code stubs and sample MIDlet use a Web Service Descriptor 
+  Language (WSDL) file and implement the 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_jsr172.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="JSR-172">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+  Web Services Specification. </p>
+  
+<ul class="note">
+  <li>Before you begin, you must already have a WS-I compliant, WSDL file available 
+    on your system or at a location that can be reached through the HTTP protocol.<strong> 
+    </strong>You must also have a device or device emulator that supports the 
+    JSR-172 specification. </li>
+</ul>
+  
+<strong>To create the Web Services Client: </strong> 
+<ol>
+  <li> Right-click on a project node and choose New File/Folder.</li>
+  <li>In the New File wizard, choose MIDP under Categories. Under File Types, 
+    choose J2ME Web Service Client. Click Next. </li>
+  <li>Identify the <code>.wsdl</code> file location for the Web service to be 
+    added to the project. 
+    <ul>
+      <li>If the WSDL service is on the Web: 
+        <ol>
+          <li>Choose Running Web Service and enter a URL for the <code>.wsdl</code> 
+            file and enter a local filename for the retrieved <code>.wsdl</code> 
+            file. </li>
+          <li>If you are behind a firewall, click Proxy Settings to designate 
+            the appropriate HTTP host and port.</li>
+          <li>Click Retrieve WSDL to get a local copy of the <code>.wsdl</code> 
+            file. <br>
+            The IDE downloads the <code>.wsdl</code> file. </li>
+        </ol>
+      </li>
+    </ul>
+    <ul>
+      <li>If you have a <code>.wsdl</code> file on your system, select Existing 
+        WSDL File and enter a file name. </li>
+    </ul>
+    <p>The WSDL file is retrieved and the rest of the fields on the page are filled 
+      with default names derived from the WSDL file name.</p>
+  </li>
+  
+  <ul class="note">
+    <li>The message "WSDL file is not WS-I compliant as required by the specification," 
+      indicates that the client cannot be generated with the selected WSDL file. 
+      To solve this problem, you can change the style of the WSDL file (see the 
+      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="Web Services Interoperability Organization">
+        <param name="text" value="<html><u>http://www.ws-i.org</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+      </object>
+      website). Another option is to use the <a href="wcw_creating.html">Mobile 
+      Client to Web Application Generator</a> to create a &quot;three-tier&quot; 
+      Web services connection.</li>
+  </ul>
+  <li>Press Finish. <br>
+    The IDE creates an opened settings file and generates the client stubs. </li>
+</ol>
+<ul class="note">
+  <li>In some situations, you might need to convert CLDC 1.1 types to CLDC 1.0 
+    types, which means Float and Double types are converted to String variables. 
+    To make the conversion, select the &#8220;Convert floating point to String&#8221; 
+    checkbox on the <a href="wcw_updatingjsr172.html">Settings file</a> and click 
+    the Generate Stubs button. </li>
+  <li>If you are behind a firewall, there is no public setting available for the 
+    HTTPS proxy within NetBeans. To work around this, run the IDE from the command 
+    line with the command <code>-J-DhttpsProxy.host</code> and <code>-J-DhttpsProxy.port, 
+    </code>or add the proxy settings into the <code>/etc/netbeans.conf</code> 
+    file.</li>
+  <li>The generated files should not be edited. Any changes made to the files 
+    are lost when you update them with the <a href="wcw_updatingjsr172.html">Settings 
+    file</a>. </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="wcw_creating.html">Connecting MIDP Applications to Web Services</a></dd>
+    <dd><a href="wcw_updatingjsr172.html">Updating  Java ME Web Services Clients</a></dd>
+</dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

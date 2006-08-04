@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>About MIDP Project Configurations</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>About MIDP Project Configurations</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>One of the most difficult aspects of developing applications for mobile devices is 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_devicefragmentation.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="device fragmentation">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+. Mobile devices often differ in a variety of attributes, such as screen size
+or color depth, and many  support proprietary or optional APIs. These differences
+can require special code or project settings. To solve this problem, the IDE
+supports <em>project configurations</em>. </p>
+<p>A project configuration enables you to define an execution environment for 
+  each device you want to run your application on. With project configurations 
+  and <a href="preprocess_about.html">preprocessing</a>, you can write a single 
+  application and create, customize, and deploy a separate distribution JAR for 
+  multiple devices.</p>
+<p>You should create one configuration for each distribution JAR you plan to build 
+  for your project. For example, if you are planning to support three different 
+  screen sizes using two sets of vendor specific APIs, you should create six configurations. 
+</p>
+<p>Properties that are defined in a project configuration include: </p>
+<ul>
+  <li><a href="../properties/prop_setplatform.html">emulator platform</a></li>
+  <li><a href="../properties/prop_setplatform.html">specific emulator device</a></li>
+  <li><a href="../properties/prop_setplatform.html">supported version</a> of the 
+    Connected Limited Device Configuration (CLDC)</li>
+  <li><a href="../properties/prop_setplatform.html">supported version</a> of the 
+    Mobile Information Device Platform (MIDP)</li>
+  <li>supported <a href="../properties/prop_setplatform.html">optional APIs</a></li>
+  <li><a href="../properties/prop_addAPI.html">API permissions</a></li>
+  <li><a href="../properties/prop_setpushregistry.html">push registry</a> entries</li>
+  <li><a href="../properties/prop_setobfuscation.html">obfuscation level</a></li>
+  <li><a href="../properties/prop_customizesecurity.html">security domains and 
+    signing</a></li>
+  <li><a href="../properties/prop_setjavadoc.html">javadoc generation</a></li>
+  <li><a href="../deploy/about_deployment.html">deployment options</a></li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="config_working.html">Working with Project Configurations</a></dd>
+<dd><a href="config_customizing.html">Customizing Project Configurations</a></dd>
+<dd><a href="config_quickref.html">Java ME MIDP Project Configuration Tasks: Quick Reference</a></dd>
+<dd><a href="config_templatecreating.html">Creating a   MIDP Project Configuration Template</a></dd>
+<dd><a href="abilities_about.html">About Abilities</a></dd>
+<dd><a href="abilities_add.html">Adding Abilities and Associating Configurations</a></dd>
+<dd><a href="preprocess_about.html">About Prepocessing</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

@@ -1,0 +1,201 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>MIDP Visual Designer Tasks: Quick Reference</title>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</head>
+
+<body>
+<h2>Visual Mobile Designer Tasks: Quick Reference</h2>
+<p>
+This topic describes common tasks you can perform in the Visual Mobile Designer
+  (VMD).</p>
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th scope="col" align="left">To perform this task</th>
+    <th scope="col" align="left">Follow these steps</th>
+  </tr>
+  <tr valign="top"> 
+    <td> Create a new project that uses the VMD.</td>
+    <td> <ol>
+        <li>Choose File &gt; New Project. <br>
+          This opens the New Project wizard.</li>
+        <li>Under Categories, Choose Mobile. Under Projects, choose the Mobile 
+          Application <a href="../projects/proj_templates.html">template</a>.</li>
+        <li>In the Name and Location page, check the Create Hello MIDlet checkbox.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Create a file within a project that uses the VMD.</td>
+    <td><ol>
+        <li>Choose File &gt; New File. <br>
+          This opens the New File wizard.</li>
+        <li>Under Categories, Choose MIDP. Under File Types, choose either the 
+          Visual MIDlet or Hello Visual MIDlet <a href="../projects/proj_templates.html">template</a>. 
+        </li>
+        <li>In the Name and Location page, specify the name and location for the 
+          new MIDlet. </li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Open the Flow Designer</td>
+    <td><ol>
+        <li>Open or create a visual design document. </li>
+        <li>Click the <a href="../ui/mvd_flowdesigner.html">Flow Design</a> button 
+          in the Designer toolbar.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Open the Screen Editor</td>
+    <td><ol>
+        <li>Open or create a visual design document. </li>
+        <li>Click the <a href="../ui/mvd_screendesigner.html">Screen Design</a> 
+          button in the Designer toolbar.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Open the Action Editor</td>
+    <td><ul>
+        <li>Double-click on a command line within the <a href="../ui/mvd_flowdesigner.html">Flow 
+          Designer</a> window.</li>
+        <li>Click the Edit button in the Assigned Commands pane of the <a href="../ui/mvd_screendesigner.html">Screen 
+          Designer</a>. </li>
+        <li>Click on the Ellipsis button in the <a href="../ui/mvd_properties.html">Action 
+          Properties</a> in the Properties window.</li>
+      </ul></td>
+  </tr>
+  <tr valign="top">
+    <td>Locate unguarded (editable) code</td>
+    <td><ul>
+        <li>Right-click on a component or transition in the Flow Designer, or 
+          a form in the Screen Designer, and choose Go To Source. <br>
+          The Source Editor opens and the cursor is placed at the first line of 
+          unguarded code (code that can be edited) that defines that component, 
+          transition, or form. </li>
+      </ul>
+      <p>Note that shaded code is &quot;guarded&quot; code, and can not be edited.</p></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add a UI screen to the Flow Designer</td>
+    <td><ul>
+        <li>Select a component from the Screens category of the Component Palette 
+          and drag it into the Flow Design window.</li>
+      </ul></td>
+  </tr>
+  <tr valign="top"> 
+    <td> Change the size of a Device Screen</td>
+    <td><ul>
+        <li>Right-click on a Device Screen in the Screen Design window and choose 
+          Set Screen Size. <br>
+          This opens a dialog where you can set the height and width of the device 
+          screen in pixels. </li>
+      </ul></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add commands to the application flow</td>
+    <td><ol>
+        <li>Select a command from the Commands category of the Component Palette 
+          and drag it on to the screen from where the command will be initiated.</li>
+        <li>Drag a line from the command to a target component. </li>
+        <li>Optionally, double-click on a line to open the Action Editor.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Redesign the layout in the Flow Designer</td>
+    <td><ul>
+        <li>With the Flow Designer open, hold down the CTRL button. <br>
+          Each command line angle and intersection point becomes a red square 
+          that can be dragged vertically or horizontally to redesign the layout. 
+        </li>
+      </ul></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Convert application design to other MIDP version</td>
+    <td><ul>
+        <li>Right-click on an object in the Flow Designer and choose Convert to 
+          MIDP <em>&lt;version number&gt;</em>. This converts all components in 
+          the VMD to the selected MIDP version. Note that if you convert from 
+          MIDP 2.0 to MIDP, components and settings that are not compatible with 
+          MIDP 1.0 are deleted from the design. </li>
+        <li>You can reverse the conversion by right-clicking on an object and 
+          choosing Undo.</li>
+      </ul></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add custom components to the Component Palette</td>
+    <td><ol>
+        <li>Ensure the class you want to use is in your project's classpath.</li>
+        <li>Right-click in the Component Palette and choose Palette Manager. 
+          <br>
+          The Palette Manager opens.</li>
+        <li>Click the Add From Project button. </li>
+        <li>Select the project that contains the object you want to add to the 
+          Component Palette. Click next.</li>
+        <li>Select any objects you want to add from the list of Found MIDP Classes. 
+        </li>
+        <li>Choose a category from the Add to Category drop-down menu. <br>
+          The wizard will add the components to the selected category in the Component 
+          Palette. </li>
+        <li>Optionally, check the Show Components from Libraries option to add 
+          class components from the libraries and resources of the project. <br>
+          <ul class="note">
+            <li>Some components listed might be used by the emulator for internal 
+              processes, and therefore can not be added to your application. </li>
+          </ul>
+        </li>
+        <li>Click Close to add the components.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Save a screenshot of your flow design</td>
+    <td><ul>
+        <li>Right-click in the Flow Design window and choose Export Flow Image.<br>
+          The IDE creates a graphic file in the .Portable Networks Graphics (PNG) 
+          format that you can save on your system. </li>
+      </ul></td>
+  </tr>
+  <!-- <tr valign="top">
+    <td>Delete a project.</td>
+    <td><ol><li>In the 
+	<a href="../aboutprojects.html">Project Navigator</a>, 
+	display the <a href="../../ui_elements/project_nav/projectlogical.html">logical view</a> of the project.</li>
+    <li>Right-click the project and choose <a href="delete_project.html">Delete</a>.</li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+    <td> Delete items from a project. </td>
+    <td>
+      <ol>
+        <li>In the <a href="../aboutprojects.html">Project Navigator</a>, display the 
+		<a href="../../ui_elements/project_nav/projectlogical.html">logical view</a> of the project. </li>
+        <li>Right-click the item to delete and choose <a href="add_remove_object.html">Delete</a>. </li>
+    </ol></td>
+  </tr> -->
+  <!--<tr valign="top">
+    <td> Rename a project.</td>
+    <td><ol>
+      <li>In the <a href="../aboutprojects.html">Project Navigator</a>, display the 
+	  <a href="../../ui_elements/project_nav/projectlogical.html">logical view</a> of the project. </li>
+      <li>Right-click the item to rename and choose <a href="rename_project.html">Rename</a>. </li>
+      <li>Enter the new name and click OK.</li>
+    </ol></td>
+  </tr> -->
+</table>
+<hr>
+<small><a href="../projects/getstarted/credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

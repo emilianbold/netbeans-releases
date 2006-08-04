@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.mobility.antext
+OpenIDE-Module-Specification-Version: 1.2.0
+OpenIDE-Module-Layer: org/netbeans/mobility/antext/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/mobility/antext/Bundle.properties

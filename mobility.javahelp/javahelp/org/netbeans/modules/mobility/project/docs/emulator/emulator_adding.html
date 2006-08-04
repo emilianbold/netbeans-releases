@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Adding Emulator Platforms</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>Adding Emulator Platforms</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>Adding  an 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_emulator.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="emulator platform">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>
+  to the IDE enables you to create 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+  <param name="content"
+value="../glossary/gloss_deviceconfiguration.html">
+  <param name="viewerActivator"
+value="javax.help.LinkLabel">
+  <param name="viewerStyle" value="javax.help.Popup">
+  <param name="viewerSize" value="400,160">
+  <param name="text" value="project configurations">
+  <param name="textFontFamily" value="SansSerif">
+  <param name="textFontSize" value="small">
+  <param name="textFontWeight" value="bold">
+  <param name="textFontStyle" value="italic">
+  <param name="textColor" value="blue">
+</object>
+and use that platform for compilation, execution and debugging within the IDE.Through
+the Java Platform Manager, you can add both custom and <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_uei.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="UEI">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>-compliant emulator
+platforms. </p>
+<p><strong>To add a UEI-compliant emulator platform: </strong></p>
+<ol>
+  <li>Choose Tools &gt; Java
+    Platform Manager.</li>
+  <li>Click the Add Platform button.</li>
+  <li>Choose Java Micro Edition Platform Emulator. Click Next.<br>
+  The wizard searches your system and compiles a list of all available Java
+      ME platforms. 
+    The wizard indicates which platforms:
+    <ul>
+      <li> have already been installed.</li>
+      <li>are available for installation. Indicated by a box with a check in
+        it.</li>
+      <li>cannot be installed. Indicated in red. You might be able to install
+        these platforms as custom (non-UEI) platforms. </li>
+    </ul>
+  </li>
+  <p>If the platform you want to install is not listed in the page, click on
+    the Find More Java ME Platforms and navigate to the directory where the platform
+    is installed. </p>
+  <li>Put a check in the checkboxes of the platforms you want install. Click
+  Next. <br>
+  The chosen platforms are installed. 
+  </LI>
+</ol>
+<p><strong>To add a non-UEI-compliant emulator platform: </strong></p>
+<ol>
+  <li>Choose Tools &gt; Java Platform Manager.</li>
+  <li>Click the Add Platform button.</li>
+  <li>Choose Custom Java Micro Edition Platform Emulator. Click Next.</li>
+  <li>In the General Information page, specify the following information:
+    <ul>
+      <li>The directory where the platform is located.</li>
+      <li>Syntax for preverify, execution, and debugger commands</li>
+      </ul>       
+          <li>In the Bootstrap Libraries page, add any additional libraries used
+            by the emulator. </li>
+          <li>Inthe Sources and Javadoc page, add any additional source files
+            and Javadoc used by the emulator. Click Finish to add the emulator. </li>
+</ol>
+<p>The process of adding emulator platforms is examined in more detail in the
+  article, 
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+  <param name="content" value="http://www.netbeans.org/kb/50/tutorial-j2mefragmentation-50.html">
+  <param name="text" value="<html><u>J2ME MIDP Device Fragmentation Tutorial</u></html>">
+  <param name="textFontSize" value="medium">
+  <param name="textColor" value="blue">
+</object> 
+  .</p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="emulator_about.html">About Emulator Platforms</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>MIDP Project Properties: Filtering</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>MIDP Project Properties: Sources Filtering</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the Sources Filtering properties page to determine the files and packages 
+  that are included in a JAR file for a specific 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_deviceconfiguration.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="project configuration">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>
+.</p>
+<p>You open the Sources Filtering properties page by choosing File &gt; <em>&lt;active 
+  project name&gt;</em> Properties. In the Project Properties dialog, select Build 
+  &gt; Sources Filtering.</p>
+<ul class="note">
+  <li>
+    If you are setting the properties for a project
+      configuration other than the default configuration (<code>DefaultConfiguration</code>),
+      you must uncheck the Use Values from &quot;DefaultConfiguration&quot; checkbox
+    at the top of the page to customize these options.</li>
+  </ul>
+<p>The Filtering page lets you set the following options:</p>
+<ul>
+  <li><strong>Exclude Files That Ant Excludes By Default. </strong>If checked,
+    files that are defined by Ant to be excluded by default (version control
+    files
+    and folders)
+    are
+    excluded from the JAR file.</li>
+  <li><strong>Exclude Test Sources. </strong>If checked, tests and
+    test packages are excluded from the JAR file. </li>
+</ul>
+<p>To see the list of files excluded by these two options, hold the cursor over
+  the option. The tooltip lists the files to be excluded. </p>
+<p>The Sources Used in Build window provides a file tree where you can identify 
+  files and packages to be included or excluded from the JAR file. Top level nodes 
+  are top level sources and packages. All files and packages are selected by default.</p>
+<p><strong>To include or exclude an item from the build:</strong></p>
+<ul>
+  <li>All items are included by default. Expand the nodes and uncheck the boxes
+    next to the files or packages you want to exclude. </li>
+</ul>
+<dl> 
+    <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="nbdocs:/org/netbeans/modules/usersguide/ant/ant_intro.html">Working with Ant </a>
+  </dd>
+</dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

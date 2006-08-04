@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Deploying a MIDlet Suite Using SCP</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>Deploying a MIDlet Suite Using SCP or SFTP</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>You can set the properties of your project to automatically deploy your MIDlet 
+  suite. You can use the Secure Client Protocol (SCP) or Secure File Transfer 
+  Protocol (SFTP) deployment methods to establish a secure connection and encrypt 
+  the data before passing the data between the client and server. </p>
+<ul class="note">
+<li>If you are setting the properties for a
+        <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+          <param name="content"
+value="../glossary/gloss_deviceconfiguration.html">
+          <param name="viewerActivator"
+value="javax.help.LinkLabel">
+          <param name="viewerStyle" value="javax.help.Popup">
+          <param name="viewerSize" value="400,160">
+          <param name="text" value="project configuration">
+          <param name="textFontFamily" value="SansSerif">
+          <param name="textFontSize" value="small">
+          <param name="textFontWeight" value="bold">
+          <param name="textFontStyle" value="italic">
+          <param name="textColor" value="blue">
+        </object>
+      other than the default configuration (<code>DefaultConfiguration</code>),
+      you must uncheck the Use Values from &quot;DefaultConfiguration&quot; checkbox
+      at the top of the page.</li>
+  </ul>
+<p><strong>To deploy a MIDlet suite using the SCP protocol:</strong></p>
+<ol>
+  <li>Choose File &gt; <em>&lt;active project name&gt;</em> Properties. </li>
+  <li>In the Project Properties dialog, select the Deploying node from the Category 
+    tree. </li>
+  <li>Choose SCP from the Select Deployment Method drop-down menu.</li>
+  <li>Optionally, you can customize theURL for the JAR file by checking the Override 
+    JAR URL in JAD and entering a custom value. </li>
+  <li>Enter the following information to specify the target location on the remote 
+    server:</li>
+  <ul>
+    <li><strong>Server.</strong> Name or IP address of the target server. </li>
+    <li><strong>Target Directory.</strong> Location on the server where the MIDlet 
+      suite is to be sent. </li>
+    <li><strong>Port. </strong>The server's SCP connection port. </li>
+    <li><strong>User Name:</strong> The name for the SCP login. </li>
+  </ul>
+  <li>Choose between using password and key authentication. </li>
+  <ul>
+    <li><strong>Use Password Authentication.</strong> Enter a password that is 
+      required when the MIDlet is deployed.</li>
+    <li><strong>Use Key Authentication.</strong> Asks you to identify a key file 
+      and passphrase that is required when the MIDlet is deployed. You create 
+      and manage key files and their passwords in the <a href="../ui/projectprop_signing.html">MIDP 
+      Project Properties: Signing page</a>. </li>
+    <li>Right-click on the project and choose Deploy Project. </li>
+  </ul>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="about_deployment.html">About Deployment</a></dd>
+<dd><a href="../security/signing_about.html">About MIDP Signing and Security</a></dd>
+<dd><a href="../security/signing_createkeystore.html">Creating a New Keystore</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

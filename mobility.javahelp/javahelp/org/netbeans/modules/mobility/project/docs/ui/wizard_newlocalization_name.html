@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>New Localization Support Class Wizard: Name and Location Page</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>New Localization Support Class Wizard:<br>
+Name and Location Page</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>You open the New Localization Support Class wizard by choosing File &gt; New 
+  File. Then select MIDP under Categories and Localization Support Class under 
+  File Types.</p>
+<p>In the  Name and Location page,
+  you tell the wizard how to create the two key files necessary for localization: </p>
+<ul>
+  <li>a Java class with the code that initializes localization</li>
+  <li>a properties file where message keys and their localized values are stored. </li>
+</ul>
+<p>In this page, you specify the following properties:</p>
+<ul>
+  <li><strong>Class Name.</strong> Specifies the name of the new Java class that 
+    provides the code for localization. </li>
+  <li><strong>Messages Bundle Name.</strong> Specifies the name of the file that 
+    is used to store message keys and their values for localization.</li>
+  <li><strong>Project. </strong>Shows the name of the project selected in the 
+    previous step. this field is not editable. </li>
+  <li><strong>Package. </strong>Shows the location of the created Java class. 
+    You can select an existing package from the Combo Box, or type in the name 
+    of a new package. The new package is created along with the class file when 
+    it is created. This field is not editable.</li>
+  <li><strong>Created Class File.</strong> Shows the full path and name of the 
+    localization support class name. The name is based on the values entered in 
+    the Localization Support Class Name and Package fields.</li>
+  <li><strong>Created Bundle File.</strong> Shows the location of the created 
+    bundle file. The file name is based on the values entered in the Messages 
+    Bundle Name and Package fields. The filename has the default extension <code>.properties</code>.</li>
+  <li><strong>Default String Value.</strong> Specifies the default text that displays 
+    in the MIDlet when localization is not successfully initialized. </li>
+  <li><strong>Error Message.</strong> Specifies a default error message that displays 
+    when the localization is not successfully initialized. </li>
+</ul>
+<p>Click Finish to complete the wizard and create the files. </p>
+<ul class="note">
+  <li>See <a href="../l10n/l10n_addsupport.html">Adding Localization Support to 
+    a MIDP Application</a> for further steps you need to take to localize your 
+    application.</li>
+</ul>
+<dl> 
+    <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../l10n/l10n_addsupport.html">Adding Localization
+          Support to a MIDP Application</a></dd>
+  <dd>        <a href="../l10n/l10n_about.html">About Java ME MIDP Localization</a></dd>
+        </dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

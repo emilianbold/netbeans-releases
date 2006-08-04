@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Creating a New Key Pair</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+<h2>Creating a New Key Pair</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>Signing a MIDlet suite allows MIDP devices to verify the integrity and origins
+of your MIDlet suite. To sign a MIDlet suite, you use the Signing Properties
+  page to assign or create a <em>key
+pair</em>: </p>
+<ul>
+  <li>A private key that is used to create a digital signature, or certificate. </li>
+  <li>A public key that can be used by anyone to verify the authenticity of the
+    signature. </li>
+</ul>
+<p>You can then export the key pair to the emulator platform you are using for
+  testing.</p>
+<p><strong>To create a new key pair:</strong></p>
+<ol>
+  <li>Choose File &gt; <em>&lt;active project name&gt;</em> Properties. In the 
+    Project Properties dialog, select Build &gt; Signing.</li>
+  <li>Check the Sign Distribution checkbox to enable signing. </li>
+  <li>Choose a keystore from the Keystore drop-down menu. <br>
+    The Security certificate details of the selected keystore 
+    <ol>
+      <li>If no keystore is available, or you want to create a new keystore, click 
+        the Open Security Manager button.<br>
+        This opens the <a href="../ui/dialog_securitymanager.html">Security Manager 
+        dialog</a>. </li>
+      <li>Choose a keystore from the left window of the dialog, or click Add Keystore 
+        to create a new keystore.<br>
+        Then close the Security manager.</li>
+    </ol>
+  </li>
+  <li>Choose an alias from the Alias keystore drop-down menu. The menu lists the 
+    available <a href="signing_about.html">aliases</a> for the selected keystore. 
+    <br>
+    You can create new aliases in the <a href="../ui/dialog_securitymanager.html">Security 
+    Manager dialog</a>. </li>
+  <li>If necessary, click the unlock buttons to make the keystore and alias available 
+    for use. </li>
+  <li>Click the Export Key into Java ME SDK/Platform/Emulator button to export 
+    a key into the emulator platform you intend to use to test the MIDlet.</li>
+</ol>
+<p>For more information about key pairs and keystores, see</p>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+  <param name="content" value="http://java.sun.com/j2se/1.4.2/docs/tooldocs/windows/keytool.html">
+  <param name="text" value="<html><u>http://java.sun.com/j2se/1.4.2/docs/tooldocs/windows/keytool.html</u></html>">
+  <param name="textFontSize" value="medium">
+  <param name="textColor" value="blue">
+</object>
+.
+<dl><dt><a name="seealso">See Also</a></dt>
+<dd><a href="../properties/prop_customizesecurity.html">Setting Security through MIDlet Signing</a></dd>
+<dd><a href="signing_about.html">About MIDP Signing and Security</a></dd>
+<dd><a href="signing_createkeystore.html">Adding or Creating a Keystore</a></dd>
+<dd><a href="signing_setdomain.html">Setting the Security Domain</a> </td></dd>
+</dl>
+
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

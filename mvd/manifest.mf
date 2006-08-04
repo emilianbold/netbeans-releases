@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.mvd
+OpenIDE-Module-Specification-Version: 1.1.0
+OpenIDE-Module-Layer: org/netbeans/modules/mvd/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mvd/resources/Bundle.properties
+
+Name: org/netbeans/modules/mvd/io/DesignDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.mobility.editor.pub.J2MEDataObject
+
+Name: org/netbeans/modules/mvd/model/registry/ComponentInfoDataObject$ComponentInfoDataLoader.class
+OpenIDE-Module-Class: Loader

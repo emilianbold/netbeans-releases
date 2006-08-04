@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
+ * Use is subject to license terms.
+-->
+<html>
+
+<head>
+
+<title>Updating Java ME Web Services Client Files</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>Updating  Java ME Web Services Client Files</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+
+<p>You can use the <a href="wcw_updatingjsr172.html">J2ME Web Services Client 
+  wizard</a> or the<a href="wcw_wsdl.html"> Mobile Client to Web Application Generator</a> 
+  to create a MIDP client/server connection. </p>
+<p>After you have created the client and connection files, you can not manually 
+  edit them. You can, however, regenerate them with different settings using the 
+  Settings file, which is displayed in the Editor after you generate the the original 
+  application, or when you open the Settings file in the Editor window. </p>
+<p><strong>To open the  Settings file: </strong></p>
+<p>In the Files or Projects window, expand the project and double-click on the 
+  appropriate node (<code>.wsclient file</code>). <br>
+The Web Services Settings File opens in the Editor window. </p>
+<p><strong>To make changes in the generated files:</strong></p>
+<p>You can change the selection of services the application uses, and edit any
+  of the following fields: </p>
+<ul>
+  <li><strong>Client Information.</strong> This information cannot be edited. 
+  </li>
+  <li><strong>Client Options: </strong>
+    <ul>
+      <li><strong>Generate stubs. </strong>Generates stub methods on the client for
+        each exported service. Method names are incorporated in the class name. Using<tt> HelloService</tt> for
+        example, the <tt>sayHello()</tt> method is exported. The generated stub method
+        creates a method on the client called <tt>example_HelloService_sayHello().</tt> If
+      this option is not selected, only one method is generated on the client.</li>
+      <li><strong>Generate grouped calls. </strong>Generates additional code
+        to support making multiple calls to server-side services in a single
+        HTTP request or
+        response. When turned on with the Generate Stub Methods option also turned
+        on, a generated method is created on the client for each exported service
+        with the stub method name ending in <tt>Grouped</tt>. Using <tt>HelloService</tt> for
+        example, the <tt>sayHello()</tt> method is exported. The generated stub
+        method<br>
+        creates a method on the client called <tt>example_HelloService_sayHelloGrouped()</tt>.
+        <p> When the option is selected, the server is called only after several
+          grouped calls are made and the <tt>getGroupedResults() </tt>method on the
+          client class is called. All the method calls are invoked in a single HTTP
+          request and response. Methods are invoked in the order they were called.
+          Results are returned in an enumeration object. </p>
+        <p>If a server call causes an exception, the exception is thrown when <tt>getGroupedResults()</tt> is
+          called. When an exception is thrown in a sequence of grouped calls, the calls
+          following the exception are not processed. </p>
+      </li>
+      <li><strong>Allow floating point.</strong> Activates support for float and
+        double data types.</li>
+      <li><strong>Generate tracing code.</strong> Generates tracing code that
+        provides runtime information during the execution of remote calls. Client
+        tracing
+        output goes to the MIDP implementation standard output. Server tracing
+        output goes to the server log file. Turn this option on to generate versions
+        of
+        client and server tracing code to help you if connection problems occur
+        between the client and the server. </li>
+    </ul>
+  </li>
+  <li>If you  need to convert CLDC 1.1 types
+        to CLDC 1.0 types, you will need to convert Float and Double types to
+        String variables. To make the conversion, check the Convert Floating
+          Point to
+        String checkbox  in the settings panel. (This field might not be available
+    in all instances.)</li>
+</ul>
+<p><strong>To regenerate the application: </strong></p>
+<ul>
+  <li>Click the Generate Stubs button to regenerate the stub classes.</li>
+</ul>
+<ul class="note">
+  <li>If you have deleted or updated the local WSDL file, you also need to refresh 
+    the WSDL file. </li>
+</ul>
+<p><strong>To refresh the WSDL file:</strong></p>
+<ul>
+<li>Click the Refresh WSDL button. <br>
+  If you have changed the WSDL file, you will be asked to if you want to change
+  your local WSDL file and update the stub files. </li></ul>
+<ul class="note"> <li>If you are using a proxy server, you must set the proxy by choosing Tools>Options
+    in the Main Menu.</li></ul>
+<ul class="note">
+  <li>If you are regenerating a three-tier application (an application generated 
+    by the Mobile Client to Web Application Generator), you will need to build 
+    and re-deploy the application. </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="wcw_creating.html">Connecting MIDP Applications to Web Services</a></dd>
+  <dd><a href="wcw_jsr172.html">Creating a Java ME Web Services (JSR-172) Client 
+    </a></dd>
+  <dd> <a href="wcw_wsdl.html">Creating a Three-Tier Mobile Web Services Client 
+    </a></dd>
+  <dt>&nbsp;</dt>
+</dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

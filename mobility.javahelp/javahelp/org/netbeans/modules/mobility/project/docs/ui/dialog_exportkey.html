@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>Export Key</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>Export Key</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the Export Key dialog to export  a key pair and its corresponding certificate
+  to an <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content"
+value="../glossary/gloss_emulator.html">
+      <param name="viewerActivator"
+value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,160">
+      <param name="text" value="emulator platform">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontSize" value="small">
+      <param name="textFontWeight" value="bold">
+      <param name="textFontStyle" value="italic">
+      <param name="textColor" value="blue">
+    </object>.</p>
+<p>You open the Export Key dialog from the <a href="projectprop_signing.html">Signing</a> 
+  page of the project properties and clicking the Export Key into Java ME SDK/Platform 
+  Emulator button, or from the <a href="dialog_securitymanager.html">Security 
+  Manager</a> dialog by selecting a keystore and clicking the Export button.</p>
+<p>The Export dialog has the following components: </p>
+<ul>
+  <li><strong>Keystore File. </strong>Shows the name of the keystore file to
+    which the key pair belongs.<strong> </strong>This field cannot be edited. </li>
+  <li><strong>Key Pair Alias. </strong>The name given to the key pair within
+  the keystore. This field cannot be edited.</li>
+<li><strong>Certificate
+    Details. </strong>Shows the details of the certificate
+    of the key to be exported. </li>
+  <li><strong>Platform.</strong> Enables you to select the the key is to be exported 
+    to emulator platform. The drop-down menu lists all the emulator platforms 
+    available. </li>
+  <li><strong>Security Domain. </strong>Enables you to select a security domain
+    for the key pair. The menu lists all domains supported
+    by
+    the selected
+      emulator platform. </li>
+  <li><strong>Keys Registered in the Platform. </strong>Lists all keys that have
+    been registered in the selected platform. </li>
+  <li><strong>Delete Key. </strong>Enables you to delete a key you select from
+    the Keys Registered in Platform window.</li>
+  <li><strong>Export. </strong>Exports a key to the selected emulator.</li>
+</ul>
+<dl><dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../security/signing_exportkey.html">Exporting a Key to an Emulator Platform</a></dd>
+  <dd><a href="../properties/prop_customizesecurity.html">
+      Setting
+        Security through MIDlet Signing </a></dd>
+ <dd>      <a href="../security/signing_about.html">About MIDP Signing and Security</a></dd>
+  <dd>     <a href="../security/signing_createkeystore.html">Adding or Creating a
+      Keystore</a></dd>
+  <dd>     <a href="../security/signing_createkeypair.html">Creating a New Key Pair</a> </dd>
+  </dd>
+</dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

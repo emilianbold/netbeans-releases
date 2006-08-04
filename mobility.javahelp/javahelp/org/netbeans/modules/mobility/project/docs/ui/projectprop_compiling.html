@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>MIDP Project Properties: Compiling</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>MIDP Project Properties: Compiling</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the Compiling properties page to set compiling options for a <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_deviceconfiguration.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="project configuration">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>.</p>
+<p>You open the Compiling properties page by choosing File &gt; <em>&lt;active 
+  project name&gt;</em> Properties. In the Project Properties dialog, select Build 
+  &gt; Compiling.</p>
+<p>If you are setting the properties for a project configuration other than the
+  default configuration (<code>DefaultConfiguration</code>), you must uncheck
+  the Use Values from &quot;DefaultConfiguration&quot; checkbox at the top of
+the page to customize these options.</p>
+<p>This page enables you to set the following options:</p>
+<ul>
+  <li><strong>Generate Debugging Info.</strong> If checked, the compiler generates 
+    line numbers and source files information. This is the <code>-g</code> option 
+    in javac. If unchecked, no debugging information is generated (the<code> -g:none</code> 
+    option in javac). </li>
+  <li><strong>Compile with Optimization. </strong>If checked, the compiled application 
+    is optimized for execution. This is the <code>-O</code> option in javac. Optimizing 
+    can slow down compilation, produce larger class files, and make the program 
+    difficult to debug.</li>
+  <li><strong>Report Uses of Deprecated APIs. </strong>If checked, the compiler 
+    lists each use or override of a deprecated member or class. This is the -deprecated 
+    option in javac. If unchecked, the compiler shows only the names of source 
+    files that use or override deprecated members or classes.</li>
+  <li><strong>Encoding.</strong> Overrides default encoding used by preprocessor 
+    and compiler. The default value is the default encoding used by your JVM and 
+    IDE.</li>
+  <li><strong>Debug Block Level.</strong> Sets the debug level for the <code>//#debug</code> 
+    and <code>//#mdebug</code> <a href="../configuration/preprocessor_directives_about.html">preprocessor 
+    directives</a>. If you enter a unique value for the level (for example, <code>debug_graphics</code>), 
+    the preprocessor allows only debug blocks that exactly match the debug block 
+    (for this example, <code>//#debug debug_graphics</code>). All other debug 
+    blocks are commented out.<br>
+    If you choose a pre-defined level from the drop-down menu, the preprocessor 
+    comments out debug blocks on lower levels, as defined by the following hierarchy: 
+    <ul>
+      <li><code>fatal</code> (most exclusive)</li>
+      <li><code>error</code></li>
+      <li><code>warn</code></li>
+      <li><code>info</code></li>
+      <li>debug (most inclusive)</li>
+    </ul>
+    <p>For example, if you choose <code>warn</code>, all<code> info</code> and 
+      <code>debug</code> blocks will be commented out. </p>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../projects/proj_creating.html">Creating MIDP Projects</a></dd>
+  <dd> <a href="../configuration/config_working.html">Working with Project Configurations</a> 
+  <dd><a href="nbdocs:/org/netbeans/modules/usersguide/ant/ant_intro.html"> Working 
+    with Ant</a></dd>
+  <dd><a href="../configuration/preprocess_about.html">About Preprocessing</a></dd>
+  <dd><a href="../configuration/preprocessor_directives_about.html">About Preprocessor 
+    Directives</a></dd>
+</dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

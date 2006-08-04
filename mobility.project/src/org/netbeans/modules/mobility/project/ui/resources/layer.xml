@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Project">
+            <file name="org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.Actions.buildAllConfigurationsAction"/>            
+            </file>
+            
+            <file name="org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.Actions.rebuildAllConfigurationsAction"/>            
+            </file>
+
+            <file name="org-netbeans-modules-project-support-ActiveConfigAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.support.ActiveConfigAction"/>            
+            </file>
+        </folder>
+    </folder>        
+
+
+    <folder name="Menu">
+        
+        <folder name="BuildProject">
+            <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/org-netbeans-modules-project-support-ActiveConfigAction.shadow" boolvalue="true"/>
+            
+            <file name="org-netbeans-modules-project-support-ActiveConfigAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-support-ActiveConfigAction.instance"/>
+            </file>
+        
+            <attr name="org-netbeans-modules-project-support-ActiveConfigAction.shadow/SeparatorMainProject.instance" boolvalue="true"/>
+        
+            <attr name="SeparatorMainProject.instance/org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.shadow" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.instance"/>
+            </file>
+            
+            <attr name="org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.shadow/org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.shadow" boolvalue="true"/>            
+
+            <file name="org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.instance"/>
+            </file>
+            
+            <attr name="org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.shadow/SeparatorBuildAllMainProject.instance" boolvalue="true"/>            
+
+            <file name="SeparatorBuildAllMainProject.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="SeparatorBuildAllMainProject.instance/org-netbeans-modules-project-ui-JavadocProject.shadow" boolvalue="true"/>
+        </folder>
+            
+        <folder name="Tools">
+            <attr name="LibrariesCustomizerAction.instance/SecurityManagerAction.instance" boolvalue="true"/>
+            <file name="SecurityManagerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Toolbars">
+    
+        <folder name="Build">            
+            <file name="org-netbeans-modules-project-support-ActiveConfigAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-support-ActiveConfigAction.instance"/>
+            </file>
+        
+            <attr name="org-netbeans-modules-project-support-ActiveConfigAction.shadow/org-netbeans-modules-project-ui-BuildMainProject.shadow" boolvalue="true"/>
+    
+        </folder>
+                
+    </folder>
+
+    <folder name="Services">
+        <file name="org-netbeans-modules-mobility-project-security-KeyStoreRepository.settings" url="/org/netbeans/modules/mobility/project/ui/resources/KeyStoreRepository.settings">
+            <attr boolvalue="true" name="hidden"/>
+        </file>
+    </folder>
+
+    <folder name="WarmUp">
+        <file name="org-netbeans-modules-mobility-project-security-KeyStoreRepositoryWarmUp.instance"/>
+    </folder>
+
+    <folder name="Templates">
+        <folder name="Project">
+            <attr name="Standard/J2ME" boolvalue="true"/>
+            <attr name="Web/J2ME" boolvalue="true"/>
+            <attr name="J2EE/J2ME" boolvalue="true"/>
+            <attr name="J2ME/Samples" boolvalue="true"/>
+
+            <folder name="J2ME">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/j2meProjectCategory.html"/>
+
+                <attr name="MobileApplication/MobileLibrary" boolvalue="true"/>
+                <attr name="MobileLibrary/j2me-sources" boolvalue="true"/>
+                <attr name="j2me-sources/j2me-wtk" boolvalue="true"/>
+                <attr name="j2me-wtk/j2me-suite" boolvalue="true"/>
+
+                <file name="MobileApplication">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.NewProjectIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/emptyProject.html"/>
+                    <attr boolvalue="true" name="application"/>
+                </file>
+
+                <file name="MobileLibrary">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.NewProjectIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/emptyLibrary.html"/>
+                </file>
+
+                <file name="j2me-sources">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.imports.SourcesIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.imports.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/j2me-sources.html"/>
+                </file>
+
+                <file name="j2me-suite">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.imports.SuiteIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.imports.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/j2me-suite.html"/>
+                </file>
+
+                <file name="j2me-wtk">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.imports.WtkIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.imports.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/j2me-wtk.html"/>
+                </file>
+
+            </folder>
+
+        </folder>
+        
+        <attr boolvalue="true" name="Package/MIDP"/>
+        <attr boolvalue="true" name="MIDP/Classes"/>
+        <folder name="MIDP">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
+            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/descriptions/MIDP/MIDP.html"/>
+            <attr name="MIDP" boolvalue="true"/>
+            <attr name="templateCategory" stringvalue="MIDP"/>
+
+            <file name="Midlet.java" url="templates/MIDP/MIDlet_java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/descriptions/MIDP/MIDlet_java.html"/>
+                <attr boolvalue="true" name="template"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
+                <attr boolvalue="true" name="isMIDletTemplate"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
+            </file>
+
+            <attr name="Midlet.java/MIDPCanvas.java" boolvalue="true"/>
+            <file name="MIDPCanvas.java" url="templates/MIDP/MIDPCanvas_java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/descriptions/MIDP/MIDPCanvas_java.html"/>
+                <attr boolvalue="true" name="template"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
+            </file>
+
+            <attr name="MIDPCanvas.java/LocalizationSupport.java" boolvalue="true"/>
+            <file name="LocalizationSupport.java" url="templates/MIDP/LocalizationSupport_java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.i18n.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/descriptions/MIDP/LocalizationSupport.html"/>
+                <attr boolvalue="true" name="template"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.i18n.LocalizationSupportIterator.singleton"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
+             </file>
+            <file name="LocalizationSupport.properties" url="templates/MIDP/LocalizationSupport_properties.template">
+                <!--
+                <attr boolvalue="true" name="template"/>
+                -->
+             </file>             
+            
+        </folder>
+        
+    </folder>
+        
+    <folder name="Buildsystem">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="build.xml" url="nbresloc:/org/netbeans/modules/mobility/project/resources/build.xsl"/>
+            <folder name="nbproject">
+                <folder name="build-impl.xml">
+                    <file name="xxx" url="nbresloc:/org/netbeans/modules/mobility/project/resources/build-impl.xsl"/>
+                </folder>    
+            </folder>  
+<!--
+             <folder name="test.xml">
+                <file name="target1">
+                    <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:project="http://www.netbeans.org/ns/project/1" xmlns:xalan="http://xml.apache.org/xslt" exclude-result-prefixes="xalan project"><xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/><xsl:template match="/">
+<xsl:comment>target1 depends on __DEPENDS__</xsl:comment>]]>
+                </file>
+                <attr name="target1/target2" boolvalue="true"/>
+                <file name="target2">
+                    <![CDATA[<xsl:comment>target2 depends on __DEPENDS__</xsl:comment>]]>
+                </file>
+                <attr name="target2/target3" boolvalue="true"/>
+                <folder name="target3">
+                    <file name="target3a">
+                        <![CDATA[<xsl:comment>target3a depends on __DEPENDS__</xsl:comment>]]>
+                    </file>
+                    <file name="target3b">
+                        <![CDATA[<xsl:comment>target3b depends on __DEPENDS__</xsl:comment>]]>
+                    </file>
+                    <file name="target3c">
+                        <![CDATA[<xsl:comment>target3c depends on __DEPENDS__</xsl:comment>]]>
+                    </file>
+                </folder>
+                <attr name="target3/target4" boolvalue="true"/>
+                <file name="target4">
+                    <![CDATA[<xsl:comment>target4 depends on __DEPENDS__</xsl:comment>]]>
+                </file>
+                <attr name="target4/target5" boolvalue="true"/>
+                <file name="target5">
+                    <![CDATA[<xsl:comment>target5 depends on __DEPENDS__</xsl:comment></xsl:template></xsl:stylesheet>]]>
+                </file>
+            </folder>
+-->
+       </folder>
+    </folder>    
+            
+    <folder name="Customizer">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="general">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/general.gif"/>
+                <file name="general">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerGeneral"/>
+                </file>
+            </folder>
+            <attr name="general/Platform" boolvalue="true"/>
+            <folder name="Platform">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/midp.gif"/>
+                <file name="CLDC">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDP"/>
+                </file>
+            </folder>
+            <attr name="Platform/Abilities" boolvalue="true"/>
+            <folder name="Abilities">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/midp.gif"/>
+                <file name="Abilities">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities"/>
+                </file>
+            </folder>
+            <attr name="Abilities/Jad" boolvalue="true"/>
+            <folder name="Jad">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/jad.gif"/>
+                <file name="Attributes">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJad"/>
+                </file>
+                <attr name="Attributes/MIDlets" boolvalue="true"/>
+                <file name="MIDlets">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDlets"/>
+                </file>
+                <attr name="MIDlets/PushReg" boolvalue="true"/>
+                <file name="PushReg">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerPushReg"/>
+                </file>
+                <attr name="PushReg/Permissions" boolvalue="true"/>
+                <file name="Permissions">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerPermissions"/>
+                </file>
+            </folder>
+            <attr name="Jad/Build" boolvalue="true"/>
+            <folder name="Build">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/build.gif"/>
+                <folder name="Filtering">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/filtering.gif"/>
+                    <file name="Filtering">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                        <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerFiltering"/>
+                    </file>
+                </folder>
+                <attr name="Filtering/Javac" boolvalue="true"/>
+                <folder name="Javac">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/build.gif"/>
+                    <file name="Javac">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                        <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerCompile"/>
+                    </file>
+                </folder>
+                <attr name="Javac/Libraries" boolvalue="true"/>
+                <folder name="Libraries">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/libraries.gif"/>
+                    <file name="Libraries">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                        <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerLibraries"/>
+                    </file>
+                </folder>
+                <attr name="Libraries/Obfuscate" boolvalue="true"/>
+                <folder name="Obfuscate">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/obfuscate.gif"/>
+                    <file name="ProGuard">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                        <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerObfuscate"/>
+                    </file>
+                </folder>
+                <attr name="Obfuscate/Jar" boolvalue="true"/>
+                <folder name="Jar">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/jar.gif"/>
+                    <file name="Jar">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                        <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJar"/>
+                    </file>
+                </folder>
+                <attr name="Jar/Sign" boolvalue="true"/>
+                <folder name="Sign">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/sign.gif"/>
+                    <file name="Sign">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                        <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerSign"/>
+                    </file>
+                </folder>
+                <attr name="Sign/Javadoc" boolvalue="true"/>
+                <folder name="Javadoc">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/javadoc.gif"/>
+                    <file name="Javadoc">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                        <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJavadoc"/>
+                    </file>
+                </folder>
+            </folder>
+            <attr name="Build/Run" boolvalue="true"/>
+            <folder name="Run">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/run.gif"/>
+                <file name="Run">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun"/>
+                </file>
+            </folder>
+            <attr name="Run/Deploy" boolvalue="true"/>
+            <folder name="Deploy">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/deploy.gif"/>
+                <file name="Deploy">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerDeploy"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

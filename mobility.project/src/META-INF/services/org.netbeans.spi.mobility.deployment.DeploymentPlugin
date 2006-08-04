@@ -1,0 +1,4 @@
+org.netbeans.modules.mobility.project.deployment.NoneDeploymentPlugin
+#position=1
+org.netbeans.modules.mobility.project.deployment.CopyDeploymentPlugin
+#position=10

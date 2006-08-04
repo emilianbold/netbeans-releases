@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>Add/Edit Push Registry Entry</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>Add/Edit Push Registry Entry</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the Add/Edit Push Registry dialog to add or edit a push registry entry
+  for a project configuration.</p>
+<p>You open the Add/Edit Attribute dialog by clicking the Add or Edit buttons
+  in the <a href="projectprop_pushregistry.html">Push Registry page</a> of the
+Project Properties.</p>
+<p><strong>To add a push registry entry:</strong></p>
+<ol>
+  <li>Open the Push Registry properties page.</li>
+  <li> Click Add to add a new MIDlet, and provide the following information in
+    the Add Push Registry Entries dialog:</li>
+  <ul>
+    <li><strong> Class Name.</strong> The MIDlet's class name. </li>
+    <li><strong>Sender IP.</strong> A valid sender that can launch the
+      associated MIDlet. If the value is the wildcard (<code>*</code>), connections
+      from any source are accepted. If datagram or socket connections are used,
+      the value of Allowed Sender can be a numeric IP address.</li>
+    <li><strong>Connection Strin<b>g.</b></strong> A connection string that identifies
+      the connection protocol and port number.</li>
+  </ul>
+</ol>
+<p>A push registration key is automatically generated and shown as an attribute
+in the MIDlet suite's Java Application Descriptor (JAD) file. 
+<ul class="note"><li>To make use of the Push Registry,
+      you must have permission to access the Push Registry API,<code> javax.microedition.io.PushRegistry</code>.
+      API permissions are handled in the <a href="projectprop_apipermissions.html">API
+      Permissions</a> page of the Project
+      Properties. </li>
+    </ul>
+<p>Each key designation is unique and of the form <code>MIDlet-Push-&lt;n&gt;</code>,
+  where <code>&lt;n&gt;</code> begins at 1 and is incrementally increased with
+  each registration. A MIDlet suite can have multiple push registrations.
+
+<p><strong>To edit a push registry entry:</strong> </p>
+<ol>
+  <li>Open the Push Registry properties page.</li>
+  <li>Click the Edit button. </li>
+  <li>In the Edit Push Registry dialog, edit the fields as described above.</li>
+</ol>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../properties/pushregistry_about.html">About Push Registry</a></dd>
+  <dd>      <a href="projectprop_pushregistry.html">MIDP Project Properties: Push Registry page</a></dd>
+   <dd>     <a href="../deploy/about_ota.html">About Over-The-Air (OTA) Provisioning
+        </a> </dd>
+    </dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

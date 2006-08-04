@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>About API Permissions</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>About API Permissions</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>If your MIDlet suite needs to access certain protected APIs (for example,
+  network connections), the MIDP 2.0 security architecture requires that the
+  connection grant permission for access. Required permissions are listed in
+the Java Application Descriptor (JAD) file with the attribute <code>MIDlet-Permissions. </code></p>
+<p>You can also define optional permissions to limit access to sensitive data
+  or functionality with the attribute <code>MIDlet-Permissions-Opt.</code> </p>
+<p>During MIDlet suite installation, the <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_midp.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="MIDP">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+     compares
+  the permissions requested with the permissions in the destination protection
+  domain. If the required permissions can not be granted, the application will
+  not be installed. </p>
+<p>During execution, if a required permission is denied, an exception is returned.
+  If an optional permission is denied, the application might continue to function,
+  although its functionality would be limited. </p>
+<p>You can set the permission requests from the <a href="../ui/projectprop_apipermissions.html">API
+    Permissions</a> page of the Project
+  Properties.</p>
+<p>For more information about API Permissions, see &quot;Security for MIDP Applications&quot; in
+  the
+MIDP 2.0 (JSR-118) specification, available at: </p>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+  <param name="content" value="http://jcp.org/aboutJava/communityprocess/final/jsr118/index.html">
+  <param name="text" value="<html><u>http://jcp.org/aboutJava/communityprocess/final/jsr118/index.html</u></html>">
+  <param name="textFontSize" value="medium">
+  <param name="textColor" value="blue">
+</object>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="prop_addAPI.html">Adding API Permissions</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

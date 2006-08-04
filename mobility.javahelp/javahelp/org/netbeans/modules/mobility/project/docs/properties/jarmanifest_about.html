@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>About JAR Manifest Files</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>About JAR Manifest Files</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>The JAR manifest is a text file included with a MIDlet suite. The manifest
+provides information about the contents of the JAR file. </p>
+<p>In Java Studio Mobility, you can edit the JAR Manifest file in the Suite Editor.</p>
+<p>The manifest contains the following attributes: </p>
+<ul>
+  <li><code>MIDlet-Name</code>.<b> </b>The name of the MIDlet suite that identifies
+    the MIDlets to the user.</li>
+  <li><code>MIDlet-Version.</code> The version number of the MIDlet suite. The
+    application management software uses the version number for install actions
+    and upgrades, as well as communication with the user. </li>
+  <li><code>MIDlet-Vendor.</code><b> </b>The organization that provides the MIDlet
+    suite.</li>
+  <li><code>MicroEdition-Profile.</code> The Java ME profile required, using the
+    same format and value as the system property<tt> microedition.profiles</tt> (for
+    example, <tt>MIDP-1.0</tt>).</li>
+  <li><code>MicroEdition-Configuration.</code><b> </b>The Java ME configuration
+    required, using the same format and value as the System property <tt>microedition.configuration</tt> (for
+    example, <tt>CLDC-1.0</tt>).</li>
+  <li><code>MIDlet-n<n></code>. The name, icon, and class of each MIDlet in the
+    JAR file, separated by a comma.
+      <ul>
+        <li>Name identifies this MIDlet to the user.</li>
+        <li>Icon is the name of an image (PNG) within the JAR that is an icon
+          for each MIDlet. </li>
+        <li>Class is the name of the class extending the MIDlet class for each
+          MIDlet. </li>
+      </ul>
+  </li>
+</ul>
+<ul class="note">
+<li>Unlike the other attributes, which are automatically
+      generated, you must set the <code>MIDlet-n</code> attribute as a property
+      of a pointer MIDlet node or by adding MIDlets to the suite.</li>
+  </ul>
+<p>Optional information that might be contained in the manifest includes: </p>
+<ul>
+  <li><code>MIDlet-Description.</code> The description of the MIDlet suite.</li>
+  <li><code>MIDlet-Icon.</code> The name of a PNG file within the JAR file and
+    used to represent the MIDlet suite. The application management software displays
+    this icon to identify the suite. </li>
+  <li><code>MIDlet-Info-URL.</code> A URL for information further describing
+    the MIDlet suite. </li>
+  <li><code>MIDlet-Data-Size.</code> The minimum number of bytes of persistent
+    data required by the MIDlet. The device might provide additional storage
+    according to its own policy. The default is zero. </li>
+</ul>
+<p>MIDP 2.0 applications may also include the following information in the manifest:</p>
+<ul>
+  <li><code>MIDlet-Permissions:</code> Lists API permissions that are critical
+    to the operation of the MIDlet suite.</li>
+  <li><code>MIDlet-Permissions-Opt:</code> Lists API permissions that might be
+    used but are not critical to the operation of the MIDlet suite. </li>
+  <li><code>MIDlet-Extensions:</code> Lists optional APIs used by the MIDlet
+    suite.</li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="prop_set_jad.html">Customizing the Application Descriptor File</a></dd>
+<dd><a href="jad_about.html">About Java Application Descriptor (JAD) Files</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

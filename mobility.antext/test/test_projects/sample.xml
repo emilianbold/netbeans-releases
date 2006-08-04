@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="changeme" default="all" basedir=".">
+    <property name="ant.test.lib" value="ant-testutil.jar"/>
+    <property name="report.dir"   value="report"/>
+    <property name="junit.out.dir.xml"  value="${report.dir}/junit/xml"/>
+    <property name="junit.out.dir.html" value="${report.dir}/junit/html"/>
+    
+    <target name="hello">
+        <echo message="Hello!"/>
+    </target>
+    
+    <target name="path">
+        <echo message="The path is ${java.class.path}"/>
+    </target>
+    
+    <target name="all" depends="hello, path">
+        <!-- TODO define script. See Help menu or http://ant.apache.org/ -->
+    </target>
+</project>

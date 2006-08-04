@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Managing Preprocessor Blocks</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>Managing  Preprocessor Blocks</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+<p>Preprocessor code blocks enable you to manage <a href="preprocess_about.html">preprocessor
+    directives</a> as you insert them into your code. These
+  code blocks are marked visually in the Source Editor and are included (or excluded)
+  when you
+build the JAR for a specific project configuration or ability. You can use
+    these code blocks to create, manage and track code that is specific to one
+or more <a href="config_about.html">project configurations</a> or <a href="abilities_about.html">abilities</a>.</p>
+<p>In the IDE, you can do the following:</p>
+<ul>
+  <li><a href="#add">Add</a> preprocessor blocks.</li>
+  <li><a href="#change">Change</a> a preprocessor block's association with <a href="config_about.html">configurations</a> 
+    or <a href="abilities_about.html">abilities</a>.</li>
+</ul>
+  <p><strong><a name="add"></a>To add a preprocessor block to your source code:</strong> </p>
+  <ol>
+    <li>Select and a line or block of code and right-click on it<br>
+      Then choose from the following:
+        <ul>
+          <li><strong>Create &lt;<em>nested</em>&gt; If/Else Block.</strong> Creates
+              a conditional If/Else expression for the default configuration or you
+            can use code completion to choose other configurations. </li>
+          <li><strong>Add Elif Block Section.</strong> Creates a conditional <code>#elif</code> expression
+                within an IF/Else block. </li>
+          <li><strong>Create Debug Block.</strong> Determines if the line following
+                  the directive should be commented or uncommented based on the
+            debug level set in the project properties.</li>
+        </ul>
+    </li>
+    <li>Use the Editor to enter code within the code blocks.</li>
+  </ol>
+  <p><a name="change"></a><strong>To change a preprocessor block's association:</strong></p>
+<ol>
+  <li>Click to the right of a preprocessor directive (signified by the characters <code>//#</code>).</li>
+  <li>Type Ctrl-Space and choose a configuration or ability from the code completion
+    drop-down menu.</li>
+</ol>
+<dl>
+
+ <dt><a name="seealso">See Also</a></dt>
+<dd><a href="config_about.html">About Project Configurations</a></dd>
+ <dd>         <a href="abilities_about.html">About Abilities</a></dd>
+ <dd>         <a href="preprocess_about.html">
+        About Preprocessing</a></dd>     
+  <dd>      <a href="config_working.html">Working with Project Configurations</a><br>
+  <a href="preprocessor_directives_about.html">About Preprocessor Directives</a>  </dd>
+</dl>
+
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

@@ -1,0 +1,4 @@
+org.netbeans.modules.mobility.deployment.ftpscp.FtpDeploymentPlugin
+#position=20
+org.netbeans.modules.mobility.deployment.ftpscp.ScpDeploymentPlugin
+#position=30

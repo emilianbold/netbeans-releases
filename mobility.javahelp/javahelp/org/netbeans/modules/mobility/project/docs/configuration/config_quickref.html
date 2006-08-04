@@ -1,0 +1,158 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Java ME MIDP Project Configuration Tasks: Quick Reference</title>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</head>
+
+<body>
+<h2>Java ME MIDP Project Configuration Tasks: Quick Reference</h2>
+<p>This topic describes common tasks you can perform to create a Java ME MIDP 
+  project configuration. For more detailed information, click the links in the 
+  right column. </p>
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th width="105" align="left" scope="col">To perform this task</th>
+    <th width="418" align="left" scope="col">Follow these steps</th>
+  </tr>
+  <tr valign="top"> 
+    <td height="90"> Create a project configuration</td>
+    <td><ol>
+      <li>Right-click on a project in the Projects view and choose Properties. </li>
+      <li>Choose Add Configuration from the Project Configuration dropdown menu.</li>
+      <li>Enter a name in the New Configuration Name field. </li>
+      <li>Click OK.</li>
+    </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Create a project configuration template</td>
+    <td><ol>
+      <li>Right-click on a project in the Projects view and choose Properties.</li>
+      <li>Click Manage Configurations.</li>
+      <li>In the Project Configuration Manager, select a configuration and click
+          the Save as Template button. </li>
+      <li>In the Save Project as Configuration Template dialog, enter a name
+        for the template.</li>
+      <li>Click Save.</li>
+    </ol>      </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Use a template to create a new project configuration</td>
+    <td><ol>
+      <li>Right-click on a project in the Projects view and choose Properties. </li>
+      <li>Choose Add Configuration from the Project Configuration dropdown menu.</li>
+      <li>Select a template from the Use Configuration template dropdown menu.</li>
+      <li>Optionally, modify the name of the configuration in the New Configuration
+        Name field. </li>
+      <li>Click OK.</li>
+    </ol>      <p>&nbsp;</p></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Customize a configuration</td>
+    <td><ol>
+      <li>Right-click on a project in the Projects view and choose Properties. </li>
+      <li>Choose a property page from the Category menu page.</li>
+      <li>Uncheck the Use Values from &quot;DefaultConfiguration&quot;.</li>
+      <li>Modify the properties as desired.</li>
+    </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Set the active configuration</td>
+    <td><ul>
+      <li>Right-click on a project in the Projects view and choose Set Active Project
+          Configuration.</li>
+    </ul>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Create an ability and associate a configuration</td>
+    <td><ol>
+      <li>Right-click on a project in the Files view and choose Properties .</li>
+      <li>Choose the Abilities page from the Category menu tree.</li>
+      <li>Click the Add Ability button.<br>
+        This opens the Add Ability dialog.</li>
+      <li>In the Add Ability dialog, enter a name for the ability.<br>
+        Optionally, add a value for the ability.</li>
+      <li>Click Ok to close the Add Ability dialog.<br>
+          The ability is now associated with the selected project configuration.</li>
+    </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Associate an ability with a configuration.</td>
+    <td><ol>
+      <li>Right-click on a project in the Files view and choose Properties .</li>
+      <li>Choose the Abilities page from the Category menu tree.</li>
+      <li>Choose a configuration from the Project Configuration dropdown menu. <br>
+          This is the configuration with which the ability will be associated.        </li>
+      <ul>
+        <li>If necessary, uncheck the Use Values from &quot;DefaultConfiguration&quot; checkbox. </li>
+      </ul>
+      <li>Click the Add Ability button.<br>
+        This opens the Add Ability dialog.</li>
+      <li>Choose an ability from the list. Click OK.</li>
+    </ol>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td>Add a preprocessor block to your code.</td>
+    <td><ol>
+      <li>Place the cursor in the Source Editor, or select a line or block of
+            code. </li>
+        <li>Choose Edit &gt; Preprocessor Blocks. <br>
+          Then choose from the following:</li>
+      <ul>
+      <li><strong>Create &lt;<em>nested</em>&gt; If/Else Block.</strong> Creates
+        a conditional If/Else expression for the default configuration or you
+        can use code completion
+        to choose other configurations. </li>
+      <li><strong>Add Elif Block Section.</strong> Creates a conditional <code>#elif</code>        expression within an IF/Else block. </li>
+      <li><strong>Create Debug Block.</strong> Determines if the line following the directive
+        should be commented or uncommented based on the debug level set in the
+        project properties.</li>
+      </ul>
+    </ol></td>
+  </tr>
+  <!-- <tr valign="top">
+    <td>Delete a project.</td>
+    <td><ol><li>In the 
+	<a href="../aboutprojects.html">Project Navigator</a>, 
+	display the <a href="../../ui_elements/project_nav/projectlogical.html">logical view</a> of the project.</li>
+    <li>Right-click the project and choose <a href="delete_project.html">Delete</a>.</li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+    <td> Delete items from a project. </td>
+    <td>
+      <ol>
+        <li>In the <a href="../aboutprojects.html">Project Navigator</a>, display the 
+		<a href="../../ui_elements/project_nav/projectlogical.html">logical view</a> of the project. </li>
+        <li>Right-click the item to delete and choose <a href="add_remove_object.html">Delete</a>. </li>
+    </ol></td>
+  </tr> -->
+  <!--<tr valign="top">
+    <td> Rename a project.</td>
+    <td><ol>
+      <li>In the <a href="../aboutprojects.html">Project Navigator</a>, display the 
+	  <a href="../../ui_elements/project_nav/projectlogical.html">logical view</a> of the project. </li>
+      <li>Right-click the item to rename and choose <a href="rename_project.html">Rename</a>. </li>
+      <li>Enter the new name and click OK.</li>
+    </ol></td>
+  </tr> -->
+</table>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

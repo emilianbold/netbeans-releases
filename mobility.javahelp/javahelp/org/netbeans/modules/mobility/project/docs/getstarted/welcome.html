@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>Using the IDE Help System</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>About Java ME MIDP Applications</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>  A Java<sup><font size="-2">TM</font></sup> 2, Micro Edition platform (Java ME<sup><font size="-2">TM</font></sup>
+  Platform), Mobile Information Device Profile (
+    <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_midp.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="MIDP">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+    )
+   application is
+  an application targeted for mobile devices such as mobile phones, PDAs, and
+  two-way pagers. Such applications
+  conform
+  to both the  Connected, Limited Device Configuration ( <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_cldc.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="CLDC">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+   )
+and MIDP.</p>
+<p>A MIDP application, or &quot;MIDlet Suite,&quot; typically consists of:</p>
+<ul>
+  <li>A Java Application Descriptor (<object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_jad.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="JAD">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>) file. This file contains a predefined
+    set of attributes (denoted by names that begin with <tt>MIDlet-</tt>) that
+    allows Application Management Software (<object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_appmgmtsoftware.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="AMS">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>) to identify, retrieve, and install
+    the MIDlets. </li>
+  <li>A Java Archive (JAR) file. This contains:
+      <ul>
+        <li>Java classes for each MIDlet in the suite. </li>
+        <li> Java classes shared between MIDlets. </li>
+        <li>Resource files used by the MIDlets (for example, image files). </li>
+        <li>A manifest file describing the JAR contents and specifying attributes
+          used by the AMS to identify and install the MIDlet suite. </li>
+      </ul>
+  </li>
+</ul>
+<p>In the IDE, MIDlet Suites are managed as <a href="../projects/proj_working.html">mobility
+      projects</a>. Mobility projects are
+       executed through an <a href="../emulator/emulator_about.html">emulator
+       platform</a>, which simulates the execution of the application on a
+       specific mobile device. Using <a href="../configuration/config_about.html">project
+       configurations</a> and <a href="../configuration/preprocess_about.html">preprocessor
+       code blocks</a>, you can   define
+       conditions for multiple devices in a single set of code, enabling you
+  test and produce MIDlet suites for each device. </p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="support.html">How the  IDE supports Java ME MIDP Development</a></dd>
+<dd><a href="guides.html">Java ME MIDP Development Tutorials and Guides</a></dd>
+<dd><a href="../projects/proj_quickref.html">Java ME MIDP Application Tasks: Quick Reference</a></dd> 
+<dd><a href="../projects/proj_working.html">Working with MIDP Projects</a></dd>
+<dd><a href="../mvd/mvd_about.html">About the Visual Mobile Designer</a></dd>
+<dd><a href="../emulator/emulator_about.html">About Emulator Platforms</a></dd>
+<dd><a href="../configuration/config_about.html">About Project Configurations</a><br>
+  <a href="../configuration/preprocess_about.html">About Preprocessor Code Blocks</a></dd>
+</dl>
+<hr>
+<p><small><a href="credits.html">Legal Notices</a></small> </p>
+</body>
+</html>

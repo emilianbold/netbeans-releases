@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>Add Java Platform wizard: Platforms page</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+<h2>Add Java Platform Wizard:<br>
+  Platform Folders Page</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>The Add Java Platform wizard enables you to  register  Java platform
+  and
+Java ME, MIDP platform-compatible SDKs or 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_emulator.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="emulator platform">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>
+  , such as the Sun Java Wireless Toolkit, in the NetBeans IDE. Once you register 
+  a platform emulator, you can use 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_deviceconfiguration.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="project configurations">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object> 
+  to set that platform
+  for compilation, execution and debugging. </p>
+<p>The Add Java Platform wizard is opened by choosing Tools &gt; Java Platform 
+  Manager and clicking the Add Platform button. It is also called from the New 
+  MIDP Project wizard if there is no Java ME MIDP platform installed in the IDE. 
+</p>
+<p>In the Platforms page, the IDE searches for all emulator platforms installed 
+  on your system. All platforms that are compliant with the Unified Emulator Interface 
+  ( 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_uei.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="UEI">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>
+  ) standard are marked with a check. </p>
+<p>Emulator platforms that are listed in red cannot be installed for one of the 
+  following reasons:</p>
+<ul>
+  <li>The platform has not been installed on your system properly. <br>
+    Try re-installing the emulator platform.</li>
+  <li>A platform by that name is already installed. <br>
+    Rename one of the colliding platforms.</li>
+  <li>The platform is not UEI-compliant. <br>
+    If the platform is not UEI-complaint, it can be installed as described below.<br>
+  </li>
+</ul>
+<p>To install one or more UEI-compliant platforms: </p>
+<ul>
+  <li>Ensure that the check box is checked next
+        to each platform you want to install. Then click Finish. </li>
+</ul>
+<p>To install one or more non-UEI compliant platforms:</p>
+<ol>
+  <li>Click the Back button. </li>
+  <li>Choose Custom Java Micro Edition Platform Emulator.</li>
+  <li>Supply the information required.</li>
+</ol>
+<p>To add additional emulator platforms not detected by the wizard:</p>
+<ul>
+  <li>Click the Find More Java ME Platform Folders button, navigate to the directory 
+    of the platform, and click the Search button.<br>
+    If the emulator is UEI-compliant, it will be added to the list of platforms
+    you can install. </li>
+</ul>
+<dl><dt><a name="seealso">See Also</a></dt>
+   <dd><a href="../emulator/emulator_about.html">About Emulator
+        Platforms</a></dd>
+        <dd><a href="../emulator/emulator_adding.html">Adding Emulator Platforms</a></dd>      
+    </dl><hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

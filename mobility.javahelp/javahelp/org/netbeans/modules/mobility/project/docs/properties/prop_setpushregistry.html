@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Adding Push Registry Entries</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+<h2>Adding Push Registry Entries</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>The push registry allows MIDlets to be launched in response to an incoming
+  network connection. When a MIDlet registers for push notifications, the device
+  software is instructed to listen for incoming network connections and launch
+the MIDlet, if appropriate. </p>
+<ul class="note">
+  <li>Push registry configuration is only available for
+      projects whose profile version is set to MDP 2.0. For information on setting
+      the project profile version, see <a href="prop_setplatform.html">Customizing
+      Platform Properties</a>.</li>
+  </ul>
+<p><strong>To open the Push Registry Properties page:</strong></p>
+<ol>
+  <li>Choose File &gt; <em>&quot;active
+        project name&quot;</em> properties.<br>
+    This opens the Project Properties dialog.</li>
+  <li>Select Push Registry from the left pane.</li>
+</ol>
+<p><strong>To register a MIDlet in the push registry:</strong></p>
+<ol>
+  <li>Open the Push Registry properties page.</li>
+  <li> Click Add to add a new MIDlet, and provide the following information
+    in the Add Push Registry Entries dialog:</li>
+  <ul>
+    <li><strong> Cla<b>ss Name.</b></strong> The MIDlet's class name. </li>
+    <li><strong>Sender IP<b>.</b></strong> A valid sender that can launch
+      the associated MIDlet. If the value is the wildcard (<code>*</code>), connections
+      from any source are accepted. If datagram or socket connections are used,
+      the value of Allowed Sender can be a numeric IP address.</li>
+    <li><strong>Connection Strin<b>g.</b></strong> A connection string that identifies
+    the connection protocol and port number.</li>
+  </ul>
+</ol>
+<p>A push registration key is automatically generated and shown as an attribute
+  in the MIDlet suite's Java Application Descriptor (JAD) file. To view the JAD
+  file, choose the Application Descriptor Property settings from the left pane.
+<ul class="note">
+  <li>To make use of the Push Registry, you
+      must also have permission to access the Push Registry API,<code> javax.microedition.io.PushRegistry</code>.
+      API permissions are handled in the <a href="../ui/projectprop_apipermissions.html">API
+      Permissions</a> page of the Project Properties. </li>
+  </ul>
+<p>Each key designation is unique and of the form <code>MIDlet-Push-&lt;n&gt;</code>,
+  where <code>&lt;n&gt;</code> begins at 1 and is incrementally increased with
+  each registration. A MIDlet suite can have multiple push registrations.
+<p><strong>To edit a push registry entry:</strong> </p>
+<ol>
+  <li>Open the Push Registry properties page.</li>
+  <li>Click the Edit button. </li>
+  <li>In the Edit Push Registry dialog, edit the fields as described above.</li>
+</ol>
+<p><strong>To remove a push registry entry:</strong></p>
+<ol>
+  <li>Open the Push Registry properties page.</li>
+  <li>Select the Push Registry entry from the table and click the Remove button.</li>
+</ol>
+<p><strong>To change the order push registry entries are displayed:</strong></p>
+<ol>
+  <li>Open the Push Registry properties page.</li>
+  <li>Select a Push Registry entry from the list.</li>
+  <li>Click the Move Up or Move Down buttons.</li>
+</ol>
+<p>For more information about using the push registry, see</p>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://developers.sun.com/techtopics/mobility/midp/articles/pushreg/">
+    <param name="text" value="<html><u>http://developers.sun.com/techtopics/mobility/midp/articles/pushreg/</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="pushregistry_about.html">About Push Registry</a></dd>
+<dd><a href="../ui/projectprop_pushregistry.html">MIDP Project Properties:
+    Push Registry Page</a></dd>
+
+  </dl>
+
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

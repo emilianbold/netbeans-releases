@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>About MIDlets</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>About MIDlets</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>MIDP applications  are called <em>MIDlets</em>, as
+  are Java class files of a specific structure that are packaged with a descriptor
+  file (
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_jad.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="JAD">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>
+  ) and an archive file (JAR)  to comprise a <em>MIDlet
+  suite</em>.  </p>
+<p>Because the IDE manages MIDP applications as MIDP projects, the
+  IDE refers to <em>MIDlets</em> as the Java class files that are the basic units
+  of a MIDP application, or MIDlet Suite. </p>
+<p>A MIDlet extends the <code>javax.microedition.midlet.MIDlet </code>class and
+  defines methods that are invoked by the Application Management Software (
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_appmgmtsoftware.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="AMS">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>
+). </p>
+<p>The three abstract methods that define the MIDlet structure and lifecycle are: 
+</p>
+<ul>
+  <li><code>startApp()</code>. Begins the <em>active</em> state, where the MIDlet 
+    acquires necessary resources and initializes the application.</li>
+  <li><code>pauseApp()</code>. The MIDlet stops and enters a <em>paused</em> state. 
+    In this state, the MIDlet becomes inactive.<br>
+    The MIDlet may go between active and paused states any number of times. </li>
+  <li><code>destroyApp()</code>. The MIDlet enters the <em>destroyed</em> state. 
+    In this state, the MIDlet releases all resources, saves any persistent data, 
+    and terminates. </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="midlet_working.html">Working with Midlets</a><br>
+    <a href="../projects/proj_creating.html">Creating a MIDP Project</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

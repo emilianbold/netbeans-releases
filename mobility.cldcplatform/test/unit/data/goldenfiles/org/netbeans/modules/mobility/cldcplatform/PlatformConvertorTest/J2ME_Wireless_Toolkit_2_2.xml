@@ -1,0 +1,60 @@
+<?xml version='1.0'?>
+<!DOCTYPE platform PUBLIC '-//NetBeans//DTD J2ME PlatformDefinition 1.0//EN' 'http://www.netbeans.org/dtds/j2me-platformdefinition-1_0.dtd'>
+<platform name="J2ME_Wireless_Toolkit_2_2" home="C:\Documents and Settings\Manowar\.netbeans\5.0\emulators\wtk22_win\emulator\wtk22" type="UEI-1.0.1" displayname="J2ME Wireless Toolkit 2.2" srcpath="" docpath="${platform.home}/docs/api/j2me-rpc,${platform.home}/docs/api/j2me-xml,${platform.home}/docs/api/midp,${platform.home}/docs/api/mmapi,">
+    <device name="DefaultColorPhone" securitydomains="untrusted,trusted,minimum,maximum" description="DefaultColorPhone">
+        <optional name="JSR75" version="1.0" displayname="File Connection and PIM Optional Packages" classpath="${platform.home}/lib/jsr75.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="WMA" version="2.0" displayname="Wireless Messaging API" classpath="${platform.home}/lib/wma20.jar" dependencies="CLDC > 1.0, MIDP > 2.0" default="true"/>
+        <configuration name="CLDC" version="1.1" displayname="Connected Limited Device Configuration" classpath="${platform.home}/lib/cldcapi11.jar" dependencies="" default="true"/>
+        <optional name="JSR82" version="1.0" displayname="Java APIs for Bluetooth Wireless Technology" classpath="${platform.home}/lib/jsr082.jar" dependencies="CLDC" default="true"/>
+        <profile name="MIDP" version="1.0" displayname="Mobile Information Device Profile" classpath="${platform.home}/lib/midpapi10.jar" dependencies="CLDC > 1.0" default="false"/>
+        <optional name="JSR172" version="1.0" displayname="J2ME Web Services" classpath="${platform.home}/lib/j2me-ws.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="WMA" version="1.1" displayname="Wireless Messaging API" classpath="${platform.home}/lib/wma11.jar" dependencies="CLDC >= 1.0, MIDP >= 1.0" default="false"/>
+        <optional name="MMAPI" version="1.1" displayname="Mobile Media API" classpath="${platform.home}/lib/mmapi.jar" dependencies="CLDC > 1.0" default="true"/>
+        <profile name="MIDP" version="2.0" displayname="Mobile Information Device Profile" classpath="${platform.home}/lib/midpapi20.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="JSR184" version="1.0" displayname="Mobile 3D Graphics Optional Package" classpath="${platform.home}/lib/jsr184.jar" dependencies="CLDC > 1.0" default="true"/>
+        <configuration name="CLDC" version="1.0" displayname="Connected Limited Device Configuration" classpath="${platform.home}/lib/cldcapi10.jar" dependencies="" default="false"/>
+        <screen width="240" height="320" bitDepth="8" isColor="true" isTouch="false"/>
+    </device>
+    <device name="DefaultGrayPhone" securitydomains="untrusted,trusted,minimum,maximum" description="DefaultGrayPhone">
+        <optional name="JSR75" version="1.0" displayname="File Connection and PIM Optional Packages" classpath="${platform.home}/lib/jsr75.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="WMA" version="2.0" displayname="Wireless Messaging API" classpath="${platform.home}/lib/wma20.jar" dependencies="CLDC > 1.0, MIDP > 2.0" default="true"/>
+        <configuration name="CLDC" version="1.1" displayname="Connected Limited Device Configuration" classpath="${platform.home}/lib/cldcapi11.jar" dependencies="" default="true"/>
+        <optional name="JSR82" version="1.0" displayname="Java APIs for Bluetooth Wireless Technology" classpath="${platform.home}/lib/jsr082.jar" dependencies="CLDC" default="true"/>
+        <profile name="MIDP" version="1.0" displayname="Mobile Information Device Profile" classpath="${platform.home}/lib/midpapi10.jar" dependencies="CLDC > 1.0" default="false"/>
+        <optional name="WMA" version="1.1" displayname="Wireless Messaging API" classpath="${platform.home}/lib/wma11.jar" dependencies="CLDC >= 1.0, MIDP >= 1.0" default="false"/>
+        <optional name="JSR172" version="1.0" displayname="J2ME Web Services" classpath="${platform.home}/lib/j2me-ws.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="MMAPI" version="1.1" displayname="Mobile Media API" classpath="${platform.home}/lib/mmapi.jar" dependencies="CLDC > 1.0" default="true"/>
+        <profile name="MIDP" version="2.0" displayname="Mobile Information Device Profile" classpath="${platform.home}/lib/midpapi20.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="JSR184" version="1.0" displayname="Mobile 3D Graphics Optional Package" classpath="${platform.home}/lib/jsr184.jar" dependencies="CLDC > 1.0" default="true"/>
+        <configuration name="CLDC" version="1.0" displayname="Connected Limited Device Configuration" classpath="${platform.home}/lib/cldcapi10.jar" dependencies="" default="false"/>
+        <screen width="180" height="208" bitDepth="8" isColor="false" isTouch="false"/>
+    </device>
+    <device name="MediaControlSkin" securitydomains="untrusted,trusted,minimum,maximum" description="MediaControlSkin">
+        <optional name="JSR75" version="1.0" displayname="File Connection and PIM Optional Packages" classpath="${platform.home}/lib/jsr75.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="WMA" version="2.0" displayname="Wireless Messaging API" classpath="${platform.home}/lib/wma20.jar" dependencies="CLDC > 1.0, MIDP > 2.0" default="true"/>
+        <configuration name="CLDC" version="1.1" displayname="Connected Limited Device Configuration" classpath="${platform.home}/lib/cldcapi11.jar" dependencies="" default="true"/>
+        <optional name="JSR82" version="1.0" displayname="Java APIs for Bluetooth Wireless Technology" classpath="${platform.home}/lib/jsr082.jar" dependencies="CLDC" default="true"/>
+        <profile name="MIDP" version="1.0" displayname="Mobile Information Device Profile" classpath="${platform.home}/lib/midpapi10.jar" dependencies="CLDC > 1.0" default="false"/>
+        <optional name="JSR172" version="1.0" displayname="J2ME Web Services" classpath="${platform.home}/lib/j2me-ws.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="WMA" version="1.1" displayname="Wireless Messaging API" classpath="${platform.home}/lib/wma11.jar" dependencies="CLDC >= 1.0, MIDP >= 1.0" default="false"/>
+        <optional name="MMAPI" version="1.1" displayname="Mobile Media API" classpath="${platform.home}/lib/mmapi.jar" dependencies="CLDC > 1.0" default="true"/>
+        <profile name="MIDP" version="2.0" displayname="Mobile Information Device Profile" classpath="${platform.home}/lib/midpapi20.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="JSR184" version="1.0" displayname="Mobile 3D Graphics Optional Package" classpath="${platform.home}/lib/jsr184.jar" dependencies="CLDC > 1.0" default="true"/>
+        <configuration name="CLDC" version="1.0" displayname="Connected Limited Device Configuration" classpath="${platform.home}/lib/cldcapi10.jar" dependencies="" default="false"/>
+        <screen width="180" height="208" bitDepth="8" isColor="true" isTouch="false"/>
+    </device>
+    <device name="QwertyDevice" securitydomains="untrusted,trusted,minimum,maximum" description="QwertyDevice">
+        <optional name="JSR75" version="1.0" displayname="File Connection and PIM Optional Packages" classpath="${platform.home}/lib/jsr75.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="WMA" version="2.0" displayname="Wireless Messaging API" classpath="${platform.home}/lib/wma20.jar" dependencies="CLDC > 1.0, MIDP > 2.0" default="true"/>
+        <configuration name="CLDC" version="1.1" displayname="Connected Limited Device Configuration" classpath="${platform.home}/lib/cldcapi11.jar" dependencies="" default="true"/>
+        <optional name="JSR82" version="1.0" displayname="Java APIs for Bluetooth Wireless Technology" classpath="${platform.home}/lib/jsr082.jar" dependencies="CLDC" default="true"/>
+        <profile name="MIDP" version="1.0" displayname="Mobile Information Device Profile" classpath="${platform.home}/lib/midpapi10.jar" dependencies="CLDC > 1.0" default="false"/>
+        <optional name="WMA" version="1.1" displayname="Wireless Messaging API" classpath="${platform.home}/lib/wma11.jar" dependencies="CLDC >= 1.0, MIDP >= 1.0" default="false"/>
+        <optional name="JSR172" version="1.0" displayname="J2ME Web Services" classpath="${platform.home}/lib/j2me-ws.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="MMAPI" version="1.1" displayname="Mobile Media API" classpath="${platform.home}/lib/mmapi.jar" dependencies="CLDC > 1.0" default="true"/>
+        <profile name="MIDP" version="2.0" displayname="Mobile Information Device Profile" classpath="${platform.home}/lib/midpapi20.jar" dependencies="CLDC > 1.0" default="true"/>
+        <optional name="JSR184" version="1.0" displayname="Mobile 3D Graphics Optional Package" classpath="${platform.home}/lib/jsr184.jar" dependencies="CLDC > 1.0" default="true"/>
+        <configuration name="CLDC" version="1.0" displayname="Connected Limited Device Configuration" classpath="${platform.home}/lib/cldcapi10.jar" dependencies="" default="false"/>
+        <screen width="636" height="235" bitDepth="12" isColor="true" isTouch="false"/>
+    </device>
+</platform>

@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
+ * Use is subject to license terms.
+-->
+<html>
+
+<head>
+
+<title>Connecting MIDP Applications to Web Services</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+<h2>Connecting MIDP Applications to Web Services</h2>
+
+<p><small><a href="#seealso">See Also</a></small> 
+<p>Web services extend the availability of server-based applications and services 
+  to remote clients.</p>
+<p>Mobile client applications use the same <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/about/about_ws.html">Web 
+  services architecture</a> as do larger Java SE applications: </p>
+<ul>
+  <li>SOAP (Simple Object Access Protocol)</li>
+  <li>WSDL (Web Service Definition Language)</li>
+</ul>
+<p>The IDE enables you to create client MIDlets that can connect to Web services 
+  either through a direct &quot;two-tier&quot; architecture, or a &quot;three-tier&quot; 
+  architecture that connects to Web services through a middleware Web application. 
+</p>
+<p>The IDE provides two wizards for creating the connecting classes: </p>
+<ul>
+  <li><strong>The J2ME Web Service Client wizard. </strong><br>
+    Use this wizard if you want to use the 
+    <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content"
+value="../glossary/gloss_jsr172.html">
+      <param name="viewerActivator"
+value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,160">
+      <param name="text" value="JSR-172">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontSize" value="small">
+      <param name="textFontWeight" value="bold">
+      <param name="textFontStyle" value="italic">
+      <param name="textColor" value="blue">
+    </object>
+    Web Services specification to create a &quot;two-tier&quot; connection to 
+    Web services. This wizard creates stub (client-side proxy) files and, optionally, 
+    a sample client MIDlet that calls a web service. </li>
+  <ul class="note">
+    <li>You must have a device or emulator platform that supports the JSR-172 
+      specification to use this wizard.<br>
+    </li>
+  </ul>
+  <li><strong>The Mobile Client to Web Application Generator. </strong><br>
+    Use this wizard to create a &quot;three-tier&quot; connection to Web services 
+    if your devices do not support the JSR-172 Web Services specification. The 
+    wizard generates a servlet that connects to a web application that includes 
+    a web service client. </li>
+  <ul class="note">
+    <li> Before you use the Mobile Client to Web Application Generator, you must 
+      have a Web project that includes a Web service client.</li>
+  </ul>
+  <p><a name="seealso">See Also</a></p>
+</ul>
+<dl>
+  <dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/about/about_ws.html">About 
+    Web Services</a></dd>
+  <dd><a href="wcw_jsr172.html">Creating a Java ME Web Services (JSR-172) Client 
+    </a></dd>
+  <dd> <a href="wcw_wsdl.html">Creating a Three-Tier Mobile Web Services Client</a></dd>
+</dl>
+
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

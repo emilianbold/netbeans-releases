@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<AppContent version="2.0">
+<Configuration value="CLDC-1.0"/>
+<Profile value="MIDP-1.0"/>
+<FileSystem systemName="f:/prace/tests/sjs-projects/prj2">
+<File name="/"/>
+</FileSystem>
+<Filter common="Default" removeCvs="true"
+/>
+<Jar compressLevel="6" compress="true"/>
+<Descriptor descriptorType="jad"/>
+<Signing level="0" position="0"
+/>
+<Obfuscator obfuscated="false"/>
+<attribute order="1" jad="true" manifest="true">
+<required name="MicroEdition-Profile" value="MIDP-1.0" >
+<tooltip readonly="true"><![CDATA[J2ME device profile and version.]]></tooltip>
+</required></attribute>
+<attribute order="2" jad="true" manifest="true">
+<required name="MicroEdition-Configuration" value="CLDC-1.0" >
+<tooltip readonly="true"><![CDATA[J2ME device configuration and version.]]></tooltip>
+</required></attribute>
+<attribute order="3" jad="true" manifest="true">
+<required name="MIDlet-Version" value="1.0" >
+<tooltip readonly="true"><![CDATA[Version number of the MIDlet suite.]]></tooltip>
+</required></attribute>
+<attribute order="4" jad="true" manifest="true">
+<required name="MIDlet-Name" value="MIDletSuite" >
+<tooltip readonly="true"><![CDATA[Name]]></tooltip>
+</required></attribute>
+<attribute order="5" jad="true" manifest="true">
+<required name="MIDlet-Vendor" value="Lukas" >
+<tooltip readonly="true"><![CDATA[The organization that provides the MIDlet suite.]]></tooltip>
+</required></attribute>
+<attribute order="6" jad="true" manifest="false">
+<required name="MIDlet-Jar-URL" value="MIDletSuite.jar" >
+<tooltip readonly="false"><![CDATA[The URL from which the JAR file is loaded.]]></tooltip>
+</required></attribute>
+<attribute order="7" jad="true" manifest="false">
+<required name="MIDlet-Jar-Size" value="1610" >
+<tooltip readonly="false"><![CDATA[The size of the JAR in bytes.]]></tooltip>
+</required></attribute>
+<attribute order="8" jad="true" manifest="true">
+<optional name="MIDlet-Info-URL" value="" >
+<tooltip readonly="false"><![CDATA[A URL for information further describing the MIDlet suite.]]></tooltip>
+</optional>
+</attribute>
+<attribute order="9" jad="true" manifest="true">
+<optional name="MIDlet-Icon" value="" >
+<tooltip readonly="false"><![CDATA[Name of a PNG file used to represent the suite.]]></tooltip>
+</optional>
+</attribute>
+<attribute order="10" jad="true" manifest="true">
+<optional name="MIDlet-Description" value="" >
+<tooltip readonly="false"><![CDATA[The description of the MIDlet suite.]]></tooltip>
+</optional>
+</attribute>
+<attribute order="11" jad="true" manifest="true">
+<optional name="MIDlet-Delete-Confirm" value="" >
+<tooltip readonly="false"><![CDATA[Text to be shown on the device when the suite is deleted.]]></tooltip>
+</optional>
+</attribute>
+<attribute order="12" jad="true" manifest="true">
+<optional name="MIDlet-Install-Notify" value="" >
+<tooltip readonly="false"><![CDATA[URL to be notified when suite is installed on a device.]]></tooltip>
+</optional>
+</attribute>
+<attribute order="13" jad="true" manifest="true">
+<optional name="MIDlet-Delete-Notify" value="" >
+<hidden/>
+<tooltip readonly="false"><![CDATA[URL to be notified when suite is deleted from a device.]]></tooltip>
+</optional>
+</attribute>
+<attribute order="14" jad="true" manifest="true">
+<optional name="MIDlet-Data-Size" value="" >
+<tooltip readonly="false"><![CDATA[The minimum number of bytes of persistent data required by the MIDlet.]]></tooltip>
+</optional>
+</attribute>
+<attribute order="15" jad="true" manifest="true">
+<permission name="">
+<hidden/>
+</permission>
+</attribute>
+<attribute order="16" jad="true" manifest="true">
+<permission-opt name="">
+</permission-opt>
+</attribute>
+<attribute order="17" jad="true" manifest="true">
+<midlet name="HelloMIDlet" class="HelloMIDlet" icon="" order="1">
+</midlet>
+</attribute>
+<attribute order="18" jad="true" manifest="true">
+<midlet name="MIDlet" class="Midlet" icon="" order="2">
+</midlet>
+</attribute>
+</AppContent>

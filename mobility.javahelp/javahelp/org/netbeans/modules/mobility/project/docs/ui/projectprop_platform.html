@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>MIDP Project Properties: Platform</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>MIDP Project Properties: Platform</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>You can view and modify the <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_emulator.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="emulator platform">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object> properties of a <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_deviceconfiguration.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="project configuration">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+  by choosing File &gt; <em>&lt;active project name&gt;</em> properties. In the 
+  Project Properties dialog, select Platform. The active project configuration 
+  is listed in the drop-down menu at the top of the Project Properties dialog. 
+</p>
+<p>You can set the following properties in this property sheet:</p>
+<ul>
+  <li><strong>Use Values from &quot;DefaultConfiguration&quot;.</strong> If checked, 
+    the emulator platform properties of the <code>DefaultConfiguration</code> 
+    project configuration are used and you cannot modify any properties on this 
+    page. If unchecked, you are able to modify properties on this page. </li>
+  <li><strong>Emulator Platform.</strong> Selects the emulator platform from all 
+    platforms that have been added to the IDE. Clicking on the Manage Emulators 
+    button opens the <a href="../properties/prop_setplatform.html">Java Platform 
+    Manager</a>, where you can: 
+    <ul>
+      <li>Add or remove available platforms</li>
+      <li>View the platform classpath</li>
+      <li> Add or remove platform source files</li>
+      <li>Add or remove java documentation sources</li>
+      <li>Use tools and extensions provided by the emulator</li>
+    </ul>
+  <li><strong>Device.</strong> Selects the device emulator the IDE will use to 
+    simulate application performance when the project is executed. The drop-down 
+    menu lists all device emulators available on the selected emulator platform. 
+  </li>
+  <li><strong>Device Configuration.</strong> Version of the Connected, Limited 
+    Device Connection ( 
+    <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content"
+value="../glossary/gloss_cldc.html">
+      <param name="viewerActivator"
+value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,160">
+      <param name="text" value="CLDC">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontSize" value="small">
+      <param name="textFontWeight" value="bold">
+      <param name="textFontStyle" value="italic">
+      <param name="textColor" value="blue">
+    </object>
+    ) supported by the emulator platform. If the selected platform supports both 
+    configurations, you can choose CLDC-1.0 to test your application's performance 
+    on devices that only support CLDC 1.0. </li>
+  <li><strong>Device Profile.</strong> Version of the Mobile Information Device 
+    Profile ( 
+    <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content"
+value="../glossary/gloss_midp.html">
+      <param name="viewerActivator"
+value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,160">
+      <param name="text" value="MIDP">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontSize" value="small">
+      <param name="textFontWeight" value="bold">
+      <param name="textFontStyle" value="italic">
+      <param name="textColor" value="blue">
+    </object>
+    ) supported by the emulator platform. If the selected platform supports both 
+    profiles, you can choose MIDP-1.0 to test your application's performance on 
+    devices that only support MIDP 1.0. </li>
+  <li><strong>Optional Packages.</strong> Optional packages and APIs supported 
+    by the selected emulator platform and emulator device. You can select or deselect 
+    any of the listed packages to test your target device under differing conditions.</li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../emulator/emulator_about.html">About Emulator Platforms</a></dd>      
+<dd><a href="../configuration/config_working.html">Working with Project Configurations</a></dd>
+  </dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small> 
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Comparison Syntax in Preprocessor Directives </title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+
+<body>
+<h2>Comparison Syntax in Preprocessor Directives </h2>
+<p><small><a href="#seealso">See Also</a></small>
+<p>The preprocessor supports three types of variables: </p>
+<ul>
+  <li>strings</li>
+  <li>integers</li>
+  <li>boolean values</li>
+</ul>
+<p>Most common comparisons (<code>&lt;=, &lt;, &gt;=, &gt; </code>and<code> ==</code>)
+are supported between the variables. </p>
+<p>Boolean
+    operations such as <code>&amp;&amp;, ||, ! and ^</code> can also be performed
+  on all symbol types.</p>
+<p>Integers behave the same as strings when it comes to boolean
+  operations. However, they are compared as true integers and can be used for
+  such tasks as preprocessing code where various screen resolutions require different
+images that are optimized for different resolutions. For example, the directive </p>
+<p><code>//#if ScreenWidth&gt;100 &amp;&amp; ScreenHeight&gt;120</code> </p>
+<p>can specify a code block which will import images only for devices whose screens
+  are larger than 100x120.</p>
+<p>If a variable is defined, then it is considered
+  a boolean with the value, &quot;true.&quot; If the variable is not defined anywhere as
+  an ability or configuration. 
+  then it is considered a
+  boolean with
+  value &quot;false.&quot;</p>
+<p>Comparisons should not be done on different variable types. However, such
+  comparisons do not break the build process. If different variable types are
+  compared, the preprocessor issues a warning in the Editor and Output windows,
+and evaluates the expressions as follows: </p>
+<ul>
+  <li> Left and right sides of the comparison operation are of different
+      types.    <br>
+    Both sides are considered strings and compared lexically, with the exception
+      of the @ operation where the &quot;subset&quot; relationship operation
+      will still be performed (allowing you to check whether a certain integer
+      is in
+      a particular set). </li>
+  <li>One of the variables is not defined or is defined as a boolean
+      symbol.    <br>
+    The variable is considered an empty string &quot;&quot;. If one of the
+      variables is integer it is also converted to a string and a lexical comparison
+      will
+      take place. . </li>
+</ul>
+
+<h3>Operators</h3>
+<p>There are three types of operators with different priorities: </p>
+<ol>
+  <li>The &quot;not&quot; operator (!)
+    <p>This operator has the highest priority and can be used on variables and
+            expressions with the syntax <code>!&lt;identifier&gt; </code>or<code> !&lt;expression&gt;</code>.
+    </p>
+    </p>
+    <p>For example, <code>//#if !(ScreenWidth&gt;100 &amp;&amp; ScreenHeight&gt;120)</code> 
+      checks if the screen size is smaller than 100x120. </p>
+    <p> Since the <code>!</code> operator has the highest priority, expressions 
+      such as<code> //#if !ScreenSize==&quot;100x200&quot;</code> are illegal and 
+      yield syntax errors because a boolean result cannot be compared to a string.</p>
+  </li>
+  <li>Comparison operators
+    <p>Comparison operators have the second highest priority and perform typical
+                comparison operations. Because the operators can compare strings
+      lexically and integers mathematically, cross-type
+                    comparisons are supported. However, they can be used only in
+      expressions and should compare two variables, not
+              symbols.</p>
+    <p>There is also a special comparison operator which performs a &quot;subset&quot; relationship
+              operation. This operator is denoted by the character <code>@</code>.
+              Both left and right arguments should be strings which represent two
+              sets of
+              tokens
+            delimited
+            by specific
+              delimiters. The operator first considers both left and right string
+              arguments as sets and then determines if the set from the left argument
+              is a subset
+              of
+            the set
+              from the right argument. The valid word delimiters are<code> &lt;whitespace&gt;,','
+              </code>and<code> ';'</code>. The delimiters can be mixed arbitralily
+          within each argument, as shown in the following examples. </p>
+    <p><code>&quot;gif&quot; @ &quot;gif86, jpeg, gifaboo&quot; = false</code></p>
+    <p><code>&quot;gif&quot; @ &quot;gif gif86 jpeg&quot; = true</code></p>
+    <p><code>&quot;1 2 4;7,8&quot; @ &quot;0,1,2,3,4,5,6,7,8,9&quot; = true</code></p>
+    <p><code>&quot;3 5 7 11 13&quot; @ &quot;0,1,2,3,4,5,6,7,8,9&quot; = false</code></p>
+  </li>
+  <li>Boolean operators
+    <p>Boolean operators have the lowest priority relative to the rest of the
+                    operators. They also have different priorities amongst each other,
+            just as in the Java language. Boolean operators perform typical logical
+            operations such as <code>&amp;&amp;,
+                    || </code>and<code> ^</code> on boolean expression results, or
+                    check for variable definitions and then
+                      treat those as
+                      boolean expressions as well. Boolean operators are processed
+                in the order: </p>
+    <ol>
+      <li><code>&amp;&amp;</code> </li>
+      <li> ^ </li>
+      <li>|| </li>
+    </ol>
+  </li>
+</ol>
+<dl> <dt><a name="seealso">See Also</a></dt>
+<dd><a href="config_about.html">About Project Configurations</a></dd>
+ <dd>         <a href="abilities_about.html">About Abilities</a></dd>
+ <dd>         <a href="preprocess_about.html">
+        About Preprocessing</a></dd>     
+  <dd>      <a href="config_working.html">Working with Project Configurations</a></dd>
+  <dd><a href="preprocess_manage.html">Managing Preprocessor Blocks</a></dd>
+  <dd><a href="preprocess_about.html">About Preprocessor Directives</a></dd>
+  </dl>
+  <hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

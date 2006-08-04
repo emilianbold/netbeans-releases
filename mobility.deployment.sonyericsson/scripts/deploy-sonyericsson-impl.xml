@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project default="deploy-sonyericsson">
+    <target name="search-ejava" unless="deployment.sonyericsson.ejava.executable">
+        <loadfile property="platform.homes.path" srcfile="${user.properties.file}">
+            <filterchain>
+                <containsregex pattern="^platforms\..+\.home=(.+)" replace="\1"/>
+                <tokenfilter>
+                    <filetokenizer/>
+                    <replaceregex pattern="[\r\n]+" replace=":" flags="g"/>
+                </tokenfilter>
+            </filterchain>
+        </loadfile>
+        <whichresource property="deployment.sonyericsson.ejava.url" resource="bin/ejava.exe" classpath="${platform.homes.path}"/>
+        <tempfile property="temp.file" destdir="${java.io.tmpdir}"/>
+        <echo file="${temp.file}" message="${deployment.sonyericsson.ejava.url}"/>
+        <loadfile property="deployment.sonyericsson.ejava.executable" srcfile="${temp.file}">
+            <filterchain>
+                <replaceregex pattern="^file:[/]*" replace=""/>
+                <replaceregex pattern="%20" replace=" " flags="g"/>
+            </filterchain>
+        </loadfile>
+        <delete file="${temp.file}"/>
+    </target>
+    
+    <target name="deploy-sonyericsson" depends="search-ejava">
+        <fail unless="deployment.sonyericsson.ejava.executable">Sony Ericsson Debug On-Device SDK was not found in installed emulator platforms.</fail>
+        <fail unless="deployment.jad">Property deployment.jad is not set.</fail>
+        <fail unless="deployment.jar">Property deployment.jar is not set.</fail>
+        <exec executable="${deployment.sonyericsson.ejava.executable}">
+            <arg value="install"/>
+            <arg file="${deployment.jad}"/>
+            <arg file="${deployment.jar}"/>
+        </exec>    
+    </target>
+</project>

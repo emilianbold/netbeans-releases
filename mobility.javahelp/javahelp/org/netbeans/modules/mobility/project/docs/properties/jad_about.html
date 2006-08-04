@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>About Java Application Descriptor (JAD) Files</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>About Java Application Descriptor (JAD) Files</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>Every MIDlet suite file is accompanied by a Java Application Descriptor (<object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_jad.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="JAD">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+)
+  file. This file contains a predefined set of attributes that allow the application
+  management software (<object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_appmgmtsoftware.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="AMS">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>) to identify, retrieve, and install the MIDlets. The
+JAD file enables the application management software on a mobile device to verify
+  that the MIDlet is suited to the device before loading the full JAR file of
+  the MIDlet suite. The descriptor also supplies configuration-specific attributes
+(parameters) to the MIDlet or MIDlets without modifying the JAR file.</p>
+<p>In the IDE, the JAD file is created automatically when you create
+  a MIDlet suite. The contents of the application descriptor file can be viewed
+  and edited by choosing File <img src="../images/arrow.gif" alt="and choosing" width="5" height="11"> <em>&quot;Project
+   name&quot;</em> Properties, then selecting Application Descriptor.  </p>
+<p>The following attributes are required in a JAD file: </p>
+<ul>
+  <li><code>MIDlet-Name</code>.<b> </b>The name of the MIDlet suite that identifies
+    the MIDlets to the user.</li>
+  <li><code>MIDlet-Version.</code> The version number of the MIDlet suite. The
+    application management software uses the version number for install actions
+    and upgrades, as well as communication with the user. </li>
+  <li><code>MIDlet-Vendor.</code><b> </b>The organization that provides the MIDlet
+    suite.</li>
+</ul>
+<p>Other attributes are available for use, depending on the version of MIDP supported
+  by the project configuration:</p>
+<ul>
+  <li><code>MIDlet-JAR-URL</code>. Location and name of the JAR file for this
+    MIDlet suite.</li>
+  <li><code>MIDlet-JAR-Size.</code> The size of the JAR file built from this
+    MIDlet suite. This read-only property is updated each time the JAR file is
+    built.</li>
+  <li><code>MicroEdition-Profile.</code> The Java ME profile required, using the
+    same format and value as the system property<tt> microedition.profiles</tt> (for
+    example, <tt>MIDP-1.0</tt>).</li>
+  <li><code>MicroEdition-Configuration.</code><b> </b>The Java ME configuration
+    required, using the same format and value as the System property <tt>microedition.configuration</tt> (for
+    example, <tt>CLDC-1.0</tt>).</li>
+  <li><code>MIDlet-Description.</code> The description of the MIDlet suite.</li>
+  <li><code>MIDlet-Icon.</code> The name of a PNG file within the JAR file and
+      used to represent the MIDlet suite. The application management software
+    displays this icon to identify the suite. </li>
+  <li><code>MIDlet-Info-URL.</code> A URL for information further describing
+    the MIDlet suite. </li>
+  <li><code>MIDlet-Data-Size.</code> The minimum number of bytes of persistent
+      data required by the MIDlet. The device might provide additional storage
+      according to its own policy. </li>
+</ul>
+<p>User-defined attributes in the JAD file can
+  provide the AMS with additional information
+  about a MIDlet that, for example, might help the AMS determine whether the
+application can be run on the target device. </p>
+<p>Another use for user-defined attributes is that they can help a MIDlet dynamically
+  adapt itself to different target devices. As a result, the same JAR file can
+  support a variety of devices without being modified. </p>
+<p>For example, you might add the attributes <code>Display-Width = 160</code> and <code>Display-Height
+    = 120</code> to the JAD, which defines the display area of the target device. </p>
+<p>Each user-defined attribute must have a unique name. Attribute names cannot
+  start with <code>MIDlet-</code>, and cannot contain spaces.</p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="prop_set_jad.html">Customizing the Application Descriptor File </a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

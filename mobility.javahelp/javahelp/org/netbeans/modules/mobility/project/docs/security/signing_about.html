@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>About MIDP Signing and Security</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>About MIDP Signing and Security</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>Signing a MIDlet suite allows MIDP devices to verify the integrity and origins
+of your MIDlet suite. MIDP devices use signing information to check an application's
+source and validity before allowing it to access protected APIs. To sign a MIDlet
+suite, you create a <em>key pair</em>: </p>
+<ul>
+  <li>A private
+      key that is used to create a digital signature, or certificate. </li>
+  <li>A public
+          key that can be used by anyone to verify the authenticity of the signature. </li>
+</ul>
+<p>Each
+               certificate has a designated <em>security
+              domain</em>.
+              Once
+              your MIDlet suite has been verified, it can access any of the protected
+            APIs permitted by its security domain.</p>
+<p>Although the security domains available vary from device to device, the following
+security domains are supported by the IDE and the default emulator platform,
+  the <a href="../toolkit/about_toolkit.html">J2ME Wireless Toolkit</a>:</p>
+<ul>
+  <li><b>Trusted.</b> A MIDlet suite with a JAR file that is both signed with
+    a certificate chain that the device can verify and has not been tampered
+    with.</li>
+  <li><b>Untrusted.</b> A MIDlet suite for which the origin and the integrity
+    of the JAR file cannot be trusted by the device (for example, unsigned MIDlet
+    suites).</li>
+  <li><b>Minimum.</b> A security domain where all permissions to protected APIs
+    are denied, including access to push functionality and network protocols.</li>
+</ul>
+<p>You can sign a MIDlet suite by: </p>
+<ul>
+  <li>using the default keystore (with the security domains described above).</li>
+  <li>importing a key pair from an existing
+          keystore.</li>
+  <li>creating a new key pair.</li>
+</ul>
+  <p>You then have to export the certificate
+  and set its security domain in each emulator.</p>
+  <ul class="note">
+  <li>
+    MIDlet signing is only available for projects whose
+      profile version is set to MDP 2.0. For information on setting the project
+      profile version, see <a href="../properties/prop_setplatform.html">Customizing Platform
+      Properties</a>.</li>
+  </ul>
+<p>For more information about Java ME security features, see &quot;Security for 
+  MIDP Applications and Trusted MIDlet Suites Using X.509 PKI&quot; in the MIDP 
+  2.0 specification. You can download the specification from:</p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+  <param name="content" value="http://developers.sun.com/techtopics/mobility/midp/articles/pushreg/">
+  <param name="text" value="<html><u>http://jcp.org/aboutJava/communityprocess/final/jsr118/index.html</u></html>">
+  <param name="textFontSize" value="medium">
+  <param name="textColor" value="blue">
+</object>
+  <dl>
+
+  <dt><a name="seealso">See Also</a></dt>
+<dd><a href="../properties/prop_customizesecurity.html">Setting Security through MIDlet Signing</a></dd>
+<dd><a href="signing_createkeypair.html">Creating a New Key Pair</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

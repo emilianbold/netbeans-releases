@@ -1,0 +1,64 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>About MIDP Projects</title>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+<h2>About MIDP Projects</h2>
+<p>A project is a group of source files and the settings with which you build, 
+  run, and debug those source files. In the IDE, all Java development has to take 
+  place within a project. Within a MIDP project, you can create multiple project 
+  configurations that customize your MIDlet for different types of mobile devices. 
+</p>
+<p>The IDE builds its project infrastructure directly on top of Apache Ant, the
+  leading build tool for Java applications. The IDE stores all of the information
+  about your project in an Ant script, a properties file, and a few XML configuration
+  files. This means that you can build and run your projects outside of the IDE
+exactly the same as inside the IDE.</p>
+<p>When a project is created, the IDE: </p>
+<ul>
+  <li>Creates a source tree you can examine in the Projects or Files views.</li>
+  <li>Sets the emulator platform for the project. </li>
+  <li>Sets the project run and compile-time classpaths.</li>
+  <li>Creates a build script that contains actions for running, compiling, debugging,
+    and building Javadoc.</li>
+</ul>
+<p>The MIDP project structure is similar to that of standard NetBeans <a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_about.html">projects</a>. 
+  There are differences, however, in the <code>build</code> and <code>dist</code> 
+  folders to accommodate the MIDP build process. </p>
+<p>When a project is created, the following folders are created under <code>build</code> : </p>
+<ul>
+  <li><code>compiled.</code> Contains all compiled classes.</li>
+  <li><code>preprocessed.</code> Holds the source files after they are preprocessed. 
+    The files will differ from the original source files if you are using project 
+    configurations. </li>
+  <li><code>obfuscated.</code> Holds the obfuscated versions of the class files.</li>
+  <li><code>preverified</code>. Holds the preverified versions of the class files. 
+    These files are packaged into the distribution JAR of your project. </li>
+</ul>
+<dl>
+  <dt> <a name="seealso">See Also</a></dt>
+  <dd><a href="proj_quickref.html">Java ME MIDP Project Tasks: Quick Reference</a></dd>
+  <dd><a href="proj_working.html">Working with Java ME MIDP Projects</a></td><br>
+    <a href="../configuration/config_about.html">About Project Configurations</a></dd>
+</dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td width="263">&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
+
+</body>
+</html>

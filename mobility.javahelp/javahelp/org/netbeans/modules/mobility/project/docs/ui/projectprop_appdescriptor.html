@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>MIDP Project Properties: Application Descriptor Attributes</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+<h2>
+MIDP Project Properties: Application Descriptor Attributes</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>The Attributes page of the MIDP Project properties enables you to add, edit, 
+  or delete the 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_attributes.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="attributes">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>
+  of a MIDlet suite for a 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content"
+value="../glossary/gloss_deviceconfiguration.html">
+    <param name="viewerActivator"
+value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="project configuration">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontSize" value="small">
+    <param name="textFontWeight" value="bold">
+    <param name="textFontStyle" value="italic">
+    <param name="textColor" value="blue">
+  </object>
+  .</p>
+<p>You open the Attributes Properties page  by choosing File &gt; <em>&lt;active
+  project
+name&gt;</em> Properties. In the Project Properties dialog, select Application
+Descriptor <img src="../images/expand.gif" alt="and expand" width="12" height="12"> Attributes. </p>
+<p>If you are setting the properties for a project configuration other than the
+  default configuration (<code>DefaultConfiguration</code>), you must uncheck
+  the Use Values from &quot;DefaultConfiguration&quot; checkbox at the top of
+the page to customize these options.</p>
+<p>The General Attributes table lists the attributes currently contained in the
+  JAD and JAR manifest files:</p>
+<ul><li><strong>Type</strong>. A field that cannot be edited, and lists whether
+    the attribute is:
+    <ul>
+      <li><strong>Required.</strong> An attribute required by the MIDP standard.</li>
+      <li><strong>Optional.</strong> An optional attribute that provides information
+        about the MIDlet suite. This is information that is not required by 
+        MIDP to run the MIDlet.</li>
+      <li><strong>Custom.</strong> A user-defined attribute. <br>
+        <ul class="note">
+          <li>Custom attributes cannot begin with the
+              prefix <code>Midlet-.</code></li>
+          </ul>
+      </li>
+      <li><strong>JAD only.</strong> A custom attribute stored only in the JAD file. </li>
+      <li><strong>Manifest only.</strong> A custom attribute stored only in the JAR Manifest file. </li>
+      <li><strong>Forced.</strong> An attribute that overrides the value
+        for 
+        <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_midp.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="MIDP">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object> 
+        or <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_cldc.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="CLDC">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+        version than is shown in the <a href="projectprop_platform.html">Platform
+        Properties</a> page.</li>
+    </ul>
+  </li>
+</ul>
+<ul>
+  <li><strong>Name</strong>. The name of the attribute. <br>
+  Only Custom field names can be edited.</li>
+  <li><strong>Value</strong>. The values for each attribute.</li>
+</ul>
+<p>To avoid errors in verification:</p>
+<ul>
+  <li>Make sure all required attributes have a defined value.</li>
+  <li>Do not begin user-defined attribute keys with <code>MIDlet-</code> or <code>MicroEdition-.</code></li>
+</ul>
+<p><strong>To add an attribute:</strong></p>
+<ol>
+  <li>Click the Add button. <br>
+    This opens the <a href="dialog_addattribute.html">Add
+  Attribute dialog</a>.</li>
+  <li>Choose an attribute from the Name combo box, or delete
+    the current entry and add your own custom entry.</li>
+  <li>Enter a value for the attribute.</li>
+  <li>Click
+        OK to close.</li>
+</ol>
+<p><strong>To edit an attribute: </strong></p>
+<ol>
+  <li>Select an attribute to edit. </li>
+  <li>Click the Edit button. <br>
+    This opens the <a href="dialog_addattribute.html">Edit  Attribute dialog</a>.</li>
+  <li>Enter a value for the attribute.</li>
+  <li>Click OK to close.</li>
+</ol>
+<p><strong>To delete an attribute:</strong></p>
+<ol>
+  <li>Select an attribute. </li>
+  <li>Click the Remove button.</li>
+<ul class="note"><li>You cannot remove a Required attribute. </li>
+
+  </ul>
+
+</ol>
+<ul class="note">
+  <li>Some attributes can be changed in only in
+        their properties pages. These properties are: </p>
+      <ul>
+        <li>API permissions</li>
+        <li>Push Registry entries</li>
+        <li>MIDlet signing</li>
+      </ul>
+    </li>
+  </ul>
+<dl><dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../properties/jad_about.html">About the  Application
+    Descriptor File</a></dd>
+<dd>    <a href="../properties/prop_set_jad.html">Customizing the Application Descriptor (JAD) Attributes</a></dd>
+ <dd>   <a href="../properties/prop_addAPI.html">Adding API Permissions</a></dd>
+ <dd>   <a href="../properties/prop_setpushregistry.html">Setting Push Registry Entries</a></dd>
+  <dd>  <a href="../security/signing_about.html">About MIDP Signing and Security</a></dd>
+  </dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

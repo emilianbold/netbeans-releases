@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>MIDP Project Properties: Deploy Page</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>MIDP Project Properties: Deploying Page</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the Deploying properties page to specify a method for deploying your MIDlet
+  suite files to another location on your system or on a remote network. When
+  you compile your project, the MIDlet suite's JAR file will automatically
+  be deployed according to the settings on this page.</p>
+<p>You open this page by choosing File &gt; <em>&lt;active project name&gt;</em> 
+  Properties. Then select the Deploying node in the Category menu tree. </p>
+<ul class="note">
+  <li>If you are setting the properties for a project configuration other than 
+    the default configuration (<code>DefaultConfiguration</code>), you must uncheck 
+    the Use Values from &quot;DefaultConfiguration&quot; checkbox at the top of 
+    the page to customize these options.</li>
+</ul>
+<p>You can set the following options in this page:</p>
+<ul>
+  <li><strong>Select Deployment Method.</strong> Enables you to choose the one 
+    of the following methods of deployment:
+    <ul>
+      <li><a href="../deploy/deploy_copy.html">File Copy</a><strong>.</strong> 
+        Moves the MIDlet suite files to a specified location on a local system.</li>
+      <li><a href="../deploy/deploy_ftp.html">File Transfer Protocol (FTP)</a><strong>.</strong> 
+        Uses the file transfer protocol to move the MIDlet suite files to a remote 
+        server over the Internet.</li>
+      <li><a href="../deploy/deploy_scp.html">Secure Copy (SCP, SFTP)</a><strong>. 
+        </strong>Establishes a secure connection and encrypts the data before 
+        passing the data between the client and server. </li>
+      <li><a href="../deploy/deploy_se.html">Sony Ericsson Phone (locally attached 
+        device)</a>. Deploys to a Sony Ericsson </li>
+      <li><a href="../deploy/deploy_webdav.html">Web-based Distributed Authoring 
+        and Versioning (WebDAV</a>)<strong>. </strong>Moves MIDlet suite files 
+        using the WebDAV protocols, a set of extensions to the HTTP protocol which 
+        allows you to work in collaboration with others to edit and manage files 
+        on remote web servers.</li>
+    </ul>
+  </li>
+  <li><strong>Override JAR URL in JAD. </strong>Enables you to change the URL 
+    for the JAR file from the default to a URL of your own choosing. For example: 
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../deploy/deploy_deploying.html">Deploying a MIDP Application</a></dd>
+ <dd><a href="../deploy/about_deployment.html">About Deployment</a></dd>
+</dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

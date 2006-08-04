@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>About Preprocessing</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>About Preprocessing</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+<p>Preprocessing modifies the code in your source files before the code is parsed
+  by the compiler. The preprocessor modifies the code according to <a href="preprocessor_directives_about.html">preprocessor
+  directives</a> inserted as code blocks into the code. These code blocks are
+  marked visually in the Source Editor and are included (or excluded) when you
+  build the JAR for a specific project configuration
+    or
+  ability. You can use 
+      these code blocks to create,
+    manage and track code that is specific to one or more <a href="config_about.html">project
+  configurations</a> or <a href="abilities_about.html">abilities</a>. </p>
+<p>  For example, if you are writing an application targeted for several different
+  devices, you can create a project configuration for each device, then create
+  a preprocessor block with directives for each project configuration.
+  You can then test the application for each device quickly by changing the active
+  project
+  configuration and running the application.</p>
+<p>This <code>If/Else</code> code block in the following example uses the directives 
+  <code>#if</code>, <code>#else</code>, and <code>#endif </code>to create a conditional 
+  timeout alarm. If the active configuration is DefaultGrayPhone, the <code>ALERT_TIMEOUT</code> 
+  is set for 2000. If the active configuration is set to any other project configuration, 
+  the <code>ALERT_TIMEOUT</code> is set to 3000. To test the application for either 
+  timeout, you can simply <a href="config_setdefault.html">change the default 
+  configuration</a> from DefaultGrayPhone to any other configuration.</p>
+<p><img src="../images/alertifelseblock.gif" width="550" height="86"></p>
+<dl><dt><a name="seealso">See Also</a></dt>
+  <dd><a href="preprocess_manage.html">Managing Preprocessor Blocks</a></dd>
+  <dd><a href="config_working.html">Working with Project Configurations</a></dd>
+  <dd><a href="config_about.html">About Project Configurations</a></dd>
+  <dd><a href="abilities_about.html">About Abilities</a><dd>
+    <a href="preprocessor_directives_about.html">About Preprocessor Directives</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

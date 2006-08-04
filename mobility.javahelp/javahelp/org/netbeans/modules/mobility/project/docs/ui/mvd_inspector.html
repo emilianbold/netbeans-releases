@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>MIDP Visual Designer Inspector Window</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>Visual Mobile Designer Inspector View</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>The Visual Mobile Designer (VMD) Inspector view displays all of the objects
+  that have been added to the application with the Visual Designer. </p>
+<p>The Inspector view is available when you are using the VMD to design the flow 
+  and user interface for your Mobile application. The default location of the 
+  Inspector is the lower left corner of the Visual Mobile Designer. </p>
+<p>The Inspector displays all of the objects in the form of a menu tree. You
+  can use the menu tree to add, remove, or change the order of objects in the
+  menu. Objects selected  in the inspector are highlighted in Screen
+  Designer view, if the containing component is currently opened in the screen
+  designer
+  view.
+The objects properties are displayed
+  in the Property Sheet window.</p>
+<p>You can also edit the <a href="mvd_properties.html">properties</a> of any object in the menu by right-clicking
+  on the node. The specific actions you can perform on a node in the Inspector
+  window depend upon
+  the category
+  and type of the object. </p>
+<p>The Visual Design
+  root node has properties that define: </p>
+<ul>
+  <li><strong>MIDP version. </strong>Displays the <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_midp.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="MIDP">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+ version used for the Visual
+    Design.<br>
+    You can change the MIDP version used by the project by right-clicking on
+    the node and choosing Convert To. 
+    <ul class="note">
+        
+      <li>If you convert from MIDP 2.0 to MIDP 1.0, components and settings that 
+        are not compatible with MIDP 1.0 are deleted from the design. </li>
+      </ul>
+  </li>
+  <li><strong>Generate Threaded Command Listeners.</strong> If checked, the IDE 
+    generates command listeners on multiple threads. This prevents the UI from 
+    freezing up when one thread is handling everything, such as command listening 
+    and a time consuming or blocking operation, such a network communication. 
+  </li>
+  <li> <strong>Start Point Action.</strong> The action that is used when the
+    MIDlet is started. For example, when the MIDlet is selected, a menu screen
+    displays. Clicking on the elipsis (...) button opens the <a href="mvd_actioneditor.html">Action
+    Editor</a>. </li>
+</ul>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../mvd/mvd_about.html">About Visually Designing
+          MIDP Applications</a></dd>
+           <dd> <a href="../mvd/mvd_working.html">Working with the Visual Mobile Designer</a></dd>
+           <dd>   <a href="../mvd/mvd_quickref.html">Visual Mobile Designer Tasks:
+              Quick Reference</a></dd>
+           
+  <dd> <a href="mvd_properties.html">Visual Mobile Designer Properties View</a> 
+  </dd>
+    </dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small> 
+</body>
+</html>

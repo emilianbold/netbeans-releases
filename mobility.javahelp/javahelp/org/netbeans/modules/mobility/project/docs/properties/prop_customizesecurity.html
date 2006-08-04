@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Setting Security and MIDlet Signing</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+<h2>Setting  Security through MIDlet Signing</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>Signing a MIDlet suite allows MIDP devices to verify the integrity and origins
+of your MIDlet suite. To sign a MIDlet suite, you use the Signing Properties
+  page to assign or create a <em>key
+pair</em>: </p>
+<ul>
+  <li>A private key that is used to create a digital signature, or certificate. </li>
+  <li>A public key that can be used by anyone to verify the authenticity of the
+    signature. </li>
+</ul>
+<p>You can then export the key pair to the emulator platform you are using for
+  testing.</p>
+<p><strong>To sign a MIDlet suite:</strong></p>
+<ol>
+  <li>Choose File &gt; <em>&lt;active
+      project name&gt;</em> Properties. In the Project Properties dialog, select
+  Build <img src="../images/expand.gif" alt="and expand" width="12" height="12"> Signing.</li>
+  <li>Check the Sign Distribution checkbox to enable signing.</li>
+  <li>Choose a keystore from the Keystore dropdown menu.<br>
+ <ul class="note">
+ <li>To create a new keystore or key pair, click the Open Security Manager button. </li>
+ </ul>
+  </li>
+  <li>Choose an alias from the Alias keystore dropdown menu. The menu lists the
+    available aliases for the selected keystore. </li>
+  <li>If necessary, click the unlock buttons to make the keystore and alias available
+    for use. </li>
+  <li>Click the Export Key into Java ME SDK/Platform/Emulator button to export a
+  key into the emulator platform you intend to use to test the MIDlet.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../security/signing_about.html">About MIDP Signing and Security</a></dd>      
+<dd><a href="../security/signing_createkeystore.html">Creating or Adding a Keystore</a></dd>
+<dd><a href="../security/signing_createkeypair.html">Creating a New Key Pair</a></dd>
+<dd><a href="../security/signing_setdomain.html">Setting the Security Domain</a></dd>
+</dl>
+  <hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

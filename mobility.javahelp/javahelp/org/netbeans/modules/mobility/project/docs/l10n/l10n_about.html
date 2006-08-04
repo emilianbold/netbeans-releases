@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>About J2ME MIDP Localization Support</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>About Java ME MIDP Localization Support</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>Localization is the process of designing software so that it can be
+  adapted (localized) to various languages and regions without engineering changes
+  to the software. When you localize
+  an application, you provide alternate language values for each element in your
+  application, such as screen text, menus, and icons. </p>
+<p>In  the NetBeans IDE, you can use the <a href="../ui/wizard_newlocalization_name.html">New
+    Localization Support Class wizard</a> to create the
+  files you need to localize an application:</p>
+<ul>
+  <li>A Java class file that initiates localization support
+    based on the currently set locale (obtained from the <tt>microedition.locale</tt> system
+  property). </li>
+  <li>A property resource bundle (with the extension (<code>.properties</code>)
+    that contains the element keys and their values. Inside the property resource
+    bundle, elements
+    are
+    listed
+    as
+    key/value
+    pairs,
+    for
+    example: 
+    <pre>
+  TEXT_NOT_FOUND=No text available for this locale. 
+  TEXT_HELLO=Hello, world!
+  TEXT_WARNING=There are {0} warnings in the file {1}.
+  BUTTON_FINISH=Finish</pre>
+  </li>
+</ul>
+<p>After you create the key/value pairs for your application, you can then
+  use the <code>getMessage()</code> method
+  within your code to prove the proper value for the called key. The initialization
+  method is called automatically when a call to the <code>getMessage(java.lang.String)</code> method
+  is attempted for the first time. </p>
+<p>For example, <code>LocalizationSupport.getMessage(&quot;TEXT_HELLO&quot;)</code></p>
+<ul class="note"><li>To see an example of a localized project, Choose
+      File &gt; New
+      Project. Under Categories, expand the Samples node and choose Mobile. Under
+      Projects, choose Localization Support Example.</li>
+  </ul>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../ui/wizard_newlocalization_name.html">New Localization Support Class wizard</a></dd>
+<dd><a href="l10n_addsupport.html">Adding Localization Support to a Java ME MIDP Application</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project default="deploy-ftp">
+    <target name="init">
+        <fail unless="deployment.ftp.server">Property deployment.ftp.server is not set.</fail>
+        <property name="deployment.ftp.port" value="21"/>
+        <property name="deployment.ftp.remotedir" value=""/>
+        <property name="deployment.ftp.passive" value="no"/>
+        <property name="deployment.ftp.separator" value="/"/>
+        <fail unless="deployment.jad">Property deployment.jad is not set.</fail>
+        <fail unless="deployment.jar">Property deployment.jar is not set.</fail>
+        <condition property="skip-connection-input">
+            <and>
+                <isset property="deployment.ftp.userid"/>
+                <isset property="deployment.ftp.password"/>
+                <not><equals arg1="${deployment.ftp.userid}" arg2="" trim="true"/></not>
+                <not><equals arg1="${deployment.ftp.password}" arg2="" trim="true"/></not>
+            </and>
+        </condition>
+    </target>
+    <target name="set-password" depends="init" if="netbeans.home" unless="skip-connection-input">
+        <property name="deployment.ftp.userid" value=""/>
+        <nb-enter-password connectionid="ftp://${deployment.ftp.server}:${deployment.ftp.port}" usernameproperty="deployment.ftp.userid.eval" username="${deployment.ftp.userid}" passwordproperty="deployment.ftp.password.eval"/>
+    </target>
+    <target name="deploy-ftp" depends="init,set-password">
+        <property name="deployment.ftp.userid.eval" value="${deployment.ftp.userid}"/>
+        <property name="deployment.ftp.password.eval" value="${deployment.ftp.password}"/>
+        <ftp server="${deployment.ftp.server}"
+             port="${deployment.ftp.port}"
+             userid="${deployment.ftp.userid.eval}"
+             password="${deployment.ftp.password.eval}"
+             action="mkdir"
+             remotedir="${deployment.ftp.remotedir}"
+             passive="${deployment.ftp.passive}"
+             verbose="yes"
+             separator="${deployment.ftp.separator}"
+             ignoreNoncriticalErrors="true">
+        </ftp>
+        <ftp server="${deployment.ftp.server}"
+             port="${deployment.ftp.port}"
+             userid="${deployment.ftp.userid.eval}"
+             password="${deployment.ftp.password.eval}"
+             remotedir="${deployment.ftp.remotedir}"
+             passive="${deployment.ftp.passive}"
+             verbose="yes"
+             separator="${deployment.ftp.separator}"
+             ignoreNoncriticalErrors="true">
+             <fileset file="${deployment.jad}"/>
+             <fileset file="${deployment.jar}"/>
+         </ftp>
+     </target>
+</project>

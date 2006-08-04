@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Customizing Project Configurations</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>Customizing Project Configurations</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>A  
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_deviceconfiguration.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="project configuration">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object> 
+  defines the execution environment for
+a Java ME MIDP application that emulates a specific mobile device. You can define
+    multiple project configurations for an application, then customize the properties
+of each configuration to match the specific devices for which you are programming.
+  This enables you to test and debug your application for each device. You can
+  then use project configurations to deploy a separate distribution JAR for
+  one or all of your configurations. </p>
+<p>You customize
+  project configurations  using the Properties dialog. You can then group configurations
+  as abilities, and embed preprocessor blocks within your code to take advantage
+      of
+      the
+      specific
+      functions
+      of each
+  configuration. </p>
+<p>After a project containing multiple configurations is built, the<code> build</code>  folder
+  contains the build directory for <code>DefaultConfiguration</code>.
+  Sub-directories in the <code>dist</code> folder contain the  build
+  and distribution files for each configuration in the project. </p>
+<p>To open the Project Properties dialog, choose File &gt; <em>&quot;active
+    project
+name&quot;</em> properties. </p>
+<p>Properties that can be viewed or customized in a project configuration include: </p>
+<ul>
+  <li><a href="../properties/prop_viewgeneral.html">general project settings</a> </li>
+  <li><a href="../properties/prop_setplatform.html">emulator platform</a></li>
+  <li><a href="../properties/prop_setplatform.html">specific emulator device</a></li>
+  <li><a href="../ui/projectprop_platform.html">supported version </a>of the Connected Limited Device Configuration (CLDC)</li>
+  <li><a href="../properties/prop_setplatform.html">supported version</a> of the Mobile Information Device Platform (MIDP)</li>
+  <li><a href="../properties/prop_setplatform.html">supported optional packages
+      and APIs</a> </li>
+  <li><a href="../properties/prop_set_jad.html">attributes listed in the
+      JAD file</a></li>
+  <li><a href="../properties/prop_setMIDlet.html">MIDlets included in the JAR</a></li>
+  <li><a href="../ui/projectprop_pushregistry.html">push registry entries</a></li>
+  <li><a href="../ui/projectprop_apipermissions.html">API permissions</a></li>
+  <li><a href="../ui/projectprop_build.html">build properties</a></li>
+  <li><a href="../ui/projectprop_libraries.html">libraries and resource files
+  bundled in the project</a></li>
+  <li><a href="../ui/projectprop_filtering.html">file filtering</a></li>
+  <li><a href="../ui/projectprop_obfuscating.html">obfuscation level</a></li>
+  <li><a href="../ui/projectprop_createjar.html">JAD and JAR file names</a></li>
+  <li><a href="../ui/projectprop_signing.html">security domains and signing</a></li>
+  <li><a href="../ui/projectprop_javadoc.html">javadoc generation</a></li>
+  <li><a href="../deploy/about_deployment.html">deployment methods</a></li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="config_working.html">Working with Project Configurations</a></dd>
+<dd><a href="config_about.html">About Project Configurations</a></dd>
+<dd><a href="abilities_about.html">About Abilities</a></dd>
+<dd><a href="preprocess_about.html">About Preprocessing</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

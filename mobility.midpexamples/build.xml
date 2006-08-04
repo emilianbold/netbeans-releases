@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.netbeans.modules.mobility.midpexamples" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.mobility.midpexamples.</description>
+    <import file="nbproject/build-impl.xml"/>
+
+    <target name="init" depends="basic-init,files-init,build-init,zip-examples"/>
+    
+    <target name="zip-examples" depends="basic-init,files-init,build-init">
+        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/mobility/midpexamples"/>
+        <mkdir dir="${examples}"/>
+        <zip basedir="audiodemo" excludes="CVS" destfile="${examples}/audiodemo.zip"/>
+        <zip basedir="converter" excludes="CVS" destfile="${examples}/converter.zip"/>
+        <zip basedir="demos" excludes="CVS" destfile="${examples}/demos.zip"/>
+        <zip basedir="demos2" excludes="CVS" destfile="${examples}/demos2.zip"/>
+        <zip basedir="games" excludes="CVS" destfile="${examples}/games.zip"/>
+        <zip basedir="games2" excludes="CVS" destfile="${examples}/games2.zip"/>
+        <zip basedir="mmademo" excludes="CVS" destfile="${examples}/mmademo.zip"/>
+        <zip basedir="NetworkDemo" excludes="CVS" destfile="${examples}/NetworkDemo.zip"/>
+        <zip basedir="photoalbum" excludes="CVS" destfile="${examples}/photoalbum.zip"/>
+        <zip basedir="UIDemo" excludes="CVS" destfile="${examples}/UIDemo.zip"/>
+        <zip basedir="UIDemo2" excludes="CVS" destfile="${examples}/UIDemo2.zip"/>
+        <zip basedir="SendMessages" excludes="CVS" destfile="${examples}/SendMessages.zip"/>
+        <zip basedir="LocalizationDemo" excludes="CVS" destfile="${examples}/LocalizationDemo.zip"/>
+        <zip basedir="BluetoothDemo" excludes="CVS" destfile="${examples}/BluetoothDemo.zip"/>
+    </target>
+</project>

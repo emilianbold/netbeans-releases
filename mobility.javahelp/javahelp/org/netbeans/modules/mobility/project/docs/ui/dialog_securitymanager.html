@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>Security Manager</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>Security Manager</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the Security Manager to manage the security keystores for
+your MIDP project.  In this page, you can: </p>
+<ul>
+  <li>Edit the keys for an existing keystore</li>
+  <li>Create a new keystore</li>
+  <li>Export a keystore into the emulator platform you intend to use to test
+    the MIDlet.</li>
+</ul>
+<p>You open the Security Manager dialog from the <a href="projectprop_signing.html">Signing 
+  properties page</a> by clicking the Open Security Manager button, or by choosing 
+  Tools &gt; Security Manager from the main menu.</p>
+<p>There are two windows in this dialog:</p>
+<ul>
+  <li>The left window of the dialog shows the existing keystores for the current
+    project. From this window, you can select a keystore to edit.</li>
+  <li>The Keys window shows the keys within the keystore file. Check the Show
+    Details checkbox to see the details of key pairs within the keystore.</li>
+</ul>
+<p>The Security Manager has the following controls: </p>
+<ul>
+  <li><strong>Add Keystore.</strong> Enables you to import existing keystores or add new keystores
+    to the project. </li>
+  <li><strong>Remove.</strong> Deletes keystores from the project. </li>
+  <li><strong>Unlock.</strong> Enables you to <a href="dialog_enterpassword.html">enter
+      a password</a> to unlock a key
+    pair for use. </li>
+  <li><strong>Export.</strong> Enables you to export a key pair to an emulator
+    platform. </li>
+  <li><strong>New.</strong> Creates a new key pair. </li>
+  <li><strong>Delete.</strong> Deletes a key pair.</li>
+</ul>
+<ul class="note"><li>If you select a keystore that is locked, an Unlock
+      Keystore button appears in the center of the Security Manager dialog. To
+      unlock the keystore, click the button and enter a password in the Enter
+      Password dialog. </li>
+  </ul>
+<p>For more information about key pairs and keystores, see</p>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+  <param name="content" value="http://java.sun.com/j2se/1.4.2/docs/tooldocs/windows/keytool.html">
+  <param name="text" value="<html><u>http://java.sun.com/j2se/1.4.2/docs/tooldocs/windows/keytool.html</u></html>">
+  <param name="textFontSize" value="medium">
+  <param name="textColor" value="blue">
+</object>.
+
+<dl> 
+    <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../properties/prop_customizesecurity.html">Setting Security through MIDlet Signing</a></dd>
+  <dd>    <a href="../security/signing_about.html">About MIDP Signing and Security</a></dd>
+   <dd>   <a href="../security/signing_createkeystore.html">Adding or Creating a Keystore      </a></dd>
+   <dd>   <a href="../security/signing_createkeypair.html">Creating a New Key Pair </a> </dd>
+</dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

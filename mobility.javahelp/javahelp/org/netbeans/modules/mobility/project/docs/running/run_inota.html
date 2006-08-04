@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+
+*     Use is subject to license terms.
+
+-->
+
+<html>
+
+<head>
+
+<title>Running a MIDlet Suite with OTA Provisioning</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+<h2>Running a MIDlet Suite with OTA Provisioning</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>Running your MIDlet suite with Over-The-Air (OTA) provisioning emulates the
+  process that takes place when a device downloads and installs your suite from
+  a server. If your suite is <a href="../security/signing_about.html">signed</a>,
+  the emulator gives it access to protected APIs according to the security domain
+  of the suite's certificate. Running a
+  suite with OTA provisioning also lets you test any inbound connections from
+  the server as defined in the suite's push registry. </p>
+<p><strong>To enable OTA provisioning for an emulator:</strong></p>
+<ol>
+  <li>Choose File &gt; <em>&lt;active
+        project name&gt;</em> Properties. </li>
+  <li>In the Project Properties dialog, select Running.</li>
+  <li>Choose the Execute Through OTA radio button.<br>
+    The IDE enables OTA provisioning for the emulator and runs the MIDlet suite
+  with the specified preferences. </li>
+</ol>
+<ul class="note">
+  <li>
+   If you are setting the properties for
+      a
+        <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+          <param name="content"
+value="../glossary/gloss_deviceconfiguration.html">
+          <param name="viewerActivator"
+value="javax.help.LinkLabel">
+          <param name="viewerStyle" value="javax.help.Popup">
+          <param name="viewerSize" value="400,160">
+          <param name="text" value="project configuration">
+          <param name="textFontFamily" value="SansSerif">
+          <param name="textFontSize" value="small">
+          <param name="textFontWeight" value="bold">
+          <param name="textFontStyle" value="italic">
+          <param name="textColor" value="blue">
+        </object>
+      other than the default configuration (<code>DefaultConfiguration</code>),
+      you must uncheck the Use Values from &quot;DefaultConfiguration&quot; checkbox
+      at the top of the page to customize these options.</li>
+  </ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../properties/prop_setrun.html">Customizing MIDP Project Run Options</a></dd>
+<dd><a href="../deploy/about_ota.html">About Over the Air Provisioning</a></dd>
+<dd><a href="../deploy/about_deployment.html">About Deployment</a></dd>
+</dl>
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td width="398">&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

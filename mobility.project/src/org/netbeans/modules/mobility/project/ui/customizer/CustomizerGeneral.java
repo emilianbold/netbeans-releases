@@ -1,0 +1,282 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.mobility.project.ui.customizer;
+import java.io.File;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.DefaultListModel;
+import javax.swing.JPanel;
+import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.netbeans.modules.mobility.project.ui.CyclicDependencyWarningPanel;
+import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
+import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
+import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+
+/** Customizer for general project attributes.
+ *
+ * @author  phrebejk, Adam Sotona
+ */
+public class CustomizerGeneral extends JPanel implements CustomizerPanel {
+    
+    private ProjectProperties props;
+    
+    /** Creates new form CustomizerCompile */
+    public CustomizerGeneral() {
+        initComponents();
+        initAccessibility();
+    }
+    
+    public void initValues(ProjectProperties props, String configuration) {
+        this.props = props;
+        final VisualPropertySupport vps = VisualPropertySupport.getDefault(props);
+        
+        vps.register(jTextFieldDisplayName, J2MEProjectProperties.J2ME_PROJECT_NAME);
+        vps.register(rebuildCheckBox, DefaultPropertiesDescriptor.NO_DEPENDENCIES);
+        vps.register(jTextFieldSrcRoot, DefaultPropertiesDescriptor.SRC_DIR);
+        
+        final FileObject fo = props.getProjectDirectory();
+        File f = null;
+        if (fo != null)
+            f = FileUtil.toFile(fo);
+        jTextFieldProjectFolder.setText((f != null) ? f.getAbsolutePath() : ""); //NOI18N
+        
+        final DefaultListModel lm = new DefaultListModel();
+        for( String st : getSortedSubprojectsList() ) {
+            lm.addElement( st );
+        }
+        projectList.setModel(lm);
+    }
+    
+    List<String> getSortedSubprojectsList() {
+        final ArrayList<Project> subprojects = new ArrayList<Project>( 5 );
+        
+        addSubprojects(DefaultPropertiesDescriptor.LIBS_CLASSPATH, subprojects);
+        final ProjectConfiguration cfg[] = props.getConfigurations();
+        for (int i= 0; i<cfg.length; i++) {
+            addSubprojects("configs." + cfg[i].getName() + '.' + DefaultPropertiesDescriptor.LIBS_CLASSPATH, subprojects);
+        }
+        
+        // Replace projects in the list with formated names
+        final ArrayList<String> strSubprojects = new ArrayList<String>( subprojects.size() );
+        for ( int i = 0; i < subprojects.size(); i++ ) {
+            final Project p = subprojects.get( i );
+            strSubprojects.add( ProjectUtils.getInformation(p).getDisplayName());
+        }
+        
+        // Sort the list
+        Collections.sort( strSubprojects, Collator.getInstance() );
+        
+        return strSubprojects;
+    }
+
+        
+    private void addSubprojects(final String cpProperty, final List<Project> result) {
+        final List<VisualClassPathItem> l = (List<VisualClassPathItem>)props.get(cpProperty);
+        if (l != null) {
+            for ( final VisualClassPathItem vcpi : l ) {
+                if (VisualClassPathItem.TYPE_ARTIFACT == vcpi.getType()) {
+                    final AntArtifact antArtifact = (AntArtifact)vcpi.getElement();
+                    if (antArtifact == null)
+                        continue;
+                    final Project sp = antArtifact.getProject();
+                    if (!result.contains(sp)) {
+                        result.add(sp);
+                        addSubprojects(sp, result);
+                    }
+                }
+            }
+        }
+    }
+    
+    /** Gets all subprojects recursively
+     */
+    private void addSubprojects( final Project p, final List<Project> result ) {
+        
+        final SubprojectProvider spp = p.getLookup().lookup( SubprojectProvider.class );
+        
+        if ( spp == null ) {
+            return;
+        }
+        
+        for( Project sp: spp.getSubprojects()) {
+            if (sp.getProjectDirectory().equals(props.getProjectDirectory())) {
+                CyclicDependencyWarningPanel.showWarning(ProjectUtils.getInformation(sp).getDisplayName());
+                return;
+            }
+            if ( !result.contains( sp ) ) {
+                result.add( sp );
+            }
+            addSubprojects( sp, result );
+        }
+        
+    }
+
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        jLabel1 = new javax.swing.JLabel();
+        jTextFieldDisplayName = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jTextFieldProjectFolder = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jTextFieldSrcRoot = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        projectList = new javax.swing.JList();
+        rebuildCheckBox = new javax.swing.JCheckBox();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("MNM_CustomizeGeneral_DisplayName_JLabel").charAt(0));
+        jLabel1.setLabelFor(jTextFieldDisplayName);
+        jLabel1.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_ProjectName"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        add(jLabel1, gridBagConstraints);
+
+        jTextFieldDisplayName.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(jTextFieldDisplayName, gridBagConstraints);
+        jTextFieldDisplayName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjName"));
+
+        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("MNM_CustomizeGeneral_ProjectFolder").charAt(0));
+        jLabel3.setLabelFor(jTextFieldProjectFolder);
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ProjectFolder"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
+        add(jLabel3, gridBagConstraints);
+
+        jTextFieldProjectFolder.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(jTextFieldProjectFolder, gridBagConstraints);
+        jTextFieldProjectFolder.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjFolder"));
+
+        jLabel4.setDisplayedMnemonic(NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustomizeGeneral_SrcDir").charAt(0));
+        jLabel4.setLabelFor(jTextFieldSrcRoot);
+        jLabel4.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_SrcDir"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
+        add(jLabel4, gridBagConstraints);
+
+        jTextFieldSrcRoot.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(jTextFieldSrcRoot, gridBagConstraints);
+        jTextFieldSrcRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjSources"));
+
+        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("MNM_CustGeneral_RequiredProjects").charAt(0));
+        jLabel2.setLabelFor(projectList);
+        jLabel2.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_RequiredProjects"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
+        add(jLabel2, gridBagConstraints);
+
+        jScrollPane1.setViewportView(projectList);
+        projectList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_Projects"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(jScrollPane1, gridBagConstraints);
+
+        rebuildCheckBox.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("MNM_CustGeneral_RebuildProjects").charAt(0));
+        rebuildCheckBox.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_RebuildProjects"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        add(rebuildCheckBox, gridBagConstraints);
+        rebuildCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_RebuildProjects"));
+
+    }
+    // </editor-fold>//GEN-END:initComponents
+    
+    private void initAccessibility() {
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerGeneral.class, "ACSN_CustGeneral"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral"));
+    }
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jTextFieldDisplayName;
+    private javax.swing.JTextField jTextFieldProjectFolder;
+    private javax.swing.JTextField jTextFieldSrcRoot;
+    private javax.swing.JList projectList;
+    private javax.swing.JCheckBox rebuildCheckBox;
+    // End of variables declaration//GEN-END:variables
+    
+    
+    // Private methods for classpath data manipulation -------------------------
+    
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
+ * Use is subject to license terms.
+-->
+<html>
+
+<head>
+
+<title>J2ME MIDP Templates</title>
+
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+
+</head>
+
+<body>
+
+<h2>Java ME MIDP Templates</h2>
+
+<p><small><a href="#seealso">See Also</a></small>
+
+<p>The IDE provides templates for different types of project and file types. </p>
+<p>You can also create <a href="../configuration/config_about.html">project configuration 
+  templates</a>. </p>
+<h3>Project Templates</h3>
+<p>With project templates, the IDE controls all aspects of how your
+  application is built, run, and debugged. You set a project's source directory,
+  classpath, emulator platform, and other project settings when creating
+the project and in the Project Properties dialog box.</p>
+<p>When the project is created, the IDE: </p>
+<ul>
+  <li>Creates a source tree you can examine in the Projects or Files views.</li>
+  <li>Sets the emulator platform for the project. </li>
+  <li>Sets the project run and compile-time classpaths.</li>
+  <li>Creates a build script that contains actions for running, compiling, debugging,
+      and building Javadoc.</li>
+</ul>
+<ul class="note">
+<li>Compiling actions include Java ME platform-specific tasks such as preprocessing, preverification, and obfuscation.</li>
+  </ul>
+<p>The NetBeans Mobility Pack comes with the following Java ME MIDP templates:</p>
+<ul>
+  <li><strong>Mobile Application.</strong> An empty Java ME MIDP project with a
+    main class. You can choose to create the project with a Hello MIDlet as well.
+    Choosing the Hello MIDlet opens the <a href="../mvd/mvd_about.html">Mobility
+    Visual Designer</a>.</li>
+  <li><strong>Mobile Class Library.</strong> An empty Java ME MIDP class library
+    with no main class.<br>
+    Use this template to create a library within an existing
+    project. </li>
+  <li><strong>Mobile Project from Existing MIDP Sources.</strong> A Java ME MIDP
+    project created from an existing source folder.</li>
+  <li><strong>Import Wireless Toolkit Project.</strong> A Java ME MIDP project that
+      imports a project created previously in the J2ME Wireless Toolkit. </li>
+  <li><strong>Import Mobility Studio Project.</strong> A Java ME MIDP project that
+    imports a project created previously in a version of the  Sun Java
+      Studio Mobility. </li>
+</ul>
+<h3>File Templates</h3>
+  <p>With file templates, you specify a project, file name and location. The
+    IDE creates the basic structure of the file, and adds it to the Application
+    Descriptor file. Besides standard file templates known from J2SE projects
+    (for example, Java class, Java interface, XML file, and others), the Java ME
+    MIDP project offers the following templates: </p>
+  
+<ul>
+  <li><strong>Visual MIDlet. </strong>A MIDlet template that opens the Visual 
+    Mobile Designer. </li>
+  <li><strong>MIDlet.</strong> A basic executable class for a mobile device.</li>
+  <li><strong>MIDP Canvas.</strong> Creates a subclass of the Canvas class. The 
+    Canvas class gives full control over the appearance of the user interface, 
+    but may not be portable across devices.</li>
+  <li><strong>Localization Support Class.</strong> Creates a <code>LocalizationSupport.java</code> 
+    file and a <code>messages.properties</code> file where you add keys and values 
+    for localized elements of the UI.</li>
+  <li><strong>Hello Visual MIDlet.</strong> A MIDlet that displays text on the 
+    screen of a device. This MIDlet template opens the Mobility Visual Designer.</li>
+  <li><strong>Mobile Client to Web Application.</strong> A wizard that creates 
+    all the code needed to access a web application from a MIDP application. It 
+    generates a servlet and a Java ME class that connects to an existing web application 
+    through the servlet. Optionally, you can use the wizard to create a mobile 
+    client that uses an existing web service through servlet middleware.</li>
+  <li><strong>J2ME Web Services Client.</strong> A wizard that creates the code 
+    to access Web services using the 
+    <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content"
+value="../glossary/gloss_jsr172.html">
+      <param name="viewerActivator"
+value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,160">
+      <param name="text" value="JSR-172">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontSize" value="small">
+      <param name="textFontWeight" value="bold">
+      <param name="textFontStyle" value="italic">
+      <param name="textColor" value="blue">
+    </object>
+    standard.</li>
+</ul>
+  
+<dl>
+  <dt> <a name="seealso">See Also</a></dt>
+  <dd><a href="proj_creating.html">Creating a Java ME MIDP Project</a></dd>
+  <dd> <a href="../getstarted/importprojects.html">Importing Java ME MIDP Projects</a></dd>
+  <dd> <a href="../midlets/midlet_working.html">Working with MIDlets</a></dd>
+  <dd> <a href="../mvd/mvd_working.html">Working with the Visual Mobile Designer.</a></dd>
+  <dd> <a href="../l10n/l10n_about.html">About Java ME MIDP Localization</a><br>
+    <a href="../wcw/wcw_creating.html">Creating MIDP Client/Server Applications</a></dd>
+</dl>
+
+  </tr>
+
+</table>
+
+<hr>
+
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+
+    <td>&nbsp;</td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>
+

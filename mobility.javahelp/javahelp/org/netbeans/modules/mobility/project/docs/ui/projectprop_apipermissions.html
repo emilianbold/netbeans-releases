@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>MIDP Project Properties: API Permissions</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>MIDP Project Properties: API Permissions</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the API Permissions properties page to set permission attributes
+ for protected APIs called by the
+  MIDlet Suite. The attributes are listed in the 
+  <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_jad.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="Java Application Descriptor">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object>
+(JAD) file.</p>
+<p>You open the API Permissions properties page by choosing File &gt; <em>&lt;active
+    project name&gt;</em> Properties. In the Project Properties dialog, select
+    Application Descriptor <img src="../images/expand.gif" alt="and expand" width="12" height="12"> API
+    Permissions.</p>
+<p>If you are setting the properties for a <object
+classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   <param name="content"
+value="../glossary/gloss_deviceconfiguration.html"> 
+   <param name="viewerActivator"
+value="javax.help.LinkLabel">
+   <param name="viewerStyle" value="javax.help.Popup">
+   <param name="viewerSize" value="400,160">
+   <param name="text" value="project configuration">
+   <param name="textFontFamily" value="SansSerif">
+   <param name="textFontSize" value="small">
+   <param name="textFontWeight" value="bold">
+   <param name="textFontStyle" value="italic">
+   <param name="textColor" value="blue">
+</object> other than the
+  default configuration (<code>DefaultConfiguration</code>), you must uncheck
+  the Use Values from &quot;DefaultConfiguration&quot; checkbox at the top of
+the page to customize these options.</p>
+<ul class="note">
+    <li>If your emulator platform's profile version is set
+      to MDP 1.0, you cannot use API Permissions. For information on
+      setting the project profile version, see <a href="../properties/prop_setplatform.html">Customizing
+      Platform Properties</a>.</li>
+  </ul>
+<p>The Requested Permissions table in this page has two fields: </p>
+<ul>
+  <li><strong>API.</strong> The API permssions requested by the MIDlet.</li>
+  <li><strong>Required. </strong>If checked, the permission is required. At installation,
+        if the required permission can not be granted by the application management
+        software,
+          the application
+        will not be installed. If the box is not checked, the permission is optional.
+          If an optional permission is denied, the application might
+        continue to function, although its functionality can be limited. </li>
+</ul>
+<p><strong>To add permission requests:</strong></p>
+<ol>
+  <li>Click the Add Button. <br>
+    The <a href="dialog_addapi.html">API Permission for API dialog</a> opens.</li>
+  <li>Choose an API from the dropdown list or enter an API into the combo box
+    and click OK.</li>
+  <li>In the Requested Permissions table, check the Required box if you want
+    installation to fail in the event that permission cannot be granted.</li>
+</ol>
+<p>For more information, see &quot;Security for MIDP Applications&quot; in the
+MIDP 2.0 (JSR-118) specification, available at: </p>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://jcp.org/aboutJava/communityprocess/final/jsr118/index.html">
+    <param name="text" value="<html><u>http://developers.sun.com/techtopics/mobility/midp/articles/pushreg/</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>
+  <dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../properties/prop_addAPI.html">Adding API Permissions </a></dd>
+   <dd>   <a href="../properties/api_about.html">About API Permissions</a></dd>
+  </dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>
