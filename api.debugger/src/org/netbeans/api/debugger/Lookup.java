@@ -46,16 +46,13 @@ import org.openide.ErrorManager;
  */
 abstract class Lookup implements ContextProvider {
     
-    abstract List lookup (String folder, Class service, Set hidden);
-    abstract Set getHiddenItems (String folder, Class service);
     public Object lookupFirst (String folder, Class service) {
         List l = lookup (folder, service);
         if (l.isEmpty ()) return null;
         return l.get (0);
     }
-    public List lookup (String folder, Class service) {
-        return lookup (folder, service, Collections.EMPTY_SET);
-    }
+    
+    public abstract List lookup (String folder, Class service);
     
     
     private static boolean verbose = 
@@ -69,13 +66,11 @@ abstract class Lookup implements ContextProvider {
             this.services = services;
         }
         
-        List lookup (String folder, Class service, Set hidden) {
+        public List lookup (String folder, Class service) {
             ArrayList l = new ArrayList ();
             int i, k = services.length;
             for (i = 0; i < k; i++)
                 if (service.isAssignableFrom (services [i].getClass ())) {
-                    if (hidden.contains (services [i].getClass ().getName ()))
-                        continue;
                     l.add (services [i]);
                     if (verbose)
                         System.out.println("\nR  instance " + services [i] + 
@@ -84,9 +79,6 @@ abstract class Lookup implements ContextProvider {
             return l;
         }
         
-        Set getHiddenItems (String folder, Class service) {
-            return Collections.EMPTY_SET;
-        }
     }
     
     static class Compound extends Lookup {
@@ -99,22 +91,11 @@ abstract class Lookup implements ContextProvider {
             setContext (this);
         }
         
-        List lookup (String folder, Class service, Set hidden) {
+        public List lookup (String folder, Class service) {
             ArrayList l = new ArrayList ();
-            l.addAll (l1.lookup (folder, service, hidden));
-            l.addAll (l2.lookup (folder, service, hidden));
+            l.addAll (l1.lookup (folder, service));
+            l.addAll (l2.lookup (folder, service));
             return l;
-        }
-        
-        Set getHiddenItems (String folder, Class service) {
-            Set s = new HashSet ();
-            Iterator i = l1.getHiddenItems (folder, service).iterator ();
-            while (i.hasNext ())
-                s.add (i.next ());
-            i = l2.getHiddenItems (folder, service).iterator ();
-            while (i.hasNext ())
-                s.add (i.next ());
-            return s;
         }
         
         void setContext (Lookup context) {
@@ -143,7 +124,7 @@ abstract class Lookup implements ContextProvider {
             this.context = context;
         }
         
-        List lookup (String folder, Class service, Set hidden) {
+        public List lookup (String folder, Class service) {
             List l = list (folder, service);
             
             Set s = new HashSet (l);
@@ -165,17 +146,6 @@ abstract class Lookup implements ContextProvider {
             }
             return ll;
         }
-        
-        Set getHiddenItems (String folder, Class service) {
-            Iterator i = list (folder, service).iterator ();
-            Set h = new HashSet ();
-            while (i.hasNext ()) {
-                String s = (String) i.next ();
-                if (!s.endsWith (HIDDEN)) continue;
-                h.add (s.substring (0, s.length () - 7));
-            }
-            return h;
-        }        
         
         private List list (String folder, Class service) {
             String name = service.getName ();
