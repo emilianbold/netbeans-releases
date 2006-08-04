@@ -21,16 +21,19 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffSetupSource;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
+import org.netbeans.api.project.Project;
 
 import javax.swing.*;
 import java.io.File;
@@ -67,6 +70,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private AbstractAction nextAction;
     private AbstractAction prevAction;
 
+    private Map<File, Project> fileProjects = new HashMap<File, Project>(100);
+    
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
         this.roots = roots;
@@ -202,6 +207,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         repaint();
     }
     
+    /**
+     * It is called outside AWT.
+     * 
+     * @param newResults
+     */ 
     public void setResults(List newResults) {
         setResults(newResults, false);
     }
@@ -212,8 +222,35 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.searchInProgress = searching;
         summaryView = null;
         diffView = null;
-        refreshComponents(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                refreshComponents(true);
+            }
+        });
     }
+    
+    private final Project NULL_PROJECT = new Project() {
+            
+        public FileObject getProjectDirectory() {
+            return null;
+        }
+
+        public Lookup getLookup() {
+            return null;
+        }
+    };
+
+    Project getProject(File file) {
+        Project p = fileProjects.get(file);
+        if (p == null) {
+            p = Utils.getProject(file);
+            if (p == null) p = NULL_PROJECT;
+            fileProjects.put(file, p);
+            int n = fileProjects.size();
+        }
+        if (p == NULL_PROJECT) p = null;
+        return p;
+    }            
     
     public File[] getRoots() {
         return roots;
@@ -233,7 +270,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         currentSearchTask.schedule(0);
     }
     
-    private static List createDisplayList(List list) {
+    private List createDisplayList(List list) {
         List dispResults = new ArrayList();
         List results = new ArrayList(list);
         Collections.sort(results, new ByRemotePathRevisionNumberComparator());
@@ -254,6 +291,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         for (int i = 0; i < n; i++) {
             DispRevision revision = (DispRevision) results.get(i);
             if (currentContainer.getHeader() != revision.getRevision().getLogInfoHeader()) {
+                getProject(currentContainer.getHeader().getFile()); // precache outside AWT
                 if (currentContainer.getRevisions().size() < 1) {
                     dispResults.remove(currentContainer);
                     if (currentContainer.getRevisions().size() == 1) {

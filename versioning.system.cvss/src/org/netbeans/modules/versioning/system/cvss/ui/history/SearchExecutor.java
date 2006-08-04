@@ -29,7 +29,6 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -169,11 +168,7 @@ class SearchExecutor implements Runnable {
                     SearchExecutor.this.run();
                     return;
                 }
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        master.setResults(results);
-                    }
-                });
+                master.setResults(results);
             }
         };
         group.addBarrier(action);

@@ -20,10 +20,8 @@
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import java.io.*;
-import org.netbeans.lib.cvsclient.command.*;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
-import org.netbeans.lib.cvsclient.connection.*;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
@@ -36,6 +34,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.openide.ErrorManager;
 import org.openide.cookies.ViewCookie;
@@ -71,7 +70,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     public SummaryView(SearchHistoryPanel master, List results) {
         this.master = master;
         this.dispResults = expandResults(results);
-        FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
         message = master.getCriteria().getCommitMessage();
         resultsList = new JList(new SummaryListModel());
@@ -103,7 +102,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         // not interested
     }
     
-    private List expandResults(List results) {
+    private static List expandResults(List results) {
         ArrayList newResults = new ArrayList(results.size());
         for (Iterator i = results.iterator(); i.hasNext();) {
             Object o = i.next();
@@ -126,7 +125,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         return newResults;
     }
 
-    private void addResults(ArrayList newResults, SearchHistoryPanel.DispRevision dispRevision, int indentation) {
+    private static void addResults(ArrayList newResults, SearchHistoryPanel.DispRevision dispRevision, int indentation) {
         dispRevision.setIndentation(indentation);
         List children = dispRevision.getChildren();
         if (children != null) {
@@ -283,7 +282,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 
             }
 
-            Project prj = Utils.getProject(drev.getRevision().getLogInfoHeader().getFile());
+            Project prj = master.getProject(drev.getRevision().getLogInfoHeader().getFile());
             if (prj != null) {
                 String prjName = ProjectUtils.getInformation(prj).getDisplayName();
                 menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_Action_AssociateChangesInProject", prjName)) {
@@ -362,7 +361,6 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
-            String revision = drev.getRevision().getNumber().trim();
             ViewCookie view = (ViewCookie) new RevisionNode(drev).getCookie(ViewCookie.class);
             if (view != null) {
                 view.view();
@@ -398,8 +396,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
             File file = drev.getRevision().getLogInfoHeader().getFile();
-            Project project = Utils.getProject(file);                
-            Context context = Utils.getProjectsContext(new Project[] { Utils.getProject(file) });
+            Project project = master.getProject(file);                
+            Context context = Utils.getProjectsContext(new Project[] { master.getProject(file) });
             SearchHistoryAction.openSearch(
                     context, 
                     ProjectUtils.getInformation(project).getDisplayName(),
@@ -443,6 +441,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         private HyperlinkLabel  diffLink;
         private HyperlinkLabel  acpLink;
         private HyperlinkLabel  acopLink;
+        
+        private final JLabel    diffToLabel;
+        private final JLabel    findCommitInLabel;
+        private final JLabel    commaLabel;
 
         public SummaryCellRenderer() {
             selectedStyle = textPane.addStyle("selected", null); // NOI18N
@@ -467,6 +469,24 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             add(textPane);
             add(actionsPane, BorderLayout.PAGE_END);
             actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
+            
+            diffToLabel = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_DiffTo"));
+            actionsPane.add(diffToLabel);
+            diffLink = new HyperlinkLabel();
+            diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
+            actionsPane.add(diffLink);
+
+            acopLink = new HyperlinkLabel();
+            acpLink = new HyperlinkLabel();
+
+            findCommitInLabel = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitIn"));
+            actionsPane.add(findCommitInLabel);
+            actionsPane.add(acpLink);
+            
+            commaLabel = new JLabel(","); // NOI18N
+            actionsPane.add(commaLabel);
+            actionsPane.add(acopLink);
+            
             textPane.setBorder(null);
         }
         
@@ -478,14 +498,14 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof SearchHistoryPanel.ResultsContainer) {
-                renderContainer(list, (SearchHistoryPanel.ResultsContainer) value, index, isSelected);
+                renderContainer((SearchHistoryPanel.ResultsContainer) value, index, isSelected);
             } else {
                 renderRevision(list, (SearchHistoryPanel.DispRevision) value, index, isSelected);
             }
             return this;
         }
 
-        private void renderContainer(JList list, SearchHistoryPanel.ResultsContainer container, int index, boolean isSelected) {
+        private void renderContainer(SearchHistoryPanel.ResultsContainer container, int index, boolean isSelected) {
 
             StyledDocument sd = textPane.getStyledDocument();
 
@@ -512,9 +532,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             } catch (BadLocationException e) {
                 ErrorManager.getDefault().notify(e);
             }
-            
-            actionsPane.removeAll();
-            actionsPane.revalidate();
+            actionsPane.setVisible(false);
         }
 
         private void renderRevision(JList list, SearchHistoryPanel.DispRevision dispRevision, final int index, boolean isSelected) {
@@ -591,50 +609,48 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 }
             }
             
-            actionsPane.removeAll();
+            actionsPane.setVisible(true);
             String prev = Utils.previousRevision(dispRevision.getRevision().getNumber());
             if (prev != null) {
-                JLabel l1 = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_DiffTo"));
-                l1.setForeground(foregroundColor);
-                actionsPane.add(l1);
-                diffLink = new HyperlinkLabel(prev, foregroundColor, backgroundColor);
-                diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
-                actionsPane.add(diffLink);
+                diffToLabel.setVisible(true);
+                diffLink.setVisible(true);
+                diffToLabel.setForeground(foregroundColor);
+                diffLink.set(prev, foregroundColor, backgroundColor);
             } else {
-                diffLink = null;
+                diffToLabel.setVisible(false);
+                diffLink.setVisible(false);
             }
 
             Project [] projects  = OpenProjects.getDefault().getOpenProjects();
             if (projects.length > 0) {
-                acopLink = new HyperlinkLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitInOpenProjects"), foregroundColor, backgroundColor);
+                acopLink.setVisible(true);
+                acopLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitInOpenProjects"), foregroundColor, backgroundColor);
             } else {
-                acopLink = null;
+                acopLink.setVisible(false);
             }
-            Project prj = Utils.getProject(dispRevision.getRevision().getLogInfoHeader().getFile());
+            
+            Project prj = master.getProject(dispRevision.getRevision().getLogInfoHeader().getFile());
             if (prj != null) {
                 String prjName = ProjectUtils.getInformation(prj).getDisplayName();
-                acpLink = new HyperlinkLabel("\"" + prjName + "\"", foregroundColor, backgroundColor); // NOI18N
+                acpLink.setVisible(true);
+                acpLink.set("\"" + prjName + "\"", foregroundColor, backgroundColor); // NOI18N
             } else {
-                acpLink = null;
+                acpLink.setVisible(false);
             }
 
-            if (acpLink != null || acopLink != null) {
-                JLabel l1 = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitIn"));
-                l1.setForeground(foregroundColor);
-                actionsPane.add(l1);
-                if (acpLink != null) {
-                    actionsPane.add(acpLink);
+            if (acpLink.isVisible() || acopLink.isVisible()) {
+                findCommitInLabel.setVisible(true);
+                findCommitInLabel.setForeground(foregroundColor);
+                if (acopLink.isVisible() && acopLink.isVisible()) {
+                    commaLabel.setVisible(true);
+                    commaLabel.setForeground(foregroundColor);
+                } else {
+                    commaLabel.setVisible(false);
                 }
-                if (acopLink != null) {
-                    if (acpLink != null) {
-                        JLabel l2 = new JLabel(","); // NOI18N
-                        l2.setForeground(foregroundColor);
-                        actionsPane.add(l2);
-                    }
-                    actionsPane.add(acopLink);
-                }
+            } else {
+                commaLabel.setVisible(false);
+                findCommitInLabel.setVisible(false);
             }
-            actionsPane.revalidate();
         }
 
         protected void paintComponent(Graphics g) {
@@ -659,16 +675,32 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
     
     private static class HyperlinkLabel extends JLabel {
-        
-        public HyperlinkLabel(String text, Color foreground, Color background) {
-            if (foreground.equals(UIManager.getColor("List.foreground"))) { // NOI18N
-                setText("<html><a href=\"\">" + text + "</a></html>"); // NOI18N
-            } else {
-                String clr = "rgb(" + foreground.getRed() + "," + foreground.getGreen() + "," + foreground.getBlue() + ")"; // NOI18N
-                setText("<html><a href=\"\" style=\"color:" + clr + "\">" + text + "</a></html>"); // NOI18N
-            }
-            setBackground(background);
+
+        public HyperlinkLabel() {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        }
+
+        public void set(String text, Color foreground, Color background) {
+            StringBuilder sb = new StringBuilder(100);
+            if (foreground.equals(UIManager.getColor("List.foreground"))) { // NOI18N
+                sb.append("<html><a href=\"\">"); // NOI18N
+                sb.append(text);
+                sb.append("</a>"); // NOI18N
+            } else {
+                sb.append("<html><a href=\"\" style=\"color:"); // NOI18N
+                sb.append("rgb("); // NOI18N
+                sb.append(foreground.getRed());
+                sb.append(","); // NOI18N
+                sb.append(foreground.getGreen());
+                sb.append(","); // NOI18N
+                sb.append(foreground.getBlue());
+                sb.append(")"); // NOI18N
+                sb.append("\">"); // NOI18N
+                sb.append(text);
+                sb.append("</a>"); // NOI18N
+            }
+            setText(sb.toString());
+            setBackground(background);
         }
     }
 }
