@@ -62,12 +62,13 @@ public class Lookups {
      * Its contents never changes so registering listeners on such lookup
      * does not have any observable effect (the listeners are never called).
      *
+     * @param objectsToLookup list of objects to include
      * @return Fully initialized lookup object ready to use
      * @throws NullPointerException if the supplied argument is null
      * @since 2.21
      *
      */
-    public static Lookup fixed(Object[] objectsToLookup) {
+    public static Lookup fixed(Object... objectsToLookup) {
         if (objectsToLookup == null) {
             throw new NullPointerException();
         }
@@ -140,18 +141,18 @@ public class Lookups {
      * of specified classes. If you have a lookup and
      * you want to remove all instances of ActionMap you can use:
      * <pre>
-     * l = Lookups.exclude (lookup, new Class[] { ActionMap.class });
+     * l = Lookups.exclude(lookup, ActionMap.class);
      * </pre>
-     * Then anybody who asks for <code>l.lookup (ActionMap.class)</code> or
+     * Then anybody who asks for <code>l.lookup(ActionMap.class)</code> or
      * subclass will get <code>null</code>. Even if the original lookup contains the
      * value.
      * To create empty lookup (well, just an example, otherwise use {@link Lookup#EMPTY}) one could use:
      * <pre>
-     * Lookup.exclude (anyLookup, new Class[] { Object.class });
+     * Lookup.exclude(anyLookup, Object.class);
      * </pre>
      * as any instance in any lookup is of type Object and thus would be excluded.
      * <p>
-     * The complete behaviour can be described as <code>classes</code> being
+     * The complete behavior can be described as <code>classes</code> being
      * a barrier. For an object not to be excluded, there has to be an inheritance
      * path between the queried class and the actual class of the instance,
      * that is not blocked by any of the excluded classes:
@@ -161,7 +162,7 @@ public class Lookups {
      * class C implements A, B {}
      * Object c = new C();
      * Lookup l1 = Lookups.singleton(c);
-     * Lookup l2 = Lookups.exclude(l1, new Class[] {A.class});
+     * Lookup l2 = Lookups.exclude(l1, A.class);
      * assertNull("A is directly excluded", l2.lookup(A.class));
      * assertEquals("Returns C as A.class is not between B and C", c, l2.lookup(B.class));
      * </pre>
@@ -174,7 +175,7 @@ public class Lookups {
      * @param classes array of classes those instances should be excluded
      * @since 5.4
      */
-    public static Lookup exclude(Lookup lookup, Class[] classes) {
+    public static Lookup exclude(Lookup lookup, Class... classes) {
         return new ExcludingLookup(lookup, classes);
     }
 

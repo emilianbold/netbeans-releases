@@ -116,7 +116,7 @@ public class ProxyLookup extends Lookup {
      * @param lookups the new lookups to delegate to
      * @since 1.19 protected
      */
-    protected final void setLookups(Lookup[] lookups) {
+    protected final void setLookups(Lookup... lookups) {
         Collection<Reference<R>> arr;
         HashSet<Lookup> newL;
         HashSet<Lookup> current;
