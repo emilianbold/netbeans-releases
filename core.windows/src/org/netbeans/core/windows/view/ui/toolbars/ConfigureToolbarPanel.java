@@ -397,8 +397,13 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                     if( null != instance ) {
                         if( instance instanceof Action ) {
                             Action action = (Action)instance;
-                            if( null == action.getValue( "iconBase" ) ) {
-                                return false;
+                            try {
+                                if( null == action.getValue( "iconBase" ) ) {
+                                    return false;
+                                }
+                            } catch( AssertionError aE ) {
+                                //hack: some action do not allow access outside
+                                //event queue - so let's ignore their assertions
                             }
                         } else if( instance instanceof JSeparator ) {
                             return false;
