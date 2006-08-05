@@ -192,6 +192,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/output2</project>
                 <project>../core/palette</project>
                 <project>../core/progress</project>
+                <project>../core/progressui</project>
                 <project>../core/settings</project>
                 <project>../core/startup</project>
                 <project>../core/swing/plaf</project>
@@ -222,6 +223,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/hints</project>
                 <project>../editor/lib</project>
                 <project>../editor/mimelookup</project>
+                <project>../editor/mimelookup/impl</project>
                 <project>../editor/options</project>
                 <project>../editor/plain</project>
                 <project>../editor/plain/lib</project>
