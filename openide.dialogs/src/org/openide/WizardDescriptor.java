@@ -1613,8 +1613,11 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /**
          * Is called in separate thread when the Finish button
-         * are clicked and allows implement asynchronous
-         * instantating of newly created objects.
+         * are clicked and allows implement asynchronous instantating of newly created objects.
+         * While instantiating users are notified by progress bar in wizard's panel. Notfication will
+         * be visualized by a progress bar.
+         * Note: The <code>ProgressHandle</code> is not started, need to start it and report progress by
+         * messages in the <code>progress()</code> method.
          * 
          * @param handle progress bar handle
          * @throws IOException when instantiate fails
