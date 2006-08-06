@@ -24,7 +24,16 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.openide.dialogs</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -32,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
+                    <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -48,6 +57,9 @@ Microsystems, Inc. All Rights Reserved.
                       <recursive/>
                       <compile-dependency/>
                   </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
+                    </test-dependency>
               </test-type>
               <test-type>
                   <name>qa-functional</name>

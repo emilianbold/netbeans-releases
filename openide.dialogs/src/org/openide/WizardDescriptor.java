@@ -36,6 +36,9 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -57,10 +60,12 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -76,6 +81,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
 /**
  * Implements a basic "wizard" GUI system.
@@ -206,6 +213,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** a component with wait cursor */
     transient private Component waitingComponent;
+    private boolean changeStateInProgress = false;
 
     /** Whether wizard panel will be constructed from <CODE>WizardDescriptor.getProperty()</CODE>/
      * <CODE>(JComponent)Panel.getComponent()</CODE> client properties or returned
@@ -284,6 +292,12 @@ public class WizardDescriptor extends DialogDescriptor {
     private RequestProcessor.Task backgroundValidationTask;
 
     private boolean validationRuns;
+
+    private ProgressHandle handle;
+
+    private static final String PROGRESS_BAR_DISPLAY_NAME = NbBundle.getMessage (WizardDescriptor.class, "CTL_InstantiateProgress_Title"); // NOI18N
+
+    private ActionListener escapeActionListener;
 
     {
         // button init
@@ -386,6 +400,35 @@ public class WizardDescriptor extends DialogDescriptor {
         super.initialize();
 
         updateState();
+        
+        // #81938: special handling WizardDescriptor to avoid close wizard during instantiate
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                final Window w = SwingUtilities.getWindowAncestor((Component) getMessage());
+                if (w != null) {
+                    w.addWindowListener (new WindowListener () {
+                        public void windowActivated (WindowEvent e) {
+                        }
+                        public void windowClosed (WindowEvent e) {
+                        }
+                        public void windowClosing (WindowEvent e) {
+                            if (!changeStateInProgress) {
+                                w.setVisible (false);
+                                w.dispose ();
+                            }
+                        }
+                        public void windowDeactivated (WindowEvent e) {
+                        }
+                        public void windowDeiconified (WindowEvent e) {
+                        }
+                        public void windowIconified (WindowEvent e) {
+                        }
+                        public void windowOpened (WindowEvent e) {
+                        }
+                    });
+                }
+            }
+        });
     }
 
     /** Set a different list of panels.
@@ -758,6 +801,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
         nextButton.setEnabled (next && valid);
         previousButton.setEnabled (prev);
+        cancelButton.setEnabled (true);
         
         if (current instanceof FinishablePanel) {
             // check if isFinishPanel
@@ -862,9 +906,21 @@ public class WizardDescriptor extends DialogDescriptor {
             // if none root pane --> don't set wait cursor
             return;
         }
+        
+        Window parentWindow = SwingUtilities.getWindowAncestor((Component) getMessage());
+        if (parentWindow != null) {
+            parentWindow.setEnabled (false);
+        }
+        
+        if (wizardPanel != null) {
+            // save escapeActionListener for normal state
+            escapeActionListener = wizardPanel.getRootPane ().getActionForKeyStroke (KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0));
+            wizardPanel.getRootPane ().unregisterKeyboardAction (KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0));
+        }
 
         waitingComponent = wizardPanel.getRootPane().getContentPane();
         waitingComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        changeStateInProgress = true;
     }
 
     private void showNormalCursor() {
@@ -873,8 +929,22 @@ public class WizardDescriptor extends DialogDescriptor {
             return;
         }
 
+        Window parentWindow = SwingUtilities.getWindowAncestor((Component) getMessage());
+        if (parentWindow != null) {
+            parentWindow.setEnabled (true);
+        }
+        
+        if (wizardPanel != null) {
+            // set back escapeActionListener as same as NbPresenter does
+            if (escapeActionListener != null) {
+                wizardPanel.getRootPane ().registerKeyboardAction (escapeActionListener, "Cancel",
+                    KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            }
+        }
+        
         waitingComponent.setCursor(null);
         waitingComponent = null;
+        changeStateInProgress = false;
     }
 
     /* commented out - issue #32927. Replaced by javadoc info in WizardDescriptor.Panel
@@ -1188,7 +1258,30 @@ public class WizardDescriptor extends DialogDescriptor {
 
     private void callInstantiate() throws IOException {
         assert panels != null;
-
+        
+        err.log (Level.FINE, "Is AsynchronousInstantiatingIterator? " + (panels instanceof AsynchronousInstantiatingIterator));
+        err.log (Level.FINE, "Is ProgressInstantiatingIterator? " + (panels instanceof ProgressInstantiatingIterator));
+        if (panels instanceof ProgressInstantiatingIterator) {
+            handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
+            
+            JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+            if (wizardPanel != null) {
+                wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createDetailLabelComponent (handle));
+            }
+            
+            err.log (Level.FINE, "Show progressPanel controlled by iterator later.");
+        } else if (panels instanceof AsynchronousInstantiatingIterator) {
+            handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
+            
+            JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
+            if (wizardPanel != null) {
+                wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createMainLabelComponent (handle));
+            }
+            
+            handle.start ();
+            err.log (Level.FINE, "Show progressPanel later.");
+        }
+         
         // bugfix #44444, force store settings before do instantiate new objects
         panels.current().storeSettings(settings);
 
@@ -1197,8 +1290,15 @@ public class WizardDescriptor extends DialogDescriptor {
 
             try {
                 assert ! (panels instanceof AsynchronousInstantiatingIterator) || ! SwingUtilities.isEventDispatchThread () : "Cannot invoked within EDT if AsynchronousInstantiatingIterator!";
-                err.log (Level.FINE, "Calls instantiate() on iterator: " + panels.getClass ().getName ());
-                newObjects = ((InstantiatingIterator) panels).instantiate();
+                
+                if (panels instanceof ProgressInstantiatingIterator) {
+                    assert handle != null : "ProgressHandle must be not null.";
+                    err.log (Level.FINE, "Calls instantiate(ProgressHandle) on iterator: " + panels.getClass ().getName ());
+                    newObjects = ((ProgressInstantiatingIterator) panels).instantiate (handle);
+                } else {
+                    err.log (Level.FINE, "Calls instantiate() on iterator: " + panels.getClass ().getName ());
+                    newObjects = ((InstantiatingIterator) panels).instantiate ();
+                }
             } finally {
 
                 // set cursor back to normal
@@ -1495,9 +1595,33 @@ public class WizardDescriptor extends DialogDescriptor {
          * instantating of newly created objects.
          *
          * @throws IOException when instantiate fails
+         * @return a set of objects created (the exact type is at the discretion of the caller)
          */
         public Set /*<Object>*/ instantiate () throws IOException;
 
+    }
+
+    /**
+     * Iterator for a wizard that wants to notify users while instantiate is running by a progress bar.
+     * The method <code>instantiate</code> is called outside ATW queue.
+     * (This interface can replace
+     * <a href="@OPENIDE/LOADERS@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
+     * in a template's declaration.)
+     * @since org.openide/1 7.1
+     */
+    public interface ProgressInstantiatingIterator extends AsynchronousInstantiatingIterator {
+
+        /**
+         * Is called in separate thread when the Finish button
+         * are clicked and allows implement asynchronous
+         * instantating of newly created objects.
+         * 
+         * @param handle progress bar handle
+         * @throws IOException when instantiate fails
+         * @return a set of objects created (the exact type is at the discretion of the caller)
+         */
+        public Set /*<Object>*/ instantiate (ProgressHandle handle) throws IOException;
+        
     }
 
     /** Special iterator that works on an array of <code>Panel</code>s.
@@ -1668,6 +1792,7 @@ public class WizardDescriptor extends DialogDescriptor {
                         previousButton.setEnabled (false);
                         nextButton.setEnabled (false);
                         finishButton.setEnabled (false);
+                        cancelButton.setEnabled (false);
                         
                         // write something to errorMessage (e.g. Wait to finishing.)
                         if (wizardPanel != null) wizardPanel.setErrorMessage (NbBundle.getMessage (WizardDescriptor.class, "MSG_WizardDescriptor_FinishInProgress"), Boolean.TRUE); // NOI18N
@@ -2050,6 +2175,8 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /** Label of steps pane */
         private JLabel label;
+        
+        private JPanel progressBarPanel;
 
         /** Selected index of content */
         private int selectedIndex;
@@ -2128,6 +2255,15 @@ public class WizardDescriptor extends DialogDescriptor {
             m_lblMessage = new FixedHeightLabel ();
             m_lblMessage.setForeground (nbErrorForeground);
             errorPanel.add(m_lblMessage, BorderLayout.CENTER);
+            
+            progressBarPanel = new JPanel (new BorderLayout ());
+            // placeholder for progress bar components
+            progressBarPanel.add (new JLabel (), BorderLayout.NORTH);
+            progressBarPanel.add (new JProgressBar (), BorderLayout.CENTER);
+            progressBarPanel.setVisible (false);
+            
+            progressBarPanel.setBorder (BorderFactory.createEmptyBorder (4, 0, 0, 0));
+            errorPanel.add (progressBarPanel, BorderLayout.SOUTH);
 
             JPanel fullRightPanel = new JPanel(new BorderLayout());
             fullRightPanel.add(labelPanel, BorderLayout.NORTH);
@@ -2158,6 +2294,17 @@ public class WizardDescriptor extends DialogDescriptor {
             }
             
             m_lblMessage.setText(msg);
+        }
+        
+        private void setProgressComponent (JComponent progressComp, JLabel progressLabel) {
+            progressBarPanel.removeAll ();
+            if (progressLabel != null) {
+                progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
+                progressBarPanel.add (progressLabel, BorderLayout.NORTH);
+            }
+            progressBarPanel.add (progressComp, BorderLayout.CENTER);
+            progressBarPanel.setVisible (true);
+            progressBarPanel.revalidate ();
         }
 
         /** Creates content panel.

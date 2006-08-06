@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.*;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.*;
@@ -75,7 +76,7 @@ public class TemplateWizard extends WizardDescriptor {
     /** Iterator for the targetChooser */
     private Iterator targetIterator;
     /** whole iterator */
-    private TemplateWizardIterImpl iterator;
+    private TemplateWizardIteratorWrapper iterator;
 
     /** values for wizards */
     private DataObject template;
@@ -97,15 +98,17 @@ public class TemplateWizard extends WizardDescriptor {
     private Component lastComp;
     
     private Set<DataObject> newObjects = null;
+
+    private ProgressHandle progressHandle;
     
     /** Creates new TemplateWizard */
     public TemplateWizard () {
-        this (new TemplateWizardIterImpl ());
+        this (new TemplateWizardIteratorWrapper.InstantiatingIterator (new TemplateWizardIterImpl ()));
     }
      
     /** Constructor to be called from public default one.
     */
-    private TemplateWizard (TemplateWizardIterImpl it) {
+    private TemplateWizard (TemplateWizardIteratorWrapper it) {
         super (it);
         
         this.iterator = it;
@@ -155,6 +158,20 @@ public class TemplateWizard extends WizardDescriptor {
                 (it = getIterator (obj)) == null
             ) {
                 it = defaultIterator ();
+            }
+            
+            // change type of TemplateWizard's iterator to follow type of iterator corresponding to active template
+            if (it instanceof InstantiatingIteratorBridge) {
+                WizardDescriptor.InstantiatingIterator newIt = ((InstantiatingIteratorBridge) it).getOriginalIterator ();
+                if (newIt instanceof WizardDescriptor.ProgressInstantiatingIterator) {
+                    TemplateWizardIteratorWrapper newIterImplWrapper = new TemplateWizardIteratorWrapper.ProgressInstantiatingIterator (this.iterator.getOriginalIterImpl ());
+                    this.iterator = newIterImplWrapper;
+                    this.setPanels (newIterImplWrapper);
+                } else if (newIt instanceof WizardDescriptor.AsynchronousInstantiatingIterator) {
+                    TemplateWizardIteratorWrapper newIterImplWrapper = new TemplateWizardIteratorWrapper.AsynchronousInstantiatingIterator (this.iterator.getOriginalIterImpl ());
+                    this.iterator = newIterImplWrapper;
+                    this.setPanels (newIterImplWrapper);
+                }
             }
             this.iterator.setIterator (it, notify);
         }
@@ -352,7 +369,12 @@ public class TemplateWizard extends WizardDescriptor {
         return instantiateImpl (template, targetFolder);
     }
     
-    Set<DataObject> instantiateNewObjects() throws IOException {
+    private ProgressHandle getProgressHandle () {
+        return progressHandle;
+    }
+    
+    Set<DataObject> instantiateNewObjects (ProgressHandle handle) throws IOException {
+        progressHandle = handle;
         try {
             // #17341. The problem is handling ESC -> value is not
             // set to CANCEL_OPTION for such cases.
@@ -644,6 +666,7 @@ public class TemplateWizard extends WizardDescriptor {
         if (unknownIterator instanceof Iterator) {
             // old style iterator
             it = (Iterator)unknownIterator;
+        // own brigde for each one iterator type
         } if (unknownIterator instanceof WizardDescriptor.InstantiatingIterator) {
             it = new InstantiatingIteratorBridge((WizardDescriptor.InstantiatingIterator) unknownIterator);
         }
@@ -746,10 +769,6 @@ public class TemplateWizard extends WizardDescriptor {
         return 1;
     }
     
-    final TemplateWizardIterImpl getIterImpl () {
-        return iterator;
-    }
-    
     /** Listens on content property changes in delegated iterator. Updates Wizard
      * descriptor properties.
      */
@@ -769,6 +788,11 @@ public class TemplateWizard extends WizardDescriptor {
             };
         }
         return pcl;
+    }
+
+    // needs for unit test only
+    final TemplateWizardIterImpl getIterImpl () {
+        return iterator.getOriginalIterImpl ();
     }
 
     /** The interface for custom iterator. Enhances to WizardDescriptor.Iterator
@@ -916,6 +940,10 @@ public class TemplateWizard extends WizardDescriptor {
             instantiatingIterator = it;
         }
         
+        private WizardDescriptor.InstantiatingIterator getOriginalIterator () {
+            return instantiatingIterator;
+        }
+        
         public void addChangeListener (javax.swing.event.ChangeListener l) {
             instantiatingIterator.addChangeListener (l);
         }
@@ -954,7 +982,13 @@ public class TemplateWizard extends WizardDescriptor {
         
         public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException {
             // iterate Set and replace unexpected object with dataobjects
-            Set<Object> workSet = instantiatingIterator.instantiate();
+            Set<Object> workSet = null;
+            if (instantiatingIterator instanceof WizardDescriptor.ProgressInstantiatingIterator) {
+                assert wiz.getProgressHandle () != null : "ProgressHandle cannot be null.";
+                workSet = ((ProgressInstantiatingIterator)instantiatingIterator).instantiate (wiz.getProgressHandle ());
+            } else {
+                workSet = instantiatingIterator.instantiate ();
+            }
             java.util.Iterator it = workSet.iterator ();
             Object obj;
             DataObject dobj;

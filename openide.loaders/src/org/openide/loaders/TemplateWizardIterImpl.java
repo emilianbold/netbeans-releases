@@ -22,6 +22,7 @@ package org.openide.loaders;
 import java.io.IOException;
 import java.util.Set;
 import javax.swing.event.*;
+import org.netbeans.api.progress.ProgressHandle;
 
 import org.openide.WizardDescriptor;
 
@@ -30,8 +31,9 @@ import org.openide.WizardDescriptor;
 *
 * @author  Jaroslav Tulach
 */
-final class TemplateWizardIterImpl extends Object
-    implements WizardDescriptor.InstantiatingIterator, ChangeListener {
+class TemplateWizardIterImpl extends Object
+    implements WizardDescriptor.Iterator, ChangeListener {
+
     /** iterator to delegate to */
     private TemplateWizard.Iterator iterator;
 
@@ -219,9 +221,14 @@ final class TemplateWizardIterImpl extends Object
         uninitialize ();
     }
     
-    public Set/*<DataObject>*/ instantiate () throws IOException {
+    public Set<DataObject> instantiate () throws IOException {
         assert wizardInstance != null : "wizardInstance cannot be null when instantiate() called."; // NOI18N
-        return wizardInstance.instantiateNewObjects ();
+        return wizardInstance.instantiateNewObjects (null);
+    }
+    
+    public Set<DataObject> instantiate (ProgressHandle handle) throws IOException {
+        assert wizardInstance != null : "wizardInstance cannot be null when instantiate() called."; // NOI18N
+        return wizardInstance.instantiateNewObjects (handle);
     }
     
     /** Notifies all registered listeners about the event.
@@ -242,4 +249,6 @@ final class TemplateWizardIterImpl extends Object
             }
         }
     }
+
 }
+

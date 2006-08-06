@@ -159,8 +159,13 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         //opaque.
         getRootPane().setOpaque(true);
         
-        // #55273: Dialogs created by DialogDisplayer are not disposed after close
-        setDefaultCloseOperation (WindowConstants.DISPOSE_ON_CLOSE);
+        if (d instanceof WizardDescriptor) {
+            // #81938: wizard close button shouln't work during finish progress
+            setDefaultCloseOperation (WindowConstants.DO_NOTHING_ON_CLOSE);
+        } else {
+            // #55273: Dialogs created by DialogDisplayer are not disposed after close
+            setDefaultCloseOperation (WindowConstants.DISPOSE_ON_CLOSE);
+        }
         
         descriptor = d;
 
@@ -916,7 +921,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     public void windowIconified(final java.awt.event.WindowEvent p1) {
     }
     public void windowClosing(final java.awt.event.WindowEvent p1) {
-        descriptor.setValue(NotifyDescriptor.CLOSED_OPTION);
+        // #81938: special handling WizardDescriptor to avoid close wizard during instantiate
+        if (! (descriptor instanceof WizardDescriptor)) {
+            descriptor.setValue(NotifyDescriptor.CLOSED_OPTION);
+        }
     }
     public void windowActivated(final java.awt.event.WindowEvent p1) {
     }

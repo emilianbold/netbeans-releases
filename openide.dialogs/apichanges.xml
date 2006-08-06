@@ -23,6 +23,21 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
+    <change id="WizardDescriptor.ProgressInstantiatingIterator">
+           <api name="dialogs"/>
+           <summary>Interface <code>ProgressInstantiatingIterator</code> added</summary>
+           <version major="7" minor="1"/>
+           <date day="8" month="4" year="2006"/>
+           <author login="jrechtacek"/>
+           <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+           <description>
+             The <code>ProgressInstantiatingIterator</code> notifies users while instantiate
+             is running by a progress bar, this progress bar is integrated into wizard panel.
+             Instantiating of newly created objects is invoked asynchronously.
+           </description>
+           <class package="org.openide" name="WizardDescriptor"/>
+           <issue number="58889"/>
+    </change>
     <change id="notifyLater">
            <api name="dialogs"/>
            <summary>New method to asynchronously show messages</summary>
