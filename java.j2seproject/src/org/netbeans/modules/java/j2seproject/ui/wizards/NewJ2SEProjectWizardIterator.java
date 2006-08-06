@@ -31,8 +31,6 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -43,7 +41,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 
 /**
  * Wizard to create a new J2SE project.
@@ -103,7 +100,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
     
     
     public Set/*<FileObject>*/ instantiate () throws IOException {
-        assert false : "Cannot this method if implment WizardDescriptor.ProgressInstantiatingIterator.";
+        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
         
@@ -145,17 +142,16 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
                     ErrorManager.getDefault().notify(x);
                 }
             }
-            if ( type == TYPE_LIB ) {
+            // if ( type == TYPE_LIB ) {
                 // resultSet.add( h.getProjectDirectory ().getFileObject ("src") );        //NOI18N 
                 // resultSet.add( h.getProjectDirectory() ); // Only expand the project directory
-            }
+            // }
         }
         FileObject dir = FileUtil.toFileObject(dirF);
         if (type == TYPE_APP || type == TYPE_EXT) {
-            createManifest(dir, MANIFEST_FILE);
+            createManifest(dir);
         }
         handle.progress (3);
-        Project p = ProjectManager.getDefault().findProject(dir);
 
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
@@ -283,10 +279,9 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
     /**
      * Create a new application manifest file with minimal initial contents.
      * @param dir the directory to create it in
-     * @param path the relative path of the file
      * @throws IOException in case of problems
      */
-    private static void createManifest(FileObject dir, String path) throws IOException {
+    private static void createManifest(final FileObject dir) throws IOException {
         FileObject manifest = dir.createData(MANIFEST_FILE);
         FileLock lock = manifest.lock();
         try {
