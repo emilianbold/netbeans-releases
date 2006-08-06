@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-public abstract class BasicWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public abstract class BasicWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
     
     private int position = 0;
     private BasicWizardIterator.PrivateWizardPanel[] wizardPanels;

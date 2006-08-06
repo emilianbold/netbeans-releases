@@ -45,7 +45,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-public class NewNbModuleWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
     
     /** Either standalone module, suite component or NB CVS module. */
     static final int TYPE_MODULE = 1;
