@@ -30,6 +30,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
@@ -47,7 +48,7 @@ import org.openide.util.NbBundle;
 /**
  * Wizard to create a new J2SE project.
  */
-public class NewJ2SEProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     static final int TYPE_APP = 0;
     static final int TYPE_LIB = 1;
@@ -102,6 +103,13 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     
     
     public Set/*<FileObject>*/ instantiate () throws IOException {
+        assert false : "Cannot this method if implment WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+        
+    public Set/*<FileObject>*/ instantiate (ProgressHandle handle) throws IOException {
+        handle.start (4);
+        //handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_ReadingProperties"));
         Set resultSet = new HashSet ();
         File dirF = (File)wiz.getProperty("projdir");        //NOI18N
         if (dirF != null) {
@@ -109,10 +117,12 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         }
         String name = (String)wiz.getProperty("name");        //NOI18N
         String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
+        handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         if (this.type == TYPE_EXT) {
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
             J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE );
+            handle.progress (2);
             for (int i=0; i<sourceFolders.length; i++) {
                 FileObject srcFo = FileUtil.toFileObject(sourceFolders[i]);
                 if (srcFo != null) {
@@ -122,6 +132,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         }
         else {
             AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == TYPE_APP ? MANIFEST_FILE : null);
+            handle.progress (2);
             if (mainClass != null && mainClass.length () > 0) {
                 try {
                     //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
@@ -143,6 +154,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         if (type == TYPE_APP || type == TYPE_EXT) {
             createManifest(dir, MANIFEST_FILE);
         }
+        handle.progress (3);
         Project p = ProjectManager.getDefault().findProject(dir);
 
         // Returning FileObject of project diretory. 
@@ -160,7 +172,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
                 break;
         }        
         resultSet.add (dir);
-
+        handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
         dirF = (dirF != null) ? dirF.getParentFile() : null;
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder (dirF);    
@@ -292,5 +304,5 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
             lock.releaseLock();
         }
     }
-    
+
 }
