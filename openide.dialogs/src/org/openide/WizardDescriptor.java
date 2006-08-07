@@ -1607,7 +1607,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * (This interface can replace
      * <a href="@OPENIDE/LOADERS@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
      * in a template's declaration.)
-     * @since org.openide/1 7.1
+     * @since org.openide.dialogs 7.1
      */
     public interface ProgressInstantiatingIterator extends AsynchronousInstantiatingIterator {
 
