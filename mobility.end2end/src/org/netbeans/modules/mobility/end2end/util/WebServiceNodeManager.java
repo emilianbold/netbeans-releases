@@ -67,8 +67,7 @@ public final class WebServiceNodeManager {
          * @param key the original child node
          * @return zero or more nodes representing the original child node
          */
-        protected Node[] createNodes(final Object key) {
-            final Node n = (Node) key;
+        protected Node[] createNodes(final Node n) {
             final ServiceInformation si = (ServiceInformation)n.getCookie(ServiceInformation.class);
             if (si != null){
                 if (name.equals(((DataObject)n.getCookie(DataObject.class)).getPrimaryFile().getNameExt())){

@@ -267,10 +267,10 @@ public class J2MEProjectGenerator {
                                 String key = (String)en.getKey();
                                 if (key.startsWith(PRIVATE_PREFIX)) {
                                     key = key.substring(privPrefixL);
-                                    if (!priv.containsKey(key)) priv.put(key, en.getValue());
+                                    if (!priv.containsKey(key)) priv.put(key, (String)en.getValue());
                                 } else {
                                     if (key.startsWith(tmpPrefix)) key = J2MEProjectProperties.CONFIG_PREFIX + cfgName + (key.substring(tmpPrefixL));
-                                    if (!proj.containsKey(key)) proj.put(key, en.getValue());
+                                    if (!proj.containsKey(key)) proj.put(key, (String)en.getValue());
                                 }
                             }
                         }
@@ -388,9 +388,9 @@ public class J2MEProjectGenerator {
         storeManifestProperties(ep, DefaultPropertiesDescriptor.MANIFEST_OTHERS, manifestOthers);
         
         if (platform != null) {
-            ep.putAll(PlatformConvertor.extractPlatformProperties("", platform.platform, platform.device, platform.configuration, platform.profile)); //NOI18N
+            ep.putAll((Map<String, String>)PlatformConvertor.extractPlatformProperties("", platform.platform, platform.device, platform.configuration, platform.profile)); //NOI18N
         } else {
-            ep.putAll(PlatformConvertor.extractPlatformProperties("", findPlatform(null), null, null, null)); //NOI18N
+            ep.putAll((Map<String, String>)PlatformConvertor.extractPlatformProperties("", findPlatform(null), null, null, null)); //NOI18N
         }
         
         priv.setProperty("netbeans.user",  System.getProperty("netbeans.user"));  //NOI18N
@@ -685,7 +685,7 @@ public class J2MEProjectGenerator {
             if (profile != null) profiles[profiles.length - 1] = profile;
             final J2MEPlatform platform = findPlatform(profiles);
             if (platform != null)
-                ep.putAll(PlatformConvertor.extractPlatformProperties("", platform, null, configuration.toString(), profile.toString())); //NOI18N
+                ep.putAll((Map<String, String>)PlatformConvertor.extractPlatformProperties("", platform, null, configuration.toString(), profile.toString())); //NOI18N
         }
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
     }
@@ -763,7 +763,7 @@ public class J2MEProjectGenerator {
             final J2MEPlatform found = findPlatform(new Profile[] { configuration });
             if (found != null) {
                 final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                ep.putAll(PlatformConvertor.extractPlatformProperties("", found, null, configuration.toString(), null)); //NOI18N
+                ep.putAll((Map<String, String>)PlatformConvertor.extractPlatformProperties("", found, null, configuration.toString(), null)); //NOI18N
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
         }

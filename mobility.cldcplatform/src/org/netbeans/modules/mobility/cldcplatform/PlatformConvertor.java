@@ -674,6 +674,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                     } else if (profs[i].isDefault()) {
                         if (apis.length() > 0) apis.append(',');
                         apis.append(profs[i].toString());
+
                         if (classpath.length() > 0) classpath.append(':');
                         classpath.append(profs[i].getClassPath());
                     }

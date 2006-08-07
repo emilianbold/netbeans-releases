@@ -175,9 +175,9 @@ public final class VisualConfigSupport {
                 String key = (String)en.getKey();
                 if (key.startsWith(PRIVATE_PREFIX)) {
                     key = key.substring(privPrefixL);
-                    if (!priv.containsKey(key)) priv.put(key, en.getValue());
+                    if (!priv.containsKey(key)) priv.put(key, (String)en.getValue());
                 } else if (!key.startsWith(tmpPrefix)) {
-                    if (!proj.containsKey(key)) proj.put(key, en.getValue());
+                    if (!proj.containsKey(key)) proj.put(key, (String)en.getValue());
                 }
             }
             String platform = null;

@@ -125,7 +125,7 @@ public class GenericServiceIterator implements TemplateWizard.Iterator, ChangeLi
         currentStep = -1;
     }
     
-    public Set<E2EDataObject> instantiate( final TemplateWizard templateWizard ) throws IOException {
+    public Set<DataObject> instantiate( final TemplateWizard templateWizard ) throws IOException {
         //System.err.println(" instantiate ");
         
         final Configuration configuration = (Configuration)templateWizard.getProperty( PROP_CONFIGURATION );
@@ -163,7 +163,7 @@ public class GenericServiceIterator implements TemplateWizard.Iterator, ChangeLi
         final Boolean b = (Boolean)templateWizard.getProperty(PROP_CREATE_MIDLET);
         e2eDO.generate(b != null && b.booleanValue());
         
-        final Set<E2EDataObject> set = new HashSet<E2EDataObject>();
+        final Set<DataObject> set = new HashSet<DataObject>();
         set.add(e2eDO);
         return set;
     }

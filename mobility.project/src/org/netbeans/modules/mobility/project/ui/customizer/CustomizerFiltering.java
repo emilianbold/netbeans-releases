@@ -276,8 +276,7 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         }
         
         
-        protected Node[] createNodes(final Object k) {
-            final Node n = (Node)k;
+        protected Node[] createNodes(final Node n) {
             final DataObject dob = (DataObject) n.getCookie(DataObject.class);
             if (dob == null) return new Node[0];
             final ArrayList<Node> nodes = new ArrayList<Node>();
