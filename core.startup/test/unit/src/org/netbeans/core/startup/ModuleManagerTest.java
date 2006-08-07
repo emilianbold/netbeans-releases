@@ -921,6 +921,35 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
+    public void testUnsatisfiedProvReq() throws Exception {
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m2 = mgr.create(new File(jars, "req-foo.jar"), null, false, false, false);
+            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            assertEquals(Dependency.create(Dependency.TYPE_REQUIRES, "foo"), m2.getDependencies());
+            Map<String,Module> modulesByName = new HashMap<String,Module>();
+            modulesByName.put(m2.getCodeNameBase(), m2);
+            Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
+            Set<Module> m2Set = new HashSet<Module>();
+            m2Set.add(m2);
+            List<Module> toEnable = mgr.simulateEnable(m2Set);
+            assertEquals("Empty: ", 0, toEnable.size());
+            Set<Object> problems = m2.getProblems();
+            assertEquals("One problem: ", 1, problems.size());
+            Object o = problems.iterator().next();
+            Locale.setDefault(Locale.US);
+            String msg = NbProblemDisplayer.messageForProblem(m2, o);
+            if (msg.indexOf("foo") < 0) {
+                fail("should contain foo:\n" + msg);
+            }
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+    
     public void testProvReqCycles() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
