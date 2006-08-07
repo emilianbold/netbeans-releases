@@ -256,6 +256,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         label.setFont (fontPinCategory);
         label.setAlignment (LabelWidget.Alignment.CENTER);
         label.setCheckClipping (true);
+        if (stateModel.getBooleanState ())
+            label.setPreferredBounds (new Rectangle ());
         pinCategoryWidgets.put (categoryDisplayName, label); 
         return label;
     }
