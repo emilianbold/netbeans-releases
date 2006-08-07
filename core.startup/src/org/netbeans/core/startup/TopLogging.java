@@ -574,17 +574,24 @@ public final class TopLogging {
         }
 
         private void checkFlush() {
+            boolean justNewLine = false;
             for (;;) {
                 int first = sb.indexOf("\n"); // NOI18N
                 if (first < 0) {
                     break;
                 }
+                justNewLine = false;
                 if (first == 0) {
+                    justNewLine = true;
                     sb.delete(0, 1);
                     continue;
                 }
                 log.log(Level.INFO, sb.substring(0, first + 1));
                 sb.delete(0, first + 1);
+            }
+            
+            if (justNewLine) {
+                log.log(Level.INFO, "\n");
             }
         }
     } // end of LgStream
