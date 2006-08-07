@@ -328,13 +328,10 @@ public class TreeModelNode extends AbstractNode {
     }
 
     private void setName (String name, boolean italics) {
+        // XXX HACK: HTMLDisplayName is missing in the models!
         if (name.startsWith ("<html>")) {
-            if (italics && name.indexOf ("<i>") < 0) {
-                name = "<html><i>" + name.substring (6, name.length () - 7) +
-                    "</i></html>";
-            }
             htmlDisplayName = name;
-            setDisplayName (name.substring (6, name.length () - 7));
+            setDisplayName (removeHTML(name));
         } else {
             htmlDisplayName = null;
             setDisplayName (name);
