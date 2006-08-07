@@ -19,13 +19,27 @@
 
 package org.netbeans.modules.debugger.ui.actions;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.Comparator;
+
 import java.util.List;
-import javax.swing.*;
-import javax.swing.border.*;
+
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.border.EmptyBorder;
+
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
@@ -44,7 +58,8 @@ Controller {
     private List                  attachTypes;
     /** Currentlydisplayed panel.*/
     private JComponent            currentPanel;
-//    private DebuggerProjectSettings    connectSettings;
+    /** Current attach type, which is stored into settings for the next invocation. */
+    private AttachType            currentAttachType;
 
 
     public ConnectorPanel ()  {
@@ -59,10 +74,8 @@ Controller {
         attachTypes = DebuggerManager.getDebuggerManager ().lookup (
             null, AttachType.class
         );
-//        DebuggerProjectSettings connectSettings = (DebuggerProjectSettings) 
-//            DebuggerProjectSettings.findObject 
-//            (DebuggerProjectSettings.class, true);
-        String defaultAttachTypeName = null; //connectSettings.getLastDebuggerType ();
+        String defaultAttachTypeName =
+                Properties.getDefault ().getProperties ("debugger").getString ("last_attach_type", null);
         int defaultIndex = 0;
         int i, k = attachTypes.size ();
         Collections.sort(attachTypes, new Comparator() {
@@ -122,6 +135,7 @@ Controller {
         c.fill = java.awt.GridBagConstraints.BOTH;
         c.gridwidth = 0;
         AttachType attachType = (AttachType) attachTypes.get (index);
+        this.currentAttachType = attachType;
         currentPanel = attachType.getCustomizer ();
         
         add (currentPanel, c);
@@ -148,6 +162,8 @@ Controller {
     }
     
     public boolean ok () {
+        String defaultAttachTypeName = currentAttachType.getClass().getName();
+        Properties.getDefault().getProperties("debugger").setString("last_attach_type", defaultAttachTypeName);
         return ((Controller) currentPanel).ok ();
     }    
 }
