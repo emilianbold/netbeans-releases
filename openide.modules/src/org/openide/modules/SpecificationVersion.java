@@ -110,20 +110,7 @@ public final class SpecificationVersion implements Comparable {
             return false;
         }
 
-        int[] d = ((SpecificationVersion) o).digits;
-        int len = digits.length;
-
-        if (len != d.length) {
-            return false;
-        }
-
-        for (int i = 0; i < len; i++) {
-            if (digits[i] != d[i]) {
-                return false;
-            }
-        }
-
-        return true;
+        return Arrays.equals(digits, ((SpecificationVersion) o).digits);
     }
 
     /** Overridden to hash by contents. */
@@ -140,7 +127,7 @@ public final class SpecificationVersion implements Comparable {
 
     /** String representation (Dewey-decimal). */
     public String toString() {
-        StringBuffer buf = new StringBuffer((digits.length * 3) + 1);
+        StringBuilder buf = new StringBuilder((digits.length * 3) + 1);
 
         for (int i = 0; i < digits.length; i++) {
             if (i > 0) {
