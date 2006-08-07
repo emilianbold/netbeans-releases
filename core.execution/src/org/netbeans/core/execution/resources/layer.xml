@@ -63,12 +63,14 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="UI">
+        <!-- Obsoleted by Build | Stop Building for Ant processes, and hopefully by other UI for other kinds of processes.
         <folder name="Runtime">
             <file name="org-netbeans-core-execution-ProcessNode.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.core.execution.ProcessNode"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.core.execution.ProcessNode.getExecutionNode"/>
             </file>
         </folder>
+        -->
         <!-- settings categories UI presentation -->
         <folder name="Services">
         
