@@ -33,6 +33,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.ant.freeform</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -90,6 +99,22 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -98,12 +123,10 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
+                    <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
+                    <run-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.modules</code-name-base>
@@ -122,22 +145,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.text</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -146,83 +153,85 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
+                    <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
                 </dependency>
             </module-dependencies>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.java.freeform</code-name-base>
-                      <recursive/>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.ant.freeform</code-name-base>
-                      <compile-dependency/>
-                      <test/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openidex.util</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.io</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.compat</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.core</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.loaders</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.projectui</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.options</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.apache.tools.ant.module</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.explorer</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.dialogs</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.nodes</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.text</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.awt</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.util</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.actions</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.modules</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.filesystems</code-name-base>
-                  </test-dependency>
-              </test-type>
-              <test-type>
-                  <name>qa-functional</name>
-              </test-type>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.freeform</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.ant.freeform</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openidex.util</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.io</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.compat</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.loaders</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.options</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.apache.tools.ant.module</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.explorer</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.dialogs</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.nodes</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.text</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.awt</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.actions</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.modules</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.filesystems</code-name-base>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>

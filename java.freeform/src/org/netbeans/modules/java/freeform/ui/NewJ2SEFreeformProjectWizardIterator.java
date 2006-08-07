@@ -30,6 +30,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
@@ -43,7 +44,7 @@ import org.openide.util.NbBundle;
 /**
  * @author  David Konecny
  */
-public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     public static final String PROP_PROJECT_MODEL = "projectModel"; // <List> NOI18N
     
@@ -66,17 +67,27 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.In
     }
     
     public Set/*<FileObject>*/ instantiate () throws IOException {
+        throw new AssertionError();
+    }
+
+    public Set/*<FileObject>*/ instantiate(final ProgressHandle handle) throws IOException {
+        handle.start(6);
         final WizardDescriptor wiz = this.wiz;
         final IOException[] ioe = new IOException[1];
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
                 try {
                     AntProjectHelper helper = NewFreeformProjectSupport.instantiateBasicProjectInfoWizardPanel(wiz);
+                    handle.progress(1);
                     NewFreeformProjectSupport.instantiateTargetMappingWizardPanel(helper, wiz);
+                    handle.progress(2);
                     ProjectModel pm = (ProjectModel)wiz.getProperty(PROP_PROJECT_MODEL);
                     ProjectModel.instantiateJavaProject(helper, pm);
+                    handle.progress(3);
                     Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+                    handle.progress(4);
                     ProjectManager.getDefault().saveProject(p);
+                    handle.progress(5);
                 } catch (IOException e) {
                     ioe[0] = e;
                     return;
@@ -93,6 +104,7 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.In
         if (f != null) {
             ProjectChooser.setProjectsFolder(f);
         }
+        handle.finish();
         return resultSet;
     }
     
