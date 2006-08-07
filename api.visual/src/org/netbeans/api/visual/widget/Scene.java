@@ -100,6 +100,10 @@ public class Scene extends Widget {
         return defaultFont;
     }
 
+    public boolean isValidated () {
+        return super.isValidated ()  &&  repaintRegion == null  &&  repaintWidgets.isEmpty ();
+    }
+
     protected boolean isRepaintRequiredForRevalidating () {
         return false;
     }
