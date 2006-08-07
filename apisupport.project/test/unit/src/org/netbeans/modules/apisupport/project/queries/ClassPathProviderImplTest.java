@@ -641,6 +641,8 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-nodes.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-awt.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
+        // Dialogs API depends on Progress API
+        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-api-progress.jar"));
         // And the usual:
         expectedRoots.add(Util.urlForDir(new File(FileUtil.toFile(p.getProjectDirectory()), "build/classes")).toExternalForm());
         assertEquals("right EXECUTE classpath incl. transitive deps",
