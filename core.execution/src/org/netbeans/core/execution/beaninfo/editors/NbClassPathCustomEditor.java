@@ -320,7 +320,10 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
             for (int i=0; i<files.length; i++) {
                 if ((files[i] != null) && (files[i].isFile())) {
                     found = true;
-                    listModel.addElement(files[i].getAbsolutePath());
+                    String path = files[i].getAbsolutePath();
+                    if (! listModel.contains (path)) {
+                        listModel.addElement (path);
+                    }
                 }
             }
             if ( found ) {
@@ -348,7 +351,10 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
             if ((f != null) && (f.isDirectory())) {
                 lastDirFolder = f.getParentFile();
 
-                listModel.addElement(f.getAbsolutePath());
+                String path = f.getAbsolutePath();
+                if (! listModel.contains (path)) {
+                    listModel.addElement (path);
+                }
                 fireValueChanged();
                 
                 pathList.setSelectedIndex(listModel.size() - 1);
@@ -481,7 +487,9 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
             if (s.endsWith("\"")) { // NOI18N
                 s = s.substring(0, s.length() -1 );
             }
-            listModel.addElement(s);
+            if (! listModel.contains (s)) {
+                listModel.addElement(s);
+            }
         }
         
     }
