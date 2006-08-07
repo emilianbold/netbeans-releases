@@ -435,18 +435,20 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         return this;
     }
     
-    /** Add action for enabling slide */
+    /** Add action for enabling auto hide of views */
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
-        // no auto hide for editor types
-        if (TabbedContainer.TYPE_EDITOR == getType()) {
+        boolean isDocked = WindowManagerImpl.getInstance().isDocked(getTopComponentAt(tabIndex));
+        // no auto hide for editors and floating views
+        if (TabbedContainer.TYPE_EDITOR == getType() || !isDocked) {
             return defaultActions;
         }
-        boolean isDocked = WindowManagerImpl.getInstance().isDocked(getTopComponentAt(tabIndex));
-        Action[] result = new Action[defaultActions.length + (isDocked ? 1 : 0)];
-        System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
-        if (isDocked) {
-            result[defaultActions.length] = 
-                new ActionUtils.AutoHideWindowAction(this, tabIndex, false);
+        int actionCount = defaultActions.length;
+        Action[] result = new Action[actionCount + 1];
+        System.arraycopy(defaultActions, 0, result, 0, actionCount);
+        // #82052: undock action as last item, auto hide as first before last
+        if (actionCount > 0) {
+            result[actionCount] = result[actionCount - 1];
+            result[actionCount - 1] = new ActionUtils.AutoHideWindowAction(this, tabIndex, false);
         }
         return result;
     }
