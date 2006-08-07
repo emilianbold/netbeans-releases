@@ -65,8 +65,8 @@ public interface TabPainter extends Border {
     void paintInterior(Graphics g, Component renderer);
 
     /**
-     * Get the close button rectangle for this tab.  May return null if
-     * supportsCloseButton() returns null.
+     * Get the close button rectangle for this tab. May contain no implementation 
+     * if supportsCloseButton() returns false."
      *
      * @param jc     The current renderer
      * @param rect   A rectangle that should be configured with the close button
@@ -77,5 +77,11 @@ public interface TabPainter extends Border {
     void getCloseButtonRectangle(JComponent jc, Rectangle rect,
                                  Rectangle bounds);
 
+    /** 
+     * Returns true if close button is supported, false otherwise.
+     * 
+     * @param renderer     The current renderer
+     * @return true if close button is supported, false otherwise
+     */
     boolean supportsCloseButton(JComponent renderer);
 }
