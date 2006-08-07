@@ -691,8 +691,10 @@ public final class PersistenceManager implements PropertyChangeListener {
                         }
                     }
                 } catch (NotSerializableException nse) {
-                    //#36916: Handle case when TC is not serializable.
+                    // #36916: Handle case when TC is not serializable.
                     String id = (String) topComponent2IDMap.get(curTC);
+                    // #75247: Log warning when TC is not serializable.
+                    Logger.global.log(Level.WARNING, "TopComponent " + id + " is not serializable.", nse); //NOI18N
                     removeTCFromConfig(wmc,id);
                 } catch (IOException exc) {
                     // some problem with saving of top component, log warning
