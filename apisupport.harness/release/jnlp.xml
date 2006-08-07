@@ -69,7 +69,11 @@ Microsystems, Inc. All Rights Reserved.
         
         <fileset id="jnlp.included.modules" dir="${netbeans.dest.dir}">
             <and>
-                <filename name="**/*.jar"/>
+                <or>
+                    <filename name="*/modules/**/*.jar"/>
+                    <filename name="*/lib/**/*.jar"/>
+                    <filename name="*/core/**/*.jar"/>
+                </or>
                 <not>
                     <filename name="**/update/**/*.jar"/>
                 </not>
