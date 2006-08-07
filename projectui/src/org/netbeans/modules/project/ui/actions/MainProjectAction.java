@@ -40,6 +40,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Actions;
 import org.openide.awt.MouseUtils;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -112,12 +113,14 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
     // Implementation of PropertyChangeListener --------------------------------
     
     public void propertyChange( PropertyChangeEvent evt ) {
-        
         if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT || 
              evt.getPropertyName() == OpenProjectList.PROPERTY_OPEN_PROJECTS ) {
-            refreshView ();
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    refreshView();
+                }
+            });
         }
-               
     }   
     
     private void refreshView() {
