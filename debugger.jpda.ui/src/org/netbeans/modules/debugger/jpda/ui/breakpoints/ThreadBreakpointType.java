@@ -37,7 +37,7 @@ public class ThreadBreakpointType extends BreakpointType {
 
     public String getCategoryDisplayName () {
         return NbBundle.getMessage (
-            ClassBreakpointType.class,
+            ThreadBreakpointType.class,
             "CTL_Java_breakpoint_events_cathegory_name"
         );
     }
