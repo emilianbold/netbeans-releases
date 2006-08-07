@@ -1798,9 +1798,4 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
          </copy>
   </target>      
 
-  <!-- [TODO] remove it before merge to trunk -->
-  <!--<target name="fix-test-dependencies" depends="bootstrap,init-module-list">
-         <subant buildpath="${test.modules.unit}" target="fix-test-dependencies"/>
-  </target>
- -->
 </project>
