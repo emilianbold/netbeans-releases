@@ -74,6 +74,7 @@ public abstract class PropertySupport<T> extends Node.Property<T> {
 
     /**
      * Like {@link Class#cast} but handles primitive types.
+     * See JDK #6456930.
      */
     static <T> T cast(Class<T> c, Object o) {
         if (c.isPrimitive()) {
