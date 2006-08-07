@@ -127,6 +127,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         private final NbModuleProject project;
         
         public RootNode(NbModuleProject project) {
+            
             // XXX add a NodePathResolver impl to lookup
             super(new RootChildren(project), Lookups.fixed(new Object[] {project}));
             this.project = project;
@@ -135,7 +136,6 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             ProjectInformation pi = ProjectUtils.getInformation(project);
             setDisplayName(pi.getDisplayName());
             setShortDescription(NbBundle.getMessage(ModuleLogicalView.class, "HINT_project_root_node", FileUtil.getFileDisplayName(project.getProjectDirectory())));
-            
             setFiles(getProjectFiles());
             pi.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -210,7 +210,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         
         private static final String[] SOURCE_GROUP_TYPES = {
             JavaProjectConstants.SOURCES_TYPE_JAVA,
-            "javahelp", // NOI18N
+            NbModuleProject.SOURCES_TYPE_JAVAHELP,
         };
         
         private final NbModuleProject project;

@@ -97,6 +97,8 @@ public final class NbModuleProject implements Project {
     private static final Icon NB_PROJECT_ICON = new ImageIcon(
             Utilities.loadImage(NB_PROJECT_ICON_PATH));
     
+    public static final String SOURCES_TYPE_JAVAHELP = "javahelp"; // NOI18N
+    
     private final AntProjectHelper helper;
     private final Evaluator eval;
     private final Lookup lookup;
@@ -168,7 +170,7 @@ public final class NbModuleProject implements Project {
         }
         if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
             // Special hack for core - ignore core/javahelp
-            sourcesHelper.addTypedSourceRoot("javahelp", "javahelp", NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages"), null, null);
+            sourcesHelper.addTypedSourceRoot("javahelp", SOURCES_TYPE_JAVAHELP, NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages"), null, null);
         }
         Iterator it = getExtraCompilationUnits().entrySet().iterator();
         while (it.hasNext()) {
@@ -679,14 +681,7 @@ public final class NbModuleProject implements Project {
             // refresh build.xml and build-impl.xml for external modules
             if (getModuleType() != NbModuleTypeProvider.NETBEANS_ORG) {
                 try {
-                    genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        NbModuleProject.class.getResource("resources/build-impl.xsl"), // NOI18N
-                        true);
-                    genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_XML_PATH,
-                        NbModuleProject.class.getResource("resources/build.xsl"), // NOI18N
-                        true);
+                    refreshBuildScripts(true);
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
@@ -725,17 +720,21 @@ public final class NbModuleProject implements Project {
         protected void projectXmlSaved() throws IOException {
             // refresh build.xml and build-impl.xml for external modules
             if (getModuleType() != NbModuleTypeProvider.NETBEANS_ORG) {
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    NbModuleProject.class.getResource("resources/build-impl.xsl"), // NOI18N
-                    false);
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
-                    NbModuleProject.class.getResource("resources/build.xsl"), // NOI18N
-                    false);
+                refreshBuildScripts(false);
             }
         }
         
+    }
+    
+    private void refreshBuildScripts(boolean checkForProjectXmlModified) throws IOException {
+        genFilesHelper.refreshBuildScript(
+                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                NbModuleProject.class.getResource("resources/build-impl.xsl"), // NOI18N
+                checkForProjectXmlModified);
+        genFilesHelper.refreshBuildScript(
+                GeneratedFilesHelper.BUILD_XML_PATH,
+                NbModuleProject.class.getResource("resources/build.xsl"), // NOI18N
+                checkForProjectXmlModified);
     }
     
     private final class SuiteProviderImpl implements SuiteProvider {
