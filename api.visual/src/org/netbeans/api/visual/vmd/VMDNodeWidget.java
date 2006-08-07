@@ -143,8 +143,11 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     }
 
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        if (! previousState.isSelected ()  ||  state.isSelected ())
+        if (! previousState.isSelected ()  &&  state.isSelected ())
             bringToFront ();
+        else if (! previousState.isHovered ()  &&  state.isHovered ())
+            bringToFront ();
+
         if (state.isHovered ())
             setBorder (BORDER_SHADOW_HOVERED);
         else if (state.isSelected ())
