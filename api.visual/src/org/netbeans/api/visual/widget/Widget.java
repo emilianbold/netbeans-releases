@@ -282,8 +282,9 @@ public class Widget {
 
     public final void setBorder (Border border) {
         assert border != null;
+        boolean repaintOnly = this.border.getInsets ().equals (border.getInsets ());
         this.border = border;
-        revalidate (this.border.getInsets ().equals (border.getInsets ()));
+        revalidate (repaintOnly);
     }
 
     public final void setBorder (javax.swing.border.Border swingBorder) {

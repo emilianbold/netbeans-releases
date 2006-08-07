@@ -136,8 +136,9 @@ public class ConnectionWidget extends Widget {
 
     public void setSourceAnchorShape (AnchorShape sourceAnchorShape) {
         assert sourceAnchorShape != null;
-        revalidate (this.sourceAnchorShape.getRadius () == sourceAnchorShape.getRadius ());
+        boolean repaintOnly = this.sourceAnchorShape.getRadius () == sourceAnchorShape.getRadius ();
         this.sourceAnchorShape = sourceAnchorShape;
+        revalidate (repaintOnly);
     }
 
     public AnchorShape getTargetAnchorShape () {
@@ -146,8 +147,9 @@ public class ConnectionWidget extends Widget {
 
     public void setTargetAnchorShape (AnchorShape targetAnchorShape) {
         assert targetAnchorShape != null;
-        revalidate (this.targetAnchorShape.getRadius () == targetAnchorShape.getRadius ());
+        boolean repaintOnly = this.targetAnchorShape.getRadius () == targetAnchorShape.getRadius ();
         this.targetAnchorShape = targetAnchorShape;
+        revalidate (repaintOnly);
     }
 
     public PointShape getControlPointShape () {
@@ -156,8 +158,9 @@ public class ConnectionWidget extends Widget {
 
     public void setControlPointShape (PointShape controlPointShape) {
         assert controlPointShape != null;
-        revalidate (this.controlPointShape.getRadius () == controlPointShape.getRadius ());
+        boolean repaintOnly = this.controlPointShape.getRadius () == controlPointShape.getRadius ();
         this.controlPointShape = controlPointShape;
+        revalidate (repaintOnly);
     }
 
     public PointShape getEndPointShape () {
@@ -166,8 +169,9 @@ public class ConnectionWidget extends Widget {
 
     public void setEndPointShape (PointShape endPointShape) {
         assert endPointShape != null;
-        revalidate (this.endPointShape.getRadius () == endPointShape.getRadius ());
+        boolean repaintOnly = this.endPointShape.getRadius () == endPointShape.getRadius ();
         this.endPointShape = endPointShape;
+        revalidate (repaintOnly);
     }
 
     public final Router getRouter () {

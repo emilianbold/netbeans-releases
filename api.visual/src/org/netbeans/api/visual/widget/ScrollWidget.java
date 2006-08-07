@@ -13,9 +13,11 @@
 package org.netbeans.api.visual.widget;
 
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.SelectAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
+import org.netbeans.api.visual.model.ObjectState;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -39,7 +41,8 @@ public class ScrollWidget extends Widget {
     private static final Point POINT_EMPTY = new Point ();
     private static final Rectangle RECTANGLE_EMPTY = new Rectangle ();
 
-    private static final Border BORDER = BorderFactory.createBevelBorder (true);
+    private static final Border BORDER_RAISED = BorderFactory.createBevelBorder (true);
+    private static final Border BORDER_LOWERED = BorderFactory.createBevelBorder (false);
 
     private Widget viewport;
     private Widget view;
@@ -83,49 +86,27 @@ public class ScrollWidget extends Widget {
     }
 
     private SliderWidget createVerticalSlider () {
-        SliderWidget slider = new SliderWidget (getScene (), true);
-        slider.setOpaque (true);
-        slider.setBackground (Color.LIGHT_GRAY);
-        return slider;
+        return new SliderWidget (getScene (), true);
     }
 
     private SliderWidget createHorizontalSlider () {
-        SliderWidget slider = new SliderWidget (getScene (), false);
-        slider.setOpaque (true);
-        slider.setBackground (Color.LIGHT_GRAY);
-        return slider;
+        return new SliderWidget (getScene (), false);
     }
 
     protected Widget createUpArrow () {
-        ImageWidget arrow = new ImageWidget (getScene (), IMAGE_UP);
-        arrow.setBorder (BORDER);
-        arrow.setOpaque (true);
-        arrow.setBackground (Color.LIGHT_GRAY);
-        return arrow;
+        return new ButtonWidget (getScene (), IMAGE_UP);
     }
 
     protected Widget createDownArrow () {
-        ImageWidget arrow = new ImageWidget (getScene (), IMAGE_DOWN);
-        arrow.setBorder (BORDER);
-        arrow.setOpaque (true);
-        arrow.setBackground (Color.LIGHT_GRAY);
-        return arrow;
+        return new ButtonWidget (getScene (), IMAGE_DOWN);
     }
 
     protected Widget createLeftArrow () {
-        ImageWidget arrow = new ImageWidget (getScene (), IMAGE_LEFT);
-        arrow.setBorder (BORDER);
-        arrow.setOpaque (true);
-        arrow.setBackground (Color.LIGHT_GRAY);
-        return arrow;
+        return new ButtonWidget (getScene (), IMAGE_LEFT);
     }
 
     protected Widget createRightArrow () {
-        ImageWidget arrow = new ImageWidget (getScene (), IMAGE_RIGHT);
-        arrow.setBorder (BORDER);
-        arrow.setOpaque (true);
-        arrow.setBackground (Color.LIGHT_GRAY);
-        return arrow;
+        return new ButtonWidget (getScene (), IMAGE_RIGHT);
     }
 
     public final Widget getView () {
@@ -260,6 +241,26 @@ public class ScrollWidget extends Widget {
 
     }
 
+    private static class ButtonWidget extends ImageWidget {
+
+        public ButtonWidget (Scene scene, Image image) {
+            super (scene, image);
+            setOpaque (true);
+            updateAiming (false);
+        }
+
+        protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
+            if (previousState.isWidgetAimed () != state.isWidgetAimed ())
+                updateAiming (state.isWidgetAimed ());
+        }
+
+        private void updateAiming (boolean state) {
+            setBackground (state ? Color.GRAY : Color.LIGHT_GRAY);
+            setBorder (state ? BORDER_LOWERED : BORDER_RAISED);
+        }
+
+    }
+
     private static class SliderWidget extends Widget {
 
         public enum Part {
@@ -278,6 +279,8 @@ public class ScrollWidget extends Widget {
         public SliderWidget (Scene scene, boolean vertical) {
             super (scene);
             this.vertical = vertical;
+            setOpaque (true);
+            setBackground (Color.LIGHT_GRAY);
         }
 
         public boolean isVertical () {
@@ -419,7 +422,7 @@ public class ScrollWidget extends Widget {
             location.y = viewport.y + viewport.height - view.height;
     }
 
-    private class UnitScrollAction extends WidgetAction.Adapter {
+    private class UnitScrollAction extends SelectAction {
 
         private int dx;
         private int dy;
@@ -429,12 +432,12 @@ public class ScrollWidget extends Widget {
             this.dy = dy;
         }
 
-        public State mousePressed (Widget widget, WidgetMouseEvent event) {
-            if (event.getButton () == MouseEvent.BUTTON1) {
-                translateView (dx, dy);
-                return State.CHAIN_ONLY;
-            }
-            return State.REJECTED;
+        protected boolean isAimingAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+            return true;
+        }
+
+        protected void doSelect (Widget widget, Point localLocation, boolean invertSelection) {
+            translateView (dx, dy);
         }
 
     }
