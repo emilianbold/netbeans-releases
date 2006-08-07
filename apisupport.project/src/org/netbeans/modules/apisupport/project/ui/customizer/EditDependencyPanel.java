@@ -57,6 +57,8 @@ public final class EditDependencyPanel extends JPanel {
             javadoc = Util.findJavadoc(origDep, platform);
         }
         showJavadocButton.setEnabled(javadoc != null);
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.title.AccessibleContext.accessibleName"));
     }
     
     private void refresh() {
@@ -139,25 +141,27 @@ public final class EditDependencyPanel extends JPanel {
         setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
         setPreferredSize(new java.awt.Dimension(400, 300));
         codeNameBase.setLabelFor(codeNameBaseValue);
-        org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_CNB"));
+        org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_CNB")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(codeNameBase, gridBagConstraints);
+        codeNameBase.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.codeNameBase.AccessibleContext.accessibleDescription")); // NOI18N
 
         jarLocation.setLabelFor(jarLocationValue);
-        org.openide.awt.Mnemonics.setLocalizedText(jarLocation, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_JAR"));
+        org.openide.awt.Mnemonics.setLocalizedText(jarLocation, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_JAR")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
         add(jarLocation, gridBagConstraints);
+        jarLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.jarLocation.AccessibleContext.accessibleDescription")); // NOI18N
 
         releaseVersion.setLabelFor(releaseVersionValue);
-        org.openide.awt.Mnemonics.setLocalizedText(releaseVersion, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_MajorReleaseVersion"));
+        org.openide.awt.Mnemonics.setLocalizedText(releaseVersion, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_MajorReleaseVersion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -173,10 +177,12 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(releaseVersionValue, gridBagConstraints);
+        releaseVersionValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.releaseVersionValue.AccessibleContext.accessibleName")); // NOI18N
+        releaseVersionValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.releaseVersionValue.AccessibleContext.accessibleDescription")); // NOI18N
 
         versionGroup.add(specVer);
         specVer.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(specVer, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_SpecificationVersion"));
+        org.openide.awt.Mnemonics.setLocalizedText(specVer, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_SpecificationVersion")); // NOI18N
         specVer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 versionChanged(evt);
@@ -189,6 +195,7 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(specVer, gridBagConstraints);
+        specVer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.specVer.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -196,9 +203,11 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(specVerValue, gridBagConstraints);
+        specVerValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.specVerValue.AccessibleContext.accessibleName")); // NOI18N
+        specVerValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.specVerValue.AccessibleContext.accessibleDescription")); // NOI18N
 
         versionGroup.add(implVer);
-        org.openide.awt.Mnemonics.setLocalizedText(implVer, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_ImplementationVersion"));
+        org.openide.awt.Mnemonics.setLocalizedText(implVer, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_ImplementationVersion")); // NOI18N
         implVer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 versionChanged(evt);
@@ -211,8 +220,9 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(implVer, gridBagConstraints);
+        implVer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.implVer.AccessibleContext.accessibleDescription")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(includeInCP, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_IncludeAPIPackages"));
+        org.openide.awt.Mnemonics.setLocalizedText(includeInCP, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_IncludeAPIPackages")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -220,8 +230,11 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(includeInCP, gridBagConstraints);
+        includeInCP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.includeInCP.AccessibleContext.accessibleDescription")); // NOI18N
 
         availablePkgSP.setViewportView(availablePkg);
+        availablePkg.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.availablePkg.AccessibleContext.accessibleName")); // NOI18N
+        availablePkg.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.availablePkg.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -237,6 +250,8 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(codeNameBaseValue, gridBagConstraints);
+        codeNameBaseValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.codeNameBaseValue.AccessibleContext.accessibleName")); // NOI18N
+        codeNameBaseValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.codeNameBaseValue.AccessibleContext.accessibleDescription")); // NOI18N
 
         jarLocationValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -246,8 +261,10 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(jarLocationValue, gridBagConstraints);
+        jarLocationValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.jarLocationValue.AccessibleContext.accessibleName")); // NOI18N
+        jarLocationValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.jarLocationValue.AccessibleContext.accessibleDescription")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(showJavadocButton, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "CTL_ShowJavadoc"));
+        org.openide.awt.Mnemonics.setLocalizedText(showJavadocButton, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "CTL_ShowJavadoc")); // NOI18N
         showJavadocButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showJavadoc(evt);
@@ -261,6 +278,7 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(showJavadocButton, gridBagConstraints);
+        showJavadocButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.showJavadocButton.AccessibleContext.accessibleDescription")); // NOI18N
 
     }// </editor-fold>//GEN-END:initComponents
     
