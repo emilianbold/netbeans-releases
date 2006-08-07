@@ -920,7 +920,7 @@ public class MutexTest extends NbTestCase {
     }
     
     public void testIsReadOrWriteForEventMutex () throws Exception {
-        class Test implements Runnable {
+        class DoTheWork implements Runnable {
             public boolean isRead;
             public boolean isWrite;
             
@@ -930,10 +930,10 @@ public class MutexTest extends NbTestCase {
             }
         }
         
-        Test rp = new Test ();
+        DoTheWork rp = new DoTheWork ();
         org.openide.util.RequestProcessor.getDefault ().post(rp).waitFinished ();
         
-        Test awt = new Test ();
+        DoTheWork awt = new DoTheWork ();
         javax.swing.SwingUtilities.invokeAndWait (awt);
         
         assertFalse ("Nothing in RP", rp.isRead);

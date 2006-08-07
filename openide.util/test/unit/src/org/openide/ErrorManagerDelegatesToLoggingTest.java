@@ -128,6 +128,18 @@ public class ErrorManagerDelegatesToLoggingTest extends NbTestCase {
         if (msg.indexOf("Ahoj Null") == -1) fail("there should be Ahoj Null: " + msg);
 
     }
+
+    public void testAttachLocalizedMessageForClassNFEIfNoMsg() {
+        Exception e = new ClassNotFoundException("Help");
+        String msg = "me please";
+        
+        ErrorManager.getDefault().annotate(e, msg);
+
+        Object[] arr = ErrorManager.getDefault().findAnnotations(e);
+        
+        assertNotNull("Arr exists", arr);
+    }
+    
     
     //
     // Manager to delegate to

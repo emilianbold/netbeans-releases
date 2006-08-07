@@ -29,8 +29,10 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -821,6 +823,8 @@ public abstract class ErrorManager extends Object {
      */
     private static final class AnnException extends Exception implements Callable<LogRecord[]> {
         private List<LogRecord> records;
+        /** additional mapping from throwables that refuse initCause call */
+        private static Map<Throwable, AnnException> extras = new WeakHashMap<Throwable, AnnException>();
 
         public String getMessage() {
             StringBuilder sb = new StringBuilder();
@@ -841,7 +845,18 @@ public abstract class ErrorManager extends Object {
             }
             if (t.getCause() == null) {
                 if (create) {
-                    t.initCause(new AnnException());
+                    try {
+                        t.initCause(new AnnException());
+                    } catch (IllegalStateException x) {
+                        AnnException ann = extras.get(t);
+                        if (ann == null) {
+                            ann = new AnnException();
+                            ann.initCause(t);
+                            Logger.getLogger(ErrorManager.class.getName()).log(Level.FINE, "getCause was null yet initCause failed for " + t, x);
+                            extras.put(t, ann);
+                        }
+                        return ann;
+                    }
                 }
                 return (AnnException)t.getCause();
             }
