@@ -371,6 +371,8 @@ public class CheckLicenseTest extends NbTestCase {
     }        
 
     public void testMayReplaces() throws Exception {
+        if (isWindows()) return;
+        
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
 
         java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
@@ -495,6 +497,7 @@ public class CheckLicenseTest extends NbTestCase {
     }
     
     public void testReplacesTextSeparatedByNewLine() throws Exception {
+        if (isWindows()) return;
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
 
         java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
@@ -571,6 +574,7 @@ public class CheckLicenseTest extends NbTestCase {
     }        
     
     public void testReplacePropertiesLicense() throws Exception {
+        if (isWindows()) return;
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
 
         java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicensePropertiesExample.properties");
@@ -641,6 +645,10 @@ public class CheckLicenseTest extends NbTestCase {
         }
     }        
 
+    private static boolean isWindows() {
+        String name = System.getProperty("os.name");
+        return name != null && name.toLowerCase().indexOf("windows") >= 0;
+    }
     
     public void testReplaceXMLLicense() throws Exception {
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
