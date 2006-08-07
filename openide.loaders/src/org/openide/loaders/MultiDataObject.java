@@ -449,9 +449,11 @@ public class MultiDataObject extends DataObject {
         }
         //#33244 - copy primary file after the secondary ones
         fo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
-        
+
+        boolean fullRescan = getMultiFileLoader() == null ||
+            getMultiFileLoader().findPrimaryFile(fo) != fo;
         try {
-            return createMultiObject (fo);
+            return fullRescan ? DataObject.find(fo) : createMultiObject (fo);
         } catch (DataObjectExistsException ex) {
             return ex.getDataObject ();
         }
