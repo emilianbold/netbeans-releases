@@ -317,7 +317,9 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             // loop if there was yet another task started to compute the
             // children list
             if (originalRecognizing == checkRecognizingStarted ()) {
-                err.fine("breaking the wait loop"); // NOI18N
+                if (isLog) {
+                    err.fine("breaking the wait loop"); // NOI18N
+                }
                 break;
             }
             
