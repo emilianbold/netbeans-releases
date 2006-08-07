@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs;
 
+import java.net.URISyntaxException;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,10 +92,10 @@ public final class FileBasedURLMapper extends URLMapper {
                 if (f.startsWith("//")) {
                     file = new File(f);
                 } else {
-                    file = FileUtil.normalizeFile(new File(URI.create(url.toExternalForm())));
+                    file = FileUtil.normalizeFile(new File(new URI(url.toExternalForm())));
                 }
             }
-        } catch (IllegalArgumentException e) {
+        } catch (URISyntaxException e) {
             file = new File(url.getFile());
             if (!file.exists()) {
                 final StringBuffer sb = new StringBuffer();

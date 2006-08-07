@@ -22,6 +22,7 @@ package org.netbeans.api.project;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,8 +93,8 @@ public class FileOwnerQuery {
             // XXX: schemaPart can contains spaces. create File first and 
             // then convert it to URI.
             try {
-                uri = URI.create(schemaPart);
-            } catch (IllegalArgumentException ex) {
+                uri = new URI(schemaPart);
+            } catch (URISyntaxException ex) {
                 try {
                     URL u = new URL(schemaPart);
                     // XXX bad to ever use new File(URL.getPath()):
