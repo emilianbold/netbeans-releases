@@ -96,6 +96,13 @@ class CommandRunnable implements Runnable, Cancellable {
             err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread + "\nCVS command: " + cmd.getCVSCommand());  // NOI18N
             workerThread.interrupt(); // sometimes not interuptible e.g. while in Socket.connect()
             err.notify(ErrorManager.INFORMATIONAL, e);
+            Thread.currentThread().interrupt(); // preserve interrupted flag
+            // let the thread finish before we return; it is (hopefully) processing the InterruptedException now
+            try {
+                workerThread.join(2000);
+            } catch (InterruptedException e1) {
+                // ignore
+            }
         }
     }
 

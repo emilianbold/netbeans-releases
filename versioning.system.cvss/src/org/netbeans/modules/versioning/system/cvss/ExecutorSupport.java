@@ -353,7 +353,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                 terminated = true;
                 ClientRuntime.Result result = (ClientRuntime.Result) e.getSource();
                 Throwable error = result.getError();
-                if (result.isAborted()) {
+                if (result.isAborted() || Thread.currentThread().isInterrupted()) {
                     toRefresh.clear();
                     return;
                 } else if (error != null) {
