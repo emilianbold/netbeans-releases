@@ -179,14 +179,14 @@ public final class InternalHandle {
         if (message != null) {
             lastMessage = message;
         }
+        if (controller == null) {
+            controller = Controller.getDefault();
+        }
         state = STATE_RUNNING;
         initialEstimate = estimate;
         timeStarted = System.currentTimeMillis();
         timeLastProgress = timeStarted;
 
-        if (controller == null) {
-            controller = Controller.getDefault();
-        }
         
         controller.start(this);
     }
@@ -321,7 +321,7 @@ public final class InternalHandle {
         return component.getProgressComponent();
     }
     
-    public JLabel extractDetailLabel() {
+    public synchronized JLabel extractDetailLabel() {
         if (customPlaced2) {
             throw new IllegalStateException("Cannot retrieve progress detail label component multiple times");
         }
@@ -333,7 +333,7 @@ public final class InternalHandle {
         return component.getDetailLabelComponent();
     }
 
-    public JLabel extractMainLabel() {
+    public synchronized JLabel extractMainLabel() {
         if (customPlaced3) {
             throw new IllegalStateException("Cannot retrieve progress main label component multiple times");
         }
