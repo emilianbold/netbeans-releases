@@ -275,11 +275,10 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             tc.close();
         }
         
-        List tcList = getOpenedDocuments();
-        List tcNodes = new ArrayList(tcList.size());
-        for (int i = 0; i < tcList.size(); i++) {
-            TopComponent tc = (TopComponent) tcList.get(i);
-            tcNodes.add(new TopComponentNode(tc));
+        List<TopComponent> tcList = getOpenedDocuments();
+        List<TopComponentNode> tcNodes = new ArrayList<TopComponentNode> (tcList.size());
+        for (TopComponent tc : tcList) {
+            tcNodes.add(new TopComponentNode<TopComponentNode>(tc));
         }
         
         if(tcList.isEmpty()) {
@@ -368,6 +367,22 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         getDefault().clearNodes();
     }
     
+    /**
+     * Tells whether documents list is empty or not.
+     * 
+     * @return true when document list contains no documents, false otherwise.
+     */ 
+    public static boolean isEmpty () {
+        for(Object elem : WindowManagerImpl.getInstance().getModes()) {
+            ModeImpl mode = (ModeImpl)elem;
+            if(mode.getKind() == Constants.MODE_KIND_EDITOR && 
+               !mode.getOpenedTopComponents().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     private JPanel createListView () {
         JPanel panel = new JPanel();
         // Defined size in #36907 - surrounding controls will add to this size
@@ -387,12 +402,12 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
     
     private void updateNodes() {
         //Create nodes for TopComponents, sort them using their own comparator
-        List tcList = getOpenedDocuments();
+        List<TopComponent> tcList = getOpenedDocuments();
         TopComponent activeTC = TopComponent.getRegistry().getActivated();
         TopComponentNode[] tcNodes = new TopComponentNode[tcList.size()];
         TopComponentNode toSelect = null;
         for (int i = 0; i < tcNodes.length; i++) {
-            TopComponent tc = (TopComponent) tcList.get(i);
+            TopComponent tc = tcList.get(i);
             tcNodes[i] = new TopComponentNode(tc);
             if( tc == activeTC ) {
                 toSelect = tcNodes[i];
@@ -422,10 +437,10 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         explorer.setRootContext(Node.EMPTY);
     }
     
-    private static List getOpenedDocuments() {
-        List documents = new ArrayList();
-        for(Iterator it = WindowManagerImpl.getInstance().getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
+    private static List<TopComponent> getOpenedDocuments() {
+        List<TopComponent> documents = new ArrayList<TopComponent> ();
+        for(Object elem : WindowManagerImpl.getInstance().getModes()) {
+            ModeImpl mode = (ModeImpl)elem;
             if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
                 documents.addAll(mode.getOpenedTopComponents());
             }
@@ -492,8 +507,8 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
     private static final Collator COLLATOR = Collator.getInstance();
 
     /** Used to display list of TopComponent in ListView. */
-    private class TopComponentNode extends AbstractNode
-                                   implements Comparable, Action, PropertyChangeListener {
+    private class TopComponentNode<T extends TopComponentNode> extends AbstractNode
+                                   implements Comparable<T>, Action, PropertyChangeListener {
         
         private TopComponent tc;
         
@@ -535,13 +550,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             fireNameChange(null, null);
         }
         
-        public int compareTo(Object o) {
-            if(!(o instanceof TopComponentNode)) {
-                return -1;
-            }
-            
-            TopComponentNode tcn = (TopComponentNode)o;
-
+        public int compareTo(T tcn) {
             String displayName1 = getDisplayName();
             String displayName2 = tcn.getDisplayName();
             

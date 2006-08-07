@@ -32,6 +32,8 @@ import java.beans.PropertyChangeListener;
 
 
 /**
+ * Shows list of opened documents in dialog.
+ * 
  * @author   Peter Zavadsky
  */
 public class DocumentsAction extends AbstractAction implements Runnable {
@@ -80,9 +82,8 @@ public class DocumentsAction extends AbstractAction implements Runnable {
     }
     
     private void updateState() {
-        // PENDING get all editor modes?
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode("editor"); // NOI18N
-        setEnabled(mode == null ? false : !mode.getOpenedTopComponents().isEmpty());
+        // #81939: enable action if documents list isn't empty
+        setEnabled(!DocumentsDlg.isEmpty());
     }
     
 }
