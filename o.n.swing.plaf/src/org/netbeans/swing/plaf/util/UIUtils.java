@@ -51,7 +51,8 @@ public final class UIUtils {
             return false;
         }
         String lfID = UIManager.getLookAndFeel().getID();
-        return lfID.equals("Windows"); //NOI18N
+        // #79401 - return true also for "JGoodies Windows" LF
+        return lfID.endsWith("Windows"); //NOI18N
     }
     
     /** Finds if windows LF with XP theme is active.
