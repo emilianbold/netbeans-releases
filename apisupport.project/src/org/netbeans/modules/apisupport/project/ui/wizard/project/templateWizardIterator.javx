@@ -23,7 +23,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
     
     private int index;
     private WizardDescriptor.Panel[] panels;
@@ -47,7 +47,7 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
         };
     }
     
-    public Set/*<FileObject>*/ instantiate() throws IOException {
+    public Set/*<FileObject>*/ instantiate(/*ProgressHandle handle*/) throws IOException {
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
         dirF.mkdirs();
