@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.masterfs;
 
+import java.net.URISyntaxException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
@@ -47,10 +48,10 @@ public final class MasterURLMapper extends URLMapper {
         FileObject retVal = null;
         String filePath = null;
         try {
-            filePath = FileUtil.normalizeFile(new File(URI.create(url.toExternalForm()))).getAbsolutePath();
-        } catch (IllegalArgumentException e) {
-            StringBuffer sb = new StringBuffer();            
-            sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append("]");//NOI18N
+            filePath = FileUtil.normalizeFile(new File(new URI(url.toExternalForm()))).getAbsolutePath();
+        } catch (URISyntaxException e) {
+            StringBuilder sb = new StringBuilder();            
+            sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append(']');//NOI18N
             IllegalArgumentException iax = new IllegalArgumentException(sb.toString());
             if (Utilities.isWindows() && url.getAuthority() != null) {
                 Exceptions.attachLocalizedMessage(iax,
