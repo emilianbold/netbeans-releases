@@ -65,6 +65,12 @@ Controller {
         String defaultAttachTypeName = null; //connectSettings.getLastDebuggerType ();
         int defaultIndex = 0;
         int i, k = attachTypes.size ();
+        Collections.sort(attachTypes, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                if (!(o1 instanceof AttachType) || !(o2 instanceof AttachType)) return 0;
+                return ((AttachType) o1).getTypeDisplayName().compareTo((AttachType) o2);
+            }
+        });
         for (i = 0; i < k; i++) {
             AttachType at = (AttachType) attachTypes.get (i);
             cbAttachTypes.addItem (at.getTypeDisplayName ());
