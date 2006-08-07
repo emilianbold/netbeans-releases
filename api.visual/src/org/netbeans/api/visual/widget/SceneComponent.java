@@ -191,8 +191,11 @@ final class SceneComponent extends JPanel implements MouseListener, MouseMotionL
 
             if (! state.isConsumed ())
                 state = processLocationOperator (operator, tool, scene, event);
-        } else
+        } else {
+            Point location = scene.getLocation ();
+            event.translatePoint (location.x, location.y);
             state = processLocationOperator (operator, tool, scene, event);
+        }
 
         lockedWidget = state.getLockedWidget ();
         lockedAction = state.getLockedAction ();

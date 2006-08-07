@@ -40,6 +40,7 @@ public class LabelWidget extends Widget {
         setOpaque (false);
 //        setCursor (new Cursor (Cursor.TEXT_CURSOR));
         setLabel (text);
+        setCheckClipping (true);
     }
 
     public String getLabel () {
