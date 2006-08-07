@@ -228,7 +228,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * on the name of the original object.
     *
     * @param folder target folder to create data in
-    * @param original orignal object that should be represented by the shadow
+    * @param original original object that should be represented by the shadow
     */
     public static DataShadow create (DataFolder folder, DataObject original)
     throws IOException {
@@ -251,11 +251,11 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     }
     
     /** Method that creates new data shadow in a folder. All modifications are
-    * done atomicly using {@link FileSystem#runAtomicAction}.
+    * done atomically using {@link FileSystem#runAtomicAction}.
     *
     * @param folder target folder to create data in
     * @param name name to give to the shadow
-    * @param original orignal object that should be represented by the shadow
+    * @param original original object that should be represented by the shadow
     */
     public static DataShadow create (
         DataFolder folder,
@@ -1023,7 +1023,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
         }
 
-        /** Class that renames the orginal object and also updates
+        /** Class that renames the original object and also updates
         * the link
         */
         private final class Name extends PropertySupport.ReadWrite {
