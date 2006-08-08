@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.settings</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -106,17 +106,16 @@ Microsystems, Inc. All Rights Reserved.
                   <test-dependency>
                       <code-name-base>org.openide.actions</code-name-base>
                       <recursive/>
-                      <run-dependency/>
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.netbeans.core.startup</code-name-base>
-                      <compile-dependency/>
                       <recursive/>
+                      <compile-dependency/>
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.netbeans.core.ui</code-name-base>
-                      <compile-dependency/>
                       <recursive/>
+                      <compile-dependency/>
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.openide.text</code-name-base>
@@ -128,8 +127,8 @@ Microsystems, Inc. All Rights Reserved.
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
-                      <compile-dependency/>
                       <recursive/>
+                      <compile-dependency/>
                   </test-dependency>
               </test-type>
               <test-type>

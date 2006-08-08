@@ -89,28 +89,28 @@ public class SortSuiteModules extends Task {
             if (config == null) {
                 throw new BuildException("Malformed project file " + projectXml, getLocation());
             }
-            Element data = XMLUtil.findElement(config, "data", ParseProjectXml.NBM_NS);
+            Element data = ParseProjectXml.findNBMElement(config, "data");
             if (data == null) {
                 throw new BuildException("Malformed project file " + projectXml, getLocation());
             }
-            Element cnbEl = XMLUtil.findElement(data, "code-name-base", ParseProjectXml.NBM_NS);
+            Element cnbEl = ParseProjectXml.findNBMElement(data, "code-name-base");
             if (cnbEl == null) {
                 throw new BuildException("Malformed project file " + projectXml, getLocation());
             }
             String cnb = XMLUtil.findText(cnbEl);
             basedirsByCNB.put(cnb, d);
             List/*<String>*/ deps = new LinkedList();
-            Element depsEl = XMLUtil.findElement(data, "module-dependencies", ParseProjectXml.NBM_NS);
+            Element depsEl = ParseProjectXml.findNBMElement(data, "module-dependencies");
             if (depsEl == null) {
                 throw new BuildException("Malformed project file " + projectXml, getLocation());
             }
             Iterator it = XMLUtil.findSubElements(depsEl).iterator();
             while (it.hasNext()) {
                 Element dep = (Element) it.next();
-                if (XMLUtil.findElement(dep, "build-prerequisite", ParseProjectXml.NBM_NS) == null) {
+                if (ParseProjectXml.findNBMElement(dep, "build-prerequisite") == null) {
                     continue;
                 }
-                Element cnbEl2 = XMLUtil.findElement(dep, "code-name-base", ParseProjectXml.NBM_NS);
+                Element cnbEl2 = ParseProjectXml.findNBMElement(dep, "code-name-base");
                 if (cnbEl2 == null) {
                     throw new BuildException("Malformed project file " + projectXml, getLocation());
                 }

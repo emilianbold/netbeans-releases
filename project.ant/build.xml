@@ -36,13 +36,4 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="test" depends="projects/projectapi-test,projectized-common.test"/>
-    <target name="test-single" depends="projects/projectapi-test,projectized-common.test-single"/>
-    <target name="projects/projectapi-test" depends="check-projects/projectapi-test" unless="projects/projectapi.test.built">
-        <ant dir="../../projects/projectapi" target="test-build"/>
-    </target>
-    <target name="check-projects/projectapi-test">
-        <available property="projects/projectapi.test.built" file="../../projects/projectapi/build/test/unit/classes"/>
-    </target>
-
 </project>

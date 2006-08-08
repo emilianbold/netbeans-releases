@@ -51,7 +51,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
             "<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n" +
             "<type>org.netbeans.modules.apisupport.project</type>\n" +
             "<configuration>\n" +
-            "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">\n" +
+            "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/3\">\n" +
             "<code-name-base>org.openide.loaders</code-name-base>\n" +
             "</data>\n" +
             "</configuration>\n" +

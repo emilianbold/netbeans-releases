@@ -47,7 +47,7 @@ public final class AccessibilityQueryImpl implements AccessibilityQueryImplement
             String path = FileUtil.getRelativePath(srcdir, pkg);
             if (path != null) {
                 String name = path.replace('/', '.');
-                Element config = project.getHelper().getPrimaryConfigurationData(true);
+                Element config = project.getPrimaryConfigurationData();
                 Element pubPkgs = Util.findElement(config, "public-packages", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
                 if (pubPkgs == null) {
                     // Try <friend-packages> too.

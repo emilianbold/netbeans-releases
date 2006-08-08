@@ -60,7 +60,8 @@ import org.xml.sax.SAXException;
 public final class ParseProjectXml extends Task {
 
     static final String PROJECT_NS = "http://www.netbeans.org/ns/project/1";
-    static final String NBM_NS = "http://www.netbeans.org/ns/nb-module-project/2";
+    static final String NBM_NS2 = "http://www.netbeans.org/ns/nb-module-project/2";
+    static final String NBM_NS3 = "http://www.netbeans.org/ns/nb-module-project/3";
     
     static final int TYPE_NB_ORG = 0;
     static final int TYPE_SUITE = 1;
@@ -462,7 +463,7 @@ public final class ParseProjectXml extends Task {
         if (c == null) {
             throw new BuildException("No <configuration>", getLocation());
         }
-        Element d = XMLUtil.findElement(c, "data", NBM_NS);
+        Element d = findNBMElement(c, "data");
         if (d == null) {
             throw new BuildException("No <data> in " + getProjectFile(), getLocation());
         }
@@ -481,9 +482,9 @@ public final class ParseProjectXml extends Task {
 
     private PublicPackage[] getPublicPackages(Document d) throws BuildException {
         Element cfg = getConfig(d);
-        Element pp = XMLUtil.findElement(cfg, "public-packages", NBM_NS);
+        Element pp = findNBMElement(cfg, "public-packages");
         if (pp == null) {
-            pp = XMLUtil.findElement(cfg, "friend-packages", NBM_NS);
+            pp = findNBMElement(cfg, "friend-packages");
         }
         if (pp == null) {
             throw new BuildException("No <public-packages>", getLocation());
@@ -515,7 +516,7 @@ public final class ParseProjectXml extends Task {
     
     private String[] getFriends(Document d) throws BuildException {
         Element cfg = getConfig(d);
-        Element pp = XMLUtil.findElement(cfg, "friend-packages", NBM_NS);
+        Element pp = findNBMElement(cfg, "friend-packages");
         if (pp == null) {
             return null;
         }
@@ -661,7 +662,7 @@ public final class ParseProjectXml extends Task {
 
     private Dep[] getDeps(Document pDoc, ModuleListParser modules) throws BuildException {
         Element cfg = getConfig(pDoc);
-        Element md = XMLUtil.findElement(cfg, "module-dependencies", NBM_NS);
+        Element md = findNBMElement(cfg, "module-dependencies");
         if (md == null) {
             throw new BuildException("No <module-dependencies>", getLocation());
         }
@@ -671,7 +672,7 @@ public final class ParseProjectXml extends Task {
         while (it.hasNext()) {
             Element dep = (Element)it.next();
             Dep d = new Dep(modules);
-            Element cnb = XMLUtil.findElement(dep, "code-name-base", NBM_NS);
+            Element cnb = findNBMElement(dep, "code-name-base");
             if (cnb == null) {
                 throw new BuildException("No <code-name-base>", getLocation());
             }
@@ -680,10 +681,10 @@ public final class ParseProjectXml extends Task {
                 throw new BuildException("No text in <code-name-base>", getLocation());
             }
             d.codenamebase = t;
-            Element rd = XMLUtil.findElement(dep, "run-dependency", NBM_NS);
+            Element rd = findNBMElement(dep, "run-dependency");
             if (rd != null) {
                 d.run = true;
-                Element rv = XMLUtil.findElement(rd, "release-version", NBM_NS);
+                Element rv = findNBMElement(rd, "release-version");
                 if (rv != null) {
                     t = XMLUtil.findText(rv);
                     if (t == null) {
@@ -691,7 +692,7 @@ public final class ParseProjectXml extends Task {
                     }
                     d.release = t;
                 }
-                Element sv = XMLUtil.findElement(rd, "specification-version", NBM_NS);
+                Element sv = findNBMElement(rd, "specification-version");
                 if (sv != null) {
                     t = XMLUtil.findText(sv);
                     if (t == null) {
@@ -699,12 +700,12 @@ public final class ParseProjectXml extends Task {
                     }
                     d.spec = t;
                 }
-                Element iv = XMLUtil.findElement(rd, "implementation-version", NBM_NS);
+                Element iv = findNBMElement(rd, "implementation-version");
                 if (iv != null) {
                     d.impl = true;
                 }
             }
-            d.compile = XMLUtil.findElement(dep, "compile-dependency", NBM_NS) != null;
+            d.compile = findNBMElement(dep, "compile-dependency") != null;
             deps.add(d);
         }
         return (Dep[])deps.toArray(new Dep[deps.size()]);
@@ -712,7 +713,7 @@ public final class ParseProjectXml extends Task {
 
     private String getCodeNameBase(Document d) throws BuildException {
         Element data = getConfig(d);
-        Element name = XMLUtil.findElement(data, "code-name-base", NBM_NS);
+        Element name = findNBMElement(data, "code-name-base");
         if (name == null) {
             throw new BuildException("No <code-name-base>", getLocation());
         }
@@ -725,9 +726,9 @@ public final class ParseProjectXml extends Task {
 
     private int getModuleType(Document d) throws BuildException {
         Element data = getConfig(d);
-        if (XMLUtil.findElement(data, "suite-component", NBM_NS) != null) {
+        if (findNBMElement(data, "suite-component") != null) {
             return TYPE_SUITE;
-        } else if (XMLUtil.findElement(data, "standalone", NBM_NS) != null) {
+        } else if (findNBMElement(data, "standalone") != null) {
             return TYPE_STANDALONE;
         } else {
             return TYPE_NB_ORG;
@@ -991,7 +992,7 @@ public final class ParseProjectXml extends Task {
             if (!ext.getLocalName().equals("class-path-extension")) {
                 continue;
             }
-            Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", NBM_NS);
+            Element runtimeRelativePath = findNBMElement(ext, "runtime-relative-path");
             if (runtimeRelativePath == null) {
                 throw new BuildException("Have malformed <class-path-extension> in " + getProjectFile(), getLocation());
             }
@@ -1094,7 +1095,7 @@ public final class ParseProjectXml extends Task {
         assert modules != null;
         Element cfg = getConfig(pDoc);
         List testDepsList = new ArrayList(); 
-        Element pp = XMLUtil.findElement(cfg, "test-dependencies", NBM_NS);
+        Element pp = findNBMElement(cfg, "test-dependencies");
         if (pp != null) {
             for (Iterator depssIt = XMLUtil.findSubElements(pp).iterator(); depssIt.hasNext();) {
                 Element depssEl = (Element) depssIt.next();
@@ -1108,10 +1109,10 @@ public final class ParseProjectXml extends Task {
                     Element el = (Element) depsIt.next();
                     if (el.getTagName().equals("test-dependency")) {
                         // parse test dep
-                        boolean  test =   (XMLUtil.findElement(el,"test",NBM_NS) != null);;
+                        boolean  test =   (findNBMElement(el,"test") != null);
                         String cnb =  findTextOrNull(el,"code-name-base");
-                        boolean  recursive = (XMLUtil.findElement(el,"recursive",NBM_NS) != null);
-                        boolean  compile = (XMLUtil.findElement(el,"compile-dependency",NBM_NS) != null);                    
+                        boolean  recursive = (findNBMElement(el,"recursive") != null);
+                        boolean  compile = (findNBMElement(el,"compile-dependency") != null);
                         testDeps.addDepenency(new TestDep(cnb,
                                                          modules,
                                                          recursive,
@@ -1128,10 +1129,19 @@ public final class ParseProjectXml extends Task {
         return testDepss;      
     }
     private static String findTextOrNull(Element parentElement,String elementName) {
-        Element el = XMLUtil.findElement(parentElement,elementName,NBM_NS);
+        Element el = findNBMElement(parentElement,elementName);
         return (el == null) ? null :
                               XMLUtil.findText(el);
                 
+    }
+    private static String NBM_NS_CACHE = NBM_NS3;
+    static Element findNBMElement(Element el,String name) {
+        Element retEl = XMLUtil.findElement(el,name,NBM_NS_CACHE) ;
+        if (retEl == null) {
+            NBM_NS_CACHE = (NBM_NS_CACHE == NBM_NS3) ? NBM_NS2 :NBM_NS3;
+            retEl = XMLUtil.findElement(el,name,NBM_NS_CACHE) ;            
+        }
+        return retEl;
     }
  
 }

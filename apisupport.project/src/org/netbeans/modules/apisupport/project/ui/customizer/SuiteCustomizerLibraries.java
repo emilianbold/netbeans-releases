@@ -654,7 +654,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             this.project = project;
             dependencies = new HashSet();
             // Cannot use ProjectXMLManager since we need to report also deps on nonexistent modules.
-            Element dataE = project.getHelper().getPrimaryConfigurationData(true);
+            Element dataE = project.getPrimaryConfigurationData();
             Element depsE = Util.findElement(dataE, "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
             Iterator/*<Element>*/ deps = Util.findSubElements(depsE).iterator();
             while (deps.hasNext()) {

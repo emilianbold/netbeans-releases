@@ -85,6 +85,7 @@ public final class ProjectXMLManager {
     private static final String STANDALONE = "standalone"; // NOI18N
     private static final String SUBPACKAGES = "subpackages"; // NOI18N
     private static final String SUITE_COMPONENT = "suite-component"; // NOI18N
+    private static final String TEST_DEPENDENCIES = "test-dependencies"; // NOI18N
     
     private final NbModuleProject project;
     private NbPlatform customPlaf;
@@ -150,7 +151,7 @@ public final class ProjectXMLManager {
         if (newModuleType != null) {
             confData.insertBefore(newModuleType, findModuleDependencies(confData));
         }
-        project.getHelper().putPrimaryConfigurationData(confData, true);
+        project.putPrimaryConfigurationData(confData);
     }
     
     /**
@@ -250,7 +251,7 @@ public final class ProjectXMLManager {
                 moduleDependencies.removeChild(dep);
             }
         }
-        project.getHelper().putPrimaryConfigurationData(confData, true);
+        project.putPrimaryConfigurationData(confData);
     }
     
     /**
@@ -289,7 +290,7 @@ public final class ProjectXMLManager {
             Util.err.log(ErrorManager.WARNING,
                     "Some modules weren't deleted: " + cnbsToDelete); // NOI18N
         }
-        project.getHelper().putPrimaryConfigurationData(confData, true);
+        project.putPrimaryConfigurationData(confData);
     }
     
     public void editDependency(ModuleDependency origDep, ModuleDependency newDep) {
@@ -307,7 +308,7 @@ public final class ProjectXMLManager {
                 break;
             }
         }
-        project.getHelper().putPrimaryConfigurationData(confData, true);
+        project.putPrimaryConfigurationData(confData);
     }
     
     /**
@@ -336,7 +337,10 @@ public final class ProjectXMLManager {
         Element moduleDependencies = findModuleDependencies(confData);
         confData.removeChild(moduleDependencies);
         moduleDependencies = createModuleElement(doc, ProjectXMLManager.MODULE_DEPENDENCIES);
-        Element before = findPublicPackagesElement(confData);
+        Element before = findTestDependenciesElement(confData);
+        if (before == null) {
+            before = findPublicPackagesElement(confData);
+        }
         if (before == null) {
             before = findFriendsElement(confData);
         }
@@ -348,7 +352,7 @@ public final class ProjectXMLManager {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);
         }
-        project.getHelper().putPrimaryConfigurationData(confData, true);
+        project.putPrimaryConfigurationData(confData);
         this.directDeps = sortedDeps;
     }
     
@@ -359,7 +363,7 @@ public final class ProjectXMLManager {
         for (int i = 0; i < nl.getLength(); i++) {
             confData.removeChild(nl.item(i));
         }
-        project.getHelper().putPrimaryConfigurationData(confData, true);
+        project.putPrimaryConfigurationData(confData);
     }
     
     /**
@@ -384,7 +388,7 @@ public final class ProjectXMLManager {
                 confData.appendChild(cpel);
                 
             }
-            project.getHelper().putPrimaryConfigurationData(confData, true);
+            project.putPrimaryConfigurationData(confData);
         }
     }
     
@@ -405,7 +409,7 @@ public final class ProjectXMLManager {
             publicPackagesEl.appendChild(
                     createModuleElement(doc, ProjectXMLManager.PACKAGE, newPackages[i]));
         }
-        project.getHelper().putPrimaryConfigurationData(confData, true);
+        project.putPrimaryConfigurationData(confData);
         publicPackages = null; // XXX cleaner would be to listen on changes in helper
     }
     
@@ -438,7 +442,7 @@ public final class ProjectXMLManager {
             friendPackages.appendChild(
                     createModuleElement(doc, ProjectXMLManager.PACKAGE, packagesToExpose[i]));
         }
-        project.getHelper().putPrimaryConfigurationData(confData, true);
+        project.putPrimaryConfigurationData(confData);
         publicPackages = null;
     }
     
@@ -556,6 +560,10 @@ public final class ProjectXMLManager {
     /** Package-private for unit tests only. */
     static Element findModuleDependencies(Element confData) {
         return findElement(confData, ProjectXMLManager.MODULE_DEPENDENCIES);
+    }
+    
+    private static Element findTestDependenciesElement(Element confData) {
+        return findElement(confData, ProjectXMLManager.TEST_DEPENDENCIES);
     }
     
     private static Element findPublicPackagesElement(Element confData) {
@@ -777,7 +785,7 @@ public final class ProjectXMLManager {
     
     private Element getConfData() {
         if (confData == null) {
-            confData = project.getHelper().getPrimaryConfigurationData(true);
+            confData = project.getPrimaryConfigurationData();
         }
         return confData;
     }

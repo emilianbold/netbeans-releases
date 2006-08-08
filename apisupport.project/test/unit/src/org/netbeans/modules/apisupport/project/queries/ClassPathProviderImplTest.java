@@ -591,11 +591,11 @@ public class ClassPathProviderImplTest extends TestBase {
         }
         File px = new File(audioviewer, "nbproject/project.xml".replace('/', File.separatorChar));
         Document doc = XMLUtil.parse(new InputSource(px.toURI().toString()), false, true, null, null);
-        NodeList nl = doc.getDocumentElement().getElementsByTagNameNS(NbModuleProjectType.NAMESPACE_SHARED, "data");
+        NodeList nl = doc.getDocumentElement().getElementsByTagNameNS(NbModuleProjectType.NAMESPACE_SHARED_2, "data");
         assertEquals(1, nl.getLength());
         Element data = (Element) nl.item(0);
         // XXX insert at position 1, between <c-n-b> and <m-d>:
-        data.appendChild(doc.createElementNS(NbModuleProjectType.NAMESPACE_SHARED, "standalone"));
+        data.appendChild(doc.createElementNS(NbModuleProjectType.NAMESPACE_SHARED_2, "standalone"));
         os = new FileOutputStream(px);
         try {
             XMLUtil.write(doc, os, "UTF-8");

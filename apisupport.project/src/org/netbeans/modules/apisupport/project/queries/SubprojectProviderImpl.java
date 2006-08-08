@@ -67,7 +67,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
             return Collections.EMPTY_SET;
         }
-        Element data = project.getHelper().getPrimaryConfigurationData(true);
+        Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);

@@ -179,14 +179,14 @@ final class ModuleListParser {
             return false;
         }
         Element configEl = XMLUtil.findElement(doc.getDocumentElement(), "configuration", ParseProjectXml.PROJECT_NS);
-        Element dataEl = XMLUtil.findElement(configEl, "data", ParseProjectXml.NBM_NS);
+        Element dataEl = ParseProjectXml.findNBMElement(configEl, "data");
         if (dataEl == null) {
             if (project != null) {
-                project.log(projectxml.toString() + ": warning: module claims to be a NBM project but is missing <data xmlns=\"" + ParseProjectXml.NBM_NS + "\">; maybe an old NB 4.[01] project?", Project.MSG_WARN);
+                project.log(projectxml.toString() + ": warning: module claims to be a NBM project but is missing <data xmlns=\"" + ParseProjectXml.NBM_NS3 + "\">; maybe an old NB 4.[01] project?", Project.MSG_WARN);
             }
             return false;
         }
-        Element cnbEl = XMLUtil.findElement(dataEl, "code-name-base", ParseProjectXml.NBM_NS);
+        Element cnbEl = ParseProjectXml.findNBMElement(dataEl, "code-name-base");
         String cnb = XMLUtil.findText(cnbEl);
         // Clumsy but the best way I know of to evaluate properties.
         Project fakeproj = new Project();
@@ -294,7 +294,7 @@ final class ModuleListParser {
             if (!ext.getLocalName().equals("class-path-extension")) {
                 continue;
             }
-            Element binaryOrigin = XMLUtil.findElement(ext, "binary-origin", ParseProjectXml.NBM_NS);
+            Element binaryOrigin = ParseProjectXml.findNBMElement(ext, "binary-origin");
             File origBin = null;
             if (binaryOrigin != null) {
                 String reltext = XMLUtil.findText(binaryOrigin);
@@ -310,7 +310,7 @@ final class ModuleListParser {
 
             File resultBin = null;
             if (origBin == null || !origBin.exists()) {
-                Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", ParseProjectXml.NBM_NS);
+                Element runtimeRelativePath = ParseProjectXml.findNBMElement(ext, "runtime-relative-path");
                 if (runtimeRelativePath == null) {
                     throw new IOException("Have malformed <class-path-extension> in " + projectxml);
                 }
@@ -329,20 +329,20 @@ final class ModuleListParser {
         }
         List/*<String>*/ prereqs = new ArrayList();
         List/*<String>*/ rundeps = new ArrayList();
-        Element depsEl = XMLUtil.findElement(dataEl, "module-dependencies", ParseProjectXml.NBM_NS);
+        Element depsEl = ParseProjectXml.findNBMElement(dataEl, "module-dependencies");
         if (depsEl == null) {
             throw new IOException("Malformed project file " + projectxml);
         }
         Iterator deps = XMLUtil.findSubElements(depsEl).iterator();
         while (deps.hasNext()) {
             Element dep = (Element) deps.next();
-            Element cnbEl2 = XMLUtil.findElement(dep, "code-name-base", ParseProjectXml.NBM_NS);
+            Element cnbEl2 = ParseProjectXml.findNBMElement(dep, "code-name-base");
             if (cnbEl2 == null) {
                 throw new IOException("Malformed project file " + projectxml);
             }
             String cnb2 = XMLUtil.findText(cnbEl2);
             rundeps.add(cnb2);
-            if (XMLUtil.findElement(dep, "build-prerequisite", ParseProjectXml.NBM_NS) == null) {
+            if (ParseProjectXml.findNBMElement(dep, "build-prerequisite") == null) {
                 continue;
             }
             prereqs.add(cnb2);

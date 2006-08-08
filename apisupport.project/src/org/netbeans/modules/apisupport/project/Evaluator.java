@@ -584,7 +584,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
      * Should be similar to impl in ParseProjectXml.
      */
     private String computeModuleClasspath(ModuleList ml) {
-        Element data = project.getHelper().getPrimaryConfigurationData(true);
+        Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
@@ -690,7 +690,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         return classpaths;
     }
     private Map /*<String,Set<TestModuleDepency>>*/getTestDependencies(ModuleList ml) {
-        Element data = project.getHelper().getPrimaryConfigurationData(true);
+        Element data = project.getPrimaryConfigurationData();
         Element pp = Util.findElement(data,
             "test-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
     

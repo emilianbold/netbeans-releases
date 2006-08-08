@@ -247,11 +247,11 @@ public class ProjectXMLManagerTest extends TestBase {
         final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                Element confData = testingProject.getHelper().getPrimaryConfigurationData(true);
+                Element confData = testingProject.getPrimaryConfigurationData();
                 Element moduleDependencies = ProjectXMLManager.findModuleDependencies(confData);
                 ProjectXMLManager.createModuleDependencyElement(moduleDependencies, md, null);
                 ProjectXMLManager.createModuleDependencyElement(moduleDependencies, md, null);
-                testingProject.getHelper().putPrimaryConfigurationData(confData, true);
+                testingProject.putPrimaryConfigurationData(confData);
                 return Boolean.TRUE;
             }
         });
@@ -425,7 +425,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 "<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n" +
                 "<type>org.netbeans.modules.apisupport.project</type>\n" +
                 "<configuration>\n" +
-                "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">\n" +
+                "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/3\">\n" +
                 "<code-name-base>org.netbeans.modules.j2eeapis</code-name-base>\n" +
                 "<standalone/>\n" +
                 "<module-dependencies/>\n" +
@@ -468,7 +468,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 "<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n" +
                 "<type>org.netbeans.modules.apisupport.project</type>\n" +
                 "<configuration>\n" +
-                "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">\n" +
+                "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/3\">\n" +
                 "<code-name-base>org.example.testing</code-name-base>\n" +
                 "<standalone/>\n" +
                 "<module-dependencies>\n" +
@@ -490,6 +490,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 "</run-dependency>\n" +
                 "</dependency>\n" +
                 "</module-dependencies>\n" +
+                "<test-dependencies/>\n" +
                 "<friend-packages>\n" +
                 "<friend>org.module.examplemodule</friend>\n" +
                 "<package>org.netbeans.examples.modules.misc</package>\n" +
@@ -507,9 +508,10 @@ public class ProjectXMLManagerTest extends TestBase {
     
     // below is stolen from ant/freeform
     private static String[] getSchemas() throws Exception {
-        String[] URIs = new String[2];
+        String[] URIs = new String[3];
         URIs[0] = ProjectXMLManager.class.getResource("resources/nb-module-project2.xsd").toExternalForm();
-        URIs[1] = AntBasedProjectFactorySingleton.class.getResource("project.xsd").toExternalForm();
+        URIs[1] = ProjectXMLManager.class.getResource("resources/nb-module-project3.xsd").toExternalForm();
+        URIs[2] = AntBasedProjectFactorySingleton.class.getResource("project.xsd").toExternalForm();
         return URIs;
     }
     

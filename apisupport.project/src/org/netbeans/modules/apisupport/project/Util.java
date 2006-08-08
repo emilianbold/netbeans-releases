@@ -68,6 +68,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -165,7 +166,32 @@ public final class Util {
         }
         return elements;
     }
-    
+
+    /**
+     * Convert an XML fragment from one namespace to another.
+     */
+    public static Element translateXML(Element from, String namespace) {
+        Element to = from.getOwnerDocument().createElementNS(namespace, from.getLocalName());
+        NodeList nl = from.getChildNodes();
+        int length = nl.getLength();
+        for (int i = 0; i < length; i++) {
+            Node node = nl.item(i);
+            Node newNode;
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                newNode = translateXML((Element) node, namespace);
+            } else {
+                newNode = node.cloneNode(true);
+            }
+            to.appendChild(newNode);
+        }
+        NamedNodeMap m = from.getAttributes();
+        for (int i = 0; i < m.getLength(); i++) {
+            Node attr = m.item(i);
+            to.setAttribute(attr.getNodeName(), attr.getNodeValue());
+        }
+        return to;
+    }
+
     // CANDIDATES FOR FileUtil (#59311):
     
     /**

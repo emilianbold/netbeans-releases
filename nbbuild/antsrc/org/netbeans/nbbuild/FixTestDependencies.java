@@ -37,6 +37,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
 
+// XXX should use DOM, not text manipulation
+
 /**
  * Moves classpath from properties to project.xml
  * @author pzajac
@@ -75,105 +77,118 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                 prjFis.close();
             }
             String xml = new String(xmlBytes);
-            int projectType = ParseProjectXml.TYPE_NB_ORG;
-            if (xml.contains("<suite-component/>")) {
-                projectType = ParseProjectXml.TYPE_SUITE;
-            } else if (xml.contains("<standalone/>")) {
-                projectType = ParseProjectXml.TYPE_NB_ORG;
-            } 
-            //grrr
-            int typeStart = xml.indexOf("<code-name-base>");
-            int typeEnd = xml.indexOf("</code-name-base>");
-            if (typeStart <= 0 || typeEnd <= 0 || typeEnd <= typeStart) {
-                throw new BuildException("Parsing of project.xml failed.");
+            String oldXsd = "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2";
+            int xsdIndex = xml.indexOf(oldXsd);
+            if (xsdIndex != -1) {
+                // increase schema version
+                String part1 = xml.substring(0,xsdIndex + oldXsd.length() - 1);
+                String part2 = xml.substring(xsdIndex + oldXsd.length(), xml.length());
+                xml = part1 + "3" + part2;
+                
+                int projectType = ParseProjectXml.TYPE_NB_ORG;
+                if (xml.contains("<suite-component/>")) {
+                    projectType = ParseProjectXml.TYPE_SUITE;
+                } else if (xml.contains("<standalone/>")) {
+                    projectType = ParseProjectXml.TYPE_NB_ORG;
+                } 
+                //grrr
+                int typeStart = xml.indexOf("<code-name-base>");
+                int typeEnd = xml.indexOf("</code-name-base>");
+                if (typeStart <= 0 || typeEnd <= 0 || typeEnd <= typeStart) {
+                    throw new BuildException("Parsing of project.xml failed.");
+                }
+                cnb = xml.substring(typeStart + "<code-name-base>".length(), typeEnd).trim();
+                if (cnb.length() <= 0) {
+                    throw new BuildException("Invalid codename base:" + cnb);
+                }
+                // test if project.xml contains test-deps
+                if (xml.contains("<test-dependencies>")) {
+                    // yes -> exit
+                    log("<test-dependencies> already exists.");
+                    log("update only schema version");
+                    PrintStream ps = new PrintStream(projectXmlFile);
+                    ps.print(xml);
+                    ps.close();                  
+                    return ;
+                }
+                // no :
+                // scan for all modules
+                ModuleListParser listParser;
+                listParser = new ModuleListParser(getProject().getProperties(), projectType, getProject());
+                Set/*<ModuleListParser.Entry>*/ entries =  listParser.findAll();
+                Set/*<String>*/ allCnbs = getCNBsFromEntries(entries);
+                // read properties
+
+                // remove modules and test from properties and put it to project.xml
+
+                // unittest
+                //
+                Set/*<String>*/ compileCNB = new HashSet();
+                Set/*<String>*/ compileTestCNB = new HashSet();
+                Set/*<String>*/ runtimeCNB = new HashSet();
+                Set/*<String>*/ runtimeTestCNB = new HashSet();
+
+                Properties projectProperties = getTestProperties();
+                readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
+                readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp.extra",allCnbs,entries);
+
+                readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp",allCnbs,entries);
+                readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp.extra",allCnbs,entries);
+
+                updateProperties(projectProperties,new String[]{"test.unit.cp","test.unit.cp.extra","test.unit.run.cp","test.unit.run.cp.extra"});
+
+                StringBuffer buffer = new StringBuffer();
+                buffer.append("\n          <test-dependencies>\n");
+                buffer.append("              <test-type>\n");
+                buffer.append("                  <name>unit</name>\n");
+                addDependency(buffer,cnb,true,true,false);
+
+                runtimeCNB.removeAll(compileCNB);
+                //compileCNB.removeAll(runtimeCNB);
+                compileCNB.addAll(compileTestCNB);
+                runtimeTestCNB.removeAll(compileTestCNB);
+                runtimeCNB.addAll(runtimeTestCNB);
+                addDependencies(buffer,compileCNB,compileTestCNB,true,false);
+                addDependencies(buffer,runtimeCNB,runtimeTestCNB,false,false);
+                buffer.append("              </test-type>\n");
+
+                // qa functional tests
+                compileCNB.clear();
+                runtimeCNB.clear();
+                compileTestCNB.clear();
+                runtimeTestCNB.clear();
+
+                buffer.append("              <test-type>\n");
+                buffer.append("                  <name>qa-functional</name>\n");
+
+                readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.qa-functional.cp",allCnbs,entries);
+                readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.qa-functional.cp.extra",allCnbs,entries);
+
+                readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.qa-functional.runtime.cp",allCnbs,entries);
+                readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.qa-functional.runtime.extra",allCnbs,entries);
+
+                addDependencies(buffer,compileCNB,compileTestCNB,true,false);
+                addDependencies(buffer,runtimeCNB,runtimeTestCNB,false,false);
+                buffer.append("              </test-type>\n");
+                buffer.append("            </test-dependencies>\n");
+                updateProperties(projectProperties,new String[]{"test.qa-functional.cp","test.qa-functional.cp","test.qa-functional.runtime.cp","test.qa-functional.runtime.extra"});
+
+                // merge project properties
+                String MODULE_DEP_END = "</module-dependencies>";
+                int moduleDepEnd = xml.indexOf(MODULE_DEP_END);
+                if (moduleDepEnd == -1) {
+                    throw new BuildException("No module dependency found.");
+                }
+                moduleDepEnd += MODULE_DEP_END.length();
+                StringBuffer resultXml = new StringBuffer();
+                resultXml.append(xml.substring(0,moduleDepEnd));
+                resultXml.append(buffer);
+                resultXml.append(xml.substring(moduleDepEnd + 1, xml.length()));
+
+               PrintStream ps = new PrintStream(projectXmlFile);
+               ps.print(resultXml);
+               ps.close();
             }
-            cnb = xml.substring(typeStart + "<code-name-base>".length(), typeEnd).trim();
-            if (cnb.length() <= 0) {
-                throw new BuildException("Invalid codename base:" + cnb);
-            }
-            // test if project.xml contains test-deps
-            if (xml.contains("<test-dependencies>")) {
-                // yes -> exit
-                log("<test-dependencies> already exists.");
-                return ;
-            }
-            // no :
-            // scan for all modules
-            ModuleListParser listParser;
-            listParser = new ModuleListParser(getProject().getProperties(), projectType, getProject());
-            Set/*<ModuleListParser.Entry>*/ entries =  listParser.findAll();
-            Set/*<String>*/ allCnbs = getCNBsFromEntries(entries);
-            // read properties
-            
-            // remove modules and test from properties and put it to project.xml
-            
-            // unittest
-            //
-            Set/*<String>*/ compileCNB = new HashSet();
-            Set/*<String>*/ compileTestCNB = new HashSet();
-            Set/*<String>*/ runtimeCNB = new HashSet();
-            Set/*<String>*/ runtimeTestCNB = new HashSet();
-            
-            Properties projectProperties = getTestProperties();
-            readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
-            readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp.extra",allCnbs,entries);
-            
-            readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp",allCnbs,entries);
-            readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp.extra",allCnbs,entries);
-            
-            updateProperties(projectProperties,new String[]{"test.unit.cp","test.unit.cp.extra","test.unit.run.cp","test.unit.run.cp.extra"});
-            
-            StringBuffer buffer = new StringBuffer();
-            buffer.append("\n          <test-dependencies>\n");
-            buffer.append("              <test-type>\n");
-            buffer.append("                  <name>unit</name>\n");
-            addDependency(buffer,cnb,true,true,false);
-            
-            runtimeCNB.removeAll(compileCNB);
-            //compileCNB.removeAll(runtimeCNB);
-            compileCNB.addAll(compileTestCNB);
-            runtimeTestCNB.removeAll(compileTestCNB);
-            runtimeCNB.addAll(runtimeTestCNB);
-            addDependencies(buffer,compileCNB,compileTestCNB,true,false);
-            addDependencies(buffer,runtimeCNB,runtimeTestCNB,false,false);
-            buffer.append("              </test-type>\n");
-            
-            // qa functional tests
-            compileCNB.clear();
-            runtimeCNB.clear();
-            compileTestCNB.clear();
-            runtimeTestCNB.clear();
-            
-            buffer.append("              <test-type>\n");
-            buffer.append("                  <name>qa-functional</name>\n");
-            
-            readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.qa-functional.cp",allCnbs,entries);
-            readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.qa-functional.cp.extra",allCnbs,entries);
-            
-            readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.qa-functional.runtime.cp",allCnbs,entries);
-            readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.qa-functional.runtime.extra",allCnbs,entries);
-            
-            addDependencies(buffer,compileCNB,compileTestCNB,true,false);
-            addDependencies(buffer,runtimeCNB,runtimeTestCNB,false,false);
-            buffer.append("              </test-type>\n");
-            buffer.append("            </test-dependencies>\n");
-            updateProperties(projectProperties,new String[]{"test.qa-functional.cp","test.qa-functional.cp","test.qa-functional.runtime.cp","test.qa-functional.runtime.extra"});
-            
-            // merge project properties
-            String MODULE_DEP_END = "</module-dependencies>";
-            int moduleDepEnd = xml.indexOf(MODULE_DEP_END);
-            if (moduleDepEnd == -1) {
-                throw new BuildException("No module dependency found.");
-            }
-            moduleDepEnd += MODULE_DEP_END.length();
-            StringBuffer resultXml = new StringBuffer();
-            resultXml.append(xml.substring(0,moduleDepEnd));
-            resultXml.append(buffer);
-            resultXml.append(xml.substring(moduleDepEnd + 1, xml.length()));
-            
-           PrintStream ps = new PrintStream(projectXmlFile);
-           ps.print(resultXml);
-           ps.close();
             
         } catch (IOException ex) {
             throw new BuildException(ex);
@@ -236,6 +251,8 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                         if (newProp.length() > 0) {
                             newProp.append(":");
                         }
+                        // windows platform
+                        token = token.replace(File.separatorChar,'/');
                         newProp.append(token);
                     }
                 }

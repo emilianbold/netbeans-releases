@@ -19,48 +19,39 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author pzajac
  */
 public class FixTestDependenciesTest extends NbTestCase {
-    
-    public FixTestDependenciesTest(java.lang.String testName) {
+
+    public FixTestDependenciesTest(String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(FixTestDependenciesTest.class);
-        return suite;
-    }
-    
+
     public void testSimple() throws IOException, Exception {
-          File prjFile = copyFile("FixTestDependenciesProject.xml"); 
+          File prjFile = copyFile("FixTestDependenciesProject.xml");
           File propertiesFile = copyFile("FixTestDependencies.properties");
-          
-          PublicPackagesInProjectizedXMLTest.
-                  execute ("FixTestDependenciesTest.xml", new String[] {"-verbose", 
-                        "-Dtest.project.xml=" + prjFile.getPath(),
-                        "-Dtest.properties.file=" + propertiesFile.getPath()});
-          
-          assertFile(copyFile("FixTestDependenciesProjectPass.xml"),prjFile);
-          assertFile(copyFile("FixTestDependenciesPass.properties"),propertiesFile);
-          
+          doFixProjectXml(propertiesFile, prjFile);
+          doFixProjectXml(propertiesFile, copyFile("FixTestDependenciesProject2.xml"));
+
+    }
+
+    private void doFixProjectXml(final File propertiesFile, final File prjFile) throws Exception, IOException {
+
+        PublicPackagesInProjectizedXMLTest.
+                execute ("FixTestDependenciesTest.xml", new String[] {"-verbose",
+                      "-Dtest.project.xml=" + prjFile.getPath(),
+                      "-Dtest.properties.file=" + propertiesFile.getPath()});
+
+        assertFile(copyFile("FixTestDependenciesProjectPass.xml"),prjFile);
+        assertFile(copyFile("FixTestDependenciesPass.properties"),propertiesFile);
     }
 
     private File copyFile(String resourceName) throws IOException {
@@ -76,5 +67,5 @@ public class FixTestDependenciesTest extends NbTestCase {
        fos.close();
        return retFile;
     }
- 
+
 }

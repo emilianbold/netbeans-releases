@@ -21,26 +21,30 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:p="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                xmlns:nbmproject="http://www.netbeans.org/ns/nb-module-project/2"
-                exclude-result-prefixes="xalan p">
+                xmlns:nbmproject2="http://www.netbeans.org/ns/nb-module-project/2"
+                xmlns:nbmproject3="http://www.netbeans.org/ns/nb-module-project/3"
+                exclude-result-prefixes="xalan p nbmproject2 nbmproject3">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
         <xsl:comment><![CDATA[
 *** GENERATED FROM project.xml - DO NOT EDIT  ***
 ***         EDIT ../build.xml INSTEAD         ***
 ]]></xsl:comment>
-        <xsl:variable name="codenamebase" select="/p:project/p:configuration/nbmproject:data/nbmproject:code-name-base"/>
+        <xsl:variable name="codenamebase" select="/p:project/p:configuration/nbmproject2:data/nbmproject2:code-name-base |
+                                                  /p:project/p:configuration/nbmproject3:data/nbmproject3:code-name-base"/>
         <project name="{$codenamebase}-impl">
             <xsl:attribute name="basedir">..</xsl:attribute>
             <xsl:choose>
-                <xsl:when test="/p:project/p:configuration/nbmproject:data/nbmproject:suite-component">
+                <xsl:when test="/p:project/p:configuration/nbmproject2:data/nbmproject2:suite-component |
+                                /p:project/p:configuration/nbmproject3:data/nbmproject3:suite-component">
                     <property file="nbproject/private/suite-private.properties"/>
                     <property file="nbproject/suite.properties"/>
                     <fail unless="suite.dir">You must set 'suite.dir' to point to your containing module suite</fail>
                     <property file="${{suite.dir}}/nbproject/private/platform-private.properties"/>
                     <property file="${{suite.dir}}/nbproject/platform.properties"/>
                 </xsl:when>
-                <xsl:when test="/p:project/p:configuration/nbmproject:data/nbmproject:standalone">
+                <xsl:when test="/p:project/p:configuration/nbmproject2:data/nbmproject2:standalone |
+                                /p:project/p:configuration/nbmproject3:data/nbmproject3:standalone">
                     <property file="nbproject/private/platform-private.properties"/>
                     <property file="nbproject/platform.properties"/>
                 </xsl:when>
@@ -57,24 +61,9 @@ Microsystems, Inc. All Rights Reserved.
                     <property name="@{{name}}" value="${{@{{value}}}}"/>
                 </sequential>
             </macrodef>
-            <!-- Skip this; it is legal to define netbeans.dest.dir and harness.dir explicitly:
-            <xsl:choose>
-                <xsl:when test="/p:project/p:configuration/nbmproject:data/nbmproject:suite-component">
-                    <fail unless="nbplatform.active">Your suite must set platform.properties to name your active NB platform</fail>
-                </xsl:when>
-                <xsl:when test="/p:project/p:configuration/nbmproject:data/nbmproject:standalone">
-                    <fail unless="nbplatform.active">You must set platform.properties to name your active NB platform</fail>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:message terminate="yes">
-                        Cannot generate build-impl.xml for a netbeans.org module!
-                    </xsl:message>
-                </xsl:otherwise>
-            </xsl:choose>
-            -->
             <property file="${{user.properties.file}}"/>
-            <nbmproject:property name="harness.dir" value="nbplatform.${{nbplatform.active}}.harness.dir"/>
-            <nbmproject:property name="netbeans.dest.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>
+            <nbmproject2:property name="harness.dir" value="nbplatform.${{nbplatform.active}}.harness.dir"/>
+            <nbmproject2:property name="netbeans.dest.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>
             <fail message="You must define 'nbplatform.${{nbplatform.active}}.harness.dir'">
                 <condition>
                     <not>

@@ -701,7 +701,17 @@ public final class ModuleList {
             return null;
         }
         Element cfg = Util.findElement(docel, "configuration", "http://www.netbeans.org/ns/project/1"); // NOI18N
-        return Util.findElement(cfg, "data", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        Element data = Util.findElement(cfg, "data", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        if (data != null) {
+            return data;
+        } else {
+            data = Util.findElement(cfg, "data", NbModuleProjectType.NAMESPACE_SHARED_2); // NOI18N
+            if (data != null) {
+                return Util.translateXML(data, NbModuleProjectType.NAMESPACE_SHARED);
+            } else {
+                return null;
+            }
+        }
     }
     
     /**

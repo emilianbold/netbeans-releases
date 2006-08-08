@@ -47,6 +47,7 @@ import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -230,14 +231,51 @@ public final class NbModuleProject implements Project {
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
-    
+
+
+    /**
+     * Replacement for {@link AntProjectHelper#getPrimaryConfigurationData}
+     * taking into account the /2 -> /3 upgrade.
+     */
+    public Element getPrimaryConfigurationData() {
+        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
+                Element data = ac.getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true);
+                if (data != null) {
+                    return Util.translateXML(data, NbModuleProjectType.NAMESPACE_SHARED);
+                } else {
+                    return helper.getPrimaryConfigurationData(true);
+                }
+            }
+        });
+    }
+
+    /**
+     * Replacement for {@link AntProjectHelper#putPrimaryConfigurationData}
+     * taking into account the /2 -> /3 upgrade.
+     */
+    public void putPrimaryConfigurationData(final Element data) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
+                if (ac.getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true) != null) {
+                    ac.putConfigurationFragment(Util.translateXML(data, NbModuleProjectType.NAMESPACE_SHARED_2), true);
+                } else {
+                    helper.putPrimaryConfigurationData(data, true);
+                }
+                return null;
+            }
+        });
+    }
+
     /** Returns a relative path to a project's source directory. */
     public String getSourceDirectoryPath() {
         return evaluator().getProperty("src.dir"); // NOI18N
     }
     
     private NbModuleTypeProvider.NbModuleType getModuleType() {
-        Element data = getHelper().getPrimaryConfigurationData(true);
+        Element data = getPrimaryConfigurationData();
         if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) { // NOI18N
             return NbModuleTypeProvider.SUITE_COMPONENT;
         } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null) { // NOI18N
@@ -331,7 +369,7 @@ public final class NbModuleProject implements Project {
     }
     
     public String getCodeNameBase() {
-        Element config = getHelper().getPrimaryConfigurationData(true);
+        Element config = getPrimaryConfigurationData();
         Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         if (cnb != null) {
             return Util.findText(cnb);
@@ -508,7 +546,7 @@ public final class NbModuleProject implements Project {
         if (evaluator().getProperty("module.javadoc.packages") != null) {
             return true;
         }
-        Element config = getHelper().getPrimaryConfigurationData(true);
+        Element config = getPrimaryConfigurationData();
         Element pubPkgs = Util.findElement(config, "public-packages", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         if (pubPkgs == null) {
             // Try <friend-packages> too.
@@ -528,7 +566,7 @@ public final class NbModuleProject implements Project {
     public Map/*<FileObject,Element>*/ getExtraCompilationUnits() {
         if (extraCompilationUnits == null) {
             extraCompilationUnits = new HashMap();
-            Iterator/*<Element>*/ ecuEls = Util.findSubElements(getHelper().getPrimaryConfigurationData(true)).iterator();
+            Iterator/*<Element>*/ ecuEls = Util.findSubElements(getPrimaryConfigurationData()).iterator();
             while (ecuEls.hasNext()) {
                 Element ecu = (Element) ecuEls.next();
                 if (ecu.getLocalName().equals("extra-compilation-unit")) { // NOI18N
