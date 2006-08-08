@@ -48,7 +48,7 @@ import org.openide.util.Utilities;
  */
 public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {    
 
-    static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
+    private static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
 
     private final SpecificationVersion JDK_14 = new SpecificationVersion ("1.4");   //NOI18N
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
@@ -208,7 +208,9 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
     }
 
     public void storeSettings(Object settings) { 
-        if ( WizardDescriptor.PREVIOUS_OPTION.equals( ((WizardDescriptor)settings).getValue() ) ) {
+        Object value = ((WizardDescriptor)settings).getValue();
+        if (WizardDescriptor.PREVIOUS_OPTION.equals(value) || WizardDescriptor.CANCEL_OPTION.equals(value) ||
+                WizardDescriptor.CLOSED_OPTION.equals(value)) {
             return;
         }
         if( isValid() ) {
@@ -219,6 +221,10 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
             Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
         }
         ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
+        
+        if (WizardDescriptor.FINISH_OPTION.equals(value)) {
+            wizard.putProperty(FOLDER_TO_DELETE, null);
+        }
     }
 
     public void stateChanged(ChangeEvent e) {
