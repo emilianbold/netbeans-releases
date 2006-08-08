@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
@@ -57,10 +58,10 @@ public class ReplaceForSerialization extends Object implements java.io.Serializa
             super(file);
         }
 
-        public void delete(FileLock lock) throws IOException {
+        public void delete(FileLock lock, ProvidedExtensions.IOHandler io) throws IOException {
             throw new IOException(getPath()); 
         }
-
+        
         boolean checkLock(FileLock lock) throws IOException {
             return false;
         }

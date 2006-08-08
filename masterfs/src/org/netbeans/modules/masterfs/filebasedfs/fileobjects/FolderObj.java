@@ -34,6 +34,7 @@ import org.openide.util.Mutex;
 import java.io.*;
 import java.util.*;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
  * @author rm111737
@@ -214,18 +215,18 @@ public final class FolderObj extends BaseFileObj {
         }        
     }
 
-    public final void delete(final FileLock lock) throws IOException {
+    public void delete(final FileLock lock, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {
         final LinkedList all = new LinkedList();
 
         final File file = getFileName().getFile();
-        if (!deleteFile(file, all, getLocalFileSystem().getFactory())) {
+        if (!deleteFile(file, all, getLocalFileSystem().getFactory(), deleteHandler)) {
             FileObject parent = getExistingParent();
             String parentPath = (parent != null) ? parent.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotDelete", file.getName(), parentPath);// NOI18N            
         }
 
         BaseFileObj.attribs.deleteAttributes(file.getAbsolutePath().replace('\\', '/'));//NOI18N
-
+        setValid(false);
         for (int i = 0; i < all.size(); i++) {
             final BaseFileObj toDel = (BaseFileObj) all.get(i);            
             final FolderObj existingParent = toDel.getExistingParent();            
@@ -233,8 +234,14 @@ public final class FolderObj extends BaseFileObj {
             if (childrenCache != null) {
                 final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
                 if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
-                try {                
-                    childrenCache.getChild(BaseFileObj.getNameExt(file), true);
+                try {      
+                    if (deleteHandler != null) {
+                        childrenCache.removeChild(BaseFileObj.getNameExt(file));
+                    } else {
+                        childrenCache.getChild(BaseFileObj.getNameExt(file), true);
+                    }
+                    
+                    
                 } finally {
                     if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();                    
                 }
@@ -344,8 +351,8 @@ public final class FolderObj extends BaseFileObj {
     }
     
     //TODO: rewrite partly and check FileLocks for existing FileObjects
-    private boolean deleteFile(final File file, final LinkedList all, final FileObjectFactory factory) throws IOException {
-        final boolean ret = file.delete();
+    private boolean deleteFile(final File file, final LinkedList all, final FileObjectFactory factory, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {
+        final boolean ret = (deleteHandler != null) ? deleteHandler.delete(file) : file.delete();
 
         if (ret) {
             final FileObject aliveFo = factory.get(file);
@@ -364,7 +371,7 @@ public final class FolderObj extends BaseFileObj {
             final File[] arr = file.listFiles();
             for (int i = 0; i < arr.length; i++) {
                 final File f2Delete = arr[i];
-                if (!deleteFile(f2Delete, all, factory)) {
+                if (!deleteFile(f2Delete, all, factory, deleteHandler)) {
                     return false;
                 }
             }
@@ -374,7 +381,7 @@ public final class FolderObj extends BaseFileObj {
         //super.delete(lock());
         
 
-        final boolean retVal = file.delete();
+        final boolean retVal = (deleteHandler != null) ? deleteHandler.delete(file) : file.delete();
         if (retVal) {
             final FileObject aliveFo = factory.get(file);
             if (aliveFo != null) {
@@ -473,6 +480,10 @@ public final class FolderObj extends BaseFileObj {
 
         public boolean existsInCache(String childName) {
             return ch.existsldInCache(getFileName(), childName);
+        }
+
+        public void removeChild(String childName) {
+            ch.removeChild(getFileName(), childName);
         }
     }
 

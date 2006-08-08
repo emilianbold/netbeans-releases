@@ -72,6 +72,21 @@ public class ProvidedExtensions implements InterceptionListener {
             File from, String newName) {
         return null;
     }
+
+    /*
+     * Return instance of {@link ProvidedExtensions.DeleteHandler}
+     * that is responsible for deleting the file or null.
+     *
+     * Just the first non null instance of <code>DeleteHandler</code> is used by
+     *  <code>MasterFileSystem</code>
+     *
+     * @param f file or folder to be deleted
+     * @return instance of {@link ProvidedExtensions.DeleteHandler} 
+     * that is responsible for deleting the file or null
+     */    
+    public ProvidedExtensions.DeleteHandler getDeleteHandler(File f) {
+        return null;
+    }
     
     
     public interface IOHandler {
@@ -80,6 +95,19 @@ public class ProvidedExtensions implements InterceptionListener {
          */
         void handle() throws IOException;
     }
+    
+    public interface DeleteHandler {
+        /**
+         * Deletes the file or directory denoted by this abstract pathname.  If
+         * this pathname denotes a directory, then the directory must be empty in
+         * order to be deleted.
+         *
+         * @return  <code>true</code> if and only if the file or directory is
+         *          successfully deleted; <code>false</code> otherwise
+         */
+        boolean delete(File file);
+    }
+    
         
     public void createSuccess(FileObject fo) {}    
     public void createFailure(FileObject parent, String name, boolean isFolder) {}   

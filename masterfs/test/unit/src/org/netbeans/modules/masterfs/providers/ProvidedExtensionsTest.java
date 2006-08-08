@@ -20,6 +20,7 @@
 package org.netbeans.modules.masterfs.providers;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,8 +28,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
@@ -368,6 +371,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
+        private static boolean implsDeleteRetVal = true;
         
         public static FileLock lock;
         
@@ -377,7 +381,31 @@ public class ProvidedExtensionsTest extends NbTestCase {
             implsRenameCalls = 0;
             renameImplCalls = 0;
         }
-        
+
+        public ProvidedExtensions.DeleteHandler getDeleteHandler(File f) {
+            return (!isImplsDeleteRetVal()) ? null : new ProvidedExtensions.DeleteHandler(){
+                final Set s = new HashSet();
+                public boolean delete(File file) {
+                    if (file.isDirectory()) {
+                        File[] childs = file.listFiles(new FileFilter() {
+                            public boolean accept(File pathname) {
+                                boolean accepted = pathname.isFile();
+                                if (!accepted && pathname.isDirectory()) {
+                                    accepted = !s.contains(pathname);
+                                    if (!s.contains(pathname)) {
+                                        s.add(pathname);
+                                    }
+                                } 
+                                return accepted;
+                            }
+                        });
+                        return childs.length == 0;
+                    }
+                    return file.delete();
+                }                
+            };
+        }
+                
         public ProvidedExtensions.IOHandler getRenameHandler(final File from, final String newName) {
             implsRenameCalls++;
             final File f = new File(from.getParentFile(),newName);
@@ -441,5 +469,13 @@ public class ProvidedExtensionsTest extends NbTestCase {
         public static void setImplsRenameRetVal(boolean implsRenameRetVal) {
             ProvidedExtensionsImpl.implsRenameRetVal = implsRenameRetVal;
         }
+               
+        public static boolean isImplsDeleteRetVal() {
+            return implsDeleteRetVal;
+        }
+        
+        public static void setImplsDeleteRetVal(boolean implsDeleteRetVal) {
+            ProvidedExtensionsImpl.implsDeleteRetVal = implsDeleteRetVal;
+        }                
     }
 }

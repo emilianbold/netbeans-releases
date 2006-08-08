@@ -94,6 +94,13 @@ public final class ChildrenSupport {
         return lookupChildInCache(folder, childName) != null;
     }
     
+    public void removeChild(final FileNaming folderName, final String childName) {
+        FileName fName = lookupChildInCache(folderName, childName);
+        if (fName != null) {
+            getChildrenCache().remove(fName);
+        }
+    }
+    
     private FileName lookupChildInCache(final FileNaming folder, final String childName) {
         final File f = new File(folder.getFile(), childName);
         final Integer id = NamingFactory.createID(f);

@@ -23,6 +23,24 @@ Microsystems, Inc. All Rights Reserved.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="added-support-for-subversion-delete">
+            <api name="masterfs"/>
+            <summary><code>ProvidedExtensions.getDeleteHandler</code> was added.</summary>
+            <version major="1" minor="9"/>
+            <date day="08" month="08" year="2006"/>
+            <author login="rmatous"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    <code>ProvidedExtensions.getDeleteHandler</code> was added, which
+                    is the way how to impose handlers for 
+                    deleting into mastersfs implementation 
+                    which was required by module org.netbeans.modules.subversion.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="81510"/>
+        </change>                
         <change id="added-support-for-subversion">
             <api name="masterfs"/>
             <summary><code>ProvidedExtensions</code> was added.</summary>

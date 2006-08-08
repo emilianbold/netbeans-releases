@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.util.Iterator;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
@@ -33,8 +34,11 @@ import org.openide.util.Mutex;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Enumerations;
 
@@ -154,15 +158,31 @@ public abstract class BaseFileObj extends FileObject {
         final String originalExt = getExt();
         
         //TODO: no lock used
-        if (!NamingFactory.rename(getFileName(),file2Rename.getName(),handler)) {
+        FileNaming[] allRenamed = NamingFactory.rename(getFileName(),file2Rename.getName(),handler);
+        if (allRenamed == null) {
             FileObject parentFo = getExistingParent();
             String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
         }
-
         FileBasedFileSystem fs = getLocalFileSystem();
         fs.getFactory().rename(); 
         BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
+        for (int i = 0; i < allRenamed.length; i++) {
+            FolderObj par = (allRenamed[i].getParent() != null) ? 
+                (FolderObj)fs.getFactory().get(allRenamed[i].getParent().getFile()) : null;
+            if (par != null) {
+                ChildrenCache childrenCache = par.getChildrenCache();
+                final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+                if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
+                try {
+                    childrenCache.removeChild(allRenamed[i].getName());
+                    childrenCache.getChild(allRenamed[i].getName(), true);
+                } finally {
+                    if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
+                }                
+            }
+        }
+        
         fireFileRenamedEvent(originalName, originalExt);
     }
 
@@ -353,8 +373,12 @@ public abstract class BaseFileObj extends FileObject {
     public final FileNaming getFileName() {
         return fileName;
     }
+    
+    public final void delete(final FileLock lock) throws IOException {
+        delete(lock, null);
+    }    
 
-    public void delete(final FileLock lock) throws IOException {
+    public void delete(final FileLock lock, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {        
         final File f = getFileName().getFile();
 
         final FolderObj existingParent = getExistingParent();
@@ -367,13 +391,20 @@ public abstract class BaseFileObj extends FileObject {
                 FSException.io("EXC_InvalidLock", lock, getPath()); // NOI18N                
             }
 
-            if (!f.delete()) {
+            boolean deleteStatus = (deleteHandler != null) ? deleteHandler.delete(f) : f.delete();
+            if (!deleteStatus) {
                 FileObject parent = getExistingParent();
                 String parentPath = (parent != null) ? parent.getPath() : f.getParentFile().getAbsolutePath();
                 FSException.io("EXC_CannotDelete", f.getName(), parentPath);// NOI18N            
             } 
             BaseFileObj.attribs.deleteAttributes(f.getAbsolutePath().replace('\\', '/'));//NOI18N
-            if (childrenCache != null) childrenCache.getChild(BaseFileObj.getNameExt(f), true);
+            if (childrenCache != null) {
+                if (deleteHandler != null) {
+                    childrenCache.removeChild(BaseFileObj.getNameExt(f));
+                } else {
+                    childrenCache.getChild(BaseFileObj.getNameExt(f), true);
+                }
+            }
         } finally {
             if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
             setValid(false);
@@ -382,7 +413,7 @@ public abstract class BaseFileObj extends FileObject {
         fireFileDeletedEvent(false);
 
     }
-
+    
     abstract boolean checkLock(FileLock lock) throws IOException;
 
     public Object writeReplace() {
@@ -392,6 +423,7 @@ public abstract class BaseFileObj extends FileObject {
     abstract protected void setValid(boolean valid);
 
     abstract public void refresh(final boolean expected, boolean fire);
+
 
     //TODO: attributes written by VCS must be readable by FileBaseFS and vice versa  
 /**

@@ -66,20 +66,22 @@ public final class NamingFactory {
         }                        
     }
 
-    public static synchronized boolean rename (FileNaming fNaming, String newName) {        
+    private static synchronized FileNaming[] rename (FileNaming fNaming, String newName) {        
         return rename(fNaming, newName, null);
     }
     
-    public static synchronized boolean rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) {
+    public static synchronized FileNaming[] rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) {
+        final ArrayList all = new ArrayList();
         boolean retVal = false;
         remove(fNaming, null);
         retVal = fNaming.rename(newName, handler);
+        all.add(fNaming);
         NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming);
-        renameChildren();
-        return retVal;
+        renameChildren(all);
+        return (retVal) ? ((FileNaming[])all.toArray(new FileNaming[all.size()])) : null;
     }
 
-    private static void renameChildren() {
+    private static void renameChildren(final ArrayList all) {
         HashMap toRename = new HashMap ();
         for (Iterator iterator = nameMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
@@ -101,7 +103,7 @@ public final class NamingFactory {
             Map.Entry entry = (Map.Entry) iterator.next();
             Integer id = (Integer)entry.getKey();
             FileNaming fN = (FileNaming)entry.getValue(); 
-
+            all.add(fN);    
             remove(fN, id);
             fN.getId(true);
             NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN);            

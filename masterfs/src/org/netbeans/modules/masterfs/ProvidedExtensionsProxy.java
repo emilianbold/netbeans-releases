@@ -41,6 +41,18 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         this.annotationProviders = annotationProviders;
     }
     
+    public ProvidedExtensions.DeleteHandler getDeleteHandler(final File f) {
+        ProvidedExtensions.DeleteHandler retValue = null;
+        for (Iterator it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                retValue = ((ProvidedExtensions)iListener).getDeleteHandler(f);
+            } 
+        }
+        return retValue;                        
+    }
+    
     public ProvidedExtensions.IOHandler getRenameHandler(final File from, final String newName) {
         final File to = new File(from.getParentFile(), newName);
         IOHandler retValue = null;
@@ -124,5 +136,5 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
                 iListener.beforeDelete(fo);
             }
         }
-    }        
+    }            
 }
