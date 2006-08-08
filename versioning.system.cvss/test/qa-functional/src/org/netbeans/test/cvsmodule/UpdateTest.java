@@ -157,7 +157,7 @@ public class UpdateTest extends JellyTestCase {
         int result = TestKit.compareThem(expected, actual, false);
         assertEquals("Some files disappear!!!", expected.length, result);
         
-        for (int j = 0; j < 100; j ++) {
+        for (int j = 0; j < 10; j ++) {
             oto = new OutputTabOperator(cvsRoot);
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.clear();
@@ -208,7 +208,7 @@ public class UpdateTest extends JellyTestCase {
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 20; i++) {
             iter = System.currentTimeMillis();
             editFilesForMerge(PROJECT1, iter);
             editFilesForMerge(PROJECT2, iter);
