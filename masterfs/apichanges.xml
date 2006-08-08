@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
             <api name="masterfs"/>
             <summary><code>ProvidedExtensions.getDeleteHandler</code> was added.</summary>
             <version major="1" minor="9"/>
-            <date day="08" month="08" year="2006"/>
+            <date day="8" month="8" year="2006"/>
             <author login="rmatous"/>
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
