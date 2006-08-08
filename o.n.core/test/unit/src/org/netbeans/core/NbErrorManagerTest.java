@@ -320,6 +320,20 @@ public final class NbErrorManagerTest extends NbTestCase {
             }
         });
     }
+
+    public void testErrorManagerCompatibilityAsDescribedInIssue79227() throws Exception {
+        MockDD.lastDescriptor = null;
+
+        Exception ex = new ClassNotFoundException();
+        ErrorManager em = ErrorManager.getDefault();
+        String msg = "LocMsg";
+        em.annotate(ex, msg);
+        em.notify(ErrorManager.USER, ex); // Issue 65116 - don't show the exception to the user
+
+        waitEQ();
+        assertNotNull("Mock descriptor called", MockDD.lastDescriptor);
+        assertEquals("Info msg", NotifyDescriptor.INFORMATION_MESSAGE, MockDD.lastDescriptor.getMessageType());
+    }
     
     // Noticed as part of analysis of #59807 stack trace: Throwable.initCause tricky!
     public void testCatchMarker() throws Exception {
@@ -391,11 +405,15 @@ public final class NbErrorManagerTest extends NbTestCase {
     }
 
     public static final class MockDD extends DialogDisplayer {
+        static NotifyDescriptor lastDescriptor;
+        
         public Object notify(NotifyDescriptor descriptor) {
+            lastDescriptor = descriptor;
             return null;
         }
 
         public Dialog createDialog(DialogDescriptor descriptor) {
+            lastDescriptor = descriptor;
             return new JDialog() {
                 @SuppressWarnings("deprecation")
                 public void show() {}

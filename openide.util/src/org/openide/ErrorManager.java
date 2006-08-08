@@ -647,6 +647,10 @@ public abstract class ErrorManager extends Object {
             if (delegates.isEmpty()) {
                 if (enterLogger()) return;
                 try {
+                    AnnException ext = AnnException.extras.get(t);
+                    if (ext != null) {
+                        t = ext;
+                    }
                     logger().log(convertSeverity(severity, true, OwnLevel.UNKNOWN), t.getMessage(), t);
                 } finally {
                     exitLogger();
