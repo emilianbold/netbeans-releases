@@ -23,7 +23,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Editor Test Application's Tests -->
 
     <!-- Validation tests-->
-    <testbag testattribs="commit" name="Editor Commit Validation">
+    <testbag testattribs="commit" name="Editor Commit Validation"
+executor="ide-nogui">
         <testset dir="qa-functional/src">
         <patternset>
             <include name="general/EditorKitsRegistryTest.class"/>
@@ -166,6 +167,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Experimental tests (not to be runned automaticaly): -->
         
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <executor name="ide-nogui" antfile="build-qa-functional.xml"
+target="runidetest-nogui"/>
     
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
     <compiler name="qa-functional-compiler-completion" antfile="build-qa-functional.xml" target="qa-functional-compiler-completion" default="false" />
