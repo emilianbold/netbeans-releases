@@ -28,6 +28,8 @@ import com.sun.jdi.request.StepRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -58,9 +60,9 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider
 implements Executor, PropertyChangeListener {
     
     public static final String SS_STEP_OUT = "SS_ACTION_STEPOUT";
-    private static final boolean ssverbose = 
-        System.getProperty ("netbeans.debugger.smartstepping") != null;
     
+    private static final Logger smartLogger = Logger.getLogger("org.netbeans.modules.debugger.jpda.smartstepping"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
         
     private StepRequest stepRequest;
     private String position;
@@ -110,17 +112,18 @@ implements Executor, PropertyChangeListener {
     
     public void runAction() {
         synchronized (getDebuggerImpl ().LOCK) {
-            if (ssverbose)
-                System.out.println("\nSS:  STEP INTO !!! *************");
+            smartLogger.finer("STEP INTO.");
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
             if (t == null || !t.isSuspended()) {
                 // Can not step when it's not suspended.
+                smartLogger.finer("Can not step into! Thread "+t+" not suspended!");
                 return ;
             }
             setStepRequest (StepRequest.STEP_INTO);
             position = t.getClassName () + '.' +
                        t.getMethodName () + ':' +
                        t.getLineNumber (null);
+            logger.fine("JDI Request (action step into): " + stepRequest);
             try {
                 getDebuggerImpl ().resume ();
             } catch (VMDisconnectedException e) {
@@ -146,18 +149,16 @@ implements Executor, PropertyChangeListener {
         if (ev.getPropertyName () == SmartSteppingFilter.PROP_EXCLUSION_PATTERNS) {
             if (ev.getOldValue () != null) {
                 // remove some patterns
-                if (ssverbose) {
-                    System.out.println("\nSS:  exclusion patterns removed");
-                }
+                smartLogger.finer("Exclusion patterns removed. Removing step requests.");
                 ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
                     getCurrentThread ()).getThreadReference ();
                 removeStepRequests (tr);
             } else {
-                if (ssverbose) {
+                if (smartLogger.isLoggable(Level.FINER)) {
                     if (stepRequest == null)
-                        System.out.println("SS:  exclusion patterns has been added");
+                        smartLogger.finer("Exclusion patterns has been added");
                     else
-                        System.out.println("\nSS:    add exclusion patterns:");
+                        smartLogger.finer("Add exclusion patterns: "+ev.getNewValue());
                 }
                 addPatternsToRequest ((String[]) 
                     ((Set<String>) ev.getNewValue ()).toArray (
@@ -167,8 +168,7 @@ implements Executor, PropertyChangeListener {
             }
         } else
         if (ev.getPropertyName () == SourcePathProvider.PROP_SOURCE_ROOTS) {
-            if (ssverbose)
-                System.out.println("\nSS:  source roots changed");
+            smartLogger.finer("Source roots changed");
             JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl ().
                 getCurrentThread ();
             if (jtr != null) {
@@ -226,8 +226,7 @@ implements Executor, PropertyChangeListener {
                 removeStepRequests (le.thread ());
                 getDebuggerImpl ().setStoppedState (tr);
             } else {
-                if (ssverbose)
-                    System.out.println("SS:  => do next step!");
+                smartLogger.finer(" => do next step.");
                 if (smartSteppingStepOut) {
                     setStepRequest (StepRequest.STEP_OUT);
                 } else if (stepRequest != null) {
@@ -237,10 +236,10 @@ implements Executor, PropertyChangeListener {
                 }
             }
 
-            if (ssverbose)
+            if (smartLogger.isLoggable(Level.FINER))
                 if (stop) {
-                    System.out.println("SS  FINISH IN CLASS " +  
-                        t.getClassName () + " ********\n"
+                    smartLogger.finer("FINISH IN CLASS " +  
+                        t.getClassName () + " ********"
                     );
                 }
             return !stop;
@@ -266,8 +265,7 @@ implements Executor, PropertyChangeListener {
     void removeStepRequests (ThreadReference tr) {
         super.removeStepRequests (tr);
         stepRequest = null;
-        if (ssverbose)
-            System.out.println("SS:    remove all patterns");
+        smartLogger.finer("removing all patterns, all step requests.");
     }
     
     private void setStepRequest (int step) {
@@ -284,8 +282,9 @@ implements Executor, PropertyChangeListener {
         getDebuggerImpl ().getOperator ().register (stepRequest, this);
         stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
         
-        if (ssverbose)
-            System.out.println("SS:    set patterns:");
+        if (smartLogger.isLoggable(Level.FINER)) {
+            smartLogger.finer("Set step request("+step+") and patterns: ");
+        }
         addPatternsToRequest (
             getSmartSteppingFilterImpl ().getExclusionPatterns ()
         );
@@ -315,8 +314,7 @@ implements Executor, PropertyChangeListener {
         int i, k = patterns.length;
         for (i = 0; i < k; i++) {
             stepRequest.addClassExclusionFilter (patterns [i]);
-            if (ssverbose)
-                System.out.println("SS:      " + patterns [i]);
+            smartLogger.finer("   add pattern: "+patterns[i]);
         }
     }
 }

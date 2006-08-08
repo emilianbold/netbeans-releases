@@ -134,7 +134,7 @@ implements Executor {
                 getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
                 stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
                 stepRequest.enable ();
-                logger.fine("JDI Request: " + stepRequest);
+                logger.fine("JDI Request (action "+action+"): " + stepRequest);
 
                 // 3) resume JVM
                 getDebuggerImpl ().resume ();
