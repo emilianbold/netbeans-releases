@@ -26,9 +26,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -68,6 +70,11 @@ public final class TargetExecutor implements Runnable {
      * @see "#43001"
      */
     private static final Map<InputOutput,String> freeTabs = new WeakHashMap<InputOutput,String>();
+    
+    /**
+     * Display names of currently active processes.
+     */
+    private static final Set<String> activeDisplayNames = new HashSet<String>();
     
     private AntProjectCookie pcookie;
     private InputOutput io;
@@ -159,7 +166,19 @@ public final class TargetExecutor implements Runnable {
      * Actually start the process.
      */
     public ExecutorTask execute () throws IOException {
-        displayName = getProcessDisplayName(pcookie, targetNames);
+        String dn = getProcessDisplayName(pcookie, targetNames);
+        if (activeDisplayNames.contains(dn)) {
+            // Uniquify: "prj (targ) #2", "prj (targ) #3", etc.
+            int i = 2;
+            String testdn;
+            do {
+                testdn = NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.uniquified", dn, i++);
+            } while (activeDisplayNames.contains(testdn));
+            dn = testdn;
+        }
+        assert !activeDisplayNames.contains(dn);
+        displayName = dn;
+        activeDisplayNames.add(displayName);
         
         final ExecutorTask task;
         synchronized (this) {
@@ -347,6 +366,7 @@ public final class TargetExecutor implements Runnable {
             }
             sa.t = null;
             sa.setEnabled(false);
+            activeDisplayNames.remove(displayName);
             if (handle[0] != null) {
                 handle[0].finish();
             }
