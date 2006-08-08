@@ -76,7 +76,7 @@ public class VersionsCache {
      * and their cached versions are purged with the {@link #purgeVolatileRevisions()} method.
      * 
      * @param revision revision to fetch
-     * @param group that carries shared state. Note that this group must not be executed later on. 
+     * @param group that carries shared state. Note that this group must not be executed later on. This parameter can be null. 
      * @return File supplied file in the specified revision (locally cached copy) or null if this file does not exist
      * in the specified revision
      * @throws java.io.IOException
@@ -156,6 +156,9 @@ public class VersionsCache {
 
     private String getBaseRevision(File file) throws IOException {
         Entry entry = CvsVersioningSystem.getInstance().getAdminHandler().getEntry(file);
+        if (entry == null) {
+            throw new IllegalArgumentException("Cannot get BASE revision, there is no Entry for the file: " + file.getAbsolutePath());
+        }
         String rawRev = entry.getRevision();
         if (rawRev != null && rawRev.startsWith("-")) { // NOI18N
             // leading - means removed
@@ -185,7 +188,7 @@ public class VersionsCache {
      * 
      * @param baseFile location of the file in local workdir (need not exist)
      * @param revision revision number to get
-     * @param group that carries shared state. Note that this group must not be executed later on.
+     * @param group that carries shared state. Note that this group must not be executed later on. This parameter can be null.
      * @return File file on disk (most probably located in some temp diretory) or null if this file does not exist
      * in repository in the specified revision
      * @throws IOException if some I/O error occurs during checkout

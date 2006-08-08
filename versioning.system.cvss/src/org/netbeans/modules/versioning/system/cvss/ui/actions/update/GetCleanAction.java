@@ -124,6 +124,9 @@ public class GetCleanAction extends AbstractSystemAction {
         }
     }
 
+    /**
+     * If the revision is BASE and there is no Entry for the file, then the file is backed up and deleted.
+     */
     private static void rollback(File file, String revision, ExecutorGroup group) {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
@@ -133,21 +136,16 @@ public class GetCleanAction extends AbstractSystemAction {
         } catch (IOException e) {
             // non-fatal, we have no entry for this file
         }
-        if (entry == null) {
-            // handling 'move away file.txt, it is in the way'
+        if ((entry == null || entry.isNewUserFile()) && revision.equals(VersionsCache.REVISION_BASE)) {
+            backup(file, entry);
             file.delete();
-            UpdateCommand cmd = new UpdateCommand();
-            cmd.setFiles(new File [] { file });
-            UpdateExecutor executor = UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null)[0];
-            group.addExecutor(executor);
-            executor.execute();
             return;
         }
         try {
             File cleanFile = VersionsCache.getInstance().getRemoteFile(file, revision, group);
             if (cleanFile != null) {
                 // 'atomic' action  >>>
-                backup(file);
+                backup(file, entry);
                 try {
                     CvsVersioningSystem.ignoreFilesystemEvents(true);
                     FileObject target;
@@ -216,14 +214,15 @@ public class GetCleanAction extends AbstractSystemAction {
         }
     }
 
-    private static void backup(File file) {
-        Entry entry = null;
+    private static void backup(File file, Entry entry) {
         try {
-            entry = CvsVersioningSystem.getInstance().getAdminHandler().getEntry(file);
+            File backup;
             if (entry != null) {
-                File backup = new File(file.getParentFile(), ".#" + file.getName() + "." + entry.getRevision());
-                FileUtils.copyFile(file, backup);
+                backup = new File(file.getParentFile(), ".#" + file.getName() + "." + entry.getRevision());
+            } else {
+                backup = new File(file.getParentFile(), ".#" + file.getName() + "." + "LOCAL");
             }
+            FileUtils.copyFile(file, backup);
         } catch (IOException e) {
             // ignore
         }
