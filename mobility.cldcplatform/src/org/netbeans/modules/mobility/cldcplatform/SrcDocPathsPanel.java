@@ -96,15 +96,15 @@ public class SrcDocPathsPanel extends javax.swing.JPanel implements ListSelectio
         os = srcModel.toArray();
         List<FileObject> l = new ArrayList<FileObject>();
         if (os != null) 
-        	for (ListItem<FileObject> osa : (ListItem<FileObject>[])os )
-        		l.add(osa.getObject());
+        	for (Object osa : os )
+        		l.add(((ListItem<FileObject>)osa).getObject());
         platform.setSourceFolders(l);
         
         os = docModel.toArray();
         List<URL> u = new ArrayList<URL>();
         if (os != null) 
-        	for (ListItem<URL> osa : (ListItem<URL>[])os )
-        		u.add(osa.getObject());
+        	for (Object osa : os)
+        		u.add(((ListItem<URL>)osa).getObject());
         platform.setJavadocFolders(u);
     }
     
