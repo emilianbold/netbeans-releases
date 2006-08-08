@@ -1989,6 +1989,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
 		t = ex;
 	    }
 	    if (t != null) {
+                // fallback: try PropertyEditorManager
+                prEd = PropertyEditorManager.findEditor(propertyType);
+                if (prEd != null && prEd.getClass().getName().equals(editorStr))
+                    return prEd;
+
 		String msg = createLoadingErrorMessage(
 		    FormUtils.getFormattedBundleString(
 			"FMT_ERR_CannotLoadClass3", // NOI18N
