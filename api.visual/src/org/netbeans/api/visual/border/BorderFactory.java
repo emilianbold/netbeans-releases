@@ -58,7 +58,7 @@ public final class BorderFactory {
     }
 
     public static Border createLineBorder (int thickness) {
-        return new LineBorder (thickness, null);
+        return createLineBorder (thickness, null);
     }
 
     public static Border createLineBorder (int thickness, Color color) {
