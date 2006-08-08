@@ -258,7 +258,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements WizardPanel.Co
     
     private void updateStatus() {
         final J2MEPlatform platform = (J2MEPlatform) wizardPanel.getProperty(DetectPanel.PLATFORM);
-        final String string = stringsToString(Arrays.asList((String [])classpathListModel.toArray()));
+        final String string = stringsToString(Arrays.asList(classpathListModel.toArray()));
         final List<J2MEPlatform.J2MEProfile> profilesList = UEIEmulatorConfiguratorImpl.analyzePath(new File(platform.getHomePath()), string, string);
         profiles = profilesList.toArray(new J2MEPlatform.J2MEProfile[profilesList.size()]);
         
@@ -320,7 +320,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements WizardPanel.Co
         return list;
     }
     
-    private String stringsToString(final List<String> list) {
+    private String stringsToString(final List<Object> list) {
         final StringBuffer sb = new StringBuffer();
         for (int i = 0; i < list.size(); i++) {
             if (i > 0)
