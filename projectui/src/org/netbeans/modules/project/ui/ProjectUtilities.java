@@ -180,7 +180,20 @@ public class ProjectUtilities {
             public void run () {
                 Node root = ptLogial.getExplorerManager ().getRootContext ();
                 // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
-                Node projNode = root.getChildren ().findChild( ProjectUtils.getInformation( p ).getName() );
+                Node[] nds = root.getChildren().getNodes();
+                Node projNode = null;
+                for (int i = 0; i < nds.length; i++) {
+                    Project prj = (Project)nds[i].getLookup().lookup(Project.class);
+                    if (prj != null && prj.getProjectDirectory().equals(p.getProjectDirectory())) {
+                        projNode = nds[i];
+                        break;
+                    }
+                }
+                if (projNode == null) {
+                    // fallback..
+                    projNode = root.getChildren ().findChild( ProjectUtils.getInformation( p ).getName() );
+                }
+                
                 if ( projNode != null ) {
                     try {                            
                         ptLogial.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
