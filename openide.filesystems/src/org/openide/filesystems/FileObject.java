@@ -27,11 +27,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
@@ -800,18 +802,33 @@ public abstract class FileObject extends Object implements Serializable {
     private class ED extends FileSystem.EventDispatcher {
         private int op;
         private Enumeration<FileChangeListener> en;
+        final private List<FileChangeListener> fsList;
+        final private List<FileChangeListener> repList;
+        
+        
         private FileEvent fe;
 
         public ED(int op, Enumeration<FileChangeListener> en, FileEvent fe) {
             this.op = op;
             this.en = en;
             this.fe = fe;
+            FileSystem fs = null;
+            try {
+                fs = this.fe.getFile().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                ExternalUtil.exception(ex);
+            }
+            ListenerList<FileChangeListener> fsll = (fs != null) ? fs.getFCLSupport().listeners : null;
+            ListenerList<FileChangeListener> repll = (fs != null && fs.getRepository() != null) ? fs.getRepository().getFCLSupport().listeners : null;
+            fsList = (fsll != null) ? new ArrayList<FileChangeListener>(fsll.getAllListeners()) :
+                new ArrayList<FileChangeListener>();
+            repList = (repll != null) ? new ArrayList<FileChangeListener>(repll.getAllListeners()) :
+                new ArrayList<FileChangeListener>();
+            
         }
 
         public ED(Enumeration<FileChangeListener> en, FileEvent fe) {
-            this.op = -1;
-            this.en = en;
-            this.fe = fe;
+            this(-1, en, fe);
         }
 
         /** @param onlyPriority if true then invokes only priority listeners
@@ -832,14 +849,6 @@ public abstract class FileObject extends Object implements Serializable {
 
                     continue;
                 }
-
-                /*
-                                FileObject fo = fe.getFile();
-                                if (fo != null && (op == FCLSupport.DATA_CREATED || op == FCLSupport.FOLDER_CREATED)) {
-                                    op = (fo.isFolder())?FCLSupport.FOLDER_CREATED:FCLSupport.DATA_CREATED;
-                                }
-
-                */
                 FCLSupport.dispatchEvent(fcl, fe, op);
             }
 
@@ -873,11 +882,17 @@ public abstract class FileObject extends Object implements Serializable {
                 } catch (FileStateInvalidException fsix) {
                     return;
                 }
+                if (fs != null && fsList != null) {
+                    for (FileChangeListener fcl : fsList) {
+                        fs.getFCLSupport().dispatchEvent(fcl, fe, op);
+                    }  
+                }
 
-                fs.getFCLSupport().dispatchEvent(fe, op);
 
-                if (rep != null) {
-                    rep.getFCLSupport().dispatchEvent(fe, op);
+                if (rep != null && repList != null) {
+                    for (FileChangeListener fcl : repList) {
+                        rep.getFCLSupport().dispatchEvent(fcl, fe, op);
+                    }                      
                 }
             }
         }

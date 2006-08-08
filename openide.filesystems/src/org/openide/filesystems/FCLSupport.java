@@ -34,7 +34,7 @@ class FCLSupport {
     public static final int ATTR_CHANGED = 5;
 
     /** listeners */
-    private ListenerList<FileChangeListener> listeners;
+    ListenerList<FileChangeListener> listeners;
 
     /* Add new listener to this object.
     * @param l the listener
