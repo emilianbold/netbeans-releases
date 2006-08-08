@@ -59,7 +59,7 @@ public final class AcceptLicense extends ModuleInstall {
      */
     public void validate() throws IllegalStateException {
 //        Util.setDefaultLookAndFeel();
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("MOBILITY-LICENSE.txt"); //NOI18N
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("LICENSE.txt"); //NOI18N
         if (fo == null) return;
         URL url = null;
         try {
