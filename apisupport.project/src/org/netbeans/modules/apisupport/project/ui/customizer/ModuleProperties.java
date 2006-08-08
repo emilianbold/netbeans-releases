@@ -55,11 +55,11 @@ public abstract class ModuleProperties {
     static final RequestProcessor RP = new RequestProcessor(ModuleProperties.class.getName());
     
     // XXX better to inject own DialogDisplayer when running tests or similar trick
-    static boolean runFromTests = false;
+    static boolean runFromTests;
     
     // Helpers for storing and retrieving real values currently stored on the disk
-    private AntProjectHelper helper;
-    private PropertyEvaluator evaluator;
+    private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
     
     /** Represent main module's properties (nbproject/project.properties). */
     private EditableProperties projectProperties;
@@ -67,7 +67,7 @@ public abstract class ModuleProperties {
     /** Represent module's private properties (nbproject/private/private.properties). */
     private EditableProperties privateProperties;
     
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     /** Creates a new instance of ModuleProperties */
     ModuleProperties(AntProjectHelper helper, PropertyEvaluator evaluator) {
@@ -202,7 +202,7 @@ public abstract class ModuleProperties {
      * Helper method for storing platform into the appropriate place.
      */
     static void storePlatform(AntProjectHelper helper, NbPlatform platform) {
-        if (platform != null) {
+        if (platform != null && platform.getID() != null) {
             // store platform properties
             EditableProperties props = helper.getProperties(
                     NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH);

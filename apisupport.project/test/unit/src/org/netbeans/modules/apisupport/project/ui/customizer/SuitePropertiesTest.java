@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
@@ -281,6 +282,15 @@ public class SuitePropertiesTest extends TestBase {
         suiteProps.refresh(spp.getSubprojects());
         model = suiteProps.getModulesListModel(); // reload
         assertEquals("two module suite components", 2, model.getSize());
+    }
+    
+    public void testSuitePropertiesWithAnonymousPlatform() throws Exception { // #73795
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1", "custom");
+        SuiteProperties suiteProps = getSuiteProperties(suite1);
+        File destDir = NbPlatform.getPlatformByID("custom").getDestDir();
+        NbPlatform.removePlatform(NbPlatform.getPlatformByID("custom"));
+        suiteProps.setActivePlatform(NbPlatform.getPlatformByDestDir(destDir));
+        saveProperties(suiteProps);
     }
     
     private void saveProperties(final SuiteProperties props) throws IOException {
