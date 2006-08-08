@@ -25,6 +25,14 @@ Microsystems, Inc. All Rights Reserved.
             <suite-component/>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.mobility</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.platform</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -34,11 +42,9 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.mobility</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
+                    <code-name-base>org.netbeans.modules.mobility.licensing</code-name-base>
                     <run-dependency>
-                        <specification-version>8.0</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

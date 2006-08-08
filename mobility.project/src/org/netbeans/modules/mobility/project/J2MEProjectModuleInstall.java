@@ -46,7 +46,7 @@ import org.openide.util.Utilities;
  */
 public class J2MEProjectModuleInstall extends ModuleInstall implements LookupListener {
     
-	public void restored() {
+    public void restored() {
         final Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class));
         result.addLookupListener(this);
         resultChanged(new LookupEvent(result));
