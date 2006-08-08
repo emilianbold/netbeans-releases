@@ -24,11 +24,10 @@ import java.net.URL;
 import java.util.Locale;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
+import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerSources.ListListener;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -42,24 +41,35 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
     
     private NbPlatform plaf;
     private PlatformComponentFactory.NbPlatformJavadocRootsModel model;
+    private final ListListener listListener;
     
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerJavadoc() {
         initComponents();
         initAccessibility();
-        javadocList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    updateEnabled();
-                }
+        this.listListener = new ListListener() {
+            void listChanged() {
+                updateEnabled();
             }
-        });
+        };
         updateEnabled();
+    }
+    
+    public void addNotify() {
+        super.addNotify();
+        javadocList.addListSelectionListener(listListener);
+        javadocList.getModel().addListDataListener(listListener);
+    }
+    
+    public void removeNotify() {
+        javadocList.removeListSelectionListener(listListener);
+        javadocList.getModel().removeListDataListener(listListener);
+        super.removeNotify();
     }
     
     private void updateEnabled() {
         // update buttons enability appropriately
-        removeButton.setEnabled(javadocList.getSelectedIndex() != -1);
+        removeButton.setEnabled(javadocList.getModel().getSize() > 0 && javadocList.getSelectedIndex() != -1);
         moveUpButton.setEnabled(javadocList.getSelectionModel().getMinSelectionIndex() > 0);
         moveDownButton.setEnabled(plaf != null &&
                 javadocList.getSelectionModel().getMaxSelectionIndex() < plaf.getJavadocRoots().length - 1);
@@ -197,9 +207,11 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
     
     private void removeFolder(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFolder
         Object[] selVals = javadocList.getSelectedValues();
+        int toSelect = javadocList.getSelectedIndex() - 1;
         URL[] selURLs = new URL[selVals.length];
         System.arraycopy(selVals, 0, selURLs, 0, selVals.length);
         model.removeJavadocRoots(selURLs);
+        javadocList.setSelectedIndex(toSelect);
     }//GEN-LAST:event_removeFolder
     
     private void addZipFolder(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addZipFolder
@@ -249,4 +261,5 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
     private String getMessage(String key) {
         return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, key);
     }
+    
 }

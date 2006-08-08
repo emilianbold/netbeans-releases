@@ -25,6 +25,8 @@ import java.net.URL;
 import java.util.Locale;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -46,19 +48,30 @@ final class NbPlatformCustomizerSources extends JPanel {
     
     private NbPlatform plaf;
     private PlatformComponentFactory.NbPlatformSourceRootsModel model;
+    private final ListListener listListener;
     
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerSources() {
         initComponents();
         initAccessibility();
-        sourceList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    updateEnabled();
-                }
+        this.listListener = new ListListener() {
+            void listChanged() {
+                updateEnabled();
             }
-        });
+        };
         updateEnabled();
+    }
+    
+    public void addNotify() {
+        super.addNotify();
+        sourceList.addListSelectionListener(listListener);
+        sourceList.getModel().addListDataListener(listListener);
+    }
+    
+    public void removeNotify() {
+        sourceList.removeListSelectionListener(listListener);
+        sourceList.getModel().removeListDataListener(listListener);
+        super.removeNotify();
     }
     
     void setPlatform(NbPlatform plaf) {
@@ -69,7 +82,7 @@ final class NbPlatformCustomizerSources extends JPanel {
     
     private void updateEnabled() {
         // update buttons enability appropriately
-        removeButton.setEnabled(sourceList.getSelectedIndex() != -1);
+        removeButton.setEnabled(sourceList.getModel().getSize() > 0 && sourceList.getSelectedIndex() != -1);
         moveUpButton.setEnabled(sourceList.getSelectionModel().getMinSelectionIndex() > 0);
         moveDownButton.setEnabled(plaf != null &&
                 sourceList.getSelectionModel().getMaxSelectionIndex() < plaf.getSourceRoots().length - 1);
@@ -201,9 +214,11 @@ final class NbPlatformCustomizerSources extends JPanel {
     
     private void removeFolder(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFolder
         Object[] selVals = sourceList.getSelectedValues();
+        int toSelect = sourceList.getSelectedIndex() - 1;
         URL[] selURLs = new URL[selVals.length];
         System.arraycopy(selVals, 0, selURLs, 0, selVals.length);
         model.removeSourceRoot(selURLs);
+        sourceList.setSelectedIndex(toSelect);
     }//GEN-LAST:event_removeFolder
     
     private void addZipOrFolder(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addZipOrFolder
@@ -267,6 +282,30 @@ final class NbPlatformCustomizerSources extends JPanel {
     
     private String getMessage(String key) {
         return NbBundle.getMessage(NbPlatformCustomizerSources.class, key);
+    }
+    
+    static abstract class ListListener implements ListDataListener, ListSelectionListener {
+        
+        public void intervalAdded(final ListDataEvent e) {
+            listChanged();
+        }
+        
+        public void intervalRemoved(final ListDataEvent e) {
+            listChanged();
+        }
+        
+        public void contentsChanged(final ListDataEvent e) {
+            listChanged();
+        }
+        
+        public void valueChanged(final ListSelectionEvent e) {
+            if (!e.getValueIsAdjusting()) {
+                listChanged();
+            }
+        }
+        
+        abstract void listChanged();
+        
     }
     
 }
