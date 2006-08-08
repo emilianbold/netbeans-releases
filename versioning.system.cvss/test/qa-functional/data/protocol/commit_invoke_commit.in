@@ -3,29 +3,29 @@ Valid-requests Root Valid-responses valid-requests Repository Directory Max-dotd
 ok
 M RCS file: /cvs/ForImport/src/xx/NewJFrame.java,v
 M done
-M Checking in NewJFrame.java;
+M Checking in xx/NewJFrame.java;
 M /cvs/ForImport/src/xx/NewJFrame.java,v  <--  NewJFrame.java
 M initial revision: 1.1
 M done
-Checked-in ./
+Checked-in xx/
 /cvs/ForImport/src/xx/NewJFrame.java
 /NewJFrame.java/1.1///
 M RCS file: /cvs/ForImport/src/xx/NewJFrame.form,v
 M done
-M Checking in NewJFrame.form;
+M Checking in xx/NewJFrame.form;
 M /cvs/ForImport/src/xx/NewJFrame.form,v  <--  NewJFrame.form
 M initial revision: 1.1
 M done
-Checked-in ./
+Checked-in xx/
 /cvs/ForImport/src/xx/NewJFrame.form
 /NewJFrame.form/1.1///
 M RCS file: /cvs/ForImport/src/xx/NewClass.java,v
 M done
-M Checking in NewClass.java;
+M Checking in xx/NewClass.java;
 M /cvs/ForImport/src/xx/NewClass.java,v  <--  NewClass.java
 M initial revision: 1.1
 M done
-Checked-in ./
+Checked-in xx/
 /cvs/ForImport/src/xx/NewClass.java
 /NewClass.java/1.1///
 ok
