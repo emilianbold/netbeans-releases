@@ -162,6 +162,8 @@ TODO:
             <param name="coverage.lib.path" location="${emma.dir}/emma.jar"/>
             <param name="xtest.jvm.coverage.args" value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
             <param name="xtest.ide.coverage.args" value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+            <!-- code coverage needs to parse project.xml in everytime -->
+            <param name="do.we.need.to.parse.project.xml.file" value="true"/>
         </antcall>
     </target>
     
