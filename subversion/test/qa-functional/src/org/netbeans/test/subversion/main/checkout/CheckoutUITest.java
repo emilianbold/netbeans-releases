@@ -42,6 +42,7 @@ import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
+import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
@@ -93,6 +94,7 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testInvokeClose() throws Exception {
+        TestKit.showStatusLabels();
         OutputOperator oo = OutputOperator.invoke();
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();   
         co.btCancel().pushNoBlock();

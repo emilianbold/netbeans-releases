@@ -21,7 +21,9 @@ import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.CheckboxOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.ide.ProjectSupport;
@@ -156,6 +158,7 @@ public final class TestKit {
         nfwo.selectFileType("Java Package");
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(packageName);
         nfnlso.finish();
         
@@ -165,6 +168,7 @@ public final class TestKit {
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(name);
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
@@ -177,6 +181,7 @@ public final class TestKit {
         nfwo.selectFileType("Java Package");
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(packageName);
         nfnlso.finish();
     }    
@@ -188,6 +193,7 @@ public final class TestKit {
         nfwo.selectFileType("Java Class");
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(name);
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
@@ -225,5 +231,10 @@ public final class TestKit {
         if (stream != null) {
             stream.println(message);
         }
+    }
+    
+    public static void showStatusLabels() {
+        Action a = new Action("View|Show Subversion", null);
+        a.perform();
     }
 }
