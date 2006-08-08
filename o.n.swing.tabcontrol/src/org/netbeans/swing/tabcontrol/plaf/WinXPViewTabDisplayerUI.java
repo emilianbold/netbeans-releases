@@ -389,7 +389,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
          * holds index of tab in which mouse pointer was lastly located. -1
          * means mouse pointer is out of component's area
          */
-        // TBD - should be part of model, not xontroller
+        // TBD - should be part of model, not controller
         private int lastIndex = -1;
 
         /**
@@ -434,7 +434,10 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
          */
         public void mouseExited(MouseEvent e) {
             super.mouseExited(e);
-            updateHighlight(-1);
+            // #72459: don't reset highlight if mouse exited into pin button
+            if (!inPinButtonRect(e.getPoint())) {
+                updateHighlight(-1);
+            }
         }
 
         /**
