@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
@@ -57,6 +59,7 @@ import org.w3c.dom.Element;
 public final class TargetExecutor implements Runnable {
     
     private static final boolean USE_PROGRESS = Boolean.getBoolean("org.apache.tools.ant.module.run.TargetExecutor.USE_PROGRESS");
+    private static final boolean SHOW_STOP_BUTTON = Boolean.getBoolean("org.apache.tools.ant.module.run.TargetExecutor.SHOW_STOP_BUTTON");
     
     /**
      * All tabs which were used for some process which has now ended.
@@ -125,6 +128,33 @@ public final class TargetExecutor implements Runnable {
         }
     }
     
+    private static final Map<InputOutput,StopAction> stopActions = new HashMap<InputOutput,StopAction>();
+
+    private static final class StopAction extends AbstractAction {
+
+        public Thread t;
+
+        public StopAction() {
+            setEnabled(false); // initially, until ready
+        }
+
+        @Override
+        public Object getValue(String key) {
+            if (key.equals(Action.SMALL_ICON)) {
+                return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/stop.gif"));
+            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
+                return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.StopAction.stop");
+            } else {
+                return super.getValue(key);
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            stopProcess(t);
+        }
+
+    }
+
     /**
      * Actually start the process.
      */
@@ -148,13 +178,16 @@ public final class TargetExecutor implements Runnable {
                     } else {
                         // Discard it.
                         free.closeInputOutput();
+                        stopActions.remove(free);
                     }
                 }
                 freeTabs.clear();
             }
             }
             if (io == null) {
-                io = IOProvider.getDefault().getIO(displayName, true);
+                StopAction sa = new StopAction();
+                io = IOProvider.getDefault().getIO(displayName, SHOW_STOP_BUTTON ? new Action[] {sa} : new Action[0]);
+                stopActions.put(io, sa);
             }
             task = ExecutionEngine.getDefault().execute(displayName, this, InputOutput.NULL);
         }
@@ -207,6 +240,7 @@ public final class TargetExecutor implements Runnable {
     synchronized public void run () {
         final Thread[] thisProcess = new Thread[1];
         final ProgressHandle[] handle = new ProgressHandle[1];
+        StopAction sa = stopActions.get(io);
         try {
             
         final boolean[] displayed = new boolean[] {AntSettings.getDefault().getAlwaysShowOutput()};
@@ -298,6 +332,8 @@ public final class TargetExecutor implements Runnable {
 	    handle[0].start();
 	}
         StopBuildingAction.registerProcess(thisProcess[0], displayName);
+        sa.t = thisProcess[0];
+        sa.setEnabled(true);
         ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback);
         
         } finally {
@@ -309,6 +345,8 @@ public final class TargetExecutor implements Runnable {
             if (thisProcess[0] != null) {
                 StopBuildingAction.unregisterProcess(thisProcess[0]);
             }
+            sa.t = null;
+            sa.setEnabled(false);
             if (handle[0] != null) {
                 handle[0].finish();
             }
