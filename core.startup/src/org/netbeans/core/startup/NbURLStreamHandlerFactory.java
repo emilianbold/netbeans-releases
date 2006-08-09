@@ -146,6 +146,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                     if (resource.length() > 0 && resource.charAt(0) == '/') resource = resource.substring(1); // NOI18N
                     ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
                     URL target;
+                    URL t1 = loader.getResource(resource);
                     if (localized) {
                         // Find the suffix insertion point.
                         // XXX #29580: should have a shared API for this
@@ -165,13 +166,13 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                         Iterator<String> suffixes = NbBundle.getLocalizingSuffixes();
                         while (suffixes.hasNext()) {
                             String suffix = suffixes.next();
-                            target = loader.getResource(base + suffix + ext);
+                            target = "".equals(suffix)? t1: loader.getResource(base + suffix + ext);
                             if (target != null) {
                                 break;
                             }
                         }
                     } else {
-                        target = loader.getResource(resource);
+                        target = t1;
                     }
                     if (target == null) {
                         throw new IOException(NbBundle.getMessage(NbURLStreamHandlerFactory.class, "EXC_nbres_cannot_connect", url));

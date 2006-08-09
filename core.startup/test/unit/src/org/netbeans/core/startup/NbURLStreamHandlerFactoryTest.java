@@ -46,6 +46,9 @@ import org.openide.util.NbBundle;
 public class NbURLStreamHandlerFactoryTest extends NbTestCase {
     
     private static final String[] RESOURCES = {
+        "/test/who",
+        "/test/who_one",
+        "/test/yes",
         "/test/something",
         "/test/something_ja",
         "/test/something_foo",
@@ -117,6 +120,21 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
         }
     }
     
+    // tests that loading of localized resources tries unlocalized version first
+    // to optimize for more common case (where class loader cache are more efficient too)
+    public void testFastGetResourceLoc() throws Exception {
+        TestClassLoader.firstFindRequest(); // reset
+        URL u = new URL("nbresloc:/test/who");
+        // Should initially be getting an unlocalized version:
+        NbBundle.setBranding("one");
+        Locale.setDefault(Locale.US);
+        u.openConnection().connect();
+        assertEquals("test/who", TestClassLoader.firstFindRequest());
+        u = new URL("nbresloc:/test/yes");
+        u.openConnection().connect();
+        assertEquals("test/yes", TestClassLoader.firstFindRequest());
+    }
+    
     private static void checkNbres(String path) throws Exception {
         checkNbres(path, path);
     }
@@ -184,7 +202,19 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
      */
     public static final class TestClassLoader extends ClassLoader {
         
+        static String first;
+        
+        static String firstFindRequest() {
+            String f = first;
+            first = null;
+            return f;
+        }
+        
         protected URL findResource(String name) {
+            if (first == null) {
+                first = name;
+            }
+            
             if (!name.startsWith("/")) {
                 name = "/" + name;
             }
