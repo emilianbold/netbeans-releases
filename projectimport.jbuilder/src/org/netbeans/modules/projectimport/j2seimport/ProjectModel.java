@@ -55,5 +55,6 @@ public interface ProjectModel {
     public interface UserLibrary {
         String getName();
         Collection getLibraries();
+        Collection getDependencies();        
     }
 }

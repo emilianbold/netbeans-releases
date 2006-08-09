@@ -21,6 +21,7 @@ package org.netbeans.modules.projectimport.jbuilder.parsing;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,8 +36,6 @@ import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -49,6 +48,7 @@ public final class UserLibrarySupport {
     private static final String FULLNAME_ELEMENT = "fullname";//NOI18N
     private static final String CLASS_ELEMENT = "class";//NOI18N
     private static final String PATH_ELEMENT = "path";//NOI18N
+    private static final String REQUIRED_LIB = "required";//NOI18N    
     
     private static File installDirLib;// = new File();
     private static File userHomeLib;// = new File();
@@ -62,7 +62,7 @@ public final class UserLibrarySupport {
     public static AbstractProject.UserLibrary getInstance(String libraryName, File projectDir)  {
         File[] folders = new File[] {projectDir, getUserHomeLib(),getInstallDirLib()};
         UserLibrarySupport uSupport = UserLibrarySupport.getInstance(libraryName, folders);
-        return (uSupport != null) ? uSupport.getLibrary() : null;
+        return (uSupport != null) ? uSupport.getLibrary(folders) : null;
     }
     
     public static File getUserHomeLib() {
@@ -102,42 +102,51 @@ public final class UserLibrarySupport {
     }
     
     private static UserLibrarySupport getInstance(String libraryName, File[] folders)  {
+        final String fileName = libraryName.trim()+".library";//NOI18N        
         for (int i = 0; i < folders.length; i++) {
-            String fileName = libraryName.trim()+".library";//NOI18N
+            if (folders[i] == null) continue;
             File library = new File(folders[i], fileName);
-            if (!library.exists() && library.getParentFile() != null) {
-                File[] allChildren = library.getParentFile().listFiles();
-                if (allChildren == null) continue;
-                for (int j = 0; j < allChildren.length; j++) {
-                    if (allChildren[j].getName().equalsIgnoreCase(fileName)) {
-                        UserLibrarySupport instance = new UserLibrarySupport(libraryName, allChildren[j]);
-                        AbstractProject.UserLibrary ul = instance.getLibrary();
-                        if (ul != null) {
-                            library = allChildren[j];
-                        }
-                    }
-                }
-            }
-            
             if (library.exists()) {
-                UserLibrarySupport instance = new UserLibrarySupport(libraryName, library);
-                return instance;
-            } else {
-                logger.finest("library: "+libraryName + " with path: " + library.getAbsolutePath() + " doesn't exists");//NOI18N
+                return new UserLibrarySupport(libraryName, library);
             }
         }
         
+        for (int i = 0; i < folders.length; i++) {
+            if (folders[i] == null) continue;
+            final File[] allChildren = folders[i].listFiles(new FileFilter() {
+                public boolean accept(File f) {
+                    return f.isFile() && f.getName().endsWith(".library");//NOI18N
+                }
+            });
+            if (allChildren == null) continue;
+            for (int j = 0; j < allChildren.length; j++) {
+                UserLibrarySupport result = resolveLibrary(libraryName, allChildren[j], folders);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        
+        logger.finest("library: "+libraryName + " doesn't exists");//NOI18N
         return null;
     }
+
+    private static UserLibrarySupport resolveLibrary(final String libraryName, final File libFile, final File[] folders) {
+        File library = null;
+        UserLibrarySupport instance = new UserLibrarySupport(libraryName, libFile);
+        AbstractProject.UserLibrary ul = instance.getLibrary(folders);
+        return ul != null ? instance : null;
+    }
+    
     /** Creates a new instance of JBLibraries */
     private UserLibrarySupport(String  libraryName, File library) {
         this.libraryName = libraryName;
         this.library = library;
     }
     
-    AbstractProject.UserLibrary getLibrary()  {
+    AbstractProject.UserLibrary getLibrary(File[] folders)  {
         try {
-            return buildLibrary();
+            return buildLibrary(folders);
         } catch (IOException iex) {
             ErrorManager.getDefault().notify(iex);
         } catch (SAXException sax) {
@@ -148,7 +157,7 @@ public final class UserLibrarySupport {
     }
     
     
-    private AbstractProject.UserLibrary buildLibrary() throws IOException, SAXException {
+    private AbstractProject.UserLibrary buildLibrary(File[] folders) throws IOException, SAXException {
         AbstractProject.UserLibrary retval = new AbstractProject.UserLibrary(libraryName);
         InputStream jprIs = new BufferedInputStream(new FileInputStream(library));
         try {
@@ -159,19 +168,32 @@ public final class UserLibrarySupport {
             if (!fullName.equals(libraryName)) {
                 return null;
             }
-            
-            Element classElem = Util.findElement(docEl, CLASS_ELEMENT,null);
-            List/*<Element>*/ pathElems = (classElem != null) ? Util.findSubElements(classElem) : Collections.EMPTY_LIST;
-            for (int i = 0; i < pathElems.size(); i++) {
-                String path = getPath((Element)pathElems.get(i));
-                if (path != null) {
-                    AbstractProject.Library lEntry = createLibraryEntry(path);
-                    if (lEntry != null) {
-                        retval.addLibrary(lEntry);
+
+            List/*<Element>*/ reqElems = Util.findSubElements(docEl);
+            for (int i = 0; i < reqElems.size(); i++) {
+                Element elem = (Element)reqElems.get(i);
+                String classElem = getClassElement(elem);
+                if (classElem != null) {
+                    resolvePath(folders, retval, elem);
+                } else {
+                    String requiredLibrary = getRequiredLibrary(elem);
+                    if (requiredLibrary != null) {
+                        UserLibrarySupport uS = UserLibrarySupport.getInstance(requiredLibrary, folders);
+                        if (uS != null) {
+                            AbstractProject.UserLibrary uL = uS.getLibrary(folders);
+                            if (uL != null) {
+                                retval.addDependency(uL);
+                            }
+                        }
                     }
-                    
                 }
             }
+            
+            //Element classElem = Util.findElement(docEl, CLASS_ELEMENT,null);
+            
+        } catch (Exception ex) {            
+            System.out.println("libraryName: " + libraryName);
+            return null;
         } finally {
             if (jprIs != null) {
                 jprIs.close();
@@ -179,6 +201,19 @@ public final class UserLibrarySupport {
         }
         
         return retval;
+    }
+
+    private void resolvePath(final File[] folders, final AbstractProject.UserLibrary retval, final Element classElem) throws IllegalArgumentException {
+        List/*<Element>*/ pathElems = (classElem != null) ? Util.findSubElements(classElem) : Collections.EMPTY_LIST;
+        for (int i = 0; i < pathElems.size(); i++) {
+            String path = getPath((Element)pathElems.get(i));
+            if (path != null) {
+                AbstractProject.Library lEntry = createLibraryEntry(path);
+                if (lEntry != null) {
+                    retval.addLibrary(lEntry);
+                }                    
+            }
+        }
     }
     
     private Element getRootElement(Document doc) throws IOException {
@@ -220,14 +255,28 @@ public final class UserLibrarySupport {
     
     
     private String getPath(Element pathElem) {
+        return getElement(pathElem, PATH_ELEMENT);
+    }
+
+    private String getRequiredLibrary(Element pathElem) {
+        return getElement(pathElem, REQUIRED_LIB);
+    }
+    
+    private String getClassElement(Element pathElem) {
+        return getElement(pathElem, CLASS_ELEMENT);
+    }
+    
+    
+    private String getElement(final Element pathElem, String name) {
         String path = null;
         
-        if (pathElem != null && pathElem.getNodeName().equals(PATH_ELEMENT)) {
+        if (pathElem != null && pathElem.getNodeName().equals(name)) {
             path = Util.findText(pathElem);
             
         }
         
         return path;
     }
+
     
 }

@@ -308,6 +308,8 @@ public final class AbstractProject implements ProjectModel {
         private final String name;
         private Collection/*<AbstractProject.Library>*/ libraries;
         private boolean fileNotFound = false;
+        private Collection/*<AbstractProject.UserLibrary>*/ dependencies;
+        
 
         public UserLibrary(String name, boolean fileNotFound) {
             this(name);
@@ -317,6 +319,7 @@ public final class AbstractProject implements ProjectModel {
         public UserLibrary(String name) {
             this.name = name;
             libraries = new HashSet();
+            dependencies = new HashSet();
         }
         
         public UserLibrary(String name, Collection/*<AbstractLibraryEntry>*/ libraries) {
@@ -330,6 +333,13 @@ public final class AbstractProject implements ProjectModel {
             
             return libraries.add(lEntry);
         }
+        
+        public boolean addDependency(ProjectModel.UserLibrary uLibrary) {
+            logger.finest("added library dependency: " + "\"" + uLibrary.getName() + "\""); //NOI18N
+            
+            return dependencies.add(uLibrary);
+        }
+        
         
         
         public String getName() {
@@ -362,6 +372,10 @@ public final class AbstractProject implements ProjectModel {
             sb.append(getName());
             
             return sb.toString();
+        }
+
+        public Collection getDependencies() {
+            return dependencies;
         }
         
         

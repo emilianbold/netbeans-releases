@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -401,8 +402,9 @@ public final class ImportUtils {
             ProjectModel.UserLibrary userLibrary = (ProjectModel.UserLibrary)it.next();
             ProjectClassPathExtender nbClsPath = (ProjectClassPathExtender) nbProject.getLookup().lookup(ProjectClassPathExtender.class);
             assert nbClsPath != null;
+            List allLibs = getAllLibraries(null, userLibrary);
             
-            for (Iterator itUL = userLibrary.getLibraries().iterator(); itUL.hasNext();) {
+            for (Iterator itUL = allLibs.iterator(); itUL.hasNext();) {
                 ProjectModel.Library lEntry = (ProjectModel.Library)itUL.next();
                 try {
                     warnings.addAll(addLibrary(nbClsPath, lEntry, projectDefinition));
@@ -415,6 +417,16 @@ public final class ImportUtils {
         
         
         return warnings;
+    }
+
+    private List getAllLibraries(List allLibs, final ProjectModel.UserLibrary userLibrary) {
+        allLibs = (allLibs == null) ? new ArrayList() : allLibs;
+        allLibs.addAll(userLibrary.getLibraries());
+        for (Iterator it = userLibrary.getDependencies().iterator(); it.hasNext();) {
+            ProjectModel.UserLibrary uLDep = (ProjectModel.UserLibrary) it.next();
+            getAllLibraries(allLibs, uLDep);
+        }
+        return allLibs;
     }
     
     private WarningContainer/*<String> warnings*/ addLibraries(final ProjectModel projectDefinition,
