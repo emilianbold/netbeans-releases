@@ -25,6 +25,7 @@ import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.Subversion;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -143,6 +144,7 @@ public class SvnClientFactory {
                 return repository;
             }
         };
+        Subversion.getInstance().cleanupFilesystem();
         if(support != null) {
             handler = new SvnClientInvocationHandler(adapter, desc, support);
         } else {

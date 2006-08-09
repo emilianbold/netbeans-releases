@@ -239,6 +239,19 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     /**
+     * Looks up cached file status.
+     * 
+     * @param file file to check
+     * @return give file's status or null if the file's status is not in cache
+     */ 
+    FileInformation getCachedStatus(File file) {
+        file = file.getParentFile();
+        if (file == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(file, FILE_STATUS_MAP);
+        return files != null ? files.get(file) : null;
+    }    
+
+    /**
      * Refreshes the status of the file given the repository status. Repository status is filled
      * in when this method is called while processing server output. 
      *

@@ -250,6 +250,7 @@ public class Subversion {
 //        SvnClient  client = SvnClientFactory.getInstance().createSvnClient();
 //        attachListeners(client, false);
 //        return client;        
+        cleanupFilesystem();
         if(attachListeners) {            
             if(noUrlClientWithListeners == null) {
                 noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();
@@ -287,6 +288,13 @@ public class Subversion {
         }
         return false;
     }
+    
+    /**
+     * TODO: Backdoor for SvnClientFactory
+     */ 
+    public void cleanupFilesystem() {
+        filesystemHandler.removeInvalidMetadata();
+    }
 
     private void attachListeners(SvnClient client, boolean quite) {
         client.addNotifyListener(getLogger(client.getSvnUrl())); 
@@ -314,18 +322,17 @@ public class Subversion {
      * @return true if file is listed in parent's ignore list
      * or IDE thinks it should be.
      */
-    public boolean isIgnored(File file) {
+    boolean isIgnored(File file) {
         String name = file.getName();
 
         // ask SVN
 
         File parent = file.getParentFile();
         if (parent != null) {
-            FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            int pstatus = cache.getStatus(parent).getStatus();
+            int pstatus = fileStatusCache.getStatus(parent).getStatus();
             if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(false);
+                    SvnClient client = getClient(false);
 
                     // XXX property can contain shell patterns (almost identical to RegExp)
                     List<String> patterns = client.getIgnoredPatterns(parent);
@@ -358,14 +365,18 @@ public class Subversion {
         int sharability = SharabilityQuery.getSharability(file);
         if (sharability == SharabilityQuery.NOT_SHARABLE) {
             try {
+                // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
+                FileInformation info = fileStatusCache.getCachedStatus(file); // getStatus may cause stack overflow
+                if (SubversionVisibilityQuery.isHiddenFolder(info, file)) {
+                    return false;
+                }
                 // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
                 if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
-                    FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                    if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                        List<String> patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
+                    if ((fileStatusCache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+                        List<String> patterns = getClient(true).getIgnoredPatterns(parent);
                         if (patterns.contains(file.getName()) == false) {
                             patterns.add(file.getName());
-                            Subversion.getInstance().getClient(true).setIgnoredPatterns(parent, patterns);
+                            getClient(true).setIgnoredPatterns(parent, patterns);
                         } else {
                             assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName(); // NOI18N
                         }

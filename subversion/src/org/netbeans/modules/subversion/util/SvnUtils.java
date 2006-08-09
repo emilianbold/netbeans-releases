@@ -641,6 +641,16 @@ public class SvnUtils {
         return false;
     }
     
+    public static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File [] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteRecursively(files[i]);
+            }
+        }
+        file.delete();
+    }
+
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 

@@ -20,6 +20,8 @@
 package org.netbeans.modules.subversion.ui.update;
 
 import java.io.File;
+import java.util.*;
+
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
@@ -28,9 +30,11 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -82,6 +86,7 @@ public class RevertModificationsAction extends ContextAction {
         }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
 
+        Set filesystems = new HashSet(2);
         File files[] = ctx.getFiles();
         File[][] split = SvnUtils.splitFlatOthers(files);
         for (int c = 0; c<split.length; c++) {
@@ -111,13 +116,56 @@ public class RevertModificationsAction extends ContextAction {
                             return;
                         }
                         client.revert(files[i], recursive);
+                        if (recursive) {
+                            refreshRecursively(files[i]);
+                        } else {
+                            cache.refreshCached(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                        }
+                        addFileSystem(filesystems, files[i]);
                     }
                 }
             } catch (SVNClientException ex) {
                 ExceptionHandler eh = new ExceptionHandler (ex);
                 eh.annotate();
             }
-        }                       
+        }
+
+        for (Iterator i = filesystems.iterator(); i.hasNext();) {
+            FileSystem fileSystem = (FileSystem) i.next();
+            fileSystem.refresh(true);
+        }
+    }
+
+    /**
+     * Folders that were resurrected by "Revert Delete" have not really been created because they already existed.
+     * Therefore we must refresh their status manually.  
+     *  
+     * @param file
+     */ 
+    private static void refreshRecursively(File file) {
+        File [] files = file.listFiles();
+        if (files != null) {
+            for (File child : files) {
+                refreshRecursively(child);
+            }
+        }
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+    }
+
+    private static void addFileSystem(Set filesystems, File file) {
+        FileObject fo;
+        for (;;) {
+            fo = FileUtil.toFileObject(file);
+            if (fo != null) break;
+            file = file.getParentFile();
+            if (file == null) return;
+        }
+        try {
+            filesystems.add(fo.getFileSystem());
+        } catch (FileStateInvalidException e) {
+            // ignore invalid filesystems
+        }
     }
     
     private static RevertModifications.RevisionInterval recountStartRevision(SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {            
@@ -125,7 +173,7 @@ public class RevertModificationsAction extends ContextAction {
             ISVNInfo info = client.getInfo(repository);
             ret.startRevision = info.getRevision();
         } 
-        Long start = Long.parseLong(ret.startRevision.toString());
+        long start = Long.parseLong(ret.startRevision.toString());
         if(start > 0) {
             start = start - 1;
         }
