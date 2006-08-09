@@ -1636,15 +1636,10 @@ final class Central implements ControllerHandler {
     }
 
     public void userUndockedTopComponent(TopComponent tc, int modeKind) {
-        // bounds moved a little so that undock is more visible
         Point tcLoc = tc.getLocation();
         Dimension tcSize = tc.getSize();
         SwingUtilities.convertPointToScreen(tcLoc, tc);
-        Rectangle bounds = new Rectangle(
-                tcLoc.x + Constants.UNDOCK_LOCATION_SHIFT_X,
-                tcLoc.y + Constants.UNDOCK_LOCATION_SHIFT_Y,
-                tcSize.width,
-                tcSize.height);
+        Rectangle bounds = new Rectangle(tcLoc, tcSize);
         attachTopComponentsIntoNewMode(new TopComponent[] { tc }, bounds, modeKind, Constants.MODE_STATE_SEPARATED);
         updateViewAfterDnD(true);
     }

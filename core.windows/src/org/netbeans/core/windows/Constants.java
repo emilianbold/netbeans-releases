@@ -127,9 +127,5 @@ public abstract class Constants {
     /** File name whose InstanceCookie can contain custom status line component.*/
     public static final String CUSTOM_STATUS_LINE_PATH = System.getProperty("netbeans.winsys.status_line.path"); // NOI18N
 
-    /** Automatic shift size of top component's location when undocked */
-    public static final int UNDOCK_LOCATION_SHIFT_X = 20;
-    public static final int UNDOCK_LOCATION_SHIFT_Y = 20;
-    
     private Constants() {}
 }
