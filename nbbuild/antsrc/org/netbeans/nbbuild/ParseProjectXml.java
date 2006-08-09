@@ -938,6 +938,10 @@ public final class ParseProjectXml extends Task {
                    addRecursiveModules(cnb,entriesMap);
                    entries.addAll(entriesMap.values());
                } else {
+                   ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
+                   if (entry == null) {
+                       throw new BuildException("Module "  + cnb + " doesn't exist.");
+                   }
                    entries.add(modulesParser.findByCodeNameBase(cnb));
                }
            }
@@ -948,6 +952,9 @@ public final class ParseProjectXml extends Task {
        private void addRecursiveModules(String cnd, Map entriesMap) {
            if (!entriesMap.containsKey(cnd)) {
                ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnd);
+               if (entry == null) {
+                   throw new BuildException("Module "  + cnd + " doesn't exist.");
+               }
                entriesMap.put(cnd,entry);
                String cnds[] = entry.getRuntimeDependencies();
                // cnds can be null
