@@ -27,19 +27,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Opens project at specified location -->
     <!-- <property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/> -->
 
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-    <!-- Overrides default qa-functional-compiler because we need something
-         more on classpath -->
-    <target name="qa-functional-compiler">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
-            <classpath>
-                <path refid="compiletest.classpath"/>
-            </classpath>
-        </buildTests>
-    </target>
-
     
     <!-- ================ -->
     <!-- Run in IDE's JVM -->
@@ -71,18 +58,6 @@ Microsystems, Inc. All Rights Reserved.
         </internalExecution>
     </target>
 
-    <!-- compilation classpath -->
-    <path id="compiletest.classpath"> 
-        <pathelement location="../../jemmy/builds/jemmy.jar"/>
-        <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
-        
-        <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
-        <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
-        <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
-        <pathelement location="${openide/execution.dir}/modules/org-openide-execution.jar"/>
-        <pathelement location="${openide/awt.dir}/modules/org-openide-awt.jar"/>
-        <pathelement location="${openide/text.dir}/modules/org-openide-text.jar"/>
-    </path>
-        
+ 
     
 </project>
