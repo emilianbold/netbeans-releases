@@ -293,9 +293,14 @@ public class DataLoaderGetActionsTest extends NbTestCase {
         
         private Lkp(InstanceContent ic) throws Exception {
             super (ic);
+
+            FileSystem fs = TestUtilHid.createLocalFileSystem (Lkp.class.getName (), new String[0]);
+            for (FileObject fo : fs.getRoot().getChildren()) {
+                fo.delete();
+            }
+            assertEquals("No children", 0, fs.getRoot().getChildren().length);
             
-            TestUtilHid.destroyLocalFileSystem (Lkp.class.getName ());
-            ic.add (new Repository (TestUtilHid.createLocalFileSystem (Lkp.class.getName (), new String[0])));
+            ic.add (new Repository (fs));
             ic.add (new Pool ());
 //            ic.add (new EM ());
         }
