@@ -346,7 +346,12 @@ public final class Startup {
                     result = new GtkLFCustoms();
                     break;
                 default :
-                    result = new WindowsLFCustoms();
+                    // #79401 check if it's XP style LnF, for example jGoodies
+                    if (UIUtils.isXPLF()) {
+                        result = new XPLFCustoms();
+                    } else {
+                        result = new WindowsLFCustoms();
+                    }
             }
         }
         return result;
