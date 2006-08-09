@@ -172,6 +172,7 @@ public final class AbstractProject implements ProjectModel {
         if (!srcEntry.isValid()) {
             addWarning(NbBundle.getMessage(AbstractProject.class, "MSG_InvalidSourceRoot",
                     srcEntry.getDirectory().getAbsolutePath(),this.getName()), false); //NOI18N
+            return false;
         }
         
         boolean retVal = sourceRoots.add(srcEntry);
