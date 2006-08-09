@@ -139,6 +139,7 @@ public class CommittingCvs12Test extends JellyTestCase {
         //System.out.println(CVSroot);
         
         OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
         in.close();
@@ -180,7 +181,6 @@ public class CommittingCvs12Test extends JellyTestCase {
         actual = new String[model.getRowCount()];
         for (int i = 0; i < actual.length; i++) {
             actual[i] = model.getValueAt(i, 0).toString();
-            System.out.println("ttt: " + model.getValueAt(i, 0));
         }
         int result = TestKit.compareThem(expected, actual, false);
         assertEquals("Wrong records displayed in dialog", 4, result);
@@ -188,6 +188,7 @@ public class CommittingCvs12Test extends JellyTestCase {
         
         oo = OutputOperator.invoke();
         oto = oo.getOutputTab(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke.in");
         cvss = new PseudoCvsServer(in);
