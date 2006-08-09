@@ -28,7 +28,6 @@ import org.openide.*;
 import org.openide.nodes.Node;
 
 import java.io.File;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -70,6 +69,7 @@ public class IgnoreAction extends ContextAction {
 
     public int getActionStatus(File [] files) {
         int actionStatus = -1;
+        if (files.length == 0) return UNDEFINED; 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {
             if (files[i].getName().equals(".svn") || files[i].getName().equals("_svn")) { // NOI18N
