@@ -26,6 +26,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
@@ -901,14 +903,17 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                     String clazz = getClass().getName();
 
                     if (warnedBadProperties.add(clazz + "." + name)) {
-                        Logger.global.log(Level.WARNING, null,
-                                          new IllegalStateException("Warning - the node \"" +
-                                                                    getDisplayName() +
-                                                                    "\" [" +
-                                                                    clazz +
-                                                                    "] is trying to fire the property " +
-                                                                    name +
-                                                                    " which is not included in its property sets. This is illegal. See IZ #31413 for details.")); // NOI18N
+                        StringWriter w = new StringWriter();
+                        IllegalStateException ise = new IllegalStateException("Warning - the node \"" +
+                            getDisplayName() +
+                            "\" [" +
+                            clazz +
+                            "] is trying to fire the property " +
+                            name +
+                            " which is not included in its property sets. This is illegal. See IZ #31413 for details."
+                        ); // NOI18N
+                        ise.printStackTrace(new PrintWriter(w));
+                        Logger.global.warning(w.toString());
                     }
                 }
             }
