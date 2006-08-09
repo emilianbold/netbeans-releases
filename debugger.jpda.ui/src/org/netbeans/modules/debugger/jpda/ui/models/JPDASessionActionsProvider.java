@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -42,11 +43,9 @@ import java.awt.event.ActionEvent;
 public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
 
     private HashSet         listeners;
-    private ContextProvider contextProvider;
     
 
-    public JPDASessionActionsProvider (ContextProvider contextProvider) {
-        this.contextProvider = contextProvider;
+    public JPDASessionActionsProvider () {
     }
 
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
@@ -55,7 +54,10 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
 
     public Action [] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
 
-        if (!(node instanceof Session)) return original.getActions(node);
+        if (!(node instanceof Session) || !SessionsTableModelFilter.isJPDASession((Session) node)) {
+            return original.getActions(node);
+        }
+        Session session = (Session) node;
         Action [] actions;
         try {
             actions = original.getActions(node);
@@ -63,11 +65,12 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
             actions = new Action[0];
         }
         List myActions = new ArrayList();
-        if (node instanceof Session) {
-            Session session = (Session) node;
-            myActions.add(new CustomizeSession(session));
-            myActions.add(new LanguageSelection(session));
+        DebuggerEngine e = session.getCurrentEngine ();
+        if (e != null) {
+            JPDADebugger d = (JPDADebugger) e.lookupFirst(null, JPDADebugger.class);
+            myActions.add(new CustomizeSession(d));
         }
+        myActions.add(new LanguageSelection(session));
         myActions.addAll(Arrays.asList(actions));
         return (Action[]) myActions.toArray(new Action[myActions.size()]);
     }
@@ -108,10 +111,10 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
 
     private class CustomizeSession extends AbstractAction implements Presenter.Popup {
 
-        private Session session;
+        private JPDADebugger dbg;
 
-        public CustomizeSession(Session session) {
-            this.session = session;
+        public CustomizeSession(JPDADebugger dbg) {
+            this.dbg = dbg;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -125,8 +128,6 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
                 new AbstractAction (localize ("CTL_Session_Resume_All_Threads")
             ) {
                 public void actionPerformed (ActionEvent e) {
-                    JPDADebugger dbg = (JPDADebugger) contextProvider.
-                        lookupFirst (null, JPDADebugger.class);
                     dbg.setSuspend (JPDADebugger.SUSPEND_ALL);
                 }
             });
@@ -134,14 +135,10 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
                 new AbstractAction (localize ("CTL_Session_Resume_Current_Thread")
             ) {
                 public void actionPerformed(ActionEvent e) {
-                    JPDADebugger dbg = (JPDADebugger) contextProvider.
-                        lookupFirst (null, JPDADebugger.class);
                     dbg.setSuspend (JPDADebugger.SUSPEND_EVENT_THREAD);
                 }
             });
 
-            JPDADebugger dbg = (JPDADebugger) contextProvider.lookupFirst
-                (null, JPDADebugger.class);
             if (dbg.getSuspend() == JPDADebugger.SUSPEND_ALL) 
                 resumeAllItem.setSelected(true);
             else resumeCurrentItem.setSelected(true);
