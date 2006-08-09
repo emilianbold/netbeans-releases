@@ -445,7 +445,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         final boolean singleClass = !emptyTest
                                     && (filesToTest.length == 1)
                                     && filesToTest[0].isData();
-        final String testClassName =
+        String testClassName =
                 emptyTest || singleClass
                 ? (String) params.get(CreateTestParam.CLASS_NAME)
                 : null;
@@ -501,7 +501,9 @@ public final class DefaultPlugin extends JUnitPlugin {
                     ErrorManager.getDefault().notify(ex);
                 }
             } else if (singleClass) {
-                assert testClassName != null;
+                if (testClassName == null) {
+                    testClassName = getTestClassName(filesToTest[0].getName());
+                }
                 try {
                     results = createSingleTest(
                             testCreator,
