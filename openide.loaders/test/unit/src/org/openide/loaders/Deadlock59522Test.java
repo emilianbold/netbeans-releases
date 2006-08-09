@@ -113,7 +113,13 @@ public class Deadlock59522Test extends NbTestCase implements FileChangeListener 
         }
     }
     
+    private boolean wasHereOnce;
     private void lockMdr() {
+        if (wasHereOnce) {
+            return;
+        }
+        
+        wasHereOnce = true;
         // no more callbacks
         fs.removeFileChangeListener(this);
         
