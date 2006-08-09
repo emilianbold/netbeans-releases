@@ -32,6 +32,7 @@ import com.sun.jdi.request.EventRequestManager;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 
 /**
@@ -44,22 +45,22 @@ public class JPDAUtils {
 
     // testing methods .........................................................................
 
-    public static void printFeatures (VirtualMachine virtualMachine) {
-        System.out.println ("canAddMethod " + virtualMachine.canAddMethod ());
-        //System.out.println ("canBeModified " + virtualMachine.canBeModified ());
-        System.out.println ("canGetBytecodes " + virtualMachine.canGetBytecodes ());
-        System.out.println ("canGetCurrentContendedMonitor " + virtualMachine.canGetCurrentContendedMonitor ());
-        System.out.println ("canGetMonitorInfo " + virtualMachine.canGetMonitorInfo ());
-        System.out.println ("canGetOwnedMonitorInfo " + virtualMachine.canGetOwnedMonitorInfo ());
-        System.out.println ("canGetSourceDebugExtension " + virtualMachine.canGetSourceDebugExtension ());
-        System.out.println ("canGetSyntheticAttribute " + virtualMachine.canGetSyntheticAttribute ());
-        System.out.println ("canPopFrames " + virtualMachine.canPopFrames ());
-        System.out.println ("canRedefineClasses " + virtualMachine.canRedefineClasses ());
-        System.out.println ("canRequestVMDeathEvent " + virtualMachine.canRequestVMDeathEvent ());
-        System.out.println ("canUnrestrictedlyRedefineClasses " + virtualMachine.canUnrestrictedlyRedefineClasses ());
-        System.out.println ("canUseInstanceFilters " + virtualMachine.canUseInstanceFilters ());
-        System.out.println ("canWatchFieldAccess " + virtualMachine.canWatchFieldAccess ());
-        System.out.println ("canWatchFieldModification " + virtualMachine.canWatchFieldModification ());
+    public static void printFeatures (Logger logger, VirtualMachine virtualMachine) {
+        logger.fine ("canAddMethod " + virtualMachine.canAddMethod ());
+        logger.fine ("canBeModified " + virtualMachine.canBeModified ());
+        logger.fine ("canGetBytecodes " + virtualMachine.canGetBytecodes ());
+        logger.fine ("canGetCurrentContendedMonitor " + virtualMachine.canGetCurrentContendedMonitor ());
+        logger.fine ("canGetMonitorInfo " + virtualMachine.canGetMonitorInfo ());
+        logger.fine ("canGetOwnedMonitorInfo " + virtualMachine.canGetOwnedMonitorInfo ());
+        logger.fine ("canGetSourceDebugExtension " + virtualMachine.canGetSourceDebugExtension ());
+        logger.fine ("canGetSyntheticAttribute " + virtualMachine.canGetSyntheticAttribute ());
+        logger.fine ("canPopFrames " + virtualMachine.canPopFrames ());
+        logger.fine ("canRedefineClasses " + virtualMachine.canRedefineClasses ());
+        logger.fine ("canRequestVMDeathEvent " + virtualMachine.canRequestVMDeathEvent ());
+        logger.fine ("canUnrestrictedlyRedefineClasses " + virtualMachine.canUnrestrictedlyRedefineClasses ());
+        logger.fine ("canUseInstanceFilters " + virtualMachine.canUseInstanceFilters ());
+        logger.fine ("canWatchFieldAccess " + virtualMachine.canWatchFieldAccess ());
+        logger.fine ("canWatchFieldModification " + virtualMachine.canWatchFieldModification ());
     }
    
     public static void showMethods (ReferenceType rt) {

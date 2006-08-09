@@ -50,6 +50,8 @@ import java.util.Set;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.netbeans.api.debugger.DebuggerInfo;
@@ -100,8 +102,7 @@ import org.openide.ErrorManager;
 */
 public class JPDADebuggerImpl extends JPDADebugger {
     
-    private static final boolean startVerbose = 
-        System.getProperty ("netbeans.debugger.start") != null;
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda");
 
 
     // variables ...............................................................
@@ -748,9 +749,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
     
     public void setRunning (VirtualMachine vm, Operator o) {
-        if (startVerbose) {
-            System.out.println("\nS JPDADebuggerImpl.setRunning ()");
-            JPDAUtils.printFeatures (vm);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Start - JPDADebuggerImpl.setRunning ()");
+            JPDAUtils.printFeatures (logger, vm);
         }
         synchronized (LOCK2) {
             starting = true;
@@ -792,8 +793,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             virtualMachine.resume();
         }
         
-        if (startVerbose)
-            System.out.println("\nS JPDADebuggerImpl.setRunning () - end");
+        logger.fine("   JPDADebuggerImpl.setRunning () finished, VM resumed.");
         synchronized (LOCK2) {
             starting = false;
             LOCK2.notify ();
@@ -820,8 +820,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void finish () {
         //Workaround for #56233
         //synchronized (LOCK) { 
-            if (startVerbose)
-                System.out.println("\nS StartActionProvider.finish ()");
+            logger.fine("StartActionProvider.finish ()");
             AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
                 (null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
@@ -835,24 +834,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
             try {
                 if (virtualMachine != null) {
                     if (di instanceof AttachingDICookie) {
-                        if (startVerbose)
-                            System.out.println ("\nS StartActionProvider." +
-                                "finish () VM dispose"
-                            );
+                        logger.fine(" StartActionProvider.finish() VM dispose");
                         virtualMachine.dispose ();
                     } else {
-                        if (startVerbose)
-                            System.out.println ("\nS StartActionProvider." +
-                                "finish () VM exit"
-                            );
+                        logger.fine(" StartActionProvider.finish() VM exit");
                         virtualMachine.exit (0);
                     }
                 }
             } catch (VMDisconnectedException e) {
-                if (startVerbose)
-                    System.out.println ("\nS StartActionProvider." +
-                        "finish () VM exception " + e
-                    );
+                logger.fine(" StartActionProvider.finish() VM exception " + e);
                 // debugee VM is already disconnected (it finished normally)
             }
             virtualMachine = null;
@@ -865,10 +855,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 jsr45EngineProviders = null;
             }
             javaEngineProvider.getDestructor ().killEngine ();
-            if (startVerbose)
-                System.out.println ("\nS StartActionProvider." +
-                    "finish () end "
-                );
+            logger.fine (" StartActionProvider.finish() end.");
             
             //Notify LOCK2 so that no one is waiting forever
             synchronized (LOCK2) {
@@ -904,6 +891,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         setState (STATE_RUNNING);
         synchronized (LOCK) {
             if (virtualMachine != null) {
+                logger.fine("VM resume");
                 virtualMachine.resume ();
             }
         }
