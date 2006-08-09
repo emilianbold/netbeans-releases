@@ -254,7 +254,7 @@ public class TopLoggingTest extends NbTestCase {
         String disk = readLog(true);
         Matcher m = Pattern.compile("BEGIN.*END", Pattern.MULTILINE | Pattern.DOTALL).matcher(disk);
         assertTrue("There is text between BEGINandEND\n" + disk, m.find());
-        disk = m.group(0);
+        disk = m.group(0).replace("\n\r", "\n");
 
         assertEquals("BEGIN\n\nEND", disk);
     }
