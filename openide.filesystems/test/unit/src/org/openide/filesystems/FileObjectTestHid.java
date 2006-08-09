@@ -80,62 +80,67 @@ public class FileObjectTestHid extends TestBaseHid {
         if (fold.getFileSystem().isReadOnly()) {
             return;
         }
-        fold.getFileSystem().addFileChangeListener(new FileChangeAdapter(){
+        final FileChangeListener noFileDataCreatedListener = new FileChangeAdapter(){
+            public void fileDataCreated(FileEvent fe) {
+                fail();
+            }
+        };
+        final FileChangeListener listener1 = new FileChangeAdapter(){
             public void fileDataCreated(FileEvent fe) {
                 try {
-                    fold.getFileSystem().removeFileChangeListener(this);
-                    fold.getFileSystem().addFileChangeListener(new FileChangeAdapter(){
-                        public void fileDataCreated(FileEvent fe) {
-                            try {
-                                fold.getFileSystem().removeFileChangeListener(this);
-                            } catch (FileStateInvalidException ex) {
-                                FileObjectTestHid.this.fsFail("");
-                            }
-                            FileObjectTestHid.this.fsFail("");
-                        }
-                    });                                                        
-                } catch (Exception ex) {
-                    FileObjectTestHid.this.fsFail ("");
+                    fold.getFileSystem().removeFileChangeListener(noFileDataCreatedListener);
+                    fold.getFileSystem().addFileChangeListener(noFileDataCreatedListener);
+                } catch (FileStateInvalidException ex) {
+                    FileObjectTestHid.this.fsFail("");
                 }
             }
-        });
-        fold.getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
-            public void run() throws java.io.IOException {
-                fold.createData("file1");
-                fold.createData("file2");
-            }            
-        });
+        };
+        
+        try {
+            fold.getFileSystem().addFileChangeListener(listener1);
+            fold.getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
+                public void run() throws java.io.IOException {
+                    fold.createData("file1");
+                    fold.createData("file2");
+                }
+            });
+        } finally {
+            fold.getFileSystem().removeFileChangeListener(listener1);
+            fold.getFileSystem().removeFileChangeListener(noFileDataCreatedListener);
+        }
     }
-
+    
     public void  testEventsDelivery81746_2() throws Exception {
-        checkSetUp();        
+        checkSetUp();
         final FileObject fold = getTestFolder1(root);
         if (fold.getFileSystem().isReadOnly()) {
             return;
-        }        
-        fold.getFileSystem().addFileChangeListener(new FileChangeAdapter(){
+        }
+        final FileChangeListener noFileDataCreatedListener = new FileChangeAdapter(){
             public void fileDataCreated(FileEvent fe) {
-                try {
-                    fold.getFileSystem().removeFileChangeListener(this);
-                    fold.addFileChangeListener(new FileChangeAdapter(){
-                        public void fileDataCreated(FileEvent fe) {
-                            fold.removeFileChangeListener(this);
-                            FileObjectTestHid.this.fsFail("");
-                        }
-                    });
-                } catch (Exception ex) {
-                    FileObjectTestHid.this.fsFail ("");
+                fail();
+            }
+        };
+        final FileChangeListener listener1 = new FileChangeAdapter(){
+            public void fileDataCreated(FileEvent fe) {
+                fold.removeFileChangeListener(noFileDataCreatedListener);
+                fold.addFileChangeListener(noFileDataCreatedListener);
+            }
+        };
+        
+        try {
+            fold.getFileSystem().addFileChangeListener(listener1);
+            fold.getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
+                public void run() throws java.io.IOException {
+                    fold.createData("file1");
+                    fold.createData("file2");
                 }
-            }
-        });
-        fold.getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
-            public void run() throws java.io.IOException {
-                fold.createData("file1");
-                fold.createData("file2");
-            }
-        });
-    }
-    
+            });
+        } finally {
+            fold.getFileSystem().removeFileChangeListener(listener1);
+            fold.removeFileChangeListener(noFileDataCreatedListener);
+        }
+    }    
     
     /** Test of copy method, of class org.openide.filesystems.FileObject. */
     public void  testCopy()  {
