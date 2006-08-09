@@ -49,7 +49,7 @@ public final class NamingFactory {
         return fileName;
     }
 
-    public static int getSize () {
+    public static synchronized int getSize () {
         return nameMap.size();
     }
     
@@ -57,7 +57,7 @@ public final class NamingFactory {
         return NamingFactory.registerInstanceOfFileNaming(parentFn, file);
     }
     
-    public static void checkCaseSensitivity(final FileNaming childName, final File f) {
+    public static synchronized void checkCaseSensitivity(final FileNaming childName, final File f) {
         if (!childName.getFile().getName().equals(f.getName())) {
             boolean isCaseSensitive = !new File(f,"a").equals(new File(f,"A"));//NOI18N
             if (!isCaseSensitive) {
