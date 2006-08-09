@@ -57,6 +57,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
@@ -529,7 +530,8 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     private static void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, String cancelButton, boolean doSetMessageType, final Executor executor) {
-        final JButton confirm = new JButton(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_" + confirmButton));
+        final JButton confirm = new JButton();
+        Mnemonics.setLocalizedText(confirm, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_" + confirmButton));
         final JButton cancel  = new JButton(cancelButton == null ?
               NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Cancel_Button")
             : NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_" + cancelButton));
