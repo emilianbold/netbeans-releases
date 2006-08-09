@@ -666,6 +666,7 @@ public class TreeModelNode extends AbstractNode {
         private final String EVALUATING_STR = NbBundle.getMessage(TreeModelNode.class, "EvaluatingProp");
         private String      id;
         private ColumnModel columnModel;
+        private boolean nodeColumn;
         private TreeModelRoot treeModelRoot;
         private int[]       evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
         
@@ -675,13 +676,14 @@ public class TreeModelNode extends AbstractNode {
         ) {
             super (
                 columnModel.getID (),
-                columnModel.getType (),
+                (columnModel.getType() == null) ? String.class : columnModel.getType (),
                 columnModel.getDisplayName (),
                 columnModel.getShortDescription (), 
                 true,
                 true
             );
             this.columnModel = columnModel;
+            this.nodeColumn = columnModel.getType() == null;
             this.treeModelRoot = treeModelRoot;
             id = columnModel.getID ();
         }
@@ -692,6 +694,7 @@ public class TreeModelNode extends AbstractNode {
         * @return <CODE>true</CODE> if the read of the value is supported
         */
         public boolean canWrite () {
+            if (nodeColumn) return false;
             try {
                 return !model.isReadOnly (object, columnModel.getID ());
             } catch (UnknownTypeException e) {
@@ -749,6 +752,9 @@ public class TreeModelNode extends AbstractNode {
         }
         
         public synchronized Object getValue () { // Sync the calls
+            if (nodeColumn) {
+                return TreeModelNode.this.getDisplayName();
+            }
             // 1) return value from cache
             synchronized (properties) {
                 //System.out.println("getValue("+TreeModelNode.this.getDisplayName()+", "+id+"): contains = "+properties.containsKey (id)+", value = "+properties.get (id));
@@ -800,6 +806,9 @@ public class TreeModelNode extends AbstractNode {
         
         public Object getValue (String attributeName) {
             if (attributeName.equals ("htmlDisplayValue")) {
+                if (nodeColumn) {
+                    return TreeModelNode.this.getHtmlDisplayName();
+                }
                 synchronized (evaluated) {
                     if (evaluated[0] != 1) {
                         return "<html><font color=\"0000CC\">"+EVALUATING_STR+"</font></html>";
@@ -813,6 +822,9 @@ public class TreeModelNode extends AbstractNode {
         }
 
         public String getShortDescription() {
+            if (nodeColumn) {
+                return TreeModelNode.this.getShortDescription();
+            }
             synchronized (properties) {
                 if (!properties.containsKey(id)) {
                     return null; // The same as value => EVALUATING_STR
