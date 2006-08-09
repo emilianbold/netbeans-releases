@@ -34,9 +34,13 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.spi.support.NewJavaFreeformProjectSupport;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.freeform.WebProjectGenerator;
 import org.netbeans.modules.web.freeform.WebProjectNature;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -118,6 +122,16 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
         File nbProjectFolder = (File)wiz.getProperty(NewFreeformProjectSupport.PROP_PROJECT_FOLDER);
         Set resultSet = new HashSet();
         resultSet.add(FileUtil.toFileObject(nbProjectFolder));
+        Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(nbProjectFolder));
+        if (p != null) {
+            Sources srcs = ProjectUtils.getSources(p);
+            if (srcs != null) {
+                SourceGroup[] grps = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+                if (grps != null && grps.length > 0) {
+                    resultSet.add(grps[0].getRootFolder());
+                }
+            }
+        }
         File f = nbProjectFolder.getParentFile();
         if (f != null) {
             ProjectChooser.setProjectsFolder(f);
