@@ -152,6 +152,9 @@ Microsystems, Inc. All Rights Reserved.
                   <test-dependency>
                       <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
                   </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                  </test-dependency>
                   
               </test-type>
               <test-type>
