@@ -47,6 +47,7 @@ public class Deadlock51637Test extends NbTestCase implements FileChangeListener 
     Node node;
     Exception assigned;
     boolean called;
+    boolean enough;
     
     public Deadlock51637Test(String testName) {
         super (testName);
@@ -82,6 +83,9 @@ public class Deadlock51637Test extends NbTestCase implements FileChangeListener 
     }
     
     private void doCreateNode () {
+        if (enough) {
+            return;
+        }
         if (node != null) {
             assertNotNull ("Node is not null, but it was not assigned", assigned);
             
@@ -90,6 +94,7 @@ public class Deadlock51637Test extends NbTestCase implements FileChangeListener 
             throw a;
         }
         // just one event is enough
+        enough = true;
         fs.removeFileChangeListener (this);
         
         called = true;
