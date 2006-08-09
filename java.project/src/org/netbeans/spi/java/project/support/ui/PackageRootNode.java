@@ -379,41 +379,24 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             if ( FileUtil.isParentOf( groupRoot, fo ) /* && group.contains( fo ) */ ) {
                 // The group contains the object
 
-                String relPath = FileUtil.getRelativePath( groupRoot, fo );
-                int lastSlashIndex = relPath.lastIndexOf( '/' ); // NOI18N
+                String relPath = FileUtil.getRelativePath( groupRoot, fo.isFolder() ? fo : fo.getParent() );
 
-                String[] path = null;
-                if ( fo.isFolder() ) {
-                    String packageName = relPath.replace( '/', '.' ); // NOI18N
-                    path = new String[] { packageName };
-                }
-                else if ( lastSlashIndex == -1 ) {
-                    path = new String[] { "", fo.getName() };
-                }
-                else {
-                    String packageName = relPath.substring( 0, lastSlashIndex ).replace( '/', '.' ); // NOI18N
-                    path = new String[] { packageName, fo.getName() };                    
-                } 
+                String[] path = new String[] { relPath.replace( '/', '.' ) };
                 try {
-                    // XXX if there are two files differing only by extension in the package,
-                    // this will be wrong...
-                    return NodeOp.findPath( root, path );
-                }
-                catch ( NodeNotFoundException e ) {
-                    if (!fo.isFolder()) {
-                        // If it is a DefaultDataObject, the node name contains the extension.
-                        if (lastSlashIndex == -1) {
-                            path = new String[] {"", fo.getNameExt()};
-                        } else {
-                            String packageName = relPath.substring(0, lastSlashIndex).replace('/', '.'); // NOI18N
-                            path = new String[] {packageName, fo.getNameExt()};
-                        }
-                        try {
-                            return NodeOp.findPath(root, path);
-                        } catch (NodeNotFoundException e2) {
-                            // already handled
+                    Node packageNode = NodeOp.findPath( root, path );
+                    if (fo.isFolder()) {
+                        return packageNode;
+                    } else {
+                        Node[] childs = packageNode.getChildren().getNodes(true);
+                        for (int i = 0; i < childs.length; i++) {
+                           DataObject dobj = childs[i].getLookup().lookup(DataObject.class);
+                           if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
+                               return childs[i];
+                           }
                         }
                     }
+                }
+                catch ( NodeNotFoundException e ) {
                     // did not manage to find it after all... why?
                     return null;
                 }

@@ -134,7 +134,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         fireIconChange();
         fireOpenedIconChange();
     }
-    
+
     /** Copied from PhysicalView and PackageRootNode. */
     public static final class PathFinder {
         
@@ -155,32 +155,35 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             }
             FileObject groupRoot = g.getRootFolder();
             if (FileUtil.isParentOf(groupRoot, fo) /* && group.contains(fo) */) {
-                String relPath = FileUtil.getRelativePath(groupRoot, fo);
+                FileObject folder = fo.isFolder() ? fo : fo.getParent();
+                String relPath = FileUtil.getRelativePath(groupRoot, folder);
                 List/*<String>*/ path = new ArrayList();
                 StringTokenizer strtok = new StringTokenizer(relPath, "/"); // NOI18N
                 while (strtok.hasMoreTokens()) {
-                   path.add(strtok.nextToken());
+                    String token = strtok.nextToken();
+                   path.add(token);
                 }
-                // XXX this is really ugly... cf. #44739 and #33330.
-                path.set(path.size() - 1, fo.getName());
                 try {
-                    return NodeOp.findPath(rootNode, Collections.enumeration(path));
-                } catch (NodeNotFoundException e) {
-                    try {
-                        //#65555: DefaultDataObject cannot be selected
-                        path.set(path.size() - 1, fo.getNameExt());
-                        return NodeOp.findPath(rootNode, Collections.enumeration(path));
-                    } catch (NodeNotFoundException e2) {
-                        return null;
+                    Node folderNode =  folder.equals(groupRoot) ? rootNode : NodeOp.findPath(rootNode, Collections.enumeration(path));
+                    if (fo.isFolder()) {
+                        return folderNode;
+                    } else {
+                        Node[] childs = folderNode.getChildren().getNodes(true);
+                        for (int i = 0; i < childs.length; i++) {
+                           DataObject dobj = childs[i].getLookup().lookup(DataObject.class);
+                           if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
+                               return childs[i];
+                           }
+                        }
                     }
+                } catch (NodeNotFoundException e) {
+                    e.printStackTrace();
                 }
             } else if (groupRoot.equals(fo)) {
                 return rootNode;
-            } else {
-                return null;
-            }
+            } 
+            return null;
         }
-        
     }
     
     /** Copied from PhysicalView. */
