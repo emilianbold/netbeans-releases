@@ -21,6 +21,7 @@ package org.netbeans;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -47,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
  * Command Line Interface and User Directory Locker support class.
@@ -248,6 +250,7 @@ public abstract class CLIHandler extends Object {
         private final File lockFile;
         private final int port;
         private int exitCode;
+        private Task parael;
         /**
          * General failure.
          */
@@ -260,7 +263,7 @@ public abstract class CLIHandler extends Object {
          * @see #cli(Args)
          */
         Status(int c) {
-            this(null, 0, c);
+            this(null, 0, c, null);
         }
         /**
          * Some measure of success.
@@ -268,10 +271,17 @@ public abstract class CLIHandler extends Object {
          * @param p the server port (not 0)
          * @param c a status code (0 or not)
          */
-        Status(File l, int p, int c) {
+        Status(File l, int p, int c, Task parael) {
             lockFile = l;
             port = p;
             exitCode = c;
+            this.parael = parael;
+        }
+        
+        private void waitFinished() {
+            if (parael != null) {
+                parael.waitFinished();
+            }
         }
         
         /**
@@ -279,6 +289,7 @@ public abstract class CLIHandler extends Object {
          * @return the lock file, or null if there is none
          */
         public File getLockFile() {
+            waitFinished();
             return lockFile;
         }
         /**
@@ -488,39 +499,38 @@ public abstract class CLIHandler extends Object {
                 
                 enterState(10, block);
                 
-                byte[] arr = new byte[KEY_LENGTH];
-                if (Boolean.getBoolean("org.netbeans.CLIHandler.fast.random")) { // NOI18N
-                    new Random().nextBytes(arr);
-                } else {
-                    try {
-                        SecureRandom.getInstance("SHA1PRNG").nextBytes(arr); // NOI18N
-                    } catch (NoSuchAlgorithmException e) {
-                        // #36966: IBM JDK doesn't have it.
-                        try {
-                            SecureRandom.getInstance("IBMSecureRandom").nextBytes(arr); // NOI18N
-                        } catch (NoSuchAlgorithmException e2) {
-                            // OK, disable server...
-                            System.err.println("WARNING: remote IDE automation features cannot be cryptographically secured, so disabling; please reopen http://www.netbeans.org/issues/show_bug.cgi?id=36966"); // NOI18N
-                            e.printStackTrace();
-                            return new Status();
-                        }
-                    }
-                }
+                final byte[] arr = new byte[KEY_LENGTH];
+                new Random().nextBytes(arr);
                 
                 server = new Server(arr, block, handlers, failOnUnknownOptions);
                 
                 final DataOutputStream os = new DataOutputStream(new FileOutputStream(lockFile));
                 int p = server.getLocalPort();
                 os.writeInt(p);
+                os.flush();
                 
                 enterState(20, block);
                 
-                os.write(arr);
-                os.flush();
-
-                RequestProcessor.getDefault().post(new Runnable() {
+                Task parael = new RequestProcessor("Secure CLI Port").post(new Runnable() { // NOI18N
                     public void run() {
                         try {
+                            SecureRandom.getInstance("SHA1PRNG").nextBytes(arr); // NOI18N
+                        } catch (NoSuchAlgorithmException e) {
+                            // #36966: IBM JDK doesn't have it.
+                            try {
+                                SecureRandom.getInstance("IBMSecureRandom").nextBytes(arr); // NOI18N
+                            } catch (NoSuchAlgorithmException e2) {
+                                // OK, disable server...
+                                server.stopServer();
+                            }
+                        }
+                        
+                        enterState(97, block);
+
+                        try {
+                            os.write(arr);
+                            os.flush();
+
                             enterState(27,block);
                             // if this turns to be slow due to lookup of getLocalHost
                             // address, it can be done asynchronously as nobody needs
@@ -554,7 +564,7 @@ public abstract class CLIHandler extends Object {
                 });
                 
                 enterState(0, block);
-                return new Status(lockFile, server.getLocalPort(), execCode);
+                return new Status(lockFile, server.getLocalPort(), execCode, parael);
             } catch (IOException ex) {
                 if (!"EXISTS".equals(ex.getMessage())) { // NOI18N
                     ex.printStackTrace();
@@ -576,6 +586,18 @@ public abstract class CLIHandler extends Object {
                     is.readFully(x);
                     enterState(24, block);
                     serverAddress = x;
+                } catch (EOFException eof) {
+                    // not yet fully written down
+                    if (port != -1) {
+                        try {
+                            enterState(94, block);
+                            // just wait a while
+                            Thread.sleep(2000);
+                        } catch (InterruptedException inter) {
+                            inter.printStackTrace();
+                        }
+                        continue;
+                    }
                 } catch (IOException ex2) {
                     // ok, try to read it once more
                     enterState(26, block);
@@ -638,7 +660,7 @@ public abstract class CLIHandler extends Object {
                                     replyStream.close();
                                     
                                     enterState(0, block);
-                                    return new Status(lockFile, port, exitCode);
+                                    return new Status(lockFile, port, exitCode, null);
                                 case REPLY_READ: {
                                     enterState(42, block);
                                     int howMuch = replyStream.readInt();
@@ -692,7 +714,7 @@ public abstract class CLIHandler extends Object {
                             }
                         }
                         
-                        // connection ok, but secret key not recognized
+                        // connection ok, butlockFile secret key not recognized
                         // delete the lock file
                     } catch (java.net.SocketTimeoutException ex2) {
                         // connection failed, the port is dead

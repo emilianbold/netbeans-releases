@@ -20,7 +20,6 @@
 package org.netbeans;
 
 import java.io.*;
-import junit.textui.TestRunner;
 import org.netbeans.junit.*;
 import java.util.*;
 import junit.framework.AssertionFailedError;
@@ -43,7 +42,7 @@ public class CLIHandlerTest extends NbTestCase {
     }
     
     public static junit.framework.Test suite() {
-        //return new CLIHandlerTest("testHelpIsPassedToRunningServer");
+        //return new CLIHandlerTest("testFileExistsHasPortButNotTheKey");
         return new NbTestSuite(CLIHandlerTest.class);
     }
     
@@ -126,6 +125,38 @@ public class CLIHandlerTest extends NbTestCase {
         
         
     }
+    
+    public void testFileExistsHasPortButNotTheKey() throws Exception {
+        // start the server and block
+        Integer block = new Integer(97);
+        InitializeRunner runner;
+        synchronized (block) {
+            runner = new InitializeRunner(block, true);
+            // the initialization code can finish without reaching 97
+            runner.waitResult();
+        }
+        
+        assertTrue("Port allocated", runner.resultPort() != 0);
+        
+        // blocks after read the keys from the file
+        InitializeRunner second = new InitializeRunner(94);
+
+        // let the CLI Secure Handler finish
+        synchronized (block) {
+            block.notifyAll();
+        }
+        // let the test go beyond 97 to the end of file
+        assertNotNull("File created", runner.resultFile());
+        
+        
+        // let the second finish
+        second.next();
+        
+        assertEquals("Still the same file", runner.resultFile(), second.resultFile());
+        assertEquals("Another port allocated", second.resultPort(), runner.resultPort());
+    }
+
+    
     public void testHelpIsPrinted() throws Exception {
         class UserDir extends CLIHandler {
             private int cnt;
@@ -767,18 +798,31 @@ public class CLIHandlerTest extends NbTestCase {
         private String[] args;
         private CLIHandler handler;
         private CLIHandler.Status result;
+        private boolean noEnd;
         
         public InitializeRunner(int till) throws InterruptedException {
             this(new String[0], null, till);
         }
+
+        public InitializeRunner(int till, boolean noEnd) throws InterruptedException {
+            this(new String[0], null, till, noEnd);
+        }
         
+        public InitializeRunner(Integer till, boolean noEnd) throws InterruptedException {
+            this(new String[0], null, till, noEnd);
+        }
         public InitializeRunner(String[] args, CLIHandler h, int till) throws InterruptedException {
             this(args, h, new Integer(till));
         }
         public InitializeRunner(String[] args, CLIHandler h, Integer till) throws InterruptedException {
+            this(args, h, till, false);
+        }
+
+        private InitializeRunner(String[] args, CLIHandler h, Integer till, boolean noEnd) throws InterruptedException {
             this.args = args;
             this.block = till;
             this.handler = h;
+            this.noEnd = noEnd;
             
             synchronized (block) {
                 new RequestProcessor("InitializeRunner blocks on " + till).post(this);
@@ -796,8 +840,13 @@ public class CLIHandlerTest extends NbTestCase {
                     true,
                     null
                 );
-                // we are finished, wake up guys in next() if any
-                block.notifyAll();
+                if (!noEnd) {
+                    // we are finished, wake up guys in next() if any
+                    block.notifyAll();
+                }
+            }
+            synchronized (this) {
+                notifyAll();
             }
         }
         
@@ -813,6 +862,19 @@ public class CLIHandlerTest extends NbTestCase {
          */
         public boolean hasResult() {
             return result != null;
+        }
+        
+        public boolean waitResult() throws InterruptedException {
+            synchronized (this) {
+                for (int i = 0; i < 10; i++) {
+                    if (result != null) {
+                        return true;
+                    }
+                    wait(1000);
+                }
+            }
+            fail("No result produced: " + result);
+            return true;
         }
         
         /** Gets the resultFile, if there is some,
