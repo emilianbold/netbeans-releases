@@ -316,6 +316,9 @@ public class ProjectUtilities {
         // file should not already exist
         StringBuffer relFileName = new StringBuffer();
         if (folderName != null) {
+            if (!allowBackslash && folderName.indexOf('\\') != -1) {
+                return NbBundle.getMessage(ProjectUtilities.class, "MSG_not_valid_folder", folderName, new Integer(1));
+            }
             relFileName.append(folderName);
             relFileName.append('/');
         }
