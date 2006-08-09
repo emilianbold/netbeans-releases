@@ -30,9 +30,13 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.netbeans.modules.java.freeform.spi.support.NewJavaFreeformProjectSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -100,6 +104,17 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
         File nbProjectFolder = pm.getNBProjectFolder();
         Set resultSet = new HashSet();
         resultSet.add(FileUtil.toFileObject(nbProjectFolder));
+        Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(nbProjectFolder));
+        if (p != null) {
+            Sources srcs = ProjectUtils.getSources(p);
+            if (srcs != null) {
+                SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if (grps != null && grps.length > 0) {
+                    resultSet.add(grps[0].getRootFolder());
+                }
+            }
+        }
+        
         File f = nbProjectFolder.getParentFile();
         if (f != null) {
             ProjectChooser.setProjectsFolder(f);
