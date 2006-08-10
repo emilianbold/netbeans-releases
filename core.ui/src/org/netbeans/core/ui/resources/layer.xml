@@ -309,7 +309,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <file name="org-openide-text-PrintSettings.settings" url="PrintSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/printSettings.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/text/printSettings.gif"/>
         </file>
     </folder>
     
