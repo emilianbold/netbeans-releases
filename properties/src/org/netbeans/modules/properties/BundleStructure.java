@@ -425,7 +425,7 @@ public class BundleStructure {
         for (int i=0; i < ps.length; i++) {
             Element.ItemElem item = ps[i].getItem(key);
             if (item != null) {
-                if (changeIfExists && !changed && !item.getValue().equals(value)) {
+                if (changeIfExists && !changed) {
                     item.setValue(value);
                     item.setComment(comment);
                     changed = true; // change only once - in the most specific set
