@@ -77,7 +77,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     private static Icon defaultIcon;
 
     /** default icon to use when none is present */
-    private static final String DEFAULT_ICON = "org/openide/resources/defaultNode.gif"; // NOI18N
+    private static final String DEFAULT_ICON = "org/openide/nodes/defaultNode.gif"; // NOI18N
 
     /** Cached icon - pre-html, there was a separate cache in NodeRenderer, but
      * if we're keeping a weak cache of VisualizerNodes, there's no reason not

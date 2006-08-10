@@ -61,7 +61,7 @@ public class BeanNode<T> extends AbstractNode {
     // static ..................................................................................................................
 
     /** Icon base for bean nodes */
-    private static final String ICON_BASE = "org/openide/resources/beans.gif"; // NOI18N
+    private static final String ICON_BASE = "org/openide/nodes/beans.gif"; // NOI18N
 
     // variables .............................................................................................................
 

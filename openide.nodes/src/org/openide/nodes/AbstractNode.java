@@ -96,11 +96,11 @@ public class AbstractNode extends Node {
     private static final NewType[] NO_NEW_TYPES = {  };
 
     /** default icon base for all nodes */
-    private static final String DEFAULT_ICON_BASE = "org/openide/resources/defaultNode"; // NOI18N
+    private static final String DEFAULT_ICON_BASE = "org/openide/nodes/defaultNode"; // NOI18N
     private static final String DEFAULT_ICON_EXTENSION = ".gif"; // NOI18N
     private static final String DEFAULT_ICON = DEFAULT_ICON_BASE + DEFAULT_ICON_EXTENSION; // NOI18N
     
-    private static final WeakHashMap overridesGetDefaultAction = new WeakHashMap(27);
+    private static final WeakHashMap overridesGetDefaultAction = new WeakHashMap(32);
 
     /** Message format to use for creation of the display name.
     * It permits conversion of text from
