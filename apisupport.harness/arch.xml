@@ -542,14 +542,6 @@ Microsystems, Inc. All Rights Reserved.
         their .jnlp file for this to to work).
     </api>
   </p>
-  <p>
-        <api type="import" group="property" name="org.netbeans.CLIHandler.fast.random" category="friend">
-            <p>
-                uses this property provided by core/bootstrap to speedup startup of NetBeans based apps under
-                development. 
-            </p>
-        </api>
-  </p>
  </answer>
 
 
