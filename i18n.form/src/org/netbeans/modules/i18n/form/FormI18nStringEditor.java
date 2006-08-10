@@ -168,10 +168,18 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      */
     public String getJavaInitializationString() {
         FormI18nString i18nString = (FormI18nString) getValue();
-        return "*/\n\\1NOI18N*/\n\\0" // NOI18N
-            + (i18nString.getKey() != null ?
-                 i18nString.getReplaceString() : // NOI18N
-                 ("\"" + FormI18nSupport.toAscii(i18nString.getValue()) + "\"")); // plain string // NOI18N
+        String javaString;
+        if (i18nString.getKey() != null) {
+            javaString = i18nString.getReplaceString();
+            if (javaString == null) { // some problem, return plain string (better than null)
+                return "\"" + FormI18nSupport.toAscii(i18nString.getValue()) + "\""; // NOI18N
+            }
+        }
+        else { // non-internationalized string (with NOI18N comment)
+            javaString = "\"" + FormI18nSupport.toAscii(i18nString.getValue()) + "\""; // NOI18N
+        }
+            
+        return "*/\n\\1NOI18N*/\n\\0" + javaString; // NOI18N
         // */\n\\1 is a special code mark for line comment
         // */\n\\0 is a special code mark to indicate that a real code follows
     }

@@ -368,11 +368,18 @@ public class I18nServiceImpl implements I18nService {
     private static PropertiesDataObject getPropertiesDataObject(DataObject srcDataObject, String bundleName)
         throws DataObjectNotFoundException
     {
+        if (bundleName.startsWith("/")) // NOI18N
+            bundleName = bundleName.substring(1);
         if (!bundleName.toLowerCase().endsWith(".properties")) // NOI18N
             bundleName = bundleName + ".properties"; // NOI18N
         FileObject bundleFile = org.netbeans.modules.i18n.Util
                 .getResource(srcDataObject.getPrimaryFile(), bundleName);
-        return (PropertiesDataObject)(bundleFile != null ? DataObject.find(bundleFile) : null);
+        if (bundleFile != null) {
+            DataObject dobj = DataObject.find(bundleFile);
+            if (dobj instanceof PropertiesDataObject)
+                return (PropertiesDataObject) dobj;
+        }
+        return null;
     }
 
     private static DataObject createPropertiesDataObject(DataObject srcDataObject,
