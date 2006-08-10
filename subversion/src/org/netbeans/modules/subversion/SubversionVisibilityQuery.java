@@ -77,7 +77,7 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation,
     }
 
     static boolean isHiddenFolder(FileInformation info, File file) {
-        return file.isDirectory() && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
+        return file.isDirectory() && info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
     }
     
     private void fireVisibilityChanged() {
