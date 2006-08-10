@@ -19,6 +19,7 @@ import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.util.GeomUtil;
+import org.openide.util.Lookup;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -30,7 +31,6 @@ import java.util.List;
 /**
  * @author David Kaspar
  */
-// TODO - clipping does not count with view zoom factor
 // TODO - Should Widget be an abstract class?
 public class Widget {
 
@@ -45,7 +45,6 @@ public class Widget {
     private WidgetAction.Chain actionsChain;
     private HashMap<String, WidgetAction.Chain> toolsActions = EMPTY_HASH_MAP;
 
-    private HashMap<String, Object> properties;
     private ArrayList<Widget.Dependency> dependencies;
 
     private boolean opaque;
@@ -76,8 +75,6 @@ public class Widget {
         childrenUm = Collections.unmodifiableList (children);
 
         actionsChain = new WidgetAction.Chain ();
-
-        properties = null;
 
         opaque = false;
         font = null;
@@ -218,14 +215,8 @@ public class Widget {
         return chain;
     }
 
-    public final Object getProperty (String name) {
-        return properties != null ? properties.get (name) : null;
-    }
-
-    public final void setProperty (String name, Object value) {
-        if (properties == null)
-            properties = new HashMap<String, Object> ();
-        properties.put (name, value);
+    public Lookup getLookup () {
+        return Lookup.EMPTY;
     }
 
     public final void addDependency (Widget.Dependency dependency) {
