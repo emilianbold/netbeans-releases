@@ -105,6 +105,8 @@ public final class SingleModuleProperties extends ModuleProperties {
     private boolean specificationVersionChanged;
     private boolean implementationVersionChange;
     private boolean providedTokensChanged;
+
+    private boolean moduleListRefreshNeeded;
     
     static {
         // setup defaults
@@ -366,6 +368,14 @@ public final class SingleModuleProperties extends ModuleProperties {
     boolean isSuiteComponent() {
         return moduleType == NbModuleTypeProvider.SUITE_COMPONENT;
     }
+
+    public void setModuleListRefreshNeeded(boolean moduleListRefreshNeeded) {
+        this.moduleListRefreshNeeded = moduleListRefreshNeeded;
+    }
+    
+    boolean isModuleListRefreshNeeded() {
+        return moduleListRefreshNeeded;
+    }
     
     boolean dependingOnImplDependency() {
         DependencyListModel depsModel = getDependenciesListModel();
@@ -486,7 +496,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     /**
-     * Deletages to {@link #getUniverseDependencies(boolean, boolean)} with
+     * Delegates to {@link #getUniverseDependencies(boolean, boolean)} with
      * <code>false</code> as a second parameter.
      */
     Set/*<ModuleDependency>*/ getUniverseDependencies(final boolean filterExcludedModules) {
@@ -682,6 +692,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             } else { // store public packages
                 getProjectXMLManager().replacePublicPackages(publicPkgs);
             }
+            setModuleListRefreshNeeded(true);
         }
         
         if (isStandalone()) {
@@ -892,5 +903,5 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return p;
     }
-    
+
 }

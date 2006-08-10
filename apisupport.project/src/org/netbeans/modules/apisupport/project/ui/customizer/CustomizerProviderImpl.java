@@ -65,6 +65,13 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
         moduleProps.storeProperties();
     }
     
+    void postSave() throws IOException {
+        if (moduleProps.isModuleListRefreshNeeded()) {
+            moduleProps.getModuleList().refresh();
+            moduleProps.setModuleListRefreshNeeded(false);
+        }
+    }
+    
     protected void prepareData() {
         Lookup lookup = getProject().getLookup();
         SuiteProvider sp = (SuiteProvider) lookup.lookup(SuiteProvider.class);

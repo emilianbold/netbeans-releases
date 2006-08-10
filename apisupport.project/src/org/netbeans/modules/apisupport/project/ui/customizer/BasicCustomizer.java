@@ -69,7 +69,18 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
         this.project = project;
     }
     
+    /**
+     * All changes should be store at this point. Is called under the write
+     * access from {@link ProjectManager#mutex}.
+     */
     abstract void storeProperties() throws IOException;
+    
+    /**
+     * Gives a chance to do some work after all the changes in a customizer
+     * were successfully saved. Is called under the write access from {@link
+     * ProjectManager#mutex}.
+     */
+    abstract void postSave() throws IOException;
     
     /**
      * Be sure that you will prepare all the data (typically subclass of {@link
@@ -173,19 +184,16 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
     
     public void save() {
         try {
-            // Store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     storeProperties();
+                    ProjectManager.getDefault().saveProject(project);
+                    postSave();
                     return null;
                 }
             });
-            // and save the project
-            ProjectManager.getDefault().saveProject(project);
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
         }
     }
     

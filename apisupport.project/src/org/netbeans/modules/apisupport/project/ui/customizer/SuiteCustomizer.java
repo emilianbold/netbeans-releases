@@ -58,6 +58,8 @@ public final class SuiteCustomizer extends BasicCustomizer {
         suiteProps.storeProperties();
     }
     
+    void postSave() { /* nothing needs to be done for now */ }
+    
     protected void prepareData() {
         Set/*<Project>*/ subModules = SuiteUtils.getSubProjects(getProject());
         if (suiteProps == null) { // first initialization
@@ -90,6 +92,6 @@ public final class SuiteCustomizer extends BasicCustomizer {
         
         listenToPanels();
     }
-    
+
 }
 
