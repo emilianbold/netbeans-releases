@@ -597,6 +597,8 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         if (PROP_ERROR_MESSAGE.equals(name)) {
+            // #76318: New Entity wizard shows unreadable red error
+            if (OK_OPTION.equals (getValue ())) return ;
             if (wizardPanel != null) {
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
@@ -1796,9 +1798,6 @@ public class WizardDescriptor extends DialogDescriptor {
                         nextButton.setEnabled (false);
                         finishButton.setEnabled (false);
                         cancelButton.setEnabled (false);
-                        
-                        // write something to errorMessage (e.g. Wait to finishing.)
-                        if (wizardPanel != null) wizardPanel.setErrorMessage (NbBundle.getMessage (WizardDescriptor.class, "MSG_WizardDescriptor_FinishInProgress"), Boolean.TRUE); // NOI18N
                         
                         Runnable performFinish = new Runnable () {
                             public void run () {
