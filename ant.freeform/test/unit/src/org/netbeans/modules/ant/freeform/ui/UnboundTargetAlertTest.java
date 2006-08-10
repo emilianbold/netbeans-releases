@@ -56,7 +56,7 @@ public class UnboundTargetAlertTest extends TestBase {
         uta.generateBindingAndAddContextMenuItem();
         List<FreeformProjectGenerator.TargetMapping> mappings = FreeformProjectGenerator.getTargetMappings(prj.helper());
         // Will add it to the end, so just look there.
-        FreeformProjectGenerator.TargetMapping lastMapping = (FreeformProjectGenerator.TargetMapping) mappings.get(mappings.size() - 1);
+        FreeformProjectGenerator.TargetMapping lastMapping = mappings.get(mappings.size() - 1);
         assertEquals("debug", lastMapping.name);
         assertEquals(null, lastMapping.script);
         assertEquals(Collections.singletonList("twiddle-this"), lastMapping.targets);

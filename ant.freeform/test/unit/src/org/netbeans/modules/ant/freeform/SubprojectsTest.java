@@ -39,11 +39,11 @@ public class SubprojectsTest extends TestBase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        simpleSubprojects = (SubprojectProvider) simple.getLookup().lookup(SubprojectProvider.class);
+        simpleSubprojects = simple.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("have a SubprojectProvider for simple", simpleSubprojects);
-        extsrcrootSubprojects = (SubprojectProvider) extsrcroot.getLookup().lookup(SubprojectProvider.class);
+        extsrcrootSubprojects = extsrcroot.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("have a SubprojectProvider for extsrcroot", extsrcrootSubprojects);
-        simple2Subprojects = (SubprojectProvider) simple2.getLookup().lookup(SubprojectProvider.class);
+        simple2Subprojects = simple2.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("have a SubprojectProvider for simple2", simple2Subprojects);
     }
     

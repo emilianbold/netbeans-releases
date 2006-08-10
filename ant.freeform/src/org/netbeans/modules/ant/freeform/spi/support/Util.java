@@ -145,7 +145,7 @@ public class Util {
     public static AuxiliaryConfiguration getAuxiliaryConfiguration(AntProjectHelper helper) {
         try {
             Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
-            AuxiliaryConfiguration aux = (AuxiliaryConfiguration)p.getLookup().lookup(AuxiliaryConfiguration.class);
+            AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
             assert aux != null;
             return aux;
         } catch (IOException e) {
@@ -246,7 +246,7 @@ public class Util {
      * @throws IllegalArgumentException if the passed project is not a freeform project.
      */
     public static FileObject getDefaultAntScript(Project prj) throws IllegalArgumentException {
-        ProjectAccessor accessor = (ProjectAccessor) prj.getLookup().lookup(ProjectAccessor.class);
+        ProjectAccessor accessor = prj.getLookup().lookup(ProjectAccessor.class);
         
         if (accessor == null) {
             throw new IllegalArgumentException("Only FreeformProjects are supported.");

@@ -112,7 +112,7 @@ public class ViewTest extends TestBase {
     
     public void testFindPath() throws Exception {
         // Do not test packages style - provided only by java/freeform.
-        LogicalViewProvider lvp2 = (LogicalViewProvider) simple.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp2 = simple.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull(lvp2);
         Node root = lvp2.createLogicalView();
         doTestFindPathPositive(lvp2, root, simple, "xdocs/foo.xml");

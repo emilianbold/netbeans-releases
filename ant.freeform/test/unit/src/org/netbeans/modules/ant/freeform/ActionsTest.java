@@ -117,7 +117,7 @@ public class ActionsTest extends TestBase {
         targetsRun.clear();
         buildXml = simple.getProjectDirectory().getFileObject("build.xml");
         assertNotNull("found build.xml", buildXml);
-        ap = (ActionProvider) simple.getLookup().lookup(ActionProvider.class);
+        ap = simple.getLookup().lookup(ActionProvider.class);
         assertNotNull("have an action provider", ap);
         FileObject myAppJava = simple.getProjectDirectory().getFileObject("src/org/foo/myapp/MyApp.java");
         assertNotNull("have MyApp.java", myAppJava);
@@ -131,7 +131,7 @@ public class ActionsTest extends TestBase {
         FileObject specialTaskJava = simple.getProjectDirectory().getFileObject("antsrc/org/foo/ant/SpecialTask.java");
         assertNotNull("have SpecialTask.java", specialTaskJava);
         specialTaskJavaDO = DataObject.find(specialTaskJava);
-        lvp = (LogicalViewProvider) simple.getLookup().lookup(LogicalViewProvider.class);
+        lvp = simple.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
     }
     

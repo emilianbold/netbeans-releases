@@ -216,7 +216,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         List<Element> subElements = Util.findSubElements(el);
         assertEquals(2, subElements.size());
         // compare first target mapping
-        Element el2 = (Element)subElements.get(0);
+        Element el2 = subElements.get(0);
         assertElement(el2, "action", null, "name", "first-targetName");
         List<Element> l1 = Util.findSubElements(el2);
         assertEquals(7, l1.size());

@@ -139,7 +139,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         assert projectFolder != null;
         
         if ((p = FileOwnerQuery.getOwner(projectFolder.toURI())) != null && projectFolder.equals(FileUtil.toFile(p.getProjectDirectory()))) {
-            ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+            ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);
             String displayName = (pi == null ? "" : pi.getDisplayName());   //NOI18N
             return MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),
                 new Object[] {displayName});
@@ -150,7 +150,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         assert projectLocation != null;
         
         if ((p = FileOwnerQuery.getOwner(projectLocation.toURI())) != null && projectLocation.equals(FileUtil.toFile(p.getProjectDirectory()))) {
-            ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+            ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);
             String displayName = (pi == null ? "" : pi.getDisplayName());   //NOI18N
             return MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_10"),
                 new Object[] {displayName});
