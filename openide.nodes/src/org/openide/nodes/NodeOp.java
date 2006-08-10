@@ -18,16 +18,27 @@
  */
 package org.openide.nodes;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Lookup;
-import org.openide.util.WeakListeners;
-
-import java.util.*;
-
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JPopupMenu;
-
+import org.openide.util.Enumerations;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** Utility class for operations on nodes.
  *
@@ -35,7 +46,7 @@ import javax.swing.JPopupMenu;
  */
 public final class NodeOp extends Object {
     /** default node actions */
-    private static org.openide.util.actions.SystemAction[] defaultActions;
+    private static SystemAction[] defaultActions;
 
     private NodeOp() {
     }
@@ -44,18 +55,18 @@ public final class NodeOp extends Object {
     * @return array of default actions
      * @deprecated Do not use this method. It is useless now.
     */
-    public static org.openide.util.actions.SystemAction[] getDefaultActions() {
+    @Deprecated
+    public static SystemAction[] getDefaultActions() {
         if (defaultActions == null) {
-            defaultActions = createFromNames(new String[] { "Tools", "Properties" // NOI18N 
-                }
-                );
+            defaultActions = createFromNames(new String[] {"Tools", "Properties"}); // NOI18N 
         }
 
         return defaultActions;
     }
 
     /** @deprecated Useless. */
-    public static void setDefaultActions(org.openide.util.actions.SystemAction[] def) {
+    @Deprecated
+    public static void setDefaultActions(SystemAction[] def) {
         throw new SecurityException();
     }
 
@@ -74,25 +85,23 @@ public final class NodeOp extends Object {
     * @param actionMap maps keys to actions or null
     * @return popup menu for this array
     */
-    static JPopupMenu findContextMenuImpl(Node[] nodes, javax.swing.ActionMap actionMap) {
+    static JPopupMenu findContextMenuImpl(Node[] nodes, ActionMap actionMap) {
         Action[] arr = findActions(nodes);
 
         // prepare lookup representing all the selected nodes
-        ArrayList allLookups = new ArrayList();
+        List<Lookup> allLookups = new ArrayList<Lookup>();
 
-        for (int i = 0; i < nodes.length; i++) {
-            allLookups.add(nodes[i].getLookup());
+        for (Node n : nodes) {
+            allLookups.add(n.getLookup());
         }
 
         if (actionMap != null) {
-            allLookups.add(org.openide.util.lookup.Lookups.singleton(actionMap));
+            allLookups.add(Lookups.singleton(actionMap));
         }
 
-        Lookup lookup = new org.openide.util.lookup.ProxyLookup(
-                (Lookup[]) allLookups.toArray(new Lookup[allLookups.size()])
-            );
+        Lookup lookup = new ProxyLookup(allLookups.toArray(new Lookup[allLookups.size()]));
 
-        return org.openide.util.Utilities.actionsToPopup(arr, lookup);
+        return Utilities.actionsToPopup(arr, lookup);
     }
 
     /** Asks the provided nodes for their actions and those that are common,
@@ -104,8 +113,7 @@ public final class NodeOp extends Object {
      * @since 3.29
      */
     public static Action[] findActions(Node[] nodes) {
-        // hashtable: Action -> Integer
-        Map actions = new HashMap();
+        Map<Action,Integer> actions = new HashMap<Action,Integer>();
 
         Action[][] actionsByNode = new Action[nodes.length][];
 
@@ -120,20 +128,19 @@ public final class NodeOp extends Object {
             }
 
             // keeps actions handled for this node iteration
-            HashSet counted = new HashSet();
+            Set<Action> counted = new HashSet<Action>();
 
-            for (int i = 0; i < actionsByNode[n].length; i++) {
-                if (actionsByNode[n][i] != null) {
+            for (Action a : actionsByNode[n]) {
+                if (a != null) {
                     // if this action was handled for this node already, skip to next iteration
-                    if (counted.contains(actionsByNode[n][i])) {
+                    if (counted.contains(a)) {
                         continue;
                     }
 
-                    counted.add(actionsByNode[n][i]);
+                    counted.add(a);
 
-                    Integer cntInt = (Integer) actions.get(actionsByNode[n][i]);
-                    int cnt = (cntInt == null) ? 0 : cntInt.intValue();
-                    actions.put(actionsByNode[n][i], new Integer(cnt + 1));
+                    Integer cntInt = actions.get(a);
+                    actions.put(a, cntInt == null ? 1 : cntInt + 1);
                 }
             }
         }
@@ -141,11 +148,10 @@ public final class NodeOp extends Object {
         // take all actions that are nodes.length number times
         if (!actions.isEmpty()) {
             // keeps actions for which was menu item created already
-            ArrayList result = new ArrayList();
-            HashSet counted = new HashSet();
+            List<Action> result = new ArrayList<Action>();
+            Set<Action> counted = new HashSet<Action>();
 
-            for (int i = 0; i < actionsByNode[0].length; i++) {
-                Action action = actionsByNode[0][i];
+            for (Action action : actionsByNode[0]) {
 
                 if (action != null) {
                     // if this action has menu item already, skip to next iteration
@@ -155,9 +161,9 @@ public final class NodeOp extends Object {
 
                     counted.add(action);
 
-                    Integer cntInt = (Integer) actions.get(action);
+                    Integer cntInt = actions.get(action);
 
-                    int cnt = (cntInt == null) ? 0 : cntInt.intValue();
+                    int cnt = (cntInt == null) ? 0 : cntInt;
 
                     if (cnt == nodes.length) {
                         result.add(action);
@@ -168,7 +174,7 @@ public final class NodeOp extends Object {
                 }
             }
 
-            return (Action[]) result.toArray(new Action[result.size()]);
+            return result.toArray(new Action[result.size()]);
         } else {
             // no available actions
             return new Action[0];
@@ -192,7 +198,7 @@ public final class NodeOp extends Object {
      * method returns <code>null</code>
      */
     public static String[] createPath(Node node, Node parent) {
-        LinkedList ar = new LinkedList();
+        LinkedList<String> ar = new LinkedList<String>();
 
         while ((node != null) && (node != parent)) {
             if (node.getName() == null) {
@@ -274,7 +280,7 @@ public final class NodeOp extends Object {
      */
     public static Node findPath(Node start, String[] names)
     throws NodeNotFoundException {
-        return findPath(start, org.openide.util.Enumerations.array(names));
+        return findPath(start, Enumerations.array(names));
     }
 
     /** Find the root for a given node.
@@ -335,10 +341,10 @@ public final class NodeOp extends Object {
 
         // creates map that assignes to nodes their original
         // position
-        HashMap map = new HashMap();
+        Map<Node,Integer> map = new HashMap<Node,Integer>();
 
         for (int i = 0; i < arr2.length; i++) {
-            map.put(arr2[i], new Integer(i));
+            map.put(arr2[i], i);
         }
 
         // takes nodes one by one in the new order and
@@ -348,7 +354,7 @@ public final class NodeOp extends Object {
 
         for (int i = 0; i < arr1.length; i++) {
             // get the position of the i-th argument in the second array
-            Integer newPos = (Integer) map.get(arr1[i]);
+            Integer newPos = map.get(arr1[i]);
 
             if (newPos == null) {
                 // not permutation i-th element is missing in the array
@@ -356,7 +362,7 @@ public final class NodeOp extends Object {
             }
 
             // perm must move the object to the newPos
-            perm[i] = newPos.intValue();
+            perm[i] = newPos;
 
             if (perm[i] != i) {
                 diff++;
@@ -373,17 +379,17 @@ public final class NodeOp extends Object {
     * @return array of Node.Handles
     */
     public static Node.Handle[] toHandles(Node[] nodes) {
-        LinkedList ll = new LinkedList();
+        List<Node.Handle> ll = new LinkedList<Node.Handle>();
 
-        for (int i = 0; i < nodes.length; i++) {
-            Node.Handle h = nodes[i].getHandle();
+        for (Node n : nodes) {
+            Node.Handle h = n.getHandle();
 
             if (h != null) {
                 ll.add(h);
             }
         }
 
-        return (Node.Handle[]) ll.toArray(new Node.Handle[ll.size()]);
+        return ll.toArray(new Node.Handle[ll.size()]);
     }
 
     /** Takes array of handles and creates array of nodes.
@@ -392,7 +398,7 @@ public final class NodeOp extends Object {
     * @exception IOException if a node cannot be created from the handle
     */
     public static Node[] fromHandles(Node.Handle[] handles)
-    throws java.io.IOException {
+    throws IOException {
         Node[] arr = new Node[handles.length];
 
         for (int i = 0; i < handles.length; i++) {
@@ -411,7 +417,7 @@ public final class NodeOp extends Object {
      * @since 4.10
      */
     public static NodeListener weakNodeListener(NodeListener l, Object source) {
-        return (NodeListener) org.openide.util.WeakListeners.create(NodeListener.class, l, source);
+        return WeakListeners.create(NodeListener.class, l, source);
     }
 
     /** Utility method to remove dependency of this package on
@@ -421,28 +427,28 @@ public final class NodeOp extends Object {
      * @param arr the array of names like "Tools", "Properties", etc. can
      *   contain nulls
      */
-    static org.openide.util.actions.SystemAction[] createFromNames(String[] arr) {
-        LinkedList ll = new LinkedList();
+    static SystemAction[] createFromNames(String[] arr) {
+        List<SystemAction> ll = new LinkedList<SystemAction>();
 
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i] == null) {
+        for (String n : arr) {
+            if (n == null) {
                 ll.add(null);
 
                 continue;
             }
 
-            String name = "org.openide.actions." + arr[i] + "Action"; // NOI18N
+            String name = "org.openide.actions." + n + "Action"; // NOI18N
 
             try {
-                ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
                 if (l == null) {
                     l = Thread.currentThread().getContextClassLoader();
                 }
                 if (l == null) {
                     l = NodeOp.class.getClassLoader();
                 }
-                Class c = Class.forName(name, true, l);
-                ll.add(org.openide.util.actions.SystemAction.get(c));
+                Class<? extends SystemAction> c = Class.forName(name, true, l).asSubclass(SystemAction.class);
+                ll.add(SystemAction.get(c));
             } catch (ClassNotFoundException ex) {
                 Logger.getAnonymousLogger().log(Level.WARNING, "NodeOp.java: Missing class " + name, ex); // NOI18N
 
@@ -450,9 +456,7 @@ public final class NodeOp extends Object {
             }
         }
 
-        return (org.openide.util.actions.SystemAction[]) ll.toArray(
-            new org.openide.util.actions.SystemAction[ll.size()]
-        );
+        return ll.toArray(new SystemAction[ll.size()]);
     }
 
     /** Notifies an exception to error manager or prints its it to stderr.
