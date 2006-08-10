@@ -128,6 +128,10 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         return null;
     }
     
+    private static String getMessage(final String key) {
+        return NbBundle.getMessage(SuiteLogicalView.class, key);
+    }
+    
     /** Package private for unit test only. */
     static final class SuiteRootNode extends AnnotatedNode
             implements PropertyChangeListener {
@@ -220,7 +224,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             super(new ModuleChildren(suite));
             this.suite = suite;
             setName("modules"); // NOI18N
-            setDisplayName(NbBundle.getMessage(SuiteLogicalView.class, "CTL_Modules"));
+            setDisplayName(getMessage("CTL_Modules"));
         }
         
         public Action[] getActions(boolean context) {
@@ -295,7 +299,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         private final SuiteProject suite;
         
         public AddSuiteComponentAction(final SuiteProject suite) {
-            super(NbBundle.getMessage(SuiteLogicalView.class, "CTL_AddModule"));
+            super(getMessage("CTL_AddModule"));
             this.suite = suite;
         }
         
@@ -325,7 +329,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         private final SuiteProject suite;
         
         public AddNewSuiteComponentAction(final SuiteProject suite) {
-            super(NbBundle.getMessage(SuiteLogicalView.class, "CTL_AddNewModule"));
+            super(getMessage("CTL_AddNewModule"));
             this.suite = suite;
         }
         
@@ -342,7 +346,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         private final NbModuleProject target;
         
         public AddNewLibraryWrapperAction(final Project suiteProvider, final NbModuleProject target) {
-            super(NbBundle.getMessage(SuiteLogicalView.class, "CTL_AddNewLibrary"));
+            super(getMessage("CTL_AddNewLibrary"));
             this.suiteProvider = suiteProvider;
             this.target = target;
         }
@@ -419,13 +423,9 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                         String displayName = ProjectUtils.getInformation(suiteComponent).getDisplayName();
                         String confirmMessage = NbBundle.getMessage(SuiteLogicalView.class,
                                 "MSG_RemovingModuleMessage", displayName, sb.toString()); // NOI18N
-                        NotifyDescriptor.Confirmation confirm = new NotifyDescriptor.Confirmation(confirmMessage,
+                        remove = UIUtil.showAcceptCancelDialog(
                                 NbBundle.getMessage(SuiteLogicalView.class, "CTL_RemovingModuleTitle", displayName),
-                                NotifyDescriptor.OK_CANCEL_OPTION);
-                        DialogDisplayer.getDefault().notify(confirm);
-                        if (confirm.getValue() == NotifyDescriptor.CANCEL_OPTION) {
-                            remove = false;
-                        }
+                                confirmMessage, getMessage("CTL_RemoveDependency"), null, NotifyDescriptor.QUESTION_MESSAGE);
                     }
                     if (remove) {
                         SuiteUtils.removeModuleFromSuiteWithDependencies(suiteComponent);
@@ -441,7 +441,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public String getName() {
-            return NbBundle.getMessage(SuiteLogicalView.class, "CTL_RemoveModule");
+            return getMessage("CTL_RemoveModule");
         }
         
         public HelpCtx getHelpCtx() {
@@ -465,8 +465,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     String previousText = StatusDisplayer.getDefault().getStatusText();
-                    StatusDisplayer.getDefault().setStatusText(
-                            NbBundle.getMessage(SuiteLogicalView.class, "MSG_OpeningProjects"));
+                    StatusDisplayer.getDefault().setStatusText(getMessage("MSG_OpeningProjects"));
                     OpenProjects.getDefault().open(projects, false);
                     StatusDisplayer.getDefault().setStatusText(previousText);
                 }
@@ -474,7 +473,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public String getName() {
-            return NbBundle.getMessage(SuiteLogicalView.class, "CTL_OpenProject");
+            return getMessage("CTL_OpenProject");
         }
         
         public HelpCtx getHelpCtx() {
@@ -506,12 +505,12 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         /** Abstract location to display name. */
         private static final java.util.Map/*<String,String>*/ FILES = new LinkedHashMap();
         static {
-            FILES.put("master.jnlp", NbBundle.getMessage(SuiteLogicalView.class, "LBL_jnlp_master"));
-            FILES.put("build.xml", NbBundle.getMessage(SuiteLogicalView.class, "LBL_build.xml"));
-            FILES.put("nbproject/project.properties", NbBundle.getMessage(SuiteLogicalView.class, "LBL_project.properties"));
-            FILES.put("nbproject/private/private.properties", NbBundle.getMessage(SuiteLogicalView.class, "LBL_private.properties"));
-            FILES.put("nbproject/platform.properties", NbBundle.getMessage(SuiteLogicalView.class, "LBL_platform.properties"));
-            FILES.put("nbproject/private/platform-private.properties", NbBundle.getMessage(SuiteLogicalView.class, "LBL_platform-private.properties"));
+            FILES.put("master.jnlp", getMessage("LBL_jnlp_master"));
+            FILES.put("build.xml", getMessage("LBL_build.xml"));
+            FILES.put("nbproject/project.properties", getMessage("LBL_project.properties"));
+            FILES.put("nbproject/private/private.properties", getMessage("LBL_private.properties"));
+            FILES.put("nbproject/platform.properties", getMessage("LBL_platform.properties"));
+            FILES.put("nbproject/private/platform-private.properties", getMessage("LBL_platform-private.properties"));
         }
         
         private final SuiteProject project;
