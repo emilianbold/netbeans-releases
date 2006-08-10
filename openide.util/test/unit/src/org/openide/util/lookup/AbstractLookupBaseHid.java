@@ -1480,6 +1480,53 @@ public class AbstractLookupBaseHid extends NbTestCase {
         
         
     }
+
+    
+
+    public void testMultipleListeners() {
+        Object object = new ImplementationObject();
+        ic.add(object);
+        
+        Listener[] listeners = new Listener[4];
+        Lookup.Result result = lookup.lookup(new Lookup.Template(LookupObject.class));
+        for(int i = 0; i < listeners.length; ++i) {
+            listeners[i] = new Listener();
+            result.addLookupListener(listeners[i]);
+        }
+        // initialize listening
+        result.allItems();
+        
+        ic.remove(object);
+        
+        // Apparently, only odd-numbered listeners get called when there are multiple LookupListeners on a result
+        //for(int i = 0; i < listeners.length; ++i) {
+        //    System.out.println("Listener " + i + ": " + listeners[i].wasCalled());            
+        //}
+        for(int i = 0; i < listeners.length; ++i) {
+            assertTrue("Listener " + i + " called", listeners[i].wasCalled());
+        }
+    }
+    
+    private class Listener implements LookupListener {
+        private boolean listenerCalled = false;
+        
+        public void resultChanged(LookupEvent ev) {
+            listenerCalled = true;
+        }
+        
+        public boolean wasCalled() {
+            return listenerCalled;
+        }
+        
+        public void reset() {
+            listenerCalled = false;
+        }
+    }
+    
+    private interface LookupObject {}
+    private class ImplementationObject implements LookupObject {}
+    private class NullObject implements LookupObject {}
+    
     
     public void testReturnSomethingElseThenYouClaimYouWillReturn() {
         class Liar extends AbstractLookup.Pair {

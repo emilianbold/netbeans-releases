@@ -456,8 +456,11 @@ public class AbstractLookup extends Lookup implements Serializable {
      * @param ev the event to fire
      */
     static void notifyListeners(Object[] listeners, LookupEvent ev, Collection<Object> evAndListeners) {
-        for (int i = listeners.length - 1; i >= 0; i -= 2) {
-            LookupListener ll = (LookupListener) listeners[i];
+        for (int i = listeners.length - 1; i >= 0; i--) {
+            if (! (listeners[i] instanceof LookupListener)) {
+                continue;
+            }
+            LookupListener ll = (LookupListener)listeners[i];
 
             try {
                 if (evAndListeners != null) {
