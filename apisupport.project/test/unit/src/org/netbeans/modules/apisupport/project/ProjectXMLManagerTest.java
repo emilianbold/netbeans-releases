@@ -37,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -116,6 +117,16 @@ public class ProjectXMLManagerTest extends TestBase {
             assertTrue("unknown dependency: " + cnbToRemove, assumedCNBs.remove(cnbToRemove));
         }
         assertTrue("following dependencies were found: " + assumedCNBs, assumedCNBs.isEmpty());
+    }
+    
+    public void testGetDirectDependenciesForCustomPlatform() throws Exception {
+        final NbModuleProject testingProject = generateTestingProject();
+        ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
+        Set deps = testingPXM.getDirectDependencies();
+        assertEquals("number of dependencies", 2, deps.size());
+        Set depsWithCustom = testingPXM.getDirectDependencies(
+                NbPlatform.getPlatformByID("custom"));
+        assertEquals("number of dependencies", 0, depsWithCustom.size());
     }
     
     public void testRemoveDependency() throws Exception {

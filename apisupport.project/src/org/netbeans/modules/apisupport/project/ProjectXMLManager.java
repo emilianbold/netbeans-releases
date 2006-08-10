@@ -178,11 +178,12 @@ public final class ProjectXMLManager {
         Element moduleDependencies = findModuleDependencies(getConfData());
         assert moduleDependencies != null : "Cannot find <module-dependencies> for: " + project;
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
+        File prjDirF = FileUtil.toFile(project.getProjectDirectory());
         ModuleList ml;
         if (customPlaf != null) {
-            ml = project.getModuleList();
+            ml = ModuleList.getModuleList(prjDirF, customPlaf.getDestDir());
         } else {
-            ml = ModuleList.getModuleList(FileUtil.toFile(project.getProjectDirectory()));
+            ml = ModuleList.getModuleList(prjDirF);
         }
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             Element depEl = (Element)it.next();
