@@ -277,7 +277,13 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     FileObject fo = FileUtil.toFileObject(dir);
                     if (fo != null && fo.isFolder()) {
                         try {
-                            ProjectManager.getDefault().findProject(fo);
+                            Project prj = ProjectManager.getDefault().findProject(fo);
+                            if (prj == null) {
+                                jTextFieldProjectName.setText(NbBundle.getMessage(ProjectChooserAccessory.class, "LBL_PrjChooser_Unrecognized"));
+                                // Only so it can be focussed and message scrolled accessibly:
+                                jLabelProjectName.setEnabled(true);
+                                jTextFieldProjectName.setEnabled(true);
+                            }
                         } catch (IOException x) {
                             String msg = x.toString();
                             ErrorManager.Annotation[] anns = ErrorManager.getDefault().findAnnotations(x);
