@@ -1621,7 +1621,7 @@ public class FileObjectTestHid extends TestBaseHid {
         checkSetUp();
         String[] names = new String[] {"name1","name2","name3","name4"};        
         List namesList = Arrays.asList(names);
-        List compareList = new ArrayList ();                
+        List<String> compareList = new ArrayList<String> ();                
         FileObject file1 = getTestFile1 (root);
                 
         try {
