@@ -1156,7 +1156,7 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private static Image getDefaultImage() {
-        return Utilities.loadImage("org/openide/resources/defaultWizard.gif", true);
+        return Utilities.loadImage("org/netbeans/modules/dialogs/defaultWizard.gif", true);
     }
 
     private void updateButtonAccessibleDescription() {
@@ -2284,10 +2284,10 @@ public class WizardDescriptor extends DialogDescriptor {
             m_lblMessage.setForeground(nbErrorForeground);
             if (msg != null && msg.trim ().length () > 0 && canContinue != null) {
                 if (canContinue.booleanValue ()) {
-                    m_lblMessage.setIcon (new ImageIcon (Utilities.loadImage ("org/openide/resources/warning.gif"))); // NOI18N
+                    m_lblMessage.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif"))); // NOI18N
                     m_lblMessage.setForeground (nbWarningForeground);
                 } else {
-                    m_lblMessage.setIcon (new ImageIcon (Utilities.loadImage ("org/openide/resources/error.gif"))); // NOI18N
+                    m_lblMessage.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/error.gif"))); // NOI18N
                 }
                 m_lblMessage.setToolTipText (msg);
             } else {
@@ -2617,7 +2617,7 @@ public class WizardDescriptor extends DialogDescriptor {
         
         public Dimension getPreferredSize() {
             Dimension preferredSize = super.getPreferredSize();
-            assert ESTIMATED_HEIGHT == Utilities.loadImage ("org/openide/resources/warning.gif").getHeight (null) : "Use only 16px icon.";
+            assert ESTIMATED_HEIGHT == Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
             preferredSize.height = Math.max (ESTIMATED_HEIGHT, preferredSize.height);
             return preferredSize;
         }
