@@ -28,6 +28,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile-bridge" depends="init,compile">
         <mkdir dir="build/bridge-classes"/>
+        <depend srcdir="src-bridge" destdir="build/bridge-classes" cache="build/depcache-bridge">
+            <classpath>
+                <path path="${src-bridge.cp}"/>
+            </classpath>
+        </depend>
         <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5" includeantruntime="false">
             <classpath>
                 <path path="${src-bridge.cp}"/>
