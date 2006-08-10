@@ -19,14 +19,12 @@
 
 package org.netbeans.modules.java.j2seplatform.wizard;
 
-import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.event.*;
 import javax.swing.*;
@@ -46,7 +44,6 @@ import org.openide.util.HelpCtx;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -592,7 +589,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 
                 platform = this.iterator.getSecondaryPlatform();
                 if (platform != null) {
-                    name = MessageFormat.format(NbBundle.getMessage(DetectPanel.class,"FMT_64BIT"), new String[] {name});
+                    name = NbBundle.getMessage(DetectPanel.class,"FMT_64BIT", name);
                     platform.setDisplayName (name);
                     platform.setAntName (createAntName(name));
                     platform.setSourceFolders (ClassPathSupport.createClassPath(src));
