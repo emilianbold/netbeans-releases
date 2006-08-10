@@ -1199,8 +1199,36 @@ public class MetaComponentCreator {
     }
 
     // --------
+    
+    private Class prepareClass(final ClassSource classSource) {
+        if (classSource.getCPRootCount() == 0) { // Just some optimization
+            return prepareClass0(classSource);
+        } else {
+            try {
+                return (Class)FormLAF.executeWithLookAndFeel(
+                    new Mutex.ExceptionAction() {
+                        public Object run() throws Exception {
+                            FormLAF.setCustomizingUIClasses(true); // Issue 80198
+                            try {
+                                Class clazz = prepareClass0(classSource);
+                                // Force creation of the default instance in the correct L&F context
+                                BeanSupport.getDefaultInstance(clazz);
+                                return clazz;
+                            } finally {
+                                FormLAF.setCustomizingUIClasses(false);
+                            }
+                        }
+                    }
+                );
+            } catch (Exception ex) {
+                // should not happen
+                ex.printStackTrace();
+                return null;
+            }
+        }
+    }
 
-    private Class prepareClass(ClassSource classSource) {
+    private Class prepareClass0(ClassSource classSource) {
         Throwable error = null;
         FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
         String className = classSource.getClassName();

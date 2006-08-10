@@ -505,7 +505,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         Class compClass = null;
         Throwable compEx = null;
         try {
+            FormLAF.setCustomizingUIClasses(true); // Issue 80198
             compClass = PersistenceObjectRegistry.loadClass(className, formFile);
+            // Force creation of the default instance in the correct L&F context
+            BeanSupport.getDefaultInstance(compClass);
         }
         catch (Exception ex) {
             compClass = InvalidComponent.class;            
@@ -514,6 +517,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         catch (LinkageError ex) {
             compClass = InvalidComponent.class;            
             compEx = ex;
+        } finally {
+            FormLAF.setCustomizingUIClasses(false);
         }
         if (compEx != null) { // loading the component class failed
             String msg = createLoadingErrorMessage(

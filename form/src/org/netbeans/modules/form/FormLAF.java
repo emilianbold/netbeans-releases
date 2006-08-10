@@ -86,6 +86,8 @@ public class FormLAF {
                     createLayoutStyle(previewLookAndFeel.getID())); 
             }
 
+            previewDefaults.putAll(delDefaults.getCustomizedUIDefaults());
+
             return previewDefaults;
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -284,6 +286,10 @@ public class FormLAF {
         return preview && !delDefaults.isDelegating();
     }
 
+    static void setCustomizingUIClasses(boolean customizing) {
+        delDefaults.setCustomizingUIClasses(customizing);
+    }
+
     /**
      * Implementation of UIDefaults that delegates requests between two
      * UIDefaults based on some rule.
@@ -298,7 +304,11 @@ public class FormLAF {
         /** If true, then the designer map is used. */
         private boolean delegating;
         /** If true, then the preview map is used. */
-        private boolean previewing;        
+        private boolean previewing;     
+        /** If true, then new UI components may install their defaults. */
+        private boolean customizingUI;
+        /** Map of defaults of new UI components. */
+        private Map customizedUIDefaults = new HashMap();
         
         DelegatingDefaults(UIDefaults preview, UIDefaults original, UIDefaults ide) {
             this.preview = preview;
@@ -326,6 +336,14 @@ public class FormLAF {
             return previewing;
         }
 
+        public void setCustomizingUIClasses(boolean customizing) {
+            customizingUI = customizing;
+        }
+
+        public Map getCustomizedUIDefaults() {
+            return customizedUIDefaults;
+        }
+
         // Delegated methods
 
         private UIDefaults getCurrentDefaults() {
@@ -337,7 +355,14 @@ public class FormLAF {
         }
 
         public Object put(Object key, Object value) {
-            return delegating ? original.put(key, value) : (previewing ? preview.put(key, value) : ide.put(key, value));
+            if (delegating) {
+                if (customizingUI) {
+                    customizedUIDefaults.put(key, value);
+                }
+                return original.put(key, value);
+            } else {
+                return (previewing ? preview.put(key, value) : ide.put(key, value));
+            }
         }
 
         public void putDefaults(Object[] keyValueList) {
