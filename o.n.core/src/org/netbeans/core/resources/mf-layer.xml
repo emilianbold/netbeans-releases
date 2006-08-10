@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="entities">
             <folder name="NetBeans_IDE">
                 <!-- public ID defined by XMLDataObject -->
-                <file name="DTD_xmlinfo" url="nbres:/org/openide/resources/xmlinfo.dtd">
+                <file name="DTD_xmlinfo" url="nbres:/org/netbeans/modules/openide/loaders/xmlinfo.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans IDE//DTD xmlinfo//EN"/>
                 </file>
             </folder>
