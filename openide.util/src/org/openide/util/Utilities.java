@@ -2754,6 +2754,9 @@ widthcheck:  {
      * For example, requesting <samp>org/netbeans/modules/foo/resources/foo.gif</samp>
      * might actually find <samp>org/netbeans/modules/foo/resources/foo_ja.gif</samp>
      * or <samp>org/netbeans/modules/foo/resources/foo_mybranding.gif</samp>.
+     * 
+     * <p>Caching of loaded images can be used internally to improve performance.
+     * 
      * @since 3.24
      */
     public static final Image loadImage(String resource, boolean localized) {
@@ -2799,13 +2802,13 @@ widthcheck:  {
 
         // First check for Mac because its part of the Unix_Mask
         if (getOperatingSystem() == OS_MAC) {
-            image = loadImage("org/openide/resources/progress-cursor-mac.gif"); //NOI18N
+            image = loadImage("org/openide/util/progress-cursor-mac.gif"); //NOI18N
         } else if (isUnix()) {
-            image = loadImage("org/openide/resources/progress-cursor-motif.gif"); //NOI18N
+            image = loadImage("org/openide/util/progress-cursor-motif.gif"); //NOI18N
         }
         // All other OS, including Windows, use Windows cursor
         else {
-            image = loadImage("org/openide/resources/progress-cursor-win.gif"); //NOI18N
+            image = loadImage("org/openide/util/progress-cursor-win.gif"); //NOI18N
         }
 
         return createCustomCursor(component, image, "PROGRESS_CURSOR"); //NOI18N
