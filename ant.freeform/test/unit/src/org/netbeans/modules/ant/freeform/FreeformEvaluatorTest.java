@@ -66,22 +66,17 @@ public class FreeformEvaluatorTest extends TestBase {
         p.setProperty("src.dir", "somethingnew");
         TestPCL l = new TestPCL();
         eval.addPropertyChangeListener(l);
-        FileLock lock = buildProperties.lock();
+        final OutputStream os = buildProperties.getOutputStream();
         try {
-            final OutputStream os = buildProperties.getOutputStream(lock);
-            try {
-                p.store(os);
-            } finally {
-                // close file under ProjectManager.readAccess so that events are fired synchronously
-                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
-                    public Void run() throws Exception {
-                        os.close();
-                        return null;
-                    }
-                });
-            }
+            p.store(os);
         } finally {
-            lock.releaseLock();
+            // close file under ProjectManager.readAccess so that events are fired synchronously
+            ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
+                    os.close();
+                    return null;
+                }
+            });
         }
         assertEquals("got a change from properties file in src.dir", Collections.singleton("src.dir"), l.changed);
         l.reset();
@@ -97,16 +92,11 @@ public class FreeformEvaluatorTest extends TestBase {
         EditableProperties p = new EditableProperties();
         p.setProperty("build.properties", "build.properties");
         FileObject locProperties = simple2.getProjectDirectory().createData("loc.properties");
-        FileLock lock = locProperties.lock();
+        OutputStream os = locProperties.getOutputStream();
         try {
-            OutputStream os = locProperties.getOutputStream(lock);
-            try {
-                p.store(os);
-            } finally {
-                os.close();
-            }
+            p.store(os);
         } finally {
-            lock.releaseLock();
+            os.close();
         }
         Element data = simple2.helper().getPrimaryConfigurationData(true);
         NodeList propertiesNL = data.getElementsByTagNameNS(FreeformProjectType.NS_GENERAL, "properties");
@@ -136,38 +126,29 @@ public class FreeformEvaluatorTest extends TestBase {
         assertEquals("right original value", "src", p.getProperty("src.dir"));
         p.setProperty("src.dir", "somethingnew");
         FileObject buildProperties2 = simple2.getProjectDirectory().createData("build2.properties");
-        lock = buildProperties2.lock();
+        os = buildProperties2.getOutputStream();
         try {
-            OutputStream os = buildProperties2.getOutputStream(lock);
-            try {
-                p.store(os);
-            } finally {
-                os.close();
-            }
+            p.store(os);
         } finally {
-            lock.releaseLock();
+            os.close();
         }
         assertEquals("No changes fired yet", Collections.EMPTY_SET, l.changed);
         // Tell loc.properties to point to it.
         p = new EditableProperties();
         p.setProperty("build.properties", "build2.properties");
         locProperties = simple2.getProjectDirectory().getFileObject("loc.properties");
-        lock = locProperties.lock();
+        os = locProperties.getOutputStream();
         try {
-            final OutputStream os = locProperties.getOutputStream(lock);
-            try {
-                p.store(os);
-            } finally {
-                // close file under ProjectManager.readAccess so that events are fired synchronously
-                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
-                    public Void run() throws Exception {
-                        os.close();
-                        return null;
-                    }
-                });
-            }
+            p.store(os);
         } finally {
-            lock.releaseLock();
+            // close file under ProjectManager.readAccess so that events are fired synchronously
+            final OutputStream _os = os;
+            ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
+                    _os.close();
+                    return null;
+                }
+            });
         }
         // Check that the change took.
         Set<String> exact = new HashSet<String>(Arrays.asList("src.dir", "build.properties"));
