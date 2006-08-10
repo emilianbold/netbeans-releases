@@ -22,17 +22,11 @@ package org.netbeans.modules.ant.freeform;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
@@ -41,9 +35,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -64,7 +56,7 @@ public class FreeformProjectGenerator {
     private static final String[] viewElementsOrder = new String[]{"items", "context-menu"}; // NOI18N
     
     // this order is not required by schema, but follow it to minimize randomness a bit
-    private static final String[] folderElementsOrder = new String[]{"source-folder", "build-folder"}; // NOI18N
+    //private static final String[] folderElementsOrder = new String[]{"source-folder", "build-folder"}; // NOI18N
     private static final String[] viewItemElementsOrder = new String[]{"source-folder", "source-file"}; // NOI18N
     private static final String[] contextMenuElementsOrder = new String[]{"ide-action", "separator", "action"}; // NOI18N
     
@@ -131,8 +123,6 @@ public class FreeformProjectGenerator {
                         antPath = "${"+ProjectConstants.PROP_ANT_SCRIPT+"}"; // NOI18N
                         props.appendChild(property);
                     }
-                    PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
-                        PropertyUtils.fixedPropertyProvider(properties)});
                     //#56344:Always write a <properties> element to project.xml of a generated freeform
 //                  if (props.getChildNodes().getLength() > 0) {
                     data.appendChild(props);

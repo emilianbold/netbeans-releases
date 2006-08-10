@@ -22,7 +22,6 @@ package org.netbeans.modules.ant.freeform;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.modules.ant.freeform.spi.LookupMerger;
@@ -95,7 +94,6 @@ public class LookupMergerImpl implements LookupMerger {
         // XXX delegate directly to single impl if only one
 
         public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-            boolean supported = false;
             for (ActionProvider ap : delegates()) {
                 if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
                     return ap.isActionEnabled(command, context);

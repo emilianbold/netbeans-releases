@@ -88,8 +88,6 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
 //        FileObject fo = FileUtil.toFileObject(getWorkDir());
 //        fo.refresh();
         
-        ArrayList sources = new ArrayList();
-        ArrayList compUnits = new ArrayList();
         AntProjectHelper helper = FreeformProjectGenerator.createProject(base, base, projectName, null);
         return helper;
     }

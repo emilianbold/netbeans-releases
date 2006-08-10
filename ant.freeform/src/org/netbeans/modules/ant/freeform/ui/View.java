@@ -21,7 +21,6 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Image;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.Action;
@@ -64,8 +63,6 @@ import org.w3c.dom.Element;
  * @author Jesse Glick
  */
 public final class View implements LogicalViewProvider {
-    
-    private static final String STYLE_TREE = "tree"; // NOI18N
     
     private final FreeformProject project;
     

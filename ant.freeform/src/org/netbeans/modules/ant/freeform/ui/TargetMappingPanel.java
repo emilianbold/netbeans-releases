@@ -64,7 +64,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
 
     private static final List<String> DEFAULT_BUILD_TARGETS = Arrays.asList("build", "compile", "jar", "dist", "all", ".*jar.*"); // NOI18N
     private static final List<String> DEFAULT_CLEAN_TARGETS = Arrays.asList("clean", ".*clean.*"); // NOI18N
-    private static final List<String> DEFAULT_REBUILD_TARGETS = Arrays.asList("rebuild", ".*rebuild.*"); // NOI18N
+    //private static final List<String> DEFAULT_REBUILD_TARGETS = Arrays.asList("rebuild", ".*rebuild.*"); // NOI18N
     private static final List<String> DEFAULT_JAVADOC_TARGETS = Arrays.asList("javadoc", "javadocs", "docs", "doc", ".*javadoc.*", ".*doc.*"); // NOI18N
     private static final List<String> DEFAULT_RUN_TARGETS = Arrays.asList("run", "start", ".*run.*", ".*start.*"); // NOI18N
     private static final List<String> DEFAULT_TEST_TARGETS = Arrays.asList("test", ".*test.*"); // NOI18N
@@ -84,7 +84,6 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
     /** Any change in custom tasks which needs to be persisted? */
     private boolean dirtyCustom;
 
-    private AntProjectHelper helper;
     
     public TargetMappingPanel(boolean advancedPart) {
         this(new ArrayList<TargetDescriptor>(), advancedPart);
@@ -105,7 +104,6 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
 
     public TargetMappingPanel(List<TargetDescriptor> extraTargets, PropertyEvaluator evaluator, AntProjectHelper helper) {
         this(extraTargets, true);
-        this.helper = helper;
         
         FileObject as = FreeformProjectGenerator.getAntScript(helper, evaluator);
         List<String> l = null;
@@ -201,7 +199,6 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
     }
     
     private void initAntTargetEditor(List<String> targets) {
-        DefaultCellEditor antTargetsEditor;
         JComboBox combo = new JComboBox();
         combo.setEditable(true);
         for (String target : targets) {

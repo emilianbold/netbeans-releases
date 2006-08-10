@@ -22,7 +22,6 @@ package org.netbeans.modules.ant.freeform;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
@@ -114,7 +113,6 @@ public class ArtifactProviderTest extends TestBase {
 
     private static void putExports(AntProjectHelper helper, List<Export> exports) {
         //assert ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         for (Element exportEl : Util.findSubElements(data)) {
