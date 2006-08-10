@@ -65,14 +65,15 @@ public final class NbRepository extends Repository {
             }
         }
         
+        File u = null;
+        File h = null;
+        List<File> extradirs = new ArrayList<File>();
         String homeDir = CLIOptions.getHomeDir ();
         if (homeDir != null) {
             // -----------------------------------------------------------------------------------------------------
             // 1. Initialization and checking of netbeans.home and netbeans.user directories
 
             File homeDirFile = new File (CLIOptions.getHomeDir ());
-            String ud = CLIOptions.getUserDir ();
-            File userDirFile = new File (ud);
             if (!homeDirFile.exists ()) {
                 System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome_notexists"));
                 doExit (2);
@@ -81,19 +82,10 @@ public final class NbRepository extends Repository {
                 System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome1"));
                 doExit (3);
             }
-            if (!ud.equals("memory")) { // NOI18N
-                if (!userDirFile.exists ()) {
-                    System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome2"));
-                    doExit (4);
-                }
-                if (!userDirFile.isDirectory ()) {
-                    System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome3"));
-                    doExit (5);
-                }
-            }
+
+            h = new File (homeDirFile, SYSTEM_FOLDER);
             
             // #27151: may also be additional install dirs
-            List<File> extradirs = new ArrayList<File>();
             String nbdirs = System.getProperty("netbeans.dirs");
             if (nbdirs != null) {
                 StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
@@ -104,44 +96,39 @@ public final class NbRepository extends Repository {
                     }
                 }
             }
-
-            // -----------------------------------------------------------------------------------------------------
-            // 7. Initialize FileSystems
-
-            
-            // system FS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            {
-                Exception exc;
-                try {
-                    File u = new File (userDirFile, SYSTEM_FOLDER);
-                    File h = new File (homeDirFile, SYSTEM_FOLDER);
-                    return SessionManager.getDefault().create(u, h, extradirs.toArray(new File[extradirs.size()]));
-                } catch (IOException ex) {
-                    exc = ex;
-                } catch (PropertyVetoException ex) {
-                    exc = ex;
-                } catch (RuntimeException ex) {
-                    exc = ex;
-                }
-
-                exc.printStackTrace ();
-                Object[] arg = new Object[] {systemDir};
-                System.err.println (new java.text.MessageFormat(
-                    NbBundle.getMessage(NbRepository.class, "CTL_Cannot_mount_systemfs")
-                ).format(arg));
-                doExit (3);
+        }
+        String ud = CLIOptions.getUserDir ();
+        if (!ud.equals("memory")) { // NOI18N
+            File userDirFile = new File (ud);
+            if (!userDirFile.exists ()) {
+                System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome2"));
+                doExit (4);
             }
+            if (!userDirFile.isDirectory ()) {
+                System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome3"));
+                doExit (5);
+            }
+            u = new File (userDirFile, SYSTEM_FOLDER);
         }
 
+        Exception exc;
         try {
-            return SessionManager.getDefault().create(null, null, new File[0]);
+            return SessionManager.getDefault().create(u, h, extradirs.toArray(new File[extradirs.size()]));
         } catch (IOException ex) {
-            ex.printStackTrace();
-            throw new InternalError ();
+            exc = ex;
         } catch (PropertyVetoException ex) {
-            ex.printStackTrace();
-            throw new InternalError ();
+            exc = ex;
+        } catch (RuntimeException ex) {
+            exc = ex;
         }
+
+        exc.printStackTrace ();
+        Object[] arg = new Object[] {systemDir};
+        System.err.println (new java.text.MessageFormat(
+            NbBundle.getMessage(NbRepository.class, "CTL_Cannot_mount_systemfs")
+        ).format(arg));
+        doExit (3);
+        return null;
     }
 
     

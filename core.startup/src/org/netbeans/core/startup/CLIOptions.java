@@ -240,6 +240,9 @@ public class CLIOptions extends CLIHandler {
             }
             
             if (userDir == null) {
+                if (homeDir == null) {
+                    return "memory"; // NOI18N
+                }
                 System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_no_user_directory"));
                 Thread.dumpStack(); // likely to happen from misbehaving unit tests, etc.
                 TopSecurityManager.exit(1);
