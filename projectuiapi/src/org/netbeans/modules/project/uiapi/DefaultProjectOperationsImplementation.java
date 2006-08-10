@@ -206,9 +206,12 @@ public final class DefaultProjectOperationsImplementation {
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Caption"), "Copy_Button", null, false, new Executor() { // NOI18N
             public void execute() throws Exception {
                 String nueName = panel.getNewName();
-                File newTarget = panel.getNewDirectory();
-                FileObject newTargetFO = FileUtil.toFileObject(newTarget);
+                File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
                 
+                FileObject newTargetFO = FileUtil.toFileObject(newTarget);
+                if (newTargetFO == null) {
+                    newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
+                }
                 doCopyProject(handle, project, nueName, newTargetFO);
             }
         });
@@ -282,8 +285,13 @@ public final class DefaultProjectOperationsImplementation {
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, new Executor() { // NOI18N
             public void execute() throws Exception {
                 String nueName = panel.getNewName();
-                File newTarget = panel.getNewDirectory();
+                File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
+                
                 FileObject newTargetFO = FileUtil.toFileObject(newTarget);
+                if (newTargetFO == null) {
+                    newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
+                }
+                
 
                 doMoveProject(handle, project, nueName, newTargetFO, "ERR_Cannot_Move");
             }
@@ -498,6 +506,15 @@ public final class DefaultProjectOperationsImplementation {
         }
     }
     
+    private static FileObject createFolder(File parent, String name) throws IOException {
+        FileObject path = FileUtil.toFileObject(parent);
+        if (path != null) {
+            return path.createFolder(name);
+        } else {
+            return createFolder(parent.getParentFile(), parent.getName()).createFolder(name);
+        }
+    }
+    
     private static boolean doDelete(Project original, FileObject toDelete) throws IOException {
         if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(toDelete).getProjectDirectory())) {
             return false;
@@ -627,11 +644,19 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     static String computeError(File location, String projectNameText, boolean pureRename) {
+        File parent = location;
         if (!location.exists()) {
-            return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Does_Not_Exist");
+            //if some dirs in teh chain are not created, consider it ok.
+            parent = location.getParentFile();
+            while (parent != null && !parent.exists()) {
+                parent = parent.getParentFile();
+            }
+            if (parent == null) {
+                return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Does_Not_Exist");
+            }
         }
         
-        if (!location.canWrite()) {
+        if (!parent.canWrite()) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Read_Only");
         }
         
