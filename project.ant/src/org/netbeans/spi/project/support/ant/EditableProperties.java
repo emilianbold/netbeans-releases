@@ -552,15 +552,13 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
             if (commentLines != null) {
                 l.addAll(commentLines);
             }
-            if (keyValueLines != null) {
-                l.addAll(keyValueLines);
-            } else {
+            if (keyValueLines == null) {
                 keyValueLines = new ArrayList<String>();
                 if (key != null && value != null) {
                     keyValueLines.add(encode(key, true)+"="+encode(value, false));
                 }
-                l.addAll(keyValueLines);
             }
+            l.addAll(keyValueLines);
             return l;
         }
         

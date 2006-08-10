@@ -1015,14 +1015,13 @@ public final class ReferenceHelper {
                             if (shared) {
                                 // substitute extra base folder property with its value
                                 entry.setValue(val);
-                                modifiedProj = true;
                             } else {
                                 // move property to private properties file
                                 it.remove();
                                 propPriv.put(entry.getKey(), val);
                                 modifiedPriv = true;
-                                modifiedProj = true;
                             }
+                            modifiedProj = true;
                         }
                     }
                     if (modifiedProj) {
