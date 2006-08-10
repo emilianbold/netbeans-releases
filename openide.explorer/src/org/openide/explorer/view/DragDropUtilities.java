@@ -63,7 +63,7 @@ import org.openide.util.datatransfer.PasteType;
 * @author Dafe Simonek
 */
 final class DragDropUtilities extends Object {
-    static final boolean dragAndDropEnabled = isDragAndDropEnabled();
+    static final boolean dragAndDropEnabled = Boolean.parseBoolean(System.getProperty("netbeans.dnd.enabled", "true")); // NOI18N
     static final int NODE_UP = -1;
     static final int NODE_CENTRAL = 0;
     static final int NODE_DOWN = 1;
@@ -76,21 +76,6 @@ final class DragDropUtilities extends Object {
 
     /** No need to instantiate this class */
     private DragDropUtilities() {
-    }
-
-    //static final int Modifiers4Move = 
-
-    /**
-     * Checks system property netbeans.dnd.enabled. If it is not
-     * present return true.
-     */
-    private static boolean isDragAndDropEnabled() {
-        if (System.getProperty("netbeans.dnd.enabled") != null) { // NOI18N
-
-            return Boolean.getBoolean("netbeans.dnd.enabled"); // NOI18N
-        } else {
-            return true;
-        }
     }
 
     /** Utility method - chooses and returns right cursor
@@ -107,10 +92,10 @@ final class DragDropUtilities extends Object {
             case DnDConstants.ACTION_COPY:
 
                 if (canDrop) {
-                    image = Utilities.loadImage("org/openide/resources/cursorscopysingle.gif"); // NOI18N
+                    image = Utilities.loadImage("org/openide/explorer/view/cursorscopysingle.gif"); // NOI18N
                     name = "ACTION_COPY"; // NOI18N
                 } else {
-                    image = Utilities.loadImage("org/openide/resources/cursorsnone.gif"); // NOI18N
+                    image = Utilities.loadImage("org/openide/explorer/view/cursorsnone.gif"); // NOI18N
                     name = "NO_ACTION_COPY"; // NOI18N
                 }
 
@@ -120,10 +105,10 @@ final class DragDropUtilities extends Object {
             case DnDConstants.ACTION_MOVE:
 
                 if (canDrop) {
-                    image = Utilities.loadImage("org/openide/resources/cursorsmovesingle.gif"); // NOI18N
+                    image = Utilities.loadImage("org/openide/explorer/view/cursorsmovesingle.gif"); // NOI18N
                     name = "ACTION_MOVE"; // NOI18N
                 } else {
-                    image = Utilities.loadImage("org/openide/resources/cursorsnone.gif"); // NOI18N
+                    image = Utilities.loadImage("org/openide/explorer/view/cursorsnone.gif"); // NOI18N
                     name = "NO_ACTION_MOVE"; // NOI18N
                 }
 
@@ -132,17 +117,17 @@ final class DragDropUtilities extends Object {
             case DnDConstants.ACTION_LINK:
 
                 if (canDrop) {
-                    image = Utilities.loadImage("org/openide/resources/cursorsunknownsingle.gif"); // NOI18N
+                    image = Utilities.loadImage("org/openide/explorer/view/cursorsunknownsingle.gif"); // NOI18N
                     name = "ACTION_LINK"; // NOI18N
                 } else {
-                    image = Utilities.loadImage("org/openide/resources/cursorsnone.gif"); // NOI18N
+                    image = Utilities.loadImage("org/openide/explorer/view/cursorsnone.gif"); // NOI18N
                     name = "NO_ACTION_LINK"; // NOI18N
                 }
 
                 break;
 
             default:
-                image = Utilities.loadImage("org/openide/resources/cursorsnone.gif"); // NOI18N
+                image = Utilities.loadImage("org/openide/explorer/view/cursorsnone.gif"); // NOI18N
                 name = "ACTION_NONE"; // NOI18N
 
                 break;
