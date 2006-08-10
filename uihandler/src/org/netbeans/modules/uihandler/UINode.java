@@ -9,6 +9,7 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +19,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 
 /**
  *
@@ -30,5 +33,15 @@ public class UINode extends AbstractNode {
         super(Children.LEAF);
         log = r;
         setName(r.getMessage());
+        try {
+            Sheet.Set s = new Sheet.Set();
+            s.setName(Sheet.PROPERTIES);
+            s.put(new PropertySupport.Reflection(log, long.class, "millis")); // NOI18N
+            
+            getSheet().put(s);
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace();
+        }
     }
+    
 }

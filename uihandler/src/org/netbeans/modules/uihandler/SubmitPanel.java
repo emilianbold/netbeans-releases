@@ -6,7 +6,12 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 
 /**
  *
@@ -20,6 +25,13 @@ implements ExplorerManager.Provider {
         manager = new ExplorerManager();
         
         initComponents();
+        try {
+            view.setProperties(new Node.Property[] { 
+                new PropertySupport.Reflection(new LogRecord(Level.ALL, null), long.class, "millis"),
+            });
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace();
+        }
     }
     
     /** This method is called from within the constructor to
