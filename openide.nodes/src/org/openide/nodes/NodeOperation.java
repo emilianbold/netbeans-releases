@@ -44,7 +44,7 @@ public abstract class NodeOperation {
      * @return some instance
      */
     public static NodeOperation getDefault() {
-        NodeOperation no = (NodeOperation) Lookup.getDefault().lookup(NodeOperation.class);
+        NodeOperation no = Lookup.getDefault().lookup(NodeOperation.class);
 
         if (no == null) {
             throw new IllegalStateException(

@@ -44,7 +44,7 @@ abstract class TMUtil extends Object {
      * @return the class
      */
     private static Class loadClass(String className) throws Exception {
-        ClassLoader loader = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader loader = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
 
         if (loader == null) {
             loader = NodeOperation.class.getClassLoader();

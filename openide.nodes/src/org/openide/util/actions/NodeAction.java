@@ -511,9 +511,8 @@ OUTER:
             this.delegate = a;
 
             this.result = actionContext.lookupResult(Node.class);
-            this.result.addLookupListener(
-                (LookupListener) WeakListeners.create(LookupListener.class, this, this.result)
-            );
+            this.result.addLookupListener(WeakListeners.create(LookupListener.class,
+                                                               this, this.result));
             resultChanged(null);
         }
 

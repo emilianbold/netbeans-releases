@@ -47,7 +47,7 @@ public class CookieActionIsTooSlowTest extends NbTestCase implements PropertyCha
     private int propertyChange;
     
     protected void setUp() throws Exception {
-        a1 = (SimpleCookieAction)SystemAction.get(SimpleCookieAction.class);
+        a1 = SystemAction.get(SimpleCookieAction.class);
         a1.addPropertyChangeListener(this);
         int count = 10;
         arr = new Node[count];
@@ -136,7 +136,7 @@ public class CookieActionIsTooSlowTest extends NbTestCase implements PropertyCha
             if (b && getCookie(OpenCookie.class) == null) {
                 getCookieSet().add(new Open());
             } else if (!b) {
-                OpenCookie o = (OpenCookie)getCookie(OpenCookie.class);
+                OpenCookie o = getCookie(OpenCookie.class);
                 if (o != null) {
                     getCookieSet().remove(o);
                 }

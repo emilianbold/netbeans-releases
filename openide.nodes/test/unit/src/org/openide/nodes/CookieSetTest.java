@@ -221,7 +221,7 @@ public class CookieSetTest extends NbTestCase {
         CookieSet set = new CookieSet ();
         an.setCookieSet (set);
         
-        Node n = filter ? (Node)new FilterNode (an) : (Node)an;
+        Node n = filter ? new FilterNode(an) : an;
         
         C1 c1 = new C1 ();
         C2 c2 = new C2 ();
@@ -250,7 +250,7 @@ public class CookieSetTest extends NbTestCase {
         CookieSet set = new CookieSet ();
         node.setCookieSet (set);
         
-        Node an = filter ? (Node)new FilterNode (node) : (Node)node;
+        Node an = filter ? new FilterNode(node) : node;
         
 
         class X implements org.openide.cookies.OpenCookie, org.openide.cookies.EditCookie {

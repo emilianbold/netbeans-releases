@@ -69,7 +69,7 @@ public class NodeActionTest extends NbTestCase {
     }
     
     public void testBasicUsage() throws Exception {
-        SimpleNodeAction a1 = (SimpleNodeAction)SystemAction.get(SimpleNodeAction.class);
+        SimpleNodeAction a1 = SystemAction.get(SimpleNodeAction.class);
         ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
             // Check enablement logic.
@@ -133,7 +133,7 @@ public class NodeActionTest extends NbTestCase {
     }
     
     public void testPerformActionWithArgs() throws Exception {
-        SimpleNodeAction a1 = (SimpleNodeAction)SystemAction.get(SimpleNodeAction.class);
+        SimpleNodeAction a1 = SystemAction.get(SimpleNodeAction.class);
         try {
             assertFalse(a1.isEnabled());
             assertEquals(Collections.EMPTY_LIST, a1.runOn);
@@ -168,8 +168,8 @@ public class NodeActionTest extends NbTestCase {
          */
     }
     private void helpTestFocusChange() throws Exception {
-        SimpleNodeAction a1 = (SimpleNodeAction)SystemAction.get(SimpleNodeAction.class);
-        DoesNotSurviveFocusChgAction a2 = (DoesNotSurviveFocusChgAction)SystemAction.get(DoesNotSurviveFocusChgAction.class);
+        SimpleNodeAction a1 = SystemAction.get(SimpleNodeAction.class);
+        DoesNotSurviveFocusChgAction a2 = SystemAction.get(DoesNotSurviveFocusChgAction.class);
         ActionsInfraHid.WaitPCL l1 = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         ActionsInfraHid.WaitPCL l2 = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
@@ -241,7 +241,7 @@ public class NodeActionTest extends NbTestCase {
      * @see "#13505"
      */
     public void testNoRedundantEnablementChecks() throws Exception {
-        LazyNodeAction a = (LazyNodeAction)SystemAction.get(LazyNodeAction.class);
+        LazyNodeAction a = SystemAction.get(LazyNodeAction.class);
         ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
             assertEquals(0, a.count);
@@ -315,7 +315,7 @@ public class NodeActionTest extends NbTestCase {
      * must call enable() again.
      */
     public void testCallSetEnabledDirectly() throws Exception {
-        SimpleNodeAction a1 = (SimpleNodeAction)SystemAction.get(SimpleNodeAction.class);
+        SimpleNodeAction a1 = SystemAction.get(SimpleNodeAction.class);
         ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
             assertFalse(a1.isEnabled());
@@ -384,7 +384,7 @@ public class NodeActionTest extends NbTestCase {
         }
         
         
-        SimpleNodeAction s = (SimpleNodeAction)SimpleNodeAction.get(SimpleNodeAction.class);
+        SimpleNodeAction s = SimpleNodeAction.get(SimpleNodeAction.class);
         Counter counter = new Counter();
         
         InstanceContent ic = new InstanceContent();

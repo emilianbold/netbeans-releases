@@ -717,7 +717,7 @@ public abstract class Children extends Object {
     * it, if not registered yet.
     */
     private Info findInfo(Entry entry) {
-        Info info = (Info) map.get(entry);
+        Info info = map.get(entry);
 
         if (info == null) {
             info = new Info(entry);
@@ -2129,7 +2129,7 @@ public abstract class Children extends Object {
          * @param ch children
          */
         private static synchronized void keysExit(Keys ch, Runnable r) {
-            Runnable reg = (Runnable) lastRuns.remove(ch);
+            Runnable reg = lastRuns.remove(ch);
 
             if ((reg != null) && !reg.equals(r)) {
                 lastRuns.put(ch, reg);

@@ -1221,7 +1221,7 @@ public class FilterNode extends Node {
         * @param ev event describing the node
         */
         public final void nodeDestroyed(NodeEvent ev) {
-            FilterNode fn = (FilterNode) this.fn.get();
+            FilterNode fn = this.fn.get();
 
             if (fn == null) {
                 return;
@@ -1503,7 +1503,7 @@ public class FilterNode extends Node {
         * @param ev event describing the action
         */
         public void childrenRemoved(NodeMemberEvent ev) {
-            Children children = (Children) this.children.get();
+            Children children = this.children.get();
 
             if (children == null) {
                 return;
@@ -1516,7 +1516,7 @@ public class FilterNode extends Node {
         * @param ev event describing the action
         */
         public void childrenReordered(NodeReorderEvent ev) {
-            Children children = (Children) this.children.get();
+            Children children = this.children.get();
 
             if (children == null) {
                 return;

@@ -501,7 +501,7 @@ public final class CookieSet extends Object {
                 return true;
             }
 
-            base = baseForCookie((Node.Cookie) cookies.get(0));
+            base = baseForCookie(cookies.get(0));
 
             return false;
         }

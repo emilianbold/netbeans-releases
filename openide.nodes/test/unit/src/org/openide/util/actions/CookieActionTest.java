@@ -199,7 +199,7 @@ public class CookieActionTest extends NbTestCase {
         }
         
         
-        SimpleCookieAction s = (SimpleCookieAction)SimpleCookieAction.get(SimpleCookieAction.class);
+        SimpleCookieAction s = SimpleCookieAction.get(SimpleCookieAction.class);
         Counter counter = new Counter();
         
         CookieNode node = new CookieNode();
@@ -238,7 +238,7 @@ public class CookieActionTest extends NbTestCase {
     /** Test of enablement of CookieAction caused creation of that cookie instance in node, which has implemented lookup in 'nice' way.
      * @see #testCookiePrematureCreationInNodeWithDefaultLookup */
     public void testCookiePrematureCreationInNodeWithNiceLookup() {
-        SimpleCookieAction2 action = (SimpleCookieAction2)SimpleCookieAction2.get(SimpleCookieAction2.class);
+        SimpleCookieAction2 action = SimpleCookieAction2.get(SimpleCookieAction2.class);
         NodeWithNiceLookup node = new NodeWithNiceLookup();
         
         assertTrue("Node has to be enabled on OpenCookie", action.enable(new Node[] {node})); // NOI18N
@@ -249,7 +249,7 @@ public class CookieActionTest extends NbTestCase {
     /** Test of enablement of CookieAction causes creation of that cookie instance in node, which has default lookup.
      * @see #testCookiePrematureCreationInNodeWithNiceLookup */
     public void testCookiePrematureCreationInNodeWithDefaultLookup() {
-        SimpleCookieAction2 action = (SimpleCookieAction2)SimpleCookieAction2.get(SimpleCookieAction2.class);
+        SimpleCookieAction2 action = SimpleCookieAction2.get(SimpleCookieAction2.class);
         NodeWithDefaultLookup node = new NodeWithDefaultLookup();
         
         assertTrue("Node has to be enabled on OpenCookie", action.enable(new Node[] {node})); // NOI18N
@@ -292,7 +292,7 @@ public class CookieActionTest extends NbTestCase {
             if (b && getCookie(OpenCookie.class) == null) {
                 getCookieSet().add(new Open());
             } else if (!b) {
-                OpenCookie o = (OpenCookie)getCookie(OpenCookie.class);
+                OpenCookie o = getCookie(OpenCookie.class);
                 if (o != null) {
                     getCookieSet().remove(o);
                 }

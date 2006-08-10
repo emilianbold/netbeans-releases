@@ -57,7 +57,7 @@ public class CookieAction2Test extends NbTestCase {
     }
     
     public void testDirectCallToEnabled() throws Exception {
-        SimpleCookieAction sca = (SimpleCookieAction)SystemAction.get(SimpleCookieAction.class);
+        SimpleCookieAction sca = SystemAction.get(SimpleCookieAction.class);
         assertTrue(sca.enable(new Node[] {new CookieNode()}));
         assertTrue(!sca.enable(new Node[] {}));
         sca.getName();
@@ -118,7 +118,7 @@ public class CookieAction2Test extends NbTestCase {
     private void doAWT(boolean clone) throws Exception {
         assertFalse("We should not run in AWT thread", SwingUtilities.isEventDispatchThread());
         
-        SimpleCookieAction sca = (SimpleCookieAction)SystemAction.get(SimpleCookieAction.class);
+        SimpleCookieAction sca = SystemAction.get(SimpleCookieAction.class);
         
         CookieNode node = new CookieNode();
         
