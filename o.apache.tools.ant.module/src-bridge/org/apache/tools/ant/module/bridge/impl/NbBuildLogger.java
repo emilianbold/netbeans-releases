@@ -352,7 +352,8 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public synchronized void buildFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
-            checkForStop();
+            // #82160: do not call checkForStop() here
+            stop = false; // do not throw ThreadDeath on messageLogged from BridgeImpl cleanup code
             lastTask = null;
             initInterestedLoggers(); // just in case
             AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));

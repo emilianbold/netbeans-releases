@@ -177,6 +177,10 @@ public final class StandardLogger extends AntLogger {
             session.println(formatMessageWithTime("FMT_finished_target_printed", time), false, null);
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_finished_target_status", session.getDisplayName()));
         } else {
+            if (t.getCause() instanceof ThreadDeath) {
+                // Sometimes wrapped, but we really want to know just that the thread was stopped.
+                t = t.getCause();
+            }
             if (!session.isExceptionConsumed(t)) {
                 session.consumeException(t);
                 if (t.getClass().getName().equals("org.apache.tools.ant.BuildException") && session.getVerbosity() < AntEvent.LOG_VERBOSE) { // NOI18N
@@ -191,8 +195,13 @@ public final class StandardLogger extends AntLogger {
                     deliverStackTrace(t, event);
                 }
             }
-            event.getSession().println(formatMessageWithTime("FMT_target_failed_printed", time), true, null); // #10305
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_target_failed_status", event.getSession().getDisplayName()));
+            if (t instanceof ThreadDeath) {
+                event.getSession().println(formatMessageWithTime("FMT_target_stopped_printed", time), true, null);
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_target_stopped_status", event.getSession().getDisplayName()));
+            } else {
+                event.getSession().println(formatMessageWithTime("FMT_target_failed_printed", time), true, null); // #10305
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_target_failed_status", event.getSession().getDisplayName()));
+            }
         }
         event.consume();
     }
