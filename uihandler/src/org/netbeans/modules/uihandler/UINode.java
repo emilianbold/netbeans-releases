@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
+import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
+import java.util.logging.SimpleFormatter;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -31,24 +35,35 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Tulach
  */
-final class UINode extends AbstractNode {
+final class UINode extends AbstractNode implements VisualData {
+    private static final SimpleFormatter FORMATTER = new SimpleFormatter();
     private LogRecord log;
 
     private UINode(LogRecord r, Children ch) {
         super(ch);
         log = r;
         setName(r.getMessage());
-        try {
-            Sheet.Set s = new Sheet.Set();
-            s.setName(Sheet.PROPERTIES);
-            s.put(new PropertySupport.Reflection<Long>(log, long.class, "millis")); // NOI18N
-            
-            getSheet().put(s);
-        } catch (NoSuchMethodException ex) {
-            ex.printStackTrace();
-        }
+        
+        Sheet.Set s = new Sheet.Set();
+        s.setName(Sheet.PROPERTIES);
+        s.put(createPropertyDate(this));
+        s.put(createPropertyLogger(this));
+        s.put(createPropertyMessage(this));
+        getSheet().put(s);
     }
 
+    public long getMillis() {
+        return log.getMillis();
+    }
+    
+    public String getLoggerName() {
+        return log.getLoggerName();
+    }
+    
+    public String getMessage() {
+        return FORMATTER.format(log);
+    }
+    
     static Node create(LogRecord r) {
         Children ch;
         if (r.getThrown() != null) {
@@ -60,6 +75,89 @@ final class UINode extends AbstractNode {
         
         return new UINode(r, ch);
     }
+    
+    static Node.Property createPropertyDate(final VisualData source) {
+        class NP extends PropertySupport.ReadOnly<Date> {
+            public NP() {
+                super(
+                    "date", Date.class, 
+                    NbBundle.getMessage(UINode.class, "MSG_DateDisplayName"),
+                    NbBundle.getMessage(UINode.class, "MSG_DateShortDescription")
+                );
+            }
+
+            public Date getValue() throws IllegalAccessException, InvocationTargetException {
+                return source == null ? null : new Date(source.getMillis());
+            }
+            
+            public int hashCode() {
+                return getClass().hashCode();
+            }
+            public boolean equals(Object o) {
+                return o != null && o.getClass().equals(getClass());
+            }
+        }
+        return new NP();
+    }
+
+    static Node.Property createPropertyLogger(final VisualData source) {
+        class NP extends PropertySupport.ReadOnly<String> {
+            public NP() {
+                super(
+                    "logger", String.class, 
+                    NbBundle.getMessage(UINode.class, "MSG_LoggerDisplayName"),
+                    NbBundle.getMessage(UINode.class, "MSG_LoggerShortDescription")
+                );
+            }
+
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                if (source == null) {
+                    return null;
+                }
+                String full = source.getLoggerName();
+                if (full.startsWith("org.netbeans.ui")) {
+                    if (full.equals("org.netbeans.ui")) {
+                        return "UI General";
+                    }
+                    
+                    return full.substring("org.netbeans.ui".length());
+                }
+                return full;
+            }
+            
+            public int hashCode() {
+                return getClass().hashCode();
+            }
+            public boolean equals(Object o) {
+                return o != null && o.getClass().equals(getClass());
+            }
+        }
+        return new NP();
+    }
+    static Node.Property createPropertyMessage(final VisualData source) {
+        class NP extends PropertySupport.ReadOnly<String> {
+            public NP() {
+                super(
+                    "message", String.class, 
+                    NbBundle.getMessage(UINode.class, "MSG_MessageDisplayName"),
+                    NbBundle.getMessage(UINode.class, "MSG_MessageShortDescription")
+                );
+            }
+
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                return source == null ? null : source.getMessage();
+            }
+            
+            public int hashCode() {
+                return getClass().hashCode();
+            }
+            public boolean equals(Object o) {
+                return o != null && o.getClass().equals(getClass());
+            }
+        }
+        return new NP();
+    }
+
     
     private static final class StackTraceChildren extends Children.Keys<StackTraceElement> {
         private Throwable throwable;
@@ -86,14 +184,15 @@ final class UINode extends AbstractNode {
             return new Node[] { an };
         }
         
-        private static String afterLastDot(String s) {
-            int index = s.lastIndexOf('.');
-            if (index == -1) {
-                return s;
-            }
-            return s.substring(index + 1);
-        }
-    
     } // end of StackTraceElement
+
+    private static String afterLastDot(String s) {
+        int index = s.lastIndexOf('.');
+        if (index == -1) {
+            return s;
+        }
+        return s.substring(index + 1);
+    }
     
+
 }

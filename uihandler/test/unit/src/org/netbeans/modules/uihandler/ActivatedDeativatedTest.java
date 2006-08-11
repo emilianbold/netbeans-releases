@@ -49,7 +49,7 @@ public class ActivatedDeativatedTest extends NbTestCase {
     protected void setUp() throws Exception {
         o = Installer.findObject(Installer.class, true);
         assertNotNull("Installer created", o);
-        MockServices.setServices(A.class, D.class, DD.class);
+        MockServices.setServices(A.class, D.class/*); //*/, DD.class);
     }
 
     protected void tearDown() throws Exception {

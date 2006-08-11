@@ -19,6 +19,7 @@
 package org.netbeans.modules.uihandler;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -34,6 +35,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Registers and unregisters loggers.
@@ -92,6 +94,8 @@ public class Installer extends ModuleInstall {
         SubmitPanel panel = new SubmitPanel();
         
         AbstractNode root = new AbstractNode(new Children.Array());
+        root.setName("root"); // NOI18N
+        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
         for (LogRecord r : recs) {
             root.getChildren().add(new Node[] { UINode.create(r) });
         }
@@ -99,7 +103,7 @@ public class Installer extends ModuleInstall {
         panel.getExplorerManager().setRootContext(root);
         
         NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.INFORMATION_MESSAGE);
-        dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+        dd.setOptions(new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION });
         Object res = DialogDisplayer.getDefault().notify(dd);
         
         return res == NotifyDescriptor.OK_OPTION;
