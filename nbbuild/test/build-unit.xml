@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="code.name.base.dashes" value="org-netbeans-nbbuild"  />
     <property name="module.run.classpath" location="${nb_all}/nbbuild/nbantext.jar:${ant.home}/lib/ant.jar:${ant.home}/lib/ant-launcher.jar:${tools.jar}" />
     <property name="xtest.userdata|nb_all" location="${nb_all}"/>
+    <property name="xtest.userdata|netbeans.dest.dir.work" location="${netbeans.dest.dir}"/>
     <property name="test.unit.cp.extra" value="${nb_all}/nbbuild/nbantext.jar:${java.class.path}"/>
     <property name="test.unit.runtime.cp" value="${nb_all}/nbbuild/nbantext.jar:${java.class.path}"/>
     <import file="../../nbbuild/templates/xtest-unit.xml"/>

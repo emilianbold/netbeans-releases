@@ -21,9 +21,9 @@ Microsystems, Inc. All Rights Reserved.
 <project name="Test Test Dependecies" basedir="." default="all" >
     <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
-    <target name="all" >
+    <target name="test-deps" >
         <!-- default netbeans.dest.dir if it is not overriden -->
-        <property name="netbeans.dest.dir" location="${nb_all}/nbbuild/netbeans"/>
+        <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
         <propertyfile file="${netbeans.dest.dir}/moduleCluster.properties"/>
         <property name="xtest.home" value="any"/>
         <property name="xtest.testtype" value="testtype"/>
@@ -89,12 +89,41 @@ Microsystems, Inc. All Rights Reserved.
 
      
     </target>
-    
-<!--    <target name="withjavadoc" >
-        <parseprojectxml 
-            projectfile="${project.file}"
-            publicpackagesproperty="pub.pac"
-            javadocpackagesproperty="javadoc.pac"
-        />
-    </target>-->
-</project>
+ 
+     <target name="test-deps-no-test-deps" >
+        <!-- default netbeans.dest.dir if it is not overriden -->
+        <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
+        <propertyfile file="${netbeans.dest.dir}/moduleCluster.properties"/>
+        <property name="xtest.home" value="any"/>
+        <property name="xtest.testtype" value="testtype"/>
+        <parseprojectxml projectfile="${project.file}" project="${nb_all}/java/">
+            <testtype name="unit" folder="unit.dist.folder" compilecp="unit.compile.cp2" runtimecp="unit.runtime.cp2"/>
+            <testtype name="qa-functional" folder="qa.dist.folder" compilecp="qa.compile.cp2" runtimecp="qa.runtime.cp2"/>
+        </parseprojectxml>        
+
+  <!-- unittests -->
+  
+        <condition property="ok-unit-dist-folder" >
+            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/ide8/org-netbeans-modules-java" />
+        </condition>
+
+        <echo message="unittestfolder  : ${unit.dist.folder}" />
+        <echo message="unittestruntimeclasspath : ${unit.runtime.cp2}" />
+        <echo message="unit.compile.cp           : ${unit.compile.cp2}" />
+        <fail message="{unit.dist.folder}" unless="ok-unit-dist-folder" />
+        <fail message="{ok-unittestcompileclasspath}" if="unit.compile.cp2"/> 
+        <fail message="{ok-unittestruntimeclasspath}" if="unit.runtime.cp2"/> 
+        
+   <!-- qa-functional tests -->
+        <condition property="ok-qa-dist-folder" >
+            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/ide8/org-netbeans-modules-java" />
+        </condition>
+   
+        <echo message="qa test folder  : ${qa.dist.folder}" />
+        <echo message="qa-testruntimeclasspath : ${qa.runtime.cp2}" />
+        <echo message="qa.compile.cp           : ${qa.compile.cp2}" />
+        <fail message="{qa.dist.folder}" unless="ok-qa-dist-folder" />
+        <fail message="{ok-qa-testcompileclasspath}" if="qa.compile.cp2"/> 
+        <fail message="{ok-qa-testruntimeclasspath}" if="qa.runtime.cp2"/> 
+  </target>
+  </project>

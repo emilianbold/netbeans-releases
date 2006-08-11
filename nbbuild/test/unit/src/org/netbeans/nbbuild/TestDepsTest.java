@@ -50,9 +50,12 @@ public class TestDepsTest extends NbTestCase {
     public void testDepsTest () throws Exception {
       // create test
       File projectxml = extractFile(TestDepsTest.class.getResourceAsStream("TestDepsProject.xml"),"project.xml");  
-      PublicPackagesInProjectizedXMLTest.execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "all" });
-             
-      // test dist 
+      PublicPackagesInProjectizedXMLTest.execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps" });
+    }
+    public void testDepsNoTestDeps() throws Exception {
+      File projectxml = extractFile(TestDepsTest.class.getResourceAsStream("TestDepsProjectNoTestDeps.xml"),"project.xml");
+      PublicPackagesInProjectizedXMLTest.execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps-no-test-deps" });
+        
     }
 
     private File extractFile(InputStream is, String fileName) throws IOException {

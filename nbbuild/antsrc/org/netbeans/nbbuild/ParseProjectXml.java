@@ -439,11 +439,10 @@ public final class ParseProjectXml extends Task {
                         if (testType.getFolder() != null) {
                             define (testType.getFolder(),td.getTestFolder());
                         }
-                        if (testType.getCompileCP() != null) {
-                            
+                        if (testType.getCompileCP() != null && td.getCompileClassPath() != null && td.getCompileClassPath().trim().length() > 0) {
                             define(testType.getCompileCP(),td.getCompileClassPath());
                         }
-                        if (testType.getRuntimeCP() != null) {
+                        if (testType.getRuntimeCP() != null && td.getRuntimeClassPath() != null && td.getRuntimeClassPath().trim().length() > 0) {
                             define(testType.getRuntimeCP(),td.getRuntimeClassPath());
                         }
 
@@ -1105,12 +1104,19 @@ public final class ParseProjectXml extends Task {
         Element cfg = getConfig(pDoc);
         List testDepsList = new ArrayList(); 
         Element pp = findNBMElement(cfg, "test-dependencies");
+        boolean existsUnitTests = false;
+        boolean existsQaFunctionalTests = false;
         if (pp != null) {
             for (Iterator depssIt = XMLUtil.findSubElements(pp).iterator(); depssIt.hasNext();) {
                 Element depssEl = (Element) depssIt.next();
                 String testType = findTextOrNull(depssEl,"name");
                 if (testType == null) {
                     testType = TestDeps.UNIT; // default variant
+                    existsUnitTests = true;
+                } else if (testType.equals(TestDeps.UNIT)) {
+                    existsUnitTests = true;
+                } else if (testType.equals(TestDeps.QA_FUNCTIONAL)) {
+                    existsQaFunctionalTests = true;
                 }
                 TestDeps testDeps = new TestDeps(testType,testCnb,modules);
                 testDepsList.add(testDeps);
@@ -1132,6 +1138,15 @@ public final class ParseProjectXml extends Task {
 
                 }
             }
+        }
+        // #82204 intialize default testtypes when are not  in project.xml
+        if (!existsUnitTests) {
+            log("Default TestDeps for unit");
+            testDepsList.add(new TestDeps(TestDeps.UNIT,testCnb,modules));
+        }
+        if (!existsQaFunctionalTests) {
+            log("Default TestDeps for qa-functional");
+            testDepsList.add(new TestDeps(TestDeps.QA_FUNCTIONAL,testCnb,modules));
         }
         TestDeps testDepss[] = new TestDeps[testDepsList.size()];
         testDepsList.toArray(testDepss);
