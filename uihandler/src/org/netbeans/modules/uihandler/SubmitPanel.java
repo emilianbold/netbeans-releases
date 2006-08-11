@@ -41,7 +41,7 @@ implements ExplorerManager.Provider {
         view.setProperties(new Node.Property[] { 
             UINode.createPropertyDate(null),
             UINode.createPropertyLogger(null),
-            UINode.createPropertyMessage(null),
+//            UINode.createPropertyMessage(null),
         });
     }
     

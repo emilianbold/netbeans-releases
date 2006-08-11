@@ -44,12 +44,23 @@ final class UINode extends AbstractNode implements VisualData {
         log = r;
         setName(r.getMessage());
         
-        Sheet.Set s = new Sheet.Set();
-        s.setName(Sheet.PROPERTIES);
+        Sheet.Set s = Sheet.createPropertiesSet();
         s.put(createPropertyDate(this));
         s.put(createPropertyLogger(this));
         s.put(createPropertyMessage(this));
         getSheet().put(s);
+        
+        if (r.getParameters() != null && r.getParameters().length > 0) {
+            Sheet.Set paramSheet = new Sheet.Set();
+            paramSheet.setName("parameters"); // NOI18N
+            paramSheet.setDisplayName(NbBundle.getMessage(UINode.class, "MSG_DisplayNameParameters"));
+            for (int i = 0; i < r.getParameters().length; i++) {
+                paramSheet.put(createProperty(i, r.getParameters()[i]));
+            }
+            getSheet().put(paramSheet);
+        }
+        
+        setShortDescription(FORMATTER.format(log));
     }
 
     public long getMillis() {
@@ -160,6 +171,37 @@ final class UINode extends AbstractNode implements VisualData {
         }
         return new NP();
     }
+    private Node.Property<?> createProperty(final int index, final Object object) {
+        class NP extends PropertySupport.ReadOnly<String> {
+            public NP() {
+                super(
+                    "param #" + index, String.class, 
+                    NbBundle.getMessage(UINode.class, "MSG_ParameterDisplayName", index, object),
+                    NbBundle.getMessage(UINode.class, "MSG_ParameterShortDescription", index, object)
+                );
+            }
+
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                return object == null ? null : object.toString();
+            }
+            
+            private int getIndex() {
+                return index;
+            }
+            
+            public int hashCode() {
+                return getClass().hashCode();
+            }
+            public boolean equals(Object o) {
+                if (o == null || !o.getClass().equals(getClass())) {
+                    return false;
+                }
+                NP np = (NP)o;
+                return getIndex() == np.getIndex();
+            }
+        }
+        return new NP();
+    }
 
     
     private static final class StackTraceChildren extends Children.Keys<StackTraceElement> {
@@ -196,6 +238,7 @@ final class UINode extends AbstractNode implements VisualData {
         }
         return s.substring(index + 1);
     }
+
     
 
 }
