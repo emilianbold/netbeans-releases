@@ -38,16 +38,17 @@ import org.openide.filesystems.FileUtil;
  * Representation of jarfile with tests 
  */
 public final class TestEntry {
+    
     private static final String JAR_NAME = "tests.jar"; // NOI18N
     private static final String QA_FUNCTIONAL = "qa-functional"; // NOI18N
     private static final String UNIT = "unit"; // NOI18N;
-    // hardcoded location of testdistribution relatively to nb cvs
+    /** Hardcoded location of testdistribution relatively to nb cvs. */
     private static final String TEST_DIST_DIR = "nbbuild/build/testdist"; // NOI18N;
     private final String codeNameBase;
-    private boolean unit;
+    private final boolean unit;
     private final String cluster;
-    
     private final File jarFile;
+    
     /**
      * Creates a new instance of TestEntry
      */
@@ -87,6 +88,7 @@ public final class TestEntry {
         }
         return null;
     }  
+    
     public String getCodeNameBase() {
         return codeNameBase;
     }
@@ -116,7 +118,7 @@ public final class TestEntry {
     public URL getSrcDir() throws IOException {
         String nborgPath = getNetBeansOrgPath();
         if (nborgPath != null) {
-            return new File(getNBCVSRoot(),nborgPath).toURL(); 
+            return new File(getNBCVSRoot(),nborgPath).toURI().toURL(); 
         } 
         File testDistDir = getTestDistRoot();
         Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(testDistDir));
@@ -124,17 +126,17 @@ public final class TestEntry {
             // ModuleSuite
             SubprojectProvider subprojects = (SubprojectProvider) prj.getLookup().lookup(SubprojectProvider.class);
             if (subprojects != null) {
-                Set  projects = subprojects.getSubprojects();
+                Set/*<Project>*/  projects = subprojects.getSubprojects();
                 for (Iterator it = projects.iterator() ; it.hasNext();) {
                     Project p = (Project)it.next();
                     if (p instanceof NbModuleProject) {
-                    NbModuleProject nbm = (NbModuleProject) p;
-                    if (nbm != null && nbm.getCodeNameBase().equals(getCodeNameBase())) {
-                        FileObject file = (isUnit()) ? nbm.getTestSourceDirectory() : nbm.getFunctionalTestSourceDirectory();
-                        if (file != null) {
-                            return file.getURL();
+                        NbModuleProject nbm = (NbModuleProject) p;
+                        if (nbm != null && nbm.getCodeNameBase().equals(getCodeNameBase())) {
+                            FileObject file = (isUnit()) ? nbm.getTestSourceDirectory() : nbm.getFunctionalTestSourceDirectory();
+                            if (file != null) {
+                                return file.getURL();
+                            }
                         }
-                    } 
                     }
                 }
             }
@@ -190,4 +192,5 @@ public final class TestEntry {
         }
         return null;
     }
+    
 } 

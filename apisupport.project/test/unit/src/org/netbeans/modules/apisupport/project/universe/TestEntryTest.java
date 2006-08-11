@@ -21,36 +21,33 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import junit.framework.*;
-import org.netbeans.junit.*;
 import org.netbeans.modules.apisupport.project.TestBase;
 
 /**
- *
  * @author pzajac
  */
 public class TestEntryTest extends TestBase {
     
-    public TestEntryTest(java.lang.String testName) {
+    public TestEntryTest(String testName) {
         super(testName);
     }
     
     public void testGetSourcesNbOrgModule() throws IOException {
-      File test = new File(nbrootF,"nbbuild/build/testdist/unit/" + CLUSTER_IDE + "/org-netbeans-modules-apisupport-project/tests.jar"); // NOI18N    
-      TestEntry entry = TestEntry.get(test);
-      assertNotNull("TestEntry for aisupport/project tests",entry);
-      assertNotNull("Nbcvsroot wasn't found.", entry.getNBCVSRoot());
-      URL srcDir = entry.getSrcDir();
-      assertEquals(new File(nbrootF,"apisupport/project/test/unit/src").toURL(),srcDir);
+        File test = new File(nbrootF,"nbbuild/build/testdist/unit/" + CLUSTER_IDE + "/org-netbeans-modules-apisupport-project/tests.jar"); // NOI18N
+        TestEntry entry = TestEntry.get(test);
+        assertNotNull("TestEntry for aisupport/project tests",entry);
+        assertNotNull("Nbcvsroot wasn't found.", entry.getNBCVSRoot());
+        URL srcDir = entry.getSrcDir();
+        assertEquals(new File(nbrootF,"apisupport/project/test/unit/src").toURI().toURL(),srcDir);
     }
     
     public void testGetSourcesFromExternalModule() throws IOException {
-      File test = file(EEP + "/suite4/build/testdist/unit/cluster/module1/tests.jar"); 
-      TestEntry entry = TestEntry.get(test);
-      assertNotNull("TestEntry for aisupport/project tests",entry);
-      assertNull("Nbcvsroot was found.", entry.getNBCVSRoot());
-      URL srcDir = entry.getSrcDir();
-      assertEquals(file(EEP + "/suite4/module1/test/unit/src").toURL().toExternalForm(),srcDir.toExternalForm());
+        File test = file(EEP + "/suite4/build/testdist/unit/cluster/module1/tests.jar");
+        TestEntry entry = TestEntry.get(test);
+        assertNotNull("TestEntry for aisupport/project tests",entry);
+        assertNull("Nbcvsroot was found.", entry.getNBCVSRoot());
+        URL srcDir = entry.getSrcDir();
+        assertEquals(file(EEP + "/suite4/module1/test/unit/src").toURI().toURL().toExternalForm(),srcDir.toExternalForm());
     }
     
 }
