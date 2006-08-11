@@ -625,8 +625,8 @@ public class VisualReplicator { //implements VisualMapper
         if (compClone == null)
             compClone = clone;
 
-        idToClone.put(metacomp.getId(), clone);
-        cloneToId.put(clone, metacomp.getId());
+        idToClone.put(metacomp.getId(), compClone);
+        cloneToId.put(compClone, metacomp.getId());
 
         if (compClone instanceof java.beans.DesignMode)
             ((java.beans.DesignMode)compClone).setDesignTime(
