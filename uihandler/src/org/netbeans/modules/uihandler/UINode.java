@@ -115,6 +115,9 @@ final class UINode extends AbstractNode implements VisualData {
                     return null;
                 }
                 String full = source.getLoggerName();
+                if (full == null) {
+                    return null;
+                }
                 if (full.startsWith("org.netbeans.ui")) {
                     if (full.equals("org.netbeans.ui")) {
                         return "UI General";
