@@ -105,8 +105,10 @@ ActionListener {
         jScrollPane1 = new javax.swing.JScrollPane();
         epPreview = new javax.swing.JEditorPane();
 
+        lStatementContinuationIndent.setLabelFor(sStatementContinuationIndent);
         lStatementContinuationIndent.setText("Statement Continuation Indent:");
 
+        lNumberOfSpacesPerIndent.setLabelFor(sNumberOfSpacesPerIndent);
         lNumberOfSpacesPerIndent.setText("Number of Spaces per Indent:");
 
         cbExpandTabsToSpaces.setText("Expand Tabs to Spaces");

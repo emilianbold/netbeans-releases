@@ -63,6 +63,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="lStatementContinuationIndent">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="sStatementContinuationIndent"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Statement Continuation Indent:"/>
       </Properties>
     </Component>
@@ -70,6 +73,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lNumberOfSpacesPerIndent">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="sNumberOfSpacesPerIndent"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Number of Spaces per Indent:"/>
       </Properties>
     </Component>
