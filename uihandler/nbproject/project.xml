@@ -82,7 +82,9 @@ Microsystems, Inc. All Rights Reserved.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.uihandler.api</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
