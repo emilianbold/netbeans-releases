@@ -326,6 +326,13 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
             removeButton.setEnabled (true);
             changeButton.setEnabled (true);
         }
+        // #62803: String[] editor keeps text in the textfield after removing all items
+        boolean containsCurrent = containsCurrent();
+        String txt = itemField.getText().trim();
+        boolean en = itemField.isEnabled() &&
+            txt.length() > 0 &&
+            !containsCurrent;
+        addButton.setEnabled(en);
     }
 
     private void updateValue () {
