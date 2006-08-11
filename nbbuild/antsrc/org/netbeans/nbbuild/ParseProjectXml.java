@@ -879,7 +879,7 @@ public final class ParseProjectXml extends Task {
                 // no cluster name is specified for standalone or module in module suite
                 cluster = "cluster";
             }
-            return ParseProjectXml.testDistLocation + sep + testtype + sep + entry.getClusterName() + sep + cnb.replace('.','-');
+            return ParseProjectXml.testDistLocation + sep + testtype + sep + cluster + sep + cnb.replace('.','-');
         }
 
         String getCompileClassPath() {
@@ -932,20 +932,18 @@ public final class ParseProjectXml extends Task {
         */
        List/*<ModuleListParser.Entry>*/ getModules() {
            List /*<ModuleListParser.Entry>*/ entries = new ArrayList();
-           if (!test) {
-               if (recursive ) {
-                   Map/*<String,ModuleListParser.Entry>*/ entriesMap = new HashMap();
-                   addRecursiveModules(cnb,entriesMap);
-                   entries.addAll(entriesMap.values());
-               } else {
-                   ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
-                   if (entry == null) {
-                       throw new BuildException("Module "  + cnb + " doesn't exist.");
-                   }
-                   entries.add(modulesParser.findByCodeNameBase(cnb));
+           if (recursive ) {
+               Map/*<String,ModuleListParser.Entry>*/ entriesMap = new HashMap();
+               addRecursiveModules(cnb,entriesMap);
+               entries.addAll(entriesMap.values());
+           } else {
+               ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
+               if (entry == null) {
+                   throw new BuildException("Module "  + cnb + " doesn't exist.");
                }
+               entries.add(modulesParser.findByCodeNameBase(cnb));
            }
-           return entries;     
+           return entries;      
            
        } 
        
@@ -982,7 +980,11 @@ public final class ParseProjectXml extends Task {
                    // get test folder
                    ModuleListParser.Entry entry = (ModuleListParser.Entry) modulesParser.findByCodeNameBase(cnb);
                    String sep = File.separator;
-                   String jarPath = ParseProjectXml.testDistLocation + sep + testDeps.testtype + sep +  entry.getClusterName() + sep + cnb.replace('.','-') + sep + "tests.jar";
+                   String cluster = entry.getClusterName();
+                   if (cluster == null) {
+                       cluster = "cluster";
+                   }
+                   String jarPath = ParseProjectXml.testDistLocation + sep + testDeps.testtype + sep + cluster  + sep + cnb.replace('.','-') + sep + "tests.jar";
                    files.add(jarPath);
                }
            }

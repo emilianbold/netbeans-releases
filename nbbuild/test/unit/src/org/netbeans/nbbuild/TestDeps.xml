@@ -48,13 +48,18 @@ Microsystems, Inc. All Rights Reserved.
         <condition property="ok-unittestruntimeclasspath" >
             <and>
                 <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform7/org-openide-filesystems/tests.jar"/>
+                <contains string="${unit.runtime.cp}" substring="platform7/core/org-openide-filesystems.jar"/>
                 <contains string="${unit.runtime.cp}" substring="platform7/modules/org-openide-nodes.jar"/>
+                <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform7/org-openide-nodes/tests.jar"/>
                 <contains string="${unit.runtime.cp}" substring="platform7/lib/org-openide-util.jar"/>
                 <contains string="${unit.runtime.cp}" substring="platform7/modules/org-netbeans-modules-queries.jar"/>
             </and>
         </condition> 
         <condition property="ok-unittestcompileclasspath" >
+            <and>
                 <contains string="${unit.compile.cp}" substring="platform7/modules/org-openide-nodes.jar"/>
+                <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform7/org-openide-nodes/tests.jar"/>
+            </and>    
         </condition>     
    
         <echo message="unittestfolder  : ${unit.dist.folder}" />

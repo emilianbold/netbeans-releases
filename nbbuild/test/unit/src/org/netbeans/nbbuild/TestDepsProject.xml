@@ -203,13 +203,11 @@ Microsystems, Inc. All Rights Reserved.
                    <name>unit</name>
                    <test-dependency>
                        <code-name-base>org.openide.filesystems</code-name-base>
-                   </test-dependency>
-                   <test-dependency>
                        <test/>
-                       <code-name-base>org.openide.filesystems</code-name-base>
                    </test-dependency>
                    <test-dependency>
                        <code-name-base>org.openide.nodes</code-name-base>
+                       <test/>
                        <compile-dependency/>
                    </test-dependency>
                    <test-dependency>
