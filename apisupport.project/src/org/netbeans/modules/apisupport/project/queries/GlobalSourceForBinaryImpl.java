@@ -45,6 +45,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.TestEntry;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -70,8 +71,8 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         try {
             { // #68685 hack - associate reasonable sources with XTest's versions of various test libs
                 String binaryRootS = binaryRoot.toExternalForm();
+                URL result = null;
                 if (binaryRootS.startsWith("jar:file:")) { // NOI18N
-                    URL result;
                     if (binaryRootS.endsWith("/xtest/lib/nbjunit.jar!/")) { // NOI18N
                         result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/nbjunit.jar!/".length()) + "/xtest/nbjunit/src/"); // NOI18N
                     } else if (binaryRootS.endsWith("/xtest/lib/nbjunit-ide.jar!/")) { // NOI18N
@@ -79,7 +80,11 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     } else if (binaryRootS.endsWith("/xtest/lib/insanelib.jar!/")) { // NOI18N
                         result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/insanelib.jar!/".length()) + "/performance/insanelib/src/"); // NOI18N
                     } else {
-                        result = null;
+                        // tests.jar in test distribution 
+                        TestEntry testJar = TestEntry.get(new File(URI.create(FileUtil.getArchiveFile(binaryRoot).toExternalForm())));
+                        if (testJar != null) {
+                           result = testJar.getSrcDir();
+                        }
                     }
                     final FileObject resultFO = result != null ? URLMapper.findFileObject(result) : null;
                     if (resultFO != null) {
@@ -115,6 +120,10 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 Util.err.log("Cannot found FileObject for " + binaryRootF + "(" + binaryRoot + ")"); // NOI18N
                 return null;
             }
+  //          if (testCnb != null && supposedPlaf != null) {
+                // test
+   //             supposedPlaf.
+   //         }
             return new NbPlatformResult(supposedPlaf, binaryRoot, fo.getName().replace('-', '.'));
         } catch (IOException ex) {
             throw new AssertionError(ex);
@@ -135,6 +144,8 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
             this.platform = platform;
             this.binaryRoot = binaryRoot;
             this.cnb = cnb;
+//            this.testType = testType;
+//            this.testCluster = testCluster;
         }
         
         public FileObject[] getRoots() {

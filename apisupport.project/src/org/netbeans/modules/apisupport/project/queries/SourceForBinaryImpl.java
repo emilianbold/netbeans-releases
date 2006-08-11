@@ -30,6 +30,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.universe.TestEntry;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -59,13 +60,20 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
             URL binaryJar = FileUtil.getArchiveFile(binaryRoot);
             if (binaryJar != null) {
                 File binaryJarF = new File(URI.create(binaryJar.toExternalForm()));
+                FileObject srcDir = null;
                 if (binaryJarF.getAbsolutePath().endsWith(getModuleJarClusterPath())) {
-                    FileObject srcDir = project.getSourceDirectory();
-                    //System.err.println("\t-> " + srcDir);
-                    if (srcDir != null) {
-                        res = new Result(new FileObject[] {srcDir});
-                        return res;
+                    srcDir = project.getSourceDirectory();
+                } else {
+                    // maybe tests.jar in testdistribution
+                    TestEntry entry = TestEntry.get(binaryJarF);
+                    if (entry != null && project.getCodeNameBase().equals(entry.getCodeNameBase())) {
+                        srcDir = ( entry.isUnit() ) ? project.getTestSourceDirectory() : 
+                               project.getFunctionalTestSourceDirectory();
                     }
+                }
+                if (srcDir != null) {
+                    res = new Result(new FileObject[] {srcDir});
+                    return res;
                 }
             }
             if (binaryRoot.equals(getClassesUrl())) {

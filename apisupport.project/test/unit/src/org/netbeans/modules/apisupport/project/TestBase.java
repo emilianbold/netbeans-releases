@@ -105,6 +105,7 @@ public abstract class TestBase extends NbTestCase {
             // Suite projects:
             "suite1",
             "suite2",
+            "suite4",
             // Standalone module projects:
             "suite3/dummy-project",
         };

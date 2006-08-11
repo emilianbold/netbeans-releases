@@ -335,7 +335,7 @@ public class ClassPathProviderImplTest extends TestBase {
         assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet(Arrays.asList(cp.getRoots())));
         // XXX test BOOT
     }
-    
+   
     public void testUnitTestClasspathsExternalModules() throws Exception {
         FileObject src = extexamples.getFileObject("suite1/support/lib-project/test/unit/src");
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
@@ -362,6 +362,21 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add("org-netbeans-modules-nbjunit.jar");
         expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
+        
+        // test dependencies
+        expectedRoots.clear();
+        src  = extexamples.getFileObject("/suite4/module2/test/unit/src");
+        expectedRoots.add(urlForJar(EEP + "/suite4/build/testdist/unit/cluster/module1/tests.jar"));
+        expectedRoots.add(urlForJar(EEP + "/suite4/build/cluster/modules/module1.jar"));
+        expectedRoots.add(urlForJar(EEP + "/suite4/build/cluster/modules/module2.jar"));
+        expectedRoots.add("junit.jar");
+        expectedRoots.add("nbjunit.jar");
+        expectedRoots.add("insanelib.jar");
+        expectedRoots.add("org-netbeans-modules-nbjunit.jar");
+        expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
+        cp = ClassPath.getClassPath(src,ClassPath.COMPILE);
+        FileObject roots[] = cp.getRoots();
+        assertSets("right compileclasspath",expectedRoots, urlsOfCp4Tests(cp));
     }
     
     public void testQaFunctionalTestClasspath() throws Exception {

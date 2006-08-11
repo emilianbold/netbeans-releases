@@ -29,6 +29,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.TestEntry;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -83,6 +84,14 @@ public final class UpdateTrackingFileOwnerQuery implements FileOwnerQueryImpleme
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);
                     }
                 }
+            }
+        }
+        // may be tests.jar in tests distribution  
+        TestEntry test = TestEntry.get(file);
+        if (test != null) {
+            Project p = test.getProject() ;
+            if (p != null) {
+                return p;
             }
         }
         return null;

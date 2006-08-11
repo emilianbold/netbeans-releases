@@ -22,7 +22,9 @@ package org.netbeans.modules.apisupport.project.queries;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.jar.Manifest;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -32,6 +34,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -67,6 +70,7 @@ public class SourceForBinaryImplTest extends TestBase {
         check("diff/src", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-diff.jar");
         check("editor/libsrc", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-editor-lib.jar");
         check("xtest/nbjunit/src", "testtools/modules/org-netbeans-modules-nbjunit.jar");
+        check("apisupport/project/test/unit/src",file("nbbuild/build/testdist/unit/" + TestBase.CLUSTER_IDE + "/org-netbeans-modules-apisupport-project/tests.jar"));
     }
     
     public void testExternalModules() throws Exception {
@@ -75,6 +79,9 @@ public class SourceForBinaryImplTest extends TestBase {
         ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite3/dummy-project/src")), ClassPath.COMPILE);
         check(EEP + "/suite3/dummy-project/src",
               file(EEP + "/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"));
+        // test dependencies
+        ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite4/module1/test/unit/src")),ClassPath.COMPILE);
+        check(EEP + "/suite4/module1/test/unit/src",file(EEP + "/suite4/build/testdist/unit/cluster/module1/tests.jar"));
     }
     
     public void testCompletionWorks_69735() throws Exception {
