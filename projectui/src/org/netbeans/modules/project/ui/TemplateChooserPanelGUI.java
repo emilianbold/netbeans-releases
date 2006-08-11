@@ -74,14 +74,16 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private String category;
     private String template;
     private boolean isWarmUp = true;
-
     private ListCellRenderer projectCellRenderer;
+    private boolean firstTime = true;
     
     public TemplateChooserPanelGUI() {
         this.builder = new FileChooserBuilder ();
         initComponents();
         setPreferredSize( PREF_DIM );
         setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
+        projectCellRenderer = new ProjectCellRenderer ();
+        projectsComboBox.setRenderer (projectCellRenderer);
      }
     
     public void readValues (Project p, String category, String template) {
@@ -181,18 +183,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
     
     public void addNotify () {
-        Utilities.attachInitJob (this, this);
-        super.addNotify ();
-        if (projectCellRenderer == null) {
-            projectCellRenderer = new ProjectCellRenderer ();
+        if (firstTime) {
+            //77244 prevent multiple initializations..
+            Utilities.attachInitJob (this, this);
+            firstTime = false;
         }
-        projectsComboBox.setRenderer (projectCellRenderer);
-    }
-    
-    public void removeNotify () {
-        super.removeNotify ();
-        projectCellRenderer = null;
-        projectsComboBox.setRenderer (null);
+        super.addNotify ();
     }
     
     /** This method is called from within the constructor to
