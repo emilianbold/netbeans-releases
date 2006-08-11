@@ -81,7 +81,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                         result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/insanelib.jar!/".length()) + "/performance/insanelib/src/"); // NOI18N
                     } else {
                         // tests.jar in test distribution 
-                        TestEntry testJar = TestEntry.get(new File(URI.create(FileUtil.getArchiveFile(binaryRoot).toExternalForm())));
+                        TestEntry testJar = TestEntry.get(archiveURLToFile(binaryRoot));
                         if (testJar != null) {
                            result = testJar.getSrcDir();
                         }
@@ -114,7 +114,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 Util.err.log(binaryRoot + " is not an archive file."); // NOI18N
                 return null;
             }
-            File binaryRootF = new File(URI.create(FileUtil.getArchiveFile(binaryRoot).toExternalForm()));
+            File binaryRootF = archiveURLToFile(binaryRoot);
             FileObject fo = FileUtil.toFileObject(binaryRootF);
             if (fo == null) {
                 Util.err.log("Cannot found FileObject for " + binaryRootF + "(" + binaryRoot + ")"); // NOI18N
@@ -155,7 +155,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 for (int i = 0; i < roots.length; i++) {
                     if (roots[i].getProtocol().equals("jar")) { // NOI18N
                         // suppose zipped sources
-                        File nbSrcF = new File(URI.create(FileUtil.getArchiveFile(roots[i]).toExternalForm()));
+                        File nbSrcF = archiveURLToFile(roots[i]);
                         if (!nbSrcF.exists()) {
                             continue;
                         }
@@ -256,6 +256,10 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
             }
         }
         return result;
+    }
+
+    private static File archiveURLToFile(final URL archiveURL) {
+        return new File(URI.create(FileUtil.getArchiveFile(archiveURL).toExternalForm()));
     }
     
     public static final class NetBeansSourcesParser {
