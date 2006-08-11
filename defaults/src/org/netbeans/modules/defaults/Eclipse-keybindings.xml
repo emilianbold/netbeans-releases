@@ -12,50 +12,50 @@
     <bind actionName="caret-end" key="D-END"/>
     <bind actionName="caret-end-line" key="END"/>
     <bind actionName="caret-forward" key="RIGHT"/>
-    <bind actionName="caret-next-word" key="C-RIGHT"/>
-    <bind actionName="caret-previous-word" key="C-LEFT"/>
+    <bind actionName="caret-next-word" key="D-RIGHT"/>
+    <bind actionName="caret-previous-word" key="D-LEFT"/>
     <bind actionName="caret-up" key="UP"/>
     <bind actionName="caret-up" key="KP_UP"/>
-    <bind actionName="collapse-fold" key="C-SUBTRACT"/>
+    <bind actionName="collapse-fold" key="D-SUBTRACT"/>
     <bind actionName="collapse-all-folds" key="DS-SUBTRACT"/>
-    <bind actionName="completion-show" key="C-SPACE"/>
+    <bind actionName="completion-show" key="D-SPACE"/>
     <bind actionName="copy-to-clipboard" key="COPY"/>
     <bind actionName="cut-to-clipboard" key="CUT"/>
     <bind actionName="delete-next" key="DELETE"/>
     <bind actionName="delete-previous" key="BACK_SPACE"/>
-    <bind actionName="documentation-show" key="CS-SPACE"/>
-    <bind actionName="expand-all-folds" key="C-MULTIPLY"/>
-    <bind actionName="expand-fold" key="C-ADD"/>
-    <bind actionName="fast-import" key="CS-M"/>
+    <bind actionName="documentation-show" key="DS-SPACE"/>
+    <bind actionName="expand-all-folds" key="D-MULTIPLY"/>
+    <bind actionName="expand-fold" key="D-ADD"/>
+    <bind actionName="fast-import" key="DS-M"/>
     <bind actionName="find" key="FIND"/>
-    <bind actionName="find-next" key="C-K"/>
-    <bind actionName="find-previous" key="CS-K"/>
-    <bind actionName="fix-imports" key="CS-O"/>
-    <bind actionName="format" key="CS-F"/>
-    <bind actionName="goto" key="C-L"/>
+    <bind actionName="find-next" key="D-K"/>
+    <bind actionName="find-previous" key="DS-K"/>
+    <bind actionName="fix-imports" key="DS-O"/>
+    <bind actionName="format" key="DS-F"/>
+    <bind actionName="goto" key="D-L"/>
     <bind actionName="goto-declaration" key="F3"/>
-    <bind actionName="goto-source" key="C-F3"/>
+    <bind actionName="goto-source" key="D-F3"/>
     <bind actionName="insert-break" key="ENTER"/>
     <bind actionName="insert-tab" key="TAB"/>
-    <bind actionName="jump-list-next" key="A-RIGHT"/>
-    <bind actionName="jump-list-prev" key="A-LEFT"/>
+    <bind actionName="jump-list-next" key="O-RIGHT"/>
+    <bind actionName="jump-list-prev" key="O-LEFT"/>
     <bind actionName="make-getter" key="O-U$G"/>
     <bind actionName="make-is" key="O-U$I"/>
     <bind actionName="make-setter" key="O-U$S"/>
-    <bind actionName="match-brace" key="CAS-P"/>
+    <bind actionName="match-brace" key="DOS-P"/>
     <bind actionName="page-down" key="PAGE_DOWN"/>
     <bind actionName="page-up" key="PAGE_UP"/>
     <bind actionName="paste-from-clipboard" key="PASTE"/>
     <bind actionName="remove-tab" key="S-TAB"/>
-    <bind actionName="remove-line" key="C-D"/>
-    <bind actionName="remove-word-next" key="C-DELETE"/>
-    <bind actionName="remove-word-previous" key="C-BACK_SPACE"/>
-    <bind actionName="replace" key="CS-F"/>
-    <bind actionName="scroll-down" key="C-UP"/>
-    <bind actionName="scroll-up" key="C-DOWN"/>
+    <bind actionName="remove-line" key="D-D"/>
+    <bind actionName="remove-word-next" key="D-DELETE"/>
+    <bind actionName="remove-word-previous" key="D-BACK_SPACE"/>
+    <bind actionName="replace" key="DS-F"/>
+    <bind actionName="scroll-down" key="D-UP"/>
+    <bind actionName="scroll-up" key="D-DOWN"/>
     <bind actionName="select-all" key="D-A"/>
-    <bind actionName="select-element-next" key="AS-UP"/>
-    <bind actionName="select-element-previous" key="AS-DOWN"/>
+    <bind actionName="select-element-next" key="OS-UP"/>
+    <bind actionName="select-element-previous" key="OS-DOWN"/>
     <bind actionName="selection-backward" key="S-LEFT"/>
     <bind actionName="selection-begin" key="DS-HOME"/>
     <bind actionName="selection-begin-line" key="S-HOME"/>
@@ -72,11 +72,11 @@
     <bind actionName="start-macro-recording" key="D-J$S"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
     <bind actionName="stop-macro-recording" key="D-J$E"/>
-    <bind actionName="to-lower-case" key="CS-Y"/>
-    <bind actionName="to-upper-case" key="CS-X"/>
+    <bind actionName="to-lower-case" key="DS-Y"/>
+    <bind actionName="to-upper-case" key="DS-X"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
-    <bind actionName="tooltip-show" key="A-P"/>
+    <bind actionName="tooltip-show" key="O-P"/>
     <bind actionName="try-catch" key="OS-W"/>
     <bind actionName="undo" key="UNDO"/>
-    <bind actionName="word-match-next" key="A-SLASH"/>
+    <bind actionName="word-match-next" key="O-SLASH"/>
 </bindings>
