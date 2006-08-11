@@ -108,14 +108,14 @@ public interface ActionProvider {
     String COMMAND_COPY = "copy"; // NOI18N
     
     /**
-     * Standard command for deleting the project.
+     * Standard command for moving the project.
      *
      * @since 1.7
      */
     String COMMAND_MOVE = "move"; // NOI18N
 
     /**
-     * Standard command for deleting the project.
+     * Standard command for renaming the project.
      *
      * @since 1.7
      */
