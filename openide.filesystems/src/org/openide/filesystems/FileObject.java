@@ -794,8 +794,11 @@ public abstract class FileObject extends Object implements Serializable {
      *  listeners.
      */
     static boolean isPriorityListener(FileChangeListener fcl) {
-        return (fcl instanceof PriorityFileChangeListener) || 
-                fcl.getClass().getName().indexOf("MasterFileObject$FileChangeListenerImpl") == -1;//NOI18N
+        if (fcl instanceof PriorityFileChangeListener) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     interface PriorityFileChangeListener extends FileChangeListener {}

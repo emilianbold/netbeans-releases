@@ -74,12 +74,28 @@ public class FileObjectTestHid extends TestBaseHid {
         //assertGC("", ref);
     }
     
-    public void  testEventsDelivery81746() throws Exception {
+    public void testEventsDelivery81746() throws Exception {
+        doEventsDelivery81746(1);
+    }
+
+    public void testEventsDeliveryInInnerAtomicActions82459() throws Exception {
+        doEventsDelivery81746(2);
+    }
+    
+    private void doEventsDelivery81746(final int howDeep) throws Exception {
         checkSetUp();
         final FileObject fold = getTestFolder1(root);
         if (fold.getFileSystem().isReadOnly()) {
             return;
         }
+        class L extends FileChangeAdapter {
+            public int cnt;
+            
+            public void fileDataCreated(FileEvent fe) {
+                cnt++;
+            }
+        }
+        
         final FileChangeListener noFileDataCreatedListener = new FileChangeAdapter(){
             public void fileDataCreated(FileEvent fe) {
                 fail();
@@ -96,10 +112,22 @@ public class FileObjectTestHid extends TestBaseHid {
             }
         };
         
+        final L countingL = new L();
         try {
             fold.getFileSystem().addFileChangeListener(listener1);
+            fold.addFileChangeListener(countingL);
+            fold.getFileSystem().addFileChangeListener(countingL);
             fold.getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
+                private int stillDeep = howDeep;
+                
                 public void run() throws java.io.IOException {
+                    if (--stillDeep > 0) {
+                        fold.getFileSystem().runAtomicAction(this);
+                        assertEquals("No events in inner actions", 0, countingL.cnt);
+                        return;
+                    }
+                    
+                    
                     fold.createData("file1");
                     fold.createData("file2");
                 }
