@@ -189,7 +189,7 @@ public class ProjectsRootNode extends AbstractNode {
     
     // XXX Needs to listen to project rename
     // However project rename is currently disabled so it is not a big deal
-    static class ProjectChildren extends Children.Keys implements ChangeListener, PropertyChangeListener {
+    static class ProjectChildren extends Children.Keys<Project> implements ChangeListener, PropertyChangeListener {
         
         private java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         
@@ -207,19 +207,15 @@ public class ProjectsRootNode extends AbstractNode {
         }
         
         public void removeNotify() {
-            for( Iterator it = sources2projects.keySet().iterator(); it.hasNext(); ) {
-                Sources sources = (Sources)it.next();
+            for (Sources sources : sources2projects.keySet()) {
                 sources.removeChangeListener( this );                
             }
             sources2projects.clear();
-            setKeys( Collections.EMPTY_LIST );
+            setKeys(Collections.<Project>emptySet());
         }
         
-        protected Node[] createNodes( Object key ) {
-            
-            Project project = (Project)key;
-            
-            LogicalViewProvider lvp = (LogicalViewProvider)project.getLookup().lookup( LogicalViewProvider.class );
+        protected Node[] createNodes(Project project) {
+            LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
             
             Node nodes[] = null;
                         
@@ -278,12 +274,12 @@ public class ProjectsRootNode extends AbstractNode {
         
         public void stateChanged( ChangeEvent e ) {
             
-            WeakReference projectRef = (WeakReference)sources2projects.get( e.getSource() );
+            Reference<Project> projectRef = sources2projects.get(e.getSource());
             if ( projectRef == null ) {
                 return;
             }
             
-            final Project project = (Project)projectRef.get();
+            final Project project = projectRef.get();
             
             if ( project == null ) {
                 return;
