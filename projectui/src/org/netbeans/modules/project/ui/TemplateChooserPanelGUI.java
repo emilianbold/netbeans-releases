@@ -239,7 +239,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     // private static final Comparator NATURAL_NAME_SORT = Collator.getInstance();
     
-    private final class TemplateChildren extends Children.Keys/*<DataObject>*/ implements ActionListener {
+    private final class TemplateChildren extends Children.Keys<DataFolder> implements ActionListener {
         
         private final DataFolder folder;
         
@@ -254,38 +254,34 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<DataFolder>emptySet());
             projectsComboBox.removeActionListener( this );
             super.removeNotify();
         }
         
         private void updateKeys() {
-            List<DataObject> l = new ArrayList<DataObject>();
-            DataObject[] kids = folder.getChildren();
-            for (int i = 0; i < kids.length; i++) {
-                DataObject d = kids[i];
+            List<DataFolder> l = new ArrayList<DataFolder>();
+            for (DataObject d : folder.getChildren()) {
                 FileObject prim = d.getPrimaryFile();
                 if ( acceptTemplate( d, prim ) ) {
                     // has children?
                     if (hasChildren ((Project)projectsComboBox.getSelectedItem (), d)) {
-                        l.add(d);
+                        l.add((DataFolder) d);
                     }
                 }
             }
             setKeys(l);
         }
         
-        protected Node[] createNodes(Object key) {
-            DataFolder d = (DataFolder)key;
-            DataObject[] chlds = d.getChildren();
-            int state = 0;
-            for (int i=0; i<chlds.length; i++) {
-                if ((chlds[i] instanceof DataFolder) && !isTemplate(chlds[i])) {
-                    state = 1;
+        protected Node[] createNodes(DataFolder d) {
+            boolean haveChildren = false;
+            for (DataObject child : d.getChildren()) {
+                if ((child instanceof DataFolder) && !isTemplate(child)) {
+                    haveChildren = true;
                     break;
                 }
             }
-            if (state == 0) {
+            if (!haveChildren) {
                 return new Node[] {new FilterNode(d.getNodeDelegate(), Children.LEAF )};
             } else {
                 return new Node[] {new FilterNode(d.getNodeDelegate(), new TemplateChildren((DataFolder)d))};
@@ -295,7 +291,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         public void actionPerformed (ActionEvent event) {
             final String cat = getCategoryName ();
             String template =  ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).getSelectedTemplateName();
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<DataFolder>emptySet());
             this.updateKeys ();
             setCategory (cat);
             ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).setSelectedTemplateByName(template);
@@ -332,7 +328,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
     
     
-    private final class FileChildren extends Children.Keys {
+    private final class FileChildren extends Children.Keys<DataObject> {
         
         private DataFolder root;
                 
@@ -346,20 +342,18 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         protected void removeNotify () {
-            this.setKeys (new Object[0]);
+            this.setKeys (new DataObject[0]);
         }
         
-        protected Node[] createNodes(Object key) {
-            if (key instanceof DataObject) {
-                DataObject dobj = (DataObject)key;
-                if (isTemplate(dobj) && OpenProjectList.isRecommended (getProject (), dobj.getPrimaryFile ())) {
-                    if (dobj instanceof DataShadow) {
-                        dobj = ((DataShadow)dobj).getOriginal ();
-                    }
-                    return new Node[] { new FilterNode (dobj.getNodeDelegate(), Children.LEAF) };
+        protected Node[] createNodes(DataObject dobj) {
+            if (isTemplate(dobj) && OpenProjectList.isRecommended(getProject(), dobj.getPrimaryFile())) {
+                if (dobj instanceof DataShadow) {
+                    dobj = ((DataShadow)dobj).getOriginal();
                 }
+                return new Node[] { new FilterNode(dobj.getNodeDelegate(), Children.LEAF) };
+            } else {
+                return new Node[0];
             }
-            return new Node[0];
         }        
         
     }

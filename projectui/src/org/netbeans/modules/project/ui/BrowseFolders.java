@@ -23,16 +23,13 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.DialogDescriptor;
@@ -42,7 +39,6 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -248,96 +244,80 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     */
     
     // Innerclasses ------------------------------------------------------------
-    
-    /** Children to be used to show FileObjects from given SourceGroups
-     */
-	 
-    private static final class SourceGroupsChildren extends Children.Keys {
-        
-        private SourceGroup[] groups;
-        private SourceGroup group;
-        private FileObject fo;
-        private Project project;
-        
-        public SourceGroupsChildren( SourceGroup[] groups, Project project ) {
+
+    private static final class SourceGroupsChildren extends Children.Keys<SourceGroup> {
+
+        private final SourceGroup[] groups;
+        private final Project project;
+
+        public SourceGroupsChildren(SourceGroup[] groups, Project project) {
+            assert groups != null;
+            assert project != null;
             this.groups = groups;
             this.project = project;
         }
-                
-        public SourceGroupsChildren( FileObject fo, SourceGroup group ) {
+
+        @Override
+        protected void addNotify() {
+            super.addNotify();
+            setKeys(groups);
+        }
+
+        @Override
+        protected void removeNotify() {
+            setKeys(Collections.<SourceGroup>emptySet());
+            super.removeNotify();
+        }
+
+        @Override
+        protected Node[] createNodes(SourceGroup g) {
+            FileObject folder = g.getRootFolder();
+            FilterNode fn = new FilterNode(
+                    new PhysicalView.GroupNode(project, g, folder.equals(project.getProjectDirectory()), DataFolder.findFolder(folder)),
+                    new SourceGroupChildren(folder, g));
+            return new Node[] { fn };
+        }
+
+    }
+
+    private static final class SourceGroupChildren extends Children.Keys<FileObject> {
+
+        private final SourceGroup group;
+        private final FileObject fo;
+
+        public SourceGroupChildren(FileObject fo, SourceGroup group) {
+            assert fo != null;
+            assert group != null;
             this.fo = fo;
             this.group = group;
         }
-                
+
+        @Override
         protected void addNotify() {
             super.addNotify();
-            setKeys( getKeys() );
+            List<FileObject> l = new ArrayList<FileObject>();
+            for (FileObject f : fo.getChildren()) {
+                if (f.isFolder() && group.contains(f) && VisibilityQuery.getDefault().isVisible(f)) {
+                    l.add(f);
+                }
+            }
+            setKeys(l);
         }
-        
+
+        @Override
         protected void removeNotify() {
-            setKeys( Collections.EMPTY_SET );
+            setKeys(Collections.<FileObject>emptySet());
             super.removeNotify();
         }
-        
-        protected Node[] createNodes(Object key) {
-            
-            FileObject folder = null;
-            SourceGroup group = null;
-            
-            if ( key instanceof SourceGroup ) {
-                folder = ((SourceGroup)key).getRootFolder();
-                group = (SourceGroup)key;
-                FilterNode fn = new FilterNode( 
-                    new PhysicalView.GroupNode( project, group, folder.equals( project.getProjectDirectory() ), DataFolder.findFolder( folder ) ), 
-                    new SourceGroupsChildren( folder, group ) );
-                return new Node[] { fn };
-            }
-            else if ( key instanceof Key ) {
-                folder = ((Key)key).folder;
-                group = ((Key)key).group;    
-                FilterNode fn = new FilterNode( 
-                    DataFolder.findFolder( folder ).getNodeDelegate(), 
-                    new SourceGroupsChildren( folder, group ) );
-                return new Node[] { fn };
-            }
-            else {
-                return new Node[0];
-            }
+
+        @Override
+        protected Node[] createNodes(FileObject folder) {
+            FilterNode fn = new FilterNode(
+                    DataFolder.findFolder(folder).getNodeDelegate(),
+                    new SourceGroupChildren(folder, group));
+            return new Node[] { fn };
         }
-        
-        private Collection getKeys() {
-			
-            if ( groups != null ) {
-                return Arrays.asList( groups );                
-            }
-            else {
-                FileObject files[] = fo.getChildren();
-                ArrayList<Key> children = new ArrayList<Key>( files.length );
-                
-                for( int i = 0; i < files.length; i++ ) {
-                    if ( files[i].isFolder() && group.contains( files[i] ) && VisibilityQuery.getDefault().isVisible( files[i] ) ) {
-                        children.add( new Key( files[i], group ) );
-                    }
-                }
-                
-                return children;
-            }
-			
-        }
-	
-        private static class Key {
-            
-            private FileObject folder;
-            private SourceGroup group;
-            
-            private Key ( FileObject folder, SourceGroup group ) {
-                this.folder = folder;
-                this.group = group;
-            }
-            
-            
-        }
-        
+
     }
 
     

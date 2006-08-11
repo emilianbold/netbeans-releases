@@ -27,6 +27,7 @@ import javax.swing.filechooser.FileSystemView;
 import org.openide.filesystems.FileUtil;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /** SystemOption to store the list of open projects
  *  XXX Should be removed later and changed either to registry
@@ -52,7 +53,7 @@ public class OpenProjectListSettings extends SystemOption {
     
     
     public static OpenProjectListSettings getInstance() {
-        return (OpenProjectListSettings)SystemOption.findObject( OpenProjectListSettings.class, true );
+        return SystemOption.findObject(OpenProjectListSettings.class, true);
     }
     
     public String displayName() {
@@ -60,8 +61,8 @@ public class OpenProjectListSettings extends SystemOption {
     }        
 
     public List<URL> getOpenProjectsURLs() {
-        @SuppressWarnings("unchecked") List<URL> list = (List<URL>)getProperty( OPEN_PROJECTS_URLS );
-        return list == null ? new ArrayList<URL>( 3 ) : list;
+        List list = (List) getProperty(OPEN_PROJECTS_URLS);
+        return list == null ? new ArrayList<URL>(3) : NbCollections.checkedListByCopy(list, URL.class, true);
     }
 
     public void setOpenProjectsURLs( List<URL> list ) {
@@ -70,20 +71,20 @@ public class OpenProjectListSettings extends SystemOption {
     
     public boolean isOpenSubprojects() {        
         Boolean value = (Boolean)getProperty( OPEN_SUBPROJECTS );        
-        return value == null ? true : value.booleanValue();
+        return value == null ? true : value;
     }
     
     public void setOpenSubprojects( boolean openSubprojects ) {
-        putProperty( OPEN_SUBPROJECTS, openSubprojects ? Boolean.TRUE : Boolean.FALSE, true );
+        putProperty(OPEN_SUBPROJECTS, openSubprojects, true);
     }
     
     public boolean isOpenAsMain() {        
         Boolean value = (Boolean)getProperty( OPEN_AS_MAIN );        
-        return value == null ? true : value.booleanValue();
+        return value == null ? true : value;
     }
     
     public void setOpenAsMain( boolean openAsMain ) {
-        putProperty( OPEN_AS_MAIN, openAsMain ? Boolean.TRUE : Boolean.FALSE, true );
+        putProperty(OPEN_AS_MAIN, openAsMain, true);
     }
     
     public URL getMainProjectURL() {
@@ -107,18 +108,18 @@ public class OpenProjectListSettings extends SystemOption {
     }
     
     public List<URL> getRecentProjectsURLs() {
-        @SuppressWarnings("unchecked") List<URL> list = (List<URL>)getProperty( RECENT_PROJECTS_URLS );
-        return list == null ? new ArrayList<URL>( 5 ) : list;
+        List list = (List) getProperty(RECENT_PROJECTS_URLS);
+        return list == null ? new ArrayList<URL>(5) : NbCollections.checkedListByCopy(list, URL.class, true);
     }
     
     public List<String> getRecentProjectsDisplayNames() {
-        @SuppressWarnings("unchecked") List<String> list = (List<String>) getProperty(RECENT_PROJECTS_DISPLAY_NAMES);
-        return list == null ? new ArrayList<String>(5) : list;
+        List list = (List) getProperty(RECENT_PROJECTS_DISPLAY_NAMES);
+        return list == null ? new ArrayList<String>(5) : NbCollections.checkedListByCopy(list, String.class, true);
     }
     
     public List<ExtIcon> getRecentProjectsIcons() {
-        @SuppressWarnings("unchecked") List<ExtIcon> list = (List<ExtIcon>) getProperty(RECENT_PROJECTS_DISPLAY_ICONS);
-        return list == null ? new ArrayList<ExtIcon>(5) : list;
+        List list = (List) getProperty(RECENT_PROJECTS_DISPLAY_ICONS);
+        return list == null ? new ArrayList<ExtIcon>(5) : NbCollections.checkedListByCopy(list, ExtIcon.class, true);
     }
     
     public void setRecentProjectsURLs( List<URL> list ) {
@@ -170,8 +171,8 @@ public class OpenProjectListSettings extends SystemOption {
     }
     
     public List<String> getRecentTemplates() {        
-        @SuppressWarnings("unchecked") List<String> list = (List<String>)getProperty( RECENT_TEMPLATES );               
-        return list == null ? new ArrayList<String>( 100 ) : list;       
+        List list = (List) getProperty(RECENT_TEMPLATES);
+        return list == null ? new ArrayList<String>(100) : NbCollections.checkedListByCopy(list, String.class, true);
     }
     
     public void setRecentTemplates( List<String> templateNames ) {

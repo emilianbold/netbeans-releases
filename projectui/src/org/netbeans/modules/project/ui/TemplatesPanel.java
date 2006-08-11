@@ -23,10 +23,8 @@ import java.awt.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.*;
 
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -175,7 +173,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         return warmUpActive;
     }
 
-    private static class CategoriesChildren extends Children.Keys {
+    private static class CategoriesChildren extends Children.Keys<DataObject> {
         
         private DataFolder root;
                 
@@ -184,44 +182,39 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         }
         
         protected void addNotify () {
-            DataObject[] children = root.getChildren();
-            setKeys (children);
+            setKeys(root.getChildren());
         }
         
         protected void removeNotify () {
-            this.setKeys (new Object[0]);
+            this.setKeys(new DataObject[0]);
         }
         
-        protected Node[] createNodes(Object key) {
-            if (key instanceof DataObject) {
-                DataObject dobj = (DataObject) key;
-                if (dobj instanceof DataFolder) {
-                    DataFolder folder = (DataFolder) dobj;
-                    DataObject[] children = folder.getChildren ();
-                    int type = children.length == 0 ? 0 : 1;   //Empty folder or File folder
-                    for (int i=0; i< children.length; i++) {
-                        if (children[i].getPrimaryFile ().isFolder ()) {
-                            type = 2;   //Folder folder
-                            break;
-                        }
+        protected Node[] createNodes(DataObject dobj) {
+            if (dobj instanceof DataFolder) {
+                DataFolder folder = (DataFolder) dobj;
+                int type = 0;   //Empty folder or File folder
+                for (DataObject child : folder.getChildren()) {
+                    type = 1;
+                    if (child.getPrimaryFile().isFolder()) {
+                        type = 2;   //Folder folder
+                        break;
                     }
-                    if (type == 1) {
-                        return new Node[] {
-                            new FilterNode (dobj.getNodeDelegate(), Children.LEAF)
-                        };
-                    }
-                    else if (type == 2) {
-                        return new Node[] {                        
-                            new FilterNode (dobj.getNodeDelegate(), new CategoriesChildren ((DataFolder)dobj))
-                        };
-                    }
+                }
+                if (type == 1) {
+                    return new Node[] {
+                        new FilterNode(dobj.getNodeDelegate(), Children.LEAF)
+                    };
+                } else if (type == 2) {
+                    return new Node[] {
+                        new FilterNode(dobj.getNodeDelegate(), new CategoriesChildren((DataFolder)dobj))
+                    };
                 }
             }
             return new Node[0];
         }                
     }
     
-    private static class TemplateChildren extends Children.Keys {
+    private static class TemplateChildren extends Children.Keys<DataObject> {
         
         private DataFolder folder;
                 
@@ -234,19 +227,17 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         }
         
         protected void removeNotify () {
-            this.setKeys (new Object[0]);
+            this.setKeys(new DataObject[0]);
         }
         
-        protected Node[] createNodes(Object key) {
-            if (key instanceof DataObject) {
-                DataObject dobj = (DataObject) key;
-                if (dobj.isTemplate()) {
-                    return new Node[] {
-                        new FilterNode (dobj.getNodeDelegate (), Children.LEAF)
-                    };
-                }
+        protected Node[] createNodes(DataObject dobj) {
+            if (dobj.isTemplate()) {
+                return new Node[] {
+                    new FilterNode(dobj.getNodeDelegate(), Children.LEAF)
+                };
+            } else {
+                return new Node[0];
             }
-            return new Node[0];
         }        
         
     }
