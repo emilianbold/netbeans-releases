@@ -433,6 +433,10 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
         
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(WebLogicalViewRootNode.class);
+        }
+        
         // Private methods -------------------------------------------------    
 
         private Action[] getAdditionalActions() {

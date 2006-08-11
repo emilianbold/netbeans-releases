@@ -93,6 +93,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -477,6 +478,10 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         
         public void setName(String s) {
             DefaultProjectOperations.performDefaultRenameOperation(project, s);
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(J2SELogicalViewRootNode.class);
         }
         
         /*

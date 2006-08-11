@@ -419,6 +419,10 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             : original;
         }
         
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(ArchiveLogicalViewRootNode.class);
+        }
+        
         // Private methods -------------------------------------------------
         
         private Action[] getAdditionalActions() {
