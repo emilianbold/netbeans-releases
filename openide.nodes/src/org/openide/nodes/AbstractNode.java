@@ -130,8 +130,10 @@ public class AbstractNode extends Node {
     private Sheet sheet;
 
     /** Actions for the node. They are used only for the pop-up menus
-    * of this node.
-    */
+     * of this node.
+     * @deprecated Override {@link #getActions(boolean)} instead of using
+     * this field.
+     */
     protected SystemAction[] systemActions;
     private SheetAndCookieListener sheetCookieL = null;
 
