@@ -109,8 +109,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         if (isSuiteComponent()) {
             computeAndSetLocation((String) moduleSuiteValue.getSelectedItem(), true);
         } else { // suite or standalone module
-            String location = computeLocationValue(
-                    ModuleUISettings.getDefault().getLastUsedModuleLocation());
+            String location = computeLocationValue(ProjectChooser.getProjectsFolder().getAbsolutePath());
             File locationF = new File(location);
             if (SuiteUtils.isSuite(locationF)) {
                 computeAndSetLocation(locationF.getParent(), true);

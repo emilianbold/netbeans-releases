@@ -69,16 +69,7 @@ public class ModuleUISettings extends SystemOption {
     public void setNewSuiteCounter(int count) {
         putProperty(NEW_SUITE_COUNTER, new Integer(count), true);
     }
-    
-    public String getLastUsedModuleLocation() {
-        return (String) getProperty(LAST_USED_MODULE_LOCATION, System.getProperty("user.home")); // NOI18N
-    }
-    
-    public void setLastUsedModuleLocation(String location) {
-        assert location != null : "Location can not be null"; // NOI18N
-        putProperty(LAST_USED_MODULE_LOCATION, location, true);
-    }
-    
+
     public String getLastUsedNbPlatformLocation() {
         return (String) getProperty(LAST_USED_NB_PLATFORM_LOCATION, System.getProperty("user.home")); // NOI18N
     }

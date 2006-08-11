@@ -35,6 +35,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -130,7 +131,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     
     public Set instantiate() throws IOException {
         final File projectFolder = new File(data.getProjectFolder());
-        ModuleUISettings.getDefault().setLastUsedModuleLocation(data.getProjectLocation());
+        ProjectChooser.setProjectsFolder(new File(data.getProjectLocation()));
         ModuleUISettings.getDefault().setLastUsedPlatformID(data.getPlatformID());
         switch (data.getWizardType()) {
             case NewNbModuleWizardIterator.TYPE_SUITE:
