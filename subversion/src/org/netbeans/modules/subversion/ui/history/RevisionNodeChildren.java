@@ -30,17 +30,12 @@ import java.util.*;
  */
 class RevisionNodeChildren extends Children.Keys {
 
-    private SearchHistoryPanel.ResultsContainer container;
-    private SearchHistoryPanel.DispRevision     revision;
+    private RepositoryRevision container;
 
-    public RevisionNodeChildren(SearchHistoryPanel.ResultsContainer container) {
+    public RevisionNodeChildren(RepositoryRevision container) {
         this.container = container;
     }
 
-    public RevisionNodeChildren(SearchHistoryPanel.DispRevision revision) {
-        this.revision = revision;
-    }
-    
     protected void addNotify() {
         refreshKeys();
     }
@@ -50,15 +45,11 @@ class RevisionNodeChildren extends Children.Keys {
     }
     
     private void refreshKeys() {
-        if (container != null) {
-            setKeys(container.getRevisions());
-        } else {
-            setKeys(revision.getChildren());
-        }
+        setKeys(container.getEvents());
     }
     
     protected Node[] createNodes(Object key) {
-        SearchHistoryPanel.DispRevision fn = (SearchHistoryPanel.DispRevision) key;
+        RepositoryRevision.Event fn = (RepositoryRevision.Event) key;
         RevisionNode node = new RevisionNode(fn);
         return new Node[] { node };
     }

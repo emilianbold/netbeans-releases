@@ -48,13 +48,18 @@ public class Context implements Serializable {
     }
 
     public Context(File file) {
-        List<File> singleList = new ArrayList<File>(1);
-        singleList.add(file);
-        this.filteredFiles = singleList;
-        this.rootFiles = singleList;
+        this(new File [] { file });
+    }
+
+    public Context(File [] files) {
+        List<File> list = new ArrayList<File>(files.length);
+        list.addAll(Arrays.asList(files));
+        removeDuplicates(list);
+        this.filteredFiles = list;
+        this.rootFiles = list;
         this.exclusions = Collections.emptyList();
     }
-    
+
     private boolean normalize() {
         for (Iterator<File> i = rootFiles.iterator(); i.hasNext();) {
             File root = i.next();

@@ -21,7 +21,6 @@ package org.netbeans.modules.subversion.ui.history;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
@@ -62,7 +61,7 @@ class SearchExecutor implements Runnable {
     
     private int                         completedSearches;
     private boolean                     searchCanceled;
-    private List<LogInformation.Revision> results = new ArrayList<LogInformation.Revision>();
+    private List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
 
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
@@ -125,23 +124,23 @@ class SearchExecutor implements Runnable {
             support.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
         } else {
             for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
-                final SVNUrl url = (SVNUrl) i.next();
-                final Set<File> files = workFiles.get(url);  
-                RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
+                final SVNUrl rootUrl = (SVNUrl) i.next();
+                final Set<File> files = workFiles.get(rootUrl);
+                RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
                 SvnProgressSupport support = new SvnProgressSupport() {
                     public void perform() {                    
-                        search(url, files, fromRevision, toRevision, this);
+                        search(rootUrl, files, fromRevision, toRevision, this);
                     }
                 };
-                support.start(rp, url, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
+                support.start(rp, rootUrl, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
             }
         }
     }
 
-    private void search(SVNUrl url, Set<File> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport) {
+    private void search(SVNUrl rootUrl, Set<File> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport) {
         SvnClient client;
         try {
-            client = Subversion.getInstance().getClient(url, progressSupport);
+            client = Subversion.getInstance().getClient(rootUrl, progressSupport);
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return;
@@ -153,8 +152,8 @@ class SearchExecutor implements Runnable {
         
         if (searchingUrl()) {
             try {
-                ISVNLogMessage [] messages = client.getLogMessages(url, null, fromRevision, toRevision, false, true, 0);
-                appendResults(url, messages);
+                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, fromRevision, toRevision, false, true, 0);
+                appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
                 ExceptionHandler eh = new ExceptionHandler(e);
                 eh.annotate();
@@ -163,11 +162,11 @@ class SearchExecutor implements Runnable {
             String [] paths = new String[files.size()];
             int idx = 0;
             for (File file : files) {
-                paths[idx++] = SvnUtils.getRelativePath(url, file);
+                paths[idx++] = SvnUtils.getRelativePath(rootUrl, file);
             }
             try {
-                ISVNLogMessage [] messages = client.getLogMessages(url, paths, fromRevision, toRevision, false, true);
-                appendResults(url, messages);
+                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, paths, fromRevision, toRevision, false, true);
+                appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
                 ExceptionHandler eh = new ExceptionHandler(e);
                 eh.annotate();
@@ -175,35 +174,42 @@ class SearchExecutor implements Runnable {
         }
     }
     
-    private Map<SVNUrl, LogInformation> urlToLoginfo = new HashMap<SVNUrl, LogInformation>(); 
-    
-    private synchronized void appendResults(SVNUrl url, ISVNLogMessage[] logMessages) {
-        for (int i = 0; i < logMessages.length; i++) {
+    /**
+     * Processes search results from a single repository. 
+     * 
+     * @param rootUrl repository root URL
+     * @param logMessages events in chronological order
+     */ 
+    private synchronized void appendResults(SVNUrl rootUrl, ISVNLogMessage[] logMessages) {
+        // /tags/tag-JavaAppX => /branches/brenc2-JavaAppX
+        Map<String, String> historyPaths = new HashMap<String, String>();
+
+        // traverse in reverse chronological order
+        for (int i = logMessages.length - 1; i >= 0; i--) {
             ISVNLogMessage logMessage = logMessages[i];
             if (filterUsername && !criteria.getUsername().equals(logMessage.getAuthor())) continue;
             if (filterMessage && logMessage.getMessage().indexOf(criteria.getCommitMessage()) == -1) continue;
-            ISVNLogMessageChangePath [] paths = logMessage.getChangedPaths();
-            for (int j = 0; j < paths.length; j++) {
-                ISVNLogMessageChangePath path = paths[j];
-                SVNUrl fileUrl = url.appendPath(path.getPath());
-                LogInformation logInfo = urlToLoginfo.get(fileUrl);
-                if (logInfo == null) {
-                    File file = computeFile(path.getPath());
-                    if (file == null) continue;
-                    file = FileUtil.normalizeFile(file);
-                    if (!underSearchRoots(file)) continue;
-                    logInfo = new LogInformation();
-                    logInfo.setRepositoryFilename(fileUrl.toString());
-                    logInfo.setFile(file);
-                    urlToLoginfo.put(fileUrl, logInfo);
+            RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl);
+            for (RepositoryRevision.Event event : rev.getEvents()) {
+                if (event.getChangedPath().getAction() == 'A' && event.getChangedPath().getCopySrcPath() != null) {
+                    // this indicates that in this revision, the file/folder was copied to a new location
+                    String existingMapping = historyPaths.get(event.getChangedPath().getPath());
+                    if (existingMapping == null) {
+                        existingMapping = event.getChangedPath().getPath();
+                    }
+                    historyPaths.put(event.getChangedPath().getCopySrcPath(), existingMapping);
                 }
-                LogInformation.Revision rev = logInfo.new Revision();
-                rev.setNumber(logMessage.getRevision().toString());
-                rev.setAuthor(logMessage.getAuthor());
-                rev.setDate(logMessage.getDate());
-                rev.setMessage(logMessage.getMessage());
-                results.add(rev);
+                String originalFilePath = event.getChangedPath().getPath();
+                for (String srcPath : historyPaths.keySet()) {
+                    if (originalFilePath.startsWith(srcPath)) {
+                        originalFilePath = historyPaths.get(srcPath) + originalFilePath.substring(srcPath.length());
+                        break;
+                    }
+                }
+                File file = computeFile(originalFilePath);
+                event.setFile(file);
             }
+            results.add(rev);
         }
         checkFinished();
     }
@@ -212,14 +218,6 @@ class SearchExecutor implements Runnable {
         return master.getRepositoryUrl() != null;
     }
     
-    private boolean underSearchRoots(File file) {
-        if (searchingUrl()) return true;
-        for (File root : master.getRoots()) {
-            if (SvnUtils.isParentOrEqual(root, file)) return true;
-        }
-        return false;
-    }
-
     private File computeFile(String path) {
         for (String s : pathToRoot.keySet()) {
             if (path.startsWith(s)) {

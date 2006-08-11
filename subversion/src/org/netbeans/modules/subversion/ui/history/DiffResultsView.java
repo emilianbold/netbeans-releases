@@ -27,7 +27,6 @@ import org.openide.ErrorManager;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Diff;
 import org.netbeans.modules.subversion.util.NoContentPanel;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.ui.diff.DiffStreamSource;
 
 import javax.swing.event.AncestorListener;
@@ -110,8 +109,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             // invoked asynchronously becase treeView.getSelection() may not be ready yet
             Runnable runnable = new Runnable() {
                 public void run() {
-                    SearchHistoryPanel.ResultsContainer container1 = (SearchHistoryPanel.ResultsContainer) nodes[0].getLookup().lookup(SearchHistoryPanel.ResultsContainer.class);
-                    SearchHistoryPanel.DispRevision r1 = (SearchHistoryPanel.DispRevision) nodes[0].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
+                    RepositoryRevision container1 = (RepositoryRevision) nodes[0].getLookup().lookup(RepositoryRevision.class);
+                    RepositoryRevision.Event r1 = (RepositoryRevision.Event) nodes[0].getLookup().lookup(RepositoryRevision.Event.class);
                     try {
                         currentIndex = treeView.getSelection()[0];
                         if (nodes.length == 1) {
@@ -122,19 +121,20 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                                 showRevisionDiff(r1, onSelectionshowLastDifference);
                             }
                         } else if (nodes.length == 2) {
-                            SearchHistoryPanel.DispRevision r2 = (SearchHistoryPanel.DispRevision) nodes[1].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
-                            if (r2.getRevision().getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
+                            RepositoryRevision.Event r2 = (RepositoryRevision.Event) nodes[1].getLookup().lookup(RepositoryRevision.Event.class);
+                            if (r2.getFile() == null || !r2.getFile().equals(r1.getFile())) {
                                 throw new Exception();
                             }
-                            String revision2 = r1.getRevision().getNumber();
-                            String revision1 = r2.getRevision().getNumber();
-                            showDiff(r1.getRevision().getLogInfoHeader(), revision1, revision2, false);
+                            long revision2 = r1.getLogInfoHeader().getLog().getRevision().getNumber();
+                            long revision1 = r2.getLogInfoHeader().getLog().getRevision().getNumber();
+                            showDiff(r1, Long.toString(revision1), Long.toString(revision2), false);
                         }
                     } catch (Exception e) {
                         showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection")); // NOI18N
                         parent.refreshComponents(false);
                         return;
                     }
+
                 }
             };
             SwingUtilities.invokeLater(runnable);
@@ -151,7 +151,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         diffView.setDividerLocation(dl);
     }
 
-    private void showDiff(LogInformation header, String revision1, String revision2, boolean showLastDifference) {
+    private void showDiff(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
         synchronized(this) {
             cancelBackgroundTasks();
             currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
@@ -175,16 +175,19 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         treeView.setSelection(idx);
     }
 
-    private void showRevisionDiff(SearchHistoryPanel.DispRevision rev, boolean showLastDifference) {
-        String revision2 = rev.getRevision().getNumber();
-        String revision1 = SvnUtils.previousRevision(revision2);
-        showDiff(rev.getRevision().getLogInfoHeader(), revision1, revision2, showLastDifference);
+    private void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
+        if (rev.getFile() == null) return;
+        long revision2 = rev.getLogInfoHeader().getLog().getRevision().getNumber();
+        long revision1 = revision2 - 1;
+        showDiff(rev, Long.toString(revision1), Long.toString(revision2), showLastDifference);
     }
 
-    private void showContainerDiff(SearchHistoryPanel.ResultsContainer container, boolean showLastDifference) {
-        List revs = container.getRevisions();
-        SearchHistoryPanel.DispRevision newest = (SearchHistoryPanel.DispRevision) revs.get(0);
-        showDiff(newest.getRevision().getLogInfoHeader(), container.getEldestRevision(), newest.getRevision().getNumber(), showLastDifference);
+    private void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
+        List<RepositoryRevision.Event> revs = container.getEvents();
+        RepositoryRevision.Event newest = revs.get(0);
+        if (newest.getFile() == null) return;
+        long rev = newest.getLogInfoHeader().getLog().getRevision().getNumber();
+        showDiff(newest, Long.toString(rev - 1), Long.toString(rev), showLastDifference);
     }
 
     void onNextButton() {
@@ -232,26 +235,26 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
      *
      * @param revision revision to select
      */
-    void select(SearchHistoryPanel.DispRevision revision) {
+    void select(RepositoryRevision.Event revision) {
         treeView.requestFocusInWindow();
         treeView.setSelection(revision);
     }
 
-    void select(SearchHistoryPanel.ResultsContainer container) {
+    void select(RepositoryRevision container) {
         treeView.requestFocusInWindow();
         treeView.setSelection(container);
     }
 
     private class ShowDiffTask implements Runnable, Cancellable {
         
-        private final LogInformation header;
+        private final RepositoryRevision.Event header;
         private final String revision1;
         private final String revision2;
         private boolean showLastDifference;
         private volatile boolean cancelled;
         private Thread thread;
 
-        public ShowDiffTask(LogInformation header, String revision1, String revision2, boolean showLastDifference) {
+        public ShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
             this.header = header;
             this.revision1 = revision1;
             this.revision2 = revision2;

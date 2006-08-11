@@ -88,7 +88,7 @@ class DiffTreeTable extends TreeTableView {
         treeTable.getSelectionModel().setSelectionInterval(idx, idx);
     }
 
-    void setSelection(SearchHistoryPanel.ResultsContainer container) {
+    void setSelection(RepositoryRevision container) {
         RevisionNode node = (RevisionNode) getNode(rootNode, container);
         if (node == null) return;
         ExplorerManager em = ExplorerManager.find(this);
@@ -99,7 +99,7 @@ class DiffTreeTable extends TreeTableView {
         }
     }
 
-    void setSelection(SearchHistoryPanel.DispRevision revision) {
+    void setSelection(RepositoryRevision.Event revision) {
         RevisionNode node = (RevisionNode) getNode(rootNode, revision);
         if (node == null) return;
         ExplorerManager em = ExplorerManager.find(this);
@@ -195,10 +195,10 @@ class DiffTreeTable extends TreeTableView {
     
         protected Node[] createNodes(Object key) {
             RevisionNode node;
-            if (key instanceof SearchHistoryPanel.ResultsContainer) {
-                node = new RevisionNode((SearchHistoryPanel.ResultsContainer) key);
-            } else { // key instanceof SearchHistoryPanel.DispRevision
-                node = new RevisionNode(((SearchHistoryPanel.DispRevision) key));
+            if (key instanceof RepositoryRevision) {
+                node = new RevisionNode((RepositoryRevision) key);
+            } else { // key instanceof RepositoryRevision.Event
+                node = new RevisionNode(((RepositoryRevision.Event) key));
             }
             return new Node[] { node };
         }

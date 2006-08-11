@@ -27,7 +27,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditor;
 import org.openide.ErrorManager;
-import org.netbeans.modules.subversion.util.SvnUtils;
 
 import javax.swing.*;
 import java.io.File;
@@ -51,32 +50,33 @@ class RevisionNode extends AbstractNode {
     static final String COLUMN_NAME_USERNAME    = "username"; // NOI18N
     static final String COLUMN_NAME_MESSAGE     = "message"; // NOI18N
         
-    private LogInformation.Revision                 revision;
-    private SearchHistoryPanel.ResultsContainer     container;
-    private String                                  path;
+    private RepositoryRevision.Event    event;
+    private RepositoryRevision          container;
+    private String                      path;
 
-    public RevisionNode(SearchHistoryPanel.ResultsContainer container) {
+    public RevisionNode(RepositoryRevision container) {
         super(new RevisionNodeChildren(container), Lookups.singleton(container));
         this.container = container;
-        this.revision = null;
-        this.path = container.getPath();
-        setName(((SearchHistoryPanel.DispRevision) container.getRevisions().get(0)).getRevision().getLogInfoHeader().getFile().getName());
+        this.event = null;
+        this.path = null;
+        setName(container.getLog().getRevision().getNumber() +
+                NbBundle.getMessage(RevisionNode.class, "LBL_NumberOfChangedPaths", container.getLog().getChangedPaths().length));
         initProperties();
     }
 
-    public RevisionNode(SearchHistoryPanel.DispRevision revision) {
-        super(revision.getChildren() == null ? Children.LEAF : new RevisionNodeChildren(revision), Lookups.fixed(new Object [] { revision }));
-        this.path = revision.getPath();
-        this.revision = revision.getRevision();
-        setName(revision.getRevision().getNumber());
+    public RevisionNode(RepositoryRevision.Event revision) {
+        super(Children.LEAF, Lookups.fixed(new Object [] { revision }));
+        this.path = revision.getChangedPath().getPath();
+        this.event = revision;
+        setName(revision.getName());
         initProperties();
     }
 
-    LogInformation.Revision getRevision() {
-        return revision;
+    RepositoryRevision.Event getRevision() {
+        return event;
     }
 
-    SearchHistoryPanel.ResultsContainer getContainer() {
+    RepositoryRevision getContainer() {
         return container;
     }
 
@@ -87,12 +87,14 @@ class RevisionNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         if (context) return null;
         // TODO: reuse action code from SummaryView
-        if (revision == null) {
-            return new Action [0];
+        if (event == null) {
+            return new Action [] {
+                new RevertModificationsAction()
+            };
         } else {
             return new Action [] {
-                //new RollbackAction(),
-                new RollbackChangeAction(),
+                new RollbackAction(),
+                new RevertModificationsAction(),
             };
         }
     }
@@ -100,14 +102,14 @@ class RevisionNode extends AbstractNode {
     public Node.Cookie getCookie(Class clazz) {
         
         if (ViewCookie.class.equals(clazz)) {
-            File file = revision.getLogInfoHeader().getFile();
+            File file = event.getFile();
 
             String mime = null;
             FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 mime = fo.getMIMEType();
             }
-            ViewEnv env = new ViewEnv(file, revision.getNumber().trim(), mime);
+            ViewEnv env = new ViewEnv(file, Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()), mime);
             return new ViewCookieImpl(env);
         } else {
             return super.getCookie(clazz);
@@ -135,21 +137,25 @@ class RevisionNode extends AbstractNode {
         ViewCookieImpl(Env env) {
             super(env);
         }
-                                
-        protected String messageName() {
-            return revision.getLogInfoHeader().getFile().getName() + " " + getName(); // NOI18N
+
+        private String formatName() {
+            return getName() + " @ " + event.getLogInfoHeader().getLog().getRevision().getNumber(); // NOI18N
         }
-        
+
+        protected String messageName() {
+            return formatName();
+        }
+
         protected String messageSave() {
-            return revision.getLogInfoHeader().getFile().getName() + " " + getName(); // NOI18N
+            return formatName();
         }
         
         protected java.lang.String messageToolTip() {
-            return revision.getLogInfoHeader().getFile().getName() + " " + getName(); // NOI18N
+            return formatName();
         }
 
         protected java.lang.String messageOpening() {
-            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", revision.getLogInfoHeader().getFile().getName() + " " + getName()); // NOI18N
+            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", event.getFile().getName() + " " + getName()); // NOI18N
         }
         
         protected java.lang.String messageOpened() {
@@ -214,8 +220,8 @@ class RevisionNode extends AbstractNode {
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            if (revision != null) {
-                return revision.getAuthor();
+            if (event == null) {
+                return container.getLog().getAuthor();
             } else {
                 return ""; // NOI18N
             }
@@ -229,8 +235,8 @@ class RevisionNode extends AbstractNode {
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            if (revision != null) {
-                return DateFormat.getDateTimeInstance().format(revision.getDate());
+            if (event == null) {
+                return DateFormat.getDateTimeInstance().format(container.getLog().getDate());
             } else {
                 return ""; // NOI18N
             }
@@ -244,8 +250,8 @@ class RevisionNode extends AbstractNode {
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            if (revision != null) {
-                return revision.getMessage();
+            if (event == null) {
+                return container.getLog().getMessage();
             } else {
                 return ""; // NOI18N
             }
@@ -255,24 +261,28 @@ class RevisionNode extends AbstractNode {
     private class RollbackAction extends AbstractAction {
 
         public RollbackAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getNumber())); // NOI18N
+            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", // NOI18N
+                    event.getLogInfoHeader().getLog().getRevision().getNumber()));
         }
 
         public void actionPerformed(ActionEvent e) {
-            File file = revision.getLogInfoHeader().getFile();
-//            GetCleanAction.rollback(file, revision.getNumber());
+            SummaryView.rollback(event);
         }
     }
 
-    private class RollbackChangeAction extends AbstractAction {
+    private class RevertModificationsAction extends AbstractAction {
 
-        public RollbackChangeAction() {
+        public RevertModificationsAction() {
             putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange")); // NOI18N
-            setEnabled(SvnUtils.previousRevision(revision.getNumber()) != null);
+            setEnabled(true);
         }
 
         public void actionPerformed(ActionEvent e) {
-//            SummaryView.rollbackChanges(new LogInformation.Revision [] { revision });
+            if (event != null) {
+                SummaryView.revertModifications(event);
+            } else {
+                SummaryView.revertModifications(container);
+            }
         }
     }
     
