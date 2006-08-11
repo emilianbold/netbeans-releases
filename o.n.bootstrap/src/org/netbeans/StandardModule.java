@@ -160,7 +160,8 @@ final class StandardModule extends Module {
                 if (localizedProps == null) {
                     Util.err.fine("Trying to get localized attr " + attr + " from disabled module " + getCodeNameBase());
                     try {
-                        if (jar != null) {
+                        // check if the jar file still exists (see issue 82480)
+                        if (jar != null && jar.isFile ()) {
                             JarFile jarFile = new JarFile(jar, false);
                             try {
                                 loadLocalizedProps(jarFile, manifest);
