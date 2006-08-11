@@ -82,6 +82,20 @@ is the proper place.
 
     <changes>
 
+        <change id="HelpIDFragmentProvider">
+            <summary>Class HelpIDFragmentProvider added</summary>
+            <version major="1" minor="11" subminor="1"/>
+            <date day="11" month="8" year="2006"/>
+            <author login="mkubec"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" />
+            <description>
+                <p>
+                    Class HelpIDFragmentProvider added to help to generate freeform project type specific HelpIDs in other project natures
+                </p>
+            </description>
+            <issue number="63085" />
+        </change>
+        
         <change id="getDefaultAntScript">
             <summary>Method getDefaultAntScript added</summary>
             <version major="1" minor="9"/>

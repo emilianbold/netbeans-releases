@@ -23,19 +23,25 @@ import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ant.freeform.spi.HelpIDFragmentProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -101,6 +107,38 @@ public class Util {
         return apc;
     }
 
+    private static final Pattern VALIDATION = Pattern.compile("([A-Za-z0-9])+"); // NOI18N
+    
+    public static String getMergedHelpIDFragments(Project p) {
+        Collection/*<HelpIDFragmentProvider>*/ providers = p.getLookup().lookup(new Lookup.Template(HelpIDFragmentProvider.class)).allInstances();
+        List/*<String>*/ fragments = new ArrayList();
+        
+        for (Iterator i = providers.iterator(); i.hasNext(); ) {
+            HelpIDFragmentProvider provider = (HelpIDFragmentProvider) i.next();
+            String fragment = provider.getHelpIDFragment();
+            
+            if (fragment == null || !VALIDATION.matcher(fragment).matches()) {
+                throw new IllegalStateException("HelpIDFragmentProvider \"" + provider + "\" provided invalid help ID fragment \"" + fragment + "\"."); // NOI18N
+            }
+            
+            fragments.add(fragment);
+        }
+        
+        Collections.sort(fragments);
+        
+        StringBuffer result = new StringBuffer();
+        
+        for (Iterator i = fragments.iterator(); i.hasNext(); ) {
+            result.append((String) i.next());
+            
+            if (i.hasNext()) {
+                result.append('.');
+            }
+        }
+        
+        return result.toString();
+    }
+    
     /**
      * Returns sorted list of targets name of the Ant script represented by the
      * given file object.

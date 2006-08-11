@@ -51,6 +51,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
@@ -268,6 +269,11 @@ public final class View implements LogicalViewProvider {
         public void setName(String name) {
             DefaultProjectOperations.performDefaultRenameOperation(p, name);
         }
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("freeform.node." + org.netbeans.modules.ant.freeform.Util.getMergedHelpIDFragments(p)); // NOI18N
+        }
+        
     }
     
     static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
