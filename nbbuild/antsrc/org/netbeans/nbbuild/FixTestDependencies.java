@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
+import org.netbeans.nbbuild.ModuleListParser.Entry;
 
 // XXX should use DOM, not text manipulation
 
@@ -66,6 +67,8 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
     public void execute() throws BuildException {
         // read project xml
         try {
+            // test mode doesn't override project.xml
+            boolean testFix = getProject().getProperty("test.fix.dependencies") != null;
             if (projectXmlFile == null || !projectXmlFile.isFile()) {
                 throw new BuildException("project.xml file doesn't exist.");
             }
@@ -79,7 +82,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
             String xml = new String(xmlBytes);
             String oldXsd = "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2";
             int xsdIndex = xml.indexOf(oldXsd);
-            if (xsdIndex != -1) {
+            if (xsdIndex != -1 || testFix) {
                 // increase schema version
                 String part1 = xml.substring(0,xsdIndex + oldXsd.length() - 1);
                 String part2 = xml.substring(xsdIndex + oldXsd.length(), xml.length());
@@ -102,7 +105,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                     throw new BuildException("Invalid codename base:" + cnb);
                 }
                 // test if project.xml contains test-deps
-                if (xml.contains("<test-dependencies>")) {
+                if (xml.contains("<test-dependencies>") && !testFix) {
                     // yes -> exit
                     log("<test-dependencies> already exists.");
                     log("update only schema version");
@@ -184,10 +187,13 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                 resultXml.append(xml.substring(0,moduleDepEnd));
                 resultXml.append(buffer);
                 resultXml.append(xml.substring(moduleDepEnd + 1, xml.length()));
-
-               PrintStream ps = new PrintStream(projectXmlFile);
-               ps.print(resultXml);
-               ps.close();
+                if (!testFix) {
+                   PrintStream ps = new PrintStream(projectXmlFile);
+                   ps.print(resultXml);
+                   ps.close();
+                } else {
+                    System.out.println(buffer);
+                }
             }
             
         } catch (IOException ex) {
@@ -230,6 +236,22 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                         if (allCnbs.contains(codeBaseName)) {
                             compileCNB.add(codeBaseName);
                             found = true;
+                        } else  {
+                            String name = token.substring(lastSlash + 1, token.length());
+                                // check if the file is wrapped library
+                                for (Iterator eIt = entries.iterator() ; eIt.hasNext() ; ) {
+                                      ModuleListParser.Entry entry = (Entry) eIt.next();
+                                      File extensions [] = entry.getClassPathExtensions();
+                                      if (extensions != null) {
+                                          for (int e = 0 ; e < extensions.length ; e++ ) {
+                                              File f = extensions[e];
+                                              if (f.getPath().endsWith( name)) {
+                                                  System.out.println("wrapped? " + entry.getCnb() + " -> " + token + " = " + f);
+                                              }
+                                          }    
+                                      }
+
+                                }
                         }
                         // check if the dependency is dependency on test
                     } else {
