@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.ant.freeform.spi.HelpIDFragmentProvider;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
@@ -55,6 +56,8 @@ public class WebProjectNature implements ProjectNature {
 
     public static final String NS_WEB = "http://www.netbeans.org/ns/freeform-project-web/1"; // NOI18N
     private static final String SCHEMA = "nbres:/org/netbeans/modules/web/freeform/resources/freeform-project-web.xsd"; // NOI18N
+    
+    private static final String HELP_ID_FRAGMENT = "web"; // NOI18N
     
     private static final WeakHashMap/*<Project,WeakReference<Lookup>>*/ lookupCache = new WeakHashMap();
 
@@ -123,7 +126,14 @@ public class WebProjectNature implements ProjectNature {
             new PrivilegedTemplatesImpl(),           // List of templates in New action popup
             new WebModules(project, projectHelper, projectEvaluator), // WebModuleProvider, ClassPathProvider
             new WebFreeFormActionProvider(project, projectHelper, aux),   //ActionProvider
+            new HelpIDFragmentProviderImpl(),
         });
+    }
+    
+    private static final class HelpIDFragmentProviderImpl implements HelpIDFragmentProvider {
+        public String getHelpIDFragment() {
+            return HELP_ID_FRAGMENT;
+        }
     }
     
     private static final class ProjectLookup extends ProxyLookup implements AntProjectListener {

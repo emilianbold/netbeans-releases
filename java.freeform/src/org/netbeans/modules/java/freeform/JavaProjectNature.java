@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.ant.freeform.spi.HelpIDFragmentProvider;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
@@ -69,6 +70,8 @@ public class JavaProjectNature implements ProjectNature {
     private static final String SCHEMA_1 = "nbres:/org/netbeans/modules/java/freeform/resources/freeform-project-java.xsd"; // NOI18N
     private static final String SCHEMA_2 = "nbres:/org/netbeans/modules/java/freeform/resources/freeform-project-java-2.xsd"; // NOI18N
     public static final String STYLE_PACKAGES = "packages"; // NOI18N
+    
+    private static final String HELP_ID_FRAGMENT = "java"; // NOI18N
     
     private static final WeakHashMap/*<Project,WeakReference<Lookup>>*/ lookupCache = new WeakHashMap();
     
@@ -140,6 +143,7 @@ public class JavaProjectNature implements ProjectNature {
             new JavaActions(project, projectHelper, projectEvaluator, aux), // ActionProvider
             new LookupMergerImpl(), // LookupMerger
             new JavaFreeformFileBuiltQuery(project, projectHelper, projectEvaluator, aux), // FileBuiltQueryImplementation
+            new HelpIDFragmentProviderImpl(),
         });
     }
     
@@ -147,7 +151,13 @@ public class JavaProjectNature implements ProjectNature {
         return aux.getConfigurationFragment(EL_JAVA, NS_JAVA_1, true) != null ||
                aux.getConfigurationFragment(EL_JAVA, NS_JAVA_2, true) != null;
     }
-
+    
+    private static final class HelpIDFragmentProviderImpl implements HelpIDFragmentProvider {
+        public String getHelpIDFragment() {
+            return HELP_ID_FRAGMENT;
+        }
+    }
+    
     private static class OpenHook extends ProjectOpenedHook {
         
         private final Classpaths cp;
