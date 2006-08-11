@@ -254,9 +254,15 @@ public class TopLoggingTest extends NbTestCase {
         String disk = readLog(true);
         Matcher m = Pattern.compile("BEGIN.*END", Pattern.MULTILINE | Pattern.DOTALL).matcher(disk);
         assertTrue("There is text between BEGINandEND\n" + disk, m.find());
-        disk = m.group(0).replace("\n\r", "\n");
+        disk = m.group(0);
+        disk = disk.replace('\n', 'n');
+        disk = disk.replace('\r', 'r');
 
-        assertEquals("BEGIN\n\nEND", disk);
+        if (org.openide.util.Utilities.isWindows()) {
+            assertEquals("BEGINrnrnEND", disk);
+        } else {
+            assertEquals("BEGINnnEND", disk);
+        }
     }
 
     public void testFlushHappensAfterFewSeconds() throws Exception {
