@@ -41,6 +41,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -68,8 +69,14 @@ public class CallStackActionsProvider implements NodeActionsProvider {
                 // TODO: Check whether this frame is deeper then the top-most
                 return true;
             }
-            public void perform (Object[] nodes) {
-                popToHere ((CallStackFrame) nodes [0]);
+            public void perform (final Object[] nodes) {
+                // Do not do expensive actions in AWT,
+                // It can also block if it can not procceed for some reason
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        popToHere ((CallStackFrame) nodes [0]);
+                    }
+                });
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
