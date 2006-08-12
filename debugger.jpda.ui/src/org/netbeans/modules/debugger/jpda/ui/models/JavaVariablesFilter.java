@@ -104,9 +104,9 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         
         String type = variable.getType ();
         
-        if (isToArrayType (type)) 
+        if (isToArrayType (type)) {
+            ObjectVariable ov = (ObjectVariable) variable;
             try {
-                ObjectVariable ov = (ObjectVariable) variable;
                 ov = (ObjectVariable) ov.invokeMethod (
                     "toArray",
                     "()[Ljava/lang/Object;",
@@ -114,7 +114,12 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                 );
                 return original.getChildren(ov, from, to);
             } catch (NoSuchMethodException e) {
-                ErrorManager.getDefault().notify(e);
+                Field elementData = ov.getField("elementData");
+                if (elementData != null) {
+                    return original.getChildren(elementData, from, to);
+                } else {
+                    ErrorManager.getDefault().notify(e);
+                }
             } catch (InvalidExpressionException e) {
                 if ( (e.getTargetException () != null) &&
                      (e.getTargetException () instanceof 
@@ -125,6 +130,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                 }
                 ErrorManager.getDefault().notify(e);
             }
+        }
         if (isMapMapType (type)) 
             try {
                 ObjectVariable ov = (ObjectVariable) variable;
@@ -221,8 +227,8 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         String type = variable.getType();
 
         if (isToArrayType (type)) {
+            ObjectVariable ov = (ObjectVariable) variable;
             try {
-                ObjectVariable ov = (ObjectVariable) variable;
                 ov = (ObjectVariable) ov.invokeMethod (
                     "toArray",
                     "()[Ljava/lang/Object;",
@@ -230,7 +236,12 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                 );
                 return original.getChildrenCount(ov);
             } catch (NoSuchMethodException e) {
-                ErrorManager.getDefault().notify(e);
+                Field elementData = ov.getField("elementData");
+                if (elementData != null) {
+                    return original.getChildrenCount(elementData);
+                } else {
+                    ErrorManager.getDefault().notify(e);
+                }
             } catch (InvalidExpressionException e) {
                 if ( (e.getTargetException () != null) &&
                      (e.getTargetException () instanceof 
