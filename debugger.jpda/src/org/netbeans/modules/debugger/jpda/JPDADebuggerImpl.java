@@ -875,8 +875,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK) {
             if (getState () == STATE_STOPPED)
                 return;
-            if (virtualMachine != null)
+            if (virtualMachine != null) {
+                logger.fine("VM suspend");
                 virtualMachine.suspend ();
+            }
             setState (STATE_STOPPED);
         }
     }
