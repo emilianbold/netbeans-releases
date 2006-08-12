@@ -96,6 +96,7 @@ public class Installer extends ModuleInstall {
         AbstractNode root = new AbstractNode(new Children.Array());
         root.setName("root"); // NOI18N
         root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
+        root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
         for (LogRecord r : recs) {
             root.getChildren().add(new Node[] { UINode.create(r) });
         }

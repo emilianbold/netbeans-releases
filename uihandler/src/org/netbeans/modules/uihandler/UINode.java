@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import org.openide.awt.Actions;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -43,6 +44,20 @@ final class UINode extends AbstractNode implements VisualData {
         super(ch);
         log = r;
         setName(r.getMessage());
+        
+        if (ch != Children.LEAF) {
+            setIconBaseWithExtension("org/netbeans/modules/uihandler/exception.gif");
+        }
+        
+        if ("UI_ACTION_BUTTON_PRESS".equals(r.getMessage())) { // NOI18N
+            setDisplayName(Actions.cutAmpersand((String)r.getParameters()[4]));
+            String thru = (String)r.getParameters()[1];
+            if (thru.contains("Toolbar")) {
+                setIconBaseWithExtension("org/netbeans/modules/uihandler/toolbars.gif");
+            } else if (thru.contains("MenuItem")) {
+                setIconBaseWithExtension("org/netbeans/modules/uihandler/menus.gif");
+            }
+        }
         
         Sheet.Set s = Sheet.createPropertiesSet();
         s.put(createPropertyDate(this));
@@ -226,6 +241,7 @@ final class UINode extends AbstractNode implements VisualData {
                     afterLastDot(key.getClassName()),
                 }
             ));
+            an.setIconBaseWithExtension("org/netbeans/modules/uihandler/stackframe.gif"); // NOI18N
             return new Node[] { an };
         }
         
