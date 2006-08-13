@@ -39,8 +39,8 @@ implements ExplorerManager.Provider {
         
         initComponents();
         view.setProperties(new Node.Property[] { 
-            UINode.createPropertyDate(null),
             UINode.createPropertyLogger(null),
+            UINode.createPropertyDate(null),
 //            UINode.createPropertyMessage(null),
         });
     }
@@ -53,17 +53,16 @@ implements ExplorerManager.Provider {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         view = new org.openide.explorer.view.TreeTableView();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
         propertySheetView1 = new org.openide.explorer.propertysheet.PropertySheetView();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jEditorPane1 = new javax.swing.JEditorPane();
 
-        jTextArea1.setBackground(getBackground());
-        jTextArea1.setColumns(20);
-        jTextArea1.setEditable(false);
-        jTextArea1.setRows(5);
-        jTextArea1.setText(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "CTL_SummaryDescription")); // NOI18N
-        jTextArea1.setEnabled(false);
-        jScrollPane1.setViewportView(jTextArea1);
+        jEditorPane1.setBackground(getBackground());
+        jEditorPane1.setContentType(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "SubmitPanel.jEditorPane1.contentType")); // NOI18N
+        jEditorPane1.setEditable(false);
+        jEditorPane1.setText(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "CTL_SummaryDescription")); // NOI18N
+        jEditorPane1.setEnabled(false);
+        jScrollPane1.setViewportView(jEditorPane1);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -73,7 +72,7 @@ implements ExplorerManager.Provider {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 891, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(view, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(propertySheetView1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 265, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
@@ -83,11 +82,11 @@ implements ExplorerManager.Provider {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(view, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, propertySheetView1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(propertySheetView1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE)
+                    .add(view, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -98,8 +97,8 @@ implements ExplorerManager.Provider {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
     private org.openide.explorer.propertysheet.PropertySheetView propertySheetView1;
     private org.openide.explorer.view.TreeTableView view;
     // End of variables declaration//GEN-END:variables

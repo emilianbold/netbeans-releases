@@ -153,7 +153,7 @@ final class UINode extends AbstractNode implements VisualData {
                         return "UI General";
                     }
                     
-                    return full.substring("org.netbeans.ui".length());
+                    return full.substring("org.netbeans.ui.".length());
                 }
                 return full;
             }
