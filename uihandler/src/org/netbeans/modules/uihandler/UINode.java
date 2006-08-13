@@ -57,7 +57,11 @@ final class UINode extends AbstractNode implements VisualData {
             } else if (thru.contains("MenuItem")) {
                 setIconBaseWithExtension("org/netbeans/modules/uihandler/menus.gif");
             }
+        } else if ("UI_ACTION_KEY_PRESS".equals(r.getMessage())) { // NOI18N
+            setDisplayName(Actions.cutAmpersand((String)r.getParameters()[4]));
+            setIconBaseWithExtension("org/netbeans/modules/uihandler/key.png");
         }
+            
         
         Sheet.Set s = Sheet.createPropertiesSet();
         s.put(createPropertyDate(this));
