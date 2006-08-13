@@ -60,6 +60,12 @@ final class UINode extends AbstractNode implements VisualData {
         } else if ("UI_ACTION_KEY_PRESS".equals(r.getMessage())) { // NOI18N
             setDisplayName(Actions.cutAmpersand((String)r.getParameters()[4]));
             setIconBaseWithExtension("org/netbeans/modules/uihandler/key.png");
+        } else if ("UI_ENABLED_MODULES".equals(r.getMessage())) { // NOI18N
+            setDisplayName(NbBundle.getMessage(UINode.class, "MSG_EnabledModules"));
+            setIconBaseWithExtension("org/netbeans/modules/uihandler/module.gif");
+        } else if ("UI_DISABLED_MODULES".equals(r.getMessage())) { // NOI18N
+            setDisplayName(NbBundle.getMessage(UINode.class, "MSG_DisabledModules"));
+            setIconBaseWithExtension("org/netbeans/modules/uihandler/module.gif");
         }
             
         
@@ -98,6 +104,9 @@ final class UINode extends AbstractNode implements VisualData {
         Children ch;
         if (r.getThrown() != null) {
             ch = new StackTraceChildren(r.getThrown());
+        } else if ("UI_ENABLED_MODULES".equals(r.getMessage()) || 
+            "UI_DISABLED_MODULES".equals(r.getMessage())) {
+            ch = new ModulesChildren(r.getParameters());
         } else {
             ch = Children.LEAF;
         }
@@ -251,6 +260,26 @@ final class UINode extends AbstractNode implements VisualData {
         
     } // end of StackTraceElement
 
+    
+    private static final class ModulesChildren extends Children.Keys<Object> {
+        private Object[] modules;
+        public ModulesChildren(Object[] m) {
+            modules = m;
+        }
+        
+        protected void addNotify() {
+            setKeys(modules);
+        }
+        
+        protected Node[] createNodes(Object key) {
+            AbstractNode an = new AbstractNode(Children.LEAF);
+            an.setName((String)key);
+            an.setIconBaseWithExtension("org/netbeans/modules/uihandler/module.gif"); // NOI18N
+            return new Node[] { an };
+        }
+        
+    } // end of StackTraceElement
+    
     private static String afterLastDot(String s) {
         int index = s.lastIndexOf('.');
         if (index == -1) {
