@@ -451,7 +451,8 @@ public class FormEditor {
                 if (severity > ErrorManager.WARNING)
                     anyNonFatalLoadingError = true;
             }
-            errorManager.notify(t);              
+            errorManager.notify(ErrorManager.INFORMATIONAL, t);
+            errorManager.notify(ErrorManager.USER, t);
         }
         
         if (checkLoadingErrors && anyNonFatalLoadingError) {
