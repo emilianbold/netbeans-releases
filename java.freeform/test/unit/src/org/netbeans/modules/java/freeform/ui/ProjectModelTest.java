@@ -23,8 +23,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
@@ -46,8 +48,8 @@ public class ProjectModelTest extends NbTestCase {
     public void testCreateEmptyModel() throws Exception {
         File baseFolder = new File(getWorkDir(), "somefolder/");
         File nbProjectFolder = new File(getWorkDir(), "nbprojfolder/");
-        Properties p = new Properties();
-        p.setProperty("key", "value");
+        Map<String,String> p = new HashMap<String,String>();
+        p.put("key", "value");
         PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{PropertyUtils.fixedPropertyProvider(p)});
         ProjectModel pm = ProjectModel.createEmptyModel(baseFolder, nbProjectFolder, evaluator);
         assertNotNull(pm);
