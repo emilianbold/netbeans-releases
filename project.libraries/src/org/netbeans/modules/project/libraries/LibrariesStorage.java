@@ -41,7 +41,7 @@ import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import javax.xml.parsers.ParserConfigurationException;
 
 
-public class LibrariesStorage extends FileChangeAdapter implements WriteableLibraryProvider {
+public class LibrariesStorage extends FileChangeAdapter implements WritableLibraryProvider {
 
     private static final String NB_HOME_PROPERTY = "netbeans.home";  //NOI18N
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
