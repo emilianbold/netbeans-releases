@@ -120,8 +120,17 @@ public final class TestEntry {
         if (nborgPath != null) {
             return new File(getNBCVSRoot(),nborgPath).toURI().toURL(); 
         } 
-        File testDistDir = getTestDistRoot();
-        Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(testDistDir));
+        File prjDir = getTestDistRoot();
+        // find parent when dir was not created
+        while(!prjDir.exists()) {
+            File parent = prjDir.getParentFile();
+            if (parent.equals(prjDir)) {
+                // filesystem root
+                return null;
+            } 
+            prjDir = parent;
+        }
+        Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(prjDir));
         if (prj != null) {
             // ModuleSuite
             SubprojectProvider subprojects = (SubprojectProvider) prj.getLookup().lookup(SubprojectProvider.class);
