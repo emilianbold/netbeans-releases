@@ -665,7 +665,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     
     private static class LibraryNode extends AbstractNode {
         
-        private static final String ICON = "org/netbeans/modules/project/libraries/resources/libraries";  //NOI18N
+        private static final String ICON = "org/netbeans/modules/project/libraries/resources/libraries.gif";  //NOI18N
         
         private LibraryImplementation lib;
         private LibraryTypeProvider provider;
@@ -674,7 +674,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             super (Children.LEAF);
             this.lib = lib;
             this.provider = provider;
-            this.setIconBase(ICON);
+            this.setIconBaseWithExtension(ICON);
         }
         
         public String getName () {            
