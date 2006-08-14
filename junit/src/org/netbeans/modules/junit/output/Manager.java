@@ -83,17 +83,6 @@ final class Manager {
     }
     
     /**
-     * Called when it is detected that the current session was initiated
-     * by a test target. Displays a message in the JUnit results window.
-     */
-    void targetStarted(final AntSession session, final TaskType sessionType) {
-        displayMessage(
-                session,
-                sessionType, 
-                NbBundle.getMessage(getClass(), "LBL_PreparingTests")); //NOI18N
-    }
-    
-    /**
      * Called when an Ant task running JUnit tests is started.
      * Displays a message in the JUnit results window.
      */

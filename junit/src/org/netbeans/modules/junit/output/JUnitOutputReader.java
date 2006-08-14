@@ -78,8 +78,6 @@ final class JUnitOutputReader {
      * @see  #expectedSuitesCount
      */
     private int executedSuitesCount = 0;
-    /** */
-    private boolean testTargetStarted = false;
     /**
      * did we already get statistics of tests/failures/errors for the current
      * report?
@@ -526,12 +524,6 @@ final class JUnitOutputReader {
     }
     
     /**
-     */
-    void testTargetStarted() {
-        checkTestTargetStarted();
-    }
-    
-    /**
      * Notifies that a test (Ant) task was just started.
      *
      * @param  expectedSuitesCount  expected number of test suites going to be
@@ -688,15 +680,6 @@ final class JUnitOutputReader {
     }
     
     //--------------------------------------------------------
-    
-    /**
-     */
-    private void checkTestTargetStarted() {
-        if (!testTargetStarted) {
-            testTargetStarted = true;
-            Manager.getInstance().targetStarted(session, sessionType);
-        }
-    }
     
     /**
      */
