@@ -20,6 +20,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -29,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
+import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardPanel;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.WizardDescriptor;
 
@@ -49,7 +51,15 @@ public class GUIRegistrationPanelTest extends LayerTestBase {
     
     public void testMemoryLeak_70032() throws Exception {
         TestBase.initializeBuildProperties(getWorkDir());
-        final WizardDescriptor wd = new WizardDescriptor(new WizardDescriptor.Panel[] {});
+        final WizardDescriptor wd = new WizardDescriptor(new WizardDescriptor.ArrayIterator() {
+            public WizardDescriptor.Panel current() { // satisfying WizardDescriptor 1.32 (#76318)
+                return new BasicWizardPanel(null) {
+                    public Component getComponent() {
+                        return new JPanel();
+                    }
+                };
+            }
+        });
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT,
                 TestBase.generateStandaloneModule(getWorkDir(), "module"));
         EventQueue.invokeAndWait(new Runnable() {
