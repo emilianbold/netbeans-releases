@@ -80,8 +80,6 @@ final class JUnitOutputReader {
     private int executedSuitesCount = 0;
     /** */
     private boolean testTargetStarted = false;
-    /** */
-    private boolean testTaskStarted = false;
     /**
      * did we already get statistics of tests/failures/errors for the current
      * report?
@@ -607,8 +605,7 @@ final class JUnitOutputReader {
     void buildFinished(final AntEvent event) {
         finishReport(event.getException());
         Manager.getInstance().sessionFinished(session,
-                                              sessionType,
-                                              testTaskStarted == false);
+                                              sessionType);
         progressHandle.finish();
     }
     

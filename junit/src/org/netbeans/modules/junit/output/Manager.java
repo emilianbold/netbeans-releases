@@ -107,20 +107,14 @@ final class Manager {
     /**
      */
     void sessionFinished(final AntSession session,
-                         final TaskType sessionType,
-                         final boolean initializationFailed) {
+                         final TaskType sessionType) {
         Object o = junitSessions.get(session);
         if (o == null) {
             /* This session did not run the "junit" task. */
             return;
         }
         
-        String message = initializationFailed
-                         ? NbBundle.getMessage(
-                                        getClass(),
-                                        "LBL_TestBuildInitFailed")      //NOI18N
-                         : null;
-        displayMessage(session, sessionType, message);
+        displayMessage(session, sessionType, null);     //updates the display
         junitSessions.remove(session);   //must be after displayMessage(...)
                                          //otherwise the window would get
                                          //activated
