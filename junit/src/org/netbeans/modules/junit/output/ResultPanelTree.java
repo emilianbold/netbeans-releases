@@ -20,24 +20,18 @@
 package org.netbeans.modules.junit.output;
 
 import java.awt.EventQueue;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import javax.accessibility.AccessibleContext;
-import javax.swing.AbstractButton;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -45,8 +39,7 @@ import org.openide.util.Utilities;
  */
 final class ResultPanelTree extends JPanel
                             implements ExplorerManager.Provider,
-                                       PropertyChangeListener,
-                                       ItemListener {
+                                       PropertyChangeListener {
 
     /** manages the tree of nodes representing found objects */
     private final ExplorerManager explorerManager;
@@ -54,8 +47,6 @@ final class ResultPanelTree extends JPanel
     private final RootNode rootNode;
     /** */
     private final ResultTreeView treeView;
-    /** */
-    private AbstractButton btnFilter;
     /** should the results be filtered (only failures and errors displayed)? */
     private boolean filtered = false;
     /** */
@@ -80,24 +71,9 @@ final class ResultPanelTree extends JPanel
         explorerManager.setRootContext(rootNode = new RootNode(filtered));
         explorerManager.addPropertyChangeListener(this);
 
-        initFilter();
         initAccessibility();
         
         this.displayHandler = displayHandler;
-    }
-    
-    /**
-     */
-    private void initFilter() {
-        btnFilter = new JToggleButton(new ImageIcon(
-                Utilities.loadImage(
-                    "org/netbeans/modules/junit/output/res/filter.png", //NOI18N
-                    true)));
-        btnFilter.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
-        btnFilter.addItemListener(this);
-        
-        updateBtnFilterLabel();
     }
     
     /**
@@ -121,29 +97,6 @@ final class ResultPanelTree extends JPanel
                NbBundle.getMessage(getClass(),
                                    "ACSN_HorizontalScrollbar"));        //NOI18N
 
-    }
-    
-    /**
-     */
-    AbstractButton getFilterButton() {
-        return btnFilter;
-    }
-    
-    /**
-     */
-    private void updateBtnFilterLabel() {
-        String key = filtered
-                     ? "MultiviewPanel.btnFilter.showAll.tooltip"       //NOI18N
-                     : "MultiviewPanel.btnFilter.showFailures.tooltip"; //NOI18N
-        btnFilter.setToolTipText(NbBundle.getMessage(getClass(), key));
-    }
-    
-    /**
-     */
-    public void itemStateChanged(ItemEvent e) {
-        /* called when the Filter button is toggled. */
-        setFiltered(btnFilter.isSelected());
-        updateBtnFilterLabel();
     }
     
     /**
@@ -192,31 +145,27 @@ final class ResultPanelTree extends JPanel
         if ((node != null) && report.containsFailed()) {
             treeView.expandReportNode(node);
         }
-        
-        btnFilter.setEnabled(
-             rootNode.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
     }
     
     /**
+     * @param  reports  non-empty list of reports to be displayed
      */
     void displayReports(final List/*<Report>*/ reports) {
         assert EventQueue.isDispatchThread();
         
         /* Called from the EventDispatch thread */
         
-        final int count = reports.size();
-        if (count == 0) {
-            return;
-        }
-        
-        if (count == 1) {
+        if (reports.size() == 1) {
             displayReport((Report) reports.get(0));
         } else {
             rootNode.displayReports(reports);
         }
-        
-        btnFilter.setEnabled(
-             rootNode.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
+    }
+    
+    /**
+     */
+    int getSuccessDisplayedLevel() {
+        return rootNode.getSuccessDisplayedLevel();
     }
     
     /**

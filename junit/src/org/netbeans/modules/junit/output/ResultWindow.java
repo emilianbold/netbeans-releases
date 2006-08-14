@@ -20,14 +20,10 @@
 package org.netbeans.modules.junit.output;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
 import javax.accessibility.AccessibleContext;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -84,9 +80,7 @@ public final class ResultWindow extends TopComponent {
     }
     
     /** */
-    private TopComponent view;
-    /** */
-    private java.util.Map topCompMethodsMap;
+    private Component view;
     
     
     /** Creates a new instance of ResultWindow */
@@ -111,139 +105,7 @@ public final class ResultWindow extends TopComponent {
     
     /**
      */
-    protected void componentOpened() {
-        assert EventQueue.isDispatchThread();
-        
-        if (view != null) {
-            forwardMessage(view, "componentOpened");                    //NOI18N
-        }
-        super.componentOpened();
-    }
-    
-    /**
-     */
-    protected void componentClosed() {
-        assert EventQueue.isDispatchThread();
-        
-        if (view != null) {
-            forwardMessage(view, "componentClosed");                    //NOI18N
-        }
-        super.componentClosed();
-    }
-    
-    /**
-     */
-    protected void componentActivated() {
-        assert EventQueue.isDispatchThread();
-        
-        if (view != null) {
-            forwardMessage(view, "componentActivated");                 //NOI18N
-        }
-        super.componentActivated();
-    }
-    
-    /**
-     */
-    protected void componentDeactivated() {
-        assert EventQueue.isDispatchThread();
-        
-        if (view != null) {
-            forwardMessage(view, "componentDeactivated");               //NOI18N
-        }
-        super.componentDeactivated();
-    }
-    
-    /**
-     */
-    protected void componentShowing() {
-        assert EventQueue.isDispatchThread();
-        
-        if (view != null) {
-            forwardMessage(view, "componentShowing");                   //NOI18N
-        }
-        super.componentShowing();
-    }
-    
-    /**
-     */
-    protected void componentHidden() {
-        assert EventQueue.isDispatchThread();
-        
-        if (view != null) {
-            forwardMessage(view, "componentHidden");                    //NOI18N
-        }
-        super.componentHidden();
-    }
-    
-    /**
-     */
-    private void forwardMessage(TopComponent tc, String messageName) {
-        ensureMethodsPrepared();
-        
-        Method method = (Method) topCompMethodsMap.get(messageName);
-        if (method != null) {
-            try {
-                method.invoke(tc, (Object[]) null);
-            } catch (InvocationTargetException invocationExc) {
-                ErrorManager.getDefault().notify(invocationExc);
-            } catch (Exception ex) {
-                topCompMethodsMap.remove(messageName);
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-            }
-        }
-    }
-    
-    /**
-     */
-    private void ensureMethodsPrepared() {
-        if (topCompMethodsMap == null) {
-            prepareMethods();
-        }
-    }
-    
-    /**
-     */
-    private void prepareMethods() throws SecurityException {
-        assert topCompMethodsMap == null;
-        assert view != null;
-        
-        topCompMethodsMap = new java.util.HashMap(8);
-        
-        final String[] methodNames = new String[] {
-            "componentOpened",                                          //NOI18N
-            "componentClosed",                                          //NOI18N
-            "componentActivated",                                       //NOI18N
-            "componentDeactivated",                                     //NOI18N
-            "componentShowing",                                         //NOI18N
-            "componentHidden"                                           //NOI18N
-        };
-        Collection methods = new ArrayList(methodNames.length);
-        
-        final Class viewClass = view.getClass();
-        final Class[] noParams = new Class[0];
-        
-        for (int i = 0; i < methodNames.length; i++) {
-            try {
-                String methodName = methodNames[i];
-                Method m = viewClass.getDeclaredMethod(methodName, noParams);
-                topCompMethodsMap.put(methodName, m);
-                methods.add(m);
-            } catch (NoSuchMethodException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-            }
-        }
-        
-        if (!methods.isEmpty()) {
-            Method[] methodsArray = new Method[methods.size()];
-            methods.toArray(methodsArray);
-            
-            Method.setAccessible(methodsArray, true);
-        }
-    }
-    
-    /**
-     */
-    void addDisplayComponent(TopComponent displayComp) {
+    void addDisplayComponent(Component displayComp) {
         assert EventQueue.isDispatchThread();
         
         removeAll();
@@ -252,19 +114,10 @@ public final class ResultWindow extends TopComponent {
     
     /**
      */
-    private void addView(final TopComponent view) {
+    private void addView(final Component view) {
         assert EventQueue.isDispatchThread();
         
         this.view = view;
-        if (isOpened()) {
-            forwardMessage(view, "componentOpened");                    //NOI18N
-            if (isShowing()) {
-                forwardMessage(view, "componentShowing");               //NOI18N
-                if (isActivated()) {
-                    forwardMessage(view, "componentActivated");         //NOI18N
-                }
-            }
-        }
         add(view);
     }
     

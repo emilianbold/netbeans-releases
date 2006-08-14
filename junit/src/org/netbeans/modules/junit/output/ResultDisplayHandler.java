@@ -19,32 +19,16 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
-import javax.swing.AbstractAction;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import org.netbeans.core.api.multiview.MultiViewHandler;
-import org.netbeans.core.api.multiview.MultiViewPerspective;
-import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
+import javax.swing.JSplitPane;
 import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-
 
 /**
  *
@@ -58,17 +42,11 @@ final class ResultDisplayHandler {
     private static final String ID_OUTPUT = "output";                   //NOI18N
     
     /** */
-    private MultiViewHandler handler;
-    /** */
-    private MultiViewPerspective treeViewHandle;
-    /** */
-    private MultiViewPerspective outputViewHandle;
-    /** */
     private ResultPanelTree treePanel;
     /** */
     private ResultPanelOutput outputListener;
     /** */
-    private TopComponent displayComp;
+    private Component displayComp;
     
     
     /** Creates a new instance of ResultDisplayHandler */
@@ -77,7 +55,7 @@ final class ResultDisplayHandler {
     
     /**
      */
-    TopComponent getDisplayComponent() {
+    Component getDisplayComponent() {
         if (displayComp == null) {
             displayComp = createDisplayComp();
         }
@@ -86,25 +64,12 @@ final class ResultDisplayHandler {
     
     /**
      */
-    private TopComponent createDisplayComp() {
-        AbstractResultViewDesc descTree
-                = new ResultTreeViewDesc(ID_TREE,
-                                         "LBL_resultTreeView");         //NOI18N
-        AbstractResultViewDesc descOutput
-                = new ResultOutputViewDesc(ID_OUTPUT,
-                                           "LBL_resultOutputView");     //NOI18N
-        TopComponent tc = MultiViewFactory.createMultiView(
-                    new MultiViewDescription[] { descTree, descOutput },
-                    descTree);
-        setUpNavigation(tc);
-                    
-        handler = MultiViews.findMultiViewHandler(tc);
-        
-        MultiViewPerspective[] viewHandles = handler.getPerspectives();
-        treeViewHandle = viewHandles[0];
-        outputViewHandle = viewHandles[1];
-        
-        return tc;
+    private Component createDisplayComp() {
+        Component left = new StatisticsPanel(this);
+        Component right = new ResultPanelOutput(this);
+        JSplitPane splitPane
+                = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, right);
+        return splitPane;
     }
     
     /**
@@ -121,50 +86,6 @@ final class ResultDisplayHandler {
         //
         //PENDING
         //
-    }
-    
-    /**
-     */
-    private void setUpNavigation(JComponent c) {
-        final String actionName = "toggleView";                         //NOI18N
-        
-        final int keyModifiers = InputEvent.ALT_DOWN_MASK
-                                 | InputEvent.SHIFT_DOWN_MASK;
-
-        final InputMap inputMap = c.getInputMap(
-                            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,  keyModifiers),
-                     actionName);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, keyModifiers),
-                     actionName);
-        
-        c.getActionMap().put(actionName, new ToggleViewAction());
-    }
-    
-    /**
-     *
-     */
-    final class ToggleViewAction extends AbstractAction {
-        
-        /*
-         * PENDING
-         * This is a hack! The default mechanism of MultiView should be used!
-         */
-        
-        /**
-         */
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-            MultiViewPerspective currView = handler.getSelectedPerspective();
-            
-            if (currView == treeViewHandle) {
-                handler.requestActive(outputViewHandle);
-            } else if (currView == outputViewHandle) {
-                handler.requestActive(treeViewHandle);
-            } else {
-                assert false;
-            }
-        }
-        
     }
     
     //------------------ DISPLAYING OUTPUT ----------------------//
@@ -404,124 +325,4 @@ final class ResultDisplayHandler {
         }
     }
 
-    //-----------------------------------------------------------//
-    
-    /**
-     * Partial implementation of a class describing single view of the multiview
-     * result window.
-     *
-     * @author  Marian Petras
-     */
-    private abstract static class AbstractResultViewDesc
-                                            implements MultiViewDescription {
-        
-        /**
-         * this view's ID part 
-         * - ID of this view among all views of the result window
-         *
-         * @serial  this view's ID part - ID of this view among all views
-         *          of the result window
-         */
-        private final String idPart;
-        private transient String id;
-        /**
-         * bundle key for this view's display name
-         *
-         * @serial  bundle key for this view's display name
-         *          - the corresponding entry must exist in the module's bundle
-         */
-        private final String displayNameKey;
-        private transient String displayName;
-        
-        private AbstractResultViewDesc(String id,
-                                       String displayNameKey) {
-            this.idPart = id;
-            this.displayNameKey = displayNameKey;
-        }
-
-        public String preferredID() {
-            //PENDING:
-            return idPart;
-        }
-
-        public String getDisplayName() {
-            if (displayName == null) {
-                try {
-                    displayName = NbBundle.getMessage(ResultDisplayHandler.class,
-                                                      displayNameKey);
-                } catch (MissingResourceException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,
-                                                     ex);
-                    displayName = "??? (" + displayNameKey + ')';       //NOI18N
-                }
-            }
-            return displayName;
-        }
-
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
-
-    }
-    
-    /**
-     * Descriptor of the tree view of the result window multiview.
-     *
-     * @author  Marian Petras
-     */
-    private final class ResultTreeViewDesc extends AbstractResultViewDesc
-                                           implements Serializable {
-        
-        static final long serialVersionUID = -4369549644387784567L;
-        
-        private ResultTreeViewDesc(final String id,
-                                   final String displayNameKey) {
-            super(id, displayNameKey);
-        }
-
-        public java.awt.Image getIcon() {
-            return null;
-        }
-
-        public MultiViewElement createElement() {
-            return new ResultViewTree(ResultDisplayHandler.this);
-        }
-        
-        public HelpCtx getHelpCtx() {
-            //PENDING:
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-    }
-    
-    /**
-     * Descriptor of the output view of the result window multiview.
-     *
-     * @author  Marian Petras
-     */
-    private final class ResultOutputViewDesc extends AbstractResultViewDesc
-                                             implements Serializable {
-        
-        static final long serialVersionUID = -6007918504501341013L;
-        
-        private ResultOutputViewDesc(final String id,
-                                     final String displayNameKey) {
-            super(id, displayNameKey);
-        }
-
-        public java.awt.Image getIcon() {
-            return null;
-        }
-
-        public MultiViewElement createElement() {
-            return new ResultViewOutput(ResultDisplayHandler.this);
-        }
-        
-        public HelpCtx getHelpCtx() {
-            //PENDING:
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-    }
-    
 }
