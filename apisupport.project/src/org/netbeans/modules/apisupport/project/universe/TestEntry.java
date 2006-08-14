@@ -123,12 +123,11 @@ public final class TestEntry {
         File prjDir = getTestDistRoot();
         // find parent when dir was not created
         while(!prjDir.exists()) {
-            File parent = prjDir.getParentFile();
-            if (parent.equals(prjDir)) {
-                // filesystem root
+            prjDir = prjDir.getParentFile();
+            if (prjDir == null) {
+                // parent doesn't exist
                 return null;
             } 
-            prjDir = parent;
         }
         Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(prjDir));
         if (prj != null) {
