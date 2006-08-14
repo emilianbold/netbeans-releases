@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.project.libraries;
 
+import java.net.URL;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import java.util.*;
 import java.beans.PropertyChangeListener;
@@ -28,8 +29,7 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
 
     private String description;
 
-    // map<ContentType, FileSet>
-    private Map contents;
+    private Map<String,List<URL>> contents;
 
     // library 'binding name' as given by user
     private String name;
@@ -38,9 +38,7 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
 
     private String localizingBundle;
 
-
-    //Listeners support
-    private ArrayList listeners;
+    private List<PropertyChangeListener> listeners;
 
     /**
      * Create new LibraryImplementation supporting given <tt>library</tt>.
@@ -48,9 +46,9 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
     public DefaultLibraryImplementation (String libraryType, String[] volumeTypes) {
         assert libraryType != null && volumeTypes != null;
         this.libraryType = libraryType;
-        this.contents = new HashMap();
-        for (int i=0; i<volumeTypes.length; i++) {
-            this.contents.put (volumeTypes[i],Collections.EMPTY_LIST);
+        this.contents = new HashMap<String,List<URL>>();
+        for (String vtype : volumeTypes) {
+            this.contents.put(vtype, Collections.<URL>emptyList());
         }
     }
 
@@ -69,19 +67,19 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
         return name;
     }
 
-    public List getContent (String contentType) throws IllegalArgumentException {
-        List content = (List) contents.get(contentType);
+    public List<URL> getContent(String contentType) throws IllegalArgumentException {
+        List<URL> content = contents.get(contentType);
         if (content == null)
             throw new IllegalArgumentException ();
         return Collections.unmodifiableList (content);
     }
 
-    public void setContent (String contentType, List path) throws IllegalArgumentException {
+    public void setContent(String contentType, List<URL> path) throws IllegalArgumentException {
         if (path == null) {
             throw new IllegalArgumentException ();
         }
         if (this.contents.keySet().contains(contentType)) {
-            this.contents.put (contentType, new ArrayList(path));
+            this.contents.put(contentType, new ArrayList<URL>(path));
             this.firePropertyChange(PROP_CONTENT,null,null);
         } else {
             throw new IllegalArgumentException ("Volume '"+contentType+
@@ -109,7 +107,7 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
 
     public synchronized void addPropertyChangeListener (PropertyChangeListener l) {
         if (this.listeners == null)
-            this.listeners = new ArrayList ();
+            this.listeners = new ArrayList<PropertyChangeListener>();
         this.listeners.add (l);
     }
 
@@ -136,15 +134,15 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
     }
 
     private void firePropertyChange (String propName, Object oldValue, Object newValue) {
-        Iterator it;
+        List<PropertyChangeListener> ls;
         synchronized (this) {
             if (this.listeners == null)
                 return;
-            it = ((List)this.listeners.clone()).iterator();
+            ls = new ArrayList<PropertyChangeListener>(listeners);
         }
         PropertyChangeEvent event = new PropertyChangeEvent (this, propName, oldValue, newValue);
-        while (it.hasNext()) {
-            ((PropertyChangeListener)it.next()).propertyChange (event);
+        for (PropertyChangeListener l : ls) {
+            l.propertyChange(event);
         }
     }
 }

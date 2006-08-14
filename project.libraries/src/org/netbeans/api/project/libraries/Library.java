@@ -50,7 +50,7 @@ public final class Library {
     // delegating peer
     private LibraryImplementation impl;
 
-    private List/*<PropertyChangeListener>*/ listeners;
+    private List<PropertyChangeListener> listeners;
 
     /**
      * Creates new library instance
@@ -149,7 +149,7 @@ public final class Library {
      */
     public synchronized void addPropertyChangeListener (PropertyChangeListener listener) {
         if (this.listeners == null)
-            this.listeners = new ArrayList ();
+            this.listeners = new ArrayList<PropertyChangeListener>();
         this.listeners.add (listener);
     }
 
@@ -169,15 +169,15 @@ public final class Library {
     }
 
     private void fireChange (String propertyName, Object oldValue, Object newValue) {
-        Iterator it = null;
+        List<PropertyChangeListener> ls;
         synchronized (this) {
             if (this.listeners == null)
                 return;
-            it = new ArrayList(listeners).iterator();
+            ls = new ArrayList<PropertyChangeListener>(listeners);
         }
         PropertyChangeEvent event = new PropertyChangeEvent (this, propertyName, oldValue, newValue);
-        while (it.hasNext()) {
-            ((PropertyChangeListener)it.next()).propertyChange (event);
+        for (PropertyChangeListener l : ls) {
+            l.propertyChange(event);
         }
     }
 

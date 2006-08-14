@@ -160,7 +160,7 @@ public class LibraryManagerTest extends NbTestCase {
     
     static class TestListener implements PropertyChangeListener {
         
-        private List events = new ArrayList ();
+        private List<String> events = new ArrayList<String>();
         
         public void propertyChange(PropertyChangeEvent event) {
             this.events.add(event.getPropertyName());
@@ -177,15 +177,15 @@ public class LibraryManagerTest extends NbTestCase {
     
     static class TestLibraryImplementation implements LibraryImplementation {
         
-        private static final Set supportedTypes;
+        private static final Set<String> supportedTypes;
         
         private String name;
         private String description;        
-        private Map contents;
+        private Map<String,List<URL>> contents;
         private PropertyChangeSupport support;
         
         static {
-            Set st = new HashSet ();
+            Set<String> st = new HashSet<String>();
             st.add ("bin");
             st.add ("src");
             st.add ("doc");
@@ -193,7 +193,7 @@ public class LibraryManagerTest extends NbTestCase {
         }
         
         public TestLibraryImplementation () {
-            this.contents = new HashMap ();
+            this.contents = new HashMap<String,List<URL>>();
             this.support = new PropertyChangeSupport (this);
         }
         
@@ -226,11 +226,11 @@ public class LibraryManagerTest extends NbTestCase {
             this.support.firePropertyChange(PROP_DESCRIPTION, null, null);
         }
 
-        public List getContent(String volumeType) throws IllegalArgumentException {
+        public List<URL> getContent(String volumeType) throws IllegalArgumentException {
             if (supportedTypes.contains(volumeType)) {
-                List l = (List) contents.get (volumeType);
+                List<URL> l = contents.get(volumeType);
                 if (l == null) {
-                    l = Collections.EMPTY_LIST;
+                    l = Collections.emptyList();
                 }
                 return Collections.unmodifiableList(l);
             }
@@ -239,7 +239,7 @@ public class LibraryManagerTest extends NbTestCase {
             }
         }
         
-        public void setContent(String volumeType, List path) throws IllegalArgumentException {
+        public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
             if (supportedTypes.contains(volumeType)) {
                 this.contents.put (volumeType, path);
                 this.support.firePropertyChange(PROP_CONTENT, null, null);

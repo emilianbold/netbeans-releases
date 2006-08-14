@@ -37,7 +37,7 @@ import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 public class NewLibraryPanel extends javax.swing.JPanel {
 
     private LibrariesModel model;
-    private Map typeMap;
+    private Map<Integer,String> typeMap;
 
     private DialogDescriptor dd;
 
@@ -75,8 +75,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     }
     
     public String getLibraryType () {
-        Integer index = new Integer (this.libraryType.getSelectedIndex());
-        return (String) this.typeMap.get(index);
+        return typeMap.get(libraryType.getSelectedIndex());
     }
     
     public String getLibraryName () {
@@ -90,7 +89,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
 
 
     private void initModel (String preselectedLibraryType) {
-        this.typeMap = new HashMap ();
+        this.typeMap = new HashMap<Integer,String>();
         this.name.setText (NbBundle.getMessage (NewLibraryPanel.class,"TXT_NewLibrary"));
         LibraryTypeRegistry regs = LibraryTypeRegistry.getDefault();
         LibraryTypeProvider[] providers = regs.getLibraryTypeProviders();
@@ -100,7 +99,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
             if (type.equals(preselectedLibraryType)) {
                 index = i;
             }
-            typeMap.put (new Integer(i),type);
+            typeMap.put(i ,type);
             String displayName = providers[i].getDisplayName();
             if (displayName == null) {
                 displayName = providers[i].getLibraryType();

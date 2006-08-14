@@ -19,27 +19,40 @@
 
 package org.netbeans.modules.project.libraries;
 
-import java.util.*;
-import java.net.URL;
-import java.io.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-
-
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
-import org.openide.xml.EntityCatalog;
-import org.openide.filesystems.*;
-import org.openide.xml.XMLUtil;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.SAXException;
-import org.xml.sax.InputSource;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class LibrariesStorage extends FileChangeAdapter implements WritableLibraryProvider {
 
@@ -51,9 +64,9 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
     // persistent storage, it may be null for before first library is store into storage
     private FileObject storage = null;
 
-    private Map libraries;
+    private Map<String, LibraryImplementation> libraries;
 
-    private Map librariesByFileNames;
+    private Map<String, LibraryImplementation> librariesByFileNames;
 
     // Library declaraion public ID
     // i18n bundle
@@ -103,15 +116,13 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
     // ... note that providers can read their data during getVolume call
     private void loadFromStorage() {
         // configure parser       
-        libraries = new HashMap();
-        librariesByFileNames = new HashMap();
+        libraries = new HashMap<String,LibraryImplementation>();
+        librariesByFileNames = new HashMap<String,LibraryImplementation>();
         LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
         LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
         LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
         // parse
-        FileObject libraryDefinitions[] = storage.getChildren();
-        for (int i = 0; i < libraryDefinitions.length; i++) {
-            FileObject descriptorFile = libraryDefinitions[i];
+        for (FileObject descriptorFile : storage.getChildren()) {
             if (XML_EXT.equalsIgnoreCase(descriptorFile.getExt())) {                          
                 try {
                     handler.setLibrary (null);
@@ -138,9 +149,9 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
                     }
                 } catch (SAXException e) {
                     ErrorManager.getDefault().notify (e);
-                } catch (javax.xml.parsers.ParserConfigurationException e) {
+                } catch (ParserConfigurationException e) {
                     ErrorManager.getDefault().notify (e);
-                } catch (java.io.IOException e) {
+                } catch (IOException e) {
                     ErrorManager.getDefault().notify (e);
                 } catch (RuntimeException e) {
                     // Other problem.
@@ -161,8 +172,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
                 this.storage = createStorage();
                 if (storage == null) {
                     // Storage broken. May happen e.g. inside unit tests.
-                    libraries = Collections.EMPTY_MAP;
-                    librariesByFileNames = Collections.EMPTY_MAP;
+                    libraries = Collections.emptyMap();
+                    librariesByFileNames = Collections.emptyMap();
                     initialized = true;
                     return;
                 }
@@ -173,11 +184,11 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
         }
     }
 
-    private static LibraryImplementation readLibrary (FileObject descriptorFile) throws SAXException, javax.xml.parsers.ParserConfigurationException, IOException{
+    private static LibraryImplementation readLibrary (FileObject descriptorFile) throws SAXException, ParserConfigurationException, IOException{
         return readLibrary (descriptorFile, (LibraryImplementation) null);
     }
     
-    private static LibraryImplementation readLibrary (FileObject descriptorFile, LibraryImplementation impl) throws SAXException, javax.xml.parsers.ParserConfigurationException, IOException {
+    private static LibraryImplementation readLibrary (FileObject descriptorFile, LibraryImplementation impl) throws SAXException, ParserConfigurationException, IOException {
         LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
         LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
         LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
@@ -186,7 +197,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
         return handler.getLibrary();
     }
 
-    private static void readLibrary (FileObject descriptorFile, LibraryDeclarationParser parser) throws SAXException, javax.xml.parsers.ParserConfigurationException, IOException {
+    private static void readLibrary (FileObject descriptorFile, LibraryDeclarationParser parser) throws SAXException, ParserConfigurationException, IOException {
         URL baseURL = descriptorFile.getURL();
         InputSource input = new InputSource(baseURL.toExternalForm());
         input.setByteStream(descriptorFile.getInputStream()); // #33554 workaround
@@ -200,7 +211,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
 
     private void writeLibrary (final FileObject storage, final LibraryImplementation library) throws IOException {
         storage.getFileSystem().runAtomicAction(
-                new FileSystem.AtomicAction () {
+                new FileSystem.AtomicAction() {
                     public void run() throws IOException {
                         String libraryType = library.getType ();
                         LibraryTypeProvider libraryTypeProvider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
@@ -221,6 +232,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
         try {
             lock = definitionFile.lock();
             out = new PrintWriter(new OutputStreamWriter(definitionFile.getOutputStream (lock),"UTF-8"));
+            // XXX use DOM and XMLUtil.write instead
             out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");      //NOI18N
             out.println("<!DOCTYPE library PUBLIC \"-//NetBeans//DTD Library Declaration 1.0//EN\" \"http://www.netbeans.org/dtds/library-declaration-1_0.dtd\">"); //NOI18N
             out.println("<library version=\"1.0\">");       			//NOI18N
@@ -235,14 +247,13 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
                 out.println("\t<localizing-bundle>"+XMLUtil.toElementContent(localizingBundle)+"</localizing-bundle>");   //NOI18N
             }
             String[] volumeTypes = libraryTypeProvider.getSupportedVolumeTypes ();
-            for (int i = 0; i < volumeTypes.length; i++) {
+            for (String vtype : volumeTypes) {
                 out.println("\t<volume>");      //NOI18N
-                out.println ("\t\t<type>"+volumeTypes[i]+"</type>");   //NOI18N
-                List volume = library.getContent (volumeTypes[i]);
+                out.println ("\t\t<type>" + vtype + "</type>");   //NOI18N
+                List<URL> volume = library.getContent(vtype);
                 if (volume != null) {
                     //If null -> broken library, repair it.
-                    for (Iterator eit = volume.iterator(); eit.hasNext();) {
-                        URL url = (URL) eit.next ();
+                    for (URL url : volume) {
                         out.println("\t\t<resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>"); //NOI18N
                     }
                 }
@@ -278,7 +289,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
     public final LibraryImplementation[] getLibraries() {
         this.initStorage();
         assert this.storage != null : "Storage is not initialized";
-        return (LibraryImplementation[]) libraries.values().toArray(new LibraryImplementation[libraries.size()]);
+        return libraries.values().toArray(new LibraryImplementation[libraries.size()]);
     } // end getLibraries
 
 
@@ -291,9 +302,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
     public void removeLibrary (LibraryImplementation library) throws IOException {
         this.initStorage();
         assert this.storage != null : "Storage is not initialized";
-        for (Iterator jt = this.librariesByFileNames.keySet().iterator(); jt.hasNext();) {
-            String key = (String) jt.next ();
-            LibraryImplementation lib = (LibraryImplementation) this.librariesByFileNames.get(key);
+        for (String key : librariesByFileNames.keySet()) {
+            LibraryImplementation lib = this.librariesByFileNames.get(key);
             if (library.equals (lib)) {
                 FileObject fo = this.storage.getFileSystem().findResource (key);
                 if (fo != null) {
@@ -307,9 +317,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
     public void updateLibrary(final LibraryImplementation oldLibrary, final LibraryImplementation newLibrary) throws IOException {
         this.initStorage();
         assert this.storage != null : "Storage is not initialized";
-        for (Iterator it = this.librariesByFileNames.keySet().iterator(); it.hasNext();) {
-            String key = (String) it.next ();
-            LibraryImplementation lib = (LibraryImplementation) this.librariesByFileNames.get(key);
+        for (String key : librariesByFileNames.keySet()) {
+            LibraryImplementation lib = librariesByFileNames.get(key);
             if (oldLibrary.equals(lib)) {
                 final FileObject fo = this.storage.getFileSystem().findResource(key);
                 if (fo != null) {
@@ -320,7 +329,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
                         return;
                     }
                     this.storage.getFileSystem().runAtomicAction(
-                            new FileSystem.AtomicAction () {
+                            new FileSystem.AtomicAction() {
                                 public void run() throws IOException {
                                     writeLibraryDefinition (fo, newLibrary, libraryTypeProvider);
                                 }
@@ -361,7 +370,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
             }            
         } catch (SAXException e) {
             ErrorManager.getDefault().notify (e);
-        } catch (javax.xml.parsers.ParserConfigurationException e) {
+        } catch (ParserConfigurationException e) {
             ErrorManager.getDefault().notify (e);
         } catch (IOException e) {
             ErrorManager.getDefault().notify (e);
@@ -372,7 +381,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
         String fileName = fe.getFile().getPath();
         LibraryImplementation impl;
         synchronized (this) {
-            impl = (LibraryImplementation) this.librariesByFileNames.remove (fileName);
+            impl = this.librariesByFileNames.remove(fileName);
             if (impl != null) {
                 this.libraries.remove (impl.getName());
             }
@@ -401,7 +410,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
         String fileName = definitionFile.getPath();
         LibraryImplementation impl;
         synchronized (this) {
-            impl = (LibraryImplementation) this.librariesByFileNames.get (fileName);
+            impl = this.librariesByFileNames.get(fileName);
         }
         if (impl != null) {
             try {
@@ -501,7 +510,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
     }
     
     private static String getNBRoots () {
-        Set result = new TreeSet ();
+        Set<String> result = new TreeSet<String>();
         String currentNbLoc = System.getProperty ("netbeans.home");   //NOI18N
         if (currentNbLoc != null) {
             File f = FileUtil.normalizeFile(new File (currentNbLoc));
@@ -518,7 +527,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
             }
         }
         StringBuffer sb = new StringBuffer ();
-        for (Iterator it = result.iterator(); it.hasNext();) {
+        for (Iterator<String> it = result.iterator(); it.hasNext();) {
             sb.append(it.next());
             if (it.hasNext()) {
                 sb.append(":");  //NOI18N
@@ -527,5 +536,4 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
         return sb.toString();
     }
 
-} // end LibrariesStorage
-
+}

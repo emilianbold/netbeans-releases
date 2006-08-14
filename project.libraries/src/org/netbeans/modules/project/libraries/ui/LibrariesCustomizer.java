@@ -413,7 +413,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             String preselectedLibraryType = null;
             Node[] preselectedNodes = this.getExplorerManager().getSelectedNodes();
             if (preselectedNodes.length == 1) {
-                LibraryCategory lc = (LibraryCategory) preselectedNodes[0].getLookup().lookup(LibraryCategory.class);
+                LibraryCategory lc = preselectedNodes[0].getLookup().lookup(LibraryCategory.class);
                 if (lc != null) {
                     preselectedLibraryType = lc.getCategoryType();
                 }
@@ -537,7 +537,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     }
     
     
-    private static class RootChildren extends Children.Keys {        
+    private static class RootChildren extends Children.Keys<LibraryTypeProvider> {
         
         private LibrariesModel model;
         
@@ -550,17 +550,11 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
         
         public void removeNotify () {
-            this.setKeys (new Object[0]);
+            this.setKeys(new LibraryTypeProvider[0]);
         }
         
-        protected Node[] createNodes(Object key) {
-            if (key instanceof LibraryTypeProvider) {
-                LibraryTypeProvider provider = (LibraryTypeProvider) key;
-                return new Node[] {
-                    new CategoryNode (provider, this.model)
-                };
-            }
-            return new Node[0];
+        protected Node[] createNodes(LibraryTypeProvider provider) {
+            return new Node[] {new CategoryNode(provider, model)};
         }
         
     }
@@ -610,7 +604,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                         
     }    
     
-    private static class CategoryChildren extends Children.Keys implements ListDataListener {
+    private static class CategoryChildren extends Children.Keys<LibraryImplementation> implements ListDataListener {
         
         private LibraryTypeProvider provider;
         private LibrariesModel model;
@@ -622,7 +616,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
         
         public void addNotify () {
-            Collection keys = new ArrayList ();
+            Collection<LibraryImplementation> keys = new ArrayList<LibraryImplementation>();
             for (int i=0; i<model.getSize(); i++) {
                 LibraryImplementation impl = (LibraryImplementation) model.getElementAt(i);
                 if (this.provider.getLibraryType().equals(impl.getType())) {
@@ -633,17 +627,11 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
         
         public void removeNotify () {
-            this.setKeys(new Object[0]);
+            this.setKeys(new LibraryImplementation[0]);
         }
         
-        protected Node[] createNodes(Object key) {
-            if (key instanceof LibraryImplementation) {
-                LibraryImplementation impl = (LibraryImplementation) key;                
-                return new Node[] {
-                    new LibraryNode (impl, this.provider)
-                };
-            }
-            return new Node[0];
+        protected Node[] createNodes(LibraryImplementation impl) {
+            return new Node[] {new LibraryNode(impl, provider)};
         }
         
         public void contentsChanged(ListDataEvent e) {

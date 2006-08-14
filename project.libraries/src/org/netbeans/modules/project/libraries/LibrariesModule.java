@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.project.libraries;
 
-import java.util.Iterator;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -34,12 +33,10 @@ public class LibrariesModule extends ModuleInstall {
 
     public void restored() {
         super.restored();
-        Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(LibraryProvider.class));
-        for (Iterator it = result.allInstances().iterator(); it.hasNext();) {
+        for (LibraryProvider lp : Lookup.getDefault().lookupAll(LibraryProvider.class)) {
             //XXX: Workaround of lookup non reentrant issue (#49405)            
             //Library can not do an initialization in its constructor
             //For promo-E the LibraryProvider should be extended by init method
-            LibraryProvider lp = (LibraryProvider) it.next();
             lp.getLibraries();
         }
     }

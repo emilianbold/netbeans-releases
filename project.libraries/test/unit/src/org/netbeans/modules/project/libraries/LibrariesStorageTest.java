@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -144,9 +145,9 @@ public class LibrariesStorageTest extends NbTestCase {
     
     private static void assertLibEquals (LibraryImplementation[] libs, String[] names) {
         assertEquals("Libraries Equals (size)",names.length,libs.length);
-        Set s = new HashSet (Arrays.asList(names)); //Ordering is not important
-        for (int i=0; i<libs.length; i++) {
-            String name = libs[i].getName();
+        Set<String> s = new HashSet<String>(Arrays.asList(names)); //Ordering is not important
+        for (LibraryImplementation lib : libs) {
+            String name = lib.getName();
             assertTrue("Libraries Equals (unknown library "+name+")", s.remove(name));
         }
     }
@@ -201,9 +202,9 @@ public class LibrariesStorageTest extends NbTestCase {
     
     private static class TestListener implements PropertyChangeListener {
         
-        private List eventNames = new ArrayList ();
+        private List<String> eventNames = new ArrayList<String>();
         
-        public List getEventNames () {
+        public List<String> getEventNames () {
             return this.eventNames;
         }
         
@@ -303,12 +304,12 @@ public class LibrariesStorageTest extends NbTestCase {
         private String name;
         private String locBundle;
         private String description;
-        private Map contents;
+        private Map<String,List<URL>> contents;
         private PropertyChangeSupport support;
         
         public TestLibrary () {
             this.support = new PropertyChangeSupport (this);
-            this.contents = new HashMap (2);
+            this.contents = new HashMap<String,List<URL>>(2);
         }
         
         public TestLibrary (String name) {
@@ -355,12 +356,12 @@ public class LibrariesStorageTest extends NbTestCase {
             this.support.firePropertyChange(PROP_DESCRIPTION,null,null);
         }
 
-        public List getContent(String volumeType) throws IllegalArgumentException {
-            for (int i=0; i< TestLibraryTypeProvider.supportedTypes.length; i++) {
-                if (TestLibraryTypeProvider.supportedTypes[i].equals (volumeType)) {
-                    List l = (List) this.contents.get (volumeType);
+        public List<URL> getContent(String volumeType) throws IllegalArgumentException {
+            for (String t : TestLibraryTypeProvider.supportedTypes) {
+                if (t.equals(volumeType)) {
+                    List<URL> l = this.contents.get(volumeType);
                     if (l == null) {
-                        l = Collections.EMPTY_LIST;
+                        l = Collections.emptyList();
                     }
                     return l;
                 }
@@ -368,10 +369,10 @@ public class LibrariesStorageTest extends NbTestCase {
             throw new IllegalArgumentException ();
         }
 
-        public void setContent(String volumeType, List path) throws IllegalArgumentException {
-            for (int i=0; i< TestLibraryTypeProvider.supportedTypes.length; i++) {
-                if (TestLibraryTypeProvider.supportedTypes[i].equals (volumeType)) {
-                    List l = (List) this.contents.put (volumeType, path);
+        public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
+            for (String t : TestLibraryTypeProvider.supportedTypes) {
+                if (t.equals(volumeType)) {
+                    List<URL> l = this.contents.put(volumeType, path);
                     this.support.firePropertyChange(PROP_CONTENT,null,null);
                     return;
                 }

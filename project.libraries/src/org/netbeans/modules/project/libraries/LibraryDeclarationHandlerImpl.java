@@ -19,16 +19,18 @@
 
 package org.netbeans.modules.project.libraries;
 
-import org.openide.ErrorManager;
-import org.xml.sax.*;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-
-import java.util.Map;
-import java.util.List;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.openide.ErrorManager;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Read content of library declaration XML document.
@@ -48,10 +50,10 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
 
     private String localizingBundle;
 
-    private Map contentTypes = new HashMap ();
+    private Map<String,List<URL>> contentTypes = new HashMap<String,List<URL>>();
     
     // last volume
-    private List cpEntries;
+    private List<URL> cpEntries;
     
     //last volume type
     private String contentType;
@@ -68,7 +70,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     }
     
     public void start_volume(final Attributes meta) throws SAXException {
-        cpEntries = new ArrayList ();
+        cpEntries = new ArrayList<URL>();
         this.inVolume = true;
     }
     
@@ -78,7 +80,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         this.contentType = null;
     }
     
-    public void handle_type(final java.lang.String data, final Attributes meta) throws SAXException {
+    public void handle_type(final String data, final Attributes meta) throws SAXException {
 		if (data == null || data.length () == 0) {
 			throw new SAXException ("Empty value of type element");	//NOI18N
 		}
@@ -123,9 +125,9 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         if (!update || !safeEquals(this.library.getDescription(), libraryDescription)) {
             this.library.setDescription (this.libraryDescription);
         }
-        for (Iterator it = this.contentTypes.keySet().iterator(); it.hasNext();) {
-            String contentType = (String) it.next();
-            List cp = (List) this.contentTypes.get (contentType);
+        for (Map.Entry<String,List<URL>> entry : contentTypes.entrySet()) {
+            String contentType = entry.getKey();
+            List<URL> cp = entry.getValue();
             try {
                 if (!update || !safeEquals (this.library.getContent(contentType),cp)) {
                     this.library.setContent(contentType, cp);
@@ -141,17 +143,17 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         this.contentTypes.clear ();
     }
 
-    public void handle_resource(java.net.URL data, final Attributes meta) throws SAXException {
+    public void handle_resource(URL data, final Attributes meta) throws SAXException {
         if (data != null) {
             cpEntries.add(data);
         }
     }
         
-    public void handle_name(final java.lang.String data, final Attributes meta) throws SAXException {
+    public void handle_name(final String data, final Attributes meta) throws SAXException {
         this.libraryName = data;
     }
     
-    public void handle_description (final java.lang.String data, final Attributes meta) throws SAXException {
+    public void handle_description (final String data, final Attributes meta) throws SAXException {
         libraryDescription = data;
     }
 
@@ -175,4 +177,3 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     }
 
 }
-

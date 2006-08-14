@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.project.libraries.ui;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
 
     private final LibraryImplementation original;
     private final LibrariesModel model;
-    private Map newContents;
+    private Map<String,List<URL>> newContents;
     private String newName;
     private String newDescription;
     private PropertyChangeSupport support;
@@ -46,7 +47,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
         assert original != null && model != null;
         this.original = original;
         this.model = model;
-        this.original.addPropertyChangeListener((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,this,this.original));
+        this.original.addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, this, this.original));
         this.support = new PropertyChangeSupport (this);
     }
     
@@ -67,9 +68,9 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
     }
     
     
-    public synchronized List getContent(String volumeType) throws IllegalArgumentException {
-        List result = null;
-        if (this.newContents == null || (result=(List)this.newContents.get(volumeType)) == null) {
+    public synchronized List<URL> getContent(String volumeType) throws IllegalArgumentException {
+        List<URL> result = null;
+        if (newContents == null || (result = newContents.get(volumeType)) == null) {
             return this.original.getContent (volumeType);
         }
         else {
@@ -95,9 +96,9 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
         }
     }
     
-    public synchronized void setContent(String volumeType, List path) throws IllegalArgumentException {
+    public synchronized void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
         if (this.newContents == null) {
-            this.newContents = new HashMap ();
+            this.newContents = new HashMap<String,List<URL>>();
         }
         this.newContents.put (volumeType, path);
         this.model.modifyLibrary(this);

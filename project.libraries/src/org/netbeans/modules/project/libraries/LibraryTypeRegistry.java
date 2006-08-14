@@ -51,7 +51,7 @@ public final class LibraryTypeRegistry extends FolderInstance {
         return folder;
     }
     
-    private static Reference instance;
+    private static Reference<LibraryTypeRegistry> instance;
 
     private LibraryTypeRegistry () {
         super(DataFolder.findFolder(findProvidersFolder()));
@@ -88,14 +88,13 @@ public final class LibraryTypeRegistry extends FolderInstance {
 
 
     protected Object createInstance(InstanceCookie[] cookies) throws IOException, ClassNotFoundException {
-        List installers = new ArrayList(cookies.length);
-        for (int i = 0; i < cookies.length; i++) {
-            InstanceCookie cake = cookies[i];
-            Object o = null;
+        List<LibraryTypeProvider> installers = new ArrayList<LibraryTypeProvider>(cookies.length);
+        for (InstanceCookie cake : cookies) {
+            LibraryTypeProvider o = null;
             try {
                 if (cake instanceof InstanceCookie.Of && !(((InstanceCookie.Of)cake).instanceOf(LibraryTypeProvider.class)))
                     continue;
-                o = cake.instanceCreate();
+                o = (LibraryTypeProvider) cake.instanceCreate();
             } catch (IOException ex) {
             } catch (ClassNotFoundException ex) {
             }
@@ -108,9 +107,9 @@ public final class LibraryTypeRegistry extends FolderInstance {
 
     public static synchronized LibraryTypeRegistry getDefault () {
         LibraryTypeRegistry regs = null;
-        if (instance == null || (regs = (LibraryTypeRegistry)instance.get()) == null) {
+        if (instance == null || (regs = instance.get()) == null) {
             regs = new LibraryTypeRegistry();
-            instance = new SoftReference (regs);
+            instance = new SoftReference<LibraryTypeRegistry>(regs);
         }
         return regs;
     }

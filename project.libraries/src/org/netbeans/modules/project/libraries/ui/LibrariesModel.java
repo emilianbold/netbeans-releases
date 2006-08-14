@@ -39,22 +39,22 @@ import org.openide.ErrorManager;
  */
 class LibrariesModel extends javax.swing.AbstractListModel implements PropertyChangeListener, LookupListener {
 
-    private List actualLibraries;
-    private List addedLibraries;
-    private List removedLibraries;
-    private List changedLibraries;
-    private Collection currentStorages;
-    private Map storageByLib;
-    private Lookup.Result lresult;
+    private List<LibraryImplementation> actualLibraries;
+    private List<LibraryImplementation> addedLibraries;
+    private List<LibraryImplementation> removedLibraries;
+    private List<ProxyLibraryImplementation> changedLibraries;
+    private Collection<? extends LibraryProvider> currentStorages;
+    private Map<LibraryImplementation,LibraryProvider> storageByLib;
+    private Lookup.Result<LibraryProvider> lresult;
     private WritableLibraryProvider writableProvider;
 
     /** Creates a new instance of LibrariesModel */
     public LibrariesModel () {
-        this.addedLibraries = new ArrayList ();
-        this.removedLibraries = new ArrayList ();
-        this.changedLibraries = new ArrayList ();
-        this.currentStorages = Collections.EMPTY_SET;
-        this.storageByLib = new HashMap ();
+        this.addedLibraries = new ArrayList<LibraryImplementation>();
+        this.removedLibraries = new ArrayList<LibraryImplementation>();
+        this.changedLibraries = new ArrayList<ProxyLibraryImplementation>();
+        this.currentStorages = Collections.emptySet();
+        this.storageByLib = new HashMap<LibraryImplementation,LibraryProvider>();
         this.getLibraries ();
     }
     
@@ -71,9 +71,9 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
     public void addLibrary (LibraryImplementation impl) {
         this.addedLibraries.add (impl);
         int index=0;
-        Comparator c = new LibrariesComparator ();
+        Comparator<LibraryImplementation> c = new LibrariesComparator();
         for (; index < this.actualLibraries.size(); index++) {
-            Object tmp = this.actualLibraries.get (index);
+            LibraryImplementation tmp = this.actualLibraries.get(index);
             if (c.compare(impl,tmp)<0)
                 break;
         }
@@ -93,9 +93,9 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
         this.fireIntervalRemoved(this,index,index);
     }
 
-    public void modifyLibrary (LibraryImplementation impl) {
+    public void modifyLibrary(ProxyLibraryImplementation impl) {
         if (!this.addedLibraries.contains (impl) && !this.changedLibraries.contains(impl)) {
-            this.changedLibraries.add (impl);
+            this.changedLibraries.add(impl);
         }
         int index = this.actualLibraries.indexOf (impl);
         this.fireContentsChanged(this,index,index);
@@ -104,7 +104,7 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
     public boolean isLibraryEditable (LibraryImplementation impl) {
         if (this.addedLibraries.contains(impl))
             return true;
-        LibraryProvider provider = (LibraryProvider) this.storageByLib.get
+        LibraryProvider provider = storageByLib.get
                 (((ProxyLibraryImplementation)impl).getOriginal());
         //Todo: Currently just one WritableLibraryProvider
         //Todo: if changed, must be rewritten to handle it
@@ -114,9 +114,8 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
     public void apply () throws IOException {
         //Todo: Currently just one WritableLibraryProvider
         //Todo: if changed, must be rewritten to handle it
-        for (Iterator it = this.removedLibraries.iterator(); it.hasNext();) {
-            LibraryImplementation impl = (LibraryImplementation)it.next();
-            LibraryProvider storage = (LibraryProvider) this.storageByLib.get (impl);
+        for (LibraryImplementation impl : removedLibraries) {
+            LibraryProvider storage = storageByLib.get(impl);
             if (storage == this.writableProvider) {
                 this.writableProvider.removeLibrary (impl);
             }
@@ -125,16 +124,15 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
             }
         }
         if (this.writableProvider != null) {
-            for (Iterator it = this.addedLibraries.iterator(); it.hasNext();) {
-                this.writableProvider.addLibrary((LibraryImplementation)it.next());
+            for (LibraryImplementation impl : addedLibraries) {
+                writableProvider.addLibrary(impl);
             }
         }
         else {
             ErrorManager.getDefault().log("Cannot add libraries, no WritableLibraryProvider."); //NOI18N
         }
-        for (Iterator it = this.changedLibraries.iterator(); it.hasNext();) {
-            ProxyLibraryImplementation proxy = (ProxyLibraryImplementation) it.next ();
-            LibraryProvider storage = (LibraryProvider) this.storageByLib.get (proxy.getOriginal());
+        for (ProxyLibraryImplementation proxy : changedLibraries) {
+            LibraryProvider storage = storageByLib.get(proxy.getOriginal());
             if (storage == this.writableProvider) {
                 this.writableProvider.updateLibrary (proxy.getOriginal(), proxy);
             }
@@ -180,35 +178,32 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
         this.addedLibraries.clear();
         this.removedLibraries.clear();
         this.changedLibraries.clear();
-        for (Iterator it = this.currentStorages.iterator(); it.hasNext();) {
-            ((LibraryProvider)it.next()).removePropertyChangeListener (this);
+        for (LibraryProvider p : currentStorages) {
+            p.removePropertyChangeListener (this);
         }
-        this.currentStorages = Collections.EMPTY_SET;
+        this.currentStorages = Collections.emptySet();
     }
 
     private synchronized void getLibraries () {
-        List libraries = new ArrayList();
+        List<LibraryImplementation> libraries = new ArrayList<LibraryImplementation>();
         if (this.lresult == null) {
             //First time
-            this.lresult = Lookup.getDefault().lookup (new Lookup.Template(LibraryProvider.class));
+            this.lresult = Lookup.getDefault().lookupResult(LibraryProvider.class);
             this.lresult.addLookupListener (this);
         }
-        Collection instances = this.lresult.allInstances();
-        Collection toAdd = new HashSet (instances);
+        Collection<? extends LibraryProvider> instances = this.lresult.allInstances();
+        Collection<LibraryProvider> toAdd = new HashSet<LibraryProvider>(instances);
         toAdd.removeAll(this.currentStorages);
-        Collection toRemove = new HashSet (this.currentStorages);
+        Collection<LibraryProvider> toRemove = new HashSet<LibraryProvider>(this.currentStorages);
         toRemove.removeAll (instances);
         this.currentStorages = instances;
         this.storageByLib.clear();
-        for (Iterator it = instances.iterator(); it.hasNext();) {
-            LibraryProvider storage = (LibraryProvider) it.next ();
+        for (LibraryProvider storage : instances) {
             //TODO: in case of more WritableLibraryProvider must be changed
             if (this.writableProvider == null && storage instanceof WritableLibraryProvider) {
                 this.writableProvider = (WritableLibraryProvider) storage;
             }
-            LibraryImplementation[] impls = storage.getLibraries();
-            for (int i = 0; i < impls.length; i++) {
-                LibraryImplementation lib = impls[i];
+            for (LibraryImplementation lib : storage.getLibraries()) {
                 LibraryImplementation proxy = null;
                 if (removedLibraries.contains(lib)) {
                     this.storageByLib.put (lib,storage);
@@ -226,23 +221,17 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
         libraries.addAll (this.addedLibraries);
         Collections.sort(libraries, new LibrariesComparator());
 
-        for (Iterator it = toRemove.iterator(); it.hasNext();) {
-            ((LibraryProvider)it.next()).removePropertyChangeListener (this);
+        for (LibraryProvider p : toRemove) {
+            p.removePropertyChangeListener(this);
         }
-        for (Iterator it = toAdd.iterator(); it.hasNext();) {
-            ((LibraryProvider)it.next()).addPropertyChangeListener (this);
+        for (LibraryProvider p : toAdd) {
+            p.addPropertyChangeListener(this);
         }
         this.actualLibraries = libraries;
     }
 
-
-
-
-    private static class LibrariesComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            assert (o1 instanceof LibraryImplementation) && (o2 instanceof LibraryImplementation);
-            LibraryImplementation lib1 = (LibraryImplementation) o1;
-            LibraryImplementation lib2 = (LibraryImplementation) o2;
+    private static class LibrariesComparator implements Comparator<LibraryImplementation> {
+        public int compare(LibraryImplementation lib1, LibraryImplementation lib2) {
             String name1 = LibrariesCustomizer.getLocalizedString(lib1.getLocalizingBundle(), lib1.getName());
             String name2 = LibrariesCustomizer.getLocalizedString(lib2.getLocalizingBundle(), lib2.getName());
             return name1.compareToIgnoreCase(name2);

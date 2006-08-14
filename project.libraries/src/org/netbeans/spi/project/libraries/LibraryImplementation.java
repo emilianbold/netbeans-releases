@@ -20,6 +20,7 @@
 package org.netbeans.spi.project.libraries;
 
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -30,29 +31,29 @@ import java.util.List;
  */
 public interface LibraryImplementation {
 
-    public static final String PROP_NAME = "name";                  //NOI18N
-    public static final String PROP_DESCRIPTION = "description";    //NOI18N
-    public static final String PROP_CONTENT = "content";            //NOI18N
+    String PROP_NAME = "name";                  //NOI18N
+    String PROP_DESCRIPTION = "description";    //NOI18N
+    String PROP_CONTENT = "content";            //NOI18N
 
     /**
      * Returns type of library, the LibraryTypeProvider creates libraries
      * of given unique type.
      * @return String unique identifier, never returns null.
      */
-    public String getType();
+    String getType();
 
     /**
      * Returns name of the library
      * @return String unique name of the library, never returns null.
      */
-    public String getName();
+    String getName();
 
     /**
      * Get a description of the library.
      * The description provides more detailed information about the library.
      * @return String the description or null if the description is not available
      */
-    public String getDescription ();
+    String getDescription();
 
 
     /**
@@ -61,31 +62,30 @@ public interface LibraryImplementation {
      * @return String, the resource name of the bundle. If null in case when the
      * name and description is not localized.
      */
-    public String getLocalizingBundle ();
+    String getLocalizingBundle();
 
     /**
      * Returns List of resources contained in the given volume.
      * The returned list is unmodifiable. To change the content of
      * the given volume use setContent method.
      * @param volumeType the type of volume for which the content should be returned.
-     * @return List &lt;URL&gt; never returns null
+     * @return list of resource URLs (never null)
      * @throws IllegalArgumentException if the library does not support given type of volume
      */
-    public List/*<URL>*/ getContent(String volumeType) throws IllegalArgumentException;
+    List<URL> getContent(String volumeType) throws IllegalArgumentException;
 
     /**
      * Sets the name of the library, called by LibrariesStorage while reading the library
      * @param name -  the unique name of the library, can't be null.
      */
-    public void setName(String name);
+    void setName(String name);
 
     /**
      * Sets the description of the library, called by LibrariesStorage while reading the library
      * The description is more detailed information about the library.
      * @param text - the description of the library, may be null.
      */
-    public void setDescription (String text);
-
+    void setDescription(String text);
 
     /**
      * Sets the localizing bundle. The bundle is used for localizing the name and description.
@@ -93,26 +93,26 @@ public interface LibraryImplementation {
      * Called by LibrariesStorage while reading the library.
      * @param resourceName of the bundle without extension, may be null.
      */
-    public void setLocalizingBundle (String resourceName);
+    void setLocalizingBundle(String resourceName);
 
     /**
      * Adds PropertyChangeListener
      * @param l - the PropertyChangeListener
      */
-    public void addPropertyChangeListener (PropertyChangeListener l);
+    void addPropertyChangeListener(PropertyChangeListener l);
 
     /**
      * Removes PropertyChangeListener
      * @param l - - the PropertyChangeListener
      */
-    public void removePropertyChangeListener (PropertyChangeListener l);
+    void removePropertyChangeListener(PropertyChangeListener l);
 
     /**
      * Sets content of given volume
      * @param volumeType the type of volume for which the content should be set
-     * @param path the List&lt;URL&gt; the list of resoruces
+     * @param path the list of resource URLs
      * @throws IllegalArgumentException if the library does not support given volumeType
      */
-    public void setContent(String volumeType, List/*<URL>*/ path) throws IllegalArgumentException;
+    void setContent(String volumeType, List<URL> path) throws IllegalArgumentException;
 
-} // end LibraryImplementation
+}

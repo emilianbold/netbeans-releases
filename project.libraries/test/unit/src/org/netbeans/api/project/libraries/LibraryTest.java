@@ -65,14 +65,14 @@ public class LibraryTest extends NbTestCase {
         LibraryManagerTest.assertEventsEquals(tl.getEventNames(), new String[] {Library.PROP_DESCRIPTION});
         tl.reset();
         LibraryManagerTest.assertLibsEquals (new Library[] {libs[0]}, new LibraryImplementation[] {impls[0]});
-        List urls = new ArrayList ();
+        List<URL> urls = new ArrayList<URL>();
         urls.add (new URL ("file:/lib/libnew1.so"));
         urls.add (new URL ("file:/lib/libnew2.so"));
         impls[0].setContent ("bin",urls);        
         LibraryManagerTest.assertEventsEquals(tl.getEventNames(), new String[] {Library.PROP_CONTENT});
         tl.reset();
         LibraryManagerTest.assertLibsEquals (new Library[] {libs[0]}, new LibraryImplementation[] {impls[0]});
-        urls = new ArrayList ();
+        urls = new ArrayList<URL>();
         urls.add (new URL ("file:/src/new/src/"));
         impls[0].setContent ("src",urls);        
         LibraryManagerTest.assertEventsEquals(tl.getEventNames(), new String[] {Library.PROP_CONTENT});

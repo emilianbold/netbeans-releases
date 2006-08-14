@@ -45,11 +45,11 @@ public final class LibraryManager {
 
     private static LibraryManager instance;
 
-    private Lookup.Result result;
-    private Collection currentStorages = new ArrayList ();
+    private Lookup.Result<LibraryProvider> result;
+    private Collection<LibraryProvider> currentStorages = new ArrayList<LibraryProvider>();
     private PropertyChangeListener plistener;
     private PropertyChangeSupport listeners;
-    private Collection cache;
+    private Collection<Library> cache;
 
 
     private LibraryManager () {
@@ -85,37 +85,35 @@ public final class LibraryManager {
                         resetCache ();
                     }
                 };
-                result = Lookup.getDefault().lookup (new Lookup.Template(LibraryProvider.class));
+                result = Lookup.getDefault().lookupResult(LibraryProvider.class);
                 result.addLookupListener (new LookupListener() {
                     public void resultChanged(LookupEvent ev) {
                             resetCache ();
                     }
                 });
             }
-            List l = new ArrayList ();
-            Collection instances = result.allInstances();
-            Collection added = new HashSet (instances);
+            List<Library> l = new ArrayList<Library>();
+            Collection<? extends LibraryProvider> instances = result.allInstances();
+            Collection<LibraryProvider> added = new HashSet<LibraryProvider>(instances);
             added.removeAll (currentStorages);
-            Collection removed = new HashSet (currentStorages);
+            Collection<LibraryProvider> removed = new HashSet<LibraryProvider>(currentStorages);
             removed.removeAll (instances);
             currentStorages.clear();
-            for (Iterator it = instances.iterator(); it.hasNext();) {
-                LibraryProvider storage = (LibraryProvider) it.next ();
+            for (LibraryProvider storage : instances) {
                 this.currentStorages.add (storage);
-                LibraryImplementation[] impls = storage.getLibraries();
-                for (int i=0; i<impls.length; i++) {                    
-                    l.add(new Library (impls[i]));
+                for (LibraryImplementation impl : storage.getLibraries()) {
+                    l.add(new Library(impl));
                 }                
             }
-            for (Iterator it = removed.iterator(); it.hasNext();) {
-                ((LibraryProvider)it.next()).removePropertyChangeListener(this.plistener);
+            for (LibraryProvider p : removed) {
+                p.removePropertyChangeListener(this.plistener);
             }
-            for (Iterator it = added.iterator(); it.hasNext();) {
-                ((LibraryProvider)it.next()).addPropertyChangeListener(this.plistener);
+            for (LibraryProvider p : added) {
+                p.addPropertyChangeListener(this.plistener);
             }            
             this.cache = l;
         }
-        return (Library[]) this.cache.toArray(new Library[this.cache.size()]);
+        return this.cache.toArray(new Library[this.cache.size()]);
     }
 
     /**

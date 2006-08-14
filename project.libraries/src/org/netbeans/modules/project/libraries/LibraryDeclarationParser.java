@@ -20,9 +20,22 @@
 package org.netbeans.modules.project.libraries;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Stack;
+import javax.xml.parsers.ParserConfigurationException;
 import org.openide.xml.XMLUtil;
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * The class reads XML documents according to specified DTD and
@@ -37,13 +50,13 @@ import org.xml.sax.*;
  */
 public class LibraryDeclarationParser implements ContentHandler, EntityResolver {
     
-    private java.lang.StringBuffer buffer;
+    private StringBuffer buffer;
     
     private LibraryDeclarationConvertor parslet;
     
     private LibraryDeclarationHandler handler;
     
-    private java.util.Stack context;
+    private Stack<Object[]> context;
 
     
     /**
@@ -56,7 +69,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
         this.parslet = parslet;
         this.handler = handler;
         buffer = new StringBuffer(111);
-        context = new java.util.Stack();
+        context = new Stack<Object[]>();
     }
     
     /**
@@ -84,9 +97,9 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
-    public final void startElement(java.lang.String ns, java.lang.String name, java.lang.String qname, Attributes attrs) throws SAXException {
+    public final void startElement(String ns, String name, String qname, Attributes attrs) throws SAXException {
         dispatch(true);
-        context.push(new Object[] {qname, new org.xml.sax.helpers.AttributesImpl(attrs)});
+        context.push(new Object[] {qname, new AttributesImpl(attrs)});
         if ("volume".equals(qname)) {
             handler.start_volume(attrs);
         } else if ("library".equals(qname)) {
@@ -98,7 +111,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
-    public final void endElement(java.lang.String ns, java.lang.String name, java.lang.String qname) throws SAXException {
+    public final void endElement(String ns, String name, String qname) throws SAXException {
         dispatch(false);
         context.pop();
         if ("volume".equals(qname)) {
@@ -127,34 +140,34 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
-    public final void processingInstruction(java.lang.String target, java.lang.String data) throws SAXException {
+    public final void processingInstruction(String target, String data) throws SAXException {
     }
     
     /**
      * This SAX interface method is implemented by the parser.
      *
      */
-    public final void startPrefixMapping(final java.lang.String prefix, final java.lang.String uri) throws SAXException {
+    public final void startPrefixMapping(final String prefix, final String uri) throws SAXException {
     }
     
     /**
      * This SAX interface method is implemented by the parser.
      *
      */
-    public final void endPrefixMapping(final java.lang.String prefix) throws SAXException {
+    public final void endPrefixMapping(final String prefix) throws SAXException {
     }
     
     /**
      * This SAX interface method is implemented by the parser.
      *
      */
-    public final void skippedEntity(java.lang.String name) throws SAXException {
+    public final void skippedEntity(String name) throws SAXException {
     }
     
     private void dispatch(final boolean fireOnlyIfMixed) throws SAXException {
         if (fireOnlyIfMixed && buffer.length() == 0) return; //skip it
         
-        Object[] ctx = (Object[]) context.peek();
+        Object[] ctx = context.peek();
         String here = (String) ctx[0];
         Attributes attrs = (Attributes) ctx[1];
         if ("description".equals(here)) {
@@ -187,7 +200,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * @throws javax.xml.parsers.FactoryConfigurationRrror if the implementation can not be instantiated.
      *
      */
-    public void parse(final InputSource input) throws SAXException, javax.xml.parsers.ParserConfigurationException, java.io.IOException {
+    public void parse(final InputSource input) throws SAXException, ParserConfigurationException, IOException {
         parse(input, this);
     }
     
@@ -200,7 +213,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * @throws javax.xml.parsers.FactoryConfigurationRrror if the implementation can not be instantiated.
      *
      */
-    public void parse(final java.net.URL url) throws SAXException, javax.xml.parsers.ParserConfigurationException, java.io.IOException {
+    public void parse(final URL url) throws SAXException, ParserConfigurationException, IOException {
         parse(new InputSource(url.toExternalForm()), this);
     }
     
@@ -213,7 +226,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * @throws javax.xml.parsers.FactoryConfigurationRrror if the implementation can not be instantiated.
      *
      */
-    public static void parse(final InputSource input, final LibraryDeclarationHandler handler, final LibraryDeclarationConvertor parslet) throws SAXException, javax.xml.parsers.ParserConfigurationException, java.io.IOException {
+    public static void parse(final InputSource input, final LibraryDeclarationHandler handler, final LibraryDeclarationConvertor parslet) throws SAXException, ParserConfigurationException, IOException {
         parse(input, new LibraryDeclarationParser(handler, parslet));
     }
     
@@ -226,11 +239,11 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * @throws javax.xml.parsers.FactoryConfigurationRrror if the implementation can not be instantiated.
      *
      */
-    public static void parse(final java.net.URL url, final LibraryDeclarationHandler handler, final LibraryDeclarationConvertor parslet) throws SAXException, javax.xml.parsers.ParserConfigurationException, java.io.IOException {
+    public static void parse(final URL url, final LibraryDeclarationHandler handler, final LibraryDeclarationConvertor parslet) throws SAXException, ParserConfigurationException, IOException {
         parse(new InputSource(url.toExternalForm()), handler, parslet);
     }
     
-    private static void parse(final InputSource input, final LibraryDeclarationParser recognizer) throws SAXException, javax.xml.parsers.ParserConfigurationException, java.io.IOException {
+    private static void parse(final InputSource input, final LibraryDeclarationParser recognizer) throws SAXException, ParserConfigurationException, IOException {
         try {
             XMLReader parser = XMLUtil.createXMLReader(false, false);
             parser.setContentHandler(recognizer);
