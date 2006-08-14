@@ -73,7 +73,7 @@ import org.openide.util.RequestProcessor;
 *
 * @author Jaroslav Tulach
 */
-public abstract class FolderInstance extends Task implements InstanceCookie {
+public abstract class FolderInstance extends Task implements InstanceCookie { // XXX add generic type params?
     
     /* -------------------------------------------------------------------- */
     /* -- Constants ------------------------------------------------------- */
