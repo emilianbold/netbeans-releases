@@ -24,6 +24,9 @@ package org.netbeans.modules.form;
  * by i18n/form module.
  */
 public interface I18nValue extends org.netbeans.modules.form.FormDesignValue {
+    String NOI18N_KEY = "noi18n"; // NOI18N
+    String COMPUTE_AUTO_KEY = "auto"; // NOI18N
+
     String getKey();
     String getValue();
 }

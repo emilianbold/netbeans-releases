@@ -70,9 +70,18 @@ public class I18nServiceImpl implements I18nService {
      * the bundle file at this moment.
      */
     public I18nValue changeKey(I18nValue prev, String newKey) {
-        FormI18nString i18nString = new FormI18nString((FormI18nString)prev);
-        i18nString.setKey(newKey);
-        return i18nString;
+        FormI18nString oldI18nString = (FormI18nString) prev;
+        FormI18nString changedI18nString;
+        if (oldI18nString.getKey() == I18nValue.COMPUTE_AUTO_KEY) {
+            // set key which was unset so far
+            changedI18nString = oldI18nString;
+        }
+        else { // create a new value for the new key
+            changedI18nString = new FormI18nString(oldI18nString);
+            changedI18nString.allData = oldI18nString.allData;
+        }
+        changedI18nString.setKey(newKey);
+        return changedI18nString;
     }
 
     /**
@@ -152,7 +161,9 @@ public class I18nServiceImpl implements I18nService {
             }
         }
 
-        if (newI18nString != null && newI18nString.getKey() != null) {
+        if (newI18nString != null && newI18nString.getKey() != null
+                && newI18nString.getKey() != I18nValue.NOI18N_KEY)
+        {   // valid new value - make sure it is up-to-date in the properties file
             JavaResourceHolder rh = (JavaResourceHolder) newI18nString.getSupport().getResourceHolder();
 
             if (rh.getResource() == null) { // find or create properties file
@@ -168,16 +179,35 @@ public class I18nServiceImpl implements I18nService {
                 newI18nString.setKey(rh.findFreeKey(newI18nString.getKey()));
             }
 
-            if (newI18nString.allData != null) { // restore complete data across all locales
-                rh.setAllData(newI18nString.getKey(), newI18nString.allData);
-                newI18nString.allData = null;
-            }
-
             rh.setLocalization(localeSuffix);
-            rh.addProperty(newI18nString.getKey(), newI18nString.getValue(), newI18nString.getComment(), true);
-
-            registerChangedDataObject(srcDataObject, rh.getResource());
+            String key = newI18nString.getKey();
+            if (!isValueUpToDate(rh, newI18nString)) {
+                if (newI18nString.allData != null) { // restore complete data across all locales
+                    rh.setAllData(key, newI18nString.allData);
+                    newI18nString.allData = null;
+                    // update also the current value - might have come from a different locale
+                    newI18nString.setValue(rh.getValueForKey(key));
+                    newI18nString.setComment(rh.getCommentForKey(key));
+                }
+                else {
+                    rh.addProperty(key, newI18nString.getValue(), newI18nString.getComment(), true);
+                }
+                registerChangedDataObject(srcDataObject, rh.getResource());
+            }
         }
+    }
+
+    private static boolean isValueUpToDate(ResourceHolder rh, I18nString i18nString) {
+        String storedValue = rh.getValueForKey(i18nString.getKey());
+        String storedComment = rh.getCommentForKey(i18nString.getKey());
+        if ("".equals(storedComment)) // NOI18N
+            storedComment = null;
+        String newValue = i18nString.getValue();
+        String newComment = i18nString.getComment();
+        if ("".equals(newComment)) // NOI18N
+            newComment = null;
+        return (storedValue == newValue || (storedValue != null && storedValue.equals(newValue)))
+            && (storedComment == newComment || (storedComment != null && storedComment.equals(newComment)));
     }
 
     /**

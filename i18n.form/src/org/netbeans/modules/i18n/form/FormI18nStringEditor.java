@@ -37,6 +37,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormDataObject;
+import org.netbeans.modules.form.I18nValue;
 import org.netbeans.modules.form.NamedPropertyEditor;
 import org.netbeans.modules.form.FormEditorSupport;
 import org.netbeans.modules.i18n.I18nPanel;
@@ -169,13 +170,13 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
     public String getJavaInitializationString() {
         FormI18nString i18nString = (FormI18nString) getValue();
         String javaString;
-        if (i18nString.getKey() != null) {
+        if (i18nString.getKey() != I18nValue.NOI18N_KEY) {
             javaString = i18nString.getReplaceString();
             if (javaString == null) { // some problem, return plain string (better than null)
                 return "\"" + FormI18nSupport.toAscii(i18nString.getValue()) + "\""; // NOI18N
             }
         }
-        else { // non-internationalized string (with NOI18N comment)
+        else { // intentionally hardcoded string (with NOI18N comment)
             javaString = "\"" + FormI18nSupport.toAscii(i18nString.getValue()) + "\""; // NOI18N
         }
             
@@ -192,7 +193,11 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         boolean noI18n;
         if (value instanceof FormI18nString) {
             formI18nString = new FormI18nString((FormI18nString)value);
-            noI18n = formI18nString.getKey() == null;
+            if (formI18nString.getKey() == I18nValue.NOI18N_KEY) {
+                formI18nString.setKey(null);
+                noI18n = true;
+            }
+            else noI18n = false;
         }
         else {
             formI18nString = createFormI18nString();
@@ -302,6 +307,7 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
             // plain string
             Node node = namedNodes.getNamedItem(ATTR_VALUE);
             if (node != null) {
+                formI18nString.setKey(I18nValue.NOI18N_KEY);
                 formI18nString.setValue(node.getNodeValue());
                 setValue(formI18nString);
             }
@@ -463,7 +469,7 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
     public Node storeToXML(Document doc) {
         FormI18nString formI18nString = (FormI18nString) getValue();
         Element element;
-        if (formI18nString.getKey() != null) {
+        if (formI18nString.getKey() != I18nValue.NOI18N_KEY) {
             element = doc.createElement (XML_RESOURCESTRING);
 
             String bundleName;
@@ -544,7 +550,7 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
             I18nString i18nString = i18nPanel.getI18nString();
 
             if (isNoI18n() && i18nString != null) {
-                i18nString.setKey(null);
+                i18nString.setKey(I18nValue.NOI18N_KEY);
                 i18nString.setValue(stringPanel.getString());
                 return i18nString;
             }

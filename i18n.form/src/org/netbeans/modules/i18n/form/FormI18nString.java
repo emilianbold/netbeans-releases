@@ -22,10 +22,14 @@ package org.netbeans.modules.i18n.form;
 
 import org.netbeans.modules.form.I18nValue;
 import org.netbeans.modules.form.FormDesignValue;
+import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
+import org.netbeans.modules.i18n.ResourceHolder;
 import org.netbeans.modules.i18n.java.JavaI18nString;
+import org.netbeans.modules.i18n.java.JavaResourceHolder;
 import org.openide.loaders.DataObject;
 
 /**
@@ -81,18 +85,45 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
     }
 
     public Object copy(FormProperty formProperty) {
-        return getValue();
-//        FormModel formModel = (formProperty == null) ? null : formProperty.getPropertyContext().getFormModel();
-//        I18nSupport newSupport = createNewSupport(FormEditor.getFormDataObject(formModel), 
-//                                                  support.getResourceHolder().getResource());
-//        return new FormI18nString(newSupport, 
-//                                  this.getKey(),
-//                                  this.getValue(),
-//                                  this.getComment(), 
-//                                  this.getArguments(), 
-//                                  this.getReplaceFormat());        
+        FormModel form = formProperty.getPropertyContext().getFormModel();
+        if (form == null)
+            return getValue();
+
+        DataObject sourceDO = FormEditor.getFormDataObject(form);
+        if (sourceDO == null)
+            return getValue();
+
+        boolean sameForm = (sourceDO == support.getSourceDataObject());
+        boolean autoMode = form.getSettings().getI18nAutoMode();
+        DataObject resource = sameForm || !autoMode ?
+                              support.getResourceHolder().getResource() : null;
+        I18nSupport newSupport = createNewSupport(sourceDO, resource);
+
+        FormI18nString newI18nString;
+        if (autoMode) { // need auto-generated key (form module must provide)
+            newI18nString = new FormI18nString(newSupport,
+                                COMPUTE_AUTO_KEY, getValue(), getComment(),
+                                getArguments(), getReplaceFormat());
+            JavaResourceHolder jrh = (JavaResourceHolder) support.getResourceHolder();
+            newI18nString.allData = jrh.getAllData(getKey());
+        }
+        else {
+            newI18nString = new FormI18nString(newSupport,
+                                getKey(), getValue(), getComment(),
+                                getArguments(), getReplaceFormat());
+            if (!sameForm) { // make sure the value is actual according to the target locale
+                ResourceHolder rh = newSupport.getResourceHolder();
+                newI18nString.value = rh.getValueForKey(getKey());
+                newI18nString.comment = rh.getCommentForKey(getKey());
+            }
+        }
+        return newI18nString;
     }
-    
+
+    public String toString() {
+        return getValue();
+    }
+
     private static I18nSupport createNewSupport(I18nSupport support) {
         return createNewSupport(support.getSourceDataObject(), support.getResourceHolder().getResource());        
     }     
