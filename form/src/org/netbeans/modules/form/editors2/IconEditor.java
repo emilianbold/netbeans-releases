@@ -23,6 +23,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.util.*;
 import java.net.URL;
 
@@ -63,7 +64,7 @@ import org.netbeans.modules.form.NamedPropertyEditor;
  * @author Jan Jancura, Jan Stola
  */
 public class IconEditor extends PropertyEditorSupport implements
-        XMLPropertyEditor, ExPropertyEditor, FormAwareEditor, NamedPropertyEditor {
+        XMLPropertyEditor, FormAwareEditor, NamedPropertyEditor {
     /** Type constant for icons from URL. */
     public static final int TYPE_URL = 1;
     /** Type constant for icons from file. */
@@ -123,8 +124,7 @@ public class IconEditor extends PropertyEditorSupport implements
     
     // variables ..................................................................................
     
-    private PropertyEnv propertyEnv;
-	private FormModel formModel;
+    private FormModel formModel;
     
     // Special access methods......................................................................
     
@@ -159,18 +159,7 @@ public class IconEditor extends PropertyEditorSupport implements
     public Object getValue() {
         return super.getValue();
     }
-    
-    public void setValue(Object object) {
-        if (propertyEnv != null) {
-            if ( object == null || ((object instanceof NbImageIcon) && ((NbImageIcon)object).stateValid) ) {
-                propertyEnv.setState(PropertyEnv.STATE_VALID);
-            } else {
-                propertyEnv.setState(PropertyEnv.STATE_INVALID);
-            }
-        }        
-        super.setValue((object instanceof NbImageIcon) ? object : null);
-    }
-    
+        
     public String getAsText() {
         Object val = getValue();
         
@@ -311,22 +300,27 @@ public class IconEditor extends PropertyEditorSupport implements
                     
                     ii.type = TYPE_CLASSPATH;
                     ii.name = s;
-                } else
+                } else {
                     if (string.startsWith(URL_PREFIX)) {
                         String s = string.substring(URL_PREFIX.length() + 1).trim();
-                        URL url = new URL(s);
-                        ii = new NbImageIcon(url);
+                        try {
+                            URL url = new URL(s);
+                            ii = new NbImageIcon(url);
+                        } catch (MalformedURLException muex) {
+                            ii = new NbImageIcon();
+                        }
                         ii.type = TYPE_URL;
                         ii.name = s;
-                    } else
+                    } else {
                         if (string.equals("null")) { // NOI18N
                             ii = null;
-                        }
-                        else {
+                        } else {
                             ii = new NbImageIcon(string.trim());
                             ii.type = TYPE_FILE;
                             ii.name = string;
                         }
+                    }
+                }
         } catch (Exception e) {
             IllegalArgumentException iae = new IllegalArgumentException();
             throw iae;
@@ -345,36 +339,33 @@ public class IconEditor extends PropertyEditorSupport implements
         /** generated Serialized Version UID */
         static final long serialVersionUID = 7018807466471349466L;
         /** The icon itself. */
-        private ImageIcon icon = null;
+        private ImageIcon icon = new ImageIcon("");
         /** Source type of the icon. */
         private int type;
         /** Name of the icon. */
         private String name;
-        /** Is the state valid? */
-        private boolean stateValid;
         
         public NbImageIcon() {            
-            stateValid = false;
-            icon = new ImageIcon("");
         }
         
         NbImageIcon(URL url) {
             type = TYPE_URL;
-            stateValid = true;
-            icon = new ImageIcon(url);
+            try {
+                icon = new ImageIcon(url);
+            } catch (Exception ex) {}
         }
         
         NbImageIcon(String file) {
             type = TYPE_FILE;
-            stateValid = true;
-            icon = new ImageIcon(file);
+            try {
+                icon = new ImageIcon(file);
+            } catch (Exception ex) {}
         }
         
         public NbImageIcon(NbImageIcon nbIcon) {
             icon = nbIcon.icon;
             type = nbIcon.type;
             name = nbIcon.name;
-            stateValid = nbIcon.stateValid;
         }
         
         String getName() {
@@ -477,9 +468,6 @@ public class IconEditor extends PropertyEditorSupport implements
             bg.add(rbNoPicture);
             
             Object value = getValue();
-            
-            if (propertyEnv != null)
-                propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
             
             if (!(value instanceof NbImageIcon)) {
                 rbNoPicture.setSelected(true);
@@ -904,28 +892,23 @@ public class IconEditor extends PropertyEditorSupport implements
                 return null;
             }
             
-            try {
-                if (rbFile.isSelected()) {
-                    ii = new NbImageIcon(s);
-                    ii.type = TYPE_FILE;
-                    ii.name = s;
-                } else
-                    if (rbClasspath.isSelected()) {
-                        URL url = findResource(s);
-                        ii = new NbImageIcon(url);
-                        ii.type = TYPE_CLASSPATH;
-                        ii.name = s;
-                    } else
-                        if (rbUrl.isSelected()) {
-                            URL url = new URL(s);
-                            ii = new NbImageIcon(url);
-                            ii.type = TYPE_URL;
-                            ii.name = s;
-                        }
-            } catch (Exception e) {
-                IllegalStateException ise = new IllegalStateException(e.toString());
-                ErrorManager.getDefault().annotate(ise, ErrorManager.USER, getString("MSG_IllegalValue"), getString("MSG_IllegalValue"), null, new Date()); // NOI18N
-                throw ise;
+            if (rbFile.isSelected()) {
+                ii = new NbImageIcon(s);
+                ii.type = TYPE_FILE;
+                ii.name = s;
+            } else if (rbClasspath.isSelected()) {
+                URL url = findResource(s);
+                ii = new NbImageIcon(url);
+                ii.type = TYPE_CLASSPATH;
+                ii.name = s;
+            } else if (rbUrl.isSelected()) {
+                URL url = null;
+                try {
+                    url = new URL(s);
+                } catch (MalformedURLException ex) {}
+                ii = new NbImageIcon(url);
+                ii.type = TYPE_URL;
+                ii.name = s;
             }
             return ii;
         }
@@ -1061,12 +1044,6 @@ public class IconEditor extends PropertyEditorSupport implements
             el.setAttribute(ATTR_NAME, "null"); // NOI18N
         }
         return el;
-    }
-    
-    // ExPropertyEditor implementation
-    
-    public void attachEnv(PropertyEnv env) {
-        propertyEnv = env;
     }
     
 }
