@@ -157,6 +157,7 @@ public final class TargetExecutor implements Runnable {
         }
 
         public void actionPerformed(ActionEvent e) {
+            setEnabled(false); // discourage repeated clicking
             stopProcess(t);
         }
 
