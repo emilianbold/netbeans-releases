@@ -48,7 +48,8 @@ public class BeanChildren extends Children.Keys {
      * and child, resp.
      * See #7925.
      */
-    private static final java.util.Map nodes2Beans = new WeakHashMap(); // Map<Node,Reference<Object>[2]>
+    private static final java.util.Map<Node,Reference[]> nodes2Beans = 
+            new WeakHashMap<Node,Reference[]>(); // Map<Node,Reference<Object>[2]>
 
     /** bean context to work on */
     private BeanContext bean;
@@ -104,7 +105,7 @@ public class BeanChildren extends Children.Keys {
 
             // #7925: deleting from BeanChildren has no effect
             synchronized (nodes2Beans) {
-                nodes2Beans.put(n, new Reference[] { new WeakReference(bean), new WeakReference(subbean) });
+                nodes2Beans.put(n, new Reference[] { new WeakReference<BeanContext>(bean), new WeakReference<Object>(subbean) });
             }
 
             n.addNodeListener(contextL);
@@ -168,14 +169,14 @@ public class BeanChildren extends Children.Keys {
     */
     private static final class ContextL extends NodeAdapter implements BeanContextMembershipListener {
         /** weak reference to the BeanChildren object */
-        private WeakReference ref;
+        private WeakReference<BeanChildren> ref;
 
         ContextL() {
         }
 
         /** Constructor */
         ContextL(BeanChildren bc) {
-            ref = new WeakReference(bc);
+            ref = new WeakReference<BeanChildren>(bc);
         }
 
         /** Listener method that is called when a bean is added to
@@ -183,7 +184,7 @@ public class BeanChildren extends Children.Keys {
         * @param bcme event describing the action
         */
         public void childrenAdded(BeanContextMembershipEvent bcme) {
-            BeanChildren bc = (BeanChildren) ref.get();
+            BeanChildren bc = ref.get();
 
             if (bc != null) {
                 bc.updateKeys();
@@ -195,7 +196,7 @@ public class BeanChildren extends Children.Keys {
         * @param bcme event describing the action
         */
         public void childrenRemoved(BeanContextMembershipEvent bcme) {
-            BeanChildren bc = (BeanChildren) ref.get();
+            BeanChildren bc = ref.get();
 
             if (bc != null) {
                 bc.updateKeys();
@@ -207,7 +208,7 @@ public class BeanChildren extends Children.Keys {
             Reference[] refs;
 
             synchronized (nodes2Beans) {
-                refs = (Reference[]) nodes2Beans.get(n);
+                refs = nodes2Beans.get(n);
             }
 
             if (refs != null) {

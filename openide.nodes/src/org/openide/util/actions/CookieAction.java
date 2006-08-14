@@ -146,7 +146,7 @@ public abstract class CookieAction extends NodeAction {
         int total = activatedNodes.length;
         int ret = 0;
 
-        Class[] cookies = getCookies();
+        Class<?>[] cookies = getCookies();
 
         for (int i = 0; i < total; i++) {
             for (int j = 0; j < cookies.length; j++) {
@@ -169,22 +169,22 @@ public abstract class CookieAction extends NodeAction {
         private org.openide.nodes.NodeListener listener;
 
         /** The nodes we are currently listening */
-        private List nodes;
+        private List<Reference<Node>> nodes;
 
         /** the associated action */
-        private Reference action; // Reference<CookieAction>
+        private Reference<CookieAction> action;
 
         /** Constructor - asociates with given cookie action
         */
         public CookiesChangeListener(CookieAction a) {
             listener = org.openide.nodes.NodeOp.weakNodeListener(this, null);
-            action = new WeakReference(a);
+            action = new WeakReference<CookieAction>(a);
         }
 
         /** Sets the nodes to work on */
         void setNodes(Node[] newNodes) {
             // detach old nodes
-            List nodes2 = this.nodes;
+            List<Reference<Node>> nodes2 = this.nodes;
 
             if (nodes2 != null) {
                 detachListeners(nodes2);
@@ -194,21 +194,21 @@ public abstract class CookieAction extends NodeAction {
 
             // attach to new nodes
             if (newNodes != null) {
-                nodes = new ArrayList(newNodes.length);
+                nodes = new ArrayList<Reference<Node>>(newNodes.length);
 
                 for (int i = 0; i < newNodes.length; i++)
-                    nodes.add(new WeakReference(newNodes[i]));
+                    nodes.add(new WeakReference<Node>(newNodes[i]));
 
                 attachListeners(nodes);
             }
         }
 
         /** Removes itself as a listener from given nodes */
-        void detachListeners(List nodes) {
-            Iterator it = nodes.iterator();
+        void detachListeners(List<Reference<Node>> nodes) {
+            Iterator<Reference<Node>> it = nodes.iterator();
 
             while (it.hasNext()) {
-                Node node = (Node) ((Reference) it.next()).get();
+                Node node = it.next().get();
 
                 if (node != null) {
                     node.removeNodeListener(listener);
@@ -217,11 +217,11 @@ public abstract class CookieAction extends NodeAction {
         }
 
         /** Attach itself as a listener to the given nodes */
-        void attachListeners(List nodes) {
-            Iterator it = nodes.iterator();
+        void attachListeners(List<Reference<Node>> nodes) {
+            Iterator<Reference<Node>> it = nodes.iterator();
 
             while (it.hasNext()) {
-                Node node = (Node) ((Reference) it.next()).get();
+                Node node = it.next().get();
 
                 if (node != null) {
                     node.addNodeListener(listener);
@@ -238,20 +238,20 @@ public abstract class CookieAction extends NodeAction {
             }
 
             // find asociated action
-            final CookieAction a = (CookieAction) action.get();
+            final CookieAction a = action.get();
 
             if (a == null) {
                 return;
             }
 
-            List _nodes = this.nodes;
+            List<Reference<Node>> _nodes = this.nodes;
 
             if (_nodes != null) {
-                ArrayList nonNullNodes = new ArrayList(_nodes.size());
-                Iterator it = _nodes.iterator();
+                ArrayList<Node> nonNullNodes = new ArrayList<Node>(_nodes.size());
+                Iterator<Reference<Node>> it = _nodes.iterator();
 
                 while (it.hasNext()) {
-                    Node node = (Node) ((Reference) it.next()).get();
+                    Node node = it.next().get();
 
                     if (node != null) {
                         nonNullNodes.add(node);
@@ -290,7 +290,7 @@ public abstract class CookieAction extends NodeAction {
         private org.openide.nodes.NodeListener listener;
 
         /** The nodes we are currently listening */
-        private List nodes;
+        private List<Reference<Node>> nodes;
 
         public CookieDelegateAction(CookieAction a, Lookup actionContext) {
             super(a, actionContext);
@@ -340,10 +340,10 @@ public abstract class CookieAction extends NodeAction {
 
             // attach to new nodes
             if (newNodes != null) {
-                nodes = new ArrayList(newNodes.length);
+                nodes = new ArrayList<Reference<Node>>(newNodes.length);
 
                 for (int i = 0; i < newNodes.length; i++)
-                    nodes.add(new WeakReference(newNodes[i]));
+                    nodes.add(new WeakReference<Node>(newNodes[i]));
             }
 
             // attach listeners to new nodes
@@ -351,12 +351,12 @@ public abstract class CookieAction extends NodeAction {
         }
 
         /** Removes itself as a listener from given nodes */
-        private void detachListeners(List nodes) {
+        private void detachListeners(List<Reference<Node>> nodes) {
             if (nodes != null) {
-                Iterator it = nodes.iterator();
+                Iterator<Reference<Node>> it = nodes.iterator();
 
                 while (it.hasNext()) {
-                    Node node = (Node) ((Reference) it.next()).get();
+                    Node node = it.next().get();
 
                     if (node != null) {
                         node.removeNodeListener(listener);
@@ -366,12 +366,12 @@ public abstract class CookieAction extends NodeAction {
         }
 
         /** Attach itself as a listener to the given nodes */
-        private void attachListeners(List nodes) {
+        private void attachListeners(List<Reference<Node>> nodes) {
             if (nodes != null) {
-                Iterator it = nodes.iterator();
+                Iterator<Reference<Node>> it = nodes.iterator();
 
                 while (it.hasNext()) {
-                    Node node = (Node) ((Reference) it.next()).get();
+                    Node node = it.next().get();
 
                     if (node != null) {
                         node.addNodeListener(listener);

@@ -85,8 +85,8 @@ public class NodeMemberEvent extends NodeEvent {
             from = getNode().getChildren().getNodes();
         }
 
-        java.util.List list = Arrays.asList(delta);
-        HashSet set = new HashSet(list);
+        java.util.List<Node> list = Arrays.asList(delta);
+        HashSet<Node> set = new HashSet<Node>(list);
 
         indices = new int[delta.length];
 
@@ -102,12 +102,12 @@ public class NodeMemberEvent extends NodeEvent {
         }
 
         if (j != delta.length) {
-            StringBuffer m = new StringBuffer(1000);
+            StringBuilder m = new StringBuilder(1000);
             m.append("Some of a set of deleted nodes are not present in the original ones.\n"); // NOI18N
             m.append("See #15478; you may need to check that your Children.Keys keys are safely comparable."); // NOI18N
-            m.append("\ni: " + i); // NOI18N
-            m.append("\nj: " + j); // NOI18N
-            m.append("\nThis: " + this); // NOI18N
+            m.append("\ni: ").append(i); // NOI18N
+            m.append("\nj: ").append(j); // NOI18N
+            m.append("\nThis: ").append(this); // NOI18N
             m.append("\nCurrent state:\n"); // NOI18N
             m.append(Arrays.asList(from));
             m.append("\nDelta:\n"); // NOI18N
@@ -120,7 +120,7 @@ public class NodeMemberEvent extends NodeEvent {
 
     /** Human presentable information about the event */
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(getClass().getName());
         sb.append("[node="); // NOI18N
         sb.append(getSource());

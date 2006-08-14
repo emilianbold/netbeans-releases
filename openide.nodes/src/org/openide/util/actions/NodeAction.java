@@ -84,7 +84,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
     private static NodesL l;
 
     /** set of actions with listeners */
-    private static final Set /*<NodeAction>*/ listeningActions = new WeakSet(100);
+    private static final Set<NodeAction> listeningActions = new WeakSet<NodeAction>(100);
 
     /* Initialize the listener.
     */
@@ -175,7 +175,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
             b = (((ns != null) && enable(ns)) ? Boolean.TRUE : Boolean.FALSE);
 
             synchronized (getLock()) {
-                putProperty(PROP_LAST_NODES, new WeakReference(ns));
+                putProperty(PROP_LAST_NODES, new WeakReference<Node[]>(ns));
                 putProperty(PROP_LAST_ENABLED, b);
 
                 if (((Boolean) getProperty(PROP_HAS_LISTENERS)).booleanValue()) {
@@ -224,6 +224,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
      * Better is to use {@link #createContextAwareInstance} and pass
      * a lookup containing all desired {@link Node} instances.
      */
+    @Deprecated
     public void actionPerformed(final ActionEvent ev) {
         final Object s = (ev == null) ? null : ev.getSource();
 
@@ -256,6 +257,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
      * Use {@link #createContextAwareInstance} to pass in a node selection.
      * Do not override this method.
      */
+    @Deprecated
     public void performAction() {
         performAction(getActivatedNodes());
     }
@@ -347,7 +349,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
     */
     private static final class NodesL implements LookupListener {
         /** result with Nodes we listen to */
-        private volatile Lookup.Result result;
+        private volatile Lookup.Result<Node> result;
 
         /** whether to change enablement of nodes marked to survive focus change */
         private boolean chgSFC = false;
@@ -356,7 +358,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
         private boolean chgNSFC = false;
 
         /** pointer to previously activated nodes (via Reference to Node) */
-        private Reference[] activatedNodes;
+        private Reference<Node>[] activatedNodes;
 
         /** Constructor that checks the current state
         */
@@ -371,7 +373,7 @@ OUTER:
                 Node[] arr = new Node[activatedNodes.length];
 
                 for (int i = 0; i < arr.length; i++) {
-                    if ((arr[i] = (Node) activatedNodes[i].get()) == null) {
+                    if ((arr[i] = activatedNodes[i].get()) == null) {
                         break OUTER;
                     }
                 }
@@ -379,9 +381,9 @@ OUTER:
                 return arr;
             }
 
-            Lookup.Result r = result;
+            Lookup.Result<Node> r = result;
 
-            return (r == null) ? new Node[0] : (Node[]) r.allInstances().toArray(new Node[0]);
+            return (r == null) ? new Node[0] : r.allInstances().toArray(new Node[0]);
         }
 
         /** Activates/passivates the listener.
@@ -406,7 +408,7 @@ OUTER:
         /** Property change listener.
         */
         public void resultChanged(LookupEvent ev) {
-            Lookup.Result r = result;
+            Lookup.Result<Node> r = result;
 
             if (r == null) {
                 return;
@@ -415,11 +417,11 @@ OUTER:
             chgSFC = true;
             chgNSFC = true;
 
-            Collection items = result.allItems();
+            Collection<? extends Lookup.Item<Node>> items = result.allItems();
             boolean updateActivatedNodes = true;
 
             if (items.size() == 1) {
-                Lookup.Item item = (Lookup.Item) items.iterator().next();
+                Lookup.Item<Node> item = items.iterator().next();
 
                 if ("none".equals(item.getId()) && (item.getInstance() == null)) {
                     // this is change of selected node to null,
@@ -429,14 +431,14 @@ OUTER:
             }
 
             if (updateActivatedNodes) {
-                Iterator it = result.allInstances().iterator();
-                ArrayList list = new ArrayList();
+                Iterator<? extends Node> it = result.allInstances().iterator();
+                ArrayList<Reference<Node>> list = new ArrayList<Reference<Node>>();
 
                 while (it.hasNext()) {
-                    list.add(new WeakReference(it.next()));
+                    list.add(new WeakReference<Node>(it.next()));
                 }
 
-                activatedNodes = (Reference[]) list.toArray(new Reference[list.size()]);
+                activatedNodes = list.toArray(new Reference[list.size()]);
             }
 
             update();
@@ -461,20 +463,20 @@ OUTER:
          * @param sfc if true, only survive-focus-change actions affected, else only not-s-f-c
         */
         private void forget(boolean sfc) {
-            List as;
+            List<NodeAction> as;
 
             synchronized (listeningActions) {
-                as = new ArrayList(listeningActions.size());
+                as = new ArrayList<NodeAction>(listeningActions.size());
 
-                for (Iterator it = listeningActions.iterator(); it.hasNext();) {
+                for (Iterator<NodeAction> it = listeningActions.iterator(); it.hasNext();) {
                     as.add(it.next());
                 }
             }
 
-            Iterator it = as.iterator();
+            Iterator<NodeAction> it = as.iterator();
 
             while (it.hasNext()) {
-                final NodeAction a = (NodeAction) it.next();
+                final NodeAction a = it.next();
 
                 if (a.surviveFocusChange() == sfc) {
                     Mutex.EVENT.readAccess(new Runnable() {
@@ -499,7 +501,7 @@ OUTER:
         private NodeAction delegate;
 
         /** lookup we are associated with (or null) */
-        private org.openide.util.Lookup.Result result;
+        private org.openide.util.Lookup.Result<Node> result;
 
         /** previous state of enabled */
         private boolean enabled = true;
@@ -525,7 +527,7 @@ OUTER:
          */
         public final synchronized Node[] nodes() {
             if (result != null) {
-                return (Node[]) result.allInstances().toArray(EMPTY_NODE_ARRAY);
+                return result.allInstances().toArray(EMPTY_NODE_ARRAY);
             } else {
                 return EMPTY_NODE_ARRAY;
             }

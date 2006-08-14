@@ -36,11 +36,11 @@ import javax.swing.event.EventListenerList;
 * @author Jaroslav Tulach
 */
 public final class CookieSet extends Object {
-    /** variable to allow effecient communication with NodeLookup */
-    private static ThreadLocal QUERY_MODE = new ThreadLocal();
+    /** variable to allow effecient communication with NodeLookup, Node.Cookie or Class or Set */
+    private static ThreadLocal<Object> QUERY_MODE = new ThreadLocal<Object>();
 
     /** list of cookies (Class, Node.Cookie) */
-    private HashMap map = new HashMap(31);
+    private HashMap<Class, R> map = new HashMap<Class,R>(31);
 
     /** set of listeners */
     private EventListenerList listeners = new EventListenerList();
@@ -200,12 +200,13 @@ public final class CookieSet extends Object {
     * @param c class or null
     * @param cookie cookie to attach
     */
-    private void registerCookie(Class c, Node.Cookie cookie) {
+    private void registerCookie(Class<?> c, Node.Cookie cookie) {
         if ((c == null) || !Node.Cookie.class.isAssignableFrom(c)) {
             return;
         }
+        Class<? extends Node.Cookie> nc = c.asSubclass(Node.Cookie.class);
 
-        R r = findR(c);
+        R r = findR(nc);
 
         if (r == null) {
             r = new R();
@@ -229,13 +230,15 @@ public final class CookieSet extends Object {
     * @param c class or null
     * @param cookie cookie to attach
     */
-    private void unregisterCookie(Class c, Node.Cookie cookie) {
+    private void unregisterCookie(Class<?> c, Node.Cookie cookie) {
         if ((c == null) || !Node.Cookie.class.isAssignableFrom(c)) {
             return;
         }
+        Class<? extends Node.Cookie> nc = c.asSubclass(Node.Cookie.class);
+
 
         // if different cookie is attached to class c stop removing
-        R r = findR(c);
+        R r = findR(nc);
 
         if (r != null) {
             // remove the cookie
@@ -340,7 +343,7 @@ public final class CookieSet extends Object {
     /** Finds a result in a map.
      */
     private R findR(Class<? extends Node.Cookie> c) {
-        return (R) map.get(c);
+        return map.get(c);
     }
 
     /** Finds base class for a cookie.
@@ -394,7 +397,7 @@ public final class CookieSet extends Object {
                         return null;
                     }
 
-                    cookie = new WeakReference(ret);
+                    cookie = new WeakReference<Node.Cookie>(ret);
                 }
             } else {
                 ret = (cookie == null) ? null : cookie.get();
@@ -476,7 +479,7 @@ public final class CookieSet extends Object {
                 return;
             }
 
-            Class newBase = baseForCookie(cookie);
+            Class<?> newBase = baseForCookie(cookie);
 
             if ((base == null) || newBase.isAssignableFrom(base)) {
                 cookies.set(0, cookie);

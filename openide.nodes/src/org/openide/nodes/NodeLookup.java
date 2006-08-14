@@ -37,10 +37,10 @@ final class NodeLookup extends AbstractLookup {
      * triggered way to many times, due to initialization in beforeLookup
      * that triggered LookupListener and PROP_COOKIE change.
      */
-    static final ThreadLocal NO_COOKIE_CHANGE = new ThreadLocal();
+    static final ThreadLocal<Node> NO_COOKIE_CHANGE = new ThreadLocal<Node>();
 
     /** Set of Classes that we have already queried <type>Class</type> */
-    private java.util.Collection queriedCookieClasses = new ArrayList();
+    private java.util.Collection<Class> queriedCookieClasses = new ArrayList<Class>();
 
     /** node we are associated with
      */
@@ -62,7 +62,9 @@ final class NodeLookup extends AbstractLookup {
      * @param c class to query
      * @param colleciton to put Pair into if found
      */
-    private static void addCookie(Node node, Class c, Collection collection, java.util.Map fromPairToClass) {
+    private static void addCookie(Node node, Class c, 
+            Collection<AbstractLookup.Pair> collection, 
+            java.util.Map<AbstractLookup.Pair, Class> fromPairToClass) {
         Object res;
         AbstractLookup.Pair pair;
         Object prev = CookieSet.entryQueryMode(c);
@@ -123,8 +125,8 @@ final class NodeLookup extends AbstractLookup {
     }
 
     public void updateLookupAsCookiesAreChanged(Class toAdd) {
-        java.util.Collection instances;
-        java.util.Map fromPairToQueryClass;
+        java.util.Collection<AbstractLookup.Pair> instances;
+        java.util.Map<AbstractLookup.Pair, Class> fromPairToQueryClass;
 
         // if it is cookie change, do the rescan, try to keep order
         synchronized (this) {
@@ -137,28 +139,26 @@ final class NodeLookup extends AbstractLookup {
                 queriedCookieClasses.add(toAdd);
             }
 
-            instances = new java.util.LinkedHashSet(queriedCookieClasses.size());
-            fromPairToQueryClass = new java.util.HashMap();
+            instances = new java.util.LinkedHashSet<AbstractLookup.Pair>(queriedCookieClasses.size());
+            fromPairToQueryClass = new java.util.HashMap<AbstractLookup.Pair, Class>();
 
-            java.util.Iterator it = /* #74334 */new ArrayList(queriedCookieClasses).iterator();
+            java.util.Iterator<Class> it = /* #74334 */new ArrayList<Class>(queriedCookieClasses).iterator();
             LookupItem nodePair = new LookupItem(node);
             instances.add(nodePair);
             fromPairToQueryClass.put(nodePair, Node.class);
 
             while (it.hasNext()) {
-                Class c = (Class) it.next();
+                Class c = it.next();
                 addCookie(node, c, instances, fromPairToQueryClass);
             }
         }
 
-        final java.util.Map m = fromPairToQueryClass;
+        final java.util.Map<AbstractLookup.Pair, Class> m = fromPairToQueryClass;
 
-        class Cmp implements java.util.Comparator {
-            public int compare(Object o1, Object o2) {
-                Pair p1 = (Pair) o1;
-                Pair p2 = (Pair) o2;
-                Class c1 = (Class) m.get(p1);
-                Class c2 = (Class) m.get(p2);
+        class Cmp implements java.util.Comparator<AbstractLookup.Pair> {
+            public int compare(AbstractLookup.Pair p1, AbstractLookup.Pair p2) {
+                Class<?> c1 = m.get(p1);
+                Class<?> c2 = m.get(p2);
 
                 if (c1.isAssignableFrom(c2)) {
                     return -1;
@@ -180,13 +180,13 @@ final class NodeLookup extends AbstractLookup {
             }
         }
 
-        java.util.ArrayList list = new java.util.ArrayList(instances);
+        java.util.ArrayList<AbstractLookup.Pair> list = new java.util.ArrayList<AbstractLookup.Pair>(instances);
         java.util.Collections.sort(list, new Cmp());
 
         if (toAdd == null) {
             setPairs(list);
         } else {
-            Object prev = NO_COOKIE_CHANGE.get();
+            Node prev = NO_COOKIE_CHANGE.get();
 
             try {
                 NO_COOKIE_CHANGE.set(node);

@@ -402,9 +402,9 @@ public class BeanNode<T> extends AbstractNode {
     * @return three property lists
     */
     public static Descriptor computeProperties(Object bean, BeanInfo info) {
-        ArrayList property = new ArrayList();
-        ArrayList expert = new ArrayList();
-        ArrayList hidden = new ArrayList();
+        ArrayList<Node.Property> property = new ArrayList<Node.Property>();
+        ArrayList<Node.Property> expert = new ArrayList<Node.Property>();
+        ArrayList<Node.Property> hidden = new ArrayList<Node.Property>();
 
         PropertyDescriptor[] propertyDescriptor = info.getPropertyDescriptors();
 
@@ -738,7 +738,7 @@ public class BeanNode<T> extends AbstractNode {
         public final Node.Property[] hidden;
 
         /** private constructor */
-        Descriptor(ArrayList p, ArrayList e, ArrayList h) {
+        Descriptor(ArrayList<Node.Property> p, ArrayList<Node.Property> e, ArrayList<Node.Property> h) {
             property = new Node.Property[p.size()];
             p.toArray(property);
 

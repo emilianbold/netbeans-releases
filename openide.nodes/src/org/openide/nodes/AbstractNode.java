@@ -100,7 +100,8 @@ public class AbstractNode extends Node {
     private static final String DEFAULT_ICON_EXTENSION = ".gif"; // NOI18N
     private static final String DEFAULT_ICON = DEFAULT_ICON_BASE + DEFAULT_ICON_EXTENSION; // NOI18N
     
-    private static final WeakHashMap overridesGetDefaultAction = new WeakHashMap(32);
+    // maps class either to Boolean or to this
+    private static final WeakHashMap<Class, Object> overridesGetDefaultAction = new WeakHashMap<Class, Object>(32);
 
     /** Message format to use for creation of the display name.
     * It permits conversion of text from
@@ -134,7 +135,7 @@ public class AbstractNode extends Node {
      * @deprecated Override {@link #getActions(boolean)} instead of using
      * this field.
      */
-    protected SystemAction[] systemActions;
+    @Deprecated protected SystemAction[] systemActions;
     private SheetAndCookieListener sheetCookieL = null;
 
     /** Create a new abstract node with a given child set.
@@ -219,6 +220,7 @@ public class AbstractNode extends Node {
     * @param base base resouce name (no initial slash)
     * @deprecated Use {@link #setIconBaseWithExtension(java.lang.String)}
     */
+    @Deprecated
     public void setIconBase(String base) {
         setIconBaseWithExtension(base, DEFAULT_ICON_EXTENSION);
     }
@@ -484,7 +486,7 @@ public class AbstractNode extends Node {
     * @param s a list of {@link PasteType}s that will have added to it all types
     *    valid for this node (ordered as they will be presented to the user)
     */
-    protected void createPasteTypes(Transferable t, List s) {
+    protected void createPasteTypes(Transferable t, List<PasteType> s) {
         NodeTransfer.Paste p = NodeTransfer.findPaste(t);
 
         if (p != null) {
@@ -500,10 +502,10 @@ public class AbstractNode extends Node {
     * @return array of operations that are allowed
     */
     public final PasteType[] getPasteTypes(Transferable t) {
-        List s = new LinkedList();
+        List<PasteType> s = new LinkedList<PasteType>();
         createPasteTypes(t, s);
 
-        return (PasteType[]) s.toArray(NO_PASTE_TYPES);
+        return s.toArray(NO_PASTE_TYPES);
     }
 
     /** Default implementation that tries to delegate the implementation
@@ -518,10 +520,10 @@ public class AbstractNode extends Node {
     *    to execute when the drop occures
     */
     public PasteType getDropType(Transferable t, int action, int index) {
-        java.util.List s = new LinkedList();
+        java.util.List<PasteType> s = new LinkedList<PasteType>();
         createPasteTypes(t, s);
 
-        return s.isEmpty() ? null : (PasteType) s.get(0);
+        return s.isEmpty() ? null : s.get(0);
     }
 
     /* List new types that can be created in this node.
@@ -605,6 +607,7 @@ public class AbstractNode extends Node {
     * @return if there is a default action set, then returns it
      * @deprecated Use {@link #getPreferredAction} instead.
     */
+    @Deprecated
     public SystemAction getDefaultAction() {
         Action a = getPreferredAction();
 
@@ -619,6 +622,7 @@ public class AbstractNode extends Node {
     * @param action the new default action, or <code>null</code> for none
     * @deprecated Override {@link #getPreferredAction} instead.
     */
+    @Deprecated
     public void setDefaultAction(SystemAction action) {
         preferredAction = action;
     }
@@ -629,6 +633,7 @@ public class AbstractNode extends Node {
     * @return actions for the node
      * @deprecated Override {@link #getActions(boolean)} instead.
     */
+    @Deprecated
     public SystemAction[] getActions() {
         if (systemActions == null) {
             systemActions = createActions();
@@ -647,6 +652,7 @@ public class AbstractNode extends Node {
     * @return array of actions for this node, or <code>null</code> to use the default node actions
      * @deprecated Override {@link #getActions(boolean)} instead.
     */
+    @Deprecated
     protected SystemAction[] createActions() {
         return null;
     }
@@ -675,6 +681,7 @@ public class AbstractNode extends Node {
     * @exception IllegalStateException If you pass a Lookup instance into the constructor, this
     *   method cannot be called.
     */
+    @Deprecated
     protected final synchronized void setCookieSet(CookieSet s) {
         if (internalLookup(false) != null) {
             throw new IllegalStateException("CookieSet cannot be used when lookup is associated with the node"); // NOI18N

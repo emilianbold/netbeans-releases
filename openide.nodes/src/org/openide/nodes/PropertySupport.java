@@ -139,11 +139,11 @@ public abstract class PropertySupport<T> extends Node.Property<T> {
                 instance, valueType,
                 (
             // find the getter ()
-            getter == null) ? null : findAccessibleClass(instance.getClass()).getMethod(getter, new Class[0]),
+            getter == null) ? null : findAccessibleClass(instance.getClass()).getMethod(getter),
                 (
             // find the setter (valueType)
             setter == null) ? null : findAccessibleClass(instance.getClass()).getMethod(
-                    setter, new Class[] { valueType }
+                    setter, new Class<?>[] { valueType }
                 )
             );
         }
@@ -165,17 +165,17 @@ public abstract class PropertySupport<T> extends Node.Property<T> {
             this(
                 instance, valueType, findGetter(instance, valueType, property),
                 findAccessibleClass(instance.getClass()).getMethod(
-                    firstLetterToUpperCase(property, "set"), new Class[] { valueType }
+                    firstLetterToUpperCase(property, "set"), valueType
                 )
             );
         }
 
         /** Find the nearest superclass (or same class) that is public to this one. */
-        private static Class findAccessibleClass(Class clazz) {
+        private static <C> Class<? super C> findAccessibleClass(Class<C> clazz) {
             if (Modifier.isPublic(clazz.getModifiers())) {
                 return clazz;
             } else {
-                Class sup = clazz.getSuperclass();
+                Class<? super C> sup = clazz.getSuperclass();
 
                 if (sup == null) {
                     return Object.class; // handle interfaces
@@ -208,7 +208,7 @@ public abstract class PropertySupport<T> extends Node.Property<T> {
 
             try {
                 return findAccessibleClass(instance.getClass()).getMethod(
-                    firstLetterToUpperCase(property, "get"), new Class[0]
+                    firstLetterToUpperCase(property, "get")
                 );
             } catch (NoSuchMethodException e) {
                 if (valueType != boolean.class) {
@@ -221,7 +221,7 @@ public abstract class PropertySupport<T> extends Node.Property<T> {
             // Is of type boolean and "get" getter does not exist
             try {
                 return findAccessibleClass(instance.getClass()).getMethod(
-                    firstLetterToUpperCase(property, "is"), new Class[0]
+                    firstLetterToUpperCase(property, "is")
                 );
             } catch (NoSuchMethodException e) {
                 throw e;

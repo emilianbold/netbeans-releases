@@ -30,13 +30,13 @@ import org.openide.util.Mutex;
 abstract class TMUtil extends Object {
     /** variable that will contain the argument to a call and then a result.
      */
-    private static final ThreadLocal TALK = new ThreadLocal();
+    private static final ThreadLocal<Object> TALK = new ThreadLocal<Object>();
 
     /** maps names of algorithms (that use the ARGUMENT and the RESULT)
      * and runnables that has to be executed to compute the algorithm
      * (String, Runnable) or (String, Exception)
      */
-    private static Hashtable algorithms = new Hashtable(10);
+    private static Hashtable<String, Object> algorithms = new Hashtable<String, Object>(10);
     private static java.awt.Frame owner;
 
     /** Dynamically loads a class.
@@ -143,8 +143,8 @@ abstract class TMUtil extends Object {
                 ic.setObject(idx);
                 ic.setImmediateReorder(false);
                 Mutex.EVENT.readAccess(
-                    new Mutex.Action() {
-                        public Object run() {
+                    new Mutex.Action<Void>() {
+                        public Void run() {
                             ic.setVisible(true);
 
                             return null;
@@ -245,7 +245,7 @@ abstract class TMUtil extends Object {
      * ARGUMENT contains array of node and customizer
      */
     static final class Cust implements Runnable {
-        private static Class nodeCustomizer;
+        private static Class<?> nodeCustomizer;
         private static java.lang.reflect.Method attach;
 
         public void run() {
@@ -253,7 +253,7 @@ abstract class TMUtil extends Object {
                 if (nodeCustomizer == null) {
                     // load method
                     nodeCustomizer = loadClass("org.openide.explorer.propertysheet.editors.NodeCustomizer"); // NOI18N
-                    attach = nodeCustomizer.getMethod("attach", new Class[] { Node.class }); // NOI18N
+                    attach = nodeCustomizer.getMethod("attach", Node.class); // NOI18N
                 }
 
                 Object[] arr = (Object[]) TALK.get();
@@ -281,9 +281,9 @@ abstract class TMUtil extends Object {
             try {
                 if (getDefault == null) {
                     // load all methods
-                    Class wm = loadClass("org.openide.windows.WindowManager"); // NOI18N
-                    getDefault = wm.getMethod("getDefault", new Class[0]); // NOI18N
-                    getMainWindow = wm.getMethod("getMainWindow", new Class[0]); // NOI18N
+                    Class<?> wm = loadClass("org.openide.windows.WindowManager"); // NOI18N
+                    getDefault = wm.getMethod("getDefault"); // NOI18N
+                    getMainWindow = wm.getMethod("getMainWindow"); // NOI18N
                 }
 
                 //

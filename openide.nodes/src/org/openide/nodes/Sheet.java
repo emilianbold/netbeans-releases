@@ -39,7 +39,7 @@ public final class Sheet extends Object {
     public static final String EXPERT = "expert"; // NOI18N
 
     /** list of sets (Sheet.Set) */
-    private ArrayList sets;
+    private ArrayList<Set> sets;
 
     /** array of sets */
     private Node.PropertySet[] array;
@@ -57,13 +57,13 @@ public final class Sheet extends Object {
     /** Default constructor.
     */
     public Sheet() {
-        this(new ArrayList(2));
+        this(new ArrayList<Set>(2));
     }
 
     /** Copy constrcutor.
     * @param ar array to use
     */
-    private Sheet(ArrayList ar) {
+    private Sheet(ArrayList<Set> ar) {
         sets = ar;
     }
 
@@ -93,10 +93,10 @@ public final class Sheet extends Object {
     * @return the cloned object */
     public synchronized Sheet cloneSheet() {
         int len = sets.size();
-        ArrayList l = new ArrayList(len);
+        ArrayList<Set> l = new ArrayList<Set>(len);
 
         for (int i = 0; i < len; i++) {
-            l.add(((Set) sets.get(i)).cloneSet());
+            l.add(sets.get(i).cloneSet());
         }
 
         return new Sheet(l);
@@ -109,7 +109,7 @@ public final class Sheet extends Object {
     public synchronized Set get(String name) {
         int indx = findIndex(name);
 
-        return (indx == -1) ? null : (Set) sets.get(indx);
+        return (indx == -1) ? null : sets.get(indx);
     }
 
     /** Add a property set. If the set does not yet exist in the sheet,
@@ -127,7 +127,7 @@ public final class Sheet extends Object {
             sets.add(set);
             removed = null;
         } else {
-            removed = (Set) sets.set(indx, set);
+            removed = sets.set(indx, set);
         }
 
         set.removePropertyChangeListener(propL);
@@ -149,7 +149,7 @@ public final class Sheet extends Object {
         int indx = findIndex(set);
 
         if (indx != -1) {
-            Set s = (Set) sets.remove(indx);
+            Set s = sets.remove(indx);
             s.removePropertyChangeListener(propL);
             refresh();
 

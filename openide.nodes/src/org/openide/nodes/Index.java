@@ -106,7 +106,7 @@ public interface Index extends Node.Cookie {
     */
     public static abstract class Support implements Index {
         /** Registered listeners */
-        private HashSet listeners;
+        private HashSet<ChangeListener> listeners;
 
         /** Default constructor. */
         public Support() {
@@ -195,7 +195,7 @@ public interface Index extends Node.Cookie {
         */
         public void addChangeListener(final ChangeListener chl) {
             if (listeners == null) {
-                listeners = new HashSet();
+                listeners = new HashSet<ChangeListener>();
             }
 
             listeners.add(chl);

@@ -26,6 +26,7 @@ import org.openide.nodes.Node;
 * @deprecated Use Looks instead.
 * @author Jaroslav Tulach, Jan Jancura, Dafe Simonek
 */
+@Deprecated
 public interface FilterCookie extends Node.Cookie {
     /** Get the declared filter (super-)class.
      * @return the class, or may be <code>null</code> if no filter is currently in use

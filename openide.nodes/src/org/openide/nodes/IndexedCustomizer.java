@@ -82,6 +82,7 @@ import org.openide.util.datatransfer.ExTransferable;
 * @deprecated Better to use {@link Index.Support#showIndexedCustomizer} which behaves better
 *             with the window system.
 */
+@Deprecated
 public final class IndexedCustomizer extends JDialog implements Customizer {
     // initializations ................................................................................
     static final long serialVersionUID = -8731362267771694641L;
@@ -384,7 +385,7 @@ public final class IndexedCustomizer extends JDialog implements Customizer {
                     nodes[i] = localNodes[permutation[i]];
             }
         } else {
-            nodes = (Node[]) localNodes.clone();
+            nodes = localNodes.clone();
         }
 
         control.setListData(nodes);
@@ -506,7 +507,7 @@ public final class IndexedCustomizer extends JDialog implements Customizer {
     private int[] getPermutation() {
         if (permutation == null) {
             if (nodes == null) {
-                nodes = (Node[]) index.getNodes().clone();
+                nodes = index.getNodes().clone();
             }
 
             permutation = new int[nodes.length];

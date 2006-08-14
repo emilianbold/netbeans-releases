@@ -864,7 +864,7 @@ public abstract class Children extends Object {
         // [TODO] Children do not have always a parent
         // see Services->FIRST ($SubLevel.class)
         // during a deserialization it may have parent == null
-        Node[] arr = (Node[]) nodes.toArray(new Node[nodes.size()]);
+        Node[] arr = nodes.toArray(new Node[nodes.size()]);
 
         if (parent == null) {
             return arr;

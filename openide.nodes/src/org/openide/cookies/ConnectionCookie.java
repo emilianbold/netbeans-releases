@@ -32,6 +32,7 @@ import java.util.EventListener;
 * @author Jaroslav Tulach
  * @deprecated Should no longer be used.
 */
+@Deprecated
 public interface ConnectionCookie extends Node.Cookie {
     /** Attaches new node to listen to events produced by this
     * event. The type must be one of event types supported by this
