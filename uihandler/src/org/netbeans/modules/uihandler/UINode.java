@@ -20,9 +20,13 @@
 package org.netbeans.modules.uihandler;
 
 import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 import java.util.Date;
+import java.util.MissingResourceException;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import org.openide.awt.Actions;
 import org.openide.nodes.AbstractNode;
@@ -44,6 +48,28 @@ final class UINode extends AbstractNode implements VisualData {
         super(ch);
         log = r;
         setName(r.getMessage());
+        if (r.getResourceBundle() != null) {
+            try {
+                String msg = r.getResourceBundle().getString(r.getMessage());
+                if (r.getParameters() != null) {
+                    msg = MessageFormat.format(msg, r.getParameters());
+                }
+                setDisplayName(msg);
+            } catch (MissingResourceException ex) {
+                Logger.getAnonymousLogger().log(Level.INFO, null, ex);
+            }
+            
+            
+            try {
+                String iconBase = r.getResourceBundle().getString(r.getMessage() + "_ICON_BASE"); // NOI18N
+                setIconBaseWithExtension(iconBase);
+            } catch (MissingResourceException ex) {
+                // ok, use default
+                setIconBaseWithExtension("org/netbeans/modules/uihandler/def.png");
+            }
+        }
+        
+        
         
         if (ch != Children.LEAF) {
             setIconBaseWithExtension("org/netbeans/modules/uihandler/exception.gif");
