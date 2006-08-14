@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -57,6 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.Keymap;
+import org.openide.awt.Actions;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
@@ -86,6 +88,8 @@ import org.openide.util.actions.SystemAction;
  * @author Jaroslav Tulach, Petr Hamernik, Jan Jancura
  */
 public class TopComponent extends JComponent implements Externalizable, Accessible, HelpCtx.Provider, Lookup.Provider {
+    /** UI logger to notify about invocation of an action */
+    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
     /** generated Serialized Version UID */
     static final long serialVersionUID = -3022538025284122942L;
     /** top component logger */
@@ -882,6 +886,12 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             }
 
             if (action.isEnabled()) {
+                LogRecord rec = new LogRecord(Level.FINER, "UI_ACTION_KEY_PRESS"); // NOI18N
+                rec.setParameters(new Object[] { ks, ks.toString(), action, action.getClass().getName(), action.getValue(Action.NAME) });
+                rec.setResourceBundle(NbBundle.getBundle(Actions.class));
+                rec.setLoggerName(UILOG.getName());
+                UILOG.log(rec);
+
                 ActionEvent ev = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, Utilities.keyToString(ks));
                 action.actionPerformed(ev);
             } else {

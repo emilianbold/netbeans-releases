@@ -25,6 +25,7 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
@@ -32,9 +33,12 @@ import java.awt.image.RGBImageFilter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.lang.ref.WeakReference;
@@ -531,7 +535,11 @@ public class Actions extends Object {
 
     /** Bridge between an action and button.
     */
-    private static class ButtonBridge extends Bridge {
+    private static class ButtonBridge extends Bridge 
+    implements ActionListener {
+        /** UI logger to notify about invocation of an action */
+        private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
+        
         /** the button */
         protected AbstractButton button;
 
@@ -539,6 +547,15 @@ public class Actions extends Object {
             super(button, action);
             button.addActionListener(action);
             this.button = button;
+            button.addActionListener(this);
+        }
+        
+        public void actionPerformed(ActionEvent ev) {
+            LogRecord rec = new LogRecord(Level.FINER, "UI_ACTION_BUTTON_PRESS"); // NOI18N
+            rec.setParameters(new Object[] { button, button.getClass().getName(), action, action.getClass().getName(), action.getValue(Action.NAME) });
+            rec.setResourceBundle(NbBundle.getBundle(Actions.class));
+            rec.setLoggerName(UILOG.getName());
+            UILOG.log(rec);
         }
 
         protected void updateButtonIcon() {
