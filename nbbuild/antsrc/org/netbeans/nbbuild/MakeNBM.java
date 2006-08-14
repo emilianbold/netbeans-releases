@@ -390,6 +390,12 @@ public class MakeNBM extends Task {
 	externalPackages.add( externalPackage );
 	return externalPackage;
     }
+    
+    private ZipFileSet main = null;
+    
+    public ZipFileSet createMain () {
+        return (main = new ZipFileSet());
+    }
 
     public void execute () throws BuildException {
         if (productDir == null) {
@@ -549,6 +555,11 @@ public class MakeNBM extends Task {
         jar.setDestFile(file);
         jar.addZipfileset(fs);
         jar.addFileset (infoXML);
+        if (main != null) { // Add the main dir
+            main.setPrefix("main"); // use main prefix
+            jar.addZipfileset(main);
+        }
+            
         jar.setCompress(true);
 	jar.setLocation(getLocation());
 	jar.init ();
