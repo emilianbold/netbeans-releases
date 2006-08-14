@@ -258,9 +258,65 @@ Microsystems, Inc. All Rights Reserved.
                   <test-dependency>
                       <code-name-base>org.netbeans.modules.diff</code-name-base>
                   </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.libs.xerces</code-name-base>
+                  </test-dependency>
               </test-type>
               <test-type>
                   <name>qa-functional</name>
+                   <test-dependency>
+                       <code-name-base>org.netbeans.api.progress</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+                   <test-dependency>
+                       <code-name-base>org.netbeans.modules.javacore</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+                    <test-dependency>
+                       <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>                   
+                    <test-dependency>
+                       <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>                   
+                   <test-dependency>
+                       <code-name-base>org.openide.dialogs</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+                   <test-dependency>
+                       <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
+                       <compile-dependency/>
+                       <recursive/>
+                   </test-dependency>
+                   <test-dependency>
+                       <code-name-base>org.openide.util</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+                   <test-dependency>
+                       <code-name-base>org.netbeans.api.mdr</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+                   <test-dependency>
+                       <code-name-base>javax.jmi.reflect</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+                   <test-dependency>
+                       <code-name-base>org.netbeans.modules.mdr</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+                   <test-dependency>
+                       <code-name-base>org.netbeans.jmi.javamodel</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+                   <test-dependency>
+                       <code-name-base>org.openide.filesystems</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+                   <test-dependency>
+                       <code-name-base>org.netbeans.modules.jmiutils</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
               </test-type>
             </test-dependencies>
             <public-packages>
