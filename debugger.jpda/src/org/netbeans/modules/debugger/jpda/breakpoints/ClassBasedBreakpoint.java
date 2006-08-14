@@ -155,12 +155,12 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     }
     
     protected boolean checkLoadedClasses (
-        String className, 
-        boolean all
+        String className
     ) {
-        logger.fine("Check loaded classes: " + className + " : " + all);
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
+        boolean all = className.startsWith("*") || className.endsWith("*"); // NOI18N
+        logger.fine("Check loaded classes: " + className + ", will load all classes: " + all); // NOI18N
         boolean matched = false;
         try {
             Iterator i = null;

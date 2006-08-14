@@ -111,7 +111,6 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 new String [0],
                 ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
             );
-            checkLoadedClasses (className, true);
         } else {
             // HACK
             // EditorContext does not provide the real class name, it does not
@@ -127,8 +126,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 new String [0],
                 ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
             );
-            checkLoadedClasses (className, false);
         }
+        checkLoadedClasses (className);
     }
 
     protected void classLoaded (ReferenceType referenceType) {
@@ -182,6 +181,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         String[] reason
     ) {
         try {
+            reason[0] = null;
             List locations = locationsOfLineInClass(referenceType, stratum,
                                                     sourceName, bpSourcePath,
                                                     lineNumber, reason);
@@ -198,7 +198,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                     }
                 }
             }
-            if (locations.isEmpty()) {
+            if (locations.isEmpty() && reason[0] == null) {
                 reason[0] = "No executable location available at line "+lineNumber;
             }
             return locations;

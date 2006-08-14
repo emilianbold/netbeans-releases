@@ -53,7 +53,7 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
             new String[0],
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        checkLoadedClasses (breakpoint.getExceptionClassName (), true);
+        checkLoadedClasses (breakpoint.getExceptionClassName ());
     }
     
     protected void classLoaded (ReferenceType referenceType) {
