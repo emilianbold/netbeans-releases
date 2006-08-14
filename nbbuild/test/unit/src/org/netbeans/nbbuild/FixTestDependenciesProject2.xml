@@ -275,13 +275,19 @@ Microsystems, Inc. All Rights Reserved.
                       <code-name-base>org.openide.compat</code-name-base>
                   </test-dependency>
                   <test-dependency>
-                      <code-name-base>org.netbeans.core</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
                       <code-name-base>org.openide.loaders</code-name-base>
                   </test-dependency>
                   <test-dependency>
+                      <code-name-base>org.netbeans.core</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
                       <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.bootstrap</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.libs.xerces</code-name-base>
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.netbeans.api.progress</code-name-base>
@@ -303,6 +309,9 @@ Microsystems, Inc. All Rights Reserved.
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.openide.awt</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core.startup</code-name-base>
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.openide.util</code-name-base>

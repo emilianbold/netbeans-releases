@@ -230,7 +230,14 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                     int lastDot = token.lastIndexOf(".");
                     // check if the file is module
                     //
-                    if (lastSlash != -1 && lastDot != -1) {
+                    // the boot.jar is org.netbeans.bootstrap
+                    if (token.endsWith("lib/boot.jar")) {
+                         compileCNB.add("org.netbeans.bootstrap");
+                         found = true;
+                    } else if (token.endsWith("core/core.jar")) {
+                        compileCNB.add("org.netbeans.core.startup");
+                        found = true;
+                    } else if (lastSlash != -1 && lastDot != -1) {
                         String codeBaseName = token.substring(lastSlash + 1, lastDot);
                         codeBaseName = codeBaseName.replace('-','.');
                         if (allCnbs.contains(codeBaseName)) {
@@ -238,21 +245,32 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                             found = true;
                         } else  {
                             String name = token.substring(lastSlash + 1, token.length());
-                                // check if the file is wrapped library
-                                for (Iterator eIt = entries.iterator() ; eIt.hasNext() ; ) {
-                                      ModuleListParser.Entry entry = (Entry) eIt.next();
-                                      File extensions [] = entry.getClassPathExtensions();
-                                      if (extensions != null) {
-                                          for (int e = 0 ; e < extensions.length ; e++ ) {
-                                              File f = extensions[e];
-                                              if (f.getPath().endsWith( name)) {
+                            // check if the file is wrapped library
+                            String wrappCNB = null;
+                            for (Iterator eIt = entries.iterator() ; eIt.hasNext() ; ) {
+                                  ModuleListParser.Entry entry = (Entry) eIt.next();
+                                  File extensions [] = entry.getClassPathExtensions();
+                                  if (extensions != null) {
+                                      for (int e = 0 ; e < extensions.length ; e++ ) {
+                                          File f = extensions[e];
+                                          if (f.getPath().endsWith( name)) {
+                                              if (wrappCNB != null) {
+                                                // collision
+                                                  found = false;
                                                   System.out.println("wrapped? " + entry.getCnb() + " -> " + token + " = " + f);
+                                              } else {
+                                                  wrappCNB = entry.getCnb();
+                                                  found = true;
                                               }
-                                          }    
-                                      }
+                                          }
+                                      }    
+                                  }
 
-                                }
-                        }
+                            }
+                            if (found && wrappCNB != null && allCnbs.contains(wrappCNB)) {
+                                  compileCNB.add(wrappCNB);
+                            }
+                         }
                         // check if the dependency is dependency on test
                     } else {
                         int prjEnd = token.indexOf("/build/test/unit/class");
@@ -382,7 +400,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                     // skip property
                     for (; i < lines.size() && ((String)lines.get(i)).trim().endsWith("\\") ; i++) ;
                     // append new property 
-                    if (value != null) {
+                    if (value != null && !value.trim().equals("")) {
                         retLines.add(name + "=" + value);
                     }
                     continue;
