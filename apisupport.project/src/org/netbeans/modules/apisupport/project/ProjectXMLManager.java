@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.w3c.dom.NodeList;
 
 /**
@@ -52,8 +54,6 @@ import org.w3c.dom.NodeList;
  * should explicitly enclose a <em>complete</em> operation within write access
  * to prevent race conditions. Use {@link ProjectManager#saveProject} to apply
  * changes <em>physically</em>.
- *
- * @author mkrauskopf
  */
 public final class ProjectXMLManager {
     
@@ -86,6 +86,12 @@ public final class ProjectXMLManager {
     private static final String SUBPACKAGES = "subpackages"; // NOI18N
     private static final String SUITE_COMPONENT = "suite-component"; // NOI18N
     private static final String TEST_DEPENDENCIES = "test-dependencies"; // NOI18N
+    private static final String TEST_TYPE_NAME = "name"; // NOI18N
+    private static final String TEST_DEPENDENCY = "test-dependency"; // NOI18N
+    private static final String TEST_DEPENDENCY_CNB = "code-name-base"; // NOI18N
+    private static final String TEST_DEPENDENCY_RECURSIVE = "recursive"; // NOI18N
+    private static final String TEST_DEPENDENCY_COMPILE = "compile-dependency"; // NOI18N
+    private static final String TEST_DEPENDENCY_TEST = "test"; // NOI18N
     
     private final NbModuleProject project;
     private NbPlatform customPlaf;
@@ -368,6 +374,53 @@ public final class ProjectXMLManager {
     }
     
     /**
+     * Gives a map from test type (e.g. <em>unit</em> or <em>qa-functional</em>)
+     * to the set of {@link TestModuleDependency dependencies} belonging to it.
+     */
+    Map/*<String, Set<TestModuleDependency>>*/ getTestDependencies(final ModuleList ml) {
+        Element testDepsEl = findTestDependenciesElement(getConfData());
+        
+        Map/*<String, SortedSet<TestModuleDependency>>*/ testDeps = new HashMap();
+        
+        if (testDepsEl != null) {
+            for (Iterator typesIt = Util.findSubElements(testDepsEl).iterator(); typesIt.hasNext();) {
+                Element typeEl = (Element) typesIt.next();
+                Element testTypeEl = findElement(typeEl, TEST_TYPE_NAME);
+                String testType = null;
+                if (testTypeEl != null) {
+                    testType = Util.findText(testTypeEl);
+                }
+                if (testType == null) {
+                    testType = TestModuleDependency.UNIT; // default variant
+                }
+                Set/*<TestModuleDependency>*/ directTestDeps = new HashSet();
+                for (Iterator depsIt = Util.findSubElements(typeEl).iterator() ; depsIt.hasNext();) {
+                    Element depEl = (Element) depsIt.next();
+                    if (depEl.getTagName().equals(TEST_DEPENDENCY)) {
+                        // parse test dep
+                        Element cnbEl = findElement(depEl, TEST_DEPENDENCY_CNB);
+                        boolean test = findElement(depEl, TEST_DEPENDENCY_TEST) != null;
+                        String cnb =  null;
+                        if (cnbEl != null) {
+                            cnb = Util.findText(cnbEl);
+                        }
+                        boolean recursive = findElement(depEl, TEST_DEPENDENCY_RECURSIVE) != null;
+                        boolean compile = findElement(depEl, TEST_DEPENDENCY_COMPILE) != null;
+                        if (cnb != null) {
+                            ModuleEntry me = ml.getEntry(cnb);
+                            if (me != null) {
+                                directTestDeps.add(new TestModuleDependency(me, test, recursive, compile));
+                            }
+                        }
+                    }
+                }
+                testDeps.put(testType, directTestDeps);
+            }
+        }
+        return testDeps;
+    }
+    
+    /**
      * Replace existing classpath extensions with new values.
      * @param newValues &lt;key=runtime-path(String), value=binary-path(String)&gt;
      */
@@ -554,25 +607,25 @@ public final class ProjectXMLManager {
         }
     }
     
-    private static Element findElement(Element confData, String elementName) {
-        return Util.findElement(confData, elementName, NbModuleProjectType.NAMESPACE_SHARED);
+    private static Element findElement(Element parentEl, String elementName) {
+        return Util.findElement(parentEl, elementName, NbModuleProjectType.NAMESPACE_SHARED);
     }
     
     /** Package-private for unit tests only. */
-    static Element findModuleDependencies(Element confData) {
-        return findElement(confData, ProjectXMLManager.MODULE_DEPENDENCIES);
+    static Element findModuleDependencies(Element parentEl) {
+        return findElement(parentEl, ProjectXMLManager.MODULE_DEPENDENCIES);
     }
     
-    private static Element findTestDependenciesElement(Element confData) {
-        return findElement(confData, ProjectXMLManager.TEST_DEPENDENCIES);
+    private static Element findTestDependenciesElement(Element parentEl) {
+        return findElement(parentEl, ProjectXMLManager.TEST_DEPENDENCIES);
     }
     
-    private static Element findPublicPackagesElement(Element confData) {
-        return findElement(confData, ProjectXMLManager.PUBLIC_PACKAGES);
+    private static Element findPublicPackagesElement(Element parentEl) {
+        return findElement(parentEl, ProjectXMLManager.PUBLIC_PACKAGES);
     }
     
-    private static Element findFriendsElement(Element confData) {
-        return findElement(confData, ProjectXMLManager.FRIEND_PACKAGES);
+    private static Element findFriendsElement(Element parentEl) {
+        return findElement(parentEl, ProjectXMLManager.FRIEND_PACKAGES);
     }
     
     private static Element createModuleElement(Document doc, String name) {

@@ -22,35 +22,38 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.util.Comparator;
 
 /**
- * Test dependedency entry from project.xml
+ * Represents one test dependency. I.e. <em>&lt;test-dependency&gt;</em>
+ * element in module's <em>project.xml</em>.
+ * 
  * @author pzajac
  */
 public class TestModuleDependency {
+    
     public static final String UNIT = "unit"; // NOI18N
     public static final String QA_FUNCTIONAL = "qa-functional"; // NOI18N 
+    
     private final ModuleEntry module;
-    // dependendends also on tests of modules
+    // depends also on tests of modules
     private boolean test;
     // depends on execution classpath of the modules
     private boolean recursive;
     // compilation dependency 
     private boolean compile;
-
-    public static final Comparator CNB_COMPARATOR = new CndsComparator();
     
-    private static final class CndsComparator implements Comparator {
+    public static final Comparator CNB_COMPARATOR = new Comparator() {
         public int compare(Object tmd1,Object tmd2) {
             return ((TestModuleDependency)tmd1).module.getCodeNameBase().compareTo(((TestModuleDependency)tmd2).module.getCodeNameBase());
         }
-    }
+    };
+    
     /**
      * Creates a new instance of TestModuleDependency
      */
     public TestModuleDependency(ModuleEntry me,boolean test,boolean recursive,boolean compile) {
         this.module = me;
-        this.setTest(test);
-        this.setRecursive(recursive);
-        this.setCompile(compile);
+        this.test = test;
+        this.recursive = recursive;
+        this.compile = compile;
     }
 
     public ModuleEntry getModule() {

@@ -82,33 +82,38 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     /** See issue #69440 for more details. */
     private boolean runInAtomicAction;
     
-     private static class TestClasspath {
-        private String compile;
-        private String runtime;
-        private String testCompile;
-        private String testRuntime;
+    private static class TestClasspath {
+        
+        private final String compile;
+        private final String runtime;
+        private final String testCompile;
+        private final String testRuntime;
+        
         public TestClasspath(String compile,String runtime,String testCompile,String testRuntime) {
             this.compile = compile;
             this.runtime = runtime;
             this.testCompile = testCompile;
             this.testRuntime = testRuntime;
         }
+        
         public String getCompileClasspath() {
-            return compile + ":" + testCompile;
+            return compile + ':' + testCompile;
         }
+        
         public String getRuntimeClasspath() {
-            return runtime + ":" + testRuntime;
+            return runtime + ':' + testRuntime;
         }
-
+        
         private static TestClasspath getOrEmpty(Map testsCPs, String testtype) {
             TestClasspath tcp = (TestClasspath) testsCPs.get(testtype);
             if (tcp == null ) {
                 // create with empty classpaths
-                tcp = new TestClasspath("","","","");
+                tcp = new TestClasspath("", "", "", ""); // NOI18N
             }
             return tcp;
         }
     }
+    
     public Evaluator(NbModuleProject project, NbModuleTypeProvider typeProvider) {
         this.project = project;
         this.typeProvider = typeProvider;
@@ -210,7 +215,9 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
     }
     
-    public void propertiesChanged(AntProjectEvent ev) {}
+    public void propertiesChanged(AntProjectEvent ev) {
+        /* TODO: Not needed now? Put here at least some comment. */
+    }
     
     /** See issue #69440 for more details. */
     public void setRunInAtomicAction(boolean runInAtomicAction) {
@@ -303,7 +310,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
         if (type == NbModuleTypeProvider.NETBEANS_ORG) {
             // For local definitions of nbjdk.* properties:
-            File nbbuild = new File(nbroot, "nbbuild"); // NOII18N
+            File nbbuild = new File(nbroot, "nbbuild"); // NOI18N
             providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(nbbuild, "user.build.properties"))); // NOI18N
             providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(nbbuild, "site.build.properties"))); // NOI18N
         }
@@ -346,7 +353,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             } else {
                 // Cf. apisupport/harness/release/build.xml#test-lib-init
                 testJars =
-                        "${test.unit.lib.cp}:" +
+                        "${test.unit.lib.cp}:" + // NOI18N
                         // XXX this is ugly, try to look for the JAR using wildcards instead
                         "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
                         "${netbeans.dest.dir}/ide8/modules/ext/junit-3.8.2.jar:" + // NOI18N
@@ -369,7 +376,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         "${netbeans.user}/modules/org-netbeans-modules-nbjunit-ide.jar"; // NOI18N, new for 6.0
             }
             Map/*<String,TestClassPath>*/ testsCPs = computeTestingClassPaths(ml,baseEval);
-            TestClasspath tcp = TestClasspath.getOrEmpty(testsCPs,"unit");
+            TestClasspath tcp = TestClasspath.getOrEmpty(testsCPs, "unit"); // NOI18N
             
             buildDefaults.put("test.unit.cp", "${cp}:${cluster}/${module.jar}:" + testJars + ":${test.unit.cp.extra}:" + tcp.getCompileClasspath()); // NOI18N
             buildDefaults.put("test.unit.run.cp.extra", ""); // NOI18N
@@ -385,16 +392,16 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             if (jelly2NbJar != null) {
                 buildDefaults.put("jelly2-nb.jar", jelly2NbJar); // NOI18N
             }
-            tcp = TestClasspath.getOrEmpty(testsCPs,"qa-functional");
+            tcp = TestClasspath.getOrEmpty(testsCPs, "qa-functional"); // NOI18N
             buildDefaults.put("test.qa-functional.cp", testJars + // NOI18N
                     ":${netbeans.home}/../testtools/modules/ext/nbjunit-ide.jar" + // NOI18N
                     ":${netbeans.user}/testtools/modules/ext/nbjunit.jar" + // NOI18N
                     ":${jemmy.jar}" + // NOI18N
                     ":${jelly2-nb.jar}" + // NOI18N
-                    ":${test.qa-functional.cp.extra}:" + 
-                     tcp.compile + ":" + tcp.testCompile); // NOI18N
+                    ":${test.qa-functional.cp.extra}:" + // NOI18N
+                     tcp.compile + ':' + tcp.testCompile);
             buildDefaults.put("build.test.qa-functional.classes.dir", "build/test/qa-functional/classes"); // NOI18N
-            buildDefaults.put("test.qa-functional.run.cp", "${test.qa-functional.cp}:${build.test.qa-functional.classes.dir}" + ":" + tcp.runtime + ":" + tcp.testRuntime); // NOI18N
+            buildDefaults.put("test.qa-functional.run.cp", "${test.qa-functional.cp}:${build.test.qa-functional.classes.dir}" + ':' + tcp.runtime + ':' + tcp.testRuntime); // NOI18N
             providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));
         }
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
@@ -456,7 +463,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                                         u = nested;
                                     }
                                 }
-                                if ("file".equals(u.getProtocol())) {
+                                if ("file".equals(u.getProtocol())) { // NOI18N
                                     File f = new File(URI.create(u.toExternalForm()));
                                     if (bootcpSB.length() > 0) {
                                         bootcpSB.append(File.pathSeparatorChar);
@@ -653,92 +660,43 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         return cp.toString();
     }
 
-    //
-    /** parse classpath for tests from project.xml
-     *  @retun Map String testtype -> TestClasspath
+    /**
+     * Gives a map from test type (e.g. <em>unit</em> or <em>qa-functional</em>)
+     * to the {@link TestClasspath test classpath} according to the content in
+     * the project's metadata (<em>project.xml<em>).
      */
-    private Map computeTestingClassPaths(ModuleList ml,PropertyEvaluator evaluator) {
+    private Map computeTestingClassPaths(ModuleList ml, PropertyEvaluator evaluator) {
+        Map/*<String, TestClasspath>*/ classpaths = new HashMap();
+        ProjectXMLManager pxm = new ProjectXMLManager(project);
+        Map/*<String, Set<TestModuleDependency>>*/ testTypes = pxm.getTestDependencies(ml);
         
-        
-        Map /*<String,String>*/ classpaths = new HashMap();
-        Map /*<String,Set<TestModuleDepency>>*/ testTypes = getTestDependencies(ml);
- 
         String testDistDir =  evaluator.getProperty("test.dist.dir"); // NOI18N
         if (testDistDir == null) {
-               NbModuleTypeProvider.NbModuleType type = typeProvider.getModuleType();
-               if (type == NbModuleTypeProvider.NETBEANS_ORG) {
-                   // test.dist.dir = ${nb_all}/nbbuild/build/testdist
-                   String nball = evaluator.getProperty("nb_all"); // NOI18N
-                   testDistDir = nball + File.separatorChar + "nbbuild" + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N 
-               } else if ( type == NbModuleTypeProvider.SUITE_COMPONENT) {
-                   // test.dist.dir = ${suite.dir}/build/testdist
-                   String suiteDir = evaluator.getProperty("suite.dir"); // NOI18N
-                   testDistDir = suiteDir + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
-               } else {
-                   // standalone module 
-                   // test.dist.dir = ${module.dir}/build/testdist
-                   String moduleDir = evaluator.getProperty("module.dir"); // NOI18N
-                   testDistDir = moduleDir + File.separatorChar + "build" + File.separatorChar + "testdist";
-               }         
+            NbModuleTypeProvider.NbModuleType type = typeProvider.getModuleType();
+            if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+                // test.dist.dir = ${nb_all}/nbbuild/build/testdist
+                String nball = evaluator.getProperty("nb_all"); // NOI18N
+                testDistDir = nball + File.separatorChar + "nbbuild" + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
+            } else if ( type == NbModuleTypeProvider.SUITE_COMPONENT) {
+                // test.dist.dir = ${suite.dir}/build/testdist
+                String suiteDir = evaluator.getProperty("suite.dir"); // NOI18N
+                testDistDir = suiteDir + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
+            } else {
+                // standalone module
+                // test.dist.dir = ${module.dir}/build/testdist
+                String moduleDir = evaluator.getProperty("module.dir"); // NOI18N
+                testDistDir = moduleDir + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
+            }
         }
-        for (Iterator ttIt = testTypes.entrySet().iterator() ; ttIt.hasNext() ; ) {
-           Map.Entry entry = (Map.Entry) ttIt.next(); 
-           String ttName = (String)entry.getKey(); 
-           Set ttModules = (Set)entry.getValue();
-           computeTestType(ttName,new File(testDistDir),ttModules,classpaths,ml);
+        for (Iterator ttIt = testTypes.entrySet().iterator(); ttIt.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) ttIt.next();
+            String ttName = (String) entry.getKey();
+            Set ttModules = (Set) entry.getValue();
+            computeTestType(ttName,new File(testDistDir),ttModules,classpaths,ml);
         }
         return classpaths;
     }
-    private Map /*<String,Set<TestModuleDepency>>*/getTestDependencies(ModuleList ml) {
-        Element data = project.getPrimaryConfigurationData();
-        Element pp = Util.findElement(data,
-            "test-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
     
-        
-        Map/*<String,SortedSet<TestModuleDepency>>*/ testDeps = new HashMap();
-     
-        if (pp != null) {
-            for (Iterator depssIt = Util.findSubElements(pp).iterator(); depssIt.hasNext();) {
-                Element depssEl = (Element) depssIt.next();
-                Element testTypeEl = Util.findElement(depssEl,"name",NbModuleProjectType.NAMESPACE_SHARED); 
-                String testType = null;
-                if (testTypeEl != null) {
-                    testType = Util.findText(testTypeEl);
-                }
-                if (testType == null) {
-                    testType = TestModuleDependency.UNIT; // default variant
-                }
-                Set/*<TestModuleDependency>*/ directTestDeps = new HashSet();
-                
-                testDeps.put(testType,directTestDeps);
-                for (Iterator depsIt = Util.findSubElements(depssEl).iterator() ; depsIt.hasNext();) {
-                    Element el = (Element) depsIt.next();
-                    if (el.getTagName().equals("test-dependency")) {
-                        // parse test dep
-                        boolean  test = Util.findElement(el,"test",NbModuleProjectType.NAMESPACE_SHARED) != null;
-                        Element cnbEl = Util.findElement(el,"code-name-base",NbModuleProjectType.NAMESPACE_SHARED);
-                        
-                        String cnb =  null;
-                        if (cnbEl != null) {
-                            cnb = Util.findText(cnbEl); 
-                        }
-                        boolean  recursive = Util.findElement(el,"recursive",NbModuleProjectType.NAMESPACE_SHARED) != null;
-                        boolean  compile = Util.findElement(el,"compile-dependency",NbModuleProjectType.NAMESPACE_SHARED) != null;
-                        if (cnb != null) {
-                            ModuleEntry me = ml.getEntry(cnb);
-                            // [TOOD] show error module is 
-                            if (me != null) {
-                                directTestDeps.add(new TestModuleDependency(me,test,recursive,compile));
-                            }
-                        }
-                    }
-                 }
-              }
-         }
-         return testDeps;
-    }
-
-   
     private void computeTestType(String ttName,File testDistDir, Set ttModules, Map/*<String,TestClasspath>*/ classpaths,ModuleList ml) {
   
         Set compileCnds = new HashSet();
@@ -810,7 +768,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 String cnb = (String)it.next();
                 ModuleEntry module = (ModuleEntry)ml.getEntry(cnb);
                 if (cps.length() > 0) {
-                    cps.append(":");
+                    cps.append(':');
                 }
                 if (test) {
                     // we need to get cluster name
@@ -819,7 +777,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         String clusterName = clusterDir.getName();
                         char s = File.separatorChar;
                         File jarFile = new File(
-                                          testDistDir, testtype + s + clusterName + s + cnb.replace('.','-') + s + "tests.jar");
+                                          testDistDir, testtype + s + clusterName + s + cnb.replace('.','-') + s + "tests.jar"); // NOI18N
                         cps.append(jarFile.getPath());
                     }
                      
