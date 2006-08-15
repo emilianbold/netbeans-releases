@@ -523,7 +523,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             }
             String archPref = getProject ().getProperty ("arch.target");
             if (archPref != null) {
-                archTarget = archPref + File.separatorChar + archTarget;
+                archTarget = archPref + "/" + archTarget;
             }
             
             t.setParameter("arch.target", archTarget);
