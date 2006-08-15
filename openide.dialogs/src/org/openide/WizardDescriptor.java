@@ -598,7 +598,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
         if (PROP_ERROR_MESSAGE.equals(name)) {
             // #76318: New Entity wizard shows unreadable red error
-            if (OK_OPTION.equals (getValue ())) return ;
+            if (init && OK_OPTION.equals (getValue ())) return ; // call getValue() only on initialized WD
             if (wizardPanel != null) {
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
