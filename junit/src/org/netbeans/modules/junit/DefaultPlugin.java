@@ -502,7 +502,11 @@ public final class DefaultPlugin extends JUnitPlugin {
                 }
             } else if (singleClass) {
                 if (testClassName == null) {
-                    testClassName = getTestClassName(filesToTest[0].getName());
+                    ClassPath cp = ClassPath.getClassPath(filesToTest[0],
+                                                          ClassPath.SOURCE);
+                    String srcClassName = cp.getResourceName(filesToTest[0],
+                                                             '.', false);
+                    testClassName = getTestClassName(srcClassName);
                 }
                 try {
                     results = createSingleTest(
