@@ -27,6 +27,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Handler;
@@ -270,5 +271,17 @@ public final class Log extends Handler {
         return ex;
     }
 
-    
+    static void threadDump(Logger log) {
+        Map<Thread,StackTraceElement[]> all = Thread.getAllStackTraces();
+        for (Map.Entry<Thread,StackTraceElement[]> elem : all.entrySet()) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("Thread: ");
+            sb.append(elem.getKey().getName()).append('\n');
+            for (StackTraceElement e : elem.getValue()) {
+                sb.append("    ").append(e.getClassName()).append('.').append(e.getMethodName())
+                    .append(':').append(e.getLineNumber()).append('\n');
+            }
+            log.log(Level.SEVERE, sb.toString());
+        }
+    }
 }

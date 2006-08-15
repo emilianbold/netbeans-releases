@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
@@ -207,6 +208,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 }
 
                 if (!finished) {
+                    Logger dump = Logger.getLogger("thread.dump"); // NOI18N
+                    Log.threadDump(dump);
                     throw new AssertionFailedError ("The test " + getName() + " did not finish in " + time + "ms");
                 }
             }

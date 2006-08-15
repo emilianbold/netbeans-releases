@@ -14,8 +14,12 @@ public class TimeOutHasToPrintLogTest extends NbTestCase {
         super(testName);
     }
     
+    private boolean isSpecial() {
+        return getName().equals("printAhojAndTimeOut") || getName().equals("justTimeOutInOneOfMyMethods");
+    }
+    
     protected Level logLevel() {
-        if (getName().equals("printAhojAndTimeOut")) {
+        if (isSpecial()) {
             return null;
         } else {
             return Level.FINE;
@@ -23,7 +27,7 @@ public class TimeOutHasToPrintLogTest extends NbTestCase {
     }
     
     protected int timeOut() {
-        if (getName().equals("printAhojAndTimeOut")) {
+        if (isSpecial()) {
             return 700;
         } else {
             return 0;
@@ -32,6 +36,10 @@ public class TimeOutHasToPrintLogTest extends NbTestCase {
     
     public void printAhojAndTimeOut() throws Exception {
         LOG.fine("Ahoj");
+        Thread.sleep(10000);
+    }
+    
+    public void justTimeOutInOneOfMyMethods() throws Exception {
         Thread.sleep(10000);
     }
 
@@ -58,5 +66,23 @@ public class TimeOutHasToPrintLogTest extends NbTestCase {
         if (s.indexOf("Ahoj") == -1) {
             fail("Ahoj has to be part of the message:\n" + s);
         }
+    }
+
+    public void testThreadDumpPrinted() throws Exception {
+        TimeOutHasToPrintLogTest t = new TimeOutHasToPrintLogTest("justTimeOutInOneOfMyMethods");
+        
+        CharSequence seq = Log.enable("thread.dump", Level.FINE);
+        
+        TestResult res = t.run();
+        
+        assertEquals("One test has been run", 1, res.runCount());
+        
+        String s = seq.toString();
+        if (s.indexOf("justTimeOutInOneOfMyMethods") == -1) {
+            fail("There should be thread dump reported in case of timeout:\n" + s);
+        }
+        
+        assertEquals("No error", 0, res.errorCount());
+        assertEquals("One failure", 1, res.failureCount());
     }
 }
