@@ -595,10 +595,13 @@ final class JUnitOutputReader {
     /**
      */
     void buildFinished(final AntEvent event) {
-        finishReport(event.getException());
-        Manager.getInstance().sessionFinished(session,
-                                              sessionType);
-        progressHandle.finish();
+        try {
+            finishReport(event.getException());
+            Manager.getInstance().sessionFinished(session,
+                                                  sessionType);
+        } finally {
+            progressHandle.finish();
+        }
     }
     
     /**
