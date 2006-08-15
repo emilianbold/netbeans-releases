@@ -888,7 +888,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             if (action.isEnabled()) {
                 LogRecord rec = new LogRecord(Level.FINER, "UI_ACTION_KEY_PRESS"); // NOI18N
                 rec.setParameters(new Object[] { ks, ks.toString(), action, action.getClass().getName(), action.getValue(Action.NAME) });
-                rec.setResourceBundle(NbBundle.getBundle(Actions.class));
+                rec.setResourceBundle(NbBundle.getBundle(TopComponent.class));
                 rec.setLoggerName(UILOG.getName());
                 UILOG.log(rec);
 
