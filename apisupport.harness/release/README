@@ -23,11 +23,10 @@ specify
 
 to indicate that it is an NBM project, and the configuration must be
 
-    <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+    <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
 
-Note that this schema is a change from the /1 schema used in NetBeans 4.0 and
-4.1. (As of this writing, the XML schema is not yet published externally, but it
-will be soon.)
+Note that this schema is a change from the /2 schema used in NetBeans 5.0.
+NetBeans 4.0 and 4.1 use schema /1.
 
 Outside of the netbeans.org CVS tree, modules can take two forms. They may be
 marked with
@@ -303,6 +302,27 @@ dependency on another module. The actual version is taken directly from that
 module's current JAR so you do not need to keep track of it. *Important*: if you
 either *export* or *import* any implementation dependencies, you should probably
 use spec.version.base (see below).
+
+Specify your test dependencies on other modules:
+
+          <test-dependencies>
+              <test-type>
+                <!-- The test type name. It is used for historical reason. By default is used unit.
+                  The 'unit' test type is default and is supported by all module project types. 
+                  NetBeans module type also supports 'qa-functional' test type.   
+                   -->  
+                  <name>unit</name>
+                  <!-- A elementary dependency on a module or tests. ->
+                  <test-dependency>
+                      <!-- Code base name of module. -->
+                      <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                      <!-- Add all transitive dependencies of module on classpath. -->
+                      <recursive/>
+                       <!-- Also compilation dependency (runtime is in everytime). --> 
+                      <compile-dependency/>
+                  </test-dependency>
+                </test-type>
+            </test-dependencies>  
 
 Declare any public API/SPI packages you export:
 
@@ -649,14 +669,16 @@ src.dir - "src", module source directory. Avoid overriding.
 test.unit.cp.extra - any additional classpath you might need to compile your
 unit tests. If left empty, you can compile against JUnit; the NB test extensions
 in nbjunit.jar; your module; and anything your module compiled against (since
-5.0u1, ${module.run.classpath}).
+5.0u1, ${module.run.classpath}). The dependencies can be also defined since 
+NetBeans 6.0. 
 
     test.unit.cp.extra=\
-        ${netbeans.dest.dir}/ide6/modules/some-module-used-in-tests.jar:
+        ${tools.jar}:\
         ${basedir}/lib/custom-junit-helpers.jar
 
 test.unit.run.cp.extra - any additional classpath you might need to *run* your
-unit tests with (beyond what they are already compiled with). E.g. to make sure
+unit tests with (beyond what they are already compiled with). The dependencies can 
+be also defined since NetBeans 6.0. E.g. to make sure
 org.openide.filesystems.FileUtil.toFileObject works reliably:
 
     test.unit.run.cp.extra=\
@@ -672,6 +694,15 @@ test.unit.src.dir - "test/unit/src"; avoid overriding.
 
 test-unit-sys-prop.<NAME> - will set a system property <NAME> when running your
 unit tests.
+
+test.dist.dir - directory with test distribution. 
+
+test.unit.folder - output directory for tests of module.
+
+test.unit.out.folder - this property can be overriden when you want to change 
+test.unit.folder property.
+
+extra.test.libs.dir - directory with extra libraries needed for test run. 
 
 tools.jar [since 5.0u1] - set to location of tools.jar in active JDK. Useful in
 case your module needs to compile against JDK-only classes. Meaningless on Mac
@@ -933,6 +964,18 @@ Do not forget that manifest files must begin with the magic phrase
     Manifest-Version: 1.0
 
 and to be safe should end in *two* newlines.
+
+UPGRADING FROM NETBEANS 5.x
+---------------------------
+Upgrading from NetBeans 5.x is trivial. 
+
+1. Change the harness to version from NetBeans 6.0.  
+
+2. Execute fix-test-dependencies ant target for your module project. It switches
+to the /3 XML schema for project.xml. Test dependencies defined in test.unit.cp.extra
+and test.unit.run.cp.extra are moved to project.xml. Only libraries which are 
+neither part of platform nor modularized will stays in properties.  
+  
 
 UPGRADING FROM NETBEANS 4.0/4.1
 -------------------------------
