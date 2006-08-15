@@ -43,6 +43,9 @@ implements ExplorerManager.Provider {
             UINode.createPropertyDate(null),
 //            UINode.createPropertyMessage(null),
         });
+        view.setTreePreferredWidth(300);
+        view.setTableColumnPreferredWidth(0, 100);
+        view.setTableColumnPreferredWidth(1, 50);
     }
     
     /** This method is called from within the constructor to
