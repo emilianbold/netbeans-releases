@@ -1,0 +1,4 @@
+    <target name="clean-preverified">
+        <delete dir="${{preverify.classes.dir}}"/>
+    </target>
+    

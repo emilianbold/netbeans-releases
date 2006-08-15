@@ -1,0 +1,23 @@
+<xsl:comment>preprocess</xsl:comment>    
+    
+    <target name="pre-preprocess"/>
+
+    <target name="do-preprocess">
+        <fail unless="preprocessed.dir">Must set preprocessed.dir</fail>
+        <property name="abilities" value=""/>
+        <property name="debug.level" value="debug"/>
+        <mkdir dir="${{preprocessed.dir}}"/>
+        <echo message="ignore me" file="${{build.dir}}/.timestamp"/>
+        <nb-prep destdir="${{preprocessed.dir}}" preprocessfor="${{config.active.name}},${{abilities}},DebugLevel=${{debug.level}}" encoding="${{javac.encoding}}">
+            <fileset dir="${{buildsystem.baton}}" defaultexcludes="${{filter.use.standard}}" excludes="${{filter.excludes.evaluated}}"/>
+        </nb-prep>
+        <copy todir="${{preprocessed.dir}}">
+            <fileset dir="${{buildsystem.baton}}" defaultexcludes="${{filter.use.standard}}" excludes="${{filter.excludes.evaluated}},${{build.classes.excludes}}"/>
+        </copy>
+        <nb-overrideproperty name="buildsystem.baton" value="${{preprocessed.dir}}"/>
+    </target>
+
+    <target name="post-preprocess"/>
+    
+    <target name="preprocess" depends="__DEPENDS__,pre-preprocess,do-preprocess,post-preprocess" description="Preprocess project sources."/>
+    

@@ -1,0 +1,12 @@
+<xsl:comment>clean</xsl:comment>
+
+    <target name="pre-clean"/>
+    
+    <target name="post-clean"/>
+
+    <target name="do-clean" depends="__DEPENDS__,post-clean"/>
+    
+    <target name="clean" depends="conditional-clean" if="no.clean.before.build" description="Clean build products.">
+        <antcall target="do-clean" inheritall="true" inheritrefs="true"/>
+    </target>
+    

@@ -1,0 +1,4 @@
+    <target name="clean-manifest">
+        <delete file="${{build.dir}}/manifest.mf"/>
+    </target>
+    

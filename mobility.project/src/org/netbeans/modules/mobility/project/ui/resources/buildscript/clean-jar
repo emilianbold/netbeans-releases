@@ -1,0 +1,4 @@
+    <target name="clean-jar">
+        <delete file="${{dist.dir}}/${{dist.jar}}"/>
+    </target>
+    

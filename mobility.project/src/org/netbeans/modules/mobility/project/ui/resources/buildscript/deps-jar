@@ -1,0 +1,50 @@
+<xsl:comment>deps-jar</xsl:comment>   
+ 
+         <target name="deps-jar" depends="__DEPENDS__" unless="no.deps">
+            <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
+            <xsl:for-each select="$references2/projdeps2:reference[not('jar') or projdeps2:artifact-type = 'jar']">
+                <xsl:variable name="subproj" select="projdeps2:foreign-project"/>
+                <xsl:variable name="subtarget">
+                    <xsl:choose>
+                        <xsl:when test="'jar'">
+                            <xsl:value-of select="projdeps2:target"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="projdeps2:clean-target"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:variable name="script" select="projdeps2:script"/>
+                <xsl:choose>
+                    <xsl:when test="projdeps2:properties">
+                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                            <xsl:for-each select="projdeps2:properties/projdeps2:property">
+                                <property name="{@name}" value="{.}"/>
+                            </xsl:for-each>
+                        </ant>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:for-each>
+            
+            <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
+            <xsl:for-each select="$references/projdeps:reference[not('jar') or projdeps:artifact-type = 'jar']">
+                <xsl:variable name="subproj" select="projdeps:foreign-project"/>
+                <xsl:variable name="subtarget">
+                    <xsl:choose>
+                        <xsl:when test="'jar'">
+                            <xsl:value-of select="projdeps:target"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="projdeps:clean-target"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:variable name="script" select="projdeps:script"/>
+                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+            </xsl:for-each>
+            
+        </target>
+   

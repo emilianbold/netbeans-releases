@@ -1,0 +1,4 @@
+    <target name="clean-javadoc">
+        <delete dir="${{dist.javadoc.dir}}"/>
+    </target>
+    

@@ -637,7 +637,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         public InputStream getInputStream() throws IOException {
             DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(getURL().getPath()));
             DataObject mainParts[] = root.getChildren();
-            ArrayList<InputStream> inputs = new ArrayList();
+            StringBuffer sb = new StringBuffer();
             String lastTarget = ""; //NOI18N
             for (int i=0; i<mainParts.length; i++) {
                 if (mainParts[i] instanceof DataFolder) {
@@ -645,23 +645,25 @@ public final class J2MEProject implements Project, AntProjectListener {
                     StringBuffer subTargets = new StringBuffer(lastTarget);
                     for (int j=0; j<subParts.length; j++) {
                         if (subParts[j].getPrimaryFile().isData()) {
-                            inputs.add(read(subParts[j].getPrimaryFile(), lastTarget));
+                            sb.append(read(subParts[j].getPrimaryFile(), lastTarget));
                             subTargets.append(',').append(subParts[j].getName());
                         }
                     }
                     lastTarget = subTargets.toString();
                 } else {
-                    inputs.add(read(mainParts[i].getPrimaryFile(), lastTarget));
+                    sb.append(read(mainParts[i].getPrimaryFile(), lastTarget));
                     lastTarget = mainParts[i].getName();
                 }
             }
-            return new SequenceInputStream(Collections.enumeration(inputs));
+            return new ByteArrayInputStream(sb.toString().getBytes());
         }
         
         public void connect() throws IOException {}
     
-        private InputStream read(FileObject fo, String dependencies) throws IOException {
-            byte buff[] = new byte[(int)fo.getSize()];
+        private String read(FileObject fo, String dependencies) throws IOException {
+            int i = (int)fo.getSize();
+//            if (i < 0) return ""; //NOI18N 
+            byte buff[] = new byte[i];
             DataInputStream in = new DataInputStream(fo.getInputStream());
             try {
                 in.readFully(buff);
@@ -669,7 +671,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             } finally {
                 in.close();
             }
-            return new ByteArrayInputStream(new String(buff).replace("__DEPENDS__", dependencies).getBytes()); //NOI18N
+            return new String(buff).replace("__DEPENDS__", dependencies); //NOI18N
         }
     
     }

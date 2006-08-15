@@ -1,0 +1,55 @@
+<xsl:comment>basic-init</xsl:comment>
+
+    <target name="exists.platform.active" unless="platform.active">
+        <echo level="warning" message="Active platform (platform.active property) in not set. If you set this and user.properties.file property, many properties required by the project will be automatically evaluated (e.g.: platform home, platform classpath, ...)."/>
+    </target>
+    
+    <target name="exists.platform.configuration" unless="platform.configuration">
+        <echo level="warning" message="Platform configuration (platform.configuration) is not set. Using default (CLDC-1.0) configuration."/>
+        <property name="platform.configuration" value="CLDC-1.0"/>
+    </target>
+    
+    <target name="exists.platform.profile" unless="platform.profile">
+        <echo level="warning" message="Platform profile (platform.profile) is not set. Using default (MIDP-1.0) profile."/>
+        <property name="platform.profile" value="MIDP-1.0"/>
+    </target>
+    
+    <target name="basic-init" depends="exists.platform.active,exists.platform.configuration,exists.platform.profile">
+        <fail unless="libs.j2me_ant_ext.classpath">Classpath to J2ME Ant extension library (libs.j2me_ant_ext.classpath property) is not set. For example: location of mobility/modules/org-netbeans-mobility-antext.jar file in the IDE installation directory.</fail>
+        <fail unless="platform.home">Platform home (platform.home property) is not set. Value of this property should be ${{platform.active.description}} emulator home directory location.</fail>
+        <fail unless="platform.bootclasspath">Platform boot classpath (platform.bootclasspath property) is not set. Value of this property should be ${{platform.active.description}} emulator boot classpath containing all J2ME classes provided by emulator.</fail>
+        <fail unless="src.dir">Must set src.dir</fail>
+        <fail unless="build.dir">Must set build.dir</fail>
+        <fail unless="dist.dir">Must set dist.dir</fail>
+        <fail unless="dist.jar">Must set dist.jar</fail>
+        <property name="javac.source" value="1.3"/>
+        <property name="javac.target" value="1.1"/>
+        <property name="javac.encoding" value="${{file.encoding}}"/>
+        <condition property="no.deps">
+            <istrue value="${{no.dependencies}}"/>
+        </condition>
+        <condition property="no.javadoc.preview">
+            <isfalse value="${{javadoc.preview}}"/>
+        </condition>
+        <condition property="filter.excludes.evaluated" value="${{filter.excludes}},**/*Test.java,**/test,**/test/**">
+            <istrue value="${{filter.exclude.tests}}"/>
+        </condition>
+        <property name="filter.excludes.evaluated" value="${{filter.excludes}}"/>
+        <condition property="deployment.do.override.jarurl" value="">
+            <istrue value="${{deployment.override.jarurl}}"/>
+        </condition>
+        <condition property="config.active.name" value="DefaultConfiguration">
+            <length string="${{config.active}}" trim="true" length="0"/>
+        </condition>
+        <property name="config.active.name" value="${{config.active}}"/>
+        <taskdef resource="org/netbeans/mobility/antext/defs.properties">
+            <classpath>
+                <pathelement path="${{libs.j2me_ant_ext.classpath}}"/>
+            </classpath>
+        </taskdef>
+        <condition property="skip.deployment">
+            <equals arg1="${{deployment.method}}" arg2="NONE" casesensitive="false" trim="true"/>
+        </condition>
+        <nb-overrideproperty name="buildsystem.baton" value="${{src.dir}}"/>
+    </target>
+

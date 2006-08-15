@@ -1,0 +1,8 @@
+<xsl:comment>jar</xsl:comment>    
+
+    <target name="pre-jar"/>
+
+    <target name="post-jar"/>
+
+    <target name="jar" depends="__DEPENDS__,post-jar" description="Build jar and application descriptor."/>
+

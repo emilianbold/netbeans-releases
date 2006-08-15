@@ -1,0 +1,43 @@
+<xsl:comment>load-properties</xsl:comment>
+
+   <target name="pre-load-properties">
+        <property file="nbproject/private/private.properties"/>
+        <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
+        <available property="user.properties.file.exists" file="${{user.properties.file}}"/>
+    </target>
+
+    <target name="exists.config.active" unless="config.active">
+        <echo level="warning" message="Active configuration (config.active property) is not set - using default."/>
+        <property value="" name="config.active"/>
+    </target>
+    
+    <target name="exists.netbeans.user" unless="netbeans.user">
+        <echo level="warning" message="NetBeans IDE user directory (netbeans.user property) is not set. By specifying this property many properties required by the project will be automatically evaluated (e.g.: ant-ext library home, ...). You could also open this project in the NetBeans IDE - in this case this property would be set automatically."/>
+    </target>
+
+    <target name="exists.user.properties.file" unless="user.properties.file.exists">
+        <echo level="warning" message="User properties file (user.properties.file) property is not set. By specifying this property many properties required by the project will be automatically evaluated (e.g.: libraries, platforms, ...)."/>
+    </target>
+
+    <target name="load-properties" depends="pre-load-properties,exists.config.active,exists.netbeans.user,exists.user.properties.file">
+        <loadproperties srcfile="nbproject/project.properties">
+            <filterchain>
+                <containsregex pattern="^configs\.${{config.active}}\.(.*)" replace="\1"/>
+                <concatfilter prepend="nbproject/project.properties"/>
+                <containsregex pattern="^platform.active=|^deployment.method="/>
+            </filterchain>
+        </loadproperties>
+        <loadproperties srcfile="${{user.properties.file}}">
+            <filterchain>
+                <replaceregex pattern="^platforms\.${{platform.active}}\." replace="platform."/>
+                <replaceregex pattern="^deployment\.${{deployment.method}}\.scriptfile=" replace="deployment.scriptfile="/>
+            </filterchain>
+        </loadproperties>
+        <loadproperties srcfile="nbproject/project.properties">
+            <filterchain>
+                <containsregex pattern="^configs\.${{config.active}}\.(.*)" replace="\1"/>
+                <concatfilter prepend="nbproject/project.properties"/>
+            </filterchain>
+        </loadproperties>
+    </target>
+

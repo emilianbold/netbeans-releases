@@ -1,0 +1,37 @@
+<xsl:comment>for-all-configs targets</xsl:comment>
+    
+    <target name="for-all-configs">
+        <antcall target="${{target.to.call}}" inheritall="false" inheritrefs="false">
+            <param name="config.active" value=""/>
+        </antcall>
+    </target>
+    <target name="jar-all">
+        <antcall target="for-all-configs">
+            <param name="target.to.call" value="jar"/>
+        </antcall>
+    </target>
+    <target name="javadoc-all">
+        <antcall target="for-all-configs">
+            <param name="target.to.call" value="javadoc"/>
+        </antcall>
+    </target>
+    <target name="deploy-all">
+        <antcall target="for-all-configs">
+            <param name="target.to.call" value="deploy"/>
+        </antcall>
+    </target>
+    <target name="rebuild-all">
+        <antcall target="for-all-configs">
+            <param name="target.to.call" value="rebuild"/>
+        </antcall>
+    </target>
+    <target name="clean-all">
+        <property file="nbproject/project.properties"/>
+        <fail unless="build.root.dir">Property build.root.dir is not set. By default its value should be \"build\".</fail>
+        <fail unless="dist.root.dir">Property dist.root.dir is not set. By default its value should be \"dist\".</fail>
+        <delete dir="${{build.root.dir}}"/>
+        <delete dir="${{dist.root.dir}}"/>
+        <antcall target="for-all-configs">
+            <param name="target.to.call" value="clean"/>
+        </antcall>
+    </target>

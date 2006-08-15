@@ -1,0 +1,15 @@
+<xsl:comment>conditional clean</xsl:comment>    
+    
+    <target name="conditional-clean-init">
+        <uptodate property="no.clean.before.build" targetfile="${{build.dir}}/.timestamp">
+            <srcfiles dir="nbproject">
+                <include name="project.properties"/>
+                <include name="build-impl.xml"/>
+            </srcfiles>
+        </uptodate>
+    </target>
+    
+    <target name="conditional-clean" depends="__DEPENDS__,conditional-clean-init" unless="no.clean.before.build" description="Clean project in case its meta information has changed.">
+        <antcall target="do-clean" inheritall="true" inheritrefs="true"/>
+    </target>
+

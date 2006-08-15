@@ -1,0 +1,6 @@
+<xsl:comment>cldc-run</xsl:comment>
+
+    <target name="cldc-run" if="cldc-platform.trigger">
+        <nb-run jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.dir}}/${{dist.jar}}" jadurl="${{dist.jad.url}}" device="${{platform.device}}" platformhome="${{platform.home}}" platformtype="${{platform.type}}" execmethod="${{run.method}}" securitydomain="${{evaluated.run.security.domain}}" commandline="${{platform.runcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
+    </target>
+

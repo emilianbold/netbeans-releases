@@ -1,0 +1,31 @@
+<xsl:comment>proguard</xsl:comment>    
+    
+    <target name="proguard-init" description="Up-to-date check before obfuscation.">
+        <property name="obfuscation.level" value="0"/>
+        <condition property="no.obfusc">
+            <or>
+                <equals arg1="${{obfuscation.level}}" arg2="0"/>
+                <uptodate targetfile="${{obfuscator.destjar}}">
+                    <srcfiles dir="${{buildsystem.baton}}"/>
+                </uptodate>
+            </or>
+        </condition>
+    </target>
+    
+    <target name="proguard" depends="proguard-init" description="Obfuscate project classes." unless="no.obfusc">
+        <fail unless="obfuscated.classes.dir">Must set obfuscated.classes.dir</fail>
+        <fail unless="obfuscator.srcjar">Must set obfuscator.srcjar</fail>
+        <fail unless="obfuscator.destjar">Must set obfuscator.destjar</fail>
+        <property name="obfuscator.classpath" value=""/>
+        <dirname file="${{obfuscator.srcjar}}" property="obfuscator.srcjar.dir"/>
+        <dirname file="${{obfuscator.destjar}}" property="obfuscator.destjar.dir"/>
+        <mkdir dir="${{obfuscator.srcjar.dir}}"/>
+        <mkdir dir="${{obfuscator.destjar.dir}}"/>
+        <jar jarfile="${{obfuscator.srcjar}}" basedir="${{buildsystem.baton}}"/>
+        <property name="obfuscation.custom" value=""/>
+        <nb-obfuscate srcjar="${{obfuscator.srcjar}}" destjar="${{obfuscator.destjar}}" obfuscatorclasspath="${{obfuscator.classpath}}" classpath="${{platform.bootclasspath}}" obfuscationLevel="${{obfuscation.level}}" extraScript="${{obfuscation.custom}}"/>
+        <mkdir dir="${{obfuscated.classes.dir}}"/>
+        <unjar src="${{obfuscator.destjar}}" dest="${{obfuscated.classes.dir}}"/>
+        <nb-overrideproperty name="buildsystem.baton" value="${{obfuscated.classes.dir}}"/>
+    </target>
+

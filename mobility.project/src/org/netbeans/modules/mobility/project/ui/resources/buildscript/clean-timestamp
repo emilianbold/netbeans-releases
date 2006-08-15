@@ -1,0 +1,4 @@
+    <target name="clean-timestamp">
+        <delete file="${{build.dir}}/.timestamp"/>
+    </target>
+

@@ -1,0 +1,8 @@
+<xsl:comment>init</xsl:comment>
+
+    <target name="pre-init"/>
+
+    <target name="post-init"/>
+
+    <target name="init" depends="__DEPENDS__,post-init"/>
+    

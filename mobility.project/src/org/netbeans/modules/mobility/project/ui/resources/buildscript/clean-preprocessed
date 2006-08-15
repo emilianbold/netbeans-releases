@@ -1,0 +1,4 @@
+    <target name="clean-preprocessed">
+        <delete dir="${{preprocessed.dir}}"/>
+    </target>
+    

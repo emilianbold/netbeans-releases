@@ -214,42 +214,105 @@ Microsystems, Inc. All Rights Reserved.
             <file name="build.xml" url="nbresloc:/org/netbeans/modules/mobility/project/resources/build.xsl"/>
             <folder name="nbproject">
                 <folder name="build-impl.xml">
-                    <file name="xxx" url="nbresloc:/org/netbeans/modules/mobility/project/resources/build-impl.xsl"/>
+                    <file name="head" url="buildscript/head"/>
+                    <attr name="head/pre-init" boolvalue="true"/>
+                    <file name="pre-init"/>
+                    <attr name="pre-init/init-subtargets" boolvalue="true"/>
+                    <folder name="init-subtargets">
+                        <file name="load-properties" url="buildscript/load-properties"/>
+                        <attr name="load-properties/basic-init" boolvalue="true"/>
+                        <file name="basic-init" url="buildscript/basic-init"/>
+                        <attr name="basic-init/cldc-init" boolvalue="true"/>
+                        <file name="cldc-init" url="buildscript/cldc-init"/>
+                    </folder>
+                    <attr name="init-subtargets/init" boolvalue="true"/>
+                    <file name="init" url="buildscript/init"/>
+                    <attr name="init/conditional-clean" boolvalue="true"/>
+                    <file name="conditional-clean" url="buildscript/conditional-clean"/>
+                    <attr name="conditional-clean/deps-jar" boolvalue="true"/>
+                    <file name="deps-jar" url="buildscript/deps-jar"/>
+                    <attr name="deps-jar/preprocess" boolvalue="true"/>
+                    <file name="preprocess" url="buildscript/preprocess"/>
+                    <attr name="preprocess/compile" boolvalue="true"/>
+                    <file name="compile" url="buildscript/compile"/>
+                    <attr name="compile/create-jad" boolvalue="true"/>
+                    <file name="create-jad" url="buildscript/create-jad"/>
+                    <attr name="create-jad/obfuscate-subtargets" boolvalue="true"/>
+                    <folder name="obfuscate-subtargets">
+                        <file name="pre-obfuscate"/>
+                        <attr name="pre-obfuscate/proguard" boolvalue="true"/>
+                        <file name="proguard" url="buildscript/proguard"/>
+                    </folder>
+                    <attr name="obfuscate-subtargets/obfuscate" boolvalue="true"/>
+                    <file name="obfuscate" url="buildscript/obfuscate"/>
+                    <attr name="obfuscate/preverify" boolvalue="true"/>
+                    <file name="preverify" url="buildscript/preverify"/>
+                    <attr name="preverify/jar-subtargets" boolvalue="true"/>
+                    <folder name="jar-subtargets">
+                        <file name="pre-jar"/>
+                        <attr name="pre-jar/set-password" boolvalue="true"/>
+                        <file name="set-password" url="buildscript/set-password"/>
+                        <attr name="set-password/do-jar" boolvalue="true"/>
+                        <file name="do-jar" url="buildscript/do-jar"/>
+                        <attr name="do-jar/update-jad" boolvalue="true"/>
+                        <file name="update-jad" url="buildscript/update-jad"/>
+                    </folder>
+                    <attr name="jar-subtargets/jar" boolvalue="true"/>
+                    <file name="jar" url="buildscript/jar"/>
+                    <attr name="jar/pre-run" boolvalue="true"/>
+                    <file name="pre-run"/>
+                    <attr name="pre-run/run-subtargets" boolvalue="true"/>
+                    <folder name="run-subtargets">
+                        <file name="cldc-run" url="buildscript/cldc-run"/>
+                    </folder>
+                    <attr name="run-subtargets/run" boolvalue="true"/>
+                    <file name="run" url="buildscript/run"/>
+                    <attr name="run/pre-debug" boolvalue="true"/>
+                    <file name="pre-debug"/>
+                    <attr name="pre-debug/debug-subtargets" boolvalue="true"/>
+                    <folder name="debug-subtargets">
+                        <file name="cldc-debug" url="buildscript/cldc-debug"/>
+                    </folder>
+                    <attr name="debug-subtargets/debug" boolvalue="true"/>
+                    <file name="debug" url="buildscript/debug"/>
+                    <attr name="debug/javadoc" boolvalue="true"/>
+                    <file name="javadoc" url="buildscript/javadoc"/>
+                    <attr name="javadoc/rebuild" boolvalue="true"/>
+                    <file name="rebuild" url="buildscript/rebuild"/>
+                    <attr name="rebuild/pre-clean" boolvalue="true"/>
+                    <file name="pre-clean"/>
+                    <attr name="pre-clean/clean-subtargets" boolvalue="true"/>
+                    <folder name="clean-subtargets">
+                        <file name="clean-timestamp" url="buildscript/clean-timestamp"/>
+                        <attr name="clean-timestamp/clean-preprocessed" boolvalue="true"/>
+                        <file name="clean-preprocessed" url="buildscript/clean-preprocessed"/>
+                        <attr name="clean-preprocessed/clean-classes" boolvalue="true"/>
+                        <file name="clean-classes" url="buildscript/clean-classes"/>
+                        <attr name="clean-classes/clean-obfuscated" boolvalue="true"/>
+                        <file name="clean-obfuscated" url="buildscript/clean-obfuscated"/>
+                        <attr name="clean-obfuscated/clean-preverified" boolvalue="true"/>
+                        <file name="clean-preverified" url="buildscript/clean-preverified"/>
+                        <attr name="clean-preverified/clean-manifest" boolvalue="true"/>
+                        <file name="clean-manifest" url="buildscript/clean-manifest"/>
+                        <attr name="clean-manifest/clean-jar" boolvalue="true"/>
+                        <file name="clean-jar" url="buildscript/clean-jar"/>
+                        <attr name="clean-jar/clean-jad" boolvalue="true"/>
+                        <file name="clean-jad" url="buildscript/clean-jad"/>
+                        <attr name="clean-jad/clean-javadoc" boolvalue="true"/>
+                        <file name="clean-javadoc" url="buildscript/clean-javadoc"/>
+                    </folder>
+                    <attr name="clean-subtargets/clean" boolvalue="true"/>
+                    <file name="clean" url="buildscript/clean"/>
+                    <attr name="clean/deploy" boolvalue="true"/>
+                    <file name="deploy" url="buildscript/deploy"/>
+                    <attr name="deploy/for-all-configs" boolvalue="true"/>
+                    <file name="for-all-configs" url="buildscript/for-all-configs"/>
+                    <attr name="for-all-configs/end-of-project" boolvalue="true"/>
+                    <file name="end-of-project" url="buildscript/end-of-project"/>
+                    <attr name="end-of-project/tail" boolvalue="true"/>
+                    <file name="tail" url="buildscript/tail"/>
                 </folder>    
             </folder>  
-<!--
-             <folder name="test.xml">
-                <file name="target1">
-                    <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:project="http://www.netbeans.org/ns/project/1" xmlns:xalan="http://xml.apache.org/xslt" exclude-result-prefixes="xalan project"><xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/><xsl:template match="/">
-<xsl:comment>target1 depends on __DEPENDS__</xsl:comment>]]>
-                </file>
-                <attr name="target1/target2" boolvalue="true"/>
-                <file name="target2">
-                    <![CDATA[<xsl:comment>target2 depends on __DEPENDS__</xsl:comment>]]>
-                </file>
-                <attr name="target2/target3" boolvalue="true"/>
-                <folder name="target3">
-                    <file name="target3a">
-                        <![CDATA[<xsl:comment>target3a depends on __DEPENDS__</xsl:comment>]]>
-                    </file>
-                    <file name="target3b">
-                        <![CDATA[<xsl:comment>target3b depends on __DEPENDS__</xsl:comment>]]>
-                    </file>
-                    <file name="target3c">
-                        <![CDATA[<xsl:comment>target3c depends on __DEPENDS__</xsl:comment>]]>
-                    </file>
-                </folder>
-                <attr name="target3/target4" boolvalue="true"/>
-                <file name="target4">
-                    <![CDATA[<xsl:comment>target4 depends on __DEPENDS__</xsl:comment>]]>
-                </file>
-                <attr name="target4/target5" boolvalue="true"/>
-                <file name="target5">
-                    <![CDATA[<xsl:comment>target5 depends on __DEPENDS__</xsl:comment></xsl:template></xsl:stylesheet>]]>
-                </file>
-            </folder>
--->
        </folder>
     </folder>    
             

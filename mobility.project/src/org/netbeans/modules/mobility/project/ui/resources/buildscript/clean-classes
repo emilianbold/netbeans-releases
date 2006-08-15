@@ -1,0 +1,4 @@
+    <target name="clean-classes">
+        <delete dir="${{build.classes.dir}}"/>
+    </target>
+    

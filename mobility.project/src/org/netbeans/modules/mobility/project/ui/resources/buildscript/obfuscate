@@ -1,0 +1,8 @@
+<xsl:comment>obfuscate</xsl:comment>    
+    
+    <target name="pre-obfuscate"/>
+
+    <target name="post-obfuscate"/>
+    
+    <target name="obfuscate" depends="__DEPENDS__,post-obfuscate" description="Obfuscate project classes."/>
+    

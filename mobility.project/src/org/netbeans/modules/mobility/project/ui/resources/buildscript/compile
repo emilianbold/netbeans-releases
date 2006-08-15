@@ -1,0 +1,49 @@
+<xsl:comment>compile</xsl:comment>    
+    
+    <target name="pre-compile"/>
+
+    <target name="do-compile">
+        <fail unless="build.classes.dir">Must set build.classes.dir</fail>
+        <mkdir dir="${{build.classes.dir}}"/>
+        <javac includeantruntime="false" source="${{javac.source}}" target="${{javac.target}}" deprecation="${{javac.deprecation}}" optimize="${{javac.optimize}}" debug="${{javac.debug}}" destdir="${{build.classes.dir}}" srcdir="${{buildsystem.baton}}" bootclasspath="${{platform.bootclasspath}}" encoding="${{javac.encoding}}">
+            <classpath>
+                <path path="${{libs.classpath}}"/>
+            </classpath>
+        </javac>
+        <copy todir="${{build.classes.dir}}">
+            <fileset dir="${{buildsystem.baton}}" defaultexcludes="${{filter.use.standard}}" excludes="${{filter.excludes.evaluated}},${{build.classes.excludes}}"/>
+        </copy>
+        <nb-overrideproperty name="buildsystem.baton" value="${{build.classes.dir}}"/>
+    </target>
+    
+    <target name="extract-libs" description="Extracts all bundled libraries.">
+        <mkdir dir="${{build.classes.dir}}"/>
+        <nb-extract dir="${{build.classes.dir}}" excludeManifest="true">
+            <classpath>
+                <path path="${{libs.classpath}}"/>
+            </classpath>
+        </nb-extract>
+    </target>
+
+    <target name="post-compile"/>
+
+    <target name="compile" depends="__DEPENDS__,pre-compile,do-compile,extract-libs,post-compile" description="Compile project classes."/>
+
+<xsl:comment>compile-single</xsl:comment>    
+    
+    <target name="pre-compile-single"/>
+
+    <target name="do-compile-single">
+        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+        <mkdir dir="${{build.classes.dir}}"/>
+        <javac includeantruntime="false" source="${{javac.source}}" target="${{javac.target}}" deprecation="${{javac.deprecation}}" optimize="${{javac.optimize}}" debug="${{javac.debug}}" srcdir="${{preprocessed.dir}}" destdir="${{build.classes.dir}}" bootclasspath="${{platform.bootclasspath}}" includes="${{javac.includes}}" encoding="${{javac.encoding}}">
+            <classpath>
+                <path path="${{libs.classpath}}"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="post-compile-single"/>
+
+    <target name="compile-single" depends="__DEPENDS__,pre-compile-single,do-compile-single,post-compile-single" description="Compile selected project classes."/>
+    

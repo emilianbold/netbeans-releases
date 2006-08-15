@@ -1,0 +1,8 @@
+<xsl:comment>run</xsl:comment>    
+
+    <target name="pre-run"/>
+
+    <target name="run" depends="jar,__DEPENDS__" description="Run MIDlet suite."/>
+    
+    <target name="run-no-build" depends="init,__DEPENDS__" description="Quick Run already built MIDlet suite."/>
+    

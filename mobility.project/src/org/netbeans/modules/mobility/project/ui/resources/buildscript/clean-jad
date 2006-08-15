@@ -1,0 +1,4 @@
+    <target name="clean-jad">
+        <delete file="${{dist.dir}}/${{dist.jad}}"/>
+    </target>
+    

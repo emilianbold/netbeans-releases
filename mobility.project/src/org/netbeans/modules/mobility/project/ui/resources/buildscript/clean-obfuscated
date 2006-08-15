@@ -1,0 +1,6 @@
+    <target name="clean-obfuscated">
+        <delete file="${{obfuscator.srcjar}}"/>
+        <delete file="${{obfuscator.destjar}}"/>
+        <delete dir="${{obfuscated.classes.dir}}"/>
+    </target>
+
