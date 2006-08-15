@@ -152,6 +152,10 @@ Microsystems, Inc. All Rights Reserved.
                       <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                       <compile-dependency/>
                   </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.bootstrap</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
               </test-type>
               <test-type>
                   <name>qa-functional</name>

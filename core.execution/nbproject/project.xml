@@ -154,7 +154,9 @@ Microsystems, Inc. All Rights Reserved.
                       <!--recursive/-->
                       <compile-dependency/>
                   </test-dependency>
-                  
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core.startup</code-name-base>
+                  </test-dependency>
               </test-type>
               <test-type>
                   <name>qa-functional</name>

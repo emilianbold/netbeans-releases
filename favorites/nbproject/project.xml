@@ -180,6 +180,15 @@ Microsystems, Inc. All Rights Reserved.
                       <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
                       <compile-dependency/>
                   </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core.startup</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.bootstrap</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                 
               </test-type>
               <test-type>
                   <name>qa-functional</name>
