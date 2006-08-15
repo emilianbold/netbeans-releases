@@ -111,7 +111,30 @@ Microsystems, Inc. All Rights Reserved.
                   <test-dependency>
                       <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
                   </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                      <compile-dependency/>
+                      <test/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.options</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.windows</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                  </test-dependency>
               </test-type>
+             
             </test-dependencies>
             
             <public-packages>
