@@ -26,7 +26,7 @@ import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
 /**
- * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
+ * First panel of <code>NewNbModuleWizardIterator</code>. Allows user to enter
  * basic module information:
  *
  * <ul>
@@ -51,11 +51,15 @@ final class BasicInfoWizardPanel extends BasicWizardPanel.NewTemplatePanel imple
     }
     
     public void reloadData() {
-        visualPanel.refreshData();
+        getVisualPanel().refreshData();
     }
     
     public void storeData() {
-        visualPanel.storeData();
+        getVisualPanel().storeData();
+    }
+    
+    private BasicInfoVisualPanel getVisualPanel() {
+        return (BasicInfoVisualPanel) getComponent();
     }
     
     public Component getComponent() {
@@ -82,7 +86,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel.NewTemplatePanel imple
                 prjFolderF.delete();
             } else {
                 String message = getMessage("MSG_UnableToCreateProjectFolder");
-                throw new WizardValidationException(visualPanel.nameValue, message, message);
+                throw new WizardValidationException(getVisualPanel().nameValue, message, message);
             }
         }
     }
