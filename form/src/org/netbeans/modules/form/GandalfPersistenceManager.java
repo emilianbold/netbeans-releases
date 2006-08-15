@@ -32,6 +32,7 @@ import org.openide.util.Utilities;
 import org.openide.*;
 import org.openide.xml.XMLUtil;
 
+import org.netbeans.modules.form.editors2.FontEditor;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutsupport.delegates.*;
 import org.netbeans.modules.form.codestructure.*;
@@ -61,6 +62,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     static final String NB33_VERSION = "1.1"; // NOI18N
     static final String NB34_VERSION = "1.2"; // NOI18N
     static final String NB42_VERSION = "1.3"; // NOI18N
+    static final String NB60_VERSION = "1.4"; // NOI18N
 
     // XML elements names
     static final String XML_FORM = "Form"; // NOI18N
@@ -3418,6 +3420,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Node valueNode = null;
 
         PropertyEditor prEd = property.getCurrentEditor();	
+        
+        if (prEd instanceof FontEditor) { // Issue 82465: new prEd in NB 6.0
+            raiseFormatVersion(NB60_VERSION);
+        }
 		
 	if ( prEd instanceof BeanPropertyEditor || 
 	     prEd instanceof XMLPropertyEditor ) {
@@ -5404,8 +5410,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void raiseFormatVersion(String ver) {
         if (ver != formatVersion
             && (formatVersion == NB32_VERSION
-                || (formatVersion == NB33_VERSION
-                    && ver == NB34_VERSION) || (ver == NB42_VERSION)))
+                || (formatVersion == NB33_VERSION && ver == NB34_VERSION)
+                || ((formatVersion == NB33_VERSION || formatVersion == NB34_VERSION) && ver == NB42_VERSION)
+                || ver == NB60_VERSION))
             formatVersion = ver;
     }
 
@@ -5413,7 +5420,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return NB32_VERSION.equals(ver)
                || NB33_VERSION.equals(ver)
                || NB34_VERSION.equals(ver)
-               || NB42_VERSION.equals(ver);
+               || NB42_VERSION.equals(ver)
+               || NB60_VERSION.equals(ver);
     }
 
     // --------------
