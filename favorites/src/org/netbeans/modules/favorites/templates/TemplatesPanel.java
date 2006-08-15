@@ -550,7 +550,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         if (file == null) {
             throw new IllegalArgumentException ("Argument file cannot be null!"); // NOI18N
         }
-        FileObject sourceFO = FileUtil.toFileObject (file);
+        FileObject sourceFO = FileUtil.toFileObject (FileUtil.normalizeFile (file));
         assert sourceFO != null : "FileObject found for file " + file;
         DataObject sourceDO = null;
         try {
