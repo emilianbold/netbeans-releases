@@ -422,7 +422,7 @@ public class FormEditor {
 
         boolean checkLoadingErrors = operation == LOADING && formLoaded;
         boolean anyNonFatalLoadingError = false; // was there a real error?
-                
+
         for (Iterator it=persistenceErrors.iterator(); it.hasNext(); ) {
             Throwable t  = (Throwable) it.next();      
             if (t instanceof PersistenceException) {
@@ -437,7 +437,7 @@ public class FormEditor {
                 ErrorManager.Annotation[] annotations =
                                             errorManager.findAnnotations(t);
                 int severity = 0;
-                if (annotations != null) {
+                if ((annotations != null) && (annotations.length != 0)) {
                     for (int i=0; i < annotations.length; i++) {
                         int s = annotations[i].getSeverity();
                         if (s == ErrorManager.UNKNOWN)
