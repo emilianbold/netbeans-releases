@@ -44,7 +44,7 @@ Document element.
 <!ELEMENT api-answers (api-questions, answer*) >
 <!ATTLIST api-answers
           question-version CDATA #REQUIRED
-          module CDATA #REQUIRED
+          module CDATA #IMPLIED
           author CDATA #REQUIRED
 >
 

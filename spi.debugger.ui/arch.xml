@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.25"
-  module="Debugger Core UI API"
   author="jjancura@netbeans.org"
 >
 

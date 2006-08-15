@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.24"
-  module="Web Services Deployment Descriptor API"
   author="pavel.buzek@sun.com"
 >
 

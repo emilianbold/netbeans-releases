@@ -7,7 +7,6 @@
 
 <api-answers
   question-version="1.27"
-  module="junit"
   author="jglick@netbeans.org, mpetras@netbeans.org"
 >
 

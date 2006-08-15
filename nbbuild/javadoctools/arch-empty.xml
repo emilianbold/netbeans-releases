@@ -4,7 +4,6 @@
 ]>
 <api-answers
   question-version="1.23"
-  module="_no module_"
   author="nobody@netbeans.org"
 >
  &api-questions;

@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.24"
-  module="java/j2seplatform"
   author="jglick@netbeans.org"
 >
 

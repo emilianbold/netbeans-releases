@@ -63,6 +63,12 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
 
         assertTrue ("File is generated", answers.exists ());
+        
+        String content = PublicPackagesInProjectizedXMLTest.readFile(answers);
+        
+        if (content.indexOf("module=") >= 0) {
+            fail("No mention of a module should be there anymore:\n" + content);
+        }
     }
 
     public void testGenerateArchFileWhenEmptyWithDefaultAnswerForNbDepsQuestion() throws Exception {
@@ -811,14 +817,21 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
             "<target name=\"all\" >" +
+            "  <property name='javadoc.title' value='My Lovely Profiler'/>" +
             "  <arch answers=\"" + answers + "\" output='" + output + "' />" +
             "</target>" +
             "</project>"
 
         );
-		PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
 
         assertTrue ("File is generated", output.exists ());
+        
+        String content = PublicPackagesInProjectizedXMLTest.readFile(output);
+        
+        if (content.indexOf("My Lovely Profiler - NetBeans Architecture Questions") == -1) {
+            fail(content);
+        }
     }
 
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {

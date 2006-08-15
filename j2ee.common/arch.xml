@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.26"
-  module="j2ee/utilities"
   author="pbuzek@netbeans.org"
 >
 

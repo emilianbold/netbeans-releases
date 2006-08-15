@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.23"
-  module="Debugger JPDA - impl"
   author="jjancura@netbeans.org"
 >
 

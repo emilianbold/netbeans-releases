@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.7"
-  module="Httpserver"
   author="rkubacki@netbeans.org"
 >
 

@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.27"
-  module="projects/projectui"
   author="jglick@netbeans.org,mkubec@netbeans.org"
 >
 

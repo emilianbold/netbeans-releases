@@ -58,6 +58,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Ant;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -459,6 +460,25 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             qSource = new DOMSource(q);
             qSource.setSystemId(questionsFile.toURI().toString());
         }
+
+        if (this.getProject().getProperty("javadoc.title") != null) {
+            // verify we have the api-answers@module and possibly add it
+            NodeList deps = q.getElementsByTagName("api-answers");
+            if (deps.getLength() != 1) {
+                throw new BuildException("Strange number of api-answers elements: " + deps.getLength());
+            }
+            
+            Node module = deps.item(0).getAttributes().getNamedItem("module");
+            if (module == null) {
+                Attr attr = q.createAttribute("module");
+                deps.item(0).getAttributes().setNamedItem(attr);
+                attr.setValue(this.getProject().getProperty("javadoc.title"));
+            }
+
+            qSource = new DOMSource(q);
+            qSource.setSystemId(questionsFile.toURI().toString());
+        }            
+        
         
         // apply the transform operation
         try {
@@ -624,7 +644,6 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         w.write ("\n");
         w.write ("<api-answers\n");
         w.write ("  question-version=\""); w.write (versionOfQuestions); w.write ("\"\n");
-        w.write ("  module=\"name of your module\"\n");
         w.write ("  author=\"yourname@netbeans.org\"\n");
         w.write (">\n\n");
         w.write ("  &api-questions;\n");        
