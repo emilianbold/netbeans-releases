@@ -23,12 +23,10 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- Contribute actions to main menu -->
   <folder name="Menu">
-	<folder name="View">
+	<folder name="Help">
+            <attr name="Tutorials/org-netbeans-modules-javadoc-search-IndexOverviewAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance"/>
-            <attr name="oldRootsEnd.txt/org-netbeans-modules-javadoc-search-IndexOverviewAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-modules-javadoc-search-IndexOverviewAction.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-form-actions-FormEditorAction.instance/org-netbeans-modules-javadoc-search-IndexOverviewAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/Separator2.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/org-netbeans-modules-j2ee-blueprints-ShowBluePrintsAction.instance" boolvalue="true"/>
         </folder>
       <folder name="Tools">
           <file name="javadoc-Search-Doc-Action.instance">
