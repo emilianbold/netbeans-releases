@@ -24,7 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.installer.utils.exceptions.UnrecognizedPlatformException;
+import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 
 /**
  *
@@ -123,17 +123,17 @@ public abstract class SystemUtils {
         MACOS_X_PPC("macos-x-ppc", "MacOS X (PPC)"),
         MACOS_X_X86("macos-x-x86", "MacOS X (Intel)");
         
-        public static Platform parsePlatform(String name) throws UnrecognizedPlatformException {
+        public static Platform parsePlatform(String name) throws UnrecognizedObjectException {
             for (Platform platform: Platform.values()) {
                 if (platform.name.equals(name)) {
                     return platform;
                 }
             }
             
-            throw new UnrecognizedPlatformException("Platform " + name + " is not recognized.");
+            throw new UnrecognizedObjectException("Platform " + name + " is not recognized.");
         }
         
-        public static List<Platform> parsePlatforms(String platformsString) throws UnrecognizedPlatformException {
+        public static List<Platform> parsePlatforms(String platformsString) throws UnrecognizedObjectException {
             if (platformsString.equals("all")) {
                 return Arrays.asList(Platform.values());
             } else {
