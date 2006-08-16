@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.uihandler;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -89,9 +91,17 @@ public class Installer extends ModuleInstall {
             a.deactivated(log);
         }
         
+        URL url;
+        try {
+            url = new URL(NbBundle.getMessage(SubmitPanel.class, "WELCOME_URL"));
+        } catch (MalformedURLException ex) {
+            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+            url = null;
+        }
+        
         List<LogRecord> recs = getLogs();
 
-        SubmitPanel panel = new SubmitPanel();
+        SubmitPanel panel = new SubmitPanel(url);
         
         AbstractNode root = new AbstractNode(new Children.Array());
         root.setName("root"); // NOI18N
