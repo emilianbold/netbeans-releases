@@ -82,7 +82,8 @@ public class ActivatedDeativatedTest extends NbTestCase {
     }
     public static final class DD extends DialogDisplayer {
         public Object notify(NotifyDescriptor descriptor) {
-            return NotifyDescriptor.OK_OPTION;
+            // last options allows to close usually
+            return descriptor.getOptions()[descriptor.getOptions().length - 1];
         }
 
         public Dialog createDialog(DialogDescriptor descriptor) {
