@@ -27,6 +27,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.palette.PaletteSwitch;
 import org.netbeans.modules.palette.Utils;
 import org.netbeans.modules.palette.ui.PalettePanel;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -122,6 +123,10 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
         } else {
             PalettePanel.getDefault().setContent( null, null, null );
         }
+    }
+
+    public HelpCtx getHelpCtx() {
+        return PalettePanel.getDefault().getHelpCtx();
     }
     
     final static class ResolvableHelper implements java.io.Serializable {

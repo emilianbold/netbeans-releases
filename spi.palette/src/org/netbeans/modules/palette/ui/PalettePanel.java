@@ -27,6 +27,8 @@ import org.netbeans.modules.palette.ModelListener;
 import org.netbeans.modules.palette.Settings;
 import org.netbeans.modules.palette.Utils;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -373,6 +375,26 @@ public class PalettePanel extends JPanel implements Scrollable {
 
     public int getScrollableUnitIncrement (Rectangle visibleRect, int orientation, int direction) {
         return 20;
+    }
+    
+    public HelpCtx getHelpCtx() {
+        Node selNode = null;
+        if( null != getModel() ) {
+            Item selItem = getModel().getSelectedItem();
+            if( null != selItem ) {
+                selNode = (Node) selItem.getLookup().lookup( Node.class );
+            } else {
+                selNode = (Node)getModel().getRoot().lookup( Node.class );
+            }
+        }
+        HelpCtx ctx = null;
+        if( null != selNode ) {
+            ctx = selNode.getHelpCtx();
+        }
+        if( null == ctx ) {
+            ctx = new HelpCtx("CommonPalette"); // NOI18N
+        }
+        return ctx;
     }
     
     private ModelListener getModelListener() {
