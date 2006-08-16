@@ -1544,7 +1544,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             layoutParams[1] = createExpressionForProperty(
                 codeStructure,
                 Integer.TYPE,
-                axis >= 0 ? propertyValues.get(axis) : new Integer(javax.swing.BoxLayout.X_AXIS),
+                axis >= 0 ? propertyValues.get(axis) : new Integer(javax.swing.BoxLayout.LINE_AXIS),
                 (PropertyEditor)
                     (axis >= 0 ? propertyEditors.get(axis) : null));
 

@@ -38,10 +38,10 @@ import org.netbeans.modules.form.FormProperty;
  *
  * @author Tran Duc Trung, Tomas Pavek
  */
-
+// Expects ltr orientation of the designer
 public class BoxLayoutSupport extends AbstractLayoutSupport
 {
-    private int axis = BoxLayout.X_AXIS;
+    private int axis = BoxLayout.LINE_AXIS;
 
     private FormProperty[] properties;
 
@@ -103,7 +103,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
                 continue;
             }
             Rectangle b = components[i].getBounds();
-            if (axis == BoxLayout.X_AXIS) {
+            if ((axis == BoxLayout.X_AXIS) || (axis == BoxLayout.LINE_AXIS)) {
                 if (posInCont.x < b.x + b.width / 2) {
                     assistantParams += i;
                     return i;
@@ -161,7 +161,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
 
         if ((components.length == 0) || ((components.length == 1) && (components[0] == component))) {
             Insets ins = containerDelegate.getInsets();
-            rect = axis == BoxLayout.X_AXIS ?
+            rect = (axis == BoxLayout.X_AXIS || axis == BoxLayout.LINE_AXIS) ?
                    new Rectangle(ins.left,
                                  ins.top + (containerDelegate.getHeight()
                                      - ins.top - ins.bottom - 20) / 2,
@@ -177,13 +177,13 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
                 comp = components[components.length - 2];
             }
             Rectangle b = comp.getBounds();
-            rect = axis == BoxLayout.X_AXIS ?
+            rect = (axis == BoxLayout.X_AXIS || axis == BoxLayout.LINE_AXIS) ?
                    new Rectangle(b.x + b.width - 10, b.y, 20, b.height) :
                    new Rectangle(b.x, b.y + b.height - 10, b.width, 20);
         }
         else {
             Rectangle b = components[newIndex].getBounds();
-            rect = axis == BoxLayout.X_AXIS ?
+            rect = (axis == BoxLayout.X_AXIS || axis == BoxLayout.LINE_AXIS) ?
                    new Rectangle(b.x - 10, b.y, 20, b.height) :
                    new Rectangle(b.x, b.y - 10, b.width, 20);
         }
@@ -226,7 +226,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      * @return new instance of BoxLayout
      */
     protected LayoutManager createDefaultLayoutInstance() {
-        return new BoxLayout(new JPanel(), BoxLayout.X_AXIS);
+        return new BoxLayout(new JPanel(), BoxLayout.LINE_AXIS);
     }
 
     /** Cloning method - creates a clone of the reference LayoutManager
@@ -309,7 +309,8 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
 
                 public void setTargetValue(Object value) {
                     int ax = ((Integer)value).intValue();
-                    if (ax == BoxLayout.X_AXIS || ax == BoxLayout.Y_AXIS) {
+                    if (ax == BoxLayout.X_AXIS || ax == BoxLayout.Y_AXIS
+                            || ax == BoxLayout.LINE_AXIS || ax == BoxLayout.PAGE_AXIS) {
                         axis = ax;
                     }
                 }
@@ -319,7 +320,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
                 }
 
                 public Object getDefaultValue() {
-                    return new Integer(BoxLayout.X_AXIS);
+                    return new Integer(BoxLayout.LINE_AXIS);
                 }
 
                 public PropertyEditor getExpliciteEditor() {
@@ -364,14 +365,20 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      */
     public static final class BoxAxisEditor extends PropertyEditorSupport {
         private final String[] tags = {
+            getBundle().getString("VALUE_axis_line"), // NOI18N
+            getBundle().getString("VALUE_axis_page"), // NOI18N
             getBundle().getString("VALUE_axis_x"), // NOI18N
             getBundle().getString("VALUE_axis_y")  // NOI18N
         };
         private final Integer[] values = {
+            new Integer(BoxLayout.LINE_AXIS),
+            new Integer(BoxLayout.PAGE_AXIS),
             new Integer(BoxLayout.X_AXIS),
             new Integer(BoxLayout.Y_AXIS)
         };
         private final String[] javaInitStrings = {
+            "javax.swing.BoxLayout.LINE_AXIS", // NOI18N
+            "javax.swing.BoxLayout.PAGE_AXIS", // NOI18N
             "javax.swing.BoxLayout.X_AXIS", // NOI18N
             "javax.swing.BoxLayout.Y_AXIS"  // NOI18N
         };
@@ -382,14 +389,19 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
 
         public String getAsText() {
             Object value = getValue();
-            if (values[0].equals(value)) return tags[0];
-            if (values[1].equals(value)) return tags[1];
+            for (int i=0; i<values.length; i++) {
+                if (values[i].equals(value)) return tags[i];
+            }
             return null;
         }
 
         public void setAsText(String str) {
-            if (tags[0].equals(str)) setValue(values[0]);
-            else if (tags[1].equals(str)) setValue(values[1]);
+            for (int i=0; i<values.length; i++) {
+                if (tags[i].equals(str)) {
+                    setValue(values[i]);
+                    break;
+                }
+            }
         }
 
         public String getJavaInitializationString() {
