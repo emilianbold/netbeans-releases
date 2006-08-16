@@ -482,11 +482,16 @@ public class WSStartServer extends StartServer {
                         "TXT_ioWindowTitle")).start();                 // NOI18N
                 
                 // show the server's log
+                String title = dm.getInstanceProperties(). // NOI18N
+                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + " ["+
+                        dm.getInstanceProperties().
+                        getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
+                        dm.getInstanceProperties().
+                        getProperty(WSDeploymentFactory.PORT_ATTR)+ "]";
+                
                 new WSTailer(new File(dm.getLogFilePath()),
                         NbBundle.getMessage(ShowServerLogAction.class,
-                        "LBL_LogWindowTitle", dm.getInstanceProperties(). // NOI18N
-                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR))).
-                        start();
+                        "LBL_LogWindowTitle", title)).start();
                 
                 // wait till the timeout happens, or if the server starts before
                 // send the completed event to j2eeserver
@@ -625,10 +630,15 @@ public class WSStartServer extends StartServer {
                         "TXT_ioWindowTitle")).start();                 // NOI18N
                 
                 // show the server's log
+                String title = dm.getInstanceProperties(). // NOI18N
+                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + " ["+
+                        dm.getInstanceProperties().
+                        getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
+                        dm.getInstanceProperties().
+                        getProperty(WSDeploymentFactory.PORT_ATTR)+ "]";
                 new WSTailer(new File(dm.getLogFilePath()),
                         NbBundle.getMessage(ShowServerLogAction.class,
-                        "LBL_LogWindowTitle", dm.getInstanceProperties(). // NOI18N
-                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR))).
+                        "LBL_LogWindowTitle", title)).
                         start();
                 
                 // wait till the timeout happens, or if the server starts before
@@ -756,11 +766,15 @@ public class WSStartServer extends StartServer {
                         "TXT_ioWindowTitle")).start();                 // NOI18N
                 
                 // show the server's log
+                  String title = dm.getInstanceProperties(). // NOI18N
+                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + " ["+
+                        dm.getInstanceProperties().
+                        getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
+                        dm.getInstanceProperties().
+                        getProperty(WSDeploymentFactory.PORT_ATTR)+ "]";
                 new WSTailer(new File(dm.getLogFilePath()),
                         NbBundle.getMessage(ShowServerLogAction.class,
-                        "LBL_LogWindowTitle", dm.getInstanceProperties(). // NOI18N
-                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR))).
-                        start();
+                        "LBL_LogWindowTitle", title)).start();
                 
                 // wait till the timeout happens, or if the server starts before
                 // send the completed event to j2eeserver

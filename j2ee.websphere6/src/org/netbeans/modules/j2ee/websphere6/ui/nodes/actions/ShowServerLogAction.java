@@ -48,15 +48,20 @@ public class ShowServerLogAction extends CookieAction {
                     
                     WSDebug.notify(file.getAbsolutePath());
                     
-                    String serverName = 
-                            ((WSManagerNode) node).getDeploymentManager().
-                            getInstanceProperties().
-                            getProperty(WSDeploymentFactory.SERVER_NAME_ATTR);
                     
+                      WSDeploymentManager dm = ((WSManagerNode) node).
+                              getDeploymentManager();
+                      String title = dm.getInstanceProperties(). // NOI18N
+                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + " ["+
+                        dm.getInstanceProperties().
+                        getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
+                        dm.getInstanceProperties().
+                        getProperty(WSDeploymentFactory.PORT_ATTR)+ "]";
+                      
                     new WSTailer(file, 
                             NbBundle.getMessage(
                             ShowServerLogAction.class, 
-                            "LBL_LogWindowTitle", serverName)).start(); // NOI18N
+                            "LBL_LogWindowTitle", title)).start(); // NOI18N
                 } catch (Exception e){
                     return;//nothing much to do
                 }
