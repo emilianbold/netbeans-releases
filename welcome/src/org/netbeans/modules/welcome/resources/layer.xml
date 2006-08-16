@@ -56,21 +56,21 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="WelcomePage">
         <folder name="GettingStartedLinks">
 
-            <file name="quickstart.url" url="quickstart.url">
+            <file name="quickstart.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
             </file>
 
-            <file name="whatsnew.url" url="whatsnew.url">
+            <file name="whatsnew.url" url="nbresloc:/org/netbeans/modules/welcome/resources/whatsnew.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
             </file>
 
             <folder name="AddOns">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
 
-                <file name="profiler.url" url="profiler.url">
+                <file name="profiler.url" url="nbresloc:/org/netbeans/modules/welcome/resources/profiler.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 </file>
-                <file name="mobility.url" url="mobility.url">
+                <file name="mobility.url" url="nbresloc:/org/netbeans/modules/welcome/resources/mobility.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 </file>
 
@@ -81,13 +81,13 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Resources">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
 
-                <file name="mailinglists.url" url="mailinglists.url">
+                <file name="mailinglists.url" url="nbresloc:/org/netbeans/modules/welcome/resources/mailinglists.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 </file>
-                <file name="docsandsupport.url" url="docsandsupport.url">
+                <file name="docsandsupport.url" url="nbresloc:/org/netbeans/modules/welcome/resources/docsandsupport.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 </file>
-                <file name="platform.url" url="platform.url">
+                <file name="platform.url" url="nbresloc:/org/netbeans/modules/welcome/resources/platform.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 </file>
 
