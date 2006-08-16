@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.utils;
@@ -38,34 +38,42 @@ import org.w3c.dom.Document;
  *
  * @author Dmitry Lipin
  */
-public class XMLUtils {
-    private static final XMLUtils xmlUtils = new XMLUtils();
-    private static final String ERROR_SAVING_FILE = "Could not save XML to file ";
+public abstract class XMLUtils {
+    ////////////////////////////////////////////////////////////////////////////
+    // Static
+    private static XMLUtils instance;
     
-    /** Creates a new instance of XMLUtils */
-    private XMLUtils() {
+    public static synchronized XMLUtils getInstance() {
+        if (instance == null) {
+            instance = new GenericXMLUtils();
+        }
+        
+        return instance;
     }
     
-    public static XMLUtils getInstance() {
-        return xmlUtils;
-    }
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance
+    public abstract void saveXMLDocument(Document doc, File file,File xsltTransformFile) throws TransformerConfigurationException, TransformerException, IOException;
     
-    public void saveXMLDocument(Document doc, File file,File xsltTransformFile)
-    throws TransformerConfigurationException, TransformerException, IOException {
-        FileOutputStream outputStream = null;
-        try {
-            Source xsltSource = new StreamSource(xsltTransformFile);
-            Source domSource = new DOMSource(doc);
-            outputStream = new FileOutputStream(file);
-            Result streamResult = new StreamResult(outputStream);
-            
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer(xsltSource);
-            
-            transformer.transform(domSource, streamResult);
-        } finally {
-            if(outputStream!=null) {
-                outputStream.close();
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private static class GenericXMLUtils extends XMLUtils {
+        public void saveXMLDocument(Document doc, File file,File xsltTransformFile) throws TransformerConfigurationException, TransformerException, IOException {
+            FileOutputStream outputStream = null;
+            try {
+                Source xsltSource = new StreamSource(xsltTransformFile);
+                Source domSource = new DOMSource(doc);
+                outputStream = new FileOutputStream(file);
+                Result streamResult = new StreamResult(outputStream);
+                
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                Transformer transformer = transformerFactory.newTransformer(xsltSource);
+                
+                transformer.transform(domSource, streamResult);
+            } finally {
+                if(outputStream!=null) {
+                    outputStream.close();
+                }
             }
         }
     }

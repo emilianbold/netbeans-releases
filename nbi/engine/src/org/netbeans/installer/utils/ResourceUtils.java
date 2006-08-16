@@ -34,16 +34,20 @@ import java.util.ResourceBundle;
  * @author Kirill Sorokin
  */
 public abstract class ResourceUtils {
+    ////////////////////////////////////////////////////////////////////////////
+    // Static
     private static ResourceUtils instance;
     
     public static synchronized ResourceUtils getInstance() {
         if (instance == null) {
-            instance = new PureJavaResourceUtils();
+            instance = new GenericResourceUtils();
         }
         
         return instance;
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance
     public abstract ResourceBundle loadBundle(URL url) throws IOException;
     
     public abstract ResourceBundle loadBundle(File file) throws IOException;
@@ -68,7 +72,9 @@ public abstract class ResourceUtils {
     
     public abstract String getString(Class clazz, String key, Object... arguments);
     
-    private static class PureJavaResourceUtils extends ResourceUtils {
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private static class GenericResourceUtils extends ResourceUtils {
         private Map<Object, ResourceBundle> loadedBundles = new HashMap<Object, ResourceBundle>();
         
         public ResourceBundle loadBundle(URL url) throws IOException {
@@ -118,19 +124,19 @@ public abstract class ResourceUtils {
         }
         
         public String getString(URL url, String key, Object... arguments) throws IOException {
-            return StringUtils.formatMessage(getString(url, key), arguments);
+            return StringUtils.getInstance().formatMessage(getString(url, key), arguments);
         }
         
         public String getString(File file, String key, Object... arguments) throws IOException {
-            return StringUtils.formatMessage(getString(file, key), arguments);
+            return StringUtils.getInstance().formatMessage(getString(file, key), arguments);
         }
         
         public String getString(String baseName, String key, Object... arguments) {
-            return StringUtils.formatMessage(getString(baseName, key), arguments);
+            return StringUtils.getInstance().formatMessage(getString(baseName, key), arguments);
         }
         
         public String getString(Class clazz, String key, Object... arguments) {
-            return StringUtils.formatMessage(getString(clazz, key), arguments);
+            return StringUtils.getInstance().formatMessage(getString(clazz, key), arguments);
         }
     }
 }

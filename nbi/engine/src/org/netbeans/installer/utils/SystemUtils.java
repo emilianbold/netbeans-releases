@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.utils;
@@ -30,62 +30,89 @@ import org.netbeans.installer.utils.exceptions.UnrecognizedPlatformException;
  *
  * @author Kirill Sorokin
  */
-public class SystemUtils {
+public abstract class SystemUtils {
+    ////////////////////////////////////////////////////////////////////////////
+    // Static
+    private static SystemUtils instance;
     
-    public static String parseString(String string) {
-        String parsedString = string;
+    public static synchronized SystemUtils getInstance() {
+        if (instance == null) {
+            instance = new GenericSystemUtils();
+        }
         
-        parsedString = parsedString.replace("${install}", getDefaultApplicationsLocation());
-        
-        return parsedString;
+        return instance;
     }
     
-    public static String parsePath(String path) {
-        String parsedPath = path;
-        
-        parsedPath = parseString(parsedPath);
-        
-        parsedPath = parsedPath.replace('\\', File.separatorChar);
-        parsedPath = parsedPath.replace('/', File.separatorChar);
-        
-        return parsedPath;
-    }
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance
+    public abstract String parseString(String string);
     
-    public static String getDefaultApplicationsLocation() {
-        switch (getCurrentPlatform()) {
-            case WINDOWS:
-                return System.getenv("ProgramFiles");
-            default:
-                return System.getProperty("user.home");
-        }
-    }
+    public abstract String parsePath(String path);
     
-    public static Platform getCurrentPlatform() {
-        if (System.getProperty("os.name").contains("Windows")) {
-            return Platform.WINDOWS;
-        }
-        if (System.getProperty("os.name").contains("Linux")) {
-            return Platform.LINUX;
-        }
-        if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("ppc")) {
-            return Platform.MACOS_X_PPC;
-        }
-        if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("i386")) {
-            return Platform.MACOS_X_X86;
-        }
-        if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("sparc")) {
-            return Platform.SOLARIS_SPARC;
-        }
-        if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("x86")) {
-            return Platform.SOLARIS_X86;
+    public abstract String getDefaultApplicationsLocation();
+    
+    public abstract Platform getCurrentPlatform();
+    
+    public abstract boolean isMacOS();
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private static class GenericSystemUtils extends SystemUtils {
+        public String parseString(String string) {
+            String parsedString = string;
+            
+            parsedString = parsedString.replace("${install}", getDefaultApplicationsLocation());
+            
+            return parsedString;
         }
         
-        return null;
-    }
-    
-    public static boolean isMacOS() {
-        return (getCurrentPlatform() == Platform.MACOS_X_X86) || 
-                (getCurrentPlatform() == Platform.MACOS_X_PPC);
+        public String parsePath(String path) {
+            String parsedPath = path;
+            
+            parsedPath = parseString(parsedPath);
+            
+            parsedPath = parsedPath.replace('\\', File.separatorChar);
+            parsedPath = parsedPath.replace('/', File.separatorChar);
+            
+            return parsedPath;
+        }
+        
+        public String getDefaultApplicationsLocation() {
+            switch (getCurrentPlatform()) {
+                case WINDOWS:
+                    return System.getenv("ProgramFiles");
+                default:
+                    return System.getProperty("user.home");
+            }
+        }
+        
+        public Platform getCurrentPlatform() {
+            if (System.getProperty("os.name").contains("Windows")) {
+                return Platform.WINDOWS;
+            }
+            if (System.getProperty("os.name").contains("Linux")) {
+                return Platform.LINUX;
+            }
+            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("ppc")) {
+                return Platform.MACOS_X_PPC;
+            }
+            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("i386")) {
+                return Platform.MACOS_X_X86;
+            }
+            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("sparc")) {
+                return Platform.SOLARIS_SPARC;
+            }
+            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("x86")) {
+                return Platform.SOLARIS_X86;
+            }
+            
+            return null;
+        }
+        
+        public boolean isMacOS() {
+            return (getCurrentPlatform() == Platform.MACOS_X_X86) ||
+                    (getCurrentPlatform() == Platform.MACOS_X_PPC);
+        }
     }
     
     public static enum Platform {

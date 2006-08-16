@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.utils;
@@ -39,7 +39,21 @@ import java.security.MessageDigest;
  *
  * @author ks152834
  */
-public class FileUtils {
+public abstract class FileUtils {
+    ////////////////////////////////////////////////////////////////////////////
+    // Static
+    private static FileUtils instance;
+    
+    public static synchronized FileUtils getInstance() {
+        if (instance == null) {
+            instance = new GenericFileUtils();
+        }
+        
+        return instance;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance
     /**
      * Reads a file into a string.
      *
@@ -47,19 +61,7 @@ public class FileUtils {
      * @throws java.io.IOException if an I/O error occurs
      * @return the contents of the file
      */
-    public static String readFile(File file) throws IOException {
-        String contents = "";
-        
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new FileInputStream(file)));
-        char[] buffer = new char[1024];
-        while (reader.ready()) {
-            contents += new String(buffer, 0, reader.read(buffer));
-        }
-        reader.close();
-        
-        return contents;
-    }
+    public abstract String readFile(File file) throws IOException;
     
     /**
      * Writes the given contents to the file, overwriting its current contents.
@@ -68,9 +70,7 @@ public class FileUtils {
      * @param string the string to write
      * @throws java.io.IOException if an I/O error occurs
      */
-    public static void writeFile(File file, String string) throws IOException {
-        writeFile(file, string, false);
-    }
+    public abstract void writeFile(File file, String string) throws IOException;
     
     /**
      * Writes the given contents to the file, wither overwriting or appending to
@@ -81,74 +81,15 @@ public class FileUtils {
      * @param append whether to overwrite the current contents or append to them
      * @throws java.io.IOException if an I/O error occurs
      */
-    public static void writeFile(File file, String string, boolean append) throws IOException {
-        if (!file.exists()) {
-            if (!file.getParentFile().exists()) {
-                file.getParentFile().mkdirs();
-            }
-            file.createNewFile();
-        }
-        
-        String newContents = "";
-        
-        if (append) {
-            newContents += readFile(file);
-        }
-        newContents += string;
-        
-        FileOutputStream outputStream = new FileOutputStream(file);
-        
-        outputStream.write(newContents.getBytes());
-        
-        outputStream.close();
-    }
+    public abstract void writeFile(File file, String string, boolean append) throws IOException;
     
-    public static String[] readStringList(File file) throws IOException {
-        return readStringList(file.toURL());
-    }
+    public abstract String[] readStringList(File file) throws IOException;
     
-    public static String[] readStringList(URL url) throws IOException {
-        if (url == null) {
-            throw new IllegalArgumentException("The supplied URL cannot be null");
-        }
-        
-        LogManager.getInstance().log("    reading string list from URL: " + url);
-        
-        BufferedReader reader = null;
-        Vector<String> lines  = new Vector<String>();
-        
-        try {
-            reader = new BufferedReader(new InputStreamReader(url.openStream()));
-            
-            while (reader.ready()) {
-                String line = reader.readLine();
-            }
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
-        }
-        
-        return lines.toArray(new String[lines.size()]);
-    }
+    public abstract String[] readStringList(URL url) throws IOException;
     
-    public static Date getLastModified(String fname) {
-        return (fname==null) ? null : getLastModified(new File(fname));
-    }
+    public abstract Date getLastModified(String fname);
     
-    public static Date getLastModified(File f) {
-        if(!f.exists()) {
-            return null;
-        }
-        Date date=null;
-        try {
-            long modif = f.lastModified();
-            date = new Date(modif);
-        } catch (SecurityException ex) {
-            ex=null;
-        }
-        return date;
-    }
+    public abstract Date getLastModified(File f);
     
     /**
      * Returns size of <b>file</b>.
@@ -162,109 +103,33 @@ public class FileUtils {
      *         <b>file</b> doesn`t exist<br><br>
      *  size of file, otherwise
      */
-    public static long getFileSize(File file) {
-        if(file==null || file.isDirectory() || !file.exists()) {
-            return -1;
-        }
-        try {
-            return file.length();
-        } catch(SecurityException ex) {
-            return -1;
-        }
-    }
+    public abstract long getFileSize(File file);
     
-    public static long getFileSize(String filename) {
-        return (filename==null) ? -1 : getFileSize(new File(filename));
-    }
+    public abstract long getFileSize(String filename);
     
-    public static long getFreeSpace(File file) {
-        return -1;
-    }
+    public abstract long getFreeSpace(File file);
     
-    //get file CRC32 checksum
-    public static long getFileCRC32(File file) throws IOException {
-        CRC32 crc = new CRC32();
-        
-        InputStream input = null;
-        try {
-            input = new FileInputStream(file);
-            
-            for (int i = input.read(); i != -1; i = input.read()) {
-                crc.update((byte) i);
-            }
-        } finally {
-            if (input != null) {
-                input.close();
-            }
-        }
-        
-        return crc.getValue();
-    }
+    public abstract long getFileCRC32(File file) throws IOException;
     
-    public static String getFileCRC32String(File file) throws IOException {
-        return Long.toString(getFileCRC32(file));
-    }
+    public abstract String getFileCRC32String(File file) throws IOException;
     
-    public static byte[] getFileDigest(File file, String algorithm) throws IOException, NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance(algorithm);
-        md.reset();
-        
-        InputStream input = null;
-        try {
-            input = new FileInputStream(file);
-            
-            byte[] buffer = new byte[10240];
-            
-            while (input.available() > 0) {
-                md.update(buffer, 0, input.read(buffer));
-            }
-        } finally {
-            if (input != null) {
-                input.close();
-            }
-        }
-        
-        return md.digest();
-    }
+    public abstract byte[] getFileDigest(File file, String algorithm) throws IOException, NoSuchAlgorithmException;
     
-    public static byte[] getFileMD5(File file) throws IOException, NoSuchAlgorithmException {
-        return getFileDigest(file, "MD5");
-    }
+    public abstract byte[] getFileMD5(File file) throws IOException, NoSuchAlgorithmException;
     
-    public static String getFileMD5String(File file) throws IOException, NoSuchAlgorithmException {
-        return StringUtils.asHexString(getFileMD5(file));
-    }
+    public abstract String getFileMD5String(File file) throws IOException, NoSuchAlgorithmException;
     
     /**
      * Load strings from file
      */
-    public static Vector <String> getStrings(File file) throws IOException {
-        Vector <String> vector = new Vector <String> ();
-        try {
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(
-                    new FileInputStream(file)));
-            
-            String string;
-            while ((string = reader.readLine()) != null) {
-                vector.add(string);
-            }
-            reader.close();
-        } catch (IOException ex) {
-            throw ex;
-        }
-        
-        return vector;
-    }
+    public abstract Vector <String> getStrings(File file) throws IOException;
     
     /**
      * Deteles a file.
      *
      * @param file The file to delete
      */
-    public static void deleteFile(File file) {
-        deleteFile(file, true);
-    }
+    public abstract void deleteFile(File file);
     
     /**
      * Deletes a file taking into account that it can be a symlink.
@@ -272,31 +137,7 @@ public class FileUtils {
      * @param file The file to delete
      * @param followLinks to follow symlinks or to just delete the link
      */
-    public static void deleteFile(File file, boolean followLinks) {
-        String type = "";
-        if (file.isDirectory()) {
-            if (followLinks) {
-                File[] children = file.listFiles();
-                
-                for (File child: children) {
-                    deleteFile(child);
-                }
-            }
-            
-            type = "directory"; //NOI18N
-        } else {
-            type = "file"; //NOI18N
-        }
-        
-        //LogUtils.log("    deleting " + type + ": " + file); //NOI18N
-        
-        if (!file.exists()) {
-            //LogUtils.log("    ... " + type + " does not exist"); //NOI18N
-        }
-        
-        file.delete();
-        file.deleteOnExit();
-    }
+    public abstract void deleteFile(File file, boolean followLinks);
     
     /**
      * Deletes a file if its name matches a given mask. If the given file is a
@@ -305,19 +146,7 @@ public class FileUtils {
      * @param file The file to delete
      * @param mask The mask for the filename
      */
-    public static void deleteFile(File file, String mask) {
-        if (file.isDirectory()) {
-            File[] children = file.listFiles(new MaskFileFilter(mask));
-            
-            for (File child: children) {
-                deleteFile(child, mask);
-            }
-        } else {
-            if (file.getName().matches(mask)) {
-                deleteFile(file);
-            }
-        }
-    }
+    public abstract void deleteFile(File file, String mask);
     
     /**
      *  Write strings list to the file
@@ -325,23 +154,7 @@ public class FileUtils {
      *   @param file File to be saved in
      *   @param append If true then append string list to the end of file
      */
-    public static void writeList(Vector stringList,File file,boolean append) {
-        if(stringList == null) {
-            return;
-        }
-        //save unzipped and unpacked file list to the file
-        try {
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(file,append)));
-            for(Object s: stringList.toArray()) {
-                writer.write((String) s);
-                writer.newLine();
-            }
-            writer.close();
-        } catch (IOException ex) {
-            LogManager.getInstance().log("Can`t write string list to " + file); //NOI18N
-        }
-    }
+    public abstract void writeList(Vector stringList, File file, boolean append);
     
     /**
      *  Write strings list to the file
@@ -349,53 +162,273 @@ public class FileUtils {
      *   @param filename File name to be saved in
      *   @param append If true then append string list to the end of file
      */
-    public static void writeList(Vector stringList,String filename,boolean append) {
-        writeList(stringList,new File(filename),append);
-    }
+    public abstract void writeList(Vector stringList, String filename, boolean append);
     
-    public static File createTempFile() throws IOException {
-        File file = File.createTempFile("nbi-", ".tmp");
-        
-        file.deleteOnExit();
-        
-        return file;
-    }
+    public abstract File createTempFile() throws IOException;
     
-    public static File createTempFile(File parent) throws IOException {
-        File file = File.createTempFile("nbi-", ".tmp", parent);
-        
-        file.deleteOnExit();
-        
-        return file;
-    }
+    public abstract File createTempFile(File parent) throws IOException;
     
-    /**
-     * A file filter which accepts all common configuration files.
-     *
-     * @author Kirill Sorokin
-     */
-    private static class ConfigFilesFilter implements FileFilter {
-        /**
-         * {@inheritDoc}
-         */
-        public boolean accept(File file) {
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private static class GenericFileUtils extends FileUtils {
+        public String readFile(File file) throws IOException {
+            String contents = "";
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(file)));
+            char[] buffer = new char[1024];
+            while (reader.ready()) {
+                contents += new String(buffer, 0, reader.read(buffer));
+            }
+            reader.close();
+            
+            return contents;
+        }
+        
+        public void writeFile(File file, String string) throws IOException {
+            writeFile(file, string, false);
+        }
+        
+        public void writeFile(File file, String string, boolean append) throws IOException {
+            if (!file.exists()) {
+                if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                file.createNewFile();
+            }
+            
+            String newContents = "";
+            
+            if (append) {
+                newContents += readFile(file);
+            }
+            newContents += string;
+            
+            FileOutputStream outputStream = new FileOutputStream(file);
+            
+            outputStream.write(newContents.getBytes());
+            
+            outputStream.close();
+        }
+        
+        public String[] readStringList(File file) throws IOException {
+            return readStringList(file.toURL());
+        }
+        
+        public String[] readStringList(URL url) throws IOException {
+            if (url == null) {
+                throw new IllegalArgumentException("The supplied URL cannot be null");
+            }
+            
+            LogManager.getInstance().log("    reading string list from URL: " + url);
+            
+            BufferedReader reader = null;
+            Vector<String> lines  = new Vector<String>();
+            
+            try {
+                reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                
+                while (reader.ready()) {
+                    String line = reader.readLine();
+                }
+            } finally {
+                if (reader != null) {
+                    reader.close();
+                }
+            }
+            
+            return lines.toArray(new String[lines.size()]);
+        }
+        
+        public Date getLastModified(String fname) {
+            return (fname==null) ? null : getLastModified(new File(fname));
+        }
+        
+        public Date getLastModified(File f) {
+            if(!f.exists()) {
+                return null;
+            }
+            Date date=null;
+            try {
+                long modif = f.lastModified();
+                date = new Date(modif);
+            } catch (SecurityException ex) {
+                ex=null;
+            }
+            return date;
+        }
+        
+        public long getFileSize(File file) {
+            if(file==null || file.isDirectory() || !file.exists()) {
+                return -1;
+            }
+            try {
+                return file.length();
+            } catch(SecurityException ex) {
+                return -1;
+            }
+        }
+        
+        public long getFileSize(String filename) {
+            return (filename==null) ? -1 : getFileSize(new File(filename));
+        }
+        
+        public long getFreeSpace(File file) {
+            return -1;
+        }
+        
+        public long getFileCRC32(File file) throws IOException {
+            CRC32 crc = new CRC32();
+            
+            InputStream input = null;
+            try {
+                input = new FileInputStream(file);
+                
+                for (int i = input.read(); i != -1; i = input.read()) {
+                    crc.update((byte) i);
+                }
+            } finally {
+                if (input != null) {
+                    input.close();
+                }
+            }
+            
+            return crc.getValue();
+        }
+        
+        public String getFileCRC32String(File file) throws IOException {
+            return Long.toString(getFileCRC32(file));
+        }
+        
+        public byte[] getFileDigest(File file, String algorithm) throws IOException, NoSuchAlgorithmException {
+            MessageDigest md = MessageDigest.getInstance(algorithm);
+            md.reset();
+            
+            InputStream input = null;
+            try {
+                input = new FileInputStream(file);
+                
+                byte[] buffer = new byte[10240];
+                
+                while (input.available() > 0) {
+                    md.update(buffer, 0, input.read(buffer));
+                }
+            } finally {
+                if (input != null) {
+                    input.close();
+                }
+            }
+            
+            return md.digest();
+        }
+        
+        public byte[] getFileMD5(File file) throws IOException, NoSuchAlgorithmException {
+            return getFileDigest(file, "MD5");
+        }
+        
+        public String getFileMD5String(File file) throws IOException, NoSuchAlgorithmException {
+            return StringUtils.getInstance().asHexString(getFileMD5(file));
+        }
+        
+        public Vector<String> getStrings(File file) throws IOException {
+            Vector <String> vector = new Vector <String> ();
+            try {
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(
+                        new FileInputStream(file)));
+                
+                String string;
+                while ((string = reader.readLine()) != null) {
+                    vector.add(string);
+                }
+                reader.close();
+            } catch (IOException ex) {
+                throw ex;
+            }
+            
+            return vector;
+        }
+        
+        public void deleteFile(File file) {
+            deleteFile(file, true);
+        }
+        
+        public void deleteFile(File file, boolean followLinks) {
+            String type = "";
             if (file.isDirectory()) {
-                return true;
+                if (followLinks) {
+                    File[] children = file.listFiles();
+                    
+                    for (File child: children) {
+                        deleteFile(child);
+                    }
+                }
+                
+                type = "directory"; //NOI18N
+            } else {
+                type = "file"; //NOI18N
             }
             
-            if (file.getName().endsWith(".xml") ||            //NOI18N
-                    file.getName().endsWith(".bat") ||        //NOI18N
-                    file.getName().endsWith(".sh") ||         //NOI18N
-                    file.getName().endsWith(".conf") ||       //NOI18N
-                    file.getName().endsWith(".properties") || //NOI18N
-                    file.getName().endsWith(".html") ||       //NOI18N
-                    file.getName().endsWith(".txt") ||        //NOI18N
-                    (file.getName().indexOf(".") == -1))      //NOI18N
-            {
-                return true;
+            //LogUtils.log("    deleting " + type + ": " + file); //NOI18N
+            
+            if (!file.exists()) {
+                //LogUtils.log("    ... " + type + " does not exist"); //NOI18N
             }
             
-            return false;
+            file.delete();
+            file.deleteOnExit();
+        }
+        
+        public void deleteFile(File file, String mask) {
+            if (file.isDirectory()) {
+                File[] children = file.listFiles(new MaskFileFilter(mask));
+                
+                for (File child: children) {
+                    deleteFile(child, mask);
+                }
+            } else {
+                if (file.getName().matches(mask)) {
+                    deleteFile(file);
+                }
+            }
+        }
+        
+        public void writeList(Vector stringList,File file,boolean append) {
+            if(stringList == null) {
+                return;
+            }
+            //save unzipped and unpacked file list to the file
+            try {
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                        new FileOutputStream(file,append)));
+                for(Object s: stringList.toArray()) {
+                    writer.write((String) s);
+                    writer.newLine();
+                }
+                writer.close();
+            } catch (IOException ex) {
+                LogManager.getInstance().log("Can`t write string list to " + file); //NOI18N
+            }
+        }
+        
+        public void writeList(Vector stringList,String filename,boolean append) {
+            writeList(stringList,new File(filename),append);
+        }
+        
+        public File createTempFile() throws IOException {
+            File file = File.createTempFile("nbi-", ".tmp");
+            
+            file.deleteOnExit();
+            
+            return file;
+        }
+        
+        public File createTempFile(File parent) throws IOException {
+            File file = File.createTempFile("nbi-", ".tmp", parent);
+            
+            file.deleteOnExit();
+            
+            return file;
         }
     }
     
@@ -410,8 +443,8 @@ public class FileUtils {
         /**
          * Creates a new instance of MaskFileFilter.
          */
-        public MaskFileFilter(String maskValue) {
-            this.mask = maskValue;
+        public MaskFileFilter(String mask) {
+            this.mask = mask;
         }
         
         /**
@@ -427,20 +460,6 @@ public class FileUtils {
             }
             
             return false;
-        }
-    }
-    
-    /**
-     * A file filter which accepts directories.
-     *
-     * @author Kirill Sorokin
-     */
-    private static class DirectoryFileFilter implements FileFilter {
-        /**
-         * {@inheritDoc}
-         */
-        public boolean accept(File file) {
-            return (file.isDirectory()) ? true : false;
         }
     }
 }

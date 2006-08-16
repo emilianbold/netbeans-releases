@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.utils;
@@ -28,18 +28,40 @@ import java.util.Date;
  *
  * @author Kirill Sorokin
  */
-public class DateUtils {
-    private static DateFormat timestampFormatter = 
-            new SimpleDateFormat("yyyyMMddHHmmss");
+public abstract class DateUtils {
+    ////////////////////////////////////////////////////////////////////////////
+    // Static
+    private static DateUtils instance;
     
-    private static DateFormat formattedTimestampFormatter = 
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    
-    public static String getTimestamp() {
-        return timestampFormatter.format(new Date());
+    public static synchronized DateUtils getInstance() {
+        if (instance == null) {
+            instance = new GenericDateUtils();
+        }
+        
+        return instance;
     }
     
-    public static String getFormattedTimestamp() {
-        return formattedTimestampFormatter.format(new Date());
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance
+    public abstract String getTimestamp();
+    
+    public abstract String getFormattedTimestamp();
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private static class GenericDateUtils extends DateUtils {
+        private static final DateFormat TIMESTAMP_FORMATTER =
+                new SimpleDateFormat("yyyyMMddHHmmss");
+        
+        private static final DateFormat FORMATTED_TIMESTAMP_FORMATTER =
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        
+        public String getTimestamp() {
+            return TIMESTAMP_FORMATTER.format(new Date());
+        }
+        
+        public String getFormattedTimestamp() {
+            return FORMATTED_TIMESTAMP_FORMATTER.format(new Date());
+        }
     }
 }

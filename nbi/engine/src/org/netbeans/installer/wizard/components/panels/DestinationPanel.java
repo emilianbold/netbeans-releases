@@ -68,7 +68,7 @@ public class DestinationPanel extends DefaultWizardPanel {
             if (defaultLocation == null) {
                 destinationField.setText(DEFAULT_INSTALLATION_LOCATION);
             } else {
-                destinationField.setText(SystemUtils.parsePath(defaultLocation));
+                destinationField.setText(SystemUtils.getInstance().parsePath(defaultLocation));
             }
         } else {
             destinationField.setText(location);
@@ -88,7 +88,7 @@ public class DestinationPanel extends DefaultWizardPanel {
         destinationLabel.setLabelFor(destinationField);
         
         destinationButton = new JButton();
-        if (SystemUtils.isMacOS()) {
+        if (SystemUtils.getInstance().isMacOS()) {
             destinationButton.setOpaque(false);
         }
         destinationButton.addActionListener(new ActionListener() {
