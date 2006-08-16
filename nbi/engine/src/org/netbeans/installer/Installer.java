@@ -15,16 +15,15 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer;
 
+import java.io.File;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.SystemUtils.Platform;
 import org.netbeans.installer.utils.error.ErrorManager;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
@@ -34,7 +33,7 @@ import org.netbeans.installer.wizard.Wizard;
  * The main class of the NBBA installer framework. It represents the installer and
  * provides methods to start the installation/maintenance process as well as to
  * finish/cancel/break the installation.
- * 
+ *
  * @author Kirill Sorokin
  */
 public class Installer {
@@ -43,7 +42,7 @@ public class Installer {
     /**
      * The main method. It gets an instance of <code>Installer</code> and calls the
      * <code>start</code> method, passing in the command line arguments.
-     * 
+     *
      * @param arguments The command line arguments
      * @see #start(String[])
      */
@@ -52,13 +51,21 @@ public class Installer {
     }
     
     /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_LOCAL_DIRECTORY_PATH =
+            System.getProperty("user.home") + File.separator + ".nbi";
+    
+    public static final String LOCAL_DIRECTORY_PATH_PROPERTY =
+            "nbi.local.directory.path";
+    
+    /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Installer instance;
     
     /**
-     * Returns an instance of <code>Installer</code>. If the instance does not 
+     * Returns an instance of <code>Installer</code>. If the instance does not
      * exist - it is created.
-     * 
+     *
      * @return An instance of <code>Installer</code>
      */
     public static synchronized Installer getInstance() {
@@ -67,8 +74,11 @@ public class Installer {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
+    private File localDirectory =
+            new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
+    
     /**
-     * The only private constructor - we need to hide the default one as 
+     * The only private constructor - we need to hide the default one as
      * <code>Installer is a singleton.
      */
     private Installer(String[] arguments) {
@@ -94,12 +104,18 @@ public class Installer {
         
         // save this as the instance
         instance = this;
+        
+        // initialize the local nbi home directory
+        if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
+            localDirectory = new File(System.getProperty(
+                    LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
+        }
     }
     
     /**
      * Starts the installer. This method parses the passed-in command line arguments,
      * initializes the wizard and the components registry.
-     * 
+     *
      * @param arguments The command line arguments
      */
     public void start() {
@@ -115,9 +131,9 @@ public class Installer {
     }
     
     /**
-     * Parses the command line arguments passed to the installer. All unknown 
+     * Parses the command line arguments passed to the installer. All unknown
      * arguments are ignored.
-     * 
+     *
      * @param arguments The command line arguments
      */
     private void parseCommandLineArguments(String[] arguments) {
@@ -125,9 +141,9 @@ public class Installer {
     }
     
     /**
-     * Cancels the installation. This method cancels the changes that were possibly 
+     * Cancels the installation. This method cancels the changes that were possibly
      * made to the components registry and exits with the cancel error code.
-     * 
+     *
      * @see #finish()
      * @see #criticalExit()
      */
@@ -140,9 +156,9 @@ public class Installer {
     }
     
     /**
-     * Finishes the installation. This method finalizes the changes made to the 
+     * Finishes the installation. This method finalizes the changes made to the
      * components registry and exits with a normal error code.
-     * 
+     *
      * @see #cancel()
      * @see #criticalExit()
      */
@@ -159,15 +175,19 @@ public class Installer {
     }
     
     /**
-     * Critically exists. No changes will be made to the components registry - it 
+     * Critically exists. No changes will be made to the components registry - it
      * will remain at the same state it was at the moment this method was called.
-     * 
+     *
      * @see #cancel()
      * @see #finish()
      */
     public void criticalExit() {
         // exit immediately, as the system is apparently in a crashed state
         System.exit(CRITICAL_ERRORCODE);
+    }
+    
+    public File getLocalDirectory() {
+        return localDirectory;
     }
     
     /////////////////////////////////////////////////////////////////////////////////
