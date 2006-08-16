@@ -83,6 +83,13 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 new InstancesModel(
                 tabServerProperties.getServerInstances(
                 targetData.getServerRoot())));
+        for(int i=0;i<localInstancesCombo.getModel().getSize();i++) {
+            if(((Instance)localInstancesCombo.getItemAt(i)).getDomainPath().equals(
+                    targetData.getDomainRoot())) {
+                    localInstancesCombo.setSelectedIndex(i);
+                    break;
+            }
+        }
         
         //localInstancesCombo.addActionListener(tabServerProperties.getInstanceSelectionListener());
         

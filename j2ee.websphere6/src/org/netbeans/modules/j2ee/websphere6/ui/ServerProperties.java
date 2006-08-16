@@ -25,6 +25,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.xml.parsers.*;
+import org.netbeans.modules.j2ee.websphere6.ui.wizard.WSInstantiatingIterator;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.openide.*;
@@ -44,7 +45,7 @@ public class ServerProperties {
     private JTextField portField;
     ServerTypeActionListener serverTypeActionListener=null;
     InstanceSelectionListener instanceSelectionListener=null;
-    
+    WSInstantiatingIterator instantiatingIterator;
     
     /** Creates a new instance of ServerProperties */
     public ServerProperties() {
@@ -73,7 +74,8 @@ public class ServerProperties {
             JComboBox localInstancesCombobox,
             JTextField domainPathField,
             JTextField hostField,
-            JTextField portField) {
+            JTextField portField,
+            WSInstantiatingIterator instantiatingIterator) {
         
         
         if(this.serverTypeCombo==null)      this.serverTypeCombo=serverCombobox;
@@ -81,6 +83,7 @@ public class ServerProperties {
         if(this.domainPathField==null)      this.domainPathField=domainPathField;
         if(this.hostField==null)            this.hostField=hostField;
         if(this.portField==null)            this.portField=portField;
+        if(this.instantiatingIterator==null) this.instantiatingIterator=instantiatingIterator;
     }
     
     /**
@@ -916,6 +919,15 @@ public class ServerProperties {
         hostField.setText(instance.getHost());
         //portField.setValue(new Integer(instance.getPort()));
         portField.setText(instance.getPort());
+        if(instantiatingIterator!=null) {
+            instantiatingIterator.setHost(instance.getHost());
+            instantiatingIterator.setPort(instance.getPort());
+            instantiatingIterator.setAdminPort(instance.getAdminPort());
+            instantiatingIterator.setConfigXmlPath(instance.getConfigXmlPath());
+            instantiatingIterator.setDefaultHostPort(instance.getDefaultHostPort());
+            instantiatingIterator.setDomainRoot(instance.getDomainPath());
+            instantiatingIterator.setServerName(instance.getName());
+        }
     }
     /**
      * A simple listeners that reacts to user's selectin a local instance. It

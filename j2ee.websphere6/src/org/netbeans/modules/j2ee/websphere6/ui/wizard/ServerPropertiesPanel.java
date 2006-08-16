@@ -269,7 +269,8 @@ public class ServerPropertiesPanel extends JPanel
         // set the desired layout
         setLayout(new GridBagLayout());
         
-        wizardServerProperties.setVariables(serverTypeCombo,localInstancesCombo,domainPathField,hostField,portField);
+        wizardServerProperties.setVariables(serverTypeCombo,localInstancesCombo,
+                domainPathField,hostField,portField,instantiatingIterator);
         
         // add server type field label
         serverTypeLabel.setText(NbBundle.getMessage(
