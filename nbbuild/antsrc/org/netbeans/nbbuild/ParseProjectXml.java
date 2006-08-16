@@ -871,7 +871,7 @@ public final class ParseProjectXml extends Task {
 
         private String getTestFolder() {
             ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
-            String sep = File.separator;
+            String sep = "/";
             
             String cluster = entry.getClusterName(); 
             if (cluster == null) {
@@ -897,7 +897,7 @@ public final class ParseProjectXml extends Task {
                     path.append(filePath);
                 }
             }
-            return path.toString();    
+            return path.toString().replace(File.separatorChar,'/');    
         }
 
         String getRuntimeClassPath() {

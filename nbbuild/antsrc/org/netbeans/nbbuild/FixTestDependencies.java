@@ -26,6 +26,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -140,10 +142,12 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
 
                 updateProperties(projectProperties,new String[]{"test.unit.cp","test.unit.cp.extra","test.unit.run.cp","test.unit.run.cp.extra"});
 
-                StringBuffer buffer = new StringBuffer();
-                buffer.append("\n          <test-dependencies>\n");
-                buffer.append("              <test-type>\n");
-                buffer.append("                  <name>unit</name>\n");
+                StringWriter writer = new StringWriter();
+                PrintWriter buffer = new PrintWriter(writer);
+                buffer.println("");
+                buffer.println("          <test-dependencies>");
+                buffer.println("              <test-type>");
+                buffer.println("                  <name>unit</name>");
                 addDependency(buffer,cnb,true,true,false);
 
                 runtimeCNB.removeAll(compileCNB);
@@ -153,7 +157,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                 runtimeCNB.addAll(runtimeTestCNB);
                 addDependencies(buffer,compileCNB,compileTestCNB,true,false);
                 addDependencies(buffer,runtimeCNB,runtimeTestCNB,false,false);
-                buffer.append("              </test-type>\n");
+                buffer.println("              </test-type>");
 
                 // qa functional tests
                 compileCNB.clear();
@@ -161,8 +165,8 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                 compileTestCNB.clear();
                 runtimeTestCNB.clear();
 
-                buffer.append("              <test-type>\n");
-                buffer.append("                  <name>qa-functional</name>\n");
+                buffer.println("              <test-type>");
+                buffer.println("                  <name>qa-functional</name>");
 
                 readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.qa-functional.cp",allCnbs,entries);
                 readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.qa-functional.cp.extra",allCnbs,entries);
@@ -172,8 +176,8 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
 
                 addDependencies(buffer,compileCNB,compileTestCNB,true,false);
                 addDependencies(buffer,runtimeCNB,runtimeTestCNB,false,false);
-                buffer.append("              </test-type>\n");
-                buffer.append("            </test-dependencies>\n");
+                buffer.println("              </test-type>");
+                buffer.println("            </test-dependencies>");
                 updateProperties(projectProperties,new String[]{"test.qa-functional.cp","test.qa-functional.cp","test.qa-functional.runtime.cp","test.qa-functional.runtime.extra"});
 
                 // merge project properties
@@ -185,7 +189,11 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                 moduleDepEnd += MODULE_DEP_END.length();
                 StringBuffer resultXml = new StringBuffer();
                 resultXml.append(xml.substring(0,moduleDepEnd));
-                resultXml.append(buffer);
+                resultXml.append(writer.toString());
+                // windows
+                if (xml.charAt(moduleDepEnd) == '\r') {
+                    moduleDepEnd++;
+                }
                 resultXml.append(xml.substring(moduleDepEnd + 1, xml.length()));
                 if (!testFix) {
                    PrintStream ps = new PrintStream(projectXmlFile);
@@ -301,26 +309,26 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
         }
     }
     
-    private void addDependencies(StringBuffer buffer, Set moduleCNB,Set testCNB, boolean compile, boolean recursive) {
+    private void addDependencies(PrintWriter buffer, Set moduleCNB,Set testCNB, boolean compile, boolean recursive) {
         for (Iterator it = moduleCNB.iterator() ; it.hasNext() ;) {
             String cnb = (String)it.next();
             addDependency(buffer,cnb,compile,recursive,testCNB.contains(cnb));
         }
     }
     
-    private void addDependency(StringBuffer buffer, String cnb, boolean compile, boolean recursive, boolean test) {
-        buffer.append("                  <test-dependency>\n");
-        buffer.append("                      <code-name-base>" + cnb + "</code-name-base>\n");
+    private void addDependency(PrintWriter buffer, String cnb, boolean compile, boolean recursive, boolean test) {
+        buffer.println("                  <test-dependency>");
+        buffer.println("                      <code-name-base>" + cnb + "</code-name-base>");
         if (recursive) {
-            buffer.append("                      <recursive/>\n");
+            buffer.println("                      <recursive/>");
         }
         if (compile) {
-            buffer.append("                      <compile-dependency/>\n");
+            buffer.println("                      <compile-dependency/>");
         }
         if (test) {
-            buffer.append("                      <test/>\n");
+            buffer.println("                      <test/>");
         }
-        buffer.append("                  </test-dependency>\n");
+        buffer.println("                  </test-dependency>");
         
     }
     
