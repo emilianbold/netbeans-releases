@@ -40,6 +40,7 @@ import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.download.DownloadManager;
 import org.netbeans.installer.download.DownloadOptions;
 import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.error.ErrorManager;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.wizard.components.WizardComponent;
@@ -293,7 +294,7 @@ public class Wizard {
         try {
             wizardComponents = loadWizardComponents(componentsInstanceURI);
         } catch (InitializationException e) {
-            ErrorManager.getInstance().notify(ErrorManager.CRITICAL, 
+            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, 
                     "Failed to load wizard components", e);
         }
     }

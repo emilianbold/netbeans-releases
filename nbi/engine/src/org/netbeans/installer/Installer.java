@@ -24,6 +24,7 @@ import java.io.File;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.error.ErrorManager;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
@@ -86,16 +87,16 @@ public class Installer {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException e) {
-            ErrorManager.getInstance().notify(ErrorManager.WARNING, "Could " +
+            ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Could " +
                     "not set the Look And Feel to the system default.", e);
         } catch (InstantiationException e) {
-            ErrorManager.getInstance().notify(ErrorManager.WARNING, "Could " +
+            ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Could " +
                     "not set the Look And Feel to the system default.", e);
         } catch (IllegalAccessException e) {
-            ErrorManager.getInstance().notify(ErrorManager.WARNING, "Could " +
+            ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Could " +
                     "not set the Look And Feel to the system default.", e);
         } catch (UnsupportedLookAndFeelException e) {
-            ErrorManager.getInstance().notify(ErrorManager.WARNING, "Could " +
+            ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Could " +
                     "not set the Look And Feel to the system default.", e);
         }
         
@@ -126,7 +127,7 @@ public class Installer {
             // start the wizard
             Wizard.getInstance().start();
         } catch (InitializationException e) {
-            ErrorManager.getInstance().notify(ErrorManager.CRITICAL, e);
+            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, e);
         }
     }
     
@@ -167,7 +168,7 @@ public class Installer {
         try {
             ProductRegistry.getInstance().finalizeChanges();
         } catch (FinalizationException e) {
-            ErrorManager.getInstance().notify(ErrorManager.CRITICAL, "Cannot save registry", e);
+            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, "Cannot save registry", e);
         }
         
         // exit with success error code
