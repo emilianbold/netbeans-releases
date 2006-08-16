@@ -24,18 +24,18 @@ import java.beans.PropertyChangeEvent;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.configurations.ProjectConfiguration;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mobility.project.J2MEActionProvider;
 import org.netbeans.modules.mobility.project.J2MEProject;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
+import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.JavaPlatformManager; 
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -55,7 +55,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -63,16 +62,20 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.ResourceBundle;
-import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
 
@@ -100,7 +103,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     
     public Node createLogicalView() {
         try {
-            return new J2MEProjectRootNode(new PLookup());
+            return new J2MEProjectRootNode();
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
             return Node.EMPTY;
@@ -155,34 +158,66 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     public boolean hasBrokenLinks() {
         return BrokenReferencesSupport.isBroken( helper, refHelper, getBreakableProperties(), getBreakablePlatformProperties());
     }
+    
+    // Common class for all nodes in our project
+    abstract static class ChildLookup extends ProxyLookup
+    {
+        abstract public Node[] createNodes(J2MEProject project) ;
+    }
 
     // Private innerclasses ----------------------------------------------------
-    private final class PLookup extends ProxyLookup {
+    final class LogicalViewChildren extends Children.Keys implements ChangeListener 
+    {
+        final private J2MEProject project;
+        final private NodeCache cache;
+        final private HashMap<String,ChildLookup> keyMap = new HashMap<String,ChildLookup>();
         
-        private PLookup()
+        LogicalViewChildren(J2MEProject proj)
         {
-            //Just to avoid creation of accessor class
+            project=proj;
+            cache=new NodeCache(proj);
+            keyMap.put("Sources",new SourcesViewProvider());
+            keyMap.put("Resources",new ResViewProvider(cache));
+            keyMap.put("Configurations",new LibResViewProvider(cache));
+            project.getConfigurationHelper().addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt)
+                {
+                    refreshResources();
+                }});
+            setKeys(getKeys());            
         }
-             
-        public Children createChildren() {
-            Node n = null;
-            final FileObject root = helper.resolveFileObject(helper.getStandardPropertyEvaluator().getProperty("src.dir")); // NOI18N
-            DataObject dao = null;
-            try {
-                dao = root == null ? null : DataObject.find(root);
-                final Sources src = ProjectUtils.getSources(project);
-                if (src != null) {
-                    final SourceGroup sg[] = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    if (sg != null && sg.length == 1)
-                        n = PackageView.createPackageView(sg[0]);
+        
+        public void refreshResources()
+        {
+            refreshKey("Resources");
+        }
+        
+        protected Node[] createNodes(final Object key)
+        {
+            ChildLookup creator=keyMap.get(key);
+            return creator != null ? creator.createNodes(project) : null;
+        }
+        
+        public void stateChanged(final ChangeEvent e)
+        {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setKeys(getKeys());
                 }
-            } catch (Exception e) {}
-            if (dao == null || n == null) {
-                setLookups(new Lookup[] {Lookups.singleton(project)});
-            } else {
-                setLookups(new Lookup[] {Lookups.fixed(new Object[] {project, dao}), n.getLookup()});
+            }); 
+        }
+        
+        private Collection<String> getKeys() {
+            //#60800, #61584 - when the project is deleted externally do not try to create children, the source groups
+            //are not valid
+            if (project.getProjectDirectory() == null || !project.getProjectDirectory().isValid()) {
+                return Collections.EMPTY_LIST;
             }
-            return n == null ? Children.LEAF : new FilterNode.Children(n);
+            final java.util.List<String> result =  new java.util.ArrayList<String>();
+            result.add("Sources");
+            result.add("Resources");
+            result.add("Configurations");
+            return result;
         }
     }
     
@@ -197,8 +232,8 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         final boolean brokenSources;
         
         
-        public J2MEProjectRootNode(PLookup lookup) {
-            super(lookup.createChildren(), lookup);
+        public J2MEProjectRootNode() {
+            super(new LogicalViewChildren(project), Lookups.singleton(project));
             this.broken = hasBrokenLinks();
             this.brokenSources = Children.LEAF == getChildren();
             setName( ProjectUtils.getInformation( project ).getDisplayName() );

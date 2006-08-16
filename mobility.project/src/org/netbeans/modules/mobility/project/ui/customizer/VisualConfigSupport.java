@@ -43,7 +43,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.configurations.ProjectConfiguration;
 import org.netbeans.modules.mobility.cldcplatform.PlatformConvertor;
-//import org.netbeans.modules.mobility.project.J2MEProjectConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -157,7 +156,7 @@ public final class VisualConfigSupport {
         
     }
     
-    static void createFromTemplate(final J2MEProjectProperties properties, final String cfg, final String template) {
+    public static void createFromTemplate(final J2MEProjectProperties properties, final String cfg, final String template) {
         if (template == null) return;
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(PlatformConvertor.CFG_TEMPLATES_PATH+'/'+template+'.'+PlatformConvertor.CFG_EXT);
         if (fo == null) fo = Repository.getDefault().getDefaultFileSystem().findResource(PlatformConvertor.CFG_TEMPLATES_PATH+'/'+template+'.'+PlatformConvertor.GCFG_EXT);

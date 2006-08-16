@@ -30,6 +30,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -204,11 +206,12 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
     
     public void initGroupValues(final boolean useDefault) {
         vps.register(tableModel, new String[] {DefaultPropertiesDescriptor.ABILITIES}, useDefault);
-        bAdd.setEnabled(!useDefault);
-        bEdit.setEnabled(!useDefault);
-        bRemove.setEnabled(!useDefault);
-        table.setEnabled(!useDefault);
-        lTable.setEnabled(!useDefault);
+        final boolean notUseDefault=useDefault ^ true;
+        bAdd.setEnabled(!notUseDefault);
+        bEdit.setEnabled(notUseDefault);
+        bRemove.setEnabled(notUseDefault);
+        table.setEnabled(notUseDefault);
+        lTable.setEnabled(notUseDefault);
         table.setBackground(javax.swing.UIManager.getDefaults().getColor(useDefault ? "Panel.background" : "Table.background")); //NOI18N
         valueChanged(null);
     }
@@ -315,10 +318,10 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
     
     public static class StorableTableModel extends AbstractTableModel implements VisualPropertySupport.StorableTableModel {
         
-        private ArrayList<Map.Entry> entries = new ArrayList<Map.Entry>();
+        private ArrayList<Map.Entry<String,String>> entries = new ArrayList<Map.Entry<String,String>>();
         private HashMap<String,String> map = new HashMap<String,String>();
-        
         private static final long serialVersionUID = -2195421895353167171L;
+                
         
         public int getRowCount() {
             return entries.size();
@@ -349,7 +352,7 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
             }
         }
         
-		public Class<?> getColumnClass(final int columnIndex) {
+        public Class<?> getColumnClass(final int columnIndex) {
             switch (columnIndex) {
                 case 0:
                     return String.class;
@@ -364,16 +367,32 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
             return new Object[] {map};
         }
         
-        public Object getValueAt(final int rowIndex, final int columnIndex) {
+        public String getValueAt(final int rowIndex, final int columnIndex) {
             assert rowIndex < entries.size();
-            final Map.Entry e = entries.get(rowIndex);
+            final Map.Entry<String,String> e = entries.get(rowIndex);
             return columnIndex == 0 ? e.getKey() : (e.getValue() == null ? "" : e.getValue());
         }
         
-		public synchronized void setDataDelegates(final Object data[]) {
+                 
+        private static class AbiltitesComparator implements Comparator<Map.Entry<String,String>>
+        {
+            public int compare(Map.Entry<String,String> o1, Map.Entry<String,String> o2)
+            {
+                return o1.getKey().compareToIgnoreCase(o2.getKey());
+            }
+
+            public boolean equals(Object obj)
+            {
+                return this.equals(obj);
+            }
+        }
+        
+        
+        public synchronized void setDataDelegates(final Object data[]) {
             assert data != null;
             map = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) data[0];
-            entries = new ArrayList<Map.Entry>(map.entrySet());
+            entries = new ArrayList<Map.Entry<String,String>>(map.entrySet());
+            Collections.sort(entries,new AbiltitesComparator());
             fireTableDataChanged();
         }
         
@@ -403,7 +422,7 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
             assert row < entries.size();
             final Map.Entry e = entries.remove(row);
             map.entrySet().remove(e);
-            fireTableRowsDeleted(row, entries.size() + 1);
+            fireTableRowsDeleted(row, entries.size() + 1);            
         }
         
     }
