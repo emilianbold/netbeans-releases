@@ -20,6 +20,7 @@
 package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
@@ -47,6 +48,7 @@ public class ActivatedDeativatedTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
+        Locale.setDefault(new Locale("te", "ST"));
         o = Installer.findObject(Installer.class, true);
         assertNotNull("Installer created", o);
         MockServices.setServices(A.class, D.class/*); //*/, DD.class);

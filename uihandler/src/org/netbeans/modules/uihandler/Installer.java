@@ -33,10 +33,14 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.uihandler.api.Activated;
 import org.netbeans.modules.uihandler.api.Deactivated;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.AbstractNode;
@@ -44,6 +48,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Registers and unregisters loggers.
@@ -101,13 +108,20 @@ public class Installer extends ModuleInstall {
         URL url = null;
         Object[] buttons = new Object[] { exitMsg };
         try {
-            url = new URL(NbBundle.getMessage(SubmitPanel.class, "WELCOME_URL")); // NOI18N
-            InputStream is = url.openStream();
-            Object[] newB = parseButtons(is, exitMsg);
-            if (newB != null) {
-                buttons = newB;
+            String uri = NbBundle.getMessage(SubmitPanel.class, "WELCOME_URL");
+            if (uri != null && uri.length() > 0) {
+                url = new URL(uri); // NOI18N
+                InputStream is = url.openStream();
+                Object[] newB = parseButtons(is, exitMsg);
+                if (newB != null) {
+                    buttons = newB;
+                }
+                is.close();
             }
-            is.close();
+        } catch (ParserConfigurationException ex) {
+            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+        } catch (SAXException ex) {
+            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
         } catch (IOException ex) {
             Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
         }
@@ -130,46 +144,92 @@ public class Installer extends ModuleInstall {
         dd.setOptions(buttons);
         Object res = DialogDisplayer.getDefault().notify(dd);
         
+        if (res instanceof JButton) {
+            JButton b = (JButton)res;
+            Object post = b.getClientProperty("url"); // NOI18N
+            if (post instanceof String) {
+                URL postURL;
+                try {
+                    postURL = new URL((String) post);
+                } catch (MalformedURLException ex) {
+                    postURL = null;
+                }
+                URL nextURL = uploadLogs(postURL, recs);
+                if (nextURL != null) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(nextURL);
+                }
+            }
+            return true;
+        }
+        
         return res == exitMsg;
+    }
+    
+    private static boolean isChild(org.w3c.dom.Node child, org.w3c.dom.Node parent) {
+        while (child != null) {
+            if (child == parent) {
+                return true;
+            }
+            child = child.getParentNode();
+        }
+        return false;
+    }
+    
+    private static String attrValue(org.w3c.dom.Node in, String attrName) {
+        org.w3c.dom.Node n = in.getAttributes().getNamedItem(attrName);
+        return n == null ? null : n.getNodeValue();
     }
     
     /** Tries to parse a list of buttons provided by given page.
      * @param u the url to read the page from
      * @param defaultButton the button to add always to the list
      */
-    static Object[] parseButtons(InputStream is, Object defaultButton) throws IOException {
-        byte[] arr = new byte[4096];
-        int len = is.read(arr);
-        String page = new String(arr, 0, len);
+    static Object[] parseButtons(InputStream is, Object defaultButton) throws IOException, ParserConfigurationException, SAXException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setValidating(false);
+        factory.setIgnoringComments(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(is);
+
+        List<Object> buttons = new ArrayList<Object>();
         
-        Matcher m = Pattern.compile(
-            "<form\\p{Space}+action=", 
-            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE
-        ).matcher(page); // NOI18N
-        
-        if (!m.find()) {
-            return null;
+        NodeList forms = doc.getElementsByTagName("form");
+        for (int i = 0; i < forms.getLength(); i++) {
+            Form f = new Form(forms.item(i).getAttributes().getNamedItem("action").getNodeValue());
+            NodeList inputs = doc.getElementsByTagName("input");
+            for (int j = 0; j < inputs.getLength(); j++) {
+                if (isChild(inputs.item(j), forms.item(i))) {
+                    org.w3c.dom.Node in = inputs.item(j);
+                    String type = attrValue(in, "type");
+                    String name = attrValue(in, "name");
+                    String value = attrValue(in, "value");
+                    
+                    if ("hidden".equals(type) && "submitAndExit".equals(name)) { // NOI18N
+                        f.submitValue = value;
+                    }
+                }
+            }
+
+            JButton b = new JButton();
+            Mnemonics.setLocalizedText(b, f.submitValue);
+            b.putClientProperty("url", f.url);
+            b.setDefaultCapable(buttons.isEmpty());
+            buttons.add(b);
         }
+        buttons.add(defaultButton);
+        return buttons.toArray();
+    }
+
+    private URL uploadLogs(URL postURL, List<LogRecord> recs) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    static final class Form extends Object {
+        final String url;
+        String submitValue;
         
-        Matcher url = Pattern.compile("['\"]([^'\"]*)['\"]").matcher(page);
-        if (!url.find(m.end())) {
-            Logger.getAnonymousLogger().warning("No action URL:\n" + page); // NOI18N
-            return null;
+        public Form(String u) {
+            url = u;
         }
-        
-        Matcher action = Pattern.compile(
-            "INPUT.*TYPE=SUBMIT.*VALUE=['\"]([^'\"]*)['\"].*</form>", 
-            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL
-        ).matcher(page);
-        if (!action.find(url.end())) {
-            Logger.getAnonymousLogger().warning("No submit button:\n" + page.substring(url.end())); // NOI18N
-            return null;
-        }
-        
-        JButton b = new JButton();
-        Mnemonics.setLocalizedText(b, action.group(1));
-        b.putClientProperty("url", url.group(1));
-        
-        return new Object[] { b, defaultButton };
     }
 }

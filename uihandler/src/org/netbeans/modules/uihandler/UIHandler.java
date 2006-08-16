@@ -35,7 +35,7 @@ public class UIHandler extends Handler {
     private final Queue<LogRecord> logs;
     private final boolean exceptionOnly;
 
-    private static int MAX_LOGS = 10000;
+    private static int MAX_LOGS = 1000;
     
     public UIHandler(Queue<LogRecord> l, boolean exceptionOnly) {
         setLevel(Level.FINEST);

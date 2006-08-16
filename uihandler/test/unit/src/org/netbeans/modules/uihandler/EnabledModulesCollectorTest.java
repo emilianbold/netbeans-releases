@@ -21,6 +21,7 @@ package org.netbeans.modules.uihandler;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.LogRecord;
 import junit.framework.TestCase;
@@ -39,6 +40,7 @@ public class EnabledModulesCollectorTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
+        Locale.setDefault(new Locale("te", "ST"));
         MockServices.setServices(EnabledModulesCollector.class, MyModule.class, MyModule2.class, ActivatedDeativatedTest.DD.class);
         installer = Installer.findObject(Installer.class, true);
         installer.restored();
@@ -51,7 +53,7 @@ public class EnabledModulesCollectorTest extends TestCase {
         assertTrue("ok", installer.closing());
         
         List<LogRecord> rec = Installer.getLogs();
-        assertEquals("One record for disabled and one for enabled", 2, rec.size());
+        assertEquals("One record for disabled and one for enabled: " + rec, 2, rec.size());
         
         assertEquals("UI_ENABLED_MODULES", rec.get(0).getMessage());
         assertEquals("UI_DISABLED_MODULES", rec.get(1).getMessage());
