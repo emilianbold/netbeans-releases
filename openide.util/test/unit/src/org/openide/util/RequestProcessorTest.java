@@ -117,6 +117,32 @@ public class RequestProcessorTest extends NbTestCase {
             
     }
     
+    public void testTaskLeakWhenCancelled() throws Exception {
+        Runnable r = new Runnable() {public void run() {}};
+
+        // schedule (1hour) and cancel immediatelly
+        new RequestProcessor(getName()).post(r, 3600*1000).cancel();
+        
+        WeakReference wr = new WeakReference(r);
+        r = null;
+        assertGC("runnable should be collected", wr);
+    }
+
+    /* This might be issue as well, but taking into account the typical lifecycle
+        of a RP and its size, I won't invest in fixing this now. 
+     *//*
+    public void testRPLeakWhenLastTaskCancelled() throws Exception {
+        Runnable r = new Runnable() {public void run() {}};
+
+        // schedule (1hour) and cancel immediatelly
+        RequestProcessor rp = new RequestProcessor(getName());
+        rp.post(r, 3600*1000).cancel();
+        
+        WeakReference wr = new WeakReference(rp);
+        rp = null;
+        assertGC("runnable should be collected", wr);
+    } /**/  
+    
     public void testScheduleAndIsFinished() throws InterruptedException {
         class Run implements Runnable {
             public boolean run;

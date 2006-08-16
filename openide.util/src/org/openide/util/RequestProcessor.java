@@ -486,6 +486,22 @@ public final class RequestProcessor {
         }
     }
 
+    private class EnqueueTask extends TimerTask {
+        Item itm;
+        
+        EnqueueTask(Item itm) {
+            this.itm = itm;
+        }
+        
+        public void run() {
+            try {
+                enqueue(itm);
+            } catch (RuntimeException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+    }
+    
     /**
      * The task describing the request sent to the processor.
      * Cancellable since 4.1.
@@ -582,17 +598,7 @@ public final class RequestProcessor {
             if (delay == 0) { // Place it to pending queue immediatelly
                 enqueue(localItem);
             } else { // Post the starter
-                starterThread.schedule(new TimerTask() {
-
-                                           public void run() {
-                                               try {
-                                                   enqueue(localItem);
-                                               }
-                                               catch (RuntimeException e) {
-                                                   Exceptions.printStackTrace(e);
-                                               }
-                                           }
-                                       }, delay);
+                starterThread.schedule(new EnqueueTask(localItem), delay);
             }
         }
 
