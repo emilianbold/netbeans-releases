@@ -14,6 +14,7 @@ package org.netbeans.api.visual.anchor;
 
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.model.StateModel;
+import org.netbeans.modules.visual.anchor.*;
 
 import java.awt.*;
 
@@ -46,7 +47,11 @@ public final class AnchorFactory {
     }
 
     public static Anchor createRectangularAnchor (Widget widget) {
-        return widget != null ? new RectangularAnchor (widget) : null;
+        return createRectangularAnchor (widget, true);
+    }
+
+    public static Anchor createRectangularAnchor (Widget widget, boolean includeBorders) {
+        return widget != null ? new RectangularAnchor (widget, includeBorders) : null;
     }
 
     public static Anchor createDirectionalAnchor (Widget widget, DirectionalAnchorKind kind) {

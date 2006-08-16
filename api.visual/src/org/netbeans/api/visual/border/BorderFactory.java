@@ -13,6 +13,7 @@
 package org.netbeans.api.visual.border;
 
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.visual.border.*;
 
 import java.awt.*;
 

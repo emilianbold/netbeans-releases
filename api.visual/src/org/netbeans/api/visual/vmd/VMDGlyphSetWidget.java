@@ -12,7 +12,6 @@
  */
 package org.netbeans.api.visual.vmd;
 
-import org.netbeans.api.visual.layout.SerialLayout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.Scene;

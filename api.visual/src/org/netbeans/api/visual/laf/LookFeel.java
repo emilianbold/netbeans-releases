@@ -14,6 +14,7 @@ package org.netbeans.api.visual.laf;
 
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 import java.awt.*;
 
@@ -21,6 +22,12 @@ import java.awt.*;
  * @author David Kaspar
  */
 public abstract class LookFeel {
+
+    private static final LookFeel DEFAULT = new DefaultLookFeel ();
+
+    public static LookFeel createDefaultLookFeel () {
+        return DEFAULT;
+    }
 
     public abstract Paint getBackground ();
 

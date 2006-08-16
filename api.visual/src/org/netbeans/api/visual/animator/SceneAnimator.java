@@ -14,6 +14,10 @@ package org.netbeans.api.visual.animator;
 
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.visual.animator.PreferredBoundsAnimator;
+import org.netbeans.modules.visual.animator.PreferredLocationAnimator;
+import org.netbeans.modules.visual.animator.ZoomAnimator;
+import org.netbeans.modules.visual.animator.ColorAnimator;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 

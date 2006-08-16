@@ -15,7 +15,7 @@ package org.netbeans.api.visual.widget;
 import org.netbeans.api.visual.action.MouseHoverAction;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.animator.SceneAnimator;
-import org.netbeans.api.visual.laf.DefaultLookFeel;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.util.GeomUtil;
 

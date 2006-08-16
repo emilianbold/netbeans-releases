@@ -13,7 +13,9 @@
 package org.netbeans.api.visual.layout;
 
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.modules.visual.layout.AbsoluteLayout;
+import org.netbeans.modules.visual.layout.CardLayout;
+import org.netbeans.modules.visual.layout.SerialLayout;
 
 /**
  * @author David Kaspar
@@ -69,34 +71,6 @@ public final class LayoutFactory {
         Layout layout = widget.getLayout ();
         if (layout instanceof CardLayout)
             ((CardLayout) layout).setActiveChildWidget (activeChildWidget);
-    }
-
-    @Deprecated
-    public static Layout createConnectionWidgetLayout (ConnectionWidget connectionWidget) {
-        assert connectionWidget != null;
-        return new ConnectionWidgetLayout (connectionWidget);
-    }
-
-    @Deprecated
-    public static void setConstraint (ConnectionWidget connectionWidget, Widget childWidget, ConnectionWidgetLayoutAlignment alignment, float placementInPercentage) {
-        Layout layout = connectionWidget.getLayout ();
-        if (layout instanceof ConnectionWidgetLayout)
-            ((ConnectionWidgetLayout) layout).setConstraint (childWidget, alignment, placementInPercentage);
-    }
-
-    @Deprecated
-    public static void setConstraint (ConnectionWidget connectionWidget, Widget childWidget, ConnectionWidgetLayoutAlignment alignment, int placementAtDistance) {
-        Layout layout = connectionWidget.getLayout ();
-        if (layout instanceof ConnectionWidgetLayout)
-            ((ConnectionWidgetLayout) layout).setConstraint (childWidget, alignment, placementAtDistance);
-
-    }
-
-    @Deprecated
-    public static void removeConstraint (ConnectionWidget connectionWidget, Widget childWidget) {
-        Layout layout = connectionWidget.getLayout ();
-        if (layout instanceof ConnectionWidgetLayout)
-            ((ConnectionWidgetLayout) layout).removeConstraint (childWidget);
     }
 
 }
