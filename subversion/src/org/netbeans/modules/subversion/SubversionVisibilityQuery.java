@@ -46,9 +46,11 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation,
         cache.addVersioningListener(this);
     }
 
-    public boolean isVisible(FileObject file) {
-        if (file.isData()) return true;
-        return cache.getStatus(FileUtil.toFile(file)).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY; 
+    public boolean isVisible(FileObject fileObject) {
+        if (fileObject.isData()) return true;
+        File file = FileUtil.toFile(fileObject);
+        if(file == null) return true;
+        return cache.getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY; 
     }
 
     public synchronized void addChangeListener(ChangeListener l) {
@@ -66,7 +68,7 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation,
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             File file = (File) event.getParams()[0];
-            if (file.isDirectory()) {
+            if (file != null && file.isDirectory()) {
                 FileInformation old = (FileInformation) event.getParams()[1];
                 FileInformation cur = (FileInformation) event.getParams()[2];
                 if (old != null && old.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY || cur.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
